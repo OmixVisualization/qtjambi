@@ -29,6 +29,7 @@
 ****************************************************************************/
 package io.qt.core;
 
+import io.qt.NativeAccess;
 import io.qt.QtObject;
 import io.qt.QtUninvokable;
 
@@ -36,6 +37,9 @@ import io.qt.QtUninvokable;
  * Abstract superclass of containers in Qt.
  */
 abstract class AbstractContainer<T> extends QtObject implements Cloneable{
+	
+	@NativeAccess
+	Object __rcContainer;
 	
 	/**
      * Returns the number of elements in this container. If this container

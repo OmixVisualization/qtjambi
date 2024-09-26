@@ -151,18 +151,36 @@ public:
     typedef std::function<void(int,bool,double)> TestStdFunction;
     static QList<Tulip::TestStdFunction> createListOfStdFunctions();
     static void testStdFunctions(const QList<Tulip::TestStdFunction>& functions);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    static QVector<QRunnable*> createVectorOfRunnables();
+    static QVector<QEasingCurve::EasingFunction> createVectorOfEasingFunctions();
+    static void testEasingFunctions(const QVector<QEasingCurve::EasingFunction>& functions);
+    static QVector<Tulip::TestStdFunction> createVectorOfStdFunctions();
+    static void testStdFunctions(const QVector<Tulip::TestStdFunction>& functions);
+    static QVector<QObject*> createVectorOfObjects();
+    static QVector<QVector<QRunnable*>> createVectorOfVectorOfRunnables();
+    static QVector<QVector<QObject*>> createVectorOfVectorOfObjects();
+    static QLinkedList<QRunnable*> createLinkedListOfRunnables();
+    static QLinkedList<QEasingCurve::EasingFunction> createLinkedListOfEasingFunctions();
+    static void testEasingFunctions(const QLinkedList<QEasingCurve::EasingFunction>& functions);
+    static QLinkedList<Tulip::TestStdFunction> createLinkedListOfStdFunctions();
+    static void testStdFunctions(const QLinkedList<Tulip::TestStdFunction>& functions);
+    static QLinkedList<QObject*> createLinkedListOfObjects();
+    static QLinkedList<QLinkedList<QRunnable*>> createLinkedListOfLinkedListOfRunnables();
+    static QLinkedList<QLinkedList<QObject*>> createLinkedListOfLinkedListOfObjects();
+#endif
     static QSet<QRunnable*> createSetOfRunnables();
     static QHash<QString,QRunnable*> createStringHashOfRunnables();
     static QMultiHash<QString,QRunnable*> createStringMultiHashOfRunnables();
     static QMap<QString,QRunnable*> createStringMapOfRunnables();
     static QMultiMap<QString,QRunnable*> createStringMultiMapOfRunnables();
-    static QList<QObject*> createListOfObjects();
     static QSet<QObject*> createSetOfObjects();
     static QHash<QString,QObject*> createStringHashOfObjects();
     static QMultiHash<QString,QObject*> createStringMultiHashOfObjects();
     static QMap<QString,QObject*> createStringMapOfObjects();
     static QMultiMap<QString,QObject*> createStringMultiMapOfObjects();
 
+    static QList<QObject*> createListOfObjects();
     static QList<QList<QRunnable*>> createListOfListOfRunnables();
     static QList<QList<QObject*>> createListOfListOfObjects();
     static qint64 fillIntList(qint32 capacity);

@@ -32,6 +32,7 @@
 include(../QtJambi/configure.pri)
 
 QT = core insighttracker
+CONFIG+=no_private_qt_headers_warning
 
 HEADERS += 
 

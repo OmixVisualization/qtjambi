@@ -29,6 +29,8 @@
 ****************************************************************************/
 package io.qt.core;
 
+import java.lang.reflect.*;
+import java.nio.*;
 import java.util.*;
 import java.util.function.*;
 import io.qt.*;
@@ -56,7 +58,7 @@ public class QList<T> extends AbstractList<T> implements java.util.List<T>, Clon
      * <p>See <a href="https://doc.qt.io/qt/qlist.html#QList">QList::QList()</a></p>
      * @param metaType the type T
      */
-    public QList(QMetaType.Type metaType) {
+    public QList(QMetaType.@StrictNonNull Type metaType) {
 		this(new QMetaType(metaType));
 	}
     
@@ -65,7 +67,7 @@ public class QList<T> extends AbstractList<T> implements java.util.List<T>, Clon
      * <p>See <a href="https://doc.qt.io/qt/qlist.html#QList">QList::QList()</a></p>
      * @param elementType the type T
      */
-    public QList(Class<T> elementType) {
+    public QList(@Nullable Class<T> elementType) {
         super(null);
         QMetaType metaType = QMetaType.fromType(elementType);
         initialize(elementType, QtJambi_LibraryUtilities.internal.nativeId(metaType), null);
@@ -76,17 +78,23 @@ public class QList<T> extends AbstractList<T> implements java.util.List<T>, Clon
      * <p>See <a href="https://doc.qt.io/qt/qlist.html#QList">QList::QList()</a></p>
      * @param metaType the type T
      */
-    public QList(QMetaType metaType) {
+    public QList(@StrictNonNull QMetaType metaType) {
         super(null);
         initialize(metaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaType), null);
     }
+    
+    @NativeAccess
+    QList(QMetaType elementMetaType, Collection<T> other) {
+		super(null);
+		initialize(elementMetaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(elementMetaType), other);
+	}
     
     /**
      * Creating a container with given content.
      * <p>See <a href="https://doc.qt.io/qt/qlist.html#QList">QList::QList(const QList&lt;T> &amp;)</a></p>
      * @param other container
      */
-    public QList(Collection<T> other) {
+    public QList(@StrictNonNull Collection<T> other) {
         super(null);
         QMetaType metaType = findElementMetaType(Objects.requireNonNull(other));
         initialize(metaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaType), other);
@@ -101,22 +109,27 @@ public class QList<T> extends AbstractList<T> implements java.util.List<T>, Clon
 
     @QtUninvokable
     private native void initialize(Class<?> elementType, long elementMetaType, Collection<T> other);
+	
+	QList(@StrictNonNull QMetaType metaType, int size) {
+        super(null);
+		throw new RuntimeException("This constructor is required for compatibility with AbstractSpan.");
+    }
     
     /**
      * Creates and returns a copy of this object.
      * <p>See <a href="https://doc.qt.io/qt/qlist.html#QList-8">QList::QList(const QList&lt;T> &amp;)</a></p>
      */
     @Override
-    public QList<T> clone(){
+    public @NonNull QList<T> clone(){
         return new QList<>(this);
     }
     
     @QtUninvokable
-    public final void append(java.util.Collection<T> t) {
+    public final void append(java.util.@NonNull Collection<T> t) {
         appendList(QtJambi_LibraryUtilities.internal.nativeId(this), Objects.requireNonNull(t));
     }
     @QtUninvokable
-    private static native <T> void appendList(long __this__nativeId, java.util.Collection<T> t);
+    private native void appendList(long __this__nativeId, java.util.Collection<T> t);
 
     @QtUninvokable
     public final void append(T t)    {
@@ -130,21 +143,21 @@ public class QList<T> extends AbstractList<T> implements java.util.List<T>, Clon
     }
 	
 	@QtUninvokable
-    private static native <T> void append(long __this__nativeId, T t);
+    private native void append(long __this__nativeId, T t);
     
     @QtUninvokable
     public final T at(int i)    {
         return at(QtJambi_LibraryUtilities.internal.nativeId(this), i);
     }
     @QtUninvokable
-    private static native <T> T at(long __this__nativeId, int i);
+    private native T at(long __this__nativeId, int i);
 
     @QtUninvokable
     public final void clear()    {
         clear(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    private static native <T> void clear(long __this__nativeId);
+    private native void clear(long __this__nativeId);
 
     @QtUninvokable
     public final boolean contains(Object t)    {
@@ -162,7 +175,7 @@ public class QList<T> extends AbstractList<T> implements java.util.List<T>, Clon
         }
     }
     @QtUninvokable
-    private static native <T> boolean contains(long __this__nativeId, T t);
+    private native boolean contains(long __this__nativeId, Object t);
 
     @QtUninvokable
     public final int count()    {
@@ -180,35 +193,35 @@ public class QList<T> extends AbstractList<T> implements java.util.List<T>, Clon
         }
     }
     @QtUninvokable
-    private static native <T> int count(long __this__nativeId, T t);
+    private native int count(long __this__nativeId, T t);
 
     @QtUninvokable
-    protected final QSequentialIterator<T> begin()    {
+    protected final @NonNull QSequentialIterator<T> begin()    {
         return begin(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    private static native <T> QSequentialIterator<T> begin(long __this__nativeId);
+    private native QSequentialIterator<T> begin(long __this__nativeId);
 
     @QtUninvokable
-    protected final QSequentialIterator<T> end()    {
+    protected final @NonNull QSequentialIterator<T> end()    {
         return end(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    private static native <T> QSequentialIterator<T> end(long __this__nativeId);
+    private native QSequentialIterator<T> end(long __this__nativeId);
 
     @QtUninvokable
-    protected final QSequentialConstIterator<T> constBegin()    {
+    protected final @NonNull QSequentialConstIterator<T> constBegin()    {
         return constBegin(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    private static native <T> QSequentialConstIterator<T> constBegin(long __this__nativeId);
+    private native QSequentialConstIterator<T> constBegin(long __this__nativeId);
 
     @QtUninvokable
-    protected final QSequentialConstIterator<T> constEnd()    {
+    protected final @NonNull QSequentialConstIterator<T> constEnd()    {
         return constEnd(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    private static native <T> QSequentialConstIterator<T> constEnd(long __this__nativeId);
+    private native QSequentialConstIterator<T> constEnd(long __this__nativeId);
 
     @QtUninvokable
     public final boolean endsWith(T t)    {
@@ -221,7 +234,7 @@ public class QList<T> extends AbstractList<T> implements java.util.List<T>, Clon
         }
     }
     @QtUninvokable
-    private static native <T> boolean endsWith(long __this__nativeId, T t);
+    private native boolean endsWith(long __this__nativeId, T t);
 
     @QtUninvokable
     public final T first()    {
@@ -248,7 +261,7 @@ public class QList<T> extends AbstractList<T> implements java.util.List<T>, Clon
         }
     }
     @QtUninvokable
-    private static native <T> int indexOf(long __this__nativeId, T t, int from);
+    private native int indexOf(long __this__nativeId, T t, int from);
 
     @QtUninvokable
     public final void insert(int i, T t)    {
@@ -261,7 +274,7 @@ public class QList<T> extends AbstractList<T> implements java.util.List<T>, Clon
         }
     }
     @QtUninvokable
-    private static native <T> void insert(long __this__nativeId, int i, int n, T t);
+    private native void insert(long __this__nativeId, int i, int n, T t);
 
     @QtUninvokable
     public final boolean isEmpty()    {
@@ -277,7 +290,7 @@ public class QList<T> extends AbstractList<T> implements java.util.List<T>, Clon
 		}
     }
     @QtUninvokable
-    private static native <T> T last(long __this__nativeId);
+    private native T last(long __this__nativeId);
 
     @SuppressWarnings("unchecked")
     @QtUninvokable
@@ -301,7 +314,7 @@ public class QList<T> extends AbstractList<T> implements java.util.List<T>, Clon
         }
     }
     @QtUninvokable
-    private static native <T> int lastIndexOf(long __this__nativeId, T t, int from);
+    private native int lastIndexOf(long __this__nativeId, T t, int from);
 
     @QtUninvokable
     public final int length() {
@@ -309,29 +322,29 @@ public class QList<T> extends AbstractList<T> implements java.util.List<T>, Clon
     }
 
     @QtUninvokable
-    public final QList<T> mid(int pos) {
+    public final @NonNull QList<T> mid(int pos) {
         return mid(pos, (int)-1);
     }
     @QtUninvokable
-    public final QList<T> mid(int pos, int length) {
+    public final @NonNull QList<T> mid(int pos, int length) {
         return mid(QtJambi_LibraryUtilities.internal.nativeId(this), pos, length);
     }
     @QtUninvokable
-    private static native <T> QList<T> mid(long __this__nativeId, int pos, int length);
+    private native QList<T> mid(long __this__nativeId, int pos, int length);
 
     @QtUninvokable
     public final void move(int from, int to) {
         move(QtJambi_LibraryUtilities.internal.nativeId(this), from, to);
     }
     @QtUninvokable
-    private static native <T> void move(long __this__nativeId, int from, int to);
+    private native void move(long __this__nativeId, int from, int to);
 
     @QtUninvokable
     private final boolean operator_equal(java.util.Collection<T> l) {
         return operator_equal(QtJambi_LibraryUtilities.internal.nativeId(this), l);
     }
     @QtUninvokable
-    private static native <T> boolean operator_equal(long __this__nativeId, java.util.Collection<T> l);
+    private native boolean operator_equal(long __this__nativeId, java.util.Collection<T> l);
 
     @QtUninvokable
     public final void prepend(T t) {
@@ -360,7 +373,7 @@ public class QList<T> extends AbstractList<T> implements java.util.List<T>, Clon
         }
     }
     @QtUninvokable
-    private static native <T> int removeAll(long __this__nativeId, T t);
+    private native int removeAll(long __this__nativeId, T t);
 
     @QtUninvokable
     public final void removeAt(int i) {
@@ -398,13 +411,13 @@ public class QList<T> extends AbstractList<T> implements java.util.List<T>, Clon
         return false;
     }
     @QtUninvokable
-    private static native <T> boolean removeOne(long __this__nativeId, T t);
+    private native boolean removeOne(long __this__nativeId, T t);
 	
 	/**
      * <p>See <a href="https://doc.qt.io/qt/qlist.html#removeIf" class="member-name-class">QList::<wbr>removeIf(Predicate)</a></p>
 	 */
     @QtUninvokable
-    public final boolean removeIf(Predicate<? super T> predicate)    {
+    public final boolean removeIf(@StrictNonNull Predicate<? super T> predicate)    {
         Objects.requireNonNull(predicate);
         boolean removed = false;
         for(T value : clone()) {
@@ -417,7 +430,7 @@ public class QList<T> extends AbstractList<T> implements java.util.List<T>, Clon
     }
 	
     @QtUninvokable
-    private static native void remove(long __this__nativeId, int i, int n);
+    private native void remove(long __this__nativeId, int i, int n);
 
     @QtUninvokable
     public final void replace(int i, T t) {
@@ -430,21 +443,21 @@ public class QList<T> extends AbstractList<T> implements java.util.List<T>, Clon
         }
     }
     @QtUninvokable
-    private static native <T> void replace(long __this__nativeId, int i, T t);
+    private native void replace(long __this__nativeId, int i, T t);
 
     @QtUninvokable
     public final void reserve(int size) {
         reserve(QtJambi_LibraryUtilities.internal.nativeId(this), size);
     }
     @QtUninvokable
-    private static native <T> void reserve(long __this__nativeId, int size);
+    private native void reserve(long __this__nativeId, int size);
 
     @QtUninvokable
     public final int size() {
         return size(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    private static native <T> int size(long __this__nativeId);
+    private native int size(long __this__nativeId);
 
     @QtUninvokable
     public final boolean startsWith(T t) {
@@ -457,14 +470,14 @@ public class QList<T> extends AbstractList<T> implements java.util.List<T>, Clon
         }
     }
     @QtUninvokable
-    private static native <T> boolean startsWith(long __this__nativeId, T t);
+    private native boolean startsWith(long __this__nativeId, T t);
 
     @QtUninvokable
     public final T takeAt(int i) {
         return takeAt(QtJambi_LibraryUtilities.internal.nativeId(this), i);
     }
     @QtUninvokable
-    private static native <T> T takeAt(long __this__nativeId, int i);
+    private native T takeAt(long __this__nativeId, int i);
 
     @QtUninvokable
     public final T takeFirst() {
@@ -484,14 +497,14 @@ public class QList<T> extends AbstractList<T> implements java.util.List<T>, Clon
 		}
     }
     @QtUninvokable
-    private static native <T> T takeLast(long __this__nativeId);
+    private native T takeLast(long __this__nativeId);
 
     @QtUninvokable
     public final T value(int i) {
         return value(QtJambi_LibraryUtilities.internal.nativeId(this), i);
     }
     @QtUninvokable
-    private static native <T> T value(long __this__nativeId, int i);
+    private native T value(long __this__nativeId, int i);
 
     @QtUninvokable
     public final T value(int i, T defaultValue) {
@@ -504,7 +517,7 @@ public class QList<T> extends AbstractList<T> implements java.util.List<T>, Clon
         }
     }
     @QtUninvokable
-    private static native <T> T valueDefault(long __this__nativeId, int i, T defaultValue);
+    private native T valueDefault(long __this__nativeId, int i, T defaultValue);
 
     /**
      * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#operator-eq-eq" class="member-name-class">QList::<wbr>operator==(QList&lt;T>)const</a></code></p>
@@ -532,11 +545,11 @@ public class QList<T> extends AbstractList<T> implements java.util.List<T>, Clon
 		}
     }
     @QtUninvokable
-    private static native int hashCode(long __this__nativeId);
+    private native int hashCode(long __this__nativeId);
     
     @Override
     @QtUninvokable
-    public String toString() {
+    public @NonNull String toString() {
     	try {
 			return toString(QtJambi_LibraryUtilities.internal.nativeId(this));
 		} catch (QNoImplementationException e) {
@@ -546,7 +559,7 @@ public class QList<T> extends AbstractList<T> implements java.util.List<T>, Clon
 		}
     }
     @QtUninvokable
-    private static native String toString(long __this__nativeId);
+    private native String toString(long __this__nativeId);
     
     @Override
     @QtUninvokable
@@ -597,10 +610,10 @@ public class QList<T> extends AbstractList<T> implements java.util.List<T>, Clon
     }
     
     @QtUninvokable
-    private static native <T> void swapItemsAt(long __this__nativeId, int i, int j);
+    private native void swapItemsAt(long __this__nativeId, int i, int j);
     
     @QtUninvokable
-    public final QSet<T> toSet() {
+    public final @NonNull QSet<T> toSet() {
 		QSet<T> set = new QSet<>(elementMetaType());
 		set.unite(this);
         return set;
@@ -610,7 +623,8 @@ public class QList<T> extends AbstractList<T> implements java.util.List<T>, Clon
      * <p>See <code>operator&lt;&lt;(QDataStream&amp;,<wbr>QList&lt;T>)</code></p>
      */
     @io.qt.QtUninvokable
-    public void writeTo(io.qt.core.QDataStream stream){
+    public void writeTo(io.qt.core.@StrictNonNull QDataStream stream){
+    	java.util.Objects.requireNonNull(stream, "Argument 'stream': null not expected.");
         writeTo(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(stream));
     }
     
@@ -621,7 +635,8 @@ public class QList<T> extends AbstractList<T> implements java.util.List<T>, Clon
      * <p>See <code>operator&gt;&gt;(QDataStream&amp;,<wbr>QList&lt;T>&amp;)</code></p>
      */
     @io.qt.QtUninvokable
-    public void readFrom(io.qt.core.QDataStream stream){
+    public void readFrom(io.qt.core.@StrictNonNull QDataStream stream){
+    	java.util.Objects.requireNonNull(stream, "Argument 'stream': null not expected.");
         readFrom(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(stream));
     }
     
@@ -633,7 +648,9 @@ public class QList<T> extends AbstractList<T> implements java.util.List<T>, Clon
         return elementMetaType(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @io.qt.QtUninvokable
-    private static native QMetaType elementMetaType(long containerAccess);
+    private native QMetaType elementMetaType(long containerAccess);
+    
+
     
     /**
      * Returns a QList containing given elements.
@@ -646,21 +663,23 @@ public class QList<T> extends AbstractList<T> implements java.util.List<T>, Clon
      *
      */
     @SuppressWarnings({ "unchecked" })
-    @SafeVarargs
-    public static <T> QList<T> of(T element0, T...elements) {
-        QMetaType metaType = findElementMetaType(element0, elements);
-        QList<T> result;
-        if(metaType.id()==QMetaType.Type.QString.value())
-            result = (QList<T>)(QList<?>)new QStringList();
-        else
-            result = new QList<>(metaType);
-        result.reserve(elements.length+1);
-        result.append(element0);
-        for (T t : elements) {
-            result.append(t);
+	@SafeVarargs
+    public static <T> @NonNull QList<T> of(T element0, T @StrictNonNull...elements) {
+		QMetaType metaType = findElementMetaType(element0, elements);
+        if(metaType.id()==QMetaType.Type.QString.value()) {
+        	QList<T> result = (QList<T>)(QList<?>)new QStringList();
+        	result.append(element0);
+        	for (T t : elements) {
+        		result.append(t);
+        	}
+        	return result;
+        }else {
+    		T[] allElements = (T[])new Object[elements.length+1];
+    		System.arraycopy(elements, 0, allElements, 1, elements.length);
+    		allElements[0] = element0;
+    		return ofTyped(metaType, allElements);
         }
-        return result;
-    }
+	}
     
     /**
      * Returns a QStringList containing given elements.
@@ -670,15 +689,299 @@ public class QList<T> extends AbstractList<T> implements java.util.List<T>, Clon
      * @return a {@code QStringList} containing the specified element
      */
     @SafeVarargs
-    public static QStringList of(String element0, String...elements) {
-        QStringList result = new QStringList();
-        result.reserve(elements.length+1);
-        result.append(element0);
-        for (String element : elements) {
-            result.append(element);
-        }
-        return result;
+    public static @NonNull QStringList of(@NonNull String element0, @NonNull String @StrictNonNull...elements) {
+    	String[] allElements = new String[elements.length+1];
+		System.arraycopy(elements, 0, allElements, 1, elements.length);
+		allElements[0] = (String)element0;
+    	return new QStringList(allElements);
     }
+    
+    /**
+     * Returns a QList containing given elements.
+     *
+     * @param elements
+     * @return a {@code QList} containing the specified element
+     */
+    public static @NonNull QList<@QtPrimitiveType@NonNull Byte> ofByte(byte @StrictNonNull...elements) {
+		QList<Byte> result = new QList<>(byte.class);
+    	for (byte t : elements) {
+			result.append(t);
+		}
+		return result;
+	}
+    
+    /**
+     * Returns a QList containing given elements.
+     *
+     * @param elements
+     * @return a {@code QList} containing the specified element
+     */
+    public static @NonNull QList<@QtPrimitiveType@NonNull Short> ofShort(short @StrictNonNull...elements) {
+		QList<Short> result = new QList<>(short.class);
+    	for (short t : elements) {
+			result.append(t);
+		}
+		return result;
+	}
+    
+    /**
+     * Returns a QList containing given elements.
+     *
+     * @param elements
+     * @return a {@code QList} containing the specified element
+     */
+    public static @NonNull QList<@QtPrimitiveType@NonNull Integer> ofInt(int @StrictNonNull...elements) {
+		QList<Integer> result = new QList<>(int.class);
+    	for (int t : elements) {
+			result.append(t);
+		}
+		return result;
+	}
+    
+    /**
+     * Returns a QList containing given elements.
+     *
+     * @param elements
+     * @return a {@code QList} containing the specified element
+     */
+    public static @NonNull QList<@QtPrimitiveType@NonNull Long> ofLong(long @StrictNonNull...elements) {
+		QList<Long> result = new QList<>(long.class);
+    	for (long t : elements) {
+			result.append(t);
+		}
+		return result;
+	}
+    
+    /**
+     * Returns a QList containing given elements.
+     *
+     * @param elements
+     * @return a {@code QList} containing the specified element
+     */
+    public static @NonNull QList<@QtPrimitiveType@NonNull Character> ofChar(char @StrictNonNull...elements) {
+		QList<Character> result = new QList<>(char.class);
+    	for (char t : elements) {
+			result.append(t);
+		}
+		return result;
+	}
+    
+    /**
+     * Returns a QList containing given elements.
+     *
+     * @param elements
+     * @return a {@code QList} containing the specified element
+     */
+    public static @NonNull QList<@QtPrimitiveType@NonNull Float> ofFloat(float @StrictNonNull...elements) {
+		QList<Float> result = new QList<>(float.class);
+    	for (float t : elements) {
+			result.append(t);
+		}
+		return result;
+	}
+    
+    /**
+     * Returns a QList containing given elements.
+     *
+     * @param elements
+     * @return a {@code QList} containing the specified element
+     */
+    public static @NonNull QList<@QtPrimitiveType@NonNull Double> ofDouble(double @StrictNonNull...elements) {
+		QList<Double> result = new QList<>(double.class);
+    	for (double t : elements) {
+			result.append(t);
+		}
+		return result;
+	}
+    
+    /**
+     * Returns a QList containing given elements.
+     *
+     * @param elements
+     * @return a {@code QList} containing the specified element
+     */
+    public static @NonNull QList<@QtPrimitiveType@NonNull Boolean> ofBoolean(boolean @StrictNonNull...elements) {
+		QList<Boolean> result = new QList<>(boolean.class);
+		for (boolean t : elements) {
+			result.append(t);
+		}
+		return result;
+	}
+    
+    /**
+     * Returns a QList containing given elements.
+     *
+     * @param elements
+     * @return a {@code QList} containing the specified element
+     */
+    public static @NonNull QList<@QtPrimitiveType@NonNull Byte> ofBuffer(@StrictNonNull ByteBuffer elements) {
+		QList<Byte> result = new QList<>(byte.class);
+		while(elements.hasRemaining()) {
+			result.append(elements.get());
+		}
+		return result;
+	}
+    
+    /**
+     * Returns a QList containing given elements.
+     *
+     * @param elements
+     * @return a {@code QList} containing the specified element
+     */
+    public static @NonNull QList<@QtPrimitiveType@NonNull Short> ofBuffer(@StrictNonNull ShortBuffer elements) {
+		QList<Short> result = new QList<>(short.class);
+		while(elements.hasRemaining()) {
+			result.append(elements.get());
+		}
+		return result;
+	}
+    
+    /**
+     * Returns a QList containing given elements.
+     *
+     * @param elements
+     * @return a {@code QList} containing the specified element
+     */
+    public static @NonNull QList<@QtPrimitiveType@NonNull Integer> ofBuffer(@StrictNonNull IntBuffer elements) {
+		QList<Integer> result = new QList<>(int.class);
+		while(elements.hasRemaining()) {
+			result.append(elements.get());
+		}
+		return result;
+	}
+    
+    /**
+     * Returns a QList containing given elements.
+     *
+     * @param elements
+     * @return a {@code QList} containing the specified element
+     */
+    public static @NonNull QList<@QtPrimitiveType@NonNull Long> ofBuffer(@StrictNonNull LongBuffer elements) {
+		QList<Long> result = new QList<>(long.class);
+		while(elements.hasRemaining()) {
+			result.append(elements.get());
+		}
+		return result;
+	}
+    
+    /**
+     * Returns a QList containing given elements.
+     *
+     * @param elements
+     * @return a {@code QList} containing the specified element
+     */
+    public static @NonNull QList<@QtPrimitiveType@NonNull Character> ofBuffer(@StrictNonNull CharBuffer elements) {
+		QList<Character> result = new QList<>(char.class);
+		while(elements.hasRemaining()) {
+			result.append(elements.get());
+		}
+		return result;
+	}
+    
+    /**
+     * Returns a QList containing given elements.
+     *
+     * @param elements
+     * @return a {@code QList} containing the specified element
+     */
+    public static @NonNull QList<@QtPrimitiveType@NonNull Float> ofBuffer(@StrictNonNull FloatBuffer elements) {
+		QList<Float> result = new QList<>(float.class);
+		while(elements.hasRemaining()) {
+			result.append(elements.get());
+		}
+		return result;
+	}
+    
+    /**
+     * Returns a QList containing given elements.
+     *
+     * @param elements
+     * @return a {@code QList} containing the specified element
+     */
+    public static @NonNull QList<@QtPrimitiveType@NonNull Double> ofBuffer(@StrictNonNull DoubleBuffer elements) {
+		QList<Double> result = new QList<>(double.class);
+		while(elements.hasRemaining()) {
+			result.append(elements.get());
+		}
+		return result;
+	}
+    
+    /**
+     * Returns a QList containing given elements.
+     *
+     * @param <T> the {@code QList}'s element type
+     * @param type the {@code QList}'s element type
+     * @param elements all list elements to be added
+     * @return a {@code QList} containing the specified element
+     *
+     */
+	@SafeVarargs
+    public static <T> @NonNull QList<T> ofTyped(@StrictNonNull Class<? super T> type, T @StrictNonNull...elements) {
+		QMetaType metaType = findElementMetaType(type, elements);
+		return ofTyped(metaType, elements);
+	}
+    
+    /**
+     * Returns a QList containing given elements.
+     *
+     * @param <T> the {@code QList}'s element type
+     * @param metaType the {@code QList}'s element type
+     * @param elements all list elements to be added
+     * @return a {@code QList} containing the specified element
+     *
+     */
+    @SuppressWarnings({ "unchecked" })
+	@SafeVarargs
+    public static <T> @NonNull QList<T> ofTyped(@StrictNonNull QMetaType metaType, T @StrictNonNull...elements) {
+		if(metaType.id()==QMetaType.Type.QString.value()) {
+			QList<T> result = (QList<T>)(QList<?>)new QStringList();
+	    	result.reserve(elements.length);
+			for (T t : elements) {
+				result.append(t);
+			}
+			return result;
+		}else {
+			if(metaType.id()==0)
+				throw new IllegalArgumentException("QMetaType::UnknownType cannot be type of QList.");
+			if(metaType.id()==QMetaType.Type.Void.value())
+				throw new IllegalArgumentException("void cannot be type of QList.");
+			return new QList<>(metaType, Arrays.asList(elements));
+		}
+	}
+	
+	/**
+     * Returns true of both containers share the same data. 
+     */
+    @QtUninvokable
+    public final boolean isSharedWith(@StrictNonNull QList<?> other) {
+		return isSharedWith(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(other));
+	}
+	@QtUninvokable
+    private native boolean isSharedWith(long __this__nativeId, long other);
+
+	/**
+     * Returns true if container is not shared. 
+     */
+    @QtUninvokable
+    public final boolean isDetached() {
+		return isDetached(QtJambi_LibraryUtilities.internal.nativeId(this));
+	}
+	@QtUninvokable
+    private native boolean isDetached(long __this__nativeId);
+	
+	/**
+     * Detached the container if it is shared.
+     */
+    @QtUninvokable
+    public final void detach() {
+    	detach(QtJambi_LibraryUtilities.internal.nativeId(this));
+	}
+	@QtUninvokable
+    private native boolean detach(long __this__nativeId);
+	
+	static <B extends java.nio.Buffer> B asBuffer(Class<B> bufferClass, QList<?> list) {
+		return null;
+	}
 
     static String pairPrefix() {
     	return "QPair";
@@ -724,7 +1027,12 @@ public class QList<T> extends AbstractList<T> implements java.util.List<T>, Clon
     @SafeVarargs
     static QMetaType findElementMetaType(Object element0, Object... elements){
         QMetaType result = getMetaType(element0);
-        Class<?> type = element0==null ? null : element0.getClass();
+        Class<?> type = element0==null ? null : QtJambi_LibraryUtilities.internal.getClass(element0);
+        if(type==null && elements!=null) {
+        	type = QtJambi_LibraryUtilities.internal.getClass(elements).getComponentType();
+        	if(type==Object.class)
+        		type = null;
+        }
         for(Object e : elements) {
             if(result!=null) {
                 QMetaType _result = getMetaType(e);
@@ -736,9 +1044,9 @@ public class QList<T> extends AbstractList<T> implements java.util.List<T>, Clon
             }
             if(e!=null) {
                 if(type==null) {
-                    type = e.getClass();
+                    type = QtJambi_LibraryUtilities.internal.getClass(e);
                 }else {
-                    Class<?> type2 = e.getClass();
+                    Class<?> type2 = QtJambi_LibraryUtilities.internal.getClass(e);
                     if(type2!=type) {
                         if(type2.isAssignableFrom(type)) {
                             type = type2;
@@ -754,6 +1062,42 @@ public class QList<T> extends AbstractList<T> implements java.util.List<T>, Clon
         if(result==null)
             result = QMetaType.fromType(type);
         return result;
+    }
+    
+	static QMetaType findElementMetaType(Class<?> type, Object... elements){
+		TypeVariable<?>[] typeParams = type.getTypeParameters();
+    	QMetaType result = typeParams==null || typeParams.length==0 ? QMetaType.fromType(type) : new QMetaType();
+    	for(Object e : elements) {
+    		if(result!=null) {
+    			if(e!=null) {
+		    		QMetaType _result = getMetaType(e);
+		    		if(!result.isValid() || result.id()==QMetaType.Type.Nullptr.value())
+		    			result = _result;
+		    		if(!_result.equals(result)) {
+		    			result = null;
+		    		}
+	    		}
+    		}
+    		if(e!=null) {
+    			if(type==null) {
+    				type = QtJambi_LibraryUtilities.internal.getClass(e);
+    			}else {
+    				Class<?> type2 = QtJambi_LibraryUtilities.internal.getClass(e);
+    				if(type2!=type) {
+    					if(type2.isAssignableFrom(type)) {
+    						type = type2;
+    					}else if(!type.isAssignableFrom(type2)) {
+    						do{
+    							type = type.getSuperclass();
+    						}while(!type.isAssignableFrom(type2));
+    					}
+    				}
+    			}
+			}
+    	}
+    	if(result==null)
+    		result = QMetaType.fromType(type);
+    	return result;
     }
     
     static QMetaType findElementMetaType(Collection<?> elements){
@@ -780,9 +1124,9 @@ public class QList<T> extends AbstractList<T> implements java.util.List<T>, Clon
                 }
                 if(e!=null) {
                     if(type==null) {
-                        type = e.getClass();
+                        type = QtJambi_LibraryUtilities.internal.getClass(e);
                     }else {
-                        Class<?> type2 = e.getClass();
+                        Class<?> type2 = QtJambi_LibraryUtilities.internal.getClass(e);
                         if(type2!=type) {
                             if(type2.isAssignableFrom(type)) {
                                 type = type2;
@@ -809,6 +1153,10 @@ public class QList<T> extends AbstractList<T> implements java.util.List<T>, Clon
             return QMetaType.fromType(QList.class, ((QList<?>)obj).elementMetaType());
         }else if(objClass==QQueue.class) {
             return QMetaType.fromType(QQueue.class, ((QQueue<?>)obj).elementMetaType());
+        }else if(objClass==QLinkedList.class) {
+            return QMetaType.fromType(QLinkedList.class, ((QLinkedList<?>)obj).elementMetaType());
+        }else if(objClass==QVector.class) {
+            return QMetaType.fromType(QVector.class, ((QVector<?>)obj).elementMetaType());
         }else if(objClass==QStack.class) {
             return QMetaType.fromType(QStack.class, ((QStack<?>)obj).elementMetaType());
         }else if(objClass==QSet.class) {
@@ -848,4 +1196,24 @@ public class QList<T> extends AbstractList<T> implements java.util.List<T>, Clon
         QMetaType metaType = QMetaType.fromType(objClass);
         return metaType;
     }
+	
+	/**
+     * <p>See <code>QList::<wbr>operator=(QList&lt;T>)</code></p>
+     */
+    @QtUninvokable
+    public final void assign(@StrictNonNull QList<T> other) {
+		assign(QtJambi_LibraryUtilities.internal.nativeId(this), other, QtJambi_LibraryUtilities.internal.nativeId(other));
+    }
+    @QtUninvokable
+    private native void assign(long __this__nativeId, Object container, long other);
+    
+    /**
+     * <p>See <code>QList::<wbr>swap(QList&lt;T>&amp;)</code></p>
+     */
+    @QtUninvokable
+    public final void swap(@StrictNonNull QList<T> other) {
+    	swap(QtJambi_LibraryUtilities.internal.nativeId(this), other, QtJambi_LibraryUtilities.internal.nativeId(other));
+    }
+    @QtUninvokable
+    private native void swap(long __this__nativeId, Object container, long other);
 }

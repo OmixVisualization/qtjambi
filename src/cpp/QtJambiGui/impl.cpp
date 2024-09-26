@@ -115,19 +115,6 @@ const QObject* getPointerOwner(const QTextCursor* __qt_this){
     }
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QPainter_threadCheck)
-(JNIEnv *env, jclass, jobject _object)
-{
-    QTJAMBI_TRY{
-        QObject* object = QtJambiAPI::convertJavaObjectToQObject<QObject>(env, _object);
-        QtJambiAPI::checkNullPointer(env, object);
-        QtJambiAPI::checkThreadOnArgument(env, "device", object);
-    }QTJAMBI_CATCH(const JavaException& exn){
-        exn.raiseInJava(env);
-    }QTJAMBI_TRY_END
-}
-
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 
 // QOpenGLContext::versionFunctions<T>() const

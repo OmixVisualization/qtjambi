@@ -43,7 +43,6 @@
 #include "parser/binder.h"
 #include "util.h"
 #include "rpp/pp-engine-bits.h"
-#include <QtConcurrent>
 #include "docindex/docindexreader.h"
 #include "preprocesshandler.h"
 #include "reporthandler.h"
@@ -223,6 +222,8 @@ void GeneratorApplication::parseArguments(){
     parser.addOption(javaOutputDirectoryOption);
     QCommandLineOption cppOutputDirectoryOption("cpp-output-directory", "c++ output directory", "directory");
     parser.addOption(cppOutputDirectoryOption);
+    QCommandLineOption logsOutputDirectoryOption("logs-output-directory", "logs output directory", "directory");
+    parser.addOption(logsOutputDirectoryOption);
     QCommandLineOption noJavaOption("no-java", "don't generate java code");
     parser.addOption(noJavaOption);
     QCommandLineOption noCHOption("no-cpp-h", "don't generate c++ headers");
@@ -241,6 +242,8 @@ void GeneratorApplication::parseArguments(){
     parser.addOption(qtjambiVersionOption);
     QCommandLineOption printoutOption("print-stdout", "print to standard out");
     parser.addOption(printoutOption);
+    QCommandLineOption legacyOption("legacy-modules", "generate legacy modules");
+    parser.addOption(legacyOption);
     QCommandLineOption typesystemOption({"t","typesystem"}, "typesystem specified in QML", "typesystemfile");
     typesystemOption.setFlags(QCommandLineOption::ShortOptionStyle);
     parser.addOption(typesystemOption);
@@ -279,7 +282,7 @@ void GeneratorApplication::parseArguments(){
     }
 
     for(const QString& lib : parser.values(staticlibsOption)){
-        m_staticLibraries << lib.split(',');
+        m_staticLibraries << lib.split(',') << "QtQmlBuiltins" << "QtAxBase";
     }
     for(QString s : parser.values(debugCppOption)){
         if (s.isEmpty())
@@ -373,6 +376,7 @@ void GeneratorApplication::parseArguments(){
 #else
 #define PATHSEP ":"
 #endif
+    bool legacy = parser.isSet(legacyOption);
     for(const QString& v : parser.values(includeDirectoryOption)){
         m_includeDirectories << v.split(PATHSEP, Qt::SkipEmptyParts);
     }
@@ -392,8 +396,8 @@ void GeneratorApplication::parseArguments(){
     QString v = parser.value(qtDocUrlOption);
     if (!v.isEmpty()){
         m_docsUrl = v;
-        if(!m_docsUrl.endsWith("/"))
-            m_docsUrl += "/";
+        if(!m_docsUrl.endsWith(QStringLiteral(u"/")))
+            m_docsUrl += QStringLiteral(u"/");
     }
     for(const QString& v : parser.values(importDirectoryOption)){
         m_importDirectories << v.split(PATHSEP, Qt::SkipEmptyParts);
@@ -404,15 +408,6 @@ void GeneratorApplication::parseArguments(){
         m_outputDirectory = v;
     QDir _outDir = m_outputDirectory.isEmpty() ? QDir::current() : QDir(m_outputDirectory);
     _outDir.mkpath(".");
-    v = parser.value(ppfileNameOption);
-    if (!v.isEmpty()){
-        m_preProcessorFileName = v;
-        if(!m_preProcessorFileName.contains('/') && !m_preProcessorFileName.contains('\\')){
-            m_preProcessorFileName = _outDir.absoluteFilePath(m_preProcessorFileName);
-        }else if(!QFileInfo(m_preProcessorFileName).isAbsolute()){
-            m_preProcessorFileName = QFileInfo(m_preProcessorFileName).absoluteFilePath();
-        }
-    }
     /*
     if(parser.isSet(qmlOption)){
         m_generateTypeSystemQML = parser.value(qmlOption);
@@ -423,7 +418,7 @@ void GeneratorApplication::parseArguments(){
     */
     v = parser.value(javaOutputDirectoryOption);
     if(v.isEmpty())
-        m_javaOutputDirectory = _outDir.absoluteFilePath("java");
+        m_javaOutputDirectory = _outDir.absoluteFilePath(QStringLiteral(u"java"));
     else{
         m_javaOutputDirectory = v;
         if(!QFileInfo::exists(m_javaOutputDirectory) && !QFileInfo(m_javaOutputDirectory).isAbsolute()){
@@ -432,11 +427,29 @@ void GeneratorApplication::parseArguments(){
     }
     v = parser.value(cppOutputDirectoryOption);
     if(v.isEmpty())
-        m_cppOutputDirectory = _outDir.absoluteFilePath("cpp");
+        m_cppOutputDirectory = _outDir.absoluteFilePath(QStringLiteral(u"cpp"));
     else{
         m_cppOutputDirectory = v;
         if(!QFileInfo::exists(m_cppOutputDirectory) && !QFileInfo(m_cppOutputDirectory).isAbsolute()){
             m_cppOutputDirectory = _outDir.absoluteFilePath(m_cppOutputDirectory);
+        }
+    }
+    v = parser.value(logsOutputDirectoryOption);
+    if(v.isEmpty())
+        m_logsOutputDirectory = _outDir.absoluteFilePath(legacy ? QStringLiteral(u"logs_legacy") : QStringLiteral(u"logs"));
+    else{
+        m_logsOutputDirectory = v;
+        if(!QFileInfo::exists(m_logsOutputDirectory) && !QFileInfo(m_logsOutputDirectory).isAbsolute()){
+            m_logsOutputDirectory = _outDir.absoluteFilePath(m_logsOutputDirectory);
+        }
+    }
+    v = parser.value(ppfileNameOption);
+    if (!v.isEmpty()){
+        m_preProcessorFileName = v;
+        if(!m_preProcessorFileName.contains(u'/') && !m_preProcessorFileName.contains(u'\\')){
+            m_preProcessorFileName = QDir(m_logsOutputDirectory).absoluteFilePath(m_preProcessorFileName);
+        }else if(!QFileInfo(m_preProcessorFileName).isAbsolute()){
+            m_preProcessorFileName = QFileInfo(m_preProcessorFileName).absoluteFilePath();
         }
     }
 
@@ -454,7 +467,7 @@ void GeneratorApplication::parseArguments(){
         if(!ok)
             qFatal("Unable to parse number: %s", qPrintable(v));
     }
-    const QString default_system = QStringLiteral(":/io/qtjambi/generator/targets/all.qml");
+    const QString default_system = legacy ? QStringLiteral(u":/io/qtjambi/generator/targets/legacy.qml") : QStringLiteral(u":/io/qtjambi/generator/targets/all.qml");
     if(parser.isSet(typesystemOption)){
         m_typesystemFileName = parser.value(typesystemOption);
         QFileInfo _typesystemFileName(m_typesystemFileName);
@@ -466,7 +479,7 @@ void GeneratorApplication::parseArguments(){
         m_typesystemFileName = default_system;
     }
 
-    const QString default_file = QStringLiteral(":/io/qtjambi/generator/targets/all.h");
+    const QString default_file = legacy ? QStringLiteral(u":/io/qtjambi/generator/targets/legacy.h") : QStringLiteral(u":/io/qtjambi/generator/targets/all.h");
     QStringList positionalArguments = parser.positionalArguments();
     if(positionalArguments.size()>0){
         m_headerFileName = positionalArguments.takeFirst();
@@ -483,6 +496,39 @@ void GeneratorApplication::parseArguments(){
 
 void dumpMetaJavaClass(const MetaClass *cls);
 
+template <class Function>
+auto concurrent_run(Function&& f){
+    typedef decltype(std::declval<Function>()()) ReturnType;
+    QFutureInterface<ReturnType> promise;
+    promise.setThreadPool(QThreadPool::globalInstance());
+    QRunnable* runnable = QRunnable::create([promise, function = std::move(f)]() mutable {
+        if (promise.isCanceled()) {
+            promise.reportFinished();
+            return;
+        }
+        try {
+            if constexpr(std::is_same<void,ReturnType>::value){
+                function();
+            }else{
+                promise.reportResult(function());
+            }
+        } catch (QException &e) {
+            promise.reportException(e);
+        } catch (...) {
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+            promise.reportException(QUnhandledException());
+#else
+            promise.reportException(std::current_exception());
+#endif
+        }
+        promise.reportFinished();
+    });
+    promise.setRunnable(runnable);
+    promise.reportStarted();
+    QThreadPool::globalInstance()->start(runnable);
+    return promise.future();
+}
+
 int GeneratorApplication::generate() {
     try{
         //parse the type system file
@@ -491,15 +537,15 @@ int GeneratorApplication::generate() {
         QFuture<void> typeSystemFuture;
         QFuture<const DocModel*> docModelFuture;
         if (!m_astToXml) {
-            typeSystemFuture = QtConcurrent::run([this,&versionAvailable,&docDirectoryAvailable](){
+            typeSystemFuture = concurrent_run([this,&versionAvailable,&docDirectoryAvailable](){
                 versionAvailable.acquire(3);
                 if(m_docsDirectory.isEmpty()){
                     if(m_qtVersionMajor==QT_VERSION_MAJOR && m_qtVersionMinor==QT_VERSION_MINOR){
-        #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
                         m_docsDirectory = QLibraryInfo::location(QLibraryInfo::DocumentationPath);
-        #else
+#else
                         m_docsDirectory = QLibraryInfo::path(QLibraryInfo::DocumentationPath);
-        #endif
+#endif
                         printf("No docs directory specified. Taking Qt's documentation path instead: %s\n", qPrintable(m_docsDirectory));
                     }
                     docDirectoryAvailable.release();
@@ -519,7 +565,7 @@ int GeneratorApplication::generate() {
             if(!m_dumpObjectTree && m_generateTypeSystemQML.isEmpty()){
                 QThread* targetThread = QThread::currentThread();
                 if(m_docsDirectory.isEmpty()){
-                    docModelFuture = QtConcurrent::run([&docDirectoryAvailable,targetThread,this]() -> const DocModel* {
+                    docModelFuture = concurrent_run([&docDirectoryAvailable,targetThread,this]() -> const DocModel* {
                         docDirectoryAvailable.acquire();
                         QDir docsDirectory(m_docsDirectory);
                         if(docsDirectory.exists()){
@@ -528,7 +574,7 @@ int GeneratorApplication::generate() {
                         }else return nullptr;
                     });
                 }else{
-                    docModelFuture = QtConcurrent::run([this, targetThread]() -> const DocModel* {
+                    docModelFuture = concurrent_run([this, targetThread]() -> const DocModel* {
                         QDir docsDirectory(m_docsDirectory);
                         if(docsDirectory.exists()){
                             DocIndexReader reader;
@@ -656,8 +702,10 @@ int GeneratorApplication::generate() {
             m_metaBuilder.setRequiredFeatures(requiredFeatures);
             m_metaBuilder.setIncludePathsList(m_includeDirectories);
             m_metaBuilder.setQtVersion(m_qtVersionMajor, m_qtVersionMinor, m_qtVersionPatch, m_qtjambiVersionPatch);
-            if (!m_outputDirectory.isNull())
+            if (!m_outputDirectory.isNull()){
                 m_metaBuilder.setOutputDirectory(m_outputDirectory);
+                m_metaBuilder.setLogsDirectory(m_logsOutputDirectory);
+            }
             m_metaBuilder.setFeatures(features);
             m_metaBuilder.setGenerateTypeSystemQML(m_generateTypeSystemQML);
             if(!m_generateTypeSystemQML.isEmpty()){
@@ -700,8 +748,8 @@ int GeneratorApplication::generate() {
                 java_generator->setTypeSystemByPackage(m_metaBuilder.typeSystemByPackage());
                 if (!m_javaOutputDirectory.isNull())
                     java_generator->setJavaOutputDirectory(m_javaOutputDirectory);
-                if (!m_outputDirectory.isNull())
-                    java_generator->setLogOutputDirectory(m_outputDirectory);
+                if (!m_logsOutputDirectory.isNull())
+                    java_generator->setLogOutputDirectory(m_logsOutputDirectory);
                 java_generator->setDocsUrl(m_docsUrl);
                 generators << java_generator;
 
@@ -751,10 +799,11 @@ int GeneratorApplication::generate() {
                     ReportHandler::setContext(contexts.at(i));
                     generator->printClasses();
                 }else{
-                    generated << QtConcurrent::run([](AbstractGenerator *generator, const QString& context){
+                    QString context = contexts.at(i);
+                    generated << concurrent_run([generator, context](){
                                  ReportHandler::setContext(context);
                                  generator->generate();
-                    }, generator, contexts.at(i));
+                    });
                 }
             }
             while(!generated.isEmpty()){
@@ -803,8 +852,9 @@ int GeneratorApplication::generate() {
 
             QString fileName("reported_warnings.log");
             QFile file(fileName);
-            if (!m_outputDirectory.isNull())
-                file.setFileName(QDir(m_outputDirectory).absoluteFilePath(fileName));
+            if (!m_logsOutputDirectory.isNull()){
+                file.setFileName(QDir(m_logsOutputDirectory).absoluteFilePath(fileName));
+            }
             file.remove();
             if(ReportHandler::reportedWarnings().size()){
                 if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
@@ -887,7 +937,7 @@ void GeneratorApplication::analyzeDependencies()
     }
     QMap<QString,TypeSystemTypeEntry*> typeSystemsByQtLibrary = m_database.typeSystemsByQtLibrary();
     for(const QString& libName : dependenciesByLib.keys()){
-        if(!typeSystemsByQtLibrary.contains(libName)){
+        if(!typeSystemsByQtLibrary.contains(libName) && !m_staticLibraries.contains(libName)){
             TypeSystemTypeEntry* entry = new TypeSystemTypeEntry(libName, libName, {});
             entry->setCodeGeneration(TypeEntry::GenerateNothing);
             m_database.addType(entry);
@@ -904,10 +954,23 @@ void GeneratorApplication::analyzeDependencies()
                     break;
                 }
             }
-            if(!skip)
+            if(!skip && !m_staticLibraries.contains(dependency))
                 entry->addRequiredQtLibrary(QString(dependency));
         }
     }
+}
+
+QString GeneratorApplication::logsOutputDirectory() const
+{
+    return m_logsOutputDirectory;
+}
+
+void GeneratorApplication::setLogsOutputDirectory(const QString &newLogsOutputDirectory)
+{
+    if (m_logsOutputDirectory == newLogsOutputDirectory)
+        return;
+    m_logsOutputDirectory = newLogsOutputDirectory;
+    emit logsOutputDirectoryChanged();
 }
 
 bool GeneratorApplication::nullness() const

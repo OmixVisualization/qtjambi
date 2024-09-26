@@ -102,9 +102,8 @@ public:
 	
 	virtual void setAttributes(std::initializer_list<Qt::WidgetAttribute> attributes);
     virtual void setInts(std::initializer_list<int> iList);
-	
-	const QList<Qt::WidgetAttribute>& getAttributes();
-    const QList<int>& getInts();
+    const QList<Qt::WidgetAttribute>& getAttributes() const;
+    const QList<int>& getInts() const;
 
     static QObject* createHiddenObject(QObject* parent);
     
@@ -121,7 +120,7 @@ signals:
     void testSignal3(Qt::Alignment);
 	void testSignal4(std::initializer_list<Qt::WidgetAttribute>);
     void testSignal5(std::initializer_list<int>);
-	
+
 private:
 	QList<Qt::WidgetAttribute> m_attributes;
     QList<int> m_ints;
@@ -134,6 +133,73 @@ struct QtPrivate::QEqualityOperatorForType<std::initializer_list<T>,true>
     static bool equals(const QMetaTypeInterface *, const void *a, const void *b)
     { return initializer_list_equals<T>(*reinterpret_cast<const std::initializer_list<T> *>(a), *reinterpret_cast<const std::initializer_list<T> *>(b)); }
 };
+#endif
+
+#if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
+
+#define SPAN_METHODS(Name, type)\
+public:\
+    void set##Name(QSpan<const type> span);\
+    void setMutable##Name(QSpan<type> span);\
+    QSpan<const type> get##Name() const;\
+    QSpan<type> getMutable##Name();\
+private:\
+    QList<type> m_##Name;
+
+class SpanTest : public QObject
+{
+    Q_OBJECT
+public:
+    struct AlignedStruct{
+        qint64 longValue;
+        qint32 intValue;
+        char byteValue;
+        bool operator==(const AlignedStruct& other)const{
+            return other.byteValue==byteValue
+                   && other.intValue==intValue
+                   && other.longValue==longValue;
+        }
+        QString toString()const{
+            return QString::asprintf("AlignedStruct(j=%d, i=%d, b=%d)", longValue, intValue, byteValue);
+        }
+    };
+    explicit SpanTest(QObject *parent = nullptr);
+
+    virtual void virtualMutableSpan(QSpan<QString> mutableStrings);
+    void callVirtualMutableSpan(QSpan<QString> mutableStrings);
+
+    virtual quint64 virtualSpan(QSpan<const QByteArray> byteArrays);
+    quint64 callVirtualSpan(QSpan<const QByteArray> byteArrays);
+
+    virtual int virtualMutableSpan(QSpan<int> mutableInts, int init);
+    int callVirtualMutableSpan(QSpan<int> mutableInts, int init = 0);
+
+    virtual char virtualMutableSpan(QSpan<char> mutableInts, char init);
+    char callVirtualMutableSpan(QSpan<char> mutableInts, char init = 0);
+
+    virtual qint64 virtualSpan(QSpan<const qint64> longs, qint64 init);
+    qint64 callVirtualSpan(QSpan<const qint64> longs, qint64 init = 0);
+
+    virtual QSpan<const qint64> virtualSpanReturning();
+    QSpan<const qint64> callVirtualSpanReturning();
+
+    virtual QSpan<qint64> virtualMutableSpanReturning();
+    QSpan<qint64> callVirtualMutableSpanReturning();
+
+    SPAN_METHODS(ByteArrays, QByteArray)
+    SPAN_METHODS(Booleans, bool)
+    SPAN_METHODS(Chars, QChar)
+    SPAN_METHODS(Strings, QString)
+    SPAN_METHODS(Ints, int)
+    SPAN_METHODS(Bytes, char)
+    SPAN_METHODS(Longs, qint64)
+    SPAN_METHODS(Shorts, qint16)
+    SPAN_METHODS(Floats, float)
+    SPAN_METHODS(Doubles, double)
+};
+
+#undef SPAN_METHODS
+
 #endif
 
 #endif // FLAGSANDENUMTEST_H

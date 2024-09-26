@@ -325,8 +325,8 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_initializeMultiSignal)
             jobjectArray signalParameterTypes = env->NewObjectArray(jsize(signalInfos.size()), Java::Runtime::List::getClass(env), nullptr);
             jobjectArray signalObjectTypes = env->NewObjectArray(jsize(signalInfos.size()), Java::Runtime::Class::getClass(env), nullptr);
             {
-                JIntArrayPointer methodIndexesPtr(env, methodIndexes, true);
-                JLongArrayPointer metaObjectsPtr(env, metaObjects, true);
+                JIntArrayPointer methodIndexesPtr(env, methodIndexes);
+                JLongArrayPointer metaObjectsPtr(env, metaObjects);
                 for(int i=0; i<signalInfos.size(); i++){
                     const QtJambiMetaObject::SignalInfo& info = signalInfos.at(i);
                     env->SetObjectArrayElement(signalObjectTypes, jsize(i), info.signalClass);

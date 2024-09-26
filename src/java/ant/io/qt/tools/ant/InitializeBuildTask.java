@@ -187,6 +187,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 			_moduleInfos.put("pdfwidgets", new ModuleInfo("QTJAMBI_NO_PDFWIDGETS", "QtPdfWidgets"));
 			_moduleInfos.put("activex", new ModuleInfo("QTJAMBI_NO_ACTIVEX", "QtAxBase", ModuleInfo.Headers.Public, true));
 			_moduleInfos.put("multimediawidgets", new ModuleInfo("QTJAMBI_NO_MULTIMEDIAWIDGETS", "QtMultimediaWidgets"));
+			_moduleInfos.put("quick3d", new ModuleInfo("QTJAMBI_NO_QUICK3D", "QtQuick3D"));
 			if(qtMajorVersion==5) {
 				_moduleInfos.put("winextras", new ModuleInfo("QTJAMBI_NO_WINEXTRAS", "QtWinExtras"));
 				_moduleInfos.put("macextras", new ModuleInfo("QTJAMBI_NO_MACEXTRAS", "QtMacExtras"));
@@ -196,27 +197,26 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 				_moduleInfos.put("openglwidgets", new ModuleInfo("QTJAMBI_NO_OPENGLWIDGETS", "QtOpenGLWidgets"));
 				_moduleInfos.put("svgwidgets", new ModuleInfo("QTJAMBI_NO_SVGWIDGETS", "QtSvgWidgets"));
 				_moduleInfos.put("webenginequick", new ModuleInfo("QTJAMBI_NO_WEBENGINEQUICK", "QtWebEngineQuick", ModuleInfo.Headers.Private));
-				_moduleInfos.put("quick3d", new ModuleInfo("QTJAMBI_NO_QUICK3D", "QtQuick3D"));
 				_moduleInfos.put("statemachine", new ModuleInfo("QTJAMBI_NO_STATEMACHINE", "QtStateMachine"));
-				if((qtMajorVersion==6 && qtMinorVersion>=4) || qtMajorVersion>6) {
+				if((qtMajorVersion==6 && qtMinorVersion>=4) || qtMajorVersion>=7) {
 					_moduleInfos.put("httpserver", new ModuleInfo("QTJAMBI_NO_HTTPSERVER", "QtHttpServer", ModuleInfo.Headers.Private));
 					_moduleInfos.put("spatialaudio", new ModuleInfo("QTJAMBI_NO_SPATIALAUDIO", "QtSpatialAudio"));
 				}
-				if((qtMajorVersion==6 && qtMinorVersion>=5) || qtMajorVersion>6) {
+				if((qtMajorVersion==6 && qtMinorVersion>=5) || qtMajorVersion>=7) {
 //					up to now there is no easy way to make these modules java-able. They are actually available as raw-Java solution.
 					_moduleInfos.put("grpc", new ModuleInfo("QTJAMBI_NO_GRPC", "QtGrpc"));
 					_moduleInfos.put("protobuf", new ModuleInfo("QTJAMBI_NO_PROTOBUF", "QtProtobuf"));
 					skippedModules.add("grpc");
 					skippedModules.add("protobuf");
-					_moduleInfos.put("insidetracker", new ModuleInfo("QTJAMBI_NO_INSIDETRACKER", "QtInsightTracker"));
+					_moduleInfos.put("insighttracker", new ModuleInfo("QTJAMBI_NO_INSIGHTETRACKER", "QtInsightTracker"));
 				}
-				if((qtMajorVersion==6 && qtMinorVersion>=6) || qtMajorVersion>7) {
+				if((qtMajorVersion==6 && qtMinorVersion>=6) || qtMajorVersion>=7) {
 					_moduleInfos.put("graphs", new ModuleInfo("QTJAMBI_NO_GRAPHS", "QtGraphs"));
 				}
-				if((qtMajorVersion==6 && qtMinorVersion>=8) || qtMajorVersion>7) {
+				if((qtMajorVersion==6 && qtMinorVersion>=8) || qtMajorVersion>=7) {
 					_moduleInfos.put("graphswidgets", new ModuleInfo("QTJAMBI_NO_GRAPHS_WIDGETS", "QtGraphsWidgets"));
 				}
-				if((qtMajorVersion==6 && qtMinorVersion>=7) || qtMajorVersion>8) {
+				if((qtMajorVersion==6 && qtMinorVersion>=7) || qtMajorVersion>=7) {
 					_moduleInfos.put("qmlbuiltins", new ModuleInfo("QTJAMBI_NO_QMLBUILTINS", "QtQmlBuiltins", ModuleInfo.Headers.Public, true));
 				}
 			}
@@ -1033,6 +1033,12 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 							qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, module))
 						availableModules.add(module);
 					break;
+				}
+			}
+			if((qtMajorVersion==6 && qtMinorVersion>=6) || qtMajorVersion>=7) {
+				if (Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, "qtjambi.datavisualization.any.true"))
+						|| Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, "qtjambi.charts.any.true"))) {
+					mySetProperty(-1, "generate.legacy.modules", "", "true", true);
 				}
 			}
 		}else {

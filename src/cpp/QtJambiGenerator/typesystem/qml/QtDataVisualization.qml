@@ -35,6 +35,14 @@ TypeSystem{
     qtLibrary: "QtDataVisualization"
     module: "qtjambi.datavisualization"
     description: "UI Components for creating stunning 3D data visualizations."
+    LoadTypeSystem{name: "QtCore";              unless: "QTJAMBI_NO_CORE"; since: 6.6}
+    LoadTypeSystem{name: "QtOpenGL";            unless: "QTJAMBI_NO_OPENGL"; since: 6.6}
+    LoadTypeSystem{name: "QtWidgets";           unless: "QTJAMBI_NO_WIDGETS"; since: 6.6}
+    LoadTypeSystem{name: "QtQml";               unless: "QTJAMBI_NO_QML"; since: 6.6}
+    LoadTypeSystem{name: "QtQuick";             unless: "QTJAMBI_NO_QUICK"; since: 6.6}
+    LoadTypeSystem{name: "QtQuickWidgets";      unless: "QTJAMBI_NO_QUICKWIDGETS"; since: 6.6}
+    LoadTypeSystem{name: "QtNetwork";           unless: "QTJAMBI_NO_NETWORK"; since: 6.6}
+
     Rejection{
         className: "*"
         functionName: "dptr"

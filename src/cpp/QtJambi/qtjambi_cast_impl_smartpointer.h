@@ -31,8 +31,6 @@
 #define QTJAMBI_CAST_IMPL_SMARTPOINTER_H
 
 #include "global.h"
-#include "qtjambi_cast_impl_util.h"
-#include "qtjambi_cast_impl_container_sequential.h"
 #include "qtjambi_cast_impl_container_associative.h"
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0) && defined(QLINKEDLIST_H)
@@ -255,7 +253,7 @@ struct qtjambi_shared_pointer_container1_caster<true, has_scope, Pointer, p_is_p
                                                     SmartPointerHelper<Pointer, C_content>::deletePointer,\
                                                     SmartPointerHelper<Pointer, C_content>::getFromPointer,\
                                                     LISTTYPE(TYPE)\
-                                                    SUPERTYPE##Access<T_content,c_is_const>::newInstance()\
+                                                    SUPERTYPE##Access<T_content>::newInstance()\
                                                     );\
     }\
 };\
@@ -297,7 +295,7 @@ struct qtjambi_shared_pointer_container1_caster<false, has_scope, Pointer, p_is_
                 list =ilist;\
                 pointer = Pointer<IContainer>(ilist);\
             }\
-            jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, in);\
+            jobject iterator = QtJambiAPI::iteratorOfJavaIterable(env, in);\
             while(QtJambiAPI::hasJavaIteratorNext(env, iterator)) {\
                 jobject element = QtJambiAPI::nextOfJavaIterator(env, iterator);\
                 list->append(qtjambi_scoped_cast<has_scope,T_content,jobject>::cast(env, element, nullptr, scope));\
@@ -314,14 +312,19 @@ QTJAMBI_SHARED_POINTER_CONTAINER1_CASTER(QQueue,QList,append)
 #ifdef QLINKEDLIST_H
 #undef LISTTYPE
 #define LISTTYPE(TYPE)
+
+template<typename T>
+class QLinkedListAccess;
+
 QTJAMBI_SHARED_POINTER_CONTAINER1_CASTER(QLinkedList,QLinkedList,append)
-#endif
+#endif // def QLINKEDLIST_H
+
 #ifdef QVECTOR_H
 #undef LISTTYPE
 #define LISTTYPE(TYPE) QtJambiAPI::VectorType::TYPE,
 QTJAMBI_SHARED_POINTER_CONTAINER1_CASTER(QStack,QVector,append)
 QTJAMBI_SHARED_POINTER_CONTAINER1_CASTER(QVector,QVector,append)
-#endif
+#endif // def QVECTOR_H
 #else
 QTJAMBI_SHARED_POINTER_CONTAINER1_CASTER(QStack,QList,append)
 #endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -362,7 +365,7 @@ struct qtjambi_shared_pointer_container2_caster<true, has_scope,\
                                      new NativeType(deref_ptr<p_is_pointer, NativeType_c>::deref(in)),\
                                      SmartPointerHelper<Pointer, C_content>::deletePointer,\
                                      SmartPointerHelper<Pointer, C_content>::getFromPointer,\
-                                     TYPE##Access<K_content,T_content,c_is_const>::newInstance()\
+                                     TYPE##Access<K_content,T_content>::newInstance()\
                                  );\
     }\
 };\

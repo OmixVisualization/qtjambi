@@ -105,6 +105,7 @@ macx:{
         QMAKE_RPATHDIR = @loader_path/.
     }
 }
+
 macx | ios:{
     INCLUDEPATH += $$JAVA_HOME_TARGET/include
     INCLUDEPATH += $$JAVA_HOME_TARGET/include/darwin
@@ -123,8 +124,6 @@ macx | ios:{
         greaterThan(QT_MAJOR_VERSION, 6) | greaterThan(QT_MINOR_VERSION, 1):{
             QMAKE_APPLE_DEVICE_ARCHS = x86_64 arm64
         }
-    }else{
-        CONFIG += c++17
     }
 } else {
     !android:INCLUDEPATH += $$quote($$JAVA_HOME_TARGET/include)
@@ -146,6 +145,10 @@ macx | ios:{
     solaris-* {
         INCLUDEPATH += $$quote($$JAVA_HOME_TARGET/include/solaris)
     }
+}
+
+lessThan(QT_MAJOR_VERSION, 6):{
+    CONFIG += c++17
 }
 
 contains(QT_CONFIG, release):contains(QT_CONFIG, debug) {

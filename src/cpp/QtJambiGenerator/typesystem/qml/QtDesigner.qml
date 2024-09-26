@@ -503,7 +503,6 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "addMenuAction(QAction*)"
-            threadAffinity: true
             ModifyArgument{
                 index: 1
                 threadAffinity: true

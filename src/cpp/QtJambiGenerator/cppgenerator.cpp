@@ -82,7 +82,6 @@ QString CppGenerator::translateType(const MetaType *java_type, Option option) {
     }else if (java_type->isCharString()){
         return QStringLiteral(u"jstring");
     }else if (java_type->isPrimitive()
-            || java_type->isQChar()
             || java_type->isQString()
             || java_type->isQStringRef()
             || java_type->isQVariant()
@@ -126,8 +125,9 @@ QString CppGenerator::translateType(const MetaType *java_type, Option option) {
         }
     } else if (java_type->isInitializerList()){
         Q_ASSERT(java_type->instantiations().size()==1);
-        if(java_type->instantiations().first()->isPrimitive()){
-            QString jniName = java_type->instantiations().first()->typeEntry()->jniName();
+        const MetaType *elementType = java_type->instantiations()[0];
+        if(elementType->isPrimitive() || elementType->isPrimitiveChar()){
+            QString jniName = elementType->typeEntry()->jniName();
             if(jniName==QStringLiteral(u"void")
                 || jniName==QStringLiteral(u"jstring")
                 || jniName==QStringLiteral(u"jthrowable")
@@ -139,6 +139,8 @@ QString CppGenerator::translateType(const MetaType *java_type, Option option) {
         }else{
             return java_type->typeEntry()->jniName();
         }
+    } else if (java_type->isQSpan()){
+            return QStringLiteral(u"jobject");
     } else if (java_type->isIntegerEnum() || java_type->isIntegerFlags()
                || ((option & EnumAsInts)
                    && (java_type->isEnum() || java_type->isFlags())
@@ -254,6 +256,7 @@ void CppGenerator::writeTypeInfo(QTextStream &s, const MetaType *type, Option op
                && type->getReferenceType()==MetaType::NoReference
                && type->indirections().isEmpty()
                && !type->isPrimitive()
+               && !type->isPrimitiveChar()
                && !type->isEnum()
                && !type->isFlags()
              )){
@@ -336,6 +339,7 @@ void CppGenerator::writeTypeInfo(QTextStream &s, const MetaType *type, Option op
                                  && !(options & FunctionOverride)
                                  && type->indirections().isEmpty()
                                  && !type->isPrimitive()
+                                 && !type->isPrimitiveChar()
                                  && !type->isEnum()
                                  && !type->isFlags()){
                     s << "&";
@@ -1142,6 +1146,20 @@ QString CppGenerator::jni_signature(const MetaType *java_type, JNISignatureForma
     }
     if(java_type->typeEntry()->type()==TypeEntry::InstantiatedTemplateArgumentType){
         return jni_signature(reinterpret_cast<const InstantiatedTemplateArgumentEntry*>(java_type->typeEntry())->javaInstantiationBaseType(), format);
+    }
+    if (java_type->isQSpan() && java_type->instantiations().size()>0) {
+        const MetaType* instantiation = java_type->instantiations()[0];
+        if(instantiation->isConstant()){
+            if ((format & Underscores) == Underscores)
+                return "Lio_qt_core_QConstSpan_2";
+            else
+                return "Lio/qt/core/QConstSpan;";
+        }else{
+            if ((format & Underscores) == Underscores)
+                return "Lio_qt_core_QSpan_2";
+            else
+                return "Lio/qt/core/QSpan;";
+        }
     }
     if (java_type->isCharString()) {
         if ((format & Underscores) == Underscores)

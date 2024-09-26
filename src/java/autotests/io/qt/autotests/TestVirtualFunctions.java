@@ -344,7 +344,7 @@ public class TestVirtualFunctions extends ApplicationInitializer {
         thread.image = new Image();
         thread.start();
         try {
-            thread.join();
+            thread.join(5000);
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -44,12 +44,12 @@ TypeSystem{
 
     InjectCode{
         position: Position.Position1
-        Text{content: "io.qt.QtUtilities.initializePackage(\"io.qt.concurrent\");\n"+
-                      "io.qt.QtUtilities.initializePackage(\"io.qt.widgets\");\n"+
-                      "io.qt.QtUtilities.initializePackage(\"io.qt.network\");\n"+
-                      "io.qt.QtUtilities.initializePackage(\"io.qt.xml\");\n"+
-                      "io.qt.QtUtilities.initializePackage(\"io.qt.sql\");\n"+
-                      "io.qt.QtUtilities.initializePackage(\"io.qt.quick\");"}
+        Text{content: "initializePackage(\"io.qt.concurrent\");\n"+
+                      "initializePackage(\"io.qt.widgets\");\n"+
+                      "initializePackage(\"io.qt.network\");\n"+
+                      "initializePackage(\"io.qt.xml\");\n"+
+                      "initializePackage(\"io.qt.sql\");\n"+
+                      "initializePackage(\"io.qt.quick\");"}
     }
     
     Rejection{
@@ -94,6 +94,62 @@ constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QPoint>> = false;
             }
             since: 6.8
         }
+        ModifyFunction{
+            signature: "testStdFunctions(const QVector<Tulip::TestStdFunction>&)"
+            ModifyArgument{
+                index: 1
+                ReplaceType{
+                    modifiedType: "io.qt.core.QVector<TestStdFunction>"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "QVector<Tulip::TestStdFunction> %out = qtjambi_cast<QVector<Tulip::TestStdFunction>>(%env, %in);"}
+                }
+            }
+            until: 5
+        }
+        ModifyFunction{
+            signature: "testEasingFunctions(const QVector<QEasingCurve::EasingFunction>&)"
+            ModifyArgument{
+                index: 1
+                ReplaceType{
+                    modifiedType: "io.qt.core.QVector<io.qt.core.QEasingCurve.EasingFunction>"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "QVector<QEasingCurve::EasingFunction> %out = qtjambi_cast<QVector<QEasingCurve::EasingFunction>>(%env, %in);"}
+                }
+            }
+            until: 5
+        }
+        ModifyFunction{
+            signature: "testStdFunctions(const QLinkedList<Tulip::TestStdFunction>&)"
+            ModifyArgument{
+                index: 1
+                ReplaceType{
+                    modifiedType: "io.qt.core.QLinkedList<TestStdFunction>"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "QLinkedList<Tulip::TestStdFunction> %out = qtjambi_cast<QLinkedList<Tulip::TestStdFunction>>(%env, %in);"}
+                }
+            }
+            until: 5
+        }
+        ModifyFunction{
+            signature: "testEasingFunctions(const QLinkedList<QEasingCurve::EasingFunction>&)"
+            ModifyArgument{
+                index: 1
+                ReplaceType{
+                    modifiedType: "io.qt.core.QLinkedList<io.qt.core.QEasingCurve.EasingFunction>"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "QLinkedList<QEasingCurve::EasingFunction> %out = qtjambi_cast<QLinkedList<QEasingCurve::EasingFunction>>(%env, %in);"}
+                }
+            }
+            until: 5
+        }
     }
     
     ValueType{
@@ -111,6 +167,34 @@ constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QPoint>> = false;
                     ownership: Ownership.Java
                 }
             }
+        }
+        ModifyFunction{
+            signature: "compare(QObject*, const QString&, const QVector<QObject*>&)"
+            ModifyArgument{
+                index: 3
+                ReplaceType{
+                    modifiedType: "io.qt.core.QVector<io.qt.core.QObject>"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "QVector<QObject*> %out = qtjambi_cast<QVector<QObject*>>(%env, %in);"}
+                }
+            }
+            until: 5
+        }
+        ModifyFunction{
+            signature: "compare(QObject*, const QString&, const QLinkedList<QObject*>&)"
+            ModifyArgument{
+                index: 3
+                ReplaceType{
+                    modifiedType: "io.qt.core.QLinkedList<io.qt.core.QObject>"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "QLinkedList<QObject*> %out = qtjambi_cast<QLinkedList<QObject*>>(%env, %in);"}
+                }
+            }
+            until: 5
         }
         ModifyFunction{
             signature: "propertyType(const QObject*, QString)"
@@ -744,6 +828,14 @@ constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QPoint>> = false;
             position: Position.End
             Text{content: "public static void empty(){}"}
         }
+    }
+
+    ObjectType{
+        name: "SpanTest"
+        ValueType{
+            name: "AlignedStruct"
+        }
+        since: 6.7
     }
     
     ObjectType{

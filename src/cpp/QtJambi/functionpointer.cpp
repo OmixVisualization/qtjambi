@@ -41,6 +41,11 @@
 #include <QtCore/QDebug>
 #include <memory>
 #include "utils_p.h"
+#include "java_p.h"
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
+#define qAsConst std::as_const
+#endif
 
 typedef decltype(std::declval<QVector<int>>().size()) size_type;
 
@@ -220,17 +225,23 @@ private:
     friend void unregister_file_by_function(QFunctionPointer fn);
 };
 
-Q_GLOBAL_STATIC(Libraries, gLibraries);
+typedef QHash<void*,void(*)(void*)> FunctionPointerCleanupHash;
+Q_GLOBAL_STATIC(FunctionPointerCleanupHash, gFunctionPointerCleanups)
+Q_GLOBAL_STATIC(Libraries, gLibraries)
 Q_GLOBAL_STATIC(QRecursiveMutex, gMutex)
 
 void register_file_by_function(LibraryFile* libFile, QFunctionPointer fn){
-    if(!gLibraries.isDestroyed())
+    if(!gLibraries.isDestroyed()){
+        QMutexLocker locker(gMutex());
         gLibraries->filesByFunction[quintptr(fn)] = libFile;
+    }
 }
 
 void unregister_file_by_function(QFunctionPointer fn){
-    if(!gLibraries.isDestroyed())
+    if(!gLibraries.isDestroyed()){
+        QMutexLocker locker(gMutex());
         gLibraries->filesByFunction.remove(quintptr(fn));
+    }
 }
 
 void clearFunctionPointersAtShutdown(){
@@ -238,6 +249,11 @@ void clearFunctionPointersAtShutdown(){
     if(!gLibraries.isDestroyed()){
         QMutexLocker locker(gMutex());
         gLibraries->swap(libraries);
+        QHash<void*,void(*)(void*)> functionPointerCleanups;
+        gFunctionPointerCleanups->swap(functionPointerCleanups);
+        for(auto iter = functionPointerCleanups.constKeyValueBegin(); iter!=functionPointerCleanups.constKeyValueEnd(); ++iter){
+            iter->second(iter->first);
+        }
     }
 }
 
@@ -245,6 +261,18 @@ namespace FunctionPointerPrivate{
 
 QRecursiveMutex* functionPointerLock(){
     return gMutex();
+}
+
+void registerFunctionPointerCleanup(void* ptr, void(*cleanup)(void*)){
+    QMutexLocker locker(gMutex());
+    (*gFunctionPointerCleanups)[ptr] = cleanup;
+}
+
+void unregisterFunctionPointerCleanup(void* ptr){
+    if(!gFunctionPointerCleanups.isDestroyed()){
+        QMutexLocker locker(gMutex());
+        gFunctionPointerCleanups->remove(ptr);
+    }
 }
 
 typedef QFunctionPointer* (*Initialize)(QFunctionPointer onNull, std::vector<QFunctionPointer>& functions);
@@ -281,13 +309,20 @@ QFunctionPointer extractFunction(
     }else{
         typeName = funTypeName;
     }
-    result = gLibraries->nextFunction(typeName, disposer, caller);
+    {
+        QMutexLocker locker(gMutex());
+        result = gLibraries->nextFunction(typeName, disposer, caller);
+    }
     if(result)
         return result;
 
     //qCDebug(DebugAPI::internalCategory) << "found: " << typeName;
     QString dirErrorString;
-    QString tmpFile = gLibraries->nextTempFilePath(&dirErrorString);
+    QString tmpFile;
+    {
+        QMutexLocker locker(gMutex());
+        tmpFile = gLibraries->nextTempFilePath(&dirErrorString);
+    }
     QFile file(":/io/qt/qtjambi/functionpointers/"+typeName);
     file.copy(tmpFile);
     if(QFileInfo::exists(tmpFile)){
@@ -307,7 +342,10 @@ QFunctionPointer extractFunction(
                 }
                 LibraryFile* libFile = new LibraryFile(typeName, std::move(libFunctions), std::move(freeIndexes), library);
                 result = libFile->nextFunction(disposer, caller);
-                gLibraries->insertLibraryFile(libFile);
+                {
+                    QMutexLocker locker(gMutex());
+                    gLibraries->insertLibraryFile(libFile);
+                }
             }else{
                 library->unload();
                 if(JniEnvironment env{300}) {
@@ -345,13 +383,14 @@ QFunctionPointer extractFunction(
 
 bool disposeFunction(QFunctionPointer fn){
     if(!gLibraries.isDestroyed()){
+        QMutexLocker locker(gMutex());
         return gLibraries->disposeFunction(fn);
     }
     return false;
 }
 
 void noFunctionAvailable(const std::type_info& functionTypeId){
-    if(JniEnvironment env{100}){
+    if(DefaultJniEnvironment env{100}){
         Java::Runtime::NullPointerException::throwNew(env, QStringLiteral("Function pointer %1 is null.").arg(QLatin1String(QtJambiAPI::typeName(functionTypeId))) QTJAMBI_STACKTRACEINFO );
     }
 }

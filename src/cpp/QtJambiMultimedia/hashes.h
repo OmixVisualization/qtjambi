@@ -35,6 +35,9 @@
 #include <QtJambi/Global>
 #include <QtJambiGui/hashes.h>
 #include <QtJambiNetwork/hashes.h>
+#if !defined(QTJAMBI_GENERATOR_RUNNING)
+#include <QtJambi/CoreAPI>
+#endif
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 QT_WARNING_DISABLE_GCC("-Wdeprecated-declarations")
@@ -339,5 +342,17 @@ using QtAudio::State = QAudio::State;
 #endif
 
 #endif
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
+inline hash_type qHash(const QMediaMetaData &value, hash_type seed = 0)
+{
+    QtPrivate::QHashCombine hash;
+    for(QMediaMetaData::Key key : value.keys()){
+        QVariant v = value.value(key);
+        seed = hash(seed, CoreAPI::computeHash(v.metaType(), v.constData(), 0));
+    }
+    return seed;
+}
+#endif //QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
 
 #endif // QTJAMBIMULTIMEDIA_HASHES_H

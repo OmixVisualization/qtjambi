@@ -82,6 +82,54 @@ void Tulip::testStdFunctions(const QList<Tulip::TestStdFunction>& functions){
     }
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+QVector<QRunnable*> Tulip::createVectorOfRunnables() {return {};}
+QVector<QEasingCurve::EasingFunction> Tulip::createVectorOfEasingFunctions() {return {[](qreal r) -> qreal { return r; }};}
+void Tulip::testEasingFunctions(const QVector<QEasingCurve::EasingFunction>& functions){
+    int i=0;
+    for(QEasingCurve::EasingFunction fun : functions){
+        if(fun)
+            fun(i++);
+    }
+}
+QVector<Tulip::TestStdFunction> Tulip::createVectorOfStdFunctions() {return {[](int,bool,double){}};}
+void Tulip::testStdFunctions(const QVector<Tulip::TestStdFunction>& functions){
+    int i=0;
+    for(Tulip::TestStdFunction fun : functions){
+        if(fun){
+            fun(i, i%2==1, i);
+            ++i;
+        }
+    }
+}
+QLinkedList<QRunnable*> Tulip::createLinkedListOfRunnables() {return {};}
+QLinkedList<QEasingCurve::EasingFunction> Tulip::createLinkedListOfEasingFunctions() {return {[](qreal r) -> qreal { return r; }};}
+void Tulip::testEasingFunctions(const QLinkedList<QEasingCurve::EasingFunction>& functions){
+    int i=0;
+    for(QEasingCurve::EasingFunction fun : functions){
+        if(fun)
+            fun(i++);
+    }
+}
+QLinkedList<Tulip::TestStdFunction> Tulip::createLinkedListOfStdFunctions() {return {[](int,bool,double){}};}
+void Tulip::testStdFunctions(const QLinkedList<Tulip::TestStdFunction>& functions){
+    int i=0;
+    for(Tulip::TestStdFunction fun : functions){
+        if(fun){
+            fun(i, i%2==1, i);
+            ++i;
+        }
+    }
+}
+QVector<QObject*> Tulip::createVectorOfObjects() {return {};}
+QVector<QVector<QRunnable*>> Tulip::createVectorOfVectorOfRunnables() {return {};}
+QVector<QVector<QObject*>> Tulip::createVectorOfVectorOfObjects() {return {};}
+QLinkedList<QObject*> Tulip::createLinkedListOfObjects() {return {};}
+QLinkedList<QLinkedList<QRunnable*>> Tulip::createLinkedListOfLinkedListOfRunnables() {return {};}
+QLinkedList<QLinkedList<QObject*>> Tulip::createLinkedListOfLinkedListOfObjects() {return {};}
+#endif
+
+
 void Tulip::consumeIntList(const QList<int>& list){list.size();};//for (int i = 0; i < list.size(); i++) {list.at(i);}}
 void Tulip::consumeStringList(const QList<QString>& list){list.size();};//for (int i = 0; i < list.size(); i++) {list.at(i);}}
 void Tulip::consumeColorList(const QList<QColor>& list){list.size();};//for (int i = 0; i < list.size(); i++) {list.at(i);}}

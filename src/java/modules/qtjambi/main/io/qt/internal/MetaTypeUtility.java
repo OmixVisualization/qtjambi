@@ -36,6 +36,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.ObjectStreamConstants;
 import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.AnnotatedParameterizedType;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -620,8 +621,37 @@ public final class MetaTypeUtility {
 				}
 			}
 			if (parameterizedType.getRawType() instanceof Class<?>) {
-				if (isQQmlListProperty((Class<?>) parameterizedType.getRawType())) {
-					String listPropertyName = internalTypeNameOfClass(clazz, genericType);
+				if (isQConstSpan((Class<?>) parameterizedType.getRawType())) {
+					String spanPropertyName = internalTypeNameOfClass(clazz, genericType, annotatedType);
+					int id = findMetaType(spanPropertyName);
+					if (id != QMetaType.Type.UnknownType.value()) {
+						return id;
+					} else {
+						int elementType = 0;
+						if(actualTypeArguments[0] instanceof Class)
+							elementType = registerMetaType((Class<?>)actualTypeArguments[0], actualTypeArguments[0], actualAnnotatedTypeArguments==null ? null : actualAnnotatedTypeArguments[0], false, false);
+						else if(actualTypeArguments[0] instanceof ParameterizedType 
+								&& ((ParameterizedType)actualTypeArguments[0]).getRawType() instanceof Class)
+							elementType = registerMetaType((Class<?>)((ParameterizedType)actualTypeArguments[0]).getRawType(), actualTypeArguments[0], actualAnnotatedTypeArguments==null ? null : actualAnnotatedTypeArguments[0], false, false);
+						else if(actualTypeArguments[0] instanceof TypeVariable) {
+							Type[] bounds = ((TypeVariable<?>)actualTypeArguments[0]).getBounds();
+							if(bounds.length>0) {
+								if(bounds[0] instanceof Class)
+									elementType = registerMetaType((Class<?>)bounds[0], actualTypeArguments[0], actualAnnotatedTypeArguments==null ? null : actualAnnotatedTypeArguments[0], false, false);
+							}
+						}
+						if(elementType!=0) {
+							if(isQSpan((Class<?>) parameterizedType.getRawType())) {
+								return QMetaType.qRegisterMetaType(qspanClass, new QMetaType(elementType));
+							}else {
+								return QMetaType.qRegisterMetaType(qspanConstClass, new QMetaType(elementType));
+							}
+						}else {
+							return id;
+						}
+					}
+				} else if (isQQmlListProperty((Class<?>) parameterizedType.getRawType())) {
+					String listPropertyName = internalTypeNameOfClass(clazz, genericType, annotatedType);
 					int id = findMetaType(listPropertyName);
 					if (id != QMetaType.Type.UnknownType.value()) {
 						return id;
@@ -774,20 +804,44 @@ public final class MetaTypeUtility {
 	}
 
 	public static String internalNameOfArgumentType(Class<? extends Object> cls) {
-		return internalTypeNameOfClass(cls, cls);
+		return internalTypeNameOfClass(cls, cls, null);
 	}
 
-	public static String internalTypeNameOfClass(Class<? extends Object> cls, Type genericType) {
+	public static String internalTypeNameOfClass(Class<? extends Object> cls, Type genericType, AnnotatedElement annotatedType) {
 		try {
 			if (isQQmlListProperty(cls) && genericType instanceof ParameterizedType) {
 				ParameterizedType ptype = (ParameterizedType) genericType;
 				Type actualTypes[] = ptype.getActualTypeArguments();
+				AnnotatedElement actualAnnotatedTypes[] = null;
+				if(ClassAnalyzerUtility.useAnnotatedType) {
+					if(annotatedType instanceof AnnotatedParameterizedType) {
+						AnnotatedParameterizedType aptype = (AnnotatedParameterizedType)annotatedType;
+						actualAnnotatedTypes = aptype.getAnnotatedActualTypeArguments();
+					}
+				}
 				if (actualTypes.length == 1 && actualTypes[0] instanceof Class<?>) {
-					String argumentName = internalTypeNameOfClass((Class<?>) actualTypes[0], actualTypes[0]);
+					String argumentName = internalTypeNameOfClass((Class<?>) actualTypes[0], actualTypes[0], actualAnnotatedTypes==null ? null : actualAnnotatedTypes[0]);
 					if (argumentName.endsWith("*")) {
 						argumentName = argumentName.substring(0, argumentName.length() - 1);
 					}
 					return "QQmlListProperty<" + argumentName + ">";
+				}
+			}else if (isQConstSpan(cls) && genericType instanceof ParameterizedType) {
+				ParameterizedType ptype = (ParameterizedType) genericType;
+				Type actualTypes[] = ptype.getActualTypeArguments();
+				AnnotatedElement actualAnnotatedTypes[] = null;
+				if(ClassAnalyzerUtility.useAnnotatedType) {
+					if(annotatedType instanceof AnnotatedParameterizedType) {
+						AnnotatedParameterizedType aptype = (AnnotatedParameterizedType)annotatedType;
+						actualAnnotatedTypes = aptype.getAnnotatedActualTypeArguments();
+					}
+				}
+				if (actualTypes.length == 1 && actualTypes[0] instanceof Class<?>) {
+					String argumentName = internalTypeNameOfClass((Class<?>) actualTypes[0], actualTypes[0], actualAnnotatedTypes==null ? null : actualAnnotatedTypes[0]);
+					if (argumentName.endsWith("*")) {
+						argumentName = argumentName.substring(0, argumentName.length() - 1);
+					}
+					return isQSpan(cls) ? "QSpan<" + argumentName + ">" : "QSpan<const " + argumentName + ">";
 				}
 			}else if (( cls==QMap.class
 						|| cls==QHash.class
@@ -798,6 +852,13 @@ public final class MetaTypeUtility {
 						|| cls==NavigableMap.class) && genericType instanceof ParameterizedType) {
 				ParameterizedType ptype = (ParameterizedType) genericType;
 				Type actualTypes[] = ptype.getActualTypeArguments();
+				AnnotatedElement actualAnnotatedTypes[] = null;
+				if(ClassAnalyzerUtility.useAnnotatedType) {
+					if(annotatedType instanceof AnnotatedParameterizedType) {
+						AnnotatedParameterizedType aptype = (AnnotatedParameterizedType)annotatedType;
+						actualAnnotatedTypes = aptype.getAnnotatedActualTypeArguments();
+					}
+				}
 				if (actualTypes.length == 2) {
 					Type keyType = actualTypes[0];
 					if(actualTypes[0] instanceof ParameterizedType)
@@ -824,8 +885,8 @@ public final class MetaTypeUtility {
 						}
 					}
 					if(keyType instanceof Class && valueType instanceof Class) {
-						String keyName = internalTypeNameOfClass((Class<?>) keyType, actualTypes[0]);
-						String valueName = internalTypeNameOfClass((Class<?>) valueType, actualTypes[1]);
+						String keyName = internalTypeNameOfClass((Class<?>) keyType, actualTypes[0], actualAnnotatedTypes==null ? null : actualAnnotatedTypes[0]);
+						String valueName = internalTypeNameOfClass((Class<?>) valueType, actualTypes[1], actualAnnotatedTypes==null ? null : actualAnnotatedTypes[1]);
 						if(keyType==actualTypes[0])
 							QMetaType.qRegisterMetaType((Class<?>) keyType);
 						if(valueType==actualTypes[1])
@@ -849,6 +910,13 @@ public final class MetaTypeUtility {
 					) && genericType instanceof ParameterizedType) {
 				ParameterizedType ptype = (ParameterizedType) genericType;
 				Type actualTypes[] = ptype.getActualTypeArguments();
+				AnnotatedElement actualAnnotatedTypes[] = null;
+				if(ClassAnalyzerUtility.useAnnotatedType) {
+					if(annotatedType instanceof AnnotatedParameterizedType) {
+						AnnotatedParameterizedType aptype = (AnnotatedParameterizedType)annotatedType;
+						actualAnnotatedTypes = aptype.getAnnotatedActualTypeArguments();
+					}
+				}
 				if (actualTypes.length == 1) {
 					Type elementType = actualTypes[0];
 					if(actualTypes[0] instanceof ParameterizedType)
@@ -863,7 +931,7 @@ public final class MetaTypeUtility {
 						}
 					}
 					if(elementType instanceof Class) {
-						String elementName = internalTypeNameOfClass((Class<?>) elementType, actualTypes[0]);
+						String elementName = internalTypeNameOfClass((Class<?>) elementType, actualTypes[0], actualAnnotatedTypes==null ? null : actualAnnotatedTypes[0]);
 						if(elementType==actualTypes[0])
 							QMetaType.qRegisterMetaType((Class<?>) elementType);
 						if(cls==Collection.class
@@ -892,7 +960,7 @@ public final class MetaTypeUtility {
 					&& (QObject.class.isAssignableFrom(cls.getDeclaringClass())
 							|| Qt.class.isAssignableFrom(cls.getDeclaringClass()))) {
 				if (ClassAnalyzerUtility.isGeneratedClass(cls.getDeclaringClass())) {
-					result = internalTypeNameOfClass(cls.getDeclaringClass(), null).replace("*", "")
+					result = internalTypeNameOfClass(cls.getDeclaringClass(), null, null).replace("*", "")
 																		+ "::" + cls.getSimpleName();
 				}
 			}
@@ -920,7 +988,33 @@ public final class MetaTypeUtility {
 			}
 			qmlListPropertiesClass = _qmlListPropertiesClass;
 		}
-		return qmlListPropertiesClass != null && qmlListPropertiesClass == cls;
+		return qmlListPropertiesClass != null && qmlListPropertiesClass.isAssignableFrom(cls);
+	}
+	
+	private static Class<?> qspanClass;
+	private static Class<?> qspanConstClass;
+	private static boolean qspanClassResolved;
+
+	static boolean isQSpan(Class<? extends Object> cls) {
+		if(qspanClass != null && qspanClass.isAssignableFrom(cls))
+			return true;
+		return false;
+	}
+	
+	static boolean isQConstSpan(Class<? extends Object> cls) {
+		if (!qspanClassResolved) {
+			qspanClassResolved = true;
+			try {
+				qspanConstClass = Class.forName("io.qt.core.QConstSpan");
+				qspanClass = Class.forName("io.qt.core.QSpan");
+			} catch (Exception e) {
+				qspanConstClass = null;
+				qspanClass = null;
+			}
+		}
+		if(qspanConstClass != null && qspanConstClass.isAssignableFrom(cls))
+			return true;
+		return false;
 	}
 	
 	static native int registerQmlListProperty(String type);
@@ -959,6 +1053,12 @@ public final class MetaTypeUtility {
         				return String.format("QStack<%1$s>", instantiations[0].name());
         			}else if(clazz.isInterface() && java.util.List.class.isAssignableFrom(clazz)) {
         				return String.format("QList<%1$s>", instantiations[0].name());
+        			}else if(isQConstSpan(clazz)) {
+        				if(isQSpan(clazz)) {
+        					return String.format("QSpan<%1$s>", instantiations[0].name());
+        				}else {
+        					return String.format("QSpan<const %1$s>", instantiations[0].name());
+        				}
         			}
         		}
         		break;

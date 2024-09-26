@@ -123,8 +123,13 @@ std::chrono::nanoseconds PerformanceTests::testAcuireJniEnvironmentExceptionHand
 }
 
 std::chrono::nanoseconds PerformanceTests::testAcuireJniEnvironmentCallingChecking(int count){
-    jmethodID empty_method = Java::Autotests::PerformanceTests::empty_method(JniEnvironment{100});
-    jclass cls = Java::Autotests::PerformanceTests::getClass(JniEnvironment{100});
+    jmethodID empty_method;
+    jclass cls;
+    {
+        JniEnvironment env{100};
+        empty_method = Java::Autotests::PerformanceTests::empty_method(env);
+        cls = jclass(env->NewGlobalRef(Java::Autotests::PerformanceTests::getClass(env)));
+    }
     auto start = std::chrono::high_resolution_clock::now();
     for(int i=0; i<count; ++i){
         if(JniEnvironment env{500}){
@@ -140,12 +145,21 @@ std::chrono::nanoseconds PerformanceTests::testAcuireJniEnvironmentCallingChecki
         //std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
     auto end = std::chrono::high_resolution_clock::now();
+    {
+        JniEnvironment env{100};
+        env->DeleteGlobalRef(cls);
+    }
     return std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
 }
 
 std::chrono::nanoseconds PerformanceTests::testAcuireJniEnvironmentExceptionHandlerCallingChecking(int count){
-    jmethodID empty_method = Java::Autotests::PerformanceTests::empty_method(JniEnvironment{100});
-    jclass cls = Java::Autotests::PerformanceTests::getClass(JniEnvironment{100});
+    jmethodID empty_method;
+    jclass cls;
+    {
+        JniEnvironment env{100};
+        empty_method = Java::Autotests::PerformanceTests::empty_method(env);
+        cls = jclass(env->NewGlobalRef(Java::Autotests::PerformanceTests::getClass(env)));
+    }
     auto start = std::chrono::high_resolution_clock::now();
     for(int i=0; i<count; ++i){
         if(JniEnvironmentExceptionHandler env{500}){
@@ -159,12 +173,21 @@ std::chrono::nanoseconds PerformanceTests::testAcuireJniEnvironmentExceptionHand
         //std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
     auto end = std::chrono::high_resolution_clock::now();
+    {
+        JniEnvironment env{100};
+        env->DeleteGlobalRef(cls);
+    }
     return std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
 }
 
 std::chrono::nanoseconds PerformanceTests::testAcuireJniEnvironmentExceptionHandlerAndBlockerCallingChecking(int count){
-    jmethodID empty_method = Java::Autotests::PerformanceTests::empty_method(JniEnvironment{100});
-    jclass cls = Java::Autotests::PerformanceTests::getClass(JniEnvironment{100});
+    jmethodID empty_method;
+    jclass cls;
+    {
+        JniEnvironment env{100};
+        empty_method = Java::Autotests::PerformanceTests::empty_method(env);
+        cls = jclass(env->NewGlobalRef(Java::Autotests::PerformanceTests::getClass(env)));
+    }
     auto start = std::chrono::high_resolution_clock::now();
     for(int i=0; i<count; ++i){
         if(JniEnvironmentExceptionHandlerAndBlocker env{500}){
@@ -179,6 +202,10 @@ std::chrono::nanoseconds PerformanceTests::testAcuireJniEnvironmentExceptionHand
         //std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
     auto end = std::chrono::high_resolution_clock::now();
+    {
+        JniEnvironment env{100};
+        env->DeleteGlobalRef(cls);
+    }
     return std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
 }
 

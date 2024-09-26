@@ -41,6 +41,8 @@ QT_WARNING_DISABLE_DEPRECATED
 #include "containeraccess_p.h"
 #include "functionpointer.h"
 #include "registryutil_p.h"
+#include "qtjambilink_p.h"
+#include "java_p.h"
 #include "utils_p.h"
 #include "coreapi.h"
 
@@ -49,14 +51,20 @@ AutoLinkedListAccess::AutoLinkedListAccess(
         size_t elementAlign,
         const QtJambiUtils::QHashFunction& hashFunction,
         const QtJambiUtils::InternalToExternalConverter& internalToExternalConverter,
-        const QtJambiUtils::ExternalToInternalConverter& externalToInternalConverter
+        const QtJambiUtils::ExternalToInternalConverter& externalToInternalConverter,
+        const QSharedPointer<AbstractContainerAccess>& elementNestedContainerAccess,
+        PtrOwnerFunction elementOwnerFunction,
+        AbstractContainerAccess::DataType elementDataType
         )
-    : AbstractLinkedListAccess(),
+    : AbstractLinkedListAccess(), AbstractNestedSequentialAccess(),
       m_elementMetaType(elementMetaType),
       m_hashFunction(hashFunction),
       m_internalToExternalConverter(internalToExternalConverter),
       m_externalToInternalConverter(externalToInternalConverter),
-      m_offset(0)
+      m_elementNestedContainerAccess(elementNestedContainerAccess),
+      m_offset(0),
+      m_elementOwnerFunction(elementOwnerFunction),
+      m_elementDataType(elementDataType)
 {
     Q_ASSERT(m_elementMetaType.id()!=QMetaType::UnknownType
             && m_elementMetaType.id()!=QMetaType::Void);
@@ -66,29 +74,56 @@ AutoLinkedListAccess::AutoLinkedListAccess(
 }
 
 AutoLinkedListAccess::AutoLinkedListAccess(const AutoLinkedListAccess& other)
-  : AbstractLinkedListAccess(),
+  : AbstractLinkedListAccess(), AbstractNestedSequentialAccess(),
     m_elementMetaType(other.m_elementMetaType.id()),
     m_hashFunction(other.m_hashFunction),
     m_internalToExternalConverter(other.m_internalToExternalConverter),
     m_externalToInternalConverter(other.m_externalToInternalConverter),
-    m_offset(other.m_offset)
+    m_elementNestedContainerAccess(other.m_elementNestedContainerAccess),
+    m_offset(other.m_offset),
+    m_elementOwnerFunction(other.m_elementOwnerFunction),
+    m_elementDataType(other.m_elementDataType)
 {
+}
+
+std::unique_ptr<AbstractLinkedListAccess::ElementIterator> AutoLinkedListAccess::elementIterator(const void* container) {
+    class ElementIterator : public AbstractLinkedListAccess::ElementIterator{
+        AutoLinkedListAccess* access;
+        Node* current;
+        Node* end;
+    public:
+        ElementIterator(AutoLinkedListAccess* _access, QLinkedListData* d)
+            : AbstractLinkedListAccess::ElementIterator(),
+            access(_access),
+            current(reinterpret_cast<Node*>(d)->n),
+            end(reinterpret_cast<Node*>(d))
+        {}
+        bool hasNext() override{
+            return current!=end;
+        }
+        jobject next(JNIEnv * env) override{
+            void* data = &current->t;
+            current = current->n;
+            jvalue _value;
+            _value.l = nullptr;
+            access->m_internalToExternalConverter(env, nullptr, data, _value, true);
+            return _value.l;
+        }
+        const void* next() override {
+            void* data = &current->t;
+            current = current->n;
+            if(access->elementType() & AbstractLinkedListAccess::PointersMask){
+                return *reinterpret_cast<void**>(data);
+            }else{
+                return data;
+            }
+        }
+    };
+    return std::unique_ptr<AbstractLinkedListAccess::ElementIterator>(new ElementIterator(this, *reinterpret_cast<QLinkedListData*const*>(container)));
 }
 
 AutoLinkedListAccess* AutoLinkedListAccess::clone(){
     return new AutoLinkedListAccess(*this);
-}
-
-void AutoLinkedListAccess::analyzeElements(const void* container, ElementAnalyzer analyzer, void* data){
-    QLinkedListData*const* linkedList = reinterpret_cast<QLinkedListData*const*>(container);
-    QLinkedListData *d = *linkedList;
-    Node* e = reinterpret_cast<Node*>(d);
-    Node *i = e->n;
-    while (i != e) {
-        if(!analyzer(&i->t, data))
-            break;
-        i = i->n;
-    }
 }
 
 void AutoLinkedListAccess::dispose()
@@ -100,11 +135,19 @@ size_t AutoLinkedListAccess::sizeOf(){
     return sizeof(QLinkedList<char>);
 }
 
+void* AutoLinkedListAccess::constructContainer(JNIEnv*, void* result, const ConstContainerAndAccessInfo& container) {
+    return constructContainer(result, container.container);
+}
+
+void* AutoLinkedListAccess::constructContainer(void* placement)
+{
+    return new(placement) QLinkedList<char>();
+}
+
 void* AutoLinkedListAccess::constructContainer(void* placement, const void* container)
 {
-    placement = new(placement) QLinkedList<char>();
-    if(container)
-        assign(placement, container);
+    placement = constructContainer(placement);
+    assign(placement, container);
     return placement;
 }
 
@@ -115,6 +158,10 @@ bool AutoLinkedListAccess::destructContainer(void* container)
     if (!d->ref.deref())
         freeData(d);
     return true;
+}
+
+void AutoLinkedListAccess::assign(JNIEnv *, const ContainerInfo& container, const ConstContainerAndAccessInfo& other){
+    assign(container.container, other.container);
 }
 
 void AutoLinkedListAccess::assign(void* container, const void* other)
@@ -138,6 +185,7 @@ int AutoLinkedListAccess::registerContainer(const QByteArray& typeName)
     if(newMetaType==QMetaType::UnknownType){
         QSharedPointer<AutoLinkedListAccess> access(new AutoLinkedListAccess(*this), &containerDisposer);
         newMetaType = registerContainerMetaType(typeName,
+#if QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
                                        qtjambi_function_pointer<16,void(void*)>([access](void* ptr){
                                             access->destructContainer(ptr);
                                        }, qHash(typeName)),
@@ -148,13 +196,15 @@ int AutoLinkedListAccess::registerContainer(const QByteArray& typeName)
                                                 return new(result) QLinkedList<char>();
                                             }
                                        },
+#endif //QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
                                        uint(sizeOf()),
                                        uint(alignof(QLinkedList<char>)),
                                        QMetaType::NeedsConstruction
                                                    | QMetaType::NeedsDestruction
                                                    | QMetaType::MovableType,
                                        nullptr,
-                                       nullptr);
+                                       nullptr,
+                                       access);
         if(m_hashFunction){
             insertHashFunctionByMetaType(newMetaType,
                                             [access]
@@ -423,12 +473,66 @@ int AutoLinkedListAccess::registerContainer(const QByteArray& typeName)
                                                                                }, _metaType_id)
                                                );
         }
+    }else{
+        registerContainerAccess(newMetaType, this);
     }
     return newMetaType;
 }
 
 const QMetaType& AutoLinkedListAccess::elementMetaType(){
     return m_elementMetaType;
+}
+
+AbstractContainerAccess::DataType AutoLinkedListAccess::elementType() {return m_elementDataType;}
+
+AbstractContainerAccess* AutoLinkedListAccess::elementNestedContainerAccess() {
+    return m_elementNestedContainerAccess ? m_elementNestedContainerAccess->clone() : nullptr;
+}
+const QSharedPointer<AbstractContainerAccess>& AutoLinkedListAccess::sharedElementNestedContainerAccess(){
+    return m_elementNestedContainerAccess;
+}
+bool AutoLinkedListAccess::hasNestedContainerAccess(){
+    return !m_elementNestedContainerAccess.isNull();
+}
+bool AutoLinkedListAccess::hasNestedPointers(){
+    if(hasNestedContainerAccess()){
+        if(auto daccess = dynamic_cast<AbstractSequentialAccess*>(m_elementNestedContainerAccess.data())){
+            return (daccess->elementType() & PointersMask) || daccess->hasNestedPointers();
+        }else if(auto daccess = dynamic_cast<AbstractAssociativeAccess*>(m_elementNestedContainerAccess.data())){
+            return (daccess->keyType() & PointersMask) || daccess->hasKeyNestedPointers() || (daccess->valueType() & PointersMask) || daccess->hasValueNestedPointers();
+        }else if(auto daccess = dynamic_cast<AbstractPairAccess*>(m_elementNestedContainerAccess.data())){
+            return (daccess->firstType() & PointersMask) || daccess->hasFirstNestedPointers() || (daccess->secondType() & PointersMask) || daccess->hasSecondNestedPointers();
+        }
+    }
+    return false;
+}
+
+const QObject* AutoLinkedListAccess::getOwner(const void* container){
+    if(hasOwnerFunction() && size(container)>0){
+        auto iter = elementIterator(container);
+        if(m_elementOwnerFunction){
+            while(iter->hasNext()){
+                const void* current = iter->next();
+                if(const QObject* owner = m_elementOwnerFunction(current))
+                    return owner;
+            }
+        }else if(m_elementNestedContainerAccess){
+            while(iter->hasNext()){
+                const void* current = iter->next();
+                if(const QObject* owner = m_elementNestedContainerAccess->getOwner(current))
+                    return owner;
+            }
+        }
+    }
+    return nullptr;
+}
+
+bool AutoLinkedListAccess::hasOwnerFunction(){
+    if(m_elementOwnerFunction && !(elementType() & PointersMask))
+        return true;
+    if(!(elementType() & PointersMask) && m_elementNestedContainerAccess && m_elementNestedContainerAccess->hasOwnerFunction())
+        return true;
+    return false;
 }
 
 void AutoLinkedListAccess::detach_helper(QLinkedListData*& d)
@@ -506,10 +610,10 @@ void AutoLinkedListAccess::detach(QLinkedListData*& d){
     if (d->ref.isShared()) detach_helper2(d, reinterpret_cast<Node*>(d));
 }
 
-void AutoLinkedListAccess::append(JNIEnv * env, void* container, jobject value)
+void AutoLinkedListAccess::append(JNIEnv * env, const ContainerInfo& container, jobject value)
 {
     const int sizeOf = m_elementMetaType.sizeOf() + 2 * sizeof(void*);
-    QLinkedListData** linkedList = reinterpret_cast<QLinkedListData**>(container);
+    QLinkedListData** linkedList = reinterpret_cast<QLinkedListData**>(container.container);
     QLinkedListData*& d = *linkedList;
     detach(d);
     Node*& e = reinterpret_cast<Node*&>(d);
@@ -553,25 +657,27 @@ jobject AutoLinkedListAccess::last(JNIEnv * env, const void* container)
 jobject AutoLinkedListAccess::createIterator(JNIEnv * env, QtJambiNativeID ownerId, void* iteratorPtr)
 {
     AbstractSequentialIteratorAccess* containerAccess = new AutoSequentialIteratorAccess(m_internalToExternalConverter,
-                                                 [](void*ptr){
+                                                 [](AutoSequentialIteratorAccess*,void*ptr){
                                                     Node* cursor = *reinterpret_cast<Node**>(ptr);
                                                     *reinterpret_cast<Node**>(ptr) = cursor->n;
                                                  },
-                                                 [](void*ptr){
+                                                 [](AutoSequentialIteratorAccess*,void*ptr){
                                                     Node* cursor = *reinterpret_cast<Node**>(ptr);
                                                     *reinterpret_cast<Node**>(ptr) = cursor->p;
                                                  },
-                                                 std::function<const void*(const void*)>([](const void*ptr)->const void*{
+                                                 [](AutoSequentialIteratorAccess*,const void*ptr)->const void*{
                                                     return &(*reinterpret_cast<Node*const*>(ptr))->t;
-                                                 }),
+                                                 },
                                                  {},
-                                                 [](const void*ptr1,const void*ptr2)->bool{
+                                                 [](AutoSequentialIteratorAccess*,const void*ptr1,const void*ptr2)->bool{
                                                     return *reinterpret_cast<Node*const*>(ptr1)==*reinterpret_cast<Node*const*>(ptr2);
                                                  },
                                                  m_externalToInternalConverter,
-                                                 std::function<void*(void*)>([](void*ptr)->void*{
+                                                 [](AutoSequentialIteratorAccess*,void*ptr)->void*{
                                                     return &(*reinterpret_cast<Node**>(ptr))->t;
-                                                 })
+                                                 },
+                                                 m_elementMetaType,
+                                                 /*offset not required*/ 0
                                             );
     return QtJambiAPI::convertQSequentialIteratorToJavaObject(env, ownerId, iteratorPtr, [](void* ptr,bool){
         delete reinterpret_cast<void**>(ptr);
@@ -581,60 +687,87 @@ jobject AutoLinkedListAccess::createIterator(JNIEnv * env, QtJambiNativeID owner
 jobject AutoLinkedListAccess::createConstIterator(JNIEnv * env, QtJambiNativeID ownerId, void* iteratorPtr)
 {
     AutoSequentialConstIteratorAccess* containerAccess = new AutoSequentialConstIteratorAccess(m_internalToExternalConverter,
-                                                 [](void*ptr){
+                                                 [](AutoSequentialConstIteratorAccess*,void*ptr){
                                                     Node* cursor = *reinterpret_cast<Node**>(ptr);
                                                     *reinterpret_cast<Node**>(ptr) = cursor->n;
                                                  },
-                                                 [](void*ptr){
+                                                 [](AutoSequentialConstIteratorAccess*,void*ptr){
                                                     Node* cursor = *reinterpret_cast<Node**>(ptr);
                                                     *reinterpret_cast<Node**>(ptr) = cursor->p;
                                                  },
-                                                 std::function<const void*(const void*)>([](const void*ptr)->const void*{
+                                                 [](AutoSequentialConstIteratorAccess*,const void*ptr)->const void*{
                                                     return &(*reinterpret_cast<Node*const*>(ptr))->t;
-                                                 }),
+                                                 },
                                                  {},
-                                                 [](const void*ptr1,const void*ptr2)->bool{
+                                                 [](AutoSequentialConstIteratorAccess*,const void*ptr1,const void*ptr2)->bool{
                                                     return *reinterpret_cast<Node*const*>(ptr1)==*reinterpret_cast<Node*const*>(ptr2);
-                                                 }
+                                                 },
+                                                 m_elementMetaType,
+                                                 /*offset not required*/ 0
                                             );
     return QtJambiAPI::convertQSequentialIteratorToJavaObject(env, ownerId, iteratorPtr, [](void* ptr,bool){
         delete reinterpret_cast<void**>(ptr);
     }, containerAccess);
 }
 
-jobject AutoLinkedListAccess::begin(JNIEnv * env, QtJambiNativeID ownerId, void* container)
+bool AutoLinkedListAccess::isDetached(const void* container){
+    QLinkedListData *const* vector = reinterpret_cast<QLinkedListData *const*>(container);
+    return vector && *vector && !(*vector)->ref.isShared();
+}
+
+void AutoLinkedListAccess::detach(const ContainerInfo& container){
+    QLinkedListData ** vector = reinterpret_cast<QLinkedListData **>(container.container);
+    detach(*vector);
+}
+
+bool AutoLinkedListAccess::isSharedWith(const void* container, const void* container2){
+    QLinkedListData *const* vector = reinterpret_cast<QLinkedListData *const*>(container);
+    QLinkedListData *const* vector2 = reinterpret_cast<QLinkedListData *const*>(container2);
+    if(vector && vector2){
+        return (*vector)==(*vector2);
+    }
+    return false;
+}
+
+void AutoLinkedListAccess::swap(JNIEnv *, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
+    QLinkedListData *& vector = *reinterpret_cast<QLinkedListData **>(container.container);
+    QLinkedListData *& vector2 = *reinterpret_cast<QLinkedListData **>(container2.container);
+    qSwap(vector, vector2);
+}
+
+jobject AutoLinkedListAccess::begin(JNIEnv * env, const ExtendedContainerInfo& container)
 {
-    QLinkedListData** linkedList = reinterpret_cast<QLinkedListData**>(container);
+    QLinkedListData** linkedList = reinterpret_cast<QLinkedListData**>(container.container);
     detach(*linkedList);
     QLinkedListData* d = *linkedList;
-    return createIterator(env, ownerId, new void*(reinterpret_cast<const Node*>(d)->n));
+    return createIterator(env, container.nativeId, new void*(reinterpret_cast<const Node*>(d)->n));
 }
 
-jobject AutoLinkedListAccess::end(JNIEnv * env, QtJambiNativeID ownerId, void* container)
+jobject AutoLinkedListAccess::end(JNIEnv * env, const ExtendedContainerInfo& container)
 {
-    QLinkedListData** linkedList = reinterpret_cast<QLinkedListData**>(container);
+    QLinkedListData** linkedList = reinterpret_cast<QLinkedListData**>(container.container);
     detach(*linkedList);
     QLinkedListData* d = *linkedList;
-    return createIterator(env, ownerId, new void*(d));
+    return createIterator(env, container.nativeId, new void*(d));
 }
 
-jobject AutoLinkedListAccess::constBegin(JNIEnv * env, QtJambiNativeID ownerId, const void* container)
+jobject AutoLinkedListAccess::constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container)
 {
-    QLinkedListData*const* linkedList = reinterpret_cast<QLinkedListData*const*>(container);
+    QLinkedListData*const* linkedList = reinterpret_cast<QLinkedListData*const*>(container.container);
     QLinkedListData* d = *linkedList;
-    return createConstIterator(env, ownerId, new void*(reinterpret_cast<const Node*>(d)->n));
+    return createConstIterator(env, container.nativeId, new void*(reinterpret_cast<const Node*>(d)->n));
 }
 
-jobject AutoLinkedListAccess::constEnd(JNIEnv * env, QtJambiNativeID ownerId, const void* container)
+jobject AutoLinkedListAccess::constEnd(JNIEnv * env, const ConstExtendedContainerInfo& container)
 {
-    QLinkedListData*const* linkedList = reinterpret_cast<QLinkedListData*const*>(container);
+    QLinkedListData*const* linkedList = reinterpret_cast<QLinkedListData*const*>(container.container);
     QLinkedListData* d = *linkedList;
-    return createConstIterator(env, ownerId, new void*(d));
+    return createConstIterator(env, container.nativeId, new void*(d));
 }
 
-void AutoLinkedListAccess::clear(JNIEnv *, void* container)
+void AutoLinkedListAccess::clear(JNIEnv *, const ContainerInfo& container)
 {
-    QLinkedListData** linkedList = reinterpret_cast<QLinkedListData**>(container);
+    QLinkedListData** linkedList = reinterpret_cast<QLinkedListData**>(container.container);
     QLinkedListData*& d = *linkedList;
     if(d!=&QLinkedListData::shared_null){
         if (!d->ref.deref())
@@ -740,7 +873,7 @@ jboolean AutoLinkedListAccess::equal(JNIEnv * env, const void* container, jobjec
     }else{
         if(d->size!=QtJambiAPI::sizeOfJavaCollection(env, other))
             return false;
-        jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, other);
+        jobject iterator = QtJambiAPI::iteratorOfJavaIterable(env, other);
         Node *i = e->n;
         while(QtJambiAPI::hasJavaIteratorNext(env, iterator)){
             QtJambiScope scope;
@@ -758,10 +891,10 @@ jboolean AutoLinkedListAccess::equal(JNIEnv * env, const void* container, jobjec
     return false;
 }
 
-void AutoLinkedListAccess::prepend(JNIEnv * env, void* container, jobject value)
+void AutoLinkedListAccess::prepend(JNIEnv * env, const ContainerInfo& container, jobject value)
 {
     const int sizeOf = m_elementMetaType.sizeOf() + 2 * sizeof(void*);
-    QLinkedListData** linkedList = reinterpret_cast<QLinkedListData**>(container);
+    QLinkedListData** linkedList = reinterpret_cast<QLinkedListData**>(container.container);
     QLinkedListData*& d = *linkedList;
     Node* e = reinterpret_cast<Node*>(d);
     detach(d);
@@ -792,25 +925,25 @@ void AutoLinkedListAccess::erase(QLinkedListData*& d, Node *i){
     }
 }
 
-void AutoLinkedListAccess::removeFirst(JNIEnv *, void* container)
+void AutoLinkedListAccess::removeFirst(JNIEnv *, const ContainerInfo& container)
 {
-    QLinkedListData** linkedList = reinterpret_cast<QLinkedListData**>(container);
+    QLinkedListData** linkedList = reinterpret_cast<QLinkedListData**>(container.container);
     QLinkedListData*& d = *linkedList;
     Node* e = reinterpret_cast<Node*>(d);
     detach(d);
     erase(d, e->n);
 }
 
-void AutoLinkedListAccess::removeLast(JNIEnv *, void* container)
+void AutoLinkedListAccess::removeLast(JNIEnv *, const ContainerInfo& container)
 {
-    QLinkedListData** linkedList = reinterpret_cast<QLinkedListData**>(container);
+    QLinkedListData** linkedList = reinterpret_cast<QLinkedListData**>(container.container);
     QLinkedListData*& d = *linkedList;
     Node* e = reinterpret_cast<Node*>(d);
     detach(d);
     erase(d, e->p);
 }
 
-jint AutoLinkedListAccess::removeAll(JNIEnv * env, void* container, jobject value)
+jint AutoLinkedListAccess::removeAll(JNIEnv * env, const ContainerInfo& container, jobject value)
 {
     jint counter = 0;
     QtJambiScope scope;
@@ -818,7 +951,7 @@ jint AutoLinkedListAccess::removeAll(JNIEnv * env, void* container, jobject valu
     _value.l = value;
     void* ptr = nullptr;
     if(m_externalToInternalConverter(env, &scope, _value, ptr, jValueType::l)){
-        QLinkedListData** linkedList = reinterpret_cast<QLinkedListData**>(container);
+        QLinkedListData** linkedList = reinterpret_cast<QLinkedListData**>(container.container);
         QLinkedListData*& d = *linkedList;
         Node* e = reinterpret_cast<Node*>(d);
         detach(d);
@@ -841,14 +974,14 @@ jint AutoLinkedListAccess::removeAll(JNIEnv * env, void* container, jobject valu
     return counter;
 }
 
-jboolean AutoLinkedListAccess::removeOne(JNIEnv * env, void* container, jobject value)
+jboolean AutoLinkedListAccess::removeOne(JNIEnv * env, const ContainerInfo& container, jobject value)
 {
     QtJambiScope scope;
     jvalue _value;
     _value.l = value;
     void* ptr = nullptr;
     if(m_externalToInternalConverter(env, &scope, _value, ptr, jValueType::l)){
-        QLinkedListData** linkedList = reinterpret_cast<QLinkedListData**>(container);
+        QLinkedListData** linkedList = reinterpret_cast<QLinkedListData**>(container.container);
         QLinkedListData*& d = *linkedList;
         Node* e = reinterpret_cast<Node*>(d);
         detach(d);
@@ -869,16 +1002,241 @@ jint AutoLinkedListAccess::size(JNIEnv *, const void* container){
     return d->size;
 }
 
-jobject AutoLinkedListAccess::takeFirst(JNIEnv * env, void* container)
+jint AutoLinkedListAccess::size(const void* container){
+    QLinkedListData*const* linkedList = reinterpret_cast<QLinkedListData*const*>(container);
+    QLinkedListData* d = *linkedList;
+    return d->size;
+}
+
+jobject AutoLinkedListAccess::takeFirst(JNIEnv * env, const ContainerInfo& container)
 {
-    jobject result = first(env, container);
+    jobject result = first(env, container.container);
     removeFirst(env, container);
     return result;
 }
 
-jobject AutoLinkedListAccess::takeLast(JNIEnv * env, void* container)
+jobject AutoLinkedListAccess::takeLast(JNIEnv * env, const ContainerInfo& container)
 {
-    jobject result = last(env, container);
+    jobject result = last(env, container.container);
     removeLast(env, container);
+    return result;
+}
+
+PointerRCAutoLinkedListAccess::PointerRCAutoLinkedListAccess(PointerRCAutoLinkedListAccess& other)
+    : AutoLinkedListAccess(other), ReferenceCountingSetContainer() {}
+
+PointerRCAutoLinkedListAccess* PointerRCAutoLinkedListAccess::clone(){
+    return new PointerRCAutoLinkedListAccess(*this);
+}
+
+void PointerRCAutoLinkedListAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
+    AutoLinkedListAccess::swap(env, container, container2);
+    if(PointerRCAutoLinkedListAccess* access = dynamic_cast<PointerRCAutoLinkedListAccess*>(container2.access)){
+        if(access!=this)
+            swapRC(env, container, container2);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void PointerRCAutoLinkedListAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
+    AutoLinkedListAccess::assign(env, container, container2);
+    if(PointerRCAutoLinkedListAccess* access = dynamic_cast<PointerRCAutoLinkedListAccess*>(container2.access)){
+        if(access!=this)
+            assignRC(env, container.object, container2.object);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void PointerRCAutoLinkedListAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
+    JniLocalFrame frame(env, 200);
+    jobject set = Java::Runtime::ArrayList::newInstance(env);
+    auto iterator = elementIterator(container.container);
+    while(iterator->hasNext()){
+        const void* content = iterator->next();
+        jobject obj{nullptr};
+        switch(elementType()){
+        case PointerToQObject:
+            if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForQObject(reinterpret_cast<const QObject*>(content))){
+                obj = link->getJavaObjectLocalRef(env);
+            }
+            break;
+        case FunctionPointer:
+            if(const std::type_info* typeId = getTypeByMetaType(elementMetaType())){
+                if(FunctionalResolver resolver = registeredFunctionalResolver(*typeId)){
+                    bool success = false;
+                    obj = resolver(env, content, &success);
+                    break;
+                }
+            }
+            Q_FALLTHROUGH();
+        case Pointer:
+            for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(content)){
+                obj = link->getJavaObjectLocalRef(env);
+                break;
+            }
+            break;
+        default:
+            break;
+        }
+        if(obj)
+            Java::Runtime::Collection::add(env, set, obj);
+    }
+    clearRC(env, container.object);
+    addAllRC(env, container.object, set);
+}
+
+void PointerRCAutoLinkedListAccess::clear(JNIEnv * env, const ContainerInfo& container) {
+    AutoLinkedListAccess::clear(env, container);
+    clearRC(env, container.object);
+}
+
+void PointerRCAutoLinkedListAccess::append(JNIEnv * env, const ContainerInfo& container, jobject value) {
+    AutoLinkedListAccess::append(env, container, value);
+    if(value)
+        addRC(env, container.object, value);
+}
+
+void PointerRCAutoLinkedListAccess::prepend(JNIEnv * env, const ContainerInfo& container, jobject value) {
+    AutoLinkedListAccess::prepend(env, container, value);
+    if(value)
+        addRC(env, container.object, value);
+}
+
+jboolean PointerRCAutoLinkedListAccess::removeOne(JNIEnv * env, const ContainerInfo& container, jobject value) {
+    jboolean result = AutoLinkedListAccess::removeOne(env, container, value);
+    if(result && !AutoLinkedListAccess::contains(env, container.container, value)){
+        removeRC(env, container.object, value);
+    }
+    return result;
+}
+
+void PointerRCAutoLinkedListAccess::removeFirst(JNIEnv * env, const ContainerInfo& container) {
+    jobject oldValue = AutoLinkedListAccess::first(env, container.container);
+    AutoLinkedListAccess::removeFirst(env, container);
+    if(!AutoLinkedListAccess::contains(env, container.container, oldValue))
+        removeRC(env, container.object, oldValue);
+}
+
+void PointerRCAutoLinkedListAccess::removeLast(JNIEnv * env, const ContainerInfo& container) {
+    jobject oldValue = AutoLinkedListAccess::last(env, container.container);
+    AutoLinkedListAccess::removeLast(env, container);
+    if(!AutoLinkedListAccess::contains(env, container.container, oldValue))
+        removeRC(env, container.object, oldValue);
+}
+
+jint PointerRCAutoLinkedListAccess::removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) {
+    jint result = AutoLinkedListAccess::removeAll(env, container, value);
+    removeRC(env, container.object, value, result);
+    return result;
+}
+
+jobject PointerRCAutoLinkedListAccess::takeFirst(JNIEnv * env, const ContainerInfo& container) {
+    jobject result = AutoLinkedListAccess::takeFirst(env, container);
+    removeRC(env, container.object, result);
+    return result;
+}
+
+jobject PointerRCAutoLinkedListAccess::takeLast(JNIEnv * env, const ContainerInfo& container) {
+    jobject result = AutoLinkedListAccess::takeLast(env, container);
+    removeRC(env, container.object, result);
+    return result;
+}
+
+NestedPointersRCAutoLinkedListAccess::NestedPointersRCAutoLinkedListAccess(NestedPointersRCAutoLinkedListAccess& other)
+    : AutoLinkedListAccess(other), ReferenceCountingSetContainer() {}
+
+NestedPointersRCAutoLinkedListAccess* NestedPointersRCAutoLinkedListAccess::clone(){
+    return new NestedPointersRCAutoLinkedListAccess(*this);
+}
+
+void NestedPointersRCAutoLinkedListAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
+    if(size(env, container.container)==0){
+        clearRC(env, container.object);
+    }else{
+        JniLocalFrame frame(env, 200);
+        jobject set = Java::Runtime::HashSet::newInstance(env);
+        auto access = elementNestedContainerAccess();
+        auto iterator = elementIterator(container.container);
+        while(iterator->hasNext()){
+            unfoldAndAddContainer(env, set, iterator->next(), elementType(), elementMetaType(), access);
+        }
+        if(access)
+            access->dispose();
+        addAllRC(env, container.object, set);
+    }
+}
+
+void NestedPointersRCAutoLinkedListAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
+    AutoLinkedListAccess::swap(env, container, container2);
+    if(NestedPointersRCAutoLinkedListAccess* access = dynamic_cast<NestedPointersRCAutoLinkedListAccess*>(container2.access)){
+        if(access!=this)
+            swapRC(env, container, container2);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void NestedPointersRCAutoLinkedListAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
+    AutoLinkedListAccess::assign(env, container, container2);
+    if(NestedPointersRCAutoLinkedListAccess* access = dynamic_cast<NestedPointersRCAutoLinkedListAccess*>(container2.access)){
+        if(access!=this)
+            assignRC(env, container.object, container2.object);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void NestedPointersRCAutoLinkedListAccess::clear(JNIEnv * env, const ContainerInfo& container) {
+    AutoLinkedListAccess::clear(env, container);
+    clearRC(env, container.object);
+}
+
+void NestedPointersRCAutoLinkedListAccess::append(JNIEnv * env, const ContainerInfo& container, jobject value) {
+    AutoLinkedListAccess::append(env, container, value);
+    addNestedValueRC(env, container.object, elementType(), hasNestedPointers(), value);
+}
+
+void NestedPointersRCAutoLinkedListAccess::prepend(JNIEnv * env, const ContainerInfo& container, jobject value) {
+    AutoLinkedListAccess::prepend(env, container, value);
+    addNestedValueRC(env, container.object, elementType(), hasNestedPointers(), value);
+}
+
+jboolean NestedPointersRCAutoLinkedListAccess::removeOne(JNIEnv * env, const ContainerInfo& container, jobject value) {
+    jboolean result = AutoLinkedListAccess::removeOne(env, container, value);
+    if(result){
+        updateRC(env, container);
+    }
+    return result;
+}
+
+void NestedPointersRCAutoLinkedListAccess::removeFirst(JNIEnv * env, const ContainerInfo& container) {
+    AutoLinkedListAccess::removeFirst(env, container);
+    updateRC(env, container);
+}
+
+void NestedPointersRCAutoLinkedListAccess::removeLast(JNIEnv * env, const ContainerInfo& container) {
+    AutoLinkedListAccess::removeLast(env, container);
+    updateRC(env, container);
+}
+
+jint NestedPointersRCAutoLinkedListAccess::removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) {
+    jint result = AutoLinkedListAccess::removeAll(env, container, value);
+    if(result>0){
+        updateRC(env, container);
+    }
+    return result;
+}
+
+jobject NestedPointersRCAutoLinkedListAccess::takeFirst(JNIEnv * env, const ContainerInfo& container) {
+    jobject result = AutoLinkedListAccess::takeFirst(env, container);
+    updateRC(env, container);
+    return result;
+}
+
+jobject NestedPointersRCAutoLinkedListAccess::takeLast(JNIEnv * env, const ContainerInfo& container) {
+    jobject result = AutoLinkedListAccess::takeLast(env, container);
+    updateRC(env, container);
     return result;
 }

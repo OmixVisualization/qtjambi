@@ -58,14 +58,11 @@
 typedef struct __GLsync *GLsync;
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
-
-#ifndef QTJAMBI_NO_GRAPHS
-#include <QtGraphs/QtGraphs>
-#include <QtJambiGraphs/hashes.h>
+#ifndef QTJAMBI_NO_DATA_VISUALIZATION
+#include <QtDataVisualization/QtDataVisualization>
+#include <QtJambiDataVisualization/hashes.h>
 #endif
-
-#ifndef QTJAMBI_NO_GRAPHS_WIDGETS
-#include <QtGraphsWidgets/QtGraphsWidgets>
+#ifndef QTJAMBI_NO_CHARTS
+#include <QtCharts/QtCharts>
 #endif
-
 #endif

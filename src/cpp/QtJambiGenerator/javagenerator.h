@@ -54,6 +54,33 @@ class JavaGenerator : public AbstractGenerator {
 public:
     JavaGenerator(TS::TypeDatabase* database, bool nullness, bool noKotlinDelegates);
 
+    struct Replacement{
+        enum Type{
+            None,
+            Name,
+            RemoveArgument,
+            ContextFromLambda,
+            ArrayAsBuffer,
+            ArrayWithOffsetAsBuffer,
+        };
+
+        Type type;
+        QString typeName;
+        QString comment;
+        Replacement(decltype(nullptr)) : type(None), typeName(), comment() {
+        }
+        Replacement(Type _type = None) : type(_type), typeName(), comment() {
+        }
+        Replacement(const QString& _typeName) : type(Name), typeName(_typeName), comment() {
+        }
+        Replacement(const QString& _typeName, const QString _comment) : type(Name), typeName(_typeName), comment(_comment) {
+        }
+        Replacement(const Replacement&) = default;
+        Replacement& operator =(const Replacement&) = default;
+        operator bool() const { return type!=None; }
+        bool operator !() const { return type==None; }
+    };
+
     QString translateType(const MetaType *java_type, const MetaClass *context, Option option = NoOption);
 
     virtual void generateFake(const MetaClass *java_class) override;
@@ -67,7 +94,7 @@ public:
                               const MetaFunction *java_function,
                               const MetaArgument *java_argument,
                               bool &commaRequired,
-                              const QMap<int,const QString*>* alternativeTypes = nullptr,
+                              const QMap<int,Replacement>* replacedArguments = nullptr,
                               Option options = Option::NoOption);
     void writeFunctional(QTextStream &s, const MetaFunctional *java_functional);
     void writeEnum(QTextStream &s, const MetaEnum *java_enum);
@@ -91,24 +118,24 @@ public:
                                  Option options = NoOption);
     void writeConstructorContents(QTextStream &s, const MetaFunction *java_function);
     void writeFunctionArguments(QTextStream &s, const MetaFunction *java_function,
-                                const QMap<int,const QString*>& replacedArguments = {}, int count = -1, Option options = NoOption);
+                                const QMap<int,Replacement>& replacedArguments = {}, int count = -1, Option options = NoOption);
     void writeJavaCallThroughContents(QTextStream &s, const MetaFunction *java_function, uint attributes = 0);
     void writeOwnershipForContainer(QTextStream &s, const MetaFunction *java_function, TS::Ownership ownership, MetaType *type, const QString &arg_name);
     void writeFunctionCallForOwnership(QTextStream &s, const MetaFunction *java_function, TS::Ownership owner, const QString& variable);
     void writePrivateNativeFunction(QTextStream &s, const MetaFunction *java_function);
     void writeJavaLangObjectOverrideFunctions(QTextStream &s, const MetaClass *cls);
-    void writeReferenceCount(QTextStream &s, const ReferenceCount &refCount, int argumentIndex, const MetaFunction *java_function, const QString &thisName = QLatin1String("this"));
+    void writeReferenceCount(QTextStream &s, const ReferenceCount &refCount, int argumentIndex, const MetaFunction *java_function, const QHash<const MetaArgument*,QString>& availableNativeIDs, const QString &thisName = QLatin1String("this"));
     void retrieveModifications(const MetaFunction *f, const MetaClass *java_class,
-                               uint *exclude_attributes, uint *include_attributes, Option option = NoOption) const;
+                               uint *exclude_attributes, uint *include_attributes, Option option = NoOption);
     QString functionSignature(const MetaFunction *java_function,
                               uint included_attributes,
                               uint excluded_attributes,
                               Option option = NoOption,
-                              const QMap<int,const QString*>& replacedArguments = {},
+                              const QMap<int,Replacement>& replacedArguments = {},
                               int arg_count = -1,
                               const QString& alternativeFunctionName = QString());
     void setupForFunction(const MetaFunction *java_function,
-                          uint *included_attributes, uint *excluded_attributes, Option option) const;
+                          uint *included_attributes, uint *excluded_attributes, Option option);
 
     QString subDirectoryForClass(const MetaClass *java_class) const override;
 
@@ -189,6 +216,7 @@ private:
     QMap<QString,TypeSystemTypeEntry *> m_typeSystemByPackage;
     QNetworkAccessManager m_networkManager;
     bool m_noKotlinDelegates;
+    QHash<QString,QMap<QString,ReferenceCount::Action>> m_referenceCountContainer;
 protected:
     bool m_nullness;
 };

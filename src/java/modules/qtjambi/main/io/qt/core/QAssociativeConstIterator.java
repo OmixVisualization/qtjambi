@@ -75,8 +75,8 @@ public class QAssociativeConstIterator<Key,T> extends AbstractIterator<T> implem
     }
     
     @NativeAccess
-    QAssociativeConstIterator(QtObject owner) { 
-    	super(owner); 
+    QAssociativeConstIterator(QPrivateConstructor c, QtObject owner) { 
+    	super(c, owner);
 	}
     
     /**
@@ -88,6 +88,9 @@ public class QAssociativeConstIterator<Key,T> extends AbstractIterator<T> implem
     }
     @QtUninvokable
     private static native <K> K key(long __this__nativeId);
+    
+    @QtUninvokable
+    static native QMetaType keyType(long __this__nativeId);
 
     /**
      * {@inheritDoc}
@@ -95,10 +98,10 @@ public class QAssociativeConstIterator<Key,T> extends AbstractIterator<T> implem
 	@Override
     @QtUninvokable
     public boolean equals(Object other) {
-        if (other instanceof QAssociativeConstIterator) {
-        	return super.equals(other);
-        }
-        return false;
+		if (other instanceof QAssociativeConstIterator) {
+			return super.equals(other);
+		}
+    	return false;
     }
 	
 
@@ -184,6 +187,14 @@ public class QAssociativeConstIterator<Key,T> extends AbstractIterator<T> implem
     @QtUninvokable
 	public final Optional<Key> key() {
 		return !isValid() ? Optional.empty() : Optional.ofNullable(_key());
+	}
+    
+    /**
+	 * Returns the key type of the iterator.
+	 */
+    @QtUninvokable
+	public final QMetaType keyType() {
+    	return keyType(QtJambi_LibraryUtilities.internal.nativeId(this));
 	}
     
     /**

@@ -122,7 +122,7 @@ public class TestDBusConnect {
 			}
 			if(pongThread!=null) {
 				pongThread.interrupt();
-				pongThread.join();
+				pongThread.join(2000);
 				pongThread.dispose();
 				pongThread = null;
 			}

@@ -30,15 +30,20 @@
 
 package io.qt.internal;
 
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.Function;
 
 import io.qt.NativeAccess;
 import io.qt.QtObjectInterface;
@@ -57,16 +62,24 @@ abstract class ReferenceUtility {
 		QtJambi_LibraryUtilities.initialize();
 	}
 
-    private static native boolean needsReferenceCounting(long object);
-
 	private static class RCList extends ArrayList<Object> {
 		@NativeAccess
 		public RCList() {
 			super();
+			if(LibraryUtility.operatingSystem==LibraryUtility.OperatingSystem.Android) {
+				WeakReference<RCList> _this = new WeakReference<>(this);
+				checkSlot = ()->{
+					RCList ref = _this.get();
+					if(ref!=null)
+						ref.check();
+				};
+			}else {
+				checkSlot = this::check;
+			}
 		}
 
 		private static final long serialVersionUID = -4010060446825990721L;
-		private final QMetaObject.Slot0 checkSlot = this::check;
+		private final QMetaObject.Slot0 checkSlot;
 
 		private synchronized void check() {
 			List<Object> disposedElements = null;
@@ -88,12 +101,16 @@ abstract class ReferenceUtility {
 				}
 			}
 		}
+		
+		boolean needsReferenceCounting(QtObjectInterface i) {
+			return ReferenceUtility.needsReferenceCounting(NativeUtility.nativeId(i));
+		}
 
 		@Override
 		@NativeAccess
 		public boolean add(Object e) {
 			if(e instanceof QtObjectInterface) {
-				if(!needsReferenceCounting(NativeUtility.nativeId((QtObjectInterface)e)))
+				if(!needsReferenceCounting((QtObjectInterface)e))
 					return false;
 				boolean result;
 				synchronized (this) {
@@ -155,72 +172,122 @@ abstract class ReferenceUtility {
 		}
 	}
 	
+	private static class UncheckedRCList extends RCList {
+		private static final long serialVersionUID = -1665613298886703452L;
+		@Override
+		boolean needsReferenceCounting(QtObjectInterface i) {
+			return true;
+		}
+	}
+	
+	private final static class Ref implements Cloneable{
+		static final Function<Object,Ref> FACTORY = Ref::new;
+		Ref(Object obj){}
+		private Ref(Ref ref){this.ref = ref.ref;}
+		public Ref clone() { return new Ref(this); }
+		private int ref = 0;
+		int ref() {
+			return ++ref;
+		}
+		int deref() {
+			return --ref;
+		}
+	}
+	
 	@NativeAccess
-	private static class RCSet extends HashSet<Object> {
+	private static class RCSet implements Collection<Object> {
+		static final Function<Object,RCSet> FACTORY = RCSet::new;
+		RCSet(Object obj){
+			this();
+		}
+		
+		private final Map<Object,Ref> map = new IdentityHashMap<>();
+		
 		@NativeAccess
 		public RCSet() {
 			super();
+			if(LibraryUtility.operatingSystem==LibraryUtility.OperatingSystem.Android) {
+				WeakReference<RCSet> _this = new WeakReference<>(this);
+				checkSlot = ()->{
+					RCSet ref = _this.get();
+					if(ref!=null)
+						ref.check();
+				};
+			}else {
+				checkSlot = this::check;
+			}
 		}
 
-		private static final long serialVersionUID = -4010060446825990721L;
-		private final QMetaObject.Slot0 checkSlot = this::check;
+		private final QMetaObject.Slot0 checkSlot;
 
-		@SuppressWarnings("unused")
 		private synchronized void check() {
 			List<Object> disposedElements = null;
-			for (Object o : this) {
-				if (o instanceof QtObjectInterface && ((QtObjectInterface) o).isDisposed()) {
-					if (disposedElements == null) {
-						disposedElements = Collections.singletonList(o);
-					} else {
-						if (disposedElements.size() == 1) {
-							disposedElements = new ArrayList<>(disposedElements);
+			synchronized(map) {
+				for (Object o : map.keySet()) {
+					if (o instanceof QtObjectInterface && ((QtObjectInterface) o).isDisposed()) {
+						if (disposedElements == null) {
+							disposedElements = Collections.singletonList(o);
+						} else {
+							if (disposedElements.size() == 1) {
+								disposedElements = new ArrayList<>(disposedElements);
+							}
+							disposedElements.add(o);
 						}
-						disposedElements.add(o);
+					}
+				}
+				if (disposedElements != null) {
+					for (Object o : disposedElements) {
+						map.remove(o);
 					}
 				}
 			}
-			if (disposedElements != null) {
-				for (Object o : disposedElements) {
-					super.remove(o);
-				}
-			}
+		}
+
+		boolean needsReferenceCounting(QtObjectInterface i) {
+			return ReferenceUtility.needsReferenceCounting(NativeUtility.nativeId(i));
 		}
 
 		@Override
 		@NativeAccess
 		public boolean add(Object e) {
 			if(e instanceof QtObjectInterface) {
-				if(!needsReferenceCounting(NativeUtility.nativeId((QtObjectInterface)e)))
+				QtObjectInterface i = (QtObjectInterface)e;
+				if(!needsReferenceCounting(i))
 					return false;
-				boolean result;
-				synchronized (this) {
-					result = super.add(e);
+				int ref;
+				synchronized(map) {
+					ref = map.computeIfAbsent(i, Ref.FACTORY).ref();
 				}
-				if (result) {
-					QMetaObject.DisposedSignal disposed = NativeUtility.getSignalOnDispose((QtObjectInterface) e, true);
+				if(ref==1) {
+					QMetaObject.DisposedSignal disposed = NativeUtility.getSignalOnDispose(i, true);
 					if (disposed != null)
 						disposed.connect(checkSlot);
 				}
-				return result;
 			}else {
-				synchronized (this) {
-					return super.add(e);
+				synchronized(map) {
+					map.computeIfAbsent(e, Ref.FACTORY).ref();
 				}
 			}
+			return true;
 		}
-
+		
 		@Override
 		@NativeAccess
 		public boolean remove(Object o) {
-			boolean result;
-			synchronized (this) {
-				result = super.remove(o);
-			}
-			if (result && o instanceof QtObjectInterface) {
-				QMetaObject.DisposedSignal disposed = NativeUtility.getSignalOnDispose((QtObjectInterface) o, true);
-				if (disposed != null)
-					disposed.disconnect(checkSlot);
+			boolean result = false;
+			synchronized(map) {
+				Ref ref = map.get(o);
+				if(ref!=null) {
+					if(ref.deref()==0) {
+						map.remove(o);
+						if (o instanceof QtObjectInterface) {
+							QMetaObject.DisposedSignal disposed = NativeUtility.getSignalOnDispose((QtObjectInterface) o, true);
+							if (disposed != null)
+								disposed.disconnect(checkSlot);
+						}
+					}
+					result = true;
+				}
 			}
 			return result;
 		}
@@ -229,9 +296,9 @@ abstract class ReferenceUtility {
 		@NativeAccess
 		public void clear() {
 			Set<Object> disposedElements;
-			synchronized(this) {
-				disposedElements = new HashSet<>(this);
-				super.clear();
+			synchronized(map) {
+				disposedElements = new IdentityHashMap<>(map).keySet();
+				map.clear();
 			}
 			for (Object o : disposedElements) {
 				if (o instanceof QtObjectInterface) {
@@ -251,18 +318,131 @@ abstract class ReferenceUtility {
 			}
 			return result;
 		}
+
+		@Override
+		public int size() {
+			synchronized(map) {
+				return map.size();
+			}
+		}
+
+		@Override
+		public boolean isEmpty() {
+			return size()==0;
+		}
+
+		@Override
+		public boolean contains(Object o) {
+			synchronized(map) {
+				return map.containsKey(o);
+			}
+		}
+
+		@Override
+		public Iterator<Object> iterator() {
+			synchronized(map) {
+				return new Iterator<Object>() {
+					final Iterator<Entry<Object, Ref>> iter = map.entrySet().iterator();
+					Object current;
+					Ref ref = advance();
+					
+					private Ref advance(){
+						if(iter.hasNext()) {
+							Entry<Object, Ref> entry = iter.next();
+							current = entry.getKey();
+							return entry.getValue().clone();
+						}else {
+							return null;
+						}
+					}
+
+					@Override
+					public boolean hasNext() {
+						return ref!=null;
+					}
+
+					@Override
+					public Object next() {
+						Object next = current;
+						if(ref.deref()==0) {
+							synchronized(map) {
+								ref = advance();
+							}
+						}
+						return next;
+					}
+				};
+			}
+		}
+
+		@Override
+		public Object[] toArray() {
+			return null;
+		}
+
+		@Override
+		public <T> T[] toArray(T[] a) {
+			return null;
+		}
+
+		@Override
+		public boolean containsAll(Collection<?> c) {
+			synchronized(map) {
+				for (Object o : c) {
+					if(!map.containsKey(o))
+						return false;
+				}
+			}
+			return true;
+		}
+
+		@Override
+		public boolean retainAll(Collection<?> c) {
+			return false;
+		}
+
+		@Override
+		public boolean removeAll(Collection<?> c) {
+			boolean result = false;
+			synchronized(map) {
+				for (Object o : c) {
+					Ref ref = map.get(o);
+					if(ref!=null) {
+						if(ref.deref()==0) {
+							map.remove(o);
+							if (o instanceof QtObjectInterface) {
+								QMetaObject.DisposedSignal disposed = NativeUtility.getSignalOnDispose((QtObjectInterface) o, true);
+								if (disposed != null)
+									disposed.disconnect(checkSlot);
+							}
+						}
+						result = true;
+					}
+				}
+			}
+			return result;
+		}
 	}
 	
 	private static class RCMap extends IdentityHashMap<Object, Object> {
 		private static final long serialVersionUID = 3076251074218500284L;
-		private final QMetaObject.Slot0 checkSlot = this::check;
+		private final QMetaObject.Slot0 checkSlot;
 
 		@NativeAccess
 		public RCMap() {
 			super();
+			if(LibraryUtility.operatingSystem==LibraryUtility.OperatingSystem.Android) {
+				WeakReference<RCMap> _this = new WeakReference<>(this);
+				checkSlot = ()->{
+					RCMap ref = _this.get();
+					if(ref!=null)
+						ref.check();
+				};
+			}else {
+				checkSlot = this::check;
+			}
 		}
 		
-		@SuppressWarnings("unused")
 		private synchronized void check() {
 			List<Object> nulledKeys = null;
 			List<Object> disposedKeys = null;
@@ -302,18 +482,22 @@ abstract class ReferenceUtility {
 				}
 			}
 		}
+		
+		boolean needsReferenceCounting(QtObjectInterface i) {
+			return ReferenceUtility.needsReferenceCounting(NativeUtility.nativeId(i));
+		}
 
 		@Override
 		public Object put(Object key, Object value) {
 			if (key instanceof QtObjectInterface || value instanceof QtObjectInterface) {
 				if (key instanceof QtObjectInterface && value instanceof QtObjectInterface) {
-					if(!needsReferenceCounting(NativeUtility.nativeId((QtObjectInterface)key)) && !needsReferenceCounting(NativeUtility.nativeId((QtObjectInterface)value)))
+					if(!needsReferenceCounting((QtObjectInterface)key) && !needsReferenceCounting((QtObjectInterface)value))
 						return false;
 				}else if (key instanceof QtObjectInterface) {
-					if(!needsReferenceCounting(NativeUtility.nativeId((QtObjectInterface)key)))
+					if(!needsReferenceCounting((QtObjectInterface)key))
 						return false;
 				}else {
-					if(!needsReferenceCounting(NativeUtility.nativeId((QtObjectInterface)value)))
+					if(!needsReferenceCounting((QtObjectInterface)value))
 						return false;
 				}
 			}
@@ -399,6 +583,223 @@ abstract class ReferenceUtility {
 				}
 			}
 			return result;
+		}
+	}
+	
+	@NativeAccess
+	private static class RCMultiMap implements Map<Object, Object> {
+		Map<Object, RCSet> map = new IdentityHashMap<>();
+		private final QMetaObject.Slot0 checkSlot;
+
+		@NativeAccess
+		public RCMultiMap() {
+			super();
+			if(LibraryUtility.operatingSystem==LibraryUtility.OperatingSystem.Android) {
+				WeakReference<RCMultiMap> _this = new WeakReference<>(this);
+				checkSlot = ()->{
+					RCMultiMap ref = _this.get();
+					if(ref!=null)
+						ref.check();
+				};
+			}else {
+				checkSlot = this::check;
+			}
+		}
+		
+		private synchronized void check() {
+			synchronized(map) {
+				List<Object> disposedKeys = null;
+				for (Entry<Object, RCSet> entry : map.entrySet()) {
+					if (entry.getKey() instanceof QtObjectInterface
+							&& ((QtObjectInterface) entry.getKey()).isDisposed()) {
+						if (disposedKeys == null) {
+							disposedKeys = Collections.singletonList(entry.getKey());
+						} else {
+							if (disposedKeys.size() == 1) {
+								disposedKeys = new ArrayList<>(disposedKeys);
+							}
+							disposedKeys.add(entry.getKey());
+						}
+					}
+				}
+				if (disposedKeys != null) {
+					for (Object key : disposedKeys) {
+						map.remove(key);
+					}
+				}
+			}
+		}
+		
+		boolean needsReferenceCounting(QtObjectInterface i) {
+			return ReferenceUtility.needsReferenceCounting(NativeUtility.nativeId(i));
+		}
+
+		@Override
+		public Object put(Object key, Object value) {
+			if (key instanceof QtObjectInterface || value instanceof QtObjectInterface) {
+				if (key instanceof QtObjectInterface && value instanceof QtObjectInterface) {
+					if(!needsReferenceCounting((QtObjectInterface)key) && !needsReferenceCounting((QtObjectInterface)value))
+						return false;
+				}else if (key instanceof QtObjectInterface) {
+					if(!needsReferenceCounting((QtObjectInterface)key))
+						return false;
+				}else {
+					if(!needsReferenceCounting((QtObjectInterface)value))
+						return false;
+				}
+			}
+
+			synchronized (map) {
+				map.computeIfAbsent(key, RCSet.FACTORY).add(value);
+			}
+			if (key instanceof QtObjectInterface) {
+				QMetaObject.DisposedSignal disposed = NativeUtility.getSignalOnDispose((QtObjectInterface) key, true);
+				if (disposed != null)
+					disposed.connect(checkSlot);
+			}
+			return null;
+		}
+
+		@Override
+		public Object remove(Object key) {
+			RCSet result;
+			synchronized (map) {
+				result = map.remove(key);
+			}
+			if (key instanceof QtObjectInterface) {
+				QMetaObject.DisposedSignal disposed = NativeUtility.getSignalOnDispose((QtObjectInterface) key, true);
+				if (disposed != null)
+					disposed.disconnect(checkSlot);
+			}
+			return result!=null && !result.isEmpty() ? result.iterator().next() : null;
+		}
+
+		@Override
+		public void clear() {
+			IdentityHashMap<Object, RCSet> _this;
+			synchronized (map) {
+				_this = new IdentityHashMap<>(map);
+				map.clear();
+			}
+			for (Entry<Object, RCSet> entry : _this.entrySet()) {
+				if (entry.getKey() instanceof QtObjectInterface) {
+					QMetaObject.DisposedSignal disposed = NativeUtility.getSignalOnDispose((QtObjectInterface) entry.getKey(), true);
+					if (disposed != null)
+						disposed.disconnect(checkSlot);
+				}
+				if (entry.getValue() instanceof QtObjectInterface) {
+					QMetaObject.DisposedSignal disposed = NativeUtility.getSignalOnDispose((QtObjectInterface) entry.getValue(), true);
+					if (disposed != null)
+						disposed.disconnect(checkSlot);
+				}
+			}
+		}
+
+		@Override
+		public boolean remove(Object key, Object value) {
+			boolean result = false;
+			RCSet set;
+			synchronized (map) {
+				set = map.get(key);
+			}
+			if (set!=null) {
+				result = set.remove(value);
+				if(set.isEmpty()) {
+					if (key instanceof QtObjectInterface) {
+						QMetaObject.DisposedSignal disposed = NativeUtility.getSignalOnDispose((QtObjectInterface) key, true);
+						if (disposed != null)
+							disposed.disconnect(checkSlot);
+					}
+					synchronized (map) {
+						set = map.remove(key);
+					}
+				}
+			}
+			return result;
+		}
+
+		@Override
+		public int size() {
+			synchronized (map) {
+				return map.size();
+			}
+		}
+
+		@Override
+		public boolean isEmpty() {
+			return size()==0;
+		}
+
+		@Override
+		public boolean containsKey(Object key) {
+			synchronized (map) {
+				return map.containsKey(key);
+			}
+		}
+
+		@Override
+		public boolean containsValue(Object value) {
+			synchronized (map) {
+				for (Entry<Object, RCSet> entry : map.entrySet()) {
+					if(entry.getValue().contains(value))
+						return true;
+				}
+			}
+			return false;
+		}
+
+		@Override
+		public Object get(Object key) {
+			RCSet set;
+			synchronized (map) {
+				set = map.get(key);
+			}
+			return set!=null && !set.isEmpty() ? set.iterator().next() : null;
+		}
+
+		@Override
+		public void putAll(Map<? extends Object, ? extends Object> m) {
+			for(Entry<? extends Object, ? extends Object> entry : m.entrySet()) {
+				put(entry.getKey(), entry.getValue());
+			}
+		}
+
+		@Override
+		public Set<Object> keySet() {
+			synchronized (map) {
+				return map.keySet();
+			}
+		}
+
+		@Override
+		public Collection<Object> values() {
+			ArrayList<Object> result = new ArrayList<>();
+			synchronized (map) {
+				for (Entry<Object, RCSet> entry : map.entrySet()) {
+					result.addAll(entry.getValue());
+				}
+			}
+			return result;
+		}
+
+		@Override
+		public Set<Entry<Object, Object>> entrySet() {
+			HashSet<Entry<Object, Object>> result = new HashSet<>();
+			synchronized (map) {
+				for (Entry<Object, RCSet> entry : map.entrySet()) {
+					for(Object value : entry.getValue())
+						result.add(new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), value));
+				}
+			}
+			return result;
+		}
+	}
+	
+	private static class UncheckedRCMap extends RCMap {
+		private static final long serialVersionUID = -1215145480483063080L;
+		@Override
+		boolean needsReferenceCounting(QtObjectInterface i) {
+			return true;
 		}
 	}
 
@@ -746,10 +1147,12 @@ abstract class ReferenceUtility {
 	}
 
 	static Map<Object, Object> newRCMap() {
-		return new RCMap();
+		return new UncheckedRCMap();
 	}
 
 	static List<Object> newRCList() {
-		return new RCList();
+		return new UncheckedRCList();
 	}
+	
+	static native boolean needsReferenceCounting(long native__id);
 }

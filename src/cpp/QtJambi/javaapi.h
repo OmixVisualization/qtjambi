@@ -60,6 +60,7 @@ QTJAMBI_EXPORT jstring convertString(JNIEnv *env, QAnyStringView s);
     private: jmethodID __constructor;\
     public: static inline jthrowable newInstance(JNIEnv* env,...){\
         auto _this = __qt_get_this(env);\
+        if(!_this.class_ref) return nullptr;\
         va_list args;\
         jobject result;\
         va_start(args, env);\
@@ -153,16 +154,19 @@ namespace Runtime
                   QTJAMBI_REPOSITORY_DECLARE_CLASS_BOOLEAN_METHOD(isInterface)
                  public: static inline jstring tryGetName(JNIEnv* env,jclass object){
                      auto _this = __qt_get_this(env);
+                     if(!_this.class_ref) return nullptr;
                      jobject result = env->CallObjectMethod(object,_this.__getName);
                      return jstring(result);
                  }
                  public: static inline jobject tryGetDeclaredMethod(JNIEnv* env,jclass object,jstring name,jobjectArray parameters){
                      auto _this = __qt_get_this(env);
+                     if(!_this.class_ref) return nullptr;
                      jobject result = env->CallObjectMethod(object,_this.__getDeclaredMethod, name, parameters);
                      return jstring(result);
                  }
                  public: static inline jobject tryGetDeclaredField(JNIEnv* env,jclass object,jstring name){
                      auto _this = __qt_get_this(env);
+                     if(!_this.class_ref) return nullptr;
                      jobject result = env->CallObjectMethod(object,_this.__getDeclaredField, name);
                      return jstring(result);
                  }
@@ -476,6 +480,9 @@ namespace Runtime
         QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(iterator)
         QTJAMBI_REPOSITORY_DECLARE_OBJECTARRAY_METHOD(toArray)
         QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(clear)
+    )
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(Iterable,
+        QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(iterator)
     )
 
     QTJAMBI_REPOSITORY_DECLARE_CLASS(Iterator,

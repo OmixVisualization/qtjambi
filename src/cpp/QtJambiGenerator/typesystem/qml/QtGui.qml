@@ -2006,7 +2006,7 @@ TypeSystem{
                                   "                                    pointer = nullptr;\n"+
                                   "                                },\n"+
                                   "                                [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                    return DataJBuffer(env, ptr, INT_MAX).take();\n"+
+                                  "                                    return LocalDataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                }\n"+
                                   "                            );\n"+
                                   "if(%out.size()==0){\n"+
@@ -2094,7 +2094,7 @@ TypeSystem{
                                   "                                    pointer = nullptr;\n"+
                                   "                                },\n"+
                                   "                                [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                    return DataJBuffer(env, ptr, INT_MAX).take();\n"+
+                                  "                                    return LocalDataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                }\n"+
                                   "                            );\n"+
                                   "if(%out.size()==0){\n"+
@@ -2135,7 +2135,7 @@ TypeSystem{
                                   "                                              pointer = bufferData->data<void>();\n"+
                                   "                                          },\n"+
                                   "                                          [](JNIEnv * env, const void* const& ptr) -> jobject {\n"+
-                                  "                                              return DataJBuffer(env, ptr, INT_MAX).take();\n"+
+                                  "                                              return LocalDataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                          }\n"+
                                   "                                      );\n"+
                                   "if(%out.size()==0){\n"+
@@ -2176,7 +2176,7 @@ TypeSystem{
                                   "                                              pointer = bufferData->data<void>();\n"+
                                   "                                          },\n"+
                                   "                                          [](JNIEnv * env, const void* const& ptr) -> jobject {\n"+
-                                  "                                              return DataJBuffer(env, ptr, INT_MAX).take();\n"+
+                                  "                                              return LocalDataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                          }\n"+
                                   "                                      );"}
                 }
@@ -2254,7 +2254,7 @@ TypeSystem{
                                   "                                    pointer = nullptr;\n"+
                                   "                                },\n"+
                                   "                                [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                    return DataJBuffer(env, ptr, INT_MAX).take();\n"+
+                                  "                                    return LocalDataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                }\n"+
                                   "                            );\n"+
                                   "if(%out.size()==0){\n"+
@@ -2281,7 +2281,7 @@ TypeSystem{
                                   "                                    pointer = nullptr;\n"+
                                   "                                },\n"+
                                   "                                [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                    return DataJBuffer(env, ptr, INT_MAX).take();\n"+
+                                  "                                    return LocalDataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                }\n"+
                                   "                            );\n"+
                                   "if(%out.size()==0){\n"+
@@ -2320,7 +2320,7 @@ TypeSystem{
                                   "                                    pointer = nullptr;\n"+
                                   "                                },\n"+
                                   "                                [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                    return DataJBuffer(env, ptr, INT_MAX).take();\n"+
+                                  "                                    return LocalDataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                }\n"+
                                   "                            );"}
                 }
@@ -2344,7 +2344,7 @@ TypeSystem{
                                   "                                    pointer = nullptr;\n"+
                                   "                                },\n"+
                                   "                                [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                    return DataJBuffer(env, ptr, INT_MAX).take();\n"+
+                                  "                                    return LocalDataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                }\n"+
                                   "                            );\n"+
                                   "if(%out.size()==0){\n"+
@@ -2383,7 +2383,7 @@ TypeSystem{
                                   "                                    pointer = nullptr;\n"+
                                   "                                },\n"+
                                   "                                [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                    return DataJBuffer(env, ptr, INT_MAX).take();\n"+
+                                  "                                    return LocalDataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                }\n"+
                                   "                            );"}
                 }
@@ -2638,7 +2638,7 @@ TypeSystem{
                                   "                                    pointer = bufferData->data<void>();\n"+
                                   "                                },\n"+
                                   "                                [](JNIEnv * env, const void* const& ptr) -> jobject {\n"+
-                                  "                                    return DataJBuffer(env, ptr, INT_MAX).take();\n"+
+                                  "                                    return LocalDataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                }\n"+
                                   "                            );"}
                 }
@@ -2683,7 +2683,7 @@ TypeSystem{
                                   "                                    pointer = bufferData->data<void>();\n"+
                                   "                                },\n"+
                                   "                                [](JNIEnv * env, const void* const& ptr) -> jobject {\n"+
-                                  "                                    return DataJBuffer(env, ptr, INT_MAX).take();\n"+
+                                  "                                    return LocalDataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                }\n"+
                                   "                            );"}
                 }
@@ -2827,6 +2827,13 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "glDebugMessageCallback(GLDEBUGPROC, const void *)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    action: ReferenceCount.Set
+                    variableName: "__rcDebugMessageCallback"
+                }
+            }
             ModifyArgument{
                 index: 2
                 RemoveArgument{
@@ -3091,7 +3098,7 @@ TypeSystem{
                                   "                                    pointer = nullptr;\n"+
                                   "                                },\n"+
                                   "                                [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                    return DataJBuffer(env, ptr, INT_MAX).take();\n"+
+                                  "                                    return LocalDataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                }\n"+
                                   "                            );"}
                 }
@@ -3698,6 +3705,46 @@ TypeSystem{
         ModifyFunction{
             signature: "cleanup()"
             remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "installUpdateHandler(QAccessible::UpdateHandler)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcUpdateHandler"
+                    action: ReferenceCount.Set
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "installRootObjectHandler(QAccessible::RootObjectHandler)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcRootObjectHandler"
+                    action: ReferenceCount.Set
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "installFactory(QAccessible::InterfaceFactory)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcInterfaceFactories"
+                    action: ReferenceCount.Add
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "removeFactory(QAccessible::InterfaceFactory)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcInterfaceFactories"
+                    action: ReferenceCount.Take
+                }
+            }
         }
         ModifyFunction{
             signature: "registerAccessibleInterface(QAccessibleInterface *)"
@@ -9031,6 +9078,11 @@ default:
             remove: RemoveFlag.All
         }
         ModifyFunction{
+            signature: "getDecodedMetricF(QPaintDevice::PaintDeviceMetric, QPaintDevice::PaintDeviceMetric)const"
+            remove: RemoveFlag.All
+            since: 6.8
+        }
+        ModifyFunction{
             signature: "initPainter(QPainter*)const"
             ModifyArgument{
                 index: 1
@@ -10263,6 +10315,10 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
                     varargs: true
                 }
             }
+            Remove{
+                // removed in favor of QSpan
+                since: 6.8
+            }
         }
     }
     
@@ -10276,6 +10332,11 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
             name: "ColorModel"
             since: 6.8
         }
+    }
+
+    ObjectType{
+        name: "QPdfOutputIntent"
+        since: 6.8
     }
     
     ValueType{
@@ -11592,6 +11653,7 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
     
     ObjectType{
         name: "QTextDocument"
+        isValueOwner: true
 
         InjectCode{
             position: Position.Comment
@@ -11626,7 +11688,6 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
             name: "MarkdownFeature"
             since: [5, 14]
         }
-        isValueOwner: true
         ExtraIncludes{
             Include{
                 fileName: "QTextBlock"
@@ -13465,6 +13526,7 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
                     variableName: "__rcStacks"
                     action: ReferenceCount.Add
                 }
+                NoNullPointer{}
             }
         }
         ModifyFunction{
@@ -13475,6 +13537,7 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
                     variableName: "__rcStacks"
                     action: ReferenceCount.Take
                 }
+                NoNullPointer{}
             }
         }
         ModifyFunction{
@@ -14571,7 +14634,7 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
                                   "                                    pointer = nullptr;\n"+
                                   "                                },\n"+
                                   "                                [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                    return DataJBuffer(env, ptr, INT_MAX).take();\n"+
+                                  "                                    return LocalDataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                }\n"+
                                   "                            );"}
                 }
@@ -14772,6 +14835,13 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
         ModifyFunction{
             signature: "glDebugMessageCallback(GLDEBUGPROC, const void *)"
             ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    action: ReferenceCount.Set
+                    variableName: "__rcDebugMessageCallback"
+                }
+            }
+            ModifyArgument{
                 index: 2
                 RemoveArgument{
                 }
@@ -14797,7 +14867,7 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
                                   "                                    pointer = nullptr;\n"+
                                   "                                },\n"+
                                   "                                [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                    return DataJBuffer(env, ptr, INT_MAX).take();\n"+
+                                  "                                    return LocalDataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                }\n"+
                                   "                            );\n"+
                                   "if(%out.size()==0){\n"+
@@ -14820,7 +14890,7 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
                                   "                                    pointer = nullptr;\n"+
                                   "                                },\n"+
                                   "                                [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                    return DataJBuffer(env, ptr, INT_MAX).take();\n"+
+                                  "                                    return LocalDataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                }\n"+
                                   "                            );"}
                 }
@@ -15392,7 +15462,7 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
                                   "                                    pointer = nullptr;\n"+
                                   "                                },\n"+
                                   "                                [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                    return DataJBuffer(env, ptr, INT_MAX).take();\n"+
+                                  "                                    return LocalDataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                }\n"+
                                   "                            );"}
                 }
@@ -16987,7 +17057,7 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
                                   "                                    pointer = nullptr;\n"+
                                   "                                },\n"+
                                   "                                [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                    return DataJBuffer(env, ptr, INT_MAX).take();\n"+
+                                  "                                    return LocalDataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                }\n"+
                                   "                            );"}
                 }
@@ -18703,11 +18773,6 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
     
     Rejection{
         className: ""
-        functionName: "qGray"
-    }
-    
-    Rejection{
-        className: ""
         functionName: "qGreen"
     }
     
@@ -18747,17 +18812,17 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
     }
     
     GlobalFunction{
-        signature: "qFuzzyCompare(QQuaternion, QQuaternion)"
-        targetType: "QQuaternion"
-    }
-    
-    GlobalFunction{
-        signature: "qFuzzyCompare(QTransform, QTransform)"
-        targetType: "QTransform"
-    }
-    
-    GlobalFunction{
         signature: "qIsGray(QRgb)"
+        targetType: "QColor"
+    }
+
+    GlobalFunction{
+        signature: "qGray(QRgb)"
+        targetType: "QColor"
+    }
+
+    GlobalFunction{
+        signature: "qGray(int,int,int)"
         targetType: "QColor"
     }
     
@@ -18804,32 +18869,6 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
     GlobalFunction{
         signature: "qPixelFormatYuv(QPixelFormat::YUVLayout, uchar, QPixelFormat::AlphaUsage, QPixelFormat::AlphaPosition, QPixelFormat::AlphaPremultiplied, QPixelFormat::TypeInterpretation, QPixelFormat::ByteOrder)"
         targetType: "QPixelFormat"
-    }
-    
-    GlobalFunction{
-        signature: "qFuzzyCompare(const QMatrix&, const QMatrix&)"
-        remove: RemoveFlag.All
-        until: [5, 15]
-    }
-    
-    GlobalFunction{
-        signature: "qFuzzyCompare(const QMatrix4x4&, const QMatrix4x4&)"
-        targetType: "QMatrix4x4"
-    }
-    
-    GlobalFunction{
-        signature: "qFuzzyCompare(const QVector2D&, const QVector2D&)"
-        targetType: "QVector2D"
-    }
-    
-    GlobalFunction{
-        signature: "qFuzzyCompare(const QVector3D&, const QVector3D&)"
-        targetType: "QVector3D"
-    }
-    
-    GlobalFunction{
-        signature: "qFuzzyCompare(const QVector4D&, const QVector4D&)"
-        targetType: "QVector4D"
     }
 
     GlobalFunction{

@@ -289,7 +289,7 @@ class CloneableMetaValue implements Cloneable{
 			int length = arguments.property("length").toInt();
 			if(length==3) {
 				value.i = arguments.property(0).toInt();
-				value.d = arguments.property(1).toDouble();
+				value.d = arguments.property(1).toNumber();
 				value.s = arguments.property(2).toString();
 			}
 		}

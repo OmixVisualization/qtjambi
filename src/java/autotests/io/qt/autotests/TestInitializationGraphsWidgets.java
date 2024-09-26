@@ -32,7 +32,8 @@ package io.qt.autotests;
 import org.junit.Assert;
 import org.junit.Test;
 
-import io.qt.graphs.widgets.Q3DSurfaceWidget;
+import io.qt.graphs.widgets.Q3DSurfaceWidgetItem;
+import io.qt.quick.widgets.QQuickWidget;
 import io.qt.widgets.QApplication;
 
 public class TestInitializationGraphsWidgets extends UnitTestInitializer {
@@ -40,7 +41,9 @@ public class TestInitializationGraphsWidgets extends UnitTestInitializer {
     public void initialize() {
     	Assert.assertTrue(io.qt.QtUtilities.initializePackage("io.qt.graphs.widgets"));
     	QApplication.initialize(new String[0]);
-    	Q3DSurfaceWidget window = new Q3DSurfaceWidget();
+    	QQuickWidget window = new QQuickWidget();
+    	Q3DSurfaceWidgetItem item = new Q3DSurfaceWidgetItem();
+    	item.setWidget(window);
     	window.show();
     	QApplication.processEvents();
     	window.hide();

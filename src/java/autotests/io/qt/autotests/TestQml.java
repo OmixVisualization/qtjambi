@@ -58,6 +58,7 @@ import io.qt.QtPropertyWriter;
 import io.qt.QtUtilities;
 import io.qt.autotests.generated.TestInterface;
 import io.qt.core.QByteArray;
+import io.qt.core.QCoreApplication;
 import io.qt.core.QEvent;
 import io.qt.core.QLibraryInfo;
 import io.qt.core.QList;
@@ -1344,4 +1345,42 @@ public class TestQml extends ApplicationInitializer{
 		@SuppressWarnings("unused")
 		QObject object = engine.rootObjects().first();
 	}
+    
+    @Test
+    public void testSetContextProperty() throws InterruptedException {
+    	QQmlEngine engine = new QQmlEngine();
+    	AtomicBoolean deleted2 = new AtomicBoolean();
+    	engine.rootContext().setContextProperty("context", new QObject() {
+    		{
+    			destroyed.connect(()->deleted2.set(true));
+    		}
+    	});
+    	for (int i = 0; i < 20; i++) {
+			ApplicationInitializer.runGC();
+			QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+			QCoreApplication.processEvents();
+			Thread.yield();
+			Thread.sleep(100);
+		}
+    	Assert.assertFalse("ContextProperty deleted", deleted2.get());
+    }
+    
+    @Test
+    public void testSetContextObject() throws InterruptedException {
+    	QQmlEngine engine = new QQmlEngine();
+    	AtomicBoolean deleted1 = new AtomicBoolean();
+    	engine.rootContext().setContextObject(new QObject() {
+    		{
+    			destroyed.connect(()->deleted1.set(true));
+    		}
+    	});
+    	for (int i = 0; i < 20; i++) {
+			ApplicationInitializer.runGC();
+			QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+			QCoreApplication.processEvents();
+			Thread.yield();
+			Thread.sleep(100);
+		}
+    	Assert.assertFalse("ContextObject deleted", deleted1.get());
+    }
 }

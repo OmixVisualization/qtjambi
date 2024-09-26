@@ -232,7 +232,7 @@ TypeSystem{
         }
         since: [6, 6]
     }
-    
+
     SuppressedWarning{text: "WARNING(CppImplGenerator) :: Value type 'QPdfDestination' is missing a default constructor.*"}
     SuppressedWarning{text: "WARNING(CppImplGenerator) :: Value type 'QPdfSelection' is missing a default constructor.*"}
 }

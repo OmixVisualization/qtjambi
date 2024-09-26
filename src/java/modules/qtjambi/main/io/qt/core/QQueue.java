@@ -29,11 +29,23 @@
 ****************************************************************************/
 package io.qt.core;
 
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.DoubleBuffer;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
+import java.nio.LongBuffer;
+import java.nio.ShortBuffer;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Queue;
 
 import io.qt.NativeAccess;
+import io.qt.NonNull;
+import io.qt.Nullable;
+import io.qt.QtPrimitiveType;
 import io.qt.QtUninvokable;
+import io.qt.StrictNonNull;
 
 /**
  * <p>Java wrapper for Qt class <code><a href="https://doc.qt.io/qt/qqueue.html">QQueue</a></code></p>
@@ -45,7 +57,7 @@ public class QQueue<T> extends QList<T> implements Queue<T>
      * <p>See <code><a href="https://doc.qt.io/qt/qqueue.html">QQueue::<wbr>QQueue()</a></code></p>
      * @param metaType the type T
      */
-	public QQueue(QMetaType metaType) {
+	public QQueue(@StrictNonNull QMetaType metaType) {
 		super(metaType);
 	}
 	
@@ -54,7 +66,7 @@ public class QQueue<T> extends QList<T> implements Queue<T>
      * <p>See <code><a href="https://doc.qt.io/qt/qqueue.html">QQueue::<wbr>QQueue()</a></code></p>
      * @param metaType the type T
      */
-	public QQueue(QMetaType.Type metaType) {
+	public QQueue(QMetaType.@StrictNonNull Type metaType) {
 		this(new QMetaType(metaType));
 	}
 
@@ -63,7 +75,7 @@ public class QQueue<T> extends QList<T> implements Queue<T>
      * <p>See <code><a href="https://doc.qt.io/qt/qqueue.html">QQueue::<wbr>QQueue(const QQueue&lt;T> &amp;)</a></code></p>
      * @param other container
      */
-	public QQueue(Collection<T> other) {
+	public QQueue(@StrictNonNull Collection<T> other) {
 		super(other);
 	}
 
@@ -72,9 +84,14 @@ public class QQueue<T> extends QList<T> implements Queue<T>
      * <p>See <code><a href="https://doc.qt.io/qt/qqueue.html">QQueue::<wbr>QQueue()</a></code></p>
      * @param elementType the type T
      */
-	public QQueue(Class<T> elementType) {
+	public QQueue(@Nullable Class<T> elementType) {
 		super(elementType);
 	}
+	
+	@NativeAccess
+    private QQueue(QMetaType elementMetaType, Collection<T> other) {
+        super(elementMetaType, other);
+    }
 
     /**
      * Constructor for internal use only.
@@ -89,7 +106,7 @@ public class QQueue<T> extends QList<T> implements Queue<T>
     /**
      * Creating a container of type QVariant.
      */
-	public static QQueue<Object> createVariantQueue(){
+	public static @NonNull QQueue<Object> createVariantQueue(){
     	return new QQueue<>(new QMetaType(QMetaType.Type.QVariant));
     }
 	
@@ -98,7 +115,7 @@ public class QQueue<T> extends QList<T> implements Queue<T>
      * <p>See <code><a href="https://doc.qt.io/qt/qqueue.html">QQueue::<wbr>QQueue(const QQueue&lt;T> &amp;)</a></code></p>
      */
 	@Override
-	public QQueue<T> clone(){
+	public @NonNull QQueue<T> clone(){
 		return new QQueue<>(this);
 	}
     
@@ -180,17 +197,195 @@ public class QQueue<T> extends QList<T> implements Queue<T>
      *
      */
     @SafeVarargs
-    public static <T> QQueue<T> of(T element0, T...elements) {
+    public static <T> @NonNull QQueue<T> of(T element0, T...elements) {
 		QMetaType metaType = findElementMetaType(element0, elements);
-		if(metaType==null || metaType.id()==0)
+		@SuppressWarnings("unchecked")
+		T[] allElements = (T[])new Object[elements.length+1];
+		System.arraycopy(elements, 0, allElements, 1, elements.length);
+		allElements[0] = element0;
+		return ofTyped(metaType, allElements);
+	}
+    
+    /**
+     * Returns a QQueue containing given elements.
+     *
+     * @param elements
+     * @return a {@code QQueue} containing the specified element
+     */
+    public static @NonNull QQueue<@QtPrimitiveType@NonNull Byte> ofByte(byte @StrictNonNull...elements) {
+		return new QQueue<>(QList.ofByte(elements));
+	}
+    
+    /**
+     * Returns a QQueue containing given elements.
+     *
+     * @param elements
+     * @return a {@code QQueue} containing the specified element
+     */
+    public static @NonNull QQueue<@QtPrimitiveType@NonNull Short> ofShort(short @StrictNonNull...elements) {
+		return new QQueue<>(QList.ofShort(elements));
+	}
+    
+    /**
+     * Returns a QQueue containing given elements.
+     *
+     * @param elements
+     * @return a {@code QQueue} containing the specified element
+     */
+    public static @NonNull QQueue<@QtPrimitiveType@NonNull Integer> ofInt(int @StrictNonNull...elements) {
+		return new QQueue<>(QList.ofInt(elements));
+	}
+    
+    /**
+     * Returns a QQueue containing given elements.
+     *
+     * @param elements
+     * @return a {@code QQueue} containing the specified element
+     */
+    public static @NonNull QQueue<@QtPrimitiveType@NonNull Long> ofLong(long @StrictNonNull...elements) {
+		return new QQueue<>(QList.ofLong(elements));
+	}
+    
+    /**
+     * Returns a QQueue containing given elements.
+     *
+     * @param elements
+     * @return a {@code QQueue} containing the specified element
+     */
+    public static @NonNull QQueue<@QtPrimitiveType@NonNull Character> ofChar(char @StrictNonNull...elements) {
+		return new QQueue<>(QList.ofChar(elements));
+	}
+    
+    /**
+     * Returns a QQueue containing given elements.
+     *
+     * @param elements
+     * @return a {@code QQueue} containing the specified element
+     */
+    public static @NonNull QQueue<@QtPrimitiveType@NonNull Float> ofFloat(float @StrictNonNull...elements) {
+		return new QQueue<>(QList.ofFloat(elements));
+	}
+    
+    /**
+     * Returns a QQueue containing given elements.
+     *
+     * @param elements
+     * @return a {@code QQueue} containing the specified element
+     */
+    public static @NonNull QQueue<@QtPrimitiveType@NonNull Double> ofDouble(double @StrictNonNull...elements) {
+		return new QQueue<>(QList.ofDouble(elements));
+	}
+    
+    /**
+     * Returns a QQueue containing given elements.
+     *
+     * @param elements
+     * @return a {@code QQueue} containing the specified element
+     */
+    public static @NonNull QQueue<@QtPrimitiveType@NonNull Boolean> ofBoolean(boolean @StrictNonNull...elements) {
+		return new QQueue<>(QList.ofBoolean(elements));
+	}
+    
+    /**
+     * Returns a QQueue containing given elements.
+     *
+     * @param elements
+     * @return a {@code QQueue} containing the specified element
+     */
+    public static @NonNull QQueue<@QtPrimitiveType@NonNull Byte> ofBuffer(@StrictNonNull ByteBuffer elements) {
+		return new QQueue<>(QList.ofBuffer(elements));
+	}
+    
+    /**
+     * Returns a QQueue containing given elements.
+     *
+     * @param elements
+     * @return a {@code QQueue} containing the specified element
+     */
+    public static @NonNull QQueue<@QtPrimitiveType@NonNull Short> ofBuffer(@StrictNonNull ShortBuffer elements) {
+		return new QQueue<>(QList.ofBuffer(elements));
+	}
+    
+    /**
+     * Returns a QQueue containing given elements.
+     *
+     * @param elements
+     * @return a {@code QQueue} containing the specified element
+     */
+    public static @NonNull QQueue<@QtPrimitiveType@NonNull Integer> ofBuffer(@StrictNonNull IntBuffer elements) {
+		return new QQueue<>(QList.ofBuffer(elements));
+	}
+    
+    /**
+     * Returns a QQueue containing given elements.
+     *
+     * @param elements
+     * @return a {@code QQueue} containing the specified element
+     */
+    public static @NonNull QQueue<@QtPrimitiveType@NonNull Long> ofBuffer(@StrictNonNull LongBuffer elements) {
+		return new QQueue<>(QList.ofBuffer(elements));
+	}
+    
+    /**
+     * Returns a QQueue containing given elements.
+     *
+     * @param elements
+     * @return a {@code QQueue} containing the specified element
+     */
+    public static @NonNull QQueue<@QtPrimitiveType@NonNull Character> ofBuffer(@StrictNonNull CharBuffer elements) {
+		return new QQueue<>(QList.ofBuffer(elements));
+	}
+    
+    /**
+     * Returns a QQueue containing given elements.
+     *
+     * @param elements
+     * @return a {@code QQueue} containing the specified element
+     */
+    public static @NonNull QQueue<@QtPrimitiveType@NonNull Float> ofBuffer(@StrictNonNull FloatBuffer elements) {
+		return new QQueue<>(QList.ofBuffer(elements));
+	}
+    
+    /**
+     * Returns a QQueue containing given elements.
+     *
+     * @param elements
+     * @return a {@code QQueue} containing the specified element
+     */
+    public static @NonNull QQueue<@QtPrimitiveType@NonNull Double> ofBuffer(@StrictNonNull DoubleBuffer elements) {
+		return new QQueue<>(QList.ofBuffer(elements));
+	}
+    
+    /**
+     * Returns a QQueue containing given elements.
+     *
+     * @param <T> the {@code QQueue}'s element type
+     * @param type the {@code QQueue}'s element type
+     * @param elements all list elements to be added
+     * @return a {@code QQueue} containing the specified element
+     *
+     */
+	@SafeVarargs
+    public static <T> @NonNull QQueue<T> ofTyped(@Nullable Class<? super T> type, T @StrictNonNull...elements) {
+		QMetaType metaType = findElementMetaType(type, elements);
+		return ofTyped(metaType, elements);
+	}
+    
+    /**
+     * Returns a QQueue containing given elements.
+     *
+     * @param <T> the {@code QQueue}'s element type
+     * @param metaType the {@code QQueue}'s element type
+     * @param elements all list elements to be added
+     * @return a {@code QQueue} containing the specified element
+     *
+     */
+	@SafeVarargs
+    public static <T> @NonNull QQueue<T> ofTyped(@StrictNonNull QMetaType metaType, T @StrictNonNull...elements) {
+		if(metaType.id()==0)
 			throw new IllegalArgumentException("QMetaType::UnknownType cannot be type of QQueue.");
 		if(metaType.id()==QMetaType.Type.Void.value())
 			throw new IllegalArgumentException("void cannot be type of QQueue.");
-		QQueue<T> result = new QQueue<>(metaType);
-		result.add(element0);
-		for (T t : elements) {
-			result.add(t);
-		}
-		return result;
+		return new QQueue<>(metaType, Arrays.asList(elements));
 	}
 }

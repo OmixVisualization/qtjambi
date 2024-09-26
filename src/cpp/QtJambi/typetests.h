@@ -58,6 +58,9 @@ struct is_copy_assignable : std::is_copy_assignable<T>{};
 template<class T>
 struct is_move_assignable : std::is_move_assignable<T>{};
 
+template<class T>
+struct is_destructible : std::is_destructible<T>{};
+
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 template<class T1, class T2>
 struct is_default_constructible<QPair<T1,T2>> : std::conditional<std::is_default_constructible<T1>::value && std::is_default_constructible<T2>::value, std::true_type, std::false_type>::type{};
@@ -69,6 +72,8 @@ template<class T1, class T2>
 struct is_copy_assignable<QPair<T1,T2>> : std::conditional<std::is_copy_assignable<T1>::value && std::is_copy_assignable<T2>::value, std::true_type, std::false_type>::type{};
 template<class T1, class T2>
 struct is_move_assignable<QPair<T1,T2>> : std::conditional<std::is_move_assignable<T1>::value && std::is_move_assignable<T2>::value, std::true_type, std::false_type>::type{};
+template<class T1, class T2>
+struct is_destructible<QPair<T1,T2>> : std::conditional<std::is_destructible<T1>::value && std::is_destructible<T2>::value, std::true_type, std::false_type>::type{};
 #endif
 template<class T1, class T2>
 struct is_default_constructible<std::pair<T1,T2>> : std::conditional<std::is_default_constructible<T1>::value && std::is_default_constructible<T2>::value, std::true_type, std::false_type>::type{};
@@ -80,6 +85,8 @@ template<class T1, class T2>
 struct is_copy_assignable<std::pair<T1,T2>> : std::conditional<std::is_copy_assignable<T1>::value && std::is_copy_assignable<T2>::value, std::true_type, std::false_type>::type{};
 template<class T1, class T2>
 struct is_move_assignable<std::pair<T1,T2>> : std::conditional<std::is_move_assignable<T1>::value && std::is_move_assignable<T2>::value, std::true_type, std::false_type>::type{};
+template<class T1, class T2>
+struct is_destructible<std::pair<T1,T2>> : std::conditional<std::is_destructible<T1>::value && std::is_destructible<T2>::value, std::true_type, std::false_type>::type{};
 
 template<class T, class = decltype(qobject_interface_iid<T*>())>
 std::true_type  supports_IID_test(const T&);
@@ -244,27 +251,6 @@ template<typename T, typename Alloc> struct supports_stream_operators<std::list<
 template<class T1, class T2, typename Compare, typename Alloc> struct supports_stream_operators<std::map<T1,T2,Compare,Alloc>> : supports_stream_operators_conditional<std::map<int,int,Compare,Alloc>,supports_stream_operators<T1>::value && supports_stream_operators<T2>::value>{};
 template<class T1, class T2, typename Compare, typename Alloc> struct supports_stream_operators<std::multimap<T1,T2,Compare,Alloc>> : supports_stream_operators_conditional<std::multimap<int,int,Compare,Alloc>,supports_stream_operators<T1>::value && supports_stream_operators<T2>::value>{};
 template<> struct supports_stream_operators<void> : std::false_type{};
-
-template<class T, class = decltype(T())>
-std::true_type  supports_StandardConstructor_test(T&&);
-std::false_type supports_StandardConstructor_test(...);
-
-template<class T> struct supports_StandardConstructor : decltype(supports_StandardConstructor_test(std::declval<T>())){};
-template<> struct supports_StandardConstructor<void> : std::false_type{};
-
-template<class T, class = decltype(T(std::declval<T>()))>
-std::true_type  supports_CopyConstructor_test(T&&);
-std::false_type supports_CopyConstructor_test(...);
-
-template<class T> struct supports_CopyConstructor : decltype(supports_CopyConstructor_test(std::declval<T>())){};
-template<> struct supports_CopyConstructor<void> : std::false_type{};
-
-template<class T, class = decltype(~T())>
-std::true_type  supports_Destructor_test(T&&);
-std::false_type supports_Destructor_test(...);
-
-template<class T> struct supports_Destructor : decltype(supports_Destructor_test(std::declval<T>())){};
-template<> struct supports_Destructor<void> : std::false_type{};
 
 template<class T, class = decltype( ++std::declval<T>() )>
 std::true_type  supports_increment_test(const T&);
@@ -929,6 +915,25 @@ struct pointer_from<RET(*)(ARGS...),true>{
     }
 };
 #endif
+
+template<typename T>
+struct result_of{
+};
+
+template<typename RET, typename... ARGS>
+struct result_of<RET(*)(ARGS...)>{
+    typedef RET type;
+};
+
+template<typename RET, typename... ARGS>
+struct result_of<RET(&)(ARGS...)>{
+    typedef RET type;
+};
+
+template<typename RET, typename... ARGS>
+struct result_of<RET(*const)(ARGS...)>{
+    typedef RET type;
+};
 
 }
 

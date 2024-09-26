@@ -29,125 +29,110 @@
 
 #include <QtCore/QReadWriteLock>
 #include "qtjambiapi.h"
-#include "jobjectwrapper.h"
 #include "java_p.h"
 #include "qtjambilink_p.h"
 
 #include "qtjambi_cast.h"
 
-Q_GLOBAL_STATIC(QReadWriteLock, gMessageHandlerLock)
+Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, gMessageHandlerLock, (QReadWriteLock::Recursive))
 Q_GLOBAL_STATIC(QSet<QtMsgType>, gEnabledMessages)
-Q_GLOBAL_STATIC(jobject, gMessageHandler)
 static bool messageHandlerInstalled = false;
 
 void qtjambi_messagehandler_proxy(QtMsgType type, const QMessageLogContext & context, const QString & message)
 {
-    if(!gMessageHandlerLock.isDestroyed()){
-        QReadLocker locker(gMessageHandlerLock());
-        if(gEnabledMessages->contains(type)){
-            if(JniEnvironment env{500}){
-                QtJambiExceptionInhibitor __exnHandler;
-                try{
-                    jobject msgType = qtjambi_cast<jobject>(env, type);
-                    jobject _context = qtjambi_cast<jobject>(env, &context);
-                    jobject msg = qtjambi_cast<jstring>(env, message);
-                    Java::QtCore::QtMessageHandler::accept(env, *gMessageHandler, msgType, _context, msg);
-                    InvalidateAfterUse::invalidate(env, _context);
-                }catch(const JavaException& exn){
-                    __exnHandler.handle(env, exn, nullptr);
-                }
+    if(!gEnabledMessages.isDestroyed()){
+        {
+            QReadLocker locker(gMessageHandlerLock());
+            if(!gEnabledMessages->contains(type))
+                return;
+        }
+        if(JniEnvironment env{500}){
+            QtJambiExceptionInhibitor __exnHandler;
+            try{
+                jobject msgType = qtjambi_cast<jobject>(env, type);
+                jobject _context = qtjambi_cast<jobject>(env, &context);
+                jobject msg = qtjambi_cast<jstring>(env, message);
+                Java::QtCore::QLogging::acceptInstalled(env, msgType, _context, msg);
+                InvalidateAfterUse::invalidate(env, _context);
+            }catch(const JavaException& exn){
+                __exnHandler.handle(env, exn, nullptr);
             }
         }
-    }else{
-        switch(type){
-        case QtMsgType::QtCriticalMsg:
-            printf("CRITICAL: %s\n", qPrintable(message));
-            break;
-        case QtMsgType::QtDebugMsg:
-            printf("DEBUG: %s\n", qPrintable(message));
-            break;
-        case QtMsgType::QtInfoMsg:
-            printf("INFO: %s\n", qPrintable(message));
-            break;
-        case QtMsgType::QtWarningMsg:
-            printf("WARNING: %s\n", qPrintable(message));
-            break;
-        case QtMsgType::QtFatalMsg:
-            printf("FATAL: %s\n", qPrintable(message));
-            break;
-        }
+    }
+    switch(type){
+    case QtMsgType::QtCriticalMsg:
+        printf("CRITICAL: %s\n", qPrintable(message));
+        break;
+    case QtMsgType::QtDebugMsg:
+        printf("DEBUG: %s\n", qPrintable(message));
+        break;
+    case QtMsgType::QtInfoMsg:
+        printf("INFO: %s\n", qPrintable(message));
+        break;
+    case QtMsgType::QtWarningMsg:
+        printf("WARNING: %s\n", qPrintable(message));
+        break;
+    case QtMsgType::QtFatalMsg:
+        printf("FATAL: %s\n", qPrintable(message));
+        break;
     }
 }
 
 jobject CoreAPI::installMessageHandler(JNIEnv *env, jobject supportedMessageTypes, jobject handler){
-    QWriteLocker locker(gMessageHandlerLock());
-    gEnabledMessages->clear();
+    QSet<QtMsgType> enabledMessages;
     if(supportedMessageTypes){
-        jobject iter = QtJambiAPI::iteratorOfJavaCollection(env, supportedMessageTypes);
+        jobject iter = QtJambiAPI::iteratorOfJavaIterable(env, supportedMessageTypes);
         while(QtJambiAPI::hasJavaIteratorNext(env, iter)){
             jobject supportedMessageType = QtJambiAPI::nextOfJavaIterator(env, iter);
-            gEnabledMessages->insert(qtjambi_cast<QtMsgType>(env, supportedMessageType));
+            enabledMessages.insert(qtjambi_cast<QtMsgType>(env, supportedMessageType));
         }
     }
-    messageHandlerInstalled = handler!=nullptr;
+    QtMessageHandler messageHandler = qtjambi_cast<QtMessageHandler>(env, handler, "QtMessageHandler");
     QtMessageHandler oldHandler;
     jobject result{nullptr};
-    if(gEnabledMessages->size()==5){
-        QtMessageHandler messageHandler = qtjambi_cast<QtMessageHandler>(env, handler, "QtMessageHandler");
-        oldHandler = qInstallMessageHandler(messageHandler);
-        if(oldHandler==messageHandler)
-            return handler;
-        if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, handler)) {
-            if(link->isShell() && link->ownership()==QtJambiLink::Ownership::Java)
-                link->setCppOwnership(env);
+    if(enabledMessages.size()==5){
+        {
+            QWriteLocker locker(gMessageHandlerLock());
+            gEnabledMessages->clear();
+            messageHandlerInstalled = messageHandler!=nullptr;
+            oldHandler = qInstallMessageHandler(messageHandler);
         }
-        if(oldHandler==&qtjambi_messagehandler_proxy){
-            if(*gMessageHandler){
-                result = env->NewLocalRef(*gMessageHandler);
-                env->DeleteGlobalRef(*gMessageHandler);
-                *gMessageHandler = nullptr;
-            }
-        }else{
-            result = qtjambi_cast<jobject>(env, oldHandler);
-        }
-    }else{
-        if(*gMessageHandler){
-            env->DeleteGlobalRef(*gMessageHandler);
-            *gMessageHandler = nullptr;
-        }
-        *gMessageHandler = env->NewGlobalRef(handler);
-        oldHandler = qInstallMessageHandler(&qtjambi_messagehandler_proxy);
-        if(oldHandler==&qtjambi_messagehandler_proxy){
+        if(oldHandler==messageHandler){
             result = handler;
         }else{
-            result = qtjambi_cast<jobject>(env, oldHandler);
+            if(oldHandler==&qtjambi_messagehandler_proxy){
+                result = nullptr;
+            }else{
+                result = qtjambi_cast<jobject>(env, oldHandler, "QtMessageHandler");
+            }
         }
-    }
-    if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, result)) {
-        if(link->isShell() && link->ownership()!=QtJambiLink::Ownership::Java)
-            link->setJavaOwnership(env);
+    }else{
+        {
+            QWriteLocker locker(gMessageHandlerLock());
+            gEnabledMessages->swap(enabledMessages);
+            messageHandlerInstalled = true;
+            oldHandler = qInstallMessageHandler(&qtjambi_messagehandler_proxy);
+        }
+        if(oldHandler==&qtjambi_messagehandler_proxy){
+            result = nullptr;
+        }else{
+            result = qtjambi_cast<jobject>(env, oldHandler, "QtMessageHandler");
+        }
     }
     return result;
 }
 
 
-void clearMessageHandlerAtShutdown(JNIEnv *env){
-    QWriteLocker locker(gMessageHandlerLock());
-    if(messageHandlerInstalled){
-        gEnabledMessages->clear();
-        QtMessageHandler oldHandler = qInstallMessageHandler(nullptr);
-        if(oldHandler==&qtjambi_messagehandler_proxy){
+void clearMessageHandlerAtShutdown(JNIEnv * env){
+    {
+        QWriteLocker locker(gMessageHandlerLock());
+        if(messageHandlerInstalled){
+            gEnabledMessages->clear();
+            qInstallMessageHandler(nullptr);
             messageHandlerInstalled = false;
-            if(*gMessageHandler){
-                jobject result = env->NewLocalRef(*gMessageHandler);
-                env->DeleteGlobalRef(*gMessageHandler);
-                *gMessageHandler = nullptr;
-                if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, result)) {
-                    if(link->isShell() && link->ownership()!=QtJambiLink::Ownership::Java)
-                        link->setJavaOwnership(env);
-                }
-            }
         }
     }
-
+    if(env){
+        Java::QtCore::QLogging::shutdown(env);
+    }
 }

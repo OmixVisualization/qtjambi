@@ -152,7 +152,7 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jobject %out = DataJBuffer(%env, %in, jlong(sizeof(int)) * count).take();"}
+                    Text{content: "jobject %out = LocalDataJBuffer(%env, %in, jlong(sizeof(int)) * count).take();"}
                 }
             }
             ModifyArgument{

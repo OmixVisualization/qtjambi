@@ -228,16 +228,6 @@ TypeSystem{
                 location: Include.Global
             }
         }
-        ModifyFunction{
-            signature: "isNull(QString)const"
-            remove: RemoveFlag.All
-            since: 6.8
-        }
-        ModifyFunction{
-            signature: "value(QString)const"
-            remove: RemoveFlag.All
-            since: 6.8
-        }
     }
     
     ValueType{
@@ -251,51 +241,6 @@ TypeSystem{
         ModifyFunction{
             signature: "append(QSqlField)"
             access: Modification.NonFinal
-        }
-        ModifyFunction{
-            signature: "setNull(QString)"
-            remove: RemoveFlag.All
-            since: 6.8
-        }
-        ModifyFunction{
-            signature: "isNull(QString)const"
-            remove: RemoveFlag.All
-            since: 6.8
-        }
-        ModifyFunction{
-            signature: "setValue(QString,QVariant)"
-            remove: RemoveFlag.All
-            since: 6.8
-        }
-        ModifyFunction{
-            signature: "value(QString)const"
-            remove: RemoveFlag.All
-            since: 6.8
-        }
-        ModifyFunction{
-            signature: "indexOf(QString)const"
-            remove: RemoveFlag.All
-            since: 6.8
-        }
-        ModifyFunction{
-            signature: "field(QString)const"
-            remove: RemoveFlag.All
-            since: 6.8
-        }
-        ModifyFunction{
-            signature: "isGenerated(QString)const"
-            remove: RemoveFlag.All
-            since: 6.8
-        }
-        ModifyFunction{
-            signature: "setGenerated(QString,bool)"
-            remove: RemoveFlag.All
-            since: 6.8
-        }
-        ModifyFunction{
-            signature: "contains(QString)const"
-            remove: RemoveFlag.All
-            since: 6.8
         }
     }
     

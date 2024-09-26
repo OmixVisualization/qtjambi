@@ -813,7 +813,6 @@ void registerConverterVariant(JNIEnv *env, QMetaType metaType, QString qtName, c
                                         if(!wrapper->object()){
                                             return true;
                                         }else{
-                                            JniLocalFrame __jniLocalFrame(env, 200);
                                             jvalue val;
                                             val.l = wrapper->object();
                                             return converter(env, nullptr, val, target, jValueType::l);
@@ -838,7 +837,6 @@ void registerConverterVariant(JNIEnv *env, QMetaType metaType, QString qtName, c
                                         if(!wrapper->object()){
                                             return true;
                                         }else{
-                                            JniLocalFrame __jniLocalFrame(env, 200);
                                             jvalue val;
                                             val.l = wrapper->object();
                                             return converter(env, nullptr, val, target, jValueType::l);
@@ -957,7 +955,7 @@ void registerConverterVariant(JNIEnv *env, QMetaType metaType, QString qtName, c
                             }, nativeWrapperType, metaType);
                         }
                     }else{
-                        const QSharedPointer<QtJambiLink>& (*findLinkForJavaObject)(JNIEnv*,jobject)
+                        QSharedPointer<QtJambiLink> (*findLinkForJavaObject)(JNIEnv*,jobject)
                             = Java::QtJambi::NativeUtility$Object::isAssignableFrom(env, clazz) ? QtJambiLink::findLinkForJavaObject : QtJambiLink::findLinkForJavaInterface;
                         QMetaType::registerConverterFunction([findLinkForJavaObject](const void *src, void *target) -> bool {
                             const JObjectWrapper* wrapper = reinterpret_cast<const JObjectWrapper*>(src);
@@ -1004,7 +1002,7 @@ void registerConverterVariant(JNIEnv *env, QMetaType metaType, QString qtName, c
                         || JObjectValueWrapper::isValueType(metaType)
                         || isJObjectWrappedMetaType(metaType)){
                         superClass = getGlobalClassRef(env, superClass);
-                        const QSharedPointer<QtJambiLink>& (*findLinkForJavaObject)(JNIEnv*,jobject)
+                        QSharedPointer<QtJambiLink> (*findLinkForJavaObject)(JNIEnv*,jobject)
                             = Java::QtJambi::NativeUtility$Object::isAssignableFrom(env, superClass) ? QtJambiLink::findLinkForJavaObject : QtJambiLink::findLinkForJavaInterface;
                         if(_qtName.endsWith("*")){
                             QMetaType::registerConverterFunction([superClass, superTypeId, findLinkForJavaObject](const void *src, void *target) -> bool {
@@ -1063,11 +1061,23 @@ void registerConverterVariant(JNIEnv *env, QMetaType metaType, QString qtName, c
         }
     }
 }
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
+typedef QVariant (*MoveConstruct)(QMetaType type, void *data);
+template<> inline MoveConstruct qvariant_cast<MoveConstruct>(const QVariant &)
+{
+    return QVariant::moveConstruct;
+}
 #endif
 
+#endif
+
+bool hasReferenceCounts(JNIEnv * env, jobject container);
+
 QVariant internal_convertJavaObjectToQVariant(JNIEnv *env, jobject java_object, bool convert){
+    static ResettableBoolFlag nullAsNull(env, "io.qt.experimental.javanull-as-nullvariant");
     if (!java_object)
-        return QVariant();
+        return nullAsNull ? QVariant(META_TYPE(QMetaType::Type::Nullptr), nullptr) : QVariant();
 
     jclass object_class = env->GetObjectClass(java_object);
     if (!object_class)
@@ -1185,6 +1195,22 @@ QVariant internal_convertJavaObjectToQVariant(JNIEnv *env, jobject java_object, 
             return QVariant(META_TYPE(QMetaType::Bool), nullptr);
         bool b = Java::Runtime::Boolean::booleanValue(env, java_object);
         return QVariant::fromValue<bool>(b);
+#if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
+    } else if (Java::QtCore::AbstractSpan::isInstanceOf(env, java_object)) {
+        if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, java_object)){
+            if(AbstractSpanAccess* access = dynamic_cast<AbstractSpanAccess*>(link->containerAccess())){
+                QMetaType containerMetaType(access->registerContainer(QStringLiteral(u"QSpan<%1%2>").arg(access->isConst() ? "const " : "", access->elementMetaType().name()).toLatin1()));
+                registerContainerConverter(access->isConst() ? SequentialContainerType::QConstSpan : SequentialContainerType::QSpan, containerMetaType, access->elementMetaType());
+                return QVariant::fromValue(JObjectWrapper(env, java_object));
+                //QtJambiSpan* span = reinterpret_cast<QtJambiSpan*>(link->pointer());
+                //return QVariant(META_TYPE(id), span);
+            }else{
+                return QVariant();
+            }
+        }else{
+            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getClassName(env, object_class).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+        }
+#endif
     } else if (Java::QtCore::QPair::isInstanceOf(env, java_object)) {
         jobject first = Java::QtCore::QPair::first(env, java_object);
         jobject second = Java::QtCore::QPair::second(env, java_object);
@@ -1193,7 +1219,7 @@ QVariant internal_convertJavaObjectToQVariant(JNIEnv *env, jobject java_object, 
         QMetaType firstMetaType(first ? getMetaTypeIdForObject(env, first) : QMetaType::Nullptr);
         QMetaType secondMetaType(second ? getMetaTypeIdForObject(env, second) : QMetaType::Nullptr);
         if(firstMetaType.isValid() && secondMetaType.isValid()){
-            AbstractContainerAccess* containerAccess = AbstractContainerAccess::create(env, AssociativeContainerType::QPair, firstMetaType, secondMetaType);
+            AbstractContainerAccess* containerAccess = ContainerAccessAPI::createContainerAccess(AssociativeContainerType::QPair, firstMetaType, secondMetaType);
             if(!containerAccess){
                 QString firstType = QLatin1String(firstMetaType.name());
                 QString secondType = QLatin1String(secondMetaType.name());
@@ -1247,7 +1273,23 @@ QVariant internal_convertJavaObjectToQVariant(JNIEnv *env, jobject java_object, 
                                                                 env, firstClass, firstType, firstMetaType);
                 QtJambiUtils::ExternalToInternalConverter memberReConverter2 = QtJambiTypeManager::getExternalToInternalConverter(
                                                                 env, secondClass, secondType, secondMetaType);
-                containerAccess = AbstractContainerAccess::create(
+                QSharedPointer<AbstractContainerAccess> memberNestedContainerAccess1 = findContainerAccess(firstMetaType);
+                QSharedPointer<AbstractContainerAccess> memberNestedContainerAccess2 = findContainerAccess(secondMetaType);
+                const std::type_info* typeId = getTypeByQtName(firstMetaType.name());
+                if(!typeId){
+                    typeId = getTypeByMetaType(firstMetaType);
+                }
+                PtrOwnerFunction memberOwnerFunction1 = nullptr;
+                if(typeId)
+                    memberOwnerFunction1 = ContainerAPI::registeredOwnerFunction(*typeId);
+                typeId = getTypeByQtName(secondMetaType.name());
+                if(!typeId){
+                    typeId = getTypeByMetaType(secondMetaType);
+                }
+                PtrOwnerFunction memberOwnerFunction2 = nullptr;
+                if(typeId)
+                    memberOwnerFunction2 = ContainerAPI::registeredOwnerFunction(*typeId);
+                containerAccess = ContainerAccessAPI::createContainerAccess(
                                                env, AssociativeContainerType::QPair,
                                                firstMetaType,
                                                align1, size1,
@@ -1255,12 +1297,16 @@ QVariant internal_convertJavaObjectToQVariant(JNIEnv *env, jobject java_object, 
                                                hashFunction1,
                                                memberConverter1,
                                                memberReConverter1,
+                                               memberNestedContainerAccess1,
+                                               memberOwnerFunction1,
                                                secondMetaType,
                                                align2, size2,
                                                isPointer2,
                                                hashFunction2,
                                                memberConverter2,
-                                               memberReConverter2);
+                                               memberReConverter2,
+                                               memberNestedContainerAccess2,
+                                               memberOwnerFunction2);
                 if(QSharedPointer<AbstractPairAccess> pairAccess = QSharedPointer<AbstractContainerAccess>(containerAccess, &containerDisposer).dynamicCast<AbstractPairAccess>()){
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                     QString qtName = QLatin1String("QPair<%1,%2>");
@@ -1291,7 +1337,7 @@ QVariant internal_convertJavaObjectToQVariant(JNIEnv *env, jobject java_object, 
                     QString qtName = QLatin1String("QList<%1>");
                     qtName = qtName.arg(QLatin1String(containerAccess->elementMetaType().name()));
                     QMetaType containerMetaType(containerAccess->registerContainer(qtName.toLatin1()));
-                    if(dynamic_cast<WrapperListAccess*>(containerAccess)){
+                    if(hasReferenceCounts(env, link->getJavaObjectLocalRef(env))){
                         registerContainerConverter(SequentialContainerType::QList, containerMetaType, containerAccess->elementMetaType());
                         return QVariant::fromValue(JCollectionWrapper(env, java_object));
                     }else{
@@ -1307,7 +1353,7 @@ QVariant internal_convertJavaObjectToQVariant(JNIEnv *env, jobject java_object, 
                     QString qtName = QLatin1String("QSet<%1>");
                     qtName = qtName.arg(QLatin1String(containerAccess->elementMetaType().name()));
                     QMetaType containerMetaType(containerAccess->registerContainer(qtName.toLatin1()));
-                    if(dynamic_cast<WrapperSetAccess*>(containerAccess)){
+                    if(hasReferenceCounts(env, link->getJavaObjectLocalRef(env))){
                         registerContainerConverter(SequentialContainerType::QSet, containerMetaType, containerAccess->elementMetaType());
                         return QVariant::fromValue(JCollectionWrapper(env, java_object));
                     }else{
@@ -1325,7 +1371,7 @@ QVariant internal_convertJavaObjectToQVariant(JNIEnv *env, jobject java_object, 
                     qtName = qtName.arg(QLatin1String(containerAccess->elementMetaType().name()));
                     QMetaType containerMetaType(containerAccess->registerContainer(qtName.toLatin1()));
                     registerContainerConverter(SequentialContainerType::QLinkedList, containerMetaType, containerAccess->elementMetaType());
-                    if(dynamic_cast<WrapperLinkedListAccess*>(containerAccess)){
+                    if(hasReferenceCounts(env, link->getJavaObjectLocalRef(env))){
                         return QVariant::fromValue(JCollectionWrapper(env, java_object));
                     }else{
                         return QVariant(FROM_META_TYPE(containerMetaType), link->pointer());
@@ -1341,7 +1387,7 @@ QVariant internal_convertJavaObjectToQVariant(JNIEnv *env, jobject java_object, 
                     qtName = qtName.arg(QLatin1String(containerAccess->elementMetaType().name()));
                     QMetaType containerMetaType(containerAccess->registerContainer(qtName.toLatin1()));
                     registerContainerConverter(SequentialContainerType::QVector, containerMetaType, containerAccess->elementMetaType());
-                    if(dynamic_cast<WrapperVectorAccess*>(containerAccess)){
+                    if(hasReferenceCounts(env, link->getJavaObjectLocalRef(env))){
                         return QVariant::fromValue(JCollectionWrapper(env, java_object));
                     }else{
                         return QVariant(FROM_META_TYPE(containerMetaType), link->pointer());
@@ -1353,7 +1399,7 @@ QVariant internal_convertJavaObjectToQVariant(JNIEnv *env, jobject java_object, 
 #endif
         }
         if(Java::Runtime::Collection::size(env, java_object)>0){
-            jobject iter = QtJambiAPI::iteratorOfJavaCollection(env, java_object);
+            jobject iter = QtJambiAPI::iteratorOfJavaIterable(env, java_object);
             jobject element = QtJambiAPI::nextOfJavaIterator(env, iter);
             int elementMetaTypeId = element ? getMetaTypeIdForObject(env, element) : QMetaType::Nullptr;
             while(QtJambiAPI::hasJavaIteratorNext(env, iter)){
@@ -1370,7 +1416,7 @@ QVariant internal_convertJavaObjectToQVariant(JNIEnv *env, jobject java_object, 
             }
             if(elementMetaTypeId == QMetaType::QString){
                 QStringList list;
-                iter = QtJambiAPI::iteratorOfJavaCollection(env, java_object);
+                iter = QtJambiAPI::iteratorOfJavaIterable(env, java_object);
                 while(QtJambiAPI::hasJavaIteratorNext(env, iter)){
                     element = QtJambiAPI::nextOfJavaIterator(env, iter);
                     list << qtjambi_cast<QString>(env, element);
@@ -1378,7 +1424,7 @@ QVariant internal_convertJavaObjectToQVariant(JNIEnv *env, jobject java_object, 
                 return QVariant::fromValue(list);
             }else if(elementMetaTypeId == QMetaType::QVariant){
                 QVariantList list;
-                iter = QtJambiAPI::iteratorOfJavaCollection(env, java_object);
+                iter = QtJambiAPI::iteratorOfJavaIterable(env, java_object);
                 while(QtJambiAPI::hasJavaIteratorNext(env, iter)){
                     element = QtJambiAPI::nextOfJavaIterator(env, iter);
                     list << QtJambiAPI::convertJavaObjectToQVariant(env, element);
@@ -1386,13 +1432,13 @@ QVariant internal_convertJavaObjectToQVariant(JNIEnv *env, jobject java_object, 
                 return QVariant::fromValue(list);
             }else if(elementMetaTypeId != QMetaType::UnknownType && elementMetaTypeId != QMetaType::Nullptr){
                 if (Java::Runtime::Set::isInstanceOf(env, java_object)) {
-                    return internal_convertJavaObjectToQVariant(env, Java::QtCore::QSet::newInstance2(env, java_object), convert);
+                    return internal_convertJavaObjectToQVariant(env, Java::QtCore::QSet::newInstance2(env, qtjambi_cast<jobject>(env, QMetaType(elementMetaTypeId)), java_object), convert);
                 }else if (Java::Runtime::Deque::isInstanceOf(env, java_object)) {
-                    return internal_convertJavaObjectToQVariant(env, Java::QtCore::QStack::newInstance2(env, java_object), convert);
+                    return internal_convertJavaObjectToQVariant(env, Java::QtCore::QStack::newInstance2(env, qtjambi_cast<jobject>(env, QMetaType(elementMetaTypeId)), java_object), convert);
                 }else if (Java::Runtime::Queue::isInstanceOf(env, java_object)) {
-                    return internal_convertJavaObjectToQVariant(env, Java::QtCore::QQueue::newInstance2(env, java_object), convert);
+                    return internal_convertJavaObjectToQVariant(env, Java::QtCore::QQueue::newInstance2(env, qtjambi_cast<jobject>(env, QMetaType(elementMetaTypeId)), java_object), convert);
                 }else{
-                    return internal_convertJavaObjectToQVariant(env, Java::QtCore::QList::newInstance2(env, java_object), convert);
+                    return internal_convertJavaObjectToQVariant(env, Java::QtCore::QList::newInstance2(env, qtjambi_cast<jobject>(env, QMetaType(elementMetaTypeId)), java_object), convert);
                 }
             }
         }
@@ -1407,7 +1453,7 @@ QVariant internal_convertJavaObjectToQVariant(JNIEnv *env, jobject java_object, 
                     qtName = qtName.arg(QLatin1String(containerAccess->keyMetaType().name()))
                                    .arg(QLatin1String(containerAccess->valueMetaType().name()));
                     QMetaType containerMetaType(containerAccess->registerContainer(qtName.toLatin1()));
-                    if(dynamic_cast<WrapperMapAccess*>(link->containerAccess())){
+                    if(hasReferenceCounts(env, link->getJavaObjectLocalRef(env))){
                         registerContainerConverter(AssociativeContainerType::QMap, containerMetaType, containerAccess->keyMetaType(), containerAccess->valueMetaType());
                         return QVariant::fromValue(JMapWrapper(env, java_object));
                     }else{
@@ -1424,7 +1470,7 @@ QVariant internal_convertJavaObjectToQVariant(JNIEnv *env, jobject java_object, 
                     qtName = qtName.arg(QLatin1String(containerAccess->keyMetaType().name()))
                                    .arg(QLatin1String(containerAccess->valueMetaType().name()));
                     QMetaType containerMetaType(containerAccess->registerContainer(qtName.toLatin1()));
-                    if(dynamic_cast<WrapperHashAccess*>(link->containerAccess())){
+                    if(hasReferenceCounts(env, link->getJavaObjectLocalRef(env))){
                         registerContainerConverter(AssociativeContainerType::QHash, containerMetaType, containerAccess->keyMetaType(), containerAccess->valueMetaType());
                         return QVariant::fromValue(JMapWrapper(env, java_object));
                     }else{
@@ -1441,7 +1487,7 @@ QVariant internal_convertJavaObjectToQVariant(JNIEnv *env, jobject java_object, 
                     qtName = qtName.arg(QLatin1String(containerAccess->keyMetaType().name()))
                                    .arg(QLatin1String(containerAccess->valueMetaType().name()));
                     QMetaType containerMetaType(containerAccess->registerContainer(qtName.toLatin1()));
-                    if(dynamic_cast<WrapperMultiMapAccess*>(link->containerAccess())){
+                    if(hasReferenceCounts(env, link->getJavaObjectLocalRef(env))){
                         registerContainerConverter(AssociativeContainerType::QMultiMap, containerMetaType, containerAccess->keyMetaType(), containerAccess->valueMetaType());
                         return QVariant::fromValue(JMapWrapper(env, java_object));
                     }else{
@@ -1458,7 +1504,7 @@ QVariant internal_convertJavaObjectToQVariant(JNIEnv *env, jobject java_object, 
                     qtName = qtName.arg(QLatin1String(containerAccess->keyMetaType().name()))
                                    .arg(QLatin1String(containerAccess->valueMetaType().name()));
                     QMetaType containerMetaType(containerAccess->registerContainer(qtName.toLatin1()));
-                    if(dynamic_cast<WrapperMultiHashAccess*>(link->containerAccess())){
+                    if(hasReferenceCounts(env, link->getJavaObjectLocalRef(env))){
                         registerContainerConverter(AssociativeContainerType::QMultiHash, containerMetaType, containerAccess->keyMetaType(), containerAccess->valueMetaType());
                         return QVariant::fromValue(JMapWrapper(env, java_object));
                     }else{
@@ -1504,7 +1550,7 @@ QVariant internal_convertJavaObjectToQVariant(JNIEnv *env, jobject java_object, 
             if(keyMetaTypeId == QMetaType::QString && valueMetaTypeId == QMetaType::QVariant){
                 if(Java::Runtime::NavigableMap::isInstanceOf(env, java_object)){
                     QVariantMap map;
-                    iter = QtJambiAPI::iteratorOfJavaCollection(env, java_object);
+                    iter = QtJambiAPI::iteratorOfJavaIterable(env, java_object);
                     while(QtJambiAPI::hasJavaIteratorNext(env, iter)){
                         jobject entry = QtJambiAPI::nextOfJavaIterator(env, iter);
                         jobject keyObject = QtJambiAPI::keyOfJavaMapEntry(env, entry);
@@ -1514,7 +1560,7 @@ QVariant internal_convertJavaObjectToQVariant(JNIEnv *env, jobject java_object, 
                     return QVariant::fromValue(map);
                 }else{
                     QVariantHash map;
-                    iter = QtJambiAPI::iteratorOfJavaCollection(env, java_object);
+                    iter = QtJambiAPI::iteratorOfJavaIterable(env, java_object);
                     while(QtJambiAPI::hasJavaIteratorNext(env, iter)){
                         jobject entry = QtJambiAPI::nextOfJavaIterator(env, iter);
                         jobject keyObject = QtJambiAPI::keyOfJavaMapEntry(env, entry);
@@ -1528,9 +1574,9 @@ QVariant internal_convertJavaObjectToQVariant(JNIEnv *env, jobject java_object, 
                      && valueMetaTypeId != QMetaType::UnknownType
                      && valueMetaTypeId != QMetaType::Nullptr){
                 if (Java::Runtime::NavigableMap::isInstanceOf(env, java_object)) {
-                    return internal_convertJavaObjectToQVariant(env, Java::QtCore::QMap::newInstance2(env, java_object), convert);
+                    return internal_convertJavaObjectToQVariant(env, Java::QtCore::QMap::newInstance2(env, qtjambi_cast<jobject>(env, QMetaType(keyMetaTypeId)), qtjambi_cast<jobject>(env, QMetaType(valueMetaTypeId)), java_object), convert);
                 }else{
-                    return internal_convertJavaObjectToQVariant(env, Java::QtCore::QHash::newInstance2(env, java_object), convert);
+                    return internal_convertJavaObjectToQVariant(env, Java::QtCore::QHash::newInstance2(env, qtjambi_cast<jobject>(env, QMetaType(keyMetaTypeId)), qtjambi_cast<jobject>(env, QMetaType(valueMetaTypeId)), java_object), convert);
                 }
             }
         }
@@ -1693,10 +1739,18 @@ QVariant internal_convertJavaObjectToQVariant(JNIEnv *env, jobject java_object, 
                             registerConverterVariant(env, type, qtName, fullJavaName, object_class, ntype);
                             if(type.flags().testFlag(QMetaType::PointerToQObject)){
                                 JQObjectWrapper wrapper(env, std::move(link));
-                                return QVariant(FROM_META_TYPE(ntype), &wrapper);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
+                                if(ntype.iface()->moveCtr)
+                                    return qvariant_cast<MoveConstruct>(*reinterpret_cast<QVariant*>(1))(ntype, &wrapper);
+#endif
+                                return QVariant(ntype, &wrapper);
                             }else{
                                 JObjectWrapper wrapper(env, java_object);
-                                return QVariant(FROM_META_TYPE(ntype), &wrapper);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
+                                if(ntype.iface()->moveCtr)
+                                    return qvariant_cast<MoveConstruct>(*reinterpret_cast<QVariant*>(1))(ntype, &wrapper);
+#endif
+                                return QVariant(ntype, &wrapper);
                             }
                         }
                     }
@@ -1724,6 +1778,10 @@ QVariant internal_convertJavaObjectToQVariant(JNIEnv *env, jobject java_object, 
                                  qPrintable(qtName));
                         return QVariant(META_TYPE(QMetaType::UnknownType), nullptr);
                     }
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
+                    if(type.iface()->moveCtr)
+                        return qvariant_cast<MoveConstruct>(*reinterpret_cast<QVariant*>(1))(type, ptr);
+#endif
                     return QVariant(FROM_META_TYPE(type), ptr);
                 }else{
                     return QVariant(FROM_META_TYPE(type), nullptr);
@@ -1793,7 +1851,7 @@ bool QtJambiAPI::convertJavaToNative(JNIEnv *env, const std::type_info& typeId, 
 
 void *QtJambiAPI::convertJavaObjectToNative(JNIEnv *env, jobject java_object)
 {
-    if(const QSharedPointer<QtJambiLink>& link = QtJambiLink::findLinkForJavaInterface(env, java_object))
+    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, java_object))
         return link->pointer();
     else if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, java_object))
         Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassName(env, java_object).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
@@ -1802,7 +1860,7 @@ void *QtJambiAPI::convertJavaObjectToNative(JNIEnv *env, jobject java_object)
 
 QObject *QtJambiAPI::convertJavaObjectToQObject(JNIEnv *env, jobject java_object)
 {
-    if(const QSharedPointer<QtJambiLink>& link = QtJambiLink::findLinkForJavaInterface(env, java_object))
+    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, java_object))
         return link->isQObject() ? link->qobject() : nullptr;
     else if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, java_object))
         Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassName(env, java_object).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
@@ -1828,11 +1886,7 @@ const void *QtJambiAPI::convertJavaObjectToNativeAsSmartPointer(JNIEnv *env, job
                     shell = *reinterpret_cast<QtJambiShellImpl**>( quintptr(ptr) + infos.at(0).size() );
                 }
 
-                jobject nativeLink = link->nativeLink(env);
-                if(nativeLink){
-                    Java::QtJambi::NativeUtility$NativeLink::reset(env, nativeLink);
-                }
-
+                link->reset(env);
                 link->invalidate(env);
                 link.clear();
                 const InterfaceOffsetInfo* interfaceOffsets = getInterfaceOffsets(env, env->GetObjectClass(java_object));
@@ -1880,12 +1934,7 @@ const void *QtJambiAPI::convertJavaObjectToNativeAsSmartPointer(JNIEnv *env, job
                     PointerToObjectLink* polink = static_cast<PointerToObjectLink*>(link.data());
                     registeredOwnerFunction = polink->ownerFunction();
                 }
-
-                jobject nativeLink = link->nativeLink(env);
-                if(nativeLink){
-                    Java::QtJambi::NativeUtility$NativeLink::reset(env, nativeLink);
-                }
-
+                link->reset(env);
                 link->invalidate(env);
                 link.clear();
                 const InterfaceOffsetInfo* interfaceOffsets = getInterfaceOffsets(env, env->GetObjectClass(java_object));
@@ -2193,12 +2242,9 @@ bool QtJambiAPI::convertJavaToModelIndex(JNIEnv *env, jobject java_object, QMode
     java_value.l = java_object;
     QModelIndex* indexPtr = nullptr;
     bool result = QModelIndexTypeEntry::convertJavaToNative(env, java_value, jValueType::l, &indexPtr, nullptr);
-    if(result && indexPtr){
+    if(result && indexPtr)
         output = *indexPtr;
-        return true;
-    }else{
-        return false;
-    }
+    return result;
 }
 
 jobject QtJambiAPI::convertNativeToJavaObjectAsCopy(JNIEnv *env, const void *qt_object, jclass clazz){
@@ -2346,9 +2392,7 @@ jobject internal_convertQObjectSmartPointerToJavaObject_notype(JNIEnv *env, cons
                     delete p;
                     // It should already be split ownership, but in case it has been changed, we need to make sure the c++
                     // object isn't deleted.
-                    jobject nativeLink = link->nativeLink(env);
-                    Java::QtJambi::NativeUtility$NativeLink::reset(env, nativeLink);
-                    link->setSplitOwnership(env);
+                    link->reset(env);
                     link.clear();
                     locker.relock();
                 }
@@ -2363,10 +2407,7 @@ jobject internal_convertQObjectSmartPointerToJavaObject_notype(JNIEnv *env, cons
                         Q_ASSERT(infos.size());
                         shell = *reinterpret_cast<QtJambiShellImpl**>( quintptr(qt_object) + infos.at(0).size() );
                     }
-                    jobject nativeLink = link->nativeLink(env);
-                    if(nativeLink){
-                        Java::QtJambi::NativeUtility$NativeLink::reset(env, nativeLink);
-                    }
+                    link->reset(env);
                     link->invalidate(env);
                     link.clear();
                     const InterfaceOffsetInfo* interfaceOffsets = getInterfaceOffsets(env, env->GetObjectClass(object));
@@ -2378,7 +2419,6 @@ jobject internal_convertQObjectSmartPointerToJavaObject_notype(JNIEnv *env, cons
                     if(shell){
                         shell->overrideLink(link);
                     }
-                    env->DeleteLocalRef(nativeLink);
                     if (!link) {
                         qCWarning(DebugAPI::internalCategory, "Qt Jambi: Couldn't created wrapper for class %s", className);
                         return nullptr;
@@ -2393,10 +2433,7 @@ jobject internal_convertQObjectSmartPointerToJavaObject_notype(JNIEnv *env, cons
                     }
                     if(p){
                         delete p;
-                        jobject nativeLink = link->nativeLink(env);
-                        if(nativeLink){
-                            Java::QtJambi::NativeUtility$NativeLink::reset(env, nativeLink);
-                        }
+                        link->reset(env);
                         link->invalidate(env);
                         link.clear();
                     }
@@ -2577,9 +2614,7 @@ jobject internal_convertQObjectToJavaObject_notype(JNIEnv *env, const QObject *c
                 delete p;
                 // It should already be split ownership, but in case it has been changed, we need to make sure the c++
                 // object isn't deleted.
-                jobject nativeLink = link->nativeLink(env);
-                Java::QtJambi::NativeUtility$NativeLink::reset(env, nativeLink);
-                link->setSplitOwnership(env);
+                link->reset(env);
                 link.clear();
                 locker.relock();
             }
@@ -2594,10 +2629,7 @@ jobject internal_convertQObjectToJavaObject_notype(JNIEnv *env, const QObject *c
                 QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object, nullptr);
                 locker.unlock();
                 delete p;
-                jobject nativeLink = link->nativeLink(env);
-                if(nativeLink){
-                    Java::QtJambi::NativeUtility$NativeLink::reset(env, nativeLink);
-                }
+                link->reset(env);
                 link->invalidate(env);
                 link.clear();
                 locker.relock();
@@ -2762,6 +2794,13 @@ jobject QtJambiAPI::convertSmartPointerToJavaObject(JNIEnv *env, const std::type
 
 jobject QtJambiAPI::convertQObjectToJavaObject(JNIEnv *env, const QObject *qt_object, const char *className)
 {
+    if(qt_object){
+        try{
+            QtJambiAPI::checkDanglingPointer(env, qt_object);
+            if(const QtJambiShellInterface* shell = dynamic_cast<const QtJambiShellInterface*>(qt_object))
+                return QtJambiShellInterface::getJavaObjectLocalRef(env, shell);
+        }catch(...){}
+    }
     const std::type_info* typeId = className ? getTypeByJavaName(className) : &typeid(QObject);
     if(typeId){
         bool ok;
@@ -2774,6 +2813,13 @@ jobject QtJambiAPI::convertQObjectToJavaObject(JNIEnv *env, const QObject *qt_ob
 
 jobject QtJambiAPI::convertQObjectToJavaObject(JNIEnv *env, const QObject *qt_object, jclass clazz)
 {
+    if(qt_object){
+        try{
+            QtJambiAPI::checkDanglingPointer(env, qt_object);
+            if(const QtJambiShellInterface* shell = dynamic_cast<const QtJambiShellInterface*>(qt_object))
+                return QtJambiShellInterface::getJavaObjectLocalRef(env, shell);
+        }catch(...){}
+    }
     QString className;
     const std::type_info* typeId;
     if(clazz){
@@ -2793,6 +2839,13 @@ jobject QtJambiAPI::convertQObjectToJavaObject(JNIEnv *env, const QObject *qt_ob
 
 jobject QtJambiAPI::convertQObjectToJavaObject(JNIEnv *env, const QObject *qt_object, const std::type_info& typeId)
 {
+    if(qt_object){
+        try{
+            QtJambiAPI::checkDanglingPointer(env, qt_object);
+            if(const QtJambiShellInterface* shell = dynamic_cast<const QtJambiShellInterface*>(qt_object))
+                return QtJambiShellInterface::getJavaObjectLocalRef(env, shell);
+        }catch(...){}
+    }
     bool ok;
     jobject result = internal_convertQObjectToJavaObject_type(env, qt_object, typeId, &ok, NativeToJavaConversionMode::None);
     if(ok)

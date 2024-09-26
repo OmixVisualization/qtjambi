@@ -1720,7 +1720,7 @@ public class TestConnections extends ApplicationInitializer
                 e.signal.connect(slot);
                 e.signal.disconnect(slot);
             }
-            t.join();
+            t.join(5000);
         } catch(Exception ex) {
             ex.printStackTrace();
         }

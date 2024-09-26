@@ -208,6 +208,7 @@
             <exclude name="io/qt/**/TestWebView*.java" unless="${qtjambi.webview.any.true}"/>
             <exclude name="io/qt/**/TestConcurrent*.java" unless="${qtjambi.concurrent.any.true}"/>
             <exclude name="io/qt/**/TestNetwork*.java" unless="${qtjambi.network.any.true}"/>
+            <exclude name="io/qt/**/TestQSsl*.java" unless="${qtjambi.network.any.true}"/>
             <exclude name="io/qt/**/TestDesigner*.java" unless="${qtjambi.designer.any.true}"/>
             <exclude name="io/qt/**/TestUiTools*.java" unless="${qtjambi.uitools.any.true}"/>
             <exclude name="io/qt/**/TestXml*.java" unless="${qtjambi.xml.any.true}"/>
@@ -232,6 +233,7 @@
             <exclude name="io/qt/**/TestWinExtras*.java" unless="${qtjambi.winextras.any.true}"/>
             <exclude name="io/qt/**/TestQuick*.java" unless="${qtjambi.quick.any.true}"/>
             <exclude name="io/qt/**/TestLocation*.java" unless="${qtjambi.location.any.true}"/>
+			<exclude name="io/qt/**/TestPrintSupport*.java" unless="${qtjambi.printsupport.any.true}"/>
             <exclude name="io/qt/**/TestRemoteObjects*.java" unless="${qtjambi.remoteobjects.any.true}"/>
             <exclude name="io/qt/**/TestRemoteObjectsInjectedCodeQt5.java" unless="${qtjambi.remoteobjects.privateheaders.true}"/>
             <exclude name="io/qt/**/TestQmlVariantQt6.java" unless="${qtjambi.qml.any.true}"/>
@@ -488,12 +490,19 @@
 				<exclude name="io/qt/**/QtDBus*.java" unless="${qtjambi.dbus.any.true}"/>
 				<exclude name="io/qt/**/QtRemoteObjects*.java" unless="${qtjambi.remoteobjects.any.true}"/>
 				<exclude name="io/qt/qml*/**" unless="${qtjambi.qml.any.true}"/>
+				<exclude name="io/qt/**/DeploymentSql.java" unless="${qtjambi.sql.any.true}"/>
+				<exclude name="io/qt/**/qmlreg/*.java" unless="${qtjambi.qml.any.true}"/>
+				<exclude name="io/qt/**/qmltypes/*.java" unless="${qtjambi.qml.any.true}"/>
                 <exclude name="io/qt/**/Test*.java"/>
             </fileset>
         </copy>
 		<echo>copying ${outputDir}/tests/java/autotests/*</echo>
         <copy todir="${test.java.srcoutdir}">
-            <fileset dir="${outputDir}/tests/java/autotests" includes="*.java,io/qt/**/*.java"/>
+            <fileset dir="${outputDir}/tests/java/autotests" includes="*.java,io/qt/**/*.java">
+				<exclude name="io/qt/**/AbstractSocketSubclass.java" unless="${qtjambi.network.any.true}"/>
+				<exclude name="io/qt/**/SqlTableModelSubclass.java" unless="${qtjambi.sql.any.true}"/>
+				<exclude name="io/qt/**/Xml*Subclass.java" unless="${qtjambi.xml.any.true}"/>
+			</fileset>
         </copy>
         <delete dir="${test.javaext.outdir}" failonerror="no"/>
         <mkdir dir="${test.javaext.outdir}"/>
@@ -861,6 +870,15 @@
 						<condition property="Dio.qt.enable-method-logs" value="-Dio.qt.enable-method-logs=${io.qt.enable-method-logs}" else="-Dx">
 							<isset property="io.qt.enable-method-logs"/>
 						</condition>
+						<condition property="Dio.qt.enable-cleanup-logs" value="-Dio.qt.enable-cleanup-logs=${io.qt.enable-cleanup-logs}" else="-Dx">
+							<isset property="io.qt.enable-cleanup-logs"/>
+						</condition>
+						<condition property="Dio.qt.enable-event-logs" value="-Dio.qt.enable-event-logs=${io.qt.enable-event-logs}" else="-Dx">
+							<isset property="io.qt.enable-event-logs"/>
+						</condition>
+						<condition property="Dio.qt.enable-metaobject-logs" value="-Dio.qt.enable-metaobject-logs=${io.qt.enable-metaobject-logs}" else="-Dx">
+							<isset property="io.qt.enable-metaobject-logs"/>
+						</condition>
 						<trycatch>
 							<try>
 								<mkdir dir="${outputDir}/${qtjambi.osname}/tests/junitxml-${kind}${jdk-exec-version}"/>
@@ -886,6 +904,9 @@
 									<jvmarg value="${Dio.qt.enable-thread-affinity-check}"/>
 									<jvmarg value="${Dio.qt.enable-event-thread-affinity-check}"/>
 									<jvmarg value="${Dio.qt.enable-method-logs}"/>
+									<jvmarg value="${Dio.qt.enable-cleanup-logs}"/>
+									<jvmarg value="${Dio.qt.enable-event-logs}"/>
+									<jvmarg value="${Dio.qt.enable-metaobject-logs}"/>
 									<jvmarg value="-Dio.qt.qml-imports=${testQmlPath}"/>
 									<jvmarg value="-Dio.qt.pluginpath=${qtjambiPluginPath}${psep}${testPluginPath}"/>
 									<jvmarg value="${XstartOnFirstThread}"/>

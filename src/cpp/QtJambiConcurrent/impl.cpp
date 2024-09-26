@@ -862,7 +862,7 @@ JavaSequence& JavaSequence::operator=(const JavaSequence& other){
         if(JniEnvironment env{200}){
             QtJambiAPI::clearJavaCollection(env, _object);
             if(other.m_collection.object()){
-                jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, other.m_collection.object());
+                jobject iterator = QtJambiAPI::iteratorOfJavaIterable(env, other.m_collection.object());
                 while(QtJambiAPI::hasJavaIteratorNext(env, iterator)){
                     QtJambiAPI::addToJavaCollection(env, _object, QtJambiAPI::nextOfJavaIterator(env, iterator));
                 }
@@ -949,7 +949,7 @@ const QVariant &JavaSequence::const_iterator::operator*() const{
                 QTJAMBI_TRY{
                     result = Java::Runtime::List::get(env, _object, m_cursor);
                 }QTJAMBI_CATCH(const JavaException&){
-                    jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, _object);
+                    jobject iterator = QtJambiAPI::iteratorOfJavaIterable(env, _object);
                     for(int i=0; i<m_cursor; ++i){
                         QtJambiAPI::nextOfJavaIterator(env, iterator);
                     }

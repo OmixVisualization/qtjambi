@@ -60,6 +60,10 @@ class QtJambiScope;
 class AbstractSequentialConstIteratorAccess;
 class AbstractAssociativeConstIteratorAccess;
 class AbstractListAccess;
+#if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
+class AbstractSpanAccess;
+#endif //QT_VERSION >= QT_VERSION_CHECK(6,7,0)
+
 class AbstractSetAccess;
 class AbstractLinkedListAccess;
 class AbstractVectorAccess;
@@ -75,6 +79,33 @@ enum class QtJambiNativeID : jlong { Invalid = 0 };
 #define InvalidNativeID QtJambiNativeID::Invalid
 
 QTJAMBI_EXPORT bool operator !(QtJambiNativeID nativeId);
+QTJAMBI_EXPORT bool operator &&(QtJambiNativeID nativeId, QtJambiNativeID nativeId2);
+QTJAMBI_EXPORT bool operator &&(QtJambiNativeID nativeId, bool b2);
+QTJAMBI_EXPORT bool operator &&(bool b1, QtJambiNativeID nativeId);
+QTJAMBI_EXPORT bool operator ||(QtJambiNativeID nativeId, QtJambiNativeID nativeId2);
+QTJAMBI_EXPORT bool operator ||(QtJambiNativeID nativeId, bool b2);
+QTJAMBI_EXPORT bool operator ||(bool b1, QtJambiNativeID nativeId);
+
+template<typename BoolSupplier>
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+typename std::enable_if<std::is_invocable_r<bool, BoolSupplier>::value, bool>::type
+#else
+bool
+#endif
+operator &&(QtJambiNativeID nativeId, BoolSupplier&& b2){
+    return nativeId!=InvalidNativeID && b2();
+}
+
+template<typename BoolSupplier>
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+typename std::enable_if<std::is_invocable_r<bool, BoolSupplier>::value, bool>::type
+#else
+bool
+#endif
+operator ||(QtJambiNativeID nativeId, BoolSupplier&& b2){
+    return nativeId!=InvalidNativeID || b2();
+}
+
 typedef const std::type_info* (*TypeInfoSupplier)(const void *object);
 
 namespace QtJambiAPI{
@@ -345,7 +376,27 @@ QTJAMBI_EXPORT bool isQByteArrayObject(JNIEnv *env, jobject obj);
 QTJAMBI_EXPORT bool isQByteArrayViewObject(JNIEnv *env, jobject obj);
 #endif
 
+QTJAMBI_EXPORT bool isSequentialConstIterator(JNIEnv *env, jobject obj);
+
+QTJAMBI_EXPORT bool isSequentialIterator(JNIEnv *env, jobject obj);
+
+#if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
+QTJAMBI_EXPORT bool isQSpanObject(JNIEnv *env, jobject obj);
+
+QTJAMBI_EXPORT void commitQSpanObject(JNIEnv *env, jobject obj);
+
+QTJAMBI_EXPORT QPair<void*,jlong> fromQSpanObject(JNIEnv *env, jobject obj, bool isConst, const QMetaType& metaType);
+#endif //QT_VERSION >= QT_VERSION_CHECK(6,7,0)
+
 QTJAMBI_EXPORT bool isJavaString(JNIEnv *env, jobject obj);
+
+QTJAMBI_EXPORT bool isJavaCharSequence(JNIEnv *env, jobject obj);
+
+QTJAMBI_EXPORT bool isJavaList(JNIEnv *env, jobject obj);
+
+QTJAMBI_EXPORT bool isJavaCollection(JNIEnv *env, jobject obj);
+
+QTJAMBI_EXPORT bool isJavaIterable(JNIEnv *env, jobject obj);
 
 QTJAMBI_EXPORT jobject convertNativeToJavaOwnedObjectAsWrapper(JNIEnv *env, const void *qt_object, const std::type_info& typeId, const char *nativeTypeName = nullptr);
 
@@ -500,7 +551,7 @@ QTJAMBI_EXPORT jobject getQPairFirst(JNIEnv *env, jobject pair);
 QTJAMBI_EXPORT jobject getQPairSecond(JNIEnv *env, jobject pair);
 
 QTJAMBI_EXPORT jobject newJavaHashSet(JNIEnv *env);
-QTJAMBI_EXPORT jobject newJavaHashMap(JNIEnv *env, int size);
+QTJAMBI_EXPORT jobject newJavaHashMap(JNIEnv *env, int size = 0);
 QTJAMBI_EXPORT jobject newJavaTreeMap(JNIEnv *env);
 
 QTJAMBI_EXPORT void putJavaMap(JNIEnv *env, jobject map, jobject key, jobject val);
@@ -509,14 +560,20 @@ QTJAMBI_EXPORT void clearJavaMap(JNIEnv *env, jobject map);
 QTJAMBI_EXPORT jobject entrySetIteratorOfJavaMap(JNIEnv *env, jobject map);
 QTJAMBI_EXPORT jobject keyOfJavaMapEntry(JNIEnv *env, jobject entry);
 QTJAMBI_EXPORT jobject valueOfJavaMapEntry(JNIEnv *env, jobject entry);
-QTJAMBI_EXPORT jobject newJavaArrayList(JNIEnv *env, jint size);
+QTJAMBI_EXPORT jobject newJavaArrayList(JNIEnv *env, jint size = 0);
 
 QTJAMBI_EXPORT void addToJavaCollection(JNIEnv *env, jobject list, jobject obj);
+QTJAMBI_EXPORT void addAllToJavaCollection(JNIEnv *env, jobject list, jobject obj);
 QTJAMBI_EXPORT void clearJavaCollection(JNIEnv *env, jobject collection);
 QTJAMBI_EXPORT int sizeOfJavaCollection(JNIEnv *env, jobject col);
-QTJAMBI_EXPORT jobject iteratorOfJavaCollection(JNIEnv *env, jobject col);
+QTJAMBI_EXPORT jobject iteratorOfJavaIterable(JNIEnv *env, jobject col);
 QTJAMBI_EXPORT jobject nextOfJavaIterator(JNIEnv *env, jobject col);
 QTJAMBI_EXPORT bool hasJavaIteratorNext(JNIEnv *env, jobject col);
+QTJAMBI_EXPORT void setAtJavaList(JNIEnv *env, jobject list, jint index, jobject obj);
+
+QTJAMBI_EXPORT jobject findObject(JNIEnv *env, const void * pointer);
+QTJAMBI_EXPORT jobject findObject(JNIEnv *env, const QObject* pointer);
+QTJAMBI_EXPORT jobject findFunctionPointerObject(JNIEnv *env, const void * pointer, const std::type_info& typeId);
 
 template<typename T>
 const T& valueReferenceFromNativeId(QtJambiNativeID nativeId){
@@ -526,6 +583,16 @@ const T& valueReferenceFromNativeId(QtJambiNativeID nativeId){
         }
     }
     return QtJambiPrivate::getDefaultValue<T>();
+}
+
+template<typename T>
+T valueFromNativeId(QtJambiNativeID nativeId){
+    if(!!nativeId){
+        if(const T* value = objectFromNativeId<T>(nativeId)){
+            return *value;
+        }
+    }
+    return T{};
 }
 
 bool QTJAMBI_EXPORT isValidArray(JNIEnv *env, jobject object, const std::type_info& typeId);
@@ -569,6 +636,12 @@ QTJAMBI_EXPORT void setJavaOwnership(JNIEnv *env, jobject object);
 
 QTJAMBI_EXPORT void setCppOwnership(JNIEnv *env, jobject object);
 
+QTJAMBI_EXPORT bool isSplitOwnership(JNIEnv *env, jobject object);
+
+QTJAMBI_EXPORT bool isCppOwnership(JNIEnv *env, jobject object);
+
+QTJAMBI_EXPORT bool isJavaOwnership(JNIEnv *env, jobject object);
+
 QTJAMBI_EXPORT void setCppOwnershipAndInvalidate(JNIEnv *env, jobject object);
 
 QTJAMBI_EXPORT void setDefaultOwnership(JNIEnv *env, jobject object);
@@ -577,9 +650,31 @@ QTJAMBI_EXPORT void setJavaOwnership(JNIEnv *env, QtJambiNativeID objectId);
 
 QTJAMBI_EXPORT void setCppOwnership(JNIEnv *env, QtJambiNativeID objectId);
 
+QTJAMBI_EXPORT void changeSplitToCppOwnership(JNIEnv *env, QtJambiNativeID objectId);
+
+QTJAMBI_EXPORT void changeSplitToCppOwnership(JNIEnv *env, jobject object);
+
 QTJAMBI_EXPORT void setCppOwnershipAndInvalidate(JNIEnv *env, QtJambiNativeID objectId);
 
 QTJAMBI_EXPORT void setDefaultOwnership(JNIEnv *env, QtJambiNativeID objectId);
+
+QTJAMBI_EXPORT bool isSplitOwnership(QtJambiNativeID objectId);
+
+QTJAMBI_EXPORT bool isCppOwnership(QtJambiNativeID objectId);
+
+QTJAMBI_EXPORT bool isJavaOwnership(QtJambiNativeID objectId);
+
+QTJAMBI_EXPORT bool isSplitOwnership(const QObject* object);
+
+QTJAMBI_EXPORT bool isCppOwnership(const QObject* object);
+
+QTJAMBI_EXPORT bool isJavaOwnership(const QObject* object);
+
+QTJAMBI_EXPORT bool isSplitOwnership(const void* object);
+
+QTJAMBI_EXPORT bool isCppOwnership(const void* object);
+
+QTJAMBI_EXPORT bool isJavaOwnership(const void* object);
 
 QTJAMBI_EXPORT void setJavaOwnershipForTopLevelObject(JNIEnv *env, QObject* qobject);
 
@@ -610,6 +705,8 @@ QTJAMBI_EXPORT jlong readJavaOptionalLong(JNIEnv *env, jobject object, bool& isP
 QTJAMBI_EXPORT jdouble readJavaOptionalDouble(JNIEnv *env, jobject object, bool& isPresent);
 
 QTJAMBI_EXPORT void checkThread(JNIEnv *env, const QObject* object);
+
+QTJAMBI_EXPORT void checkThread(JNIEnv *env, const std::type_info& argumentType, const void* object);
 
 QTJAMBI_EXPORT void checkThreadUI(JNIEnv *env, const std::type_info& typeId);
 
@@ -692,6 +789,29 @@ QTJAMBI_EXPORT jobject convertQSequentialIteratorToJavaObject(JNIEnv *env,
                            PtrDeleterFunction destructor_function,
                            AbstractSequentialConstIteratorAccess* access);
 
+#if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
+QTJAMBI_EXPORT jobject convertQSpanToJavaObject(JNIEnv *env,
+                                                QtJambiNativeID owner,
+                                                AbstractSpanAccess* access,
+                                                const void* begin,
+                                                jlong size
+                                                );
+
+template<typename T, bool t_is_const, std::size_t E>
+jobject convertQSpanToJavaObject(JNIEnv *env,
+                                 const QSpan<typename std::conditional<t_is_const, typename std::add_const<T>::type, T>::type,E>& span,
+                                 QtJambiNativeID owner = InvalidNativeID);
+
+QTJAMBI_EXPORT jobject convertQSpanFromQListToJavaObject(JNIEnv *env,
+                                                const void* span,
+                                                CopyFunction copyFunction,
+                                                PtrDeleterFunction destructor_function,
+                                                AbstractListAccess* containerAccess, bool isConst);
+
+template<typename T, std::size_t E>
+jobject convertQSpanToDetachedJavaObject(JNIEnv *env, const QSpan<T,E>& span);
+#endif
+
 QTJAMBI_EXPORT jobject convertQAssociativeIteratorToJavaObject(JNIEnv *env,
                            QtJambiNativeID owner,
                            void* iteratorPtr,
@@ -719,15 +839,13 @@ QTJAMBI_EXPORT jobject convertQStringListToJavaObject(JNIEnv *__jni_env,
                                      QtJambiNativeID owner,
                                      const void* listPtr,
                                      CopyFunction copyFunction,
-                                     PtrDeleterFunction deleter,
-                                     bool isConstant
+                                     PtrDeleterFunction deleter
                                 );
 
 QTJAMBI_EXPORT jobject convertQStringListToJavaObject(JNIEnv *__jni_env,
                                      void* listPtr,
                                      SmartPointerDeleter sharedPointerDeleter,
-                                     SmartPointerGetter sharedPointerGetter,
-                                     bool isConstant
+                                     SmartPointerGetter sharedPointerGetter
                                 );
 
 QTJAMBI_EXPORT jobject convertQSetToJavaObject(JNIEnv *__jni_env,
@@ -841,6 +959,34 @@ QTJAMBI_EXPORT jobject convertQMultiMapToJavaObject(JNIEnv *__jni_env,
                                      AbstractMultiMapAccess* mapAccess
                                 );
 
+template<class Container>
+Container createIterable(typename Container::const_iterator begin, typename Container::size_type size){
+#ifdef Q_CC_MSVC
+    return Container(begin, begin+size);
+#else
+    struct ContainerAccess{
+        typename Container::iterator begin;
+        typename Container::size_type size;
+    } access;
+    access.begin = begin;
+    access.size = size;
+    union{
+        Container* container;
+        ContainerAccess* access;
+    } u;
+    u.access = &access;
+    return Container(*u.container);
+#endif
+}
+
+template<class Container>
+Container createIterable(typename Container::const_iterator begin, typename Container::const_iterator end){
+#ifdef Q_CC_MSVC
+    return Container(begin, end);
+#else
+    return createIterable<Container>(begin, size_t(end)-size_t(begin));
+#endif
+}
 
 } // namespace QtJambiAPI
 

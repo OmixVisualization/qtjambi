@@ -34,46 +34,70 @@
 #include <QtCore/QMultiHash>
 #include "containeraccess.h"
 
+#if defined(QTJAMBI_GENERIC_ACCESS)
+
 namespace ContainerAccessAPI {
 
 template<size_t align1, size_t size1, size_t align2, size_t size2>
-class GenericMultiHashAccess : public AbstractMultiHashAccess{
+class GenericMultiHashAccess : public AbstractMultiHashAccess, public AbstractNestedAssociativeAccess {
     typedef typename std::conditional<size1==0, void*, ContainerElement<size1, 0, false, align1>>::type K;
     typedef typename std::conditional<size2==0, void*, ContainerElement<size2, 1, false, align2>>::type T;
     MetaTypeInfo<0,size1==0> m_keyMetaTypeInfo;
     QtJambiUtils::InternalToExternalConverter m_keyInternalToExternalConverter;
     QtJambiUtils::ExternalToInternalConverter m_keyExternalToInternalConverter;
+    QSharedPointer<AbstractContainerAccess> m_keyNestedContainerAccess;
     MetaTypeInfo<1,size2==0> m_valueMetaTypeInfo;
     QtJambiUtils::InternalToExternalConverter m_valueInternalToExternalConverter;
     QtJambiUtils::ExternalToInternalConverter m_valueExternalToInternalConverter;
+    QSharedPointer<AbstractContainerAccess> m_valueNestedContainerAccess;
+    AbstractContainerAccess::DataType m_keyDataType;
+    AbstractContainerAccess::DataType m_valueDataType;
+    PtrOwnerFunction m_keyOwnerFunction;
+    PtrOwnerFunction m_valueOwnerFunction;
     GenericMultiHashAccess(
             const QMetaType& keyMetaType,
             const QtJambiUtils::QHashFunction& keyHashFunction,
             const QtJambiUtils::InternalToExternalConverter& keyInternalToExternalConverter,
             const QtJambiUtils::ExternalToInternalConverter& keyExternalToInternalConverter,
+            const QSharedPointer<AbstractContainerAccess>& keyNestedContainerAccess,
+            PtrOwnerFunction keyOwnerFunction,
             const QMetaType& valueMetaType,
             const QtJambiUtils::QHashFunction& valueHashFunction,
             const QtJambiUtils::InternalToExternalConverter& valueInternalToExternalConverter,
-            const QtJambiUtils::ExternalToInternalConverter& valueExternalToInternalConverter
+            const QtJambiUtils::ExternalToInternalConverter& valueExternalToInternalConverter,
+            const QSharedPointer<AbstractContainerAccess>& valueNestedContainerAccess,
+            PtrOwnerFunction valueOwnerFunction
             )
-        :   AbstractMultiHashAccess(),
+        :   AbstractMultiHashAccess(), AbstractNestedAssociativeAccess(),
           m_keyMetaTypeInfo(keyMetaType, keyHashFunction),
           m_keyInternalToExternalConverter(keyInternalToExternalConverter),
           m_keyExternalToInternalConverter(keyExternalToInternalConverter),
+          m_keyNestedContainerAccess(keyNestedContainerAccess),
           m_valueMetaTypeInfo(valueMetaType, valueHashFunction),
           m_valueInternalToExternalConverter(valueInternalToExternalConverter),
-          m_valueExternalToInternalConverter(valueExternalToInternalConverter)
+          m_valueExternalToInternalConverter(valueExternalToInternalConverter),
+          m_valueNestedContainerAccess(valueNestedContainerAccess),
+          m_keyDataType(dataType(keyMetaType, m_keyNestedContainerAccess)),
+          m_valueDataType(dataType(valueMetaType, m_valueNestedContainerAccess)),
+          m_keyOwnerFunction(keyOwnerFunction),
+          m_valueOwnerFunction(valueOwnerFunction)
     {
     }
 
     GenericMultiHashAccess(const GenericMultiHashAccess<align1, size1, align2, size2>& other)
-        :   AbstractMultiHashAccess(),
+        :   AbstractMultiHashAccess(), AbstractNestedAssociativeAccess(),
           m_keyMetaTypeInfo(other.m_keyMetaTypeInfo),
           m_keyInternalToExternalConverter(other.m_keyInternalToExternalConverter),
           m_keyExternalToInternalConverter(other.m_keyExternalToInternalConverter),
+          m_keyNestedContainerAccess(other.m_keyNestedContainerAccess),
           m_valueMetaTypeInfo(other.m_valueMetaTypeInfo),
           m_valueInternalToExternalConverter(other.m_valueInternalToExternalConverter),
-          m_valueExternalToInternalConverter(other.m_valueExternalToInternalConverter)
+          m_valueExternalToInternalConverter(other.m_valueExternalToInternalConverter),
+          m_valueNestedContainerAccess(other.m_valueNestedContainerAccess),
+          m_keyDataType(other.m_keyDataType),
+          m_valueDataType(other.m_valueDataType),
+          m_keyOwnerFunction(other.m_keyOwnerFunction),
+          m_valueOwnerFunction(other.m_valueOwnerFunction)
     {
     }
 
@@ -83,34 +107,30 @@ public:
                                           const QtJambiUtils::QHashFunction& keyHashFunction,
                                           const QtJambiUtils::InternalToExternalConverter& keyInternalToExternalConverter,
                                           const QtJambiUtils::ExternalToInternalConverter& keyExternalToInternalConverter,
+                                          const QSharedPointer<AbstractContainerAccess>& keyNestedContainerAccess,
+                                          PtrOwnerFunction keyOwnerFunction,
                                           const QMetaType& valueMetaType,
                                           const QtJambiUtils::QHashFunction& valueHashFunction,
                                           const QtJambiUtils::InternalToExternalConverter& valueInternalToExternalConverter,
-                                          const QtJambiUtils::ExternalToInternalConverter& valueExternalToInternalConverter){
+                                          const QtJambiUtils::ExternalToInternalConverter& valueExternalToInternalConverter,
+                                          const QSharedPointer<AbstractContainerAccess>& valueNestedContainerAccess,
+                                          PtrOwnerFunction valueOwnerFunction){
         return new GenericMultiHashAccess(
                                     keyMetaType,
                                     keyHashFunction,
                                     keyInternalToExternalConverter,
                                     keyExternalToInternalConverter,
+                                    keyNestedContainerAccess,
+                                    keyOwnerFunction,
                                     valueMetaType,
                                     valueHashFunction,
                                     valueInternalToExternalConverter,
-                                    valueExternalToInternalConverter);
+                                    valueExternalToInternalConverter,
+                                    valueNestedContainerAccess,
+                                    valueOwnerFunction);
     }
 
     void dispose() override { delete this; }
-
-    void analyzeEntries(const void* container, EntryAnalyzer analyzer, void* data) override {
-        for(auto iter = reinterpret_cast<const QMultiHash<K,T>*>(container)->begin();
-            iter != reinterpret_cast<const QMultiHash<K,T>*>(container)->end();
-            ++iter
-            ){
-            if(!analyzer(QtJambiPrivate::pointer_from<decltype(iter.key())>::from(iter.key()),
-                         QtJambiPrivate::pointer_from<decltype(iter.value())>::from(iter.value()), data)){
-                break;
-            }
-        }
-    }
 
     GenericMultiHashAccess<align1, size1, align2, size2>* clone() override{
         return new GenericMultiHashAccess<align1, size1, align2, size2>(*this);
@@ -118,43 +138,110 @@ public:
     size_t sizeOf() override {
         return sizeof(QMultiHash<K,T>);
     }
-    void assign(void* container, const void* other) override {
-        QTJAMBI_KEY_VALUE_LOCKER
-        (*reinterpret_cast<QMultiHash<K,T>*>(container)) = (*reinterpret_cast<const QMultiHash<K,T>*>(other));
+    void assign(JNIEnv *, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override {
+        QTJAMBI_KEY_VALUE_LOCKER(this);
+        (*reinterpret_cast<QMultiHash<K,T>*>(container.container)) = (*reinterpret_cast<const QMultiHash<K,T>*>(other.container));
     }
-    void* constructContainer(void* placement, const void* copyOf = nullptr) override {
-        QTJAMBI_KEY_VALUE_LOCKER
-        if(copyOf){
-            return new(placement) QMultiHash<K,T>(*reinterpret_cast<const QMultiHash<K,T>*>(copyOf));
-        }else{
-            return new(placement) QMultiHash<K,T>();
-        }
+    void assign(void* container, const void* other) override {
+        QTJAMBI_KEY_VALUE_LOCKER(this);
+            (*reinterpret_cast<QMultiHash<K,T>*>(container)) = (*reinterpret_cast<const QMultiHash<K,T>*>(other));
+    }
+    void* constructContainer(void* placement) override {
+        QTJAMBI_KEY_VALUE_LOCKER(this);
+        return new(placement) QMultiHash<K,T>();
+    }
+    void* constructContainer(void* placement, const void* copyOf) override {
+        QTJAMBI_KEY_VALUE_LOCKER(this);
+        return new(placement) QMultiHash<K,T>(*reinterpret_cast<const QMultiHash<K,T>*>(copyOf));
+    }
+    void* constructContainer(JNIEnv *, void* placement, const ConstContainerAndAccessInfo& copyOf) override {
+        return constructContainer(placement, copyOf.container);
     }
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     void* constructContainer(void* placement, void* move) override {
-        QTJAMBI_KEY_VALUE_LOCKER
+        QTJAMBI_KEY_VALUE_LOCKER(this);
         return new(placement) QMultiHash<K,T>(std::move(*reinterpret_cast<const QMultiHash<K,T>*>(move)));
+    }
+    void* constructContainer(JNIEnv *, void* placement, const ContainerAndAccessInfo& move) override {
+        return constructContainer(placement, move.container);
     }
 #endif
     bool destructContainer(void* container) override {
-        QTJAMBI_KEY_VALUE_LOCKER
+        QTJAMBI_KEY_VALUE_LOCKER(this);
         reinterpret_cast<QMultiHash<K,T>*>(container)->~QMultiHash<K,T>();
         return true;
     }
     int registerContainer(const QByteArray& containerTypeName) override {
-        return QtJambiPrivate::registerAssociativeContainerType<QMultiHash<K,T>, size1, size2>(containerTypeName, m_keyMetaTypeInfo.metaType(), m_valueMetaTypeInfo.metaType());
+        return QtJambiPrivate::registerAssociativeContainerType<QMultiHash<K,T>, size1, size2>(containerTypeName, m_keyMetaTypeInfo.metaType(), m_valueMetaTypeInfo.metaType(), this);
     }
-    bool isConstant() override {return false;}
-    const QMetaType& keyMetaType() override {return m_keyMetaTypeInfo.metaType();}
-    const QMetaType& valueMetaType() override {return m_valueMetaTypeInfo.metaType();}
+    const QMetaType& keyMetaType() override {
+        return m_keyMetaTypeInfo.metaType();
+    }
 
-    void clear(JNIEnv *, void* container) override {
-        QTJAMBI_KEY_VALUE_LOCKER
-        reinterpret_cast<QMultiHash<K,T> *>(container)->clear();
+    const QMetaType& valueMetaType() override {
+        return m_valueMetaTypeInfo.metaType();
+    }
+
+    DataType keyType() override{
+        return m_keyDataType;
+    }
+
+    DataType valueType() override{
+        return m_valueDataType;
+    }
+
+    AbstractContainerAccess* keyNestedContainerAccess() override {
+        return m_keyNestedContainerAccess ? m_keyNestedContainerAccess->clone() : nullptr;
+    }
+
+    AbstractContainerAccess* valueNestedContainerAccess() override {
+        return m_valueNestedContainerAccess ? m_valueNestedContainerAccess->clone() : nullptr;
+    }
+
+    const QSharedPointer<AbstractContainerAccess>& sharedKeyNestedContainerAccess() override {
+        return m_keyNestedContainerAccess;
+    }
+    const QSharedPointer<AbstractContainerAccess>& sharedValueNestedContainerAccess() override {
+        return m_valueNestedContainerAccess;
+    }
+    bool hasKeyNestedContainerAccess() override {
+        return !m_keyNestedContainerAccess.isNull();
+    }
+    bool hasKeyNestedPointers() override {
+        if(hasKeyNestedContainerAccess()){
+            if(auto daccess = dynamic_cast<AbstractSequentialAccess*>(m_keyNestedContainerAccess.data())){
+                return (daccess->elementType() & PointersMask) || daccess->hasNestedPointers();
+            }else if(auto daccess = dynamic_cast<AbstractAssociativeAccess*>(m_keyNestedContainerAccess.data())){
+                return (daccess->keyType() & PointersMask) || daccess->hasKeyNestedPointers() || (daccess->valueType() & PointersMask) || daccess->hasValueNestedPointers();
+            }else if(auto daccess = dynamic_cast<AbstractPairAccess*>(m_keyNestedContainerAccess.data())){
+                return (daccess->firstType() & PointersMask) || daccess->hasFirstNestedPointers() || (daccess->secondType() & PointersMask) || daccess->hasSecondNestedPointers();
+            }
+        }
+        return false;
+    }
+    bool hasValueNestedContainerAccess() override {
+        return !m_valueNestedContainerAccess.isNull();
+    }
+    bool hasValueNestedPointers() override {
+        if(hasValueNestedContainerAccess()){
+            if(auto daccess = dynamic_cast<AbstractSequentialAccess*>(m_valueNestedContainerAccess.data())){
+                return (daccess->elementType() & PointersMask) || daccess->hasNestedPointers();
+            }else if(auto daccess = dynamic_cast<AbstractAssociativeAccess*>(m_valueNestedContainerAccess.data())){
+                return (daccess->keyType() & PointersMask) || daccess->hasKeyNestedPointers() || (daccess->valueType() & PointersMask) || daccess->hasValueNestedPointers();
+            }else if(auto daccess = dynamic_cast<AbstractPairAccess*>(m_valueNestedContainerAccess.data())){
+                return (daccess->firstType() & PointersMask) || daccess->hasFirstNestedPointers() || (daccess->secondType() & PointersMask) || daccess->hasSecondNestedPointers();
+            }
+        }
+        return false;
+    }
+
+    void clear(JNIEnv *, const ContainerInfo& container) override {
+        QTJAMBI_KEY_VALUE_LOCKER(this);
+        reinterpret_cast<QMultiHash<K,T> *>(container.container)->clear();
     }
 
     jboolean contains(JNIEnv * env, const void* container, jobject key) override {
-        QTJAMBI_KEY_VALUE_LOCKER
+        QTJAMBI_KEY_VALUE_LOCKER(this);
         bool result = false;
         {
             jvalue _key;
@@ -168,7 +255,7 @@ public:
     }
 
     jint count(JNIEnv * env, const void* container, jobject key) override {
-        QTJAMBI_KEY_VALUE_LOCKER
+        QTJAMBI_KEY_VALUE_LOCKER(this);
         jint result = 0;
         {
             jvalue _key;
@@ -181,8 +268,8 @@ public:
         return result;
     }
 
-    void insert(JNIEnv *env, void* container, jobject key, jobject value) override {
-        QTJAMBI_KEY_VALUE_LOCKER
+    void insert(JNIEnv *env, const ContainerInfo& container, jobject key, jobject value) override {
+        QTJAMBI_KEY_VALUE_LOCKER(this);
         {
             jvalue jv;
             jv.l = key;
@@ -193,7 +280,7 @@ public:
                 T _qvalue;
                 void *_qvaluePtr = &_qvalue;
                 if(m_valueExternalToInternalConverter(env, nullptr, jv, _qvaluePtr, jValueType::l)){
-                    reinterpret_cast<QMultiHash<K,T> *>(container)->insert(_qkey, _qvalue);
+                    reinterpret_cast<QMultiHash<K,T> *>(container.container)->insert(_qkey, _qvalue);
                 }
 
             }
@@ -201,7 +288,7 @@ public:
     }
 
     jobject key(JNIEnv * env, const void* container, jobject value, jobject defaultKey) override {
-        QTJAMBI_KEY_VALUE_LOCKER
+        QTJAMBI_KEY_VALUE_LOCKER(this);
         jobject result = nullptr;
         {
             jvalue jv;
@@ -225,12 +312,12 @@ public:
         return result;
     }
 
-    jobject keys(JNIEnv * env, const void* container) override {
-        QTJAMBI_KEY_VALUE_LOCKER
-        jobject result = nullptr;
-        AbstractContainerAccess* access = AbstractContainerAccess::create(env, SequentialContainerType::QList, m_keyMetaTypeInfo.metaType());
-        if(!access)
-            access = AbstractContainerAccess::create(env, SequentialContainerType::QList,
+    ContainerAndAccessInfo keys(JNIEnv * env, const ConstContainerInfo& container) override {
+        ContainerAndAccessInfo result;
+        QTJAMBI_KEY_VALUE_LOCKER(this);
+        result.access = ContainerAccessAPI::createContainerAccess(SequentialContainerType::QList, m_keyMetaTypeInfo.metaType());
+        if(!result.access)
+            result.access = ContainerAccessAPI::createContainerAccess(env, SequentialContainerType::QList,
                                                      m_keyMetaTypeInfo.metaType(),
                                                      align1, size1,
                                                      AbstractContainerAccess::isPointerType(m_keyMetaTypeInfo.metaType()),
@@ -239,21 +326,23 @@ public:
 #endif
                                                      m_keyMetaTypeInfo.hashFunction(),
                                                      m_keyInternalToExternalConverter,
-                                                     m_keyExternalToInternalConverter
+                                                     m_keyExternalToInternalConverter,
+                                                     m_keyNestedContainerAccess,
+                                                     m_keyOwnerFunction
                                                     );
-        if(access){
-            const void* keys = new QList<K>(reinterpret_cast<const QMultiHash<K,T> *>(container)->keys());
-            result = objectFromQList(env, keys, access);
+        if(result.access){
+            result.container = new QList<K>(reinterpret_cast<const QMultiHash<K,T> *>(container.container)->keys());
+            result.object = ContainerAPI::objectFromQList(env, result.container, result.access);
         }
         return result;
     }
 
-    jobject keys(JNIEnv * env, const void* container, jobject value) override {
-        QTJAMBI_KEY_VALUE_LOCKER
-        jobject result = nullptr;
-        AbstractContainerAccess* access = AbstractContainerAccess::create(env, SequentialContainerType::QList, m_keyMetaTypeInfo.metaType());
-        if(!access)
-            access = AbstractContainerAccess::create(env, SequentialContainerType::QList,
+    ContainerAndAccessInfo keys(JNIEnv * env, const ConstContainerInfo& container, jobject value) override {
+        QTJAMBI_KEY_VALUE_LOCKER(this);
+        ContainerAndAccessInfo result;
+        result.access = ContainerAccessAPI::createContainerAccess(SequentialContainerType::QList, m_keyMetaTypeInfo.metaType());
+        if(!result.access)
+            result.access = ContainerAccessAPI::createContainerAccess(env, SequentialContainerType::QList,
                                                      m_keyMetaTypeInfo.metaType(),
                                                      align1, size1,
                                                      AbstractContainerAccess::isPointerType(m_keyMetaTypeInfo.metaType()),
@@ -263,20 +352,22 @@ public:
 
                                                      m_keyMetaTypeInfo.hashFunction(),
                                                      m_keyInternalToExternalConverter,
-                                                     m_keyExternalToInternalConverter);
-        if(access){
+                                                     m_keyExternalToInternalConverter,
+                                                     m_keyNestedContainerAccess,
+                                                     m_keyOwnerFunction);
+        if(result.access){
             jvalue jv;
             jv.l = value;
             T _qvalue;
             void *_qvaluePtr = &_qvalue;
             if(m_valueExternalToInternalConverter(env, nullptr, jv, _qvaluePtr, jValueType::l)){
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0) || QT_VERSION >= QT_VERSION_CHECK(6,2,0)
-                const void* keys = new QList<K>(reinterpret_cast<const QMultiHash<K,T> *>(container)->keys(_qvalue));
+                result.container = new QList<K>(reinterpret_cast<const QMultiHash<K,T> *>(container.container)->keys(_qvalue));
 #else
                 QList<K>* _keys = new QList<K>();
                 if(size1==0 || m_keyMetaTypeInfo.metaType().isEqualityComparable()){
-                    typename QMultiHash<K,T>::const_iterator i = reinterpret_cast<const QMultiHash<K,T> *>(container)->begin();
-                    typename QMultiHash<K,T>::const_iterator end = reinterpret_cast<const QMultiHash<K,T> *>(container)->end();
+                    typename QMultiHash<K,T>::const_iterator i = reinterpret_cast<const QMultiHash<K,T> *>(container.container)->begin();
+                    typename QMultiHash<K,T>::const_iterator end = reinterpret_cast<const QMultiHash<K,T> *>(container.container)->end();
                     while (i != end) {
                         if(size1==0){
                             if(i.value() == _qvalue)
@@ -286,9 +377,9 @@ public:
                         ++i;
                     }
                 }
-                const void* keys = _keys;
+                result.container = _keys;
 #endif
-                result = objectFromQList(env, keys, access);
+                result.object = ContainerAPI::objectFromQList(env, result.container, result.access);
             }
         }
         return result;
@@ -297,10 +388,10 @@ public:
     jboolean equal(JNIEnv * env, const void* container, jobject other) override {
         void* ptr{nullptr};
         if (ContainerAPI::getAsQMultiHash(env, other, keyMetaType(), valueMetaType(), ptr)) {
-            QTJAMBI_KEY_VALUE_LOCKER
+            QTJAMBI_KEY_VALUE_LOCKER(this);
             return *reinterpret_cast<const QMultiHash<K,T> *>(container)==*reinterpret_cast<const QMultiHash<K,T> *>(ptr);
         }else{
-            QTJAMBI_KEY_VALUE_LOCKER
+            QTJAMBI_KEY_VALUE_LOCKER(this);
             QMultiHash<K,T> map;
             jobject iterator = QtJambiAPI::entrySetIteratorOfJavaMap(env, other);
             while(QtJambiAPI::hasJavaIteratorNext(env, iterator)){
@@ -323,8 +414,8 @@ public:
         return false;
     }
 
-    jint remove(JNIEnv * env, void* container,jobject key) override {
-        QTJAMBI_KEY_VALUE_LOCKER
+    jint remove(JNIEnv * env, const ContainerInfo& container,jobject key) override {
+        QTJAMBI_KEY_VALUE_LOCKER(this);
         jint result = 0;
         {
             jvalue _key;
@@ -332,7 +423,7 @@ public:
             K _qkey;
             void *_qkeyPtr = &_qkey;
             if(m_keyExternalToInternalConverter(env, nullptr, _key, _qkeyPtr, jValueType::l)){
-                result = reinterpret_cast<QMultiHash<K,T> *>(container)->remove(_qkey);
+                result = reinterpret_cast<QMultiHash<K,T> *>(container.container)->remove(_qkey);
             }
         }
         return result;
@@ -340,7 +431,7 @@ public:
 
     jint size(JNIEnv *, const void* container) override {
         jint result = 0;
-        QTJAMBI_KEY_VALUE_LOCKER
+        QTJAMBI_KEY_VALUE_LOCKER(this);
         result = reinterpret_cast<const QMultiHash<K,T> *>(container)->size();
         return result;
     }
@@ -349,18 +440,18 @@ public:
 
     jint capacity(JNIEnv *, const void* container) override {
         jint result = 0;
-        QTJAMBI_KEY_VALUE_LOCKER
+        QTJAMBI_KEY_VALUE_LOCKER(this);
         result = reinterpret_cast<const QMultiHash<K,T> *>(container)->capacity();
         return result;
     }
 
-    void reserve(JNIEnv *, void* container, jint size) override {
-        QTJAMBI_KEY_VALUE_LOCKER
-        reinterpret_cast<QMultiHash<K,T> *>(container)->reserve(size);
+    void reserve(JNIEnv *, const ContainerInfo& container, jint size) override {
+        QTJAMBI_KEY_VALUE_LOCKER(this);
+        reinterpret_cast<QMultiHash<K,T> *>(container.container)->reserve(size);
     }
 
-    jobject take(JNIEnv *env, void* container, jobject key) override {
-        QTJAMBI_KEY_VALUE_LOCKER
+    jobject take(JNIEnv *env, const ContainerInfo& container, jobject key) override {
+        QTJAMBI_KEY_VALUE_LOCKER(this);
         jobject result = nullptr;
         {
             jvalue _key;
@@ -368,7 +459,7 @@ public:
             K _qkey;
             void *_qkeyPtr = &_qkey;
             if(m_keyExternalToInternalConverter(env, nullptr, _key, _qkeyPtr, jValueType::l)){
-                T _qvalue = reinterpret_cast<QMultiHash<K,T> *>(container)->take(_qkey);
+                T _qvalue = reinterpret_cast<QMultiHash<K,T> *>(container.container)->take(_qkey);
                 jvalue _value;
                 _value.l = nullptr;
                 if(m_valueInternalToExternalConverter(env, nullptr, &_qvalue, _value, true)){
@@ -381,7 +472,7 @@ public:
 
     jobject value(JNIEnv * env, const void* container, jobject key, jobject defaultValue) override {
         jobject result = nullptr;
-        QTJAMBI_KEY_VALUE_LOCKER
+        QTJAMBI_KEY_VALUE_LOCKER(this);
         {
             jvalue jv;
             jv.l = key;
@@ -403,12 +494,12 @@ public:
         return result;
     }
 
-    jobject values(JNIEnv * env, const void* container) override {
-        QTJAMBI_KEY_VALUE_LOCKER
-        jobject result = nullptr;
-        AbstractContainerAccess* access = AbstractContainerAccess::create(env, SequentialContainerType::QList, m_valueMetaTypeInfo.metaType());
-        if(!access)
-            access = AbstractContainerAccess::create(env, SequentialContainerType::QList,
+    ContainerAndAccessInfo values(JNIEnv * env, const ConstContainerInfo& container) override {
+        ContainerAndAccessInfo result;
+        QTJAMBI_KEY_VALUE_LOCKER(this);
+        result.access = ContainerAccessAPI::createContainerAccess(SequentialContainerType::QList, m_valueMetaTypeInfo.metaType());
+        if(!result.access)
+            result.access = ContainerAccessAPI::createContainerAccess(env, SequentialContainerType::QList,
                                                      m_valueMetaTypeInfo.metaType(),
                                                      align2, size2,
                                                      AbstractContainerAccess::isPointerType(m_valueMetaTypeInfo.metaType()),
@@ -417,21 +508,23 @@ public:
 #endif
                                                      m_valueMetaTypeInfo.hashFunction(),
                                                      m_valueInternalToExternalConverter,
-                                                     m_valueExternalToInternalConverter
+                                                     m_valueExternalToInternalConverter,
+                                                     m_valueNestedContainerAccess,
+                                                     m_valueOwnerFunction
                                                      );
-        if(access){
-            const void* values = new QList<T>(reinterpret_cast<const QMultiHash<K,T> *>(container)->values());
-            result = objectFromQList(env, values, access);
+        if(result.access){
+            result.container = new QList<T>(reinterpret_cast<const QMultiHash<K,T> *>(container.container)->values());
+            result.object = ContainerAPI::objectFromQList(env, result.container, result.access);
         }
         return result;
     }
 
-    jobject uniqueKeys(JNIEnv * env, const void* container) override {
-        QTJAMBI_KEY_VALUE_LOCKER
-        jobject result = nullptr;
-        AbstractContainerAccess* access = AbstractContainerAccess::create(env, SequentialContainerType::QList, m_keyMetaTypeInfo.metaType());
-        if(!access)
-            access = AbstractContainerAccess::create(env, SequentialContainerType::QList,
+    ContainerAndAccessInfo uniqueKeys(JNIEnv * env, const ConstContainerInfo& container) override {
+        ContainerAndAccessInfo result;
+        QTJAMBI_KEY_VALUE_LOCKER(this);
+        result.access = ContainerAccessAPI::createContainerAccess(SequentialContainerType::QList, m_keyMetaTypeInfo.metaType());
+        if(!result.access)
+            result.access = ContainerAccessAPI::createContainerAccess(env, SequentialContainerType::QList,
                                                      m_keyMetaTypeInfo.metaType(),
                                                      align1, size1,
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
@@ -440,21 +533,23 @@ public:
                                                      AbstractContainerAccess::isPointerType(m_keyMetaTypeInfo.metaType()),
                                                      m_keyMetaTypeInfo.hashFunction(),
                                                      m_keyInternalToExternalConverter,
-                                                     m_keyExternalToInternalConverter
+                                                     m_keyExternalToInternalConverter,
+                                                     m_keyNestedContainerAccess,
+                                                     m_keyOwnerFunction
                                                     );
-        if(access){
-            const void* keys = new QList<K>(reinterpret_cast<const QMultiHash<K,T> *>(container)->uniqueKeys());
-            result = objectFromQList(env, keys, access);
+        if(result.access){
+            result.container = new QList<K>(reinterpret_cast<const QMultiHash<K,T> *>(container.container)->uniqueKeys());
+            result.object = ContainerAPI::objectFromQList(env, result.container, result.access);
         }
         return result;
     }
 
-    jobject values(JNIEnv * env, const void* container, jobject key) override {
-        QTJAMBI_KEY_VALUE_LOCKER
-        jobject result = nullptr;
-        AbstractContainerAccess* access = AbstractContainerAccess::create(env, SequentialContainerType::QList, m_valueMetaTypeInfo.metaType());
-        if(!access)
-            access = AbstractContainerAccess::create(env, SequentialContainerType::QList, m_valueMetaTypeInfo.metaType(),
+    ContainerAndAccessInfo values(JNIEnv * env, const ConstContainerInfo& container, jobject key) override {
+        ContainerAndAccessInfo result;
+        QTJAMBI_KEY_VALUE_LOCKER(this);
+        result.access = ContainerAccessAPI::createContainerAccess(SequentialContainerType::QList, m_valueMetaTypeInfo.metaType());
+        if(!result.access)
+            result.access = ContainerAccessAPI::createContainerAccess(env, SequentialContainerType::QList, m_valueMetaTypeInfo.metaType(),
                                                                                 align2, size2,
                                                                                 AbstractContainerAccess::isPointerType(m_valueMetaTypeInfo.metaType()),
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
@@ -462,23 +557,25 @@ public:
 #endif
                                                                                 m_valueMetaTypeInfo.hashFunction(),
                                                                                 m_valueInternalToExternalConverter,
-                                                                                m_valueExternalToInternalConverter
+                                                                                m_valueExternalToInternalConverter,
+                                                                                m_valueNestedContainerAccess,
+                                                                                m_valueOwnerFunction
                                                                                );
-        if(access){
+        if(result.access){
             jvalue jv;
             jv.l = key;
             K _qkey;
             void *_qkeyPtr = &_qkey;
             if(m_keyExternalToInternalConverter(env, nullptr, jv, _qkeyPtr, jValueType::l)){
-                const void* values = new QList<T>(reinterpret_cast<const QMultiHash<K,T> *>(container)->values(_qkey));
-                result = objectFromQList(env, values, access);
+                result.container = new QList<T>(reinterpret_cast<const QMultiHash<K,T> *>(container.container)->values(_qkey));
+                result.object = ContainerAPI::objectFromQList(env, result.container, result.access);
             }
         }
         return result;
     }
 
     jboolean contains(JNIEnv *env, const void* container, jobject key, jobject value) override {
-        QTJAMBI_KEY_VALUE_LOCKER
+        QTJAMBI_KEY_VALUE_LOCKER(this);
         bool result = false;
         {
             jvalue jv;
@@ -498,7 +595,7 @@ public:
     }
 
     jint count(JNIEnv *env, const void* container, jobject key, jobject value) override {
-        QTJAMBI_KEY_VALUE_LOCKER
+        QTJAMBI_KEY_VALUE_LOCKER(this);
         jint result = 0;
         {
             jvalue jv;
@@ -523,8 +620,8 @@ private:
     };
 public:
 
-    jobject begin(JNIEnv * env, QtJambiNativeID ownerId, void* container) override {
-        QTJAMBI_KEY_VALUE_LOCKER
+    jobject begin(JNIEnv * env, const ExtendedContainerInfo& container) override {
+        QTJAMBI_KEY_VALUE_LOCKER(this);
         AssociativeConstIteratorAccess<QMultiHash, align1, size1, align2, size2, false>* access = new AssociativeIteratorAccess<QMultiHash, align1, size1, align2, size2>(
                     m_keyMetaTypeInfo,
                     m_keyInternalToExternalConverter,
@@ -532,15 +629,15 @@ public:
                     m_valueInternalToExternalConverter,
                     m_valueExternalToInternalConverter);
         jobject result = QtJambiAPI::convertQAssociativeIteratorToJavaObject(env,
-                                      ownerId,
-                                      new Iterator{reinterpret_cast<QMultiHash<K,T> *>(container)->begin()},
+                                      container.nativeId,
+                                      new Iterator{reinterpret_cast<QMultiHash<K,T> *>(container.container)->begin()},
                                       [](void* ptr,bool){ delete reinterpret_cast<Iterator*>(ptr); },
                                       access);
         return result;
     }
 
-    jobject end(JNIEnv * env, QtJambiNativeID ownerId, void* container) override {
-        QTJAMBI_KEY_VALUE_LOCKER
+    jobject end(JNIEnv * env, const ExtendedContainerInfo& container) override {
+        QTJAMBI_KEY_VALUE_LOCKER(this);
         AssociativeConstIteratorAccess<QMultiHash, align1, size1, align2, size2, false>* access = new AssociativeIteratorAccess<QMultiHash, align1, size1, align2, size2>(
                     m_keyMetaTypeInfo,
                     m_keyInternalToExternalConverter,
@@ -548,45 +645,45 @@ public:
                     m_valueInternalToExternalConverter,
                     m_valueExternalToInternalConverter);
         jobject result = QtJambiAPI::convertQAssociativeIteratorToJavaObject(env,
-                                      ownerId,
-                                      new Iterator{reinterpret_cast<QMultiHash<K,T> *>(container)->end()},
+                                      container.nativeId,
+                                      new Iterator{reinterpret_cast<QMultiHash<K,T> *>(container.container)->end()},
                                       [](void* ptr,bool){ delete reinterpret_cast<Iterator*>(ptr); },
                                       access);
         return result;
     }
 
-    jobject constBegin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override {
-        QTJAMBI_KEY_VALUE_LOCKER
+    jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) override {
+        QTJAMBI_KEY_VALUE_LOCKER(this);
         AbstractAssociativeConstIteratorAccess* access = new AssociativeConstIteratorAccess<QMultiHash, align1, size1, align2, size2>(
                     m_keyMetaTypeInfo,
                     m_keyInternalToExternalConverter,
                     m_valueMetaTypeInfo,
                     m_valueInternalToExternalConverter);
         jobject result = QtJambiAPI::convertQAssociativeIteratorToJavaObject(env,
-                                      ownerId,
-                                      new typename QMultiHash<K,T>::const_iterator(reinterpret_cast<const QMultiHash<K,T> *>(container)->constBegin()),
+                                      container.nativeId,
+                                      new typename QMultiHash<K,T>::const_iterator(reinterpret_cast<const QMultiHash<K,T> *>(container.container)->constBegin()),
                                       [](void* ptr,bool){ delete reinterpret_cast<typename QMultiHash<K,T>::const_iterator*>(ptr); },
                                       access);
         return result;
     }
 
-    jobject constEnd(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override {
-        QTJAMBI_KEY_VALUE_LOCKER
+    jobject constEnd(JNIEnv * env, const ConstExtendedContainerInfo& container) override {
+        QTJAMBI_KEY_VALUE_LOCKER(this);
         AbstractAssociativeConstIteratorAccess* access = new AssociativeConstIteratorAccess<QMultiHash, align1, size1, align2, size2>(
                     m_keyMetaTypeInfo,
                     m_keyInternalToExternalConverter,
                     m_valueMetaTypeInfo,
                     m_valueInternalToExternalConverter);
         jobject result = QtJambiAPI::convertQAssociativeIteratorToJavaObject(env,
-                                      ownerId,
-                                      new typename QMultiHash<K,T>::const_iterator(reinterpret_cast<const QMultiHash<K,T> *>(container)->constEnd()),
+                                      container.nativeId,
+                                      new typename QMultiHash<K,T>::const_iterator(reinterpret_cast<const QMultiHash<K,T> *>(container.container)->constEnd()),
                                       [](void* ptr,bool){ delete reinterpret_cast<typename QMultiHash<K,T>::const_iterator*>(ptr); },
                                       access);
         return result;
     }
 
-    jobject find(JNIEnv * env, QtJambiNativeID ownerId, void* container, jobject key) override {
-        QTJAMBI_KEY_VALUE_LOCKER
+    jobject find(JNIEnv * env, const ExtendedContainerInfo& container, jobject key) override {
+        QTJAMBI_KEY_VALUE_LOCKER(this);
         jobject result = nullptr;
         {
             jvalue _key;
@@ -601,19 +698,19 @@ public:
                             m_valueInternalToExternalConverter,
                             m_valueExternalToInternalConverter);
                 result = QtJambiAPI::convertQAssociativeIteratorToJavaObject(env,
-                                              ownerId,
-                                              new Iterator{reinterpret_cast<QMultiHash<K,T> *>(container)->find(_qkey)},
+                                              container.nativeId,
+                                              new Iterator{reinterpret_cast<QMultiHash<K,T> *>(container.container)->find(_qkey)},
                                               [](void* ptr,bool){ delete reinterpret_cast<Iterator*>(ptr); },
                                               access);
             }
         }
         if(!result)
-            result = end(env, ownerId, container);
+            result = end(env, container);
         return result;
     }
 
-    jobject constFind(JNIEnv * env, QtJambiNativeID ownerId, const void* container, jobject key) override {
-        QTJAMBI_KEY_VALUE_LOCKER
+    jobject constFind(JNIEnv * env, const ConstExtendedContainerInfo& container, jobject key) override {
+        QTJAMBI_KEY_VALUE_LOCKER(this);
         jobject result = nullptr;
         {
             jvalue _key;
@@ -627,19 +724,19 @@ public:
                             m_valueMetaTypeInfo,
                             m_valueInternalToExternalConverter);
                 result = QtJambiAPI::convertQAssociativeIteratorToJavaObject(env,
-                                              ownerId,
-                                              new typename QMultiHash<K,T>::const_iterator(reinterpret_cast<const QMultiHash<K,T> *>(container)->constFind(_qkey)),
+                                              container.nativeId,
+                                              new typename QMultiHash<K,T>::const_iterator(reinterpret_cast<const QMultiHash<K,T> *>(container.container)->constFind(_qkey)),
                                               [](void* ptr,bool){ delete reinterpret_cast<typename QMultiHash<K,T>::const_iterator*>(ptr); },
                                               access);
             }
         }
         if(!result)
-            result = constEnd(env, ownerId, container);
+            result = constEnd(env, container);
         return result;
     }
 
-    jobject find(JNIEnv * env, QtJambiNativeID ownerId, void* container, jobject key, jobject value) override {
-        QTJAMBI_KEY_VALUE_LOCKER
+    jobject find(JNIEnv * env, const ExtendedContainerInfo& container, jobject key, jobject value) override {
+        QTJAMBI_KEY_VALUE_LOCKER(this);
         jobject result = nullptr;
         {
             jvalue jv;
@@ -658,20 +755,20 @@ public:
                                                                                     m_valueInternalToExternalConverter,
                                                                                     m_valueExternalToInternalConverter);
                     result = QtJambiAPI::convertQAssociativeIteratorToJavaObject(env,
-                                                  ownerId,
-                                                  new Iterator{reinterpret_cast<QMultiHash<K,T> *>(container)->find(_qkey, _qvalue)},
+                                                  container.nativeId,
+                                                  new Iterator{reinterpret_cast<QMultiHash<K,T> *>(container.container)->find(_qkey, _qvalue)},
                                                   [](void* ptr,bool){ delete reinterpret_cast<Iterator*>(ptr); },
                                                   access);
                 }
             }
         }
         if(!result)
-            result = end(env, ownerId, container);
+            result = end(env, container);
         return result;
     }
 
-    jobject constFind(JNIEnv * env, QtJambiNativeID ownerId, const void* container, jobject key, jobject value) override {
-        QTJAMBI_KEY_VALUE_LOCKER
+    jobject constFind(JNIEnv * env, const ConstExtendedContainerInfo& container, jobject key, jobject value) override {
+        QTJAMBI_KEY_VALUE_LOCKER(this);
         jobject result = nullptr;
         {
             jvalue jv;
@@ -689,20 +786,20 @@ public:
                                                                                     m_valueMetaTypeInfo,
                                                                                     m_valueInternalToExternalConverter);
                     result = QtJambiAPI::convertQAssociativeIteratorToJavaObject(env,
-                                                  ownerId,
-                                                  new typename QMultiHash<K,T>::const_iterator(reinterpret_cast<const QMultiHash<K,T> *>(container)->constFind(_qkey, _qvalue)),
+                                                  container.nativeId,
+                                                  new typename QMultiHash<K,T>::const_iterator(reinterpret_cast<const QMultiHash<K,T> *>(container.container)->constFind(_qkey, _qvalue)),
                                                   [](void* ptr,bool){ delete reinterpret_cast<typename QMultiHash<K,T>::const_iterator*>(ptr); },
                                                   access);
                 }
             }
         }
         if(!result)
-            result = constEnd(env, ownerId, container);
+            result = constEnd(env, container);
         return result;
     }
 
-    jint remove(JNIEnv * env, void* container,jobject key, jobject value) override {
-        QTJAMBI_KEY_VALUE_LOCKER
+    jint remove(JNIEnv * env, const ContainerInfo& container,jobject key, jobject value) override {
+        QTJAMBI_KEY_VALUE_LOCKER(this);
         jint result = 0;
         {
             jvalue jv;
@@ -714,15 +811,15 @@ public:
                 T _qvalue;
                 void *_qvaluePtr = &_qvalue;
                 if(m_valueExternalToInternalConverter(env, nullptr, jv, _qvaluePtr, jValueType::l)){
-                    result = jint(reinterpret_cast<QMultiHash<K,T> *>(container)->remove(_qkey, _qvalue));
+                    result = jint(reinterpret_cast<QMultiHash<K,T> *>(container.container)->remove(_qkey, _qvalue));
                 }
             }
         }
         return result;
     }
 
-    void replace(JNIEnv * env, void* container,jobject key, jobject value) override {
-        QTJAMBI_KEY_VALUE_LOCKER
+    void replace(JNIEnv * env, const ContainerInfo& container,jobject key, jobject value) override {
+        QTJAMBI_KEY_VALUE_LOCKER(this);
         {
             jvalue jv;
             jv.l = key;
@@ -733,18 +830,100 @@ public:
                 T _qvalue;
                 void *_qvaluePtr = &_qvalue;
                 if(m_valueExternalToInternalConverter(env, nullptr, jv, _qvaluePtr, jValueType::l)){
-                    reinterpret_cast<QMultiHash<K,T> *>(container)->replace(_qkey, _qvalue);
+                    reinterpret_cast<QMultiHash<K,T> *>(container.container)->replace(_qkey, _qvalue);
                 }
             }
         }
     }
 
-    void unite(JNIEnv *env, void* container, jobject other) override {
-        void* ptr{nullptr};
-        if (ContainerAPI::getAsQMultiHash(env, other, keyMetaType(), valueMetaType(), ptr)) {
-            QTJAMBI_KEY_VALUE_LOCKER
-            reinterpret_cast<QMultiHash<K,T> *>(container)->unite(*reinterpret_cast<QMultiHash<K,T> *>(ptr));
+    void unite(JNIEnv *env, const ContainerInfo& container, ContainerAndAccessInfo& other) override {
+        QTJAMBI_KEY_VALUE_LOCKER(this);
+        if (ContainerAPI::getAsQMultiHash(env, other.object, keyMetaType(), valueMetaType(), other.container, other.access)) {
+            reinterpret_cast<QMultiHash<K,T> *>(container.container)->unite(*reinterpret_cast<QMultiHash<K,T> *>(other.container));
+        }else{
+            QMultiHash<K,T> tmp;
+            jobject iterator = QtJambiAPI::entrySetIteratorOfJavaMap(env, other.object);
+            while(QtJambiAPI::hasJavaIteratorNext(env, iterator)) {
+                jobject entry = QtJambiAPI::nextOfJavaIterator(env, iterator);
+                jobject key = QtJambiAPI::keyOfJavaMapEntry(env, entry);
+                jobject valCollection = QtJambiAPI::valueOfJavaMapEntry(env, entry);
+                jobject iterator2 = QtJambiAPI::iteratorOfJavaIterable(env, valCollection);
+                while(QtJambiAPI::hasJavaIteratorNext(env, iterator2)) {
+                    jobject val = QtJambiAPI::nextOfJavaIterator(env, iterator2);
+                    jvalue jv;
+                    jv.l = key;
+                    K _qkey;
+                    void *_qkeyPtr = &_qkey;
+                    if(m_keyExternalToInternalConverter(env, nullptr, jv, _qkeyPtr, jValueType::l)){
+                        jv.l = val;
+                        T _qvalue;
+                        void *_qvaluePtr = &_qvalue;
+                        if(m_valueExternalToInternalConverter(env, nullptr, jv, _qvaluePtr, jValueType::l)){
+                            tmp.insert(_qkey, _qvalue);
+                        }
+                    }
+                }
+            }
+            reinterpret_cast<QMultiHash<K,T> *>(container.container)->unite(tmp);
         }
+    }
+
+    bool isDetached(const void* container) override {
+        QTJAMBI_KEY_VALUE_LOCKER(this);
+        return reinterpret_cast<const QMultiHash<K,T> *>(container)->isDetached();
+    }
+
+    void detach(const ContainerInfo& container) override {
+        QTJAMBI_KEY_VALUE_LOCKER(this);
+        reinterpret_cast<QMultiHash<K,T> *>(container.container)->detach();
+    }
+
+    bool isSharedWith(const void* container, const void* container2) override {
+        QTJAMBI_KEY_VALUE_LOCKER(this);
+        return reinterpret_cast<const QMultiHash<K,T> *>(container)->isSharedWith(*reinterpret_cast<const QMultiHash<K,T> *>(container2));
+    }
+
+    void swap(JNIEnv *, const ContainerInfo& container, const ContainerAndAccessInfo& container2) override {
+        QTJAMBI_KEY_VALUE_LOCKER(this);
+        reinterpret_cast<QMultiHash<K,T> *>(container.container)->swap(*reinterpret_cast<QMultiHash<K,T> *>(container2.container));
+    }
+
+    class KeyValueIterator : public AbstractHashAccess::KeyValueIterator{
+    public:
+        GenericMultiHashAccess* access;
+        typename QMultiHash<K,T>::ConstIterator current;
+        typename QMultiHash<K,T>::ConstIterator end;
+        KeyValueIterator(GenericMultiHashAccess* _access, const void* container)
+            : access(_access){
+            QTJAMBI_KEY_VALUE_LOCKER(access);
+            current = reinterpret_cast<const QMultiHash<K,T>*>(container)->constBegin();
+            end = reinterpret_cast<const QMultiHash<K,T>*>(container)->constEnd();
+        }
+        ~KeyValueIterator() override {};
+        bool hasNext() override {return current!=end;};
+        QPair<jobject,jobject> next(JNIEnv * env) override {
+            QTJAMBI_KEY_VALUE_LOCKER(access);
+            jvalue k;
+            k.l = nullptr;
+            jvalue v;
+            v.l = nullptr;
+            access->m_keyInternalToExternalConverter(env, nullptr, &current.key(), k, true);
+            access->m_valueInternalToExternalConverter(env, nullptr, &current.value(), v, true);
+            ++current;
+            return {k.l, v.l};
+        };
+        QPair<const void*,const void*> next() override {
+            QTJAMBI_KEY_VALUE_LOCKER(access);
+            const void* key = access->m_keyDataType==AbstractContainerAccess::Value ? nullptr :
+                                  QtJambiPrivate::ContainerContentDeref<K, size1==0>::deref(current.key());
+            const void* value = access->m_valueDataType==AbstractContainerAccess::Value ? nullptr :
+                                    QtJambiPrivate::ContainerContentDeref<T, size2==0>::deref(current.value());
+            ++current;
+            return {key, value};
+        }
+    };
+    std::unique_ptr<AbstractHashAccess::KeyValueIterator> keyValueIterator(const void* container) override {
+        return std::unique_ptr<AbstractHashAccess::KeyValueIterator>(new KeyValueIterator(this, container));
     }
 };
 
@@ -756,5 +935,7 @@ struct AssociativeContainerAccessFac<QMultiHash,align1,size1,align2,size2>{
 };
 
 }
+
+#endif //defined(QTJAMBI_GENERIC_ACCESS)
 
 #endif // CONTAINERACCESS_MULTIHASH_H

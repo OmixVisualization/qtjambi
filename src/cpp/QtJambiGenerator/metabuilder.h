@@ -162,6 +162,8 @@ class MetaBuilder {
 
         const QString& outputDirectory() const { return m_out_dir; }
         void setOutputDirectory(const QString &outDir) { m_out_dir = outDir; }
+        const QString& logsDirectory() const { return m_logs_dir; }
+        void setLogsDirectory(const QString &outDir) { m_logs_dir = outDir; }
         void setFeatures(const QMap<QString, QString>& features){ m_features = &features; }
         void setQtVersion(uint qtVersionMajor, uint qtVersionMinor, uint qtVersionPatch, uint qtjambiVersionPatch) {
             m_qtVersionMajor = qtVersionMajor;
@@ -197,6 +199,7 @@ protected:
                               MetaFunction *meta_function, QSet<QString> *warnings = nullptr);
 
         QString m_out_dir;
+        QString m_logs_dir;
 
         MetaClassList m_meta_classes;
         QMap<QString,QHashDummyValue> m_classNames;
@@ -255,6 +258,7 @@ protected:
         QList<QPair<MetaClass*,QString>> m_pendingScopedClasses;
         QList<QPair<QPair<QString,FunctionModelItem>,MetaFunction*>> m_pendingHashFunctions;
         QList<QPair<QPair<QString,FunctionModelItem>,MetaFunction*>> m_pendingSwapFunctions;
+        QList<QPair<QPair<QString,FunctionModelItem>,MetaFunction*>> m_pendingFuzzyFunctions;
 };
 
 struct Operator {

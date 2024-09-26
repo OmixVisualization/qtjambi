@@ -606,7 +606,7 @@ public class TestQVariant extends ApplicationInitializer {
     		assertTrue(""+entry.getKey(), entry.getKey().toString().startsWith("TEST"));
     		assertTrue(""+entry.getValue(), entry.getValue() instanceof List);
     		List<?> list = (List<?>)entry.getValue();
-    		assertEquals(2, list.size());
+    		assertEquals("size of "+entry.getKey(), 2, list.size());
     		for (Object object : list) {
     			assertTrue(object instanceof Integer);
 			}
@@ -625,7 +625,7 @@ public class TestQVariant extends ApplicationInitializer {
     		assertTrue(((QObject)entry.getKey()).objectName().startsWith("VariantTestObject"));
     		assertTrue(entry.getValue() instanceof List);
     		List<?> list = (List<?>)entry.getValue();
-    		assertEquals(2, list.size());
+    		assertEquals("value size for "+entry.getKey(), 2, list.size());
     		for (Object object : list) {
     			assertTrue(object instanceof Integer);
 			}
@@ -948,10 +948,10 @@ public class TestQVariant extends ApplicationInitializer {
         QRectF expectedRectF = new QRectF();
         QSize expectedSize = new QSize();
         QSizeF expectedSizeF = new QSizeF();
-        List<Object> expectedList = QList.createVariantList();
+        List<?> expectedList = QList.createVariantList();
         Map<String, Object> expectedMap = QMap.createVariantMap();
         if(convertToQList)
-        	expectedList = QList.of('t', 'h', 'i', 's', ' ', 'i', 's', ' ', 'm', 'y', ' ', 's', 't', 'r', 'i', 'n', 'g');
+        	expectedList = QList.ofChar('t', 'h', 'i', 's', ' ', 'i', 's', ' ', 'm', 'y', ' ', 's', 't', 'r', 'i', 'n', 'g');
 
         testQVariant("Normal string", variant, expectedDouble, true, expectedString, true, expectedByteArray, true, expectedInt, true, expectedBool, true, expectedBitArray, false, expectedChar,
                 false, expectedDate, true, expectedTime, true, expectedDateTime, true, expectedPoint, false, expectedPointF, false, expectedRect, false, expectedRectF, false,
@@ -977,10 +977,10 @@ public class TestQVariant extends ApplicationInitializer {
         QRectF expectedRectF = new QRectF();
         QSize expectedSize = new QSize();
         QSizeF expectedSizeF = new QSizeF();
-        List<Object> expectedList = QList.createVariantList();
+        List<?> expectedList = QList.createVariantList();
         Map<String, Object> expectedMap = QMap.createVariantMap();
         if(convertToQList)
-        	expectedList = QList.of((byte)'t', (byte)'h', (byte)'i', (byte)'s', (byte)' ', (byte)'i', (byte)'s', (byte)' ', (byte)'m', (byte)'y', (byte)' ', (byte)'s', (byte)'t', (byte)'r', (byte)'i', (byte)'n', (byte)'g');
+        	expectedList = QList.ofByte((byte)'t', (byte)'h', (byte)'i', (byte)'s', (byte)' ', (byte)'i', (byte)'s', (byte)' ', (byte)'m', (byte)'y', (byte)' ', (byte)'s', (byte)'t', (byte)'r', (byte)'i', (byte)'n', (byte)'g');
 
         testQVariant("QByteArray", variant, expectedDouble, true, expectedString, true, expectedByteArray, true, expectedInt, true, expectedBool, true, expectedBitArray,
                 false, expectedChar, false, expectedDate, false, expectedTime, false, expectedDateTime, false, expectedPoint, false, expectedPointF, false, expectedRect, false, expectedRectF, false,
@@ -1033,10 +1033,10 @@ public class TestQVariant extends ApplicationInitializer {
         QRectF expectedRectF = new QRectF();
         QSize expectedSize = new QSize();
         QSizeF expectedSizeF = new QSizeF();
-        List<Object> expectedList = QList.createVariantList();
+        List<?> expectedList = QList.createVariantList();
         Map<String, Object> expectedMap = QMap.createVariantMap();
         if(convertToQList)
-        	expectedList = QList.of('1', '2', '3', '.', '4', '5', '6');
+        	expectedList = QList.ofChar('1', '2', '3', '.', '4', '5', '6');
 
         testQVariant("String double", variant, expectedDouble, true, expectedString, true, expectedByteArray, true, expectedInt, true, expectedBool, true, expectedBitArray,
                 false, expectedChar, false, expectedDate, true, expectedTime, true, expectedDateTime, true, expectedPoint, false, expectedPointF, false, expectedRect, false, expectedRectF, false,
@@ -1062,10 +1062,10 @@ public class TestQVariant extends ApplicationInitializer {
         QRectF expectedRectF = new QRectF();
         QSize expectedSize = new QSize();
         QSizeF expectedSizeF = new QSizeF();
-        List<Object> expectedList = QList.createVariantList();
+        List<?> expectedList = QList.createVariantList();
         Map<String, Object> expectedMap = QMap.createVariantMap();
         if(convertToQList)
-        	expectedList = QList.of((byte)'4', (byte)'5', (byte)'6', (byte)'.', (byte)'7', (byte)'8', (byte)'9');
+        	expectedList = QList.ofByte((byte)'4', (byte)'5', (byte)'6', (byte)'.', (byte)'7', (byte)'8', (byte)'9');
 
         testQVariant("Byte array double", variant, expectedDouble, true, expectedString, true, expectedByteArray, true, expectedInt, true, expectedBool, true,
                 expectedBitArray, false, expectedChar, false, expectedDate, false, expectedTime, false, expectedDateTime, false, expectedPoint, false, expectedPointF, false, expectedRect, false,
@@ -1091,10 +1091,10 @@ public class TestQVariant extends ApplicationInitializer {
         QRectF expectedRectF = new QRectF();
         QSize expectedSize = new QSize();
         QSizeF expectedSizeF = new QSizeF();
-        List<Object> expectedList = QList.createVariantList();
+        List<?> expectedList = QList.createVariantList();
         Map<String, Object> expectedMap = QMap.createVariantMap();
         if(convertToQList)
-        	expectedList = QList.of('3', '2', '1');
+        	expectedList = QList.ofChar('3', '2', '1');
 
         testQVariant("String integer", variant, expectedDouble, true, expectedString, true, expectedByteArray, true, expectedInt, true, expectedBool, true, expectedBitArray,
                 false, expectedChar, false, expectedDate, true, expectedTime, true, expectedDateTime, true, expectedPoint, false, expectedPointF, false, expectedRect, false, expectedRectF, false,
@@ -1120,10 +1120,10 @@ public class TestQVariant extends ApplicationInitializer {
         QRectF expectedRectF = new QRectF();
         QSize expectedSize = new QSize();
         QSizeF expectedSizeF = new QSizeF();
-        List<Object> expectedList = QList.createVariantList();
+        List<?> expectedList = QList.createVariantList();
         Map<String, Object> expectedMap = QMap.createVariantMap();
         if(convertToQList)
-        	expectedList = QList.of('F', 'a', 'L', 's', 'E');
+        	expectedList = QList.ofChar('F', 'a', 'L', 's', 'E');
 
         testQVariant("String boolean", variant, expectedDouble, true, expectedString, true, expectedByteArray, true, expectedInt, true, expectedBool, true, expectedBitArray,
                 false, expectedChar, false, expectedDate, true, expectedTime, true, expectedDateTime, true, expectedPoint, false, expectedPointF, false, expectedRect, false, expectedRectF, false,
@@ -1149,10 +1149,10 @@ public class TestQVariant extends ApplicationInitializer {
         QRectF expectedRectF = new QRectF();
         QSize expectedSize = new QSize();
         QSizeF expectedSizeF = new QSizeF();
-        List<Object> expectedList = QList.createVariantList();
+        List<?> expectedList = QList.createVariantList();
         Map<String, Object> expectedMap = QMap.createVariantMap();
         if(convertToQList)
-        	expectedList = QList.of('t', 'R', 'U', 'e');
+        	expectedList = QList.ofChar('t', 'R', 'U', 'e');
 
         testQVariant("String boolean (true)", variant, expectedDouble, true, expectedString, true, expectedByteArray, true, expectedInt, true, expectedBool, true,
                 expectedBitArray, false, expectedChar, false, expectedDate, true, expectedTime, true, expectedDateTime, true, expectedPoint, false, expectedPointF, false, expectedRect, false,
@@ -1609,7 +1609,7 @@ public class TestQVariant extends ApplicationInitializer {
 	
 	        Map<String,Object> receivedArguments = new TreeMap<>();
 	    	for(QMetaMethod m : object.metaObject().methods()) {
-//	    		System.out.println(m.cppMethodSignature() + " = " + m.methodSignature());
+	    		System.out.println(m.cppMethodSignature() + " = " + m.methodSignature());
 	    		if(m.methodType()==QMetaMethod.MethodType.Signal && m.parameterTypes().size()==1) {
 	    			QMetaObject.AbstractPrivateSignal1<?> signal = (QMetaObject.AbstractPrivateSignal1<?>)m.toSignal(object);
 	    			String name = m.name().toString();

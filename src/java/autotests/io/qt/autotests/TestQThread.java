@@ -232,7 +232,7 @@ public class TestQThread extends ApplicationInitializer{
 		jthread.setName("testThreadSignalsToQObject");
 		jthread.setDaemon(true);
 		jthread.start();
-		jthread.join();
+		jthread.join(2000);
 		if(throwable[0]!=null)
 			throw throwable[0];
 		assertEquals("started counter", 0, started.get());
@@ -263,7 +263,7 @@ public class TestQThread extends ApplicationInitializer{
 		jthread.started.connect(started::incrementAndGet);
 		jthread.finished.connect(finished::incrementAndGet);
 		jthread.start();
-		jthread.join();
+		jthread.join(2000);
 		int i=0;
 		while(finished.get()==0 && i<10000) {
 			Thread.sleep(50);
@@ -285,7 +285,7 @@ public class TestQThread extends ApplicationInitializer{
 		jthread.started.connect(started::incrementAndGet);
 		jthread.finished.connect(finished::incrementAndGet);
 		jthread.start();
-		jthread.join();
+		jthread.join(2000);
 		assertEquals("started counter", 0, started.get());
 		assertEquals("running counter", 1, running.get());
 		assertEquals("finished counter", 0, finished.get());
@@ -335,7 +335,7 @@ public class TestQThread extends ApplicationInitializer{
 			assertTrue(thread.javaThread()!=null);
 			thread.javaThread().interrupt();
 //			thread.requestInterruption();
-			thread.join();
+			thread.join(2000);
 			assertTrue(interrupted.get());
 			assertFalse(continued.get());
 			assertTrue("not interruptionRequested", interruptionRequested.get());
@@ -374,7 +374,7 @@ public class TestQThread extends ApplicationInitializer{
 			assertTrue(thread.isRunning());
 			assertFalse(thread.isFinished());
 			thread.requestInterruption();
-			thread.join();
+			thread.join(2000);
 			assertTrue(interrupted.get());
 			assertFalse(continued.get());
 			assertTrue(interruptionRequested.get());
@@ -416,7 +416,7 @@ public class TestQThread extends ApplicationInitializer{
 				Thread.sleep(100);
 			}
 			thread.interrupt();
-			thread.join();
+			thread.join(2000);
 			assertTrue(interrupted.get());
 			assertFalse(continued.get());
 			assertFalse("is interruptionRequested", interruptionRequested.get());
@@ -458,7 +458,7 @@ public class TestQThread extends ApplicationInitializer{
 				Thread.sleep(100);
 			}
 			QThread.thread(thread).requestInterruption();
-			thread.join();
+			thread.join(2000);
 			assertTrue(interrupted.get());
 			assertFalse(continued.get());
 			assertTrue(interruptionRequested.get());
@@ -473,73 +473,51 @@ public class TestQThread extends ApplicationInitializer{
 	@org.junit.Test
 	public void testDeleteTopLevelRunnerThread() throws Throwable {
 		WeakReference<QThread> reference;
+		WeakReference<Thread> jreference;
 		{
+			AtomicBoolean finished = new AtomicBoolean();
 			boolean[] javaOwnership = {false};
 			Thread[] javaThreads = {null,null};
 			QThread[] qtarray = {null};
 			Throwable[] exception = {null};
 			QThread thread = QThread.create(()->{
+				Thread currentJThread = Thread.currentThread();
+				QThread currentThread = QThread.currentThread();
+				Thread javaThread = null;
 				try {
-					qtarray[0] = QThread.currentThread();
-					javaOwnership[0] = General.internalAccess.isJavaOwnership(qtarray[0]);
-					javaThreads[0] = Thread.currentThread();
-					javaThreads[1] = qtarray[0].javaThread();
+					qtarray[0] = currentThread;
+					javaOwnership[0] = General.internalAccess.isJavaOwnership(currentThread);
+					javaThreads[0] = currentJThread;
+					javaThread = currentThread.javaThread();
+					javaThreads[1] = javaThread;
 				}catch(Throwable t) {
 					exception[0] = t;
+				}finally {
+					currentThread = null;
+					currentJThread = null;
+					javaThread = null;
 				}
 			});
+			thread.finished.connect(()->finished.set(true));
 			reference = new WeakReference<>(thread);
 			thread.start();
-			thread.join();
+			thread.join(2000);
 			if(exception[0]!=null)
 				throw exception[0];
+			Assert.assertTrue(javaThreads[0]!=null);
 			Assert.assertEquals(javaThreads[0], javaThreads[1]);
+			jreference = new WeakReference<>(javaThreads[0]);
 			Assert.assertEquals(thread, qtarray[0]);
 			Assert.assertTrue(javaOwnership[0]);
 			Assert.assertTrue(General.internalAccess.isJavaOwnership(thread));
+			Assert.assertTrue(finished.get());
+			Assert.assertFalse(thread.isAlive());
+			javaThreads[0] = null;
+			javaThreads[1] = null;
 			qtarray[0] = null;
 			thread = null;
 		}
-		ApplicationInitializer.runGC();
-		Assert.assertTrue("reference is not null", null==reference.get());
-	}
-	
-	@org.junit.Test
-	public void testDeleteChildRunnerThread() throws Throwable {
-		QObject parent = new QObject();
-		WeakReference<QThread> reference;
-		{
-			boolean[] cppOwnership = {false};
-			Thread[] javaThreads = {null,null};
-			QThread[] qtarray = {null};
-			Throwable[] exception = {null};
-			QThread thread = QThread.create(()->{
-				try {
-					qtarray[0] = QThread.currentThread();
-					cppOwnership[0] = General.internalAccess.isCppOwnership(qtarray[0]);
-					javaThreads[0] = Thread.currentThread();
-					javaThreads[1] = qtarray[0].javaThread();
-				}catch(Throwable t) {
-					exception[0] = t;
-				}
-			}, parent);
-			reference = new WeakReference<>(thread);
-			thread.start();
-			thread.join();
-			if(exception[0]!=null)
-				throw exception[0];
-			Assert.assertEquals(javaThreads[0], javaThreads[1]);
-			Assert.assertEquals(thread, qtarray[0]);
-			Assert.assertTrue(cppOwnership[0]);
-			Assert.assertTrue(General.internalAccess.isCppOwnership(thread));
-			qtarray[0] = null;
-			thread = null;
-		}
-		ApplicationInitializer.runGC();
-		Assert.assertTrue(reference.get()!=null);
-		Assert.assertEquals(parent, reference.get().parent());
-		parent = null;
-		for (int i = 0; i < 10; i++) {
+		for (int i = 0; i < 120; i++) {
 			ApplicationInitializer.runGC();
 			QCoreApplication.processEvents();
 			QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
@@ -550,96 +528,56 @@ public class TestQThread extends ApplicationInitializer{
 			if(reference.get()==null)
 				break;
 		}
-		Assert.assertTrue("reference is not null", null==reference.get());
-	}
-	
-	@org.junit.Test
-	public void testDeleteTopLevelEventThread() throws Throwable {
-		WeakReference<QThread> reference;
-		{
-			boolean[] javaOwnership = {false};
-			Thread[] javaThreads = {null,null};
-			QThread[] qtarray = {null};
-			QThread thread = new QThread();
-			Throwable[] exception = {null};
-			QObject obj = new QObject() {
-				@Override
-				public boolean event(QEvent event) {
-					if(event.type()==QEvent.Type.DeferredDispose) {
-						try {
-							qtarray[0] = QThread.currentThread();
-							javaOwnership[0] = General.internalAccess.isJavaOwnership(qtarray[0]);
-							javaThreads[0] = Thread.currentThread();
-							javaThreads[1] = qtarray[0].javaThread();
-						}catch(Throwable t) {
-							exception[0] = t;
-						}finally {
-							qtarray[0].exit();
-						}
-					}
-					return super.event(event);
-				}
-			};
-			obj.moveToThread(thread);
-			obj.disposeLater();
-			reference = new WeakReference<>(thread);
-			thread.start();
-			thread.join();
-			if(exception[0]!=null)
-				throw exception[0];
-			Assert.assertEquals(javaThreads[0], javaThreads[1]);
-			Assert.assertEquals(thread, qtarray[0]);
-			Assert.assertTrue(javaOwnership[0]);
-			Assert.assertTrue(General.internalAccess.isJavaOwnership(thread));
-			qtarray[0] = null;
-			thread = null;
+		QThread remaining = reference.get();
+		if(remaining!=null && !remaining.isDisposed()) {
+			Assert.assertEquals("QThread reference is not null and existing with parent", null, remaining.parent());
+			Assert.assertTrue("QThread reference is not null and existing with cpp ownership", General.internalAccess.isJavaOwnership(remaining));
+			Assert.fail("QThread reference is not null and existing");
 		}
-		ApplicationInitializer.runGC();
-		Assert.assertTrue("reference is not null", null==reference.get());
+		Assert.assertTrue("QThread reference is not null but disposed", null==remaining);
+		Assert.assertTrue("Thread reference is not", null==jreference.get());
 	}
 	
 	@org.junit.Test
-	public void testDeleteChildEventThread() throws Throwable {
+	public void testDeleteChildRunnerThread() throws Throwable {
 		QObject parent = new QObject();
 		WeakReference<QThread> reference;
+		WeakReference<Thread> jreference;
 		{
+			AtomicBoolean finished = new AtomicBoolean();
 			boolean[] cppOwnership = {false};
 			Thread[] javaThreads = {null,null};
 			QThread[] qtarray = {null};
 			Throwable[] exception = {null};
-			QThread thread = new QThread(parent);
-			QObject obj = new QObject() {
-				@Override
-				public boolean event(QEvent event) {
-					if(event.type()==QEvent.Type.DeferredDispose) {
-						try {
-							qtarray[0] = QThread.currentThread();
-							cppOwnership[0] = General.internalAccess.isCppOwnership(qtarray[0]);
-							javaThreads[0] = Thread.currentThread();
-							javaThreads[1] = qtarray[0].javaThread();
-						}catch(Throwable t) {
-							exception[0] = t;
-						}finally {
-							qtarray[0].exit();
-						}
-					}
-					return super.event(event);
+			QThread thread = QThread.create(()->{
+				QThread currentThread = QThread.currentThread();
+				try {
+					qtarray[0] = currentThread;
+					cppOwnership[0] = General.internalAccess.isCppOwnership(currentThread);
+					javaThreads[0] = Thread.currentThread();
+					javaThreads[1] = currentThread.javaThread();
+				}catch(Throwable t) {
+					exception[0] = t;
+				}finally {
+					currentThread = null;
 				}
-			};
-			obj.moveToThread(thread);
-			obj.disposeLater();
+			}, parent);
 			reference = new WeakReference<>(thread);
+			thread.finished.connect(()->finished.set(true));
 			thread.start();
-			thread.join();
-			if(exception[0]!=null) {
-				qtarray[0] = null;
-				thread = null;
+			thread.join(2000);
+			if(exception[0]!=null)
 				throw exception[0];
-			}
+			Assert.assertTrue(javaThreads[0]!=null);
 			Assert.assertEquals(javaThreads[0], javaThreads[1]);
+			jreference = new WeakReference<>(javaThreads[0]);
 			Assert.assertEquals(thread, qtarray[0]);
 			Assert.assertTrue(cppOwnership[0]);
 			Assert.assertTrue(General.internalAccess.isCppOwnership(thread));
+			Assert.assertTrue(finished.get());
+			Assert.assertFalse(thread.isAlive());
+			javaThreads[0] = null;
+			javaThreads[1] = null;
 			qtarray[0] = null;
 			thread = null;
 		}
@@ -647,7 +585,154 @@ public class TestQThread extends ApplicationInitializer{
 		Assert.assertTrue(reference.get()!=null);
 		Assert.assertEquals(parent, reference.get().parent());
 		parent = null;
-		for (int i = 0; i < 50; i++) {
+		for (int i = 0; i < 120; i++) {
+			ApplicationInitializer.runGC();
+			QCoreApplication.processEvents();
+			QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+			QCoreApplication.processEvents();
+			ApplicationInitializer.runGC();
+			Thread.yield();
+			Thread.sleep(50);
+			if(reference.get()==null)
+				break;
+		}
+		QThread remaining = reference.get();
+		Assert.assertTrue("QThread reference is not null and existing", remaining==null || remaining.isDisposed());
+		Assert.assertTrue("QThread reference is not null but disposed", null==remaining);
+		Assert.assertTrue("Thread reference is not", null==jreference.get());
+	}
+	
+	@org.junit.Test
+	public void testDeleteTopLevelEventThread() throws Throwable {
+		WeakReference<QThread> reference;
+		WeakReference<Thread> jreference;
+		AtomicBoolean finished = new AtomicBoolean();
+		{
+			boolean[] javaOwnership = {false};
+			Thread[] javaThreads = {null,null};
+			QThread[] qtarray = {null};
+			Throwable[] exception = {null};
+			QObject obj = new QObject() {
+				@Override
+				public boolean event(QEvent event) {
+					if(event.type()==QEvent.Type.DeferredDispose) {
+						QThread currentThread = QThread.currentThread();
+						try {
+							qtarray[0] = currentThread;
+							javaOwnership[0] = General.internalAccess.isJavaOwnership(currentThread);
+							javaThreads[0] = Thread.currentThread();
+							javaThreads[1] = currentThread.javaThread();
+						}catch(Throwable t) {
+							exception[0] = t;
+						}finally {
+							currentThread.exit();
+							currentThread = null;
+						}
+					}
+					return super.event(event);
+				}
+			};
+			QThread thread = new QThread();
+			reference = new WeakReference<>(thread);
+			obj.moveToThread(thread);
+			obj.disposeLater();
+			thread.finished.connect(()->finished.set(true));
+			thread.start();
+			thread.join(2000);
+			if(exception[0]!=null)
+				throw exception[0];
+			Assert.assertTrue(javaThreads[0]!=null);
+			Assert.assertEquals(javaThreads[0], javaThreads[1]);
+			jreference = new WeakReference<>(javaThreads[0]);
+			Assert.assertEquals(thread, qtarray[0]);
+			Assert.assertTrue(javaOwnership[0]);
+			Assert.assertEquals(null, thread.parent());
+			Assert.assertTrue(General.internalAccess.isJavaOwnership(thread));
+			Assert.assertTrue(finished.get());
+			Assert.assertFalse(thread.isAlive());
+			javaThreads[0] = null;
+			javaThreads[1] = null;
+			qtarray[0] = null;
+			thread = null;
+			obj = null;
+		}
+		for (int i = 0; i < 120; i++) {
+			ApplicationInitializer.runGC();
+			QCoreApplication.processEvents();
+			QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+			QCoreApplication.processEvents();
+			ApplicationInitializer.runGC();
+			Thread.yield();
+			Thread.sleep(50);
+			if(reference.get()==null)
+				break;
+		}
+		QThread remaining = reference.get();
+		Assert.assertTrue("QThread reference is not null and existing", remaining==null || remaining.isDisposed());
+		Assert.assertTrue("QThread reference is not null but disposed", null==remaining);
+		Assert.assertTrue("Thread reference is not", null==jreference.get());
+	}
+	
+	@org.junit.Test
+	public void testDeleteChildEventThread() throws Throwable {
+		WeakReference<QThread> reference;
+		WeakReference<Thread> jreference;
+		{
+			QObject parent = new QObject();
+			{
+				boolean[] cppOwnership = {false};
+				Thread[] javaThreads = {null,null};
+				QThread[] qtarray = {null};
+				Throwable[] exception = {null};
+				QObject obj = new QObject() {
+					@Override
+					public boolean event(QEvent event) {
+						if(event.type()==QEvent.Type.DeferredDispose) {
+							QThread currentThread = QThread.currentThread();
+							try {
+								qtarray[0] = currentThread;
+								cppOwnership[0] = General.internalAccess.isCppOwnership(currentThread);
+								javaThreads[0] = Thread.currentThread();
+								javaThreads[1] = currentThread.javaThread();
+							}catch(Throwable t) {
+								exception[0] = t;
+							}finally {
+								currentThread.exit();
+								currentThread = null;
+							}
+						}
+						return super.event(event);
+					}
+				};
+				QThread thread = new QThread(parent);
+				reference = new WeakReference<>(thread);
+				obj.moveToThread(thread);
+				obj.disposeLater();
+				thread.start();
+				thread.join(2000);
+				if(exception[0]!=null) {
+					qtarray[0] = null;
+					thread = null;
+					throw exception[0];
+				}
+				Assert.assertTrue(javaThreads[0]!=null);
+				Assert.assertEquals(javaThreads[0], javaThreads[1]);
+				jreference = new WeakReference<>(javaThreads[0]);
+				Assert.assertEquals(thread, qtarray[0]);
+				Assert.assertTrue(cppOwnership[0]);
+				Assert.assertTrue(General.internalAccess.isCppOwnership(thread));
+				javaThreads[0] = null;
+				javaThreads[1] = null;
+				qtarray[0] = null;
+				thread = null;
+				obj = null;
+			}
+			ApplicationInitializer.runGC();
+			Assert.assertTrue(reference.get()!=null);
+			Assert.assertEquals(parent, reference.get().parent());
+			parent = null;
+		}
+		for (int i = 0; i < 120; i++) {
 			ApplicationInitializer.runGC();
 			QCoreApplication.processEvents();
 			QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
@@ -662,11 +747,15 @@ public class TestQThread extends ApplicationInitializer{
 			if(reference.get()==null)
 				break;
 		}
-		Assert.assertTrue("reference is not null", null==reference.get());
+		QThread remaining = reference.get();
+		Assert.assertTrue("QThread reference is not null and existing", remaining==null || remaining.isDisposed());
+		Assert.assertTrue("QThread reference is not null but disposed", null==remaining);
+		Assert.assertTrue("Thread reference is not", null==jreference.get());
 	}
 	
 	@org.junit.Test
 	public void testDeleteAdoptedThread() throws Throwable {
+		AtomicBoolean finished = new AtomicBoolean();
 		AtomicBoolean threadCleaned = new AtomicBoolean();
 		AtomicBoolean qthreadCleaned = new AtomicBoolean();
 		{
@@ -675,33 +764,42 @@ public class TestQThread extends ApplicationInitializer{
 			QThread[] qtarray = {null};
 			Throwable[] exception = {null};
 			Thread thread = new Thread(()->{
+				QThread currentThread = QThread.currentThread();
+				currentThread.finished.connect(()->finished.set(true));
 				try {
-					qtarray[0] = QThread.currentThread();
-					cppOwnership[0] = General.internalAccess.isCppOwnership(qtarray[0]);
+					qtarray[0] = currentThread;
+					cppOwnership[0] = General.internalAccess.isCppOwnership(currentThread);
 					javaThreads[0] = Thread.currentThread();
-					javaThreads[1] = qtarray[0].javaThread();
-					General.internalAccess.registerCleaner(qtarray[0], ()->qthreadCleaned.set(true));
+					javaThreads[1] = currentThread.javaThread();
+					General.internalAccess.registerCleaner(currentThread, ()->qthreadCleaned.set(true));
 				}catch(Throwable t) {
 					exception[0] = t;
 				}finally {
-					qtarray[0].exit();
+					currentThread.exit();
+					currentThread = null;
 				}
 			});
 			General.internalAccess.registerCleaner(thread, ()->threadCleaned.set(true));
 			thread.start();
-			thread.join();
+			thread.join(2000);
 			if(exception[0]!=null)
 				throw exception[0];
 			Assert.assertEquals(thread, javaThreads[0]);
 			Assert.assertEquals(javaThreads[0], javaThreads[1]);
 			Assert.assertTrue(cppOwnership[0]);
 			Assert.assertFalse("QThread is null", qtarray[0]==null);
-			Assert.assertFalse("QThread is disposed", qtarray[0].isDisposed());
-			Assert.assertTrue(General.internalAccess.isCppOwnership(qtarray[0]));
+			for (int i = 0; i < 120 && !finished.get(); i++) {
+				Thread.yield();
+				Thread.sleep(100);
+			}
+			Assert.assertTrue("Thread termintated without emitting QThread::finished", finished.get());
+//			Assert.assertTrue("QThread is disposed", qtarray[0].isDisposed());
+			javaThreads[0] = null;
+			javaThreads[1] = null;
 			qtarray[0] = null;
 			thread = null;
 		}
-		for (int i = 0; i < 50; i++) {
+		for (int i = 0; i < 120; i++) {
 			if(qthreadCleaned.get())
 				break;
 			ApplicationInitializer.runGC();
@@ -710,13 +808,7 @@ public class TestQThread extends ApplicationInitializer{
 			Thread.yield();
 			Thread.sleep(100);
 		}
-		if(!QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows)) {
-			if(!System.getProperty("java.version", "").startsWith("1.8") 
-    			&& !System.getProperty("java.version", "").startsWith("8")) {
-				Assert.assertTrue("QThread has not been deleted", qthreadCleaned.get());
-			}else if(!qthreadCleaned.get()){
-				System.err.println("threadCleaned="+qthreadCleaned.get()+" as expected in Java8");
-			}
-		}
+		Assert.assertTrue("Thread has not been deleted", threadCleaned.get());
+		Assert.assertTrue("QThread has not been deleted", qthreadCleaned.get());
 	}
 }

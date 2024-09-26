@@ -34,7 +34,7 @@
 
 bool invalidateJavaObject(JNIEnv *env, jobject java_object)
 {
-    if(const QSharedPointer<QtJambiLink>& link = QtJambiLink::findLinkForJavaInterface(env, java_object)){
+    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, java_object)){
         if (link->ownership() != QtJambiLink::Ownership::Java
 //              && !link->createdByJava()
                 && !link->isShell()
@@ -66,7 +66,7 @@ bool invalidateCollection(JNIEnv *env, jobject java_collection)
     bool result = false;
     Q_ASSERT(java_collection);
     if(!invalidateJavaObject(env, java_collection)){
-        jobject __qt__iterator = QtJambiAPI::iteratorOfJavaCollection(env, java_collection);
+        jobject __qt__iterator = QtJambiAPI::iteratorOfJavaIterable(env, java_collection);
         while(QtJambiAPI::hasJavaIteratorNext(env, __qt__iterator)) {
             jobject java_element = QtJambiAPI::nextOfJavaIterator(env, __qt__iterator);
             if (java_element) {
@@ -79,7 +79,7 @@ bool invalidateCollection(JNIEnv *env, jobject java_collection)
 
 bool forcedInvalidateJavaObject(JNIEnv *env, jobject java_object)
 {
-    if(const QSharedPointer<QtJambiLink>& link = QtJambiLink::findLinkForJavaInterface(env, java_object)){
+    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, java_object)){
         link->invalidate(env);
         return true;
     }
@@ -105,7 +105,7 @@ bool forcedInvalidateCollection(JNIEnv *env, jobject java_collection)
     bool result = false;
     Q_ASSERT(java_collection);
     if(!forcedInvalidateJavaObject(env, java_collection)){
-        jobject __qt__iterator = QtJambiAPI::iteratorOfJavaCollection(env, java_collection);
+        jobject __qt__iterator = QtJambiAPI::iteratorOfJavaIterable(env, java_collection);
         while(QtJambiAPI::hasJavaIteratorNext(env, __qt__iterator)) {
             jobject java_element = QtJambiAPI::nextOfJavaIterator(env, __qt__iterator);
             if (java_element) {

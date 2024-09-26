@@ -37,7 +37,7 @@
         <mkdir dir="${generator.outputdir}"/>
 		<!--options="- - debug-level=full"-->
 		<if>
-			<istrue value="${qtjambi.graphs.any.true}"/>
+			<istrue value="${generate.legacy.modules}"/>
 			<then>
 				<generator dir="${generator.builddir}/../bin"
 						importdirectories="${basedir}/src/cpp/QtJambiGenerator"
@@ -49,8 +49,7 @@
 						qtlibdirectory="${generator.builddir}/../lib${psep}${tools.qt.libdir}"
 						qtbindirectory="${generator.builddir}/../bin${psep}${tools.qt.bindir}"
 						includeDirectories="${qtjambi.qt.includedir};${basedir}/src/cpp/QtJambiGenerator/targets;${generator.includepaths};${generator.extra.includes}"
-						typesystem=":/io/qtjambi/generator/targets/graphs.qml"
-						header=":/io/qtjambi/generator/targets/graphs.h"
+						legacy="true"
 					/>
 			</then>
 		</if>

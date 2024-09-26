@@ -48,7 +48,11 @@ inline hash_type qHash(const QSqlError &value, hash_type seed = 0)
 inline hash_type qHash(const QSqlField &value, hash_type seed = 0)
 {
     QtPrivate::QHashCombine hash;
-    seed = hash(seed, int(value.type()));
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    seed = hash(seed, QMetaType::typeName(value.type()));
+#else
+    seed = hash(seed, value.metaType().name());
+#endif
     seed = hash(seed, int(value.requiredStatus()));
     seed = hash(seed, value.name());
     seed = hash(seed, value.tableName());
@@ -57,7 +61,9 @@ inline hash_type qHash(const QSqlField &value, hash_type seed = 0)
     seed = hash(seed, value.isValid());
     seed = hash(seed, value.length());
     seed = hash(seed, value.precision());
+#if QT_VERSION < QT_VERSION_CHECK(6, 8, 0)
     seed = hash(seed, value.typeID());
+#endif
     seed = hash(seed, value.isGenerated());
     seed = hash(seed, value.isValid());
     return seed;

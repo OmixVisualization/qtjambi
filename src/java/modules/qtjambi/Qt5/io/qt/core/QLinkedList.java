@@ -29,6 +29,7 @@
 ****************************************************************************/
 package io.qt.core;
 
+import java.nio.*;
 import java.util.*;
 import java.util.function.*;
 import io.qt.*;
@@ -52,31 +53,36 @@ public class QLinkedList<T> extends AbstractSequentialContainer<T> implements De
         super(p);
     }
     
-    public QLinkedList(QMetaType.Type metaType) {
+    public QLinkedList(QMetaType.@StrictNonNull Type metaType) {
 		this(new QMetaType(metaType));
 	}
     
-    public QLinkedList(Class<T> elementType) {
+    public QLinkedList(@Nullable Class<T> elementType) {
 		super(null);
 		QMetaType metaType = QMetaType.fromType(elementType);
 		initialize(elementType, QtJambi_LibraryUtilities.internal.nativeId(metaType), null);
 	}
     
-	public QLinkedList(QMetaType metaType) {
+	public QLinkedList(@StrictNonNull QMetaType metaType) {
 		super(null);
 		initialize(metaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaType), null);
 	}
     
-    public QLinkedList(Collection<T> other) {
+    public QLinkedList(@StrictNonNull Collection<T> other) {
 		super(null);
 		QMetaType metaType = QList.findElementMetaType(Objects.requireNonNull(other));
+		initialize(metaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaType), other);
+    }
+    
+    private QLinkedList(QMetaType metaType, Collection<T> other) {
+		super(null);
 		initialize(metaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaType), other);
     }
     
     /**
      * Creating a container of type QVariant.
      */
-    public static QLinkedList<Object> createVariantLinkedList(){
+    public static @NonNull QLinkedList<Object> createVariantLinkedList(){
     	return new QLinkedList<>(new QMetaType(QMetaType.Type.QVariant));
     }
 
@@ -87,7 +93,7 @@ public class QLinkedList<T> extends AbstractSequentialContainer<T> implements De
      * Creates and returns a copy of this object.
      */
     @Override
-	public QLinkedList<T> clone(){
+	public @NonNull QLinkedList<T> clone(){
 		return new QLinkedList<>(this);
 	}
     
@@ -102,14 +108,14 @@ public class QLinkedList<T> extends AbstractSequentialContainer<T> implements De
     	}
     }
     @QtUninvokable
-    private static native <T> void append(long __this__nativeId, T t);
+    private native void append(long __this__nativeId, T t);
 
     @QtUninvokable
     public final void clear() {
         clear(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    private static native <T> void clear(long __this__nativeId);
+    private native void clear(long __this__nativeId);
 
     @QtUninvokable
     public final boolean contains(Object t) {
@@ -127,7 +133,7 @@ public class QLinkedList<T> extends AbstractSequentialContainer<T> implements De
     	}
     }
     @QtUninvokable
-    private static native <T> boolean contains(long __this__nativeId, T t);
+    private native boolean contains(long __this__nativeId, Object t);
 
     @QtUninvokable
     public final int count() {
@@ -145,35 +151,35 @@ public class QLinkedList<T> extends AbstractSequentialContainer<T> implements De
     	}
     }
     @QtUninvokable
-    private static native <T> int count(long __this__nativeId, T t);
+    private native int count(long __this__nativeId, T t);
 
     @QtUninvokable
-    protected final QSequentialIterator<T> begin() {
+    protected final @NonNull QSequentialIterator<T> begin() {
         return begin(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    private static native <T> QSequentialIterator<T> begin(long __this__nativeId);
+    private native QSequentialIterator<T> begin(long __this__nativeId);
 
     @QtUninvokable
-    protected final QSequentialIterator<T> end() {
+    protected final @NonNull QSequentialIterator<T> end() {
         return end(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    private static native <T> QSequentialIterator<T> end(long __this__nativeId);
+    private native QSequentialIterator<T> end(long __this__nativeId);
 
     @QtUninvokable
-    protected final QSequentialConstIterator<T> constBegin() {
+    protected final @NonNull QSequentialConstIterator<T> constBegin() {
         return constBegin(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    private static native <T> QSequentialConstIterator<T> constBegin(long __this__nativeId);
+    private native QSequentialConstIterator<T> constBegin(long __this__nativeId);
 
     @QtUninvokable
-    protected final QSequentialConstIterator<T> constEnd() {
+    protected final @NonNull QSequentialConstIterator<T> constEnd() {
         return constEnd(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    private static native <T> QSequentialConstIterator<T> constEnd(long __this__nativeId);
+    private native QSequentialConstIterator<T> constEnd(long __this__nativeId);
 
     @QtUninvokable
     public final boolean endsWith(T t) {
@@ -186,7 +192,7 @@ public class QLinkedList<T> extends AbstractSequentialContainer<T> implements De
         }
     }
     @QtUninvokable
-    private static native <T> boolean endsWith(long __this__nativeId, T t);
+    private native boolean endsWith(long __this__nativeId, T t);
 
     @QtUninvokable
     public final T first() {
@@ -197,7 +203,7 @@ public class QLinkedList<T> extends AbstractSequentialContainer<T> implements De
 		}
     }
     @QtUninvokable
-    private static native <T> T first(long __this__nativeId);
+    private native T first(long __this__nativeId);
 
     @QtUninvokable
     public final boolean isEmpty() {
@@ -213,14 +219,14 @@ public class QLinkedList<T> extends AbstractSequentialContainer<T> implements De
 		}
     }
     @QtUninvokable
-    private static native <T> T last(long __this__nativeId);
+    private native T last(long __this__nativeId);
 
     @QtUninvokable
     private final boolean operator_equal(java.util.Collection<T> l) {
         return operator_equal(QtJambi_LibraryUtilities.internal.nativeId(this), l);
     }
     @QtUninvokable
-    private static native <T> boolean operator_equal(long __this__nativeId, java.util.Collection<T> l);
+    private native boolean operator_equal(long __this__nativeId, java.util.Collection<T> l);
 
     @QtUninvokable
     public final void prepend(T t) {
@@ -233,7 +239,7 @@ public class QLinkedList<T> extends AbstractSequentialContainer<T> implements De
     	}
     }
     @QtUninvokable
-    private static native <T> void prepend(long __this__nativeId, T t);
+    private native void prepend(long __this__nativeId, T t);
 
     @QtUninvokable
     public final int removeAll(T t) {
@@ -251,7 +257,7 @@ public class QLinkedList<T> extends AbstractSequentialContainer<T> implements De
     	}
     }
     @QtUninvokable
-    private static native <T> int removeAll(long __this__nativeId, T t);
+    private native int removeAll(long __this__nativeId, T t);
 
     @QtUninvokable
     public final T removeFirst() {
@@ -260,7 +266,7 @@ public class QLinkedList<T> extends AbstractSequentialContainer<T> implements De
         return value;
     }
     @QtUninvokable
-    private static native void removeFirst(long __this__nativeId);
+    private native void removeFirst(long __this__nativeId);
 
     @QtUninvokable
     public final T removeLast() {
@@ -269,13 +275,13 @@ public class QLinkedList<T> extends AbstractSequentialContainer<T> implements De
         return value;
     }
     @QtUninvokable
-    private static native void removeLast(long __this__nativeId);
+    private native void removeLast(long __this__nativeId);
 	
 	/**
      * <p>See <a href="https://doc.qt.io/qt/qlinkedlist.html#removeIf" class="member-name-class">QLinkedList::<wbr>removeIf(Predicate)</a></p>
 	 */
     @QtUninvokable
-    public final boolean removeIf(Predicate<? super T> predicate)    {
+    public final boolean removeIf(@StrictNonNull Predicate<? super T> predicate)    {
         Objects.requireNonNull(predicate);
         boolean removed = false;
         for(T value : clone()) {
@@ -303,14 +309,14 @@ public class QLinkedList<T> extends AbstractSequentialContainer<T> implements De
     	}
     }
     @QtUninvokable
-    private static native <T> boolean removeOne(long __this__nativeId, T t);
+    private native boolean removeOne(long __this__nativeId, T t);
 
     @QtUninvokable
     public final int size() {
         return size(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    private static native <T> int size(long __this__nativeId);
+    private native int size(long __this__nativeId);
 
     @QtUninvokable
     public final boolean startsWith(T t) {
@@ -323,21 +329,21 @@ public class QLinkedList<T> extends AbstractSequentialContainer<T> implements De
         }
     }
     @QtUninvokable
-    private static native <T> boolean startsWith(long __this__nativeId, T t);
+    private native boolean startsWith(long __this__nativeId, T t);
 
     @QtUninvokable
     public final T takeFirst() {
         return takeFirst(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    private static native <T> T takeFirst(long __this__nativeId);
+    private native T takeFirst(long __this__nativeId);
 
     @QtUninvokable
     public final T takeLast() {
         return takeLast(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    private static native <T> T takeLast(long __this__nativeId);
+    private native T takeLast(long __this__nativeId);
 
     /**
      * <p>See <code><a href="https://doc.qt.io/qt/qlinkedlist.html#operator-eq-eq" class="member-name-class">QLinkedList::<wbr>operator==(QLinkedList&lt;T>)const</a></code></p>
@@ -366,11 +372,11 @@ public class QLinkedList<T> extends AbstractSequentialContainer<T> implements De
 		}
     }
     @QtUninvokable
-    private static native int hashCode(long __this__nativeId);
+    private native int hashCode(long __this__nativeId);
     
     @Override
     @QtUninvokable
-    public String toString() {
+    public @NonNull String toString() {
     	try {
 			return toString(QtJambi_LibraryUtilities.internal.nativeId(this));
 		} catch (QNoNativeResourcesException e) {
@@ -378,7 +384,7 @@ public class QLinkedList<T> extends AbstractSequentialContainer<T> implements De
 		}
     }
     @QtUninvokable
-    private static native String toString(long __this__nativeId);
+    private native String toString(long __this__nativeId);
     
     @Override
     @QtUninvokable
@@ -425,7 +431,8 @@ public class QLinkedList<T> extends AbstractSequentialContainer<T> implements De
      * <p>See <code>operator&lt;&lt;(QDataStream&amp;,<wbr>QLinkedList&lt;T>)</code></p>
      */
     @io.qt.QtUninvokable
-    public void writeTo(io.qt.core.QDataStream stream){
+    public void writeTo(io.qt.core.@StrictNonNull QDataStream stream){
+    	java.util.Objects.requireNonNull(stream, "Argument 'stream': null not expected.");
         writeTo(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(stream));
     }
     
@@ -436,7 +443,8 @@ public class QLinkedList<T> extends AbstractSequentialContainer<T> implements De
      * <p>See <code>operator&gt;&gt;(QDataStream&amp;,<wbr>QLinkedList&lt;T>&amp;)</code></p>
      */
     @io.qt.QtUninvokable
-    public void readFrom(io.qt.core.QDataStream stream){
+    public void readFrom(io.qt.core.@StrictNonNull QDataStream stream){
+    	java.util.Objects.requireNonNull(stream, "Argument 'stream': null not expected.");
         readFrom(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(stream));
     }
     
@@ -448,7 +456,7 @@ public class QLinkedList<T> extends AbstractSequentialContainer<T> implements De
     	return elementMetaType(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @io.qt.QtUninvokable
-    private static native QMetaType elementMetaType(long containerAccess);
+    private native QMetaType elementMetaType(long containerAccess);
 	
 	@Override
     @QtUninvokable
@@ -554,7 +562,7 @@ public class QLinkedList<T> extends AbstractSequentialContainer<T> implements De
 
 	@Override
     @QtUninvokable
-	public final java.util.Iterator<T> descendingIterator() {
+	public final java.util.@NonNull Iterator<T> descendingIterator() {
 		return constEnd().toJavaDescendingIterator();
 	}
     
@@ -567,14 +575,309 @@ public class QLinkedList<T> extends AbstractSequentialContainer<T> implements De
      * @return a {@code QLinkedList} containing the specified element
      * @throws NullPointerException if elements are {@code null}
      */
+    @SuppressWarnings({ "unchecked" })
     @SafeVarargs
-    public static <T> QLinkedList<T> of(T element0, T...elements) {
+    public static <T> @NonNull QLinkedList<T> of(T element0, T @StrictNonNull...elements) {
         QMetaType metaType = QList.findElementMetaType(element0, elements);
-        QLinkedList<T> result = new QLinkedList<>(metaType);
-        result.add(element0);
-        for (T t : elements) {
-            result.add(t);
-        }
-        return result;
+		T[] allElements = (T[])new Object[elements.length+1];
+		System.arraycopy(elements, 0, allElements, 1, elements.length);
+		allElements[0] = element0;
+		return ofTyped(metaType, allElements);
     }
+    
+    /**
+     * Returns a QLinkedList containing given elements.
+     *
+     * @param elements
+     * @return a {@code QLinkedList} containing the specified element
+     */
+    public static @NonNull QLinkedList<@QtPrimitiveType@NonNull Byte> ofByte(byte @StrictNonNull...elements) {
+		QLinkedList<Byte> result = new QLinkedList<>(byte.class);
+		for (byte t : elements) {
+			result.append(t);
+		}
+		return result;
+	}
+    
+    /**
+     * Returns a QLinkedList containing given elements.
+     *
+     * @param elements
+     * @return a {@code QLinkedList} containing the specified element
+     */
+    public static @NonNull QLinkedList<@QtPrimitiveType@NonNull Short> ofShort(short @StrictNonNull...elements) {
+		QLinkedList<Short> result = new QLinkedList<>(short.class);
+		for (short t : elements) {
+			result.append(t);
+		}
+		return result;
+	}
+    
+    /**
+     * Returns a QLinkedList containing given elements.
+     *
+     * @param elements
+     * @return a {@code QLinkedList} containing the specified element
+     */
+    public static @NonNull QLinkedList<@QtPrimitiveType@NonNull Integer> ofInt(int @StrictNonNull...elements) {
+		QLinkedList<Integer> result = new QLinkedList<>(int.class);
+		for (int t : elements) {
+			result.append(t);
+		}
+		return result;
+	}
+    
+    /**
+     * Returns a QLinkedList containing given elements.
+     *
+     * @param elements
+     * @return a {@code QLinkedList} containing the specified element
+     */
+    public static @NonNull QLinkedList<@QtPrimitiveType@NonNull Long> ofLong(long @StrictNonNull...elements) {
+		QLinkedList<Long> result = new QLinkedList<>(long.class);
+		for (long t : elements) {
+			result.append(t);
+		}
+		return result;
+	}
+    
+    /**
+     * Returns a QLinkedList containing given elements.
+     *
+     * @param elements
+     * @return a {@code QLinkedList} containing the specified element
+     */
+    public static @NonNull QLinkedList<@QtPrimitiveType@NonNull Character> ofChar(char @StrictNonNull...elements) {
+		QLinkedList<Character> result = new QLinkedList<>(char.class);
+		for (char t : elements) {
+			result.append(t);
+		}
+		return result;
+	}
+    
+    /**
+     * Returns a QLinkedList containing given elements.
+     *
+     * @param elements
+     * @return a {@code QLinkedList} containing the specified element
+     */
+    public static @NonNull QLinkedList<@QtPrimitiveType@NonNull Float> ofFloat(float @StrictNonNull...elements) {
+		QLinkedList<Float> result = new QLinkedList<>(float.class);
+		for (float t : elements) {
+			result.append(t);
+		}
+		return result;
+	}
+    
+    /**
+     * Returns a QLinkedList containing given elements.
+     *
+     * @param elements
+     * @return a {@code QLinkedList} containing the specified element
+     */
+    public static @NonNull QLinkedList<@QtPrimitiveType@NonNull Double> ofDouble(double @StrictNonNull...elements) {
+		QLinkedList<Double> result = new QLinkedList<>(double.class);
+		for (double t : elements) {
+			result.append(t);
+		}
+		return result;
+	}
+    
+    /**
+     * Returns a QLinkedList containing given elements.
+     *
+     * @param elements
+     * @return a {@code QLinkedList} containing the specified element
+     */
+    public static @NonNull QLinkedList<@QtPrimitiveType@NonNull Boolean> ofBoolean(boolean @StrictNonNull...elements) {
+		QLinkedList<Boolean> result = new QLinkedList<>(boolean.class);
+		for (boolean t : elements) {
+			result.append(t);
+		}
+		return result;
+	}
+    
+    /**
+     * Returns a QLinkedList containing given elements.
+     *
+     * @param elements
+     * @return a {@code QLinkedList} containing the specified element
+     */
+    public static @NonNull QLinkedList<@QtPrimitiveType@NonNull Byte> ofBuffer(@StrictNonNull ByteBuffer elements) {
+		QLinkedList<Byte> result = new QLinkedList<>(byte.class);
+		while(elements.hasRemaining()) {
+			result.append(elements.get());
+		}
+		return result;
+	}
+    
+    /**
+     * Returns a QLinkedList containing given elements.
+     *
+     * @param elements
+     * @return a {@code QLinkedList} containing the specified element
+     */
+    public static @NonNull QLinkedList<@QtPrimitiveType@NonNull Short> ofBuffer(@StrictNonNull ShortBuffer elements) {
+		QLinkedList<Short> result = new QLinkedList<>(short.class);
+		while(elements.hasRemaining()) {
+			result.append(elements.get());
+		}
+		return result;
+	}
+    
+    /**
+     * Returns a QLinkedList containing given elements.
+     *
+     * @param elements
+     * @return a {@code QLinkedList} containing the specified element
+     */
+    public static @NonNull QLinkedList<@QtPrimitiveType@NonNull Integer> ofBuffer(@StrictNonNull IntBuffer elements) {
+		QLinkedList<Integer> result = new QLinkedList<>(int.class);
+		while(elements.hasRemaining()) {
+			result.append(elements.get());
+		}
+		return result;
+	}
+    
+    /**
+     * Returns a QLinkedList containing given elements.
+     *
+     * @param elements
+     * @return a {@code QLinkedList} containing the specified element
+     */
+    public static @NonNull QLinkedList<@QtPrimitiveType@NonNull Long> ofBuffer(@StrictNonNull LongBuffer elements) {
+		QLinkedList<Long> result = new QLinkedList<>(long.class);
+		while(elements.hasRemaining()) {
+			result.append(elements.get());
+		}
+		return result;
+	}
+    
+    /**
+     * Returns a QLinkedList containing given elements.
+     *
+     * @param elements
+     * @return a {@code QLinkedList} containing the specified element
+     */
+    public static @NonNull QLinkedList<@QtPrimitiveType@NonNull Character> ofBuffer(@StrictNonNull CharBuffer elements) {
+		QLinkedList<Character> result = new QLinkedList<>(char.class);
+		while(elements.hasRemaining()) {
+			result.append(elements.get());
+		}
+		return result;
+	}    
+    /**
+     * Returns a QLinkedList containing given elements.
+     *
+     * @param elements
+     * @return a {@code QLinkedList} containing the specified element
+     */
+    public static @NonNull QLinkedList<@QtPrimitiveType@NonNull Float> ofBuffer(@StrictNonNull FloatBuffer elements) {
+		QLinkedList<Float> result = new QLinkedList<>(float.class);
+		while(elements.hasRemaining()) {
+			result.append(elements.get());
+		}
+		return result;
+	}
+    
+    /**
+     * Returns a QLinkedList containing given elements.
+     *
+     * @param elements
+     * @return a {@code QLinkedList} containing the specified element
+     */
+    public static @NonNull QLinkedList<@QtPrimitiveType@NonNull Double> ofBuffer(@StrictNonNull DoubleBuffer elements) {
+		QLinkedList<Double> result = new QLinkedList<>(double.class);
+		while(elements.hasRemaining()) {
+			result.append(elements.get());
+		}
+		return result;
+	}
+    
+    /**
+     * Returns a QLinkedList containing given elements.
+     *
+     * @param <T> the {@code QLinkedList}'s element type
+     * @param type the {@code QLinkedList}'s element type
+     * @param elements all list elements to be added
+     * @return a {@code QLinkedList} containing the specified element
+     *
+     */
+	@SafeVarargs
+    public static <T> @NonNull QLinkedList<T> ofTyped(@StrictNonNull Class<? super T> type, T @StrictNonNull...elements) {
+		QMetaType metaType = QList.findElementMetaType(type, elements);
+		return ofTyped(metaType, elements);
+	}
+    
+    /**
+     * Returns a QLinkedList containing given elements.
+     *
+     * @param <T> the {@code QLinkedList}'s element type
+     * @param metaType the {@code QLinkedList}'s element type
+     * @param elements all list elements to be added
+     * @return a {@code QLinkedList} containing the specified element
+     *
+     */
+	@SafeVarargs
+    public static <T> @NonNull QLinkedList<T> ofTyped(@StrictNonNull QMetaType metaType, T @StrictNonNull...elements) {
+		if(metaType.id()==0)
+			throw new IllegalArgumentException("QMetaType::UnknownType cannot be type of QLinkedList.");
+		if(metaType.id()==QMetaType.Type.Void.value())
+			throw new IllegalArgumentException("void cannot be type of QLinkedList.");
+		return new QLinkedList<>(metaType, Arrays.asList(elements));
+	}
+	
+	
+	
+	/**
+     * <p>See <code>QLinkedList::<wbr>operator=(QLinkedList&lt;T>)</code></p>
+     */
+    @QtUninvokable
+    public final void assign(@StrictNonNull QLinkedList<T> other) {
+		assign(QtJambi_LibraryUtilities.internal.nativeId(this), other, QtJambi_LibraryUtilities.internal.nativeId(other));
+    }
+    
+    @QtUninvokable
+    private native void assign(long __this__nativeId, Object container, long other);
+    
+    /**
+     * <p>See <code>QLinkedList::<wbr>swap(QLinkedList&lt;T>&amp;)</code></p>
+     */
+    @QtUninvokable
+    public final void swap(@StrictNonNull QLinkedList<T> other) {
+    	swap(QtJambi_LibraryUtilities.internal.nativeId(this), other, QtJambi_LibraryUtilities.internal.nativeId(other));
+    }
+    
+    @QtUninvokable
+    private native void swap(long __this__nativeId, Object container, long other);
+	
+	/**
+     * Returns true of both containers share the same data. 
+     */
+    @QtUninvokable
+    public final boolean isSharedWith(@StrictNonNull QLinkedList<?> other) {
+		return isSharedWith(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(other));
+	}
+	@QtUninvokable
+    private native boolean isSharedWith(long __this__nativeId, long other);
+
+	/**
+     * Returns true if container is not shared. 
+     */
+    @QtUninvokable
+    public final boolean isDetached() {
+		return isDetached(QtJambi_LibraryUtilities.internal.nativeId(this));
+	}
+	@QtUninvokable
+    private native boolean isDetached(long __this__nativeId);
+	
+	/**
+     * Detached the container if it is shared.
+     */
+    @QtUninvokable
+    public final void detach() {
+    	detach(QtJambi_LibraryUtilities.internal.nativeId(this));
+	}
+	@QtUninvokable
+    private native boolean detach(long __this__nativeId);
 }

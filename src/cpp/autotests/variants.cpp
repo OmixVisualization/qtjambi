@@ -663,6 +663,20 @@ bool Variants::compare(QObject* object, const QString& property, const QList<QOb
     return list1==list2;
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+bool Variants::compare(QObject* object, const QString& property, const QVector<QObject*>& list2){
+    QVariant variant = object->property(qPrintable(property));
+    QVector<QObject*> list1 = variant.value<QVector<QObject*>>();
+    return list1==list2;
+}
+bool Variants::compare(QObject* object, const QString& property, const QLinkedList<QObject*>& list2){
+    QVariant variant = object->property(qPrintable(property));
+    QLinkedList<QObject*> list1 = variant.value<QLinkedList<QObject*>>();
+    return list1==list2;
+}
+#endif
+
+
 bool Variants::compare(QObject* object, const QString& property, const QPair<QObject*,QObject*>& pair2){
     QVariant variant = object->property(qPrintable(property));
     QPair<QObject*,QObject*> pair1 = variant.value<QPair<QObject*,QObject*>>();

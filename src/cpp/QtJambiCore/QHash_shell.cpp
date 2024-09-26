@@ -49,24 +49,13 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QH
     }QTJAMBI_TRY_END
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiHash_initialize)
-(JNIEnv * env, jobject _this, jclass keyType, QtJambiNativeID keyMetaType, jclass valueType, QtJambiNativeID valueMetaType, jobject other)
-{
-    QTJAMBI_TRY{
-        QTJAMBI_NATIVE_METHOD_CALL("QMultiHash<K,V>::initialize()")
-        CoreAPI::initializeQMultiHash(env, _this, keyType, keyMetaType, valueType, valueMetaType, other);
-    }QTJAMBI_CATCH(const JavaException& exn){
-        exn.raiseInJava(env);
-    }QTJAMBI_TRY_END
-}
-
 extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QHash_keyMetaType)
-(JNIEnv * env, jclass, QtJambiNativeID __this_nativeId)
+(JNIEnv * env, jobject, QtJambiNativeID __this_nativeId)
 {
     jobject result{nullptr};
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
-        QtJambiAPI::checkNullPointer(env, container.first, typeid(QMap<QVariant,QVariant>));
+        QtJambiAPI::checkNullPointer(env, container.first, typeid(QHash<QVariant,QVariant>));
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QHash<K,V>::keyMetaType()", container.first)
         QTJAMBI_CONTAINER_CAST(AbstractHashAccess, containerAccess, container.second);
 
@@ -78,7 +67,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QHash_valueMetaType)
-(JNIEnv * env, jclass, QtJambiNativeID __this_nativeId)
+(JNIEnv * env, jobject, QtJambiNativeID __this_nativeId)
 {
     jobject result{nullptr};
     QTJAMBI_TRY{
@@ -98,17 +87,17 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 // QHash<Key, T>::begin()
 extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QHash_begin__J)
 (JNIEnv *__jni_env,
- jclass,
+ jobject _this,
  QtJambiNativeID __this_nativeId)
 {
     jobject result{nullptr};
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QHash<QVariant,QVariant>));
-        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("begin()", container.first)
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QHash<Key, T>::begin()", container.first)
         QTJAMBI_CONTAINER_CAST(AbstractHashAccess, containerAccess, container.second);
 
-        result = containerAccess->begin(__jni_env, __this_nativeId, container.first);
+        result = containerAccess->begin(__jni_env, ExtendedContainerInfo{_this, container.first, __this_nativeId});
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -118,7 +107,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 // QHash<Key, T>::end()
 extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QHash_end__J)
 (JNIEnv *__jni_env,
- jclass,
+ jobject _this,
  QtJambiNativeID __this_nativeId)
 {
     jobject result{nullptr};
@@ -128,7 +117,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QHash<Key, T>::end()", container.first)
         QTJAMBI_CONTAINER_CAST(AbstractHashAccess, containerAccess, container.second);
 
-        result = containerAccess->end(__jni_env, __this_nativeId, container.first);
+        result = containerAccess->end(__jni_env, ExtendedContainerInfo{_this, container.first, __this_nativeId});
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -138,17 +127,17 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 // QHash<Key, T>::constBegin() const
 extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QHash_constBegin__J)
 (JNIEnv *__jni_env,
- jclass,
+ jobject _this,
  QtJambiNativeID __this_nativeId)
 {
     jobject result{nullptr};
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QHash<QVariant,QVariant>));
-        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("begin() const", container.first)
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QHash<Key, T>::constBegin() const", container.first)
         QTJAMBI_CONTAINER_CAST(AbstractHashAccess, containerAccess, container.second);
 
-        result = containerAccess->constBegin(__jni_env, __this_nativeId, container.first);
+        result = containerAccess->constBegin(__jni_env, ConstExtendedContainerInfo{_this, container.first, __this_nativeId});
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -158,7 +147,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 // QHash<Key, T>::constEnd() const
 extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QHash_constEnd__J)
 (JNIEnv *__jni_env,
- jclass,
+ jobject _this,
  QtJambiNativeID __this_nativeId)
 {
     jobject result{nullptr};
@@ -168,7 +157,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QHash<Key, T>::constEnd() const", container.first)
         QTJAMBI_CONTAINER_CAST(AbstractHashAccess, containerAccess, container.second);
 
-        result = containerAccess->constEnd(__jni_env, __this_nativeId, container.first);
+        result = containerAccess->constEnd(__jni_env, ConstExtendedContainerInfo{_this, container.first, __this_nativeId});
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -178,7 +167,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 // QHash<Key, T>::capacity() const
 extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QHash_capacity__J)
 (JNIEnv *__jni_env,
- jclass,
+ jobject,
  QtJambiNativeID __this_nativeId)
 {
     jint result{0};
@@ -198,7 +187,7 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QH
 // QHash<Key, T>::clear()
 extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QHash_clear__J)
 (JNIEnv *__jni_env,
- jclass,
+ jobject _this,
  QtJambiNativeID __this_nativeId)
 {
     QTJAMBI_TRY{
@@ -207,7 +196,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QH
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QHash<Key, T>::clear()", container.first)
         QTJAMBI_CONTAINER_CAST(AbstractHashAccess, containerAccess, container.second);
 
-        containerAccess->clear(__jni_env, container.first);
+        containerAccess->clear(__jni_env, ContainerInfo{_this, container.first});
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -216,7 +205,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QH
 // QHash<Key, T>::contains(const Key & k) const
 extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QHash_contains__JLjava_lang_Object_2)
 (JNIEnv *__jni_env,
- jclass,
+ jobject,
  QtJambiNativeID __this_nativeId,
  jobject t0)
 {
@@ -237,7 +226,7 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_cor
 // QHash<Key, T>::count(const Key & k) const
 extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QHash_count__JLjava_lang_Object_2)
 (JNIEnv *__jni_env,
- jclass,
+ jobject,
  QtJambiNativeID __this_nativeId,
  jobject t0)
 {
@@ -258,7 +247,7 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QH
 // QHash<Key, T>::find(const Key & k) const
 extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QHash_find__JLjava_lang_Object_2)
 (JNIEnv *__jni_env,
- jclass,
+ jobject _this,
  QtJambiNativeID __this_nativeId,
  jobject t0)
 {
@@ -269,7 +258,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QHash<Key, T>::find(const Key & k) const", container.first)
         QTJAMBI_CONTAINER_CAST(AbstractHashAccess, containerAccess, container.second);
 
-        result = containerAccess->constFind(__jni_env, __this_nativeId, container.first, t0);
+        result = containerAccess->constFind(__jni_env, ConstExtendedContainerInfo{_this, container.first, __this_nativeId}, t0);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -279,7 +268,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 // QHash<Key, T>::insert(const K & k, const T & t)
 extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QHash_insert__JLjava_lang_Object_2Ljava_lang_Object_2)
 (JNIEnv *__jni_env,
- jclass,
+ jobject _this,
  QtJambiNativeID __this_nativeId,
  jobject k0,
  jobject t1)
@@ -290,7 +279,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QH
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QHash<Key, T>::insert(const K & k, const T & t)", container.first)
         QTJAMBI_CONTAINER_CAST(AbstractHashAccess, containerAccess, container.second);
 
-        containerAccess->insert(__jni_env, container.first, k0, t1);
+        containerAccess->insert(__jni_env, ContainerInfo{_this, container.first}, k0, t1);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -299,7 +288,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QH
 // QHash<Key, T>::key(const V & value, const K & defaultKey) const
 extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QHash_key__JLjava_lang_Object_2Ljava_lang_Object_2)
 (JNIEnv *__jni_env,
- jclass,
+ jobject,
  QtJambiNativeID __this_nativeId,
  jobject t0,
  jobject k1)
@@ -321,7 +310,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 // QHash<Key, T>::keys(const T & value) const
 extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QHash_keysForValue__JLjava_lang_Object_2)
 (JNIEnv *__jni_env,
- jclass,
+ jobject _this,
  QtJambiNativeID __this_nativeId,
  jobject t0)
 {
@@ -332,7 +321,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QHash<Key, T>::keys(const T & value) const", container.first)
         QTJAMBI_CONTAINER_CAST(AbstractHashAccess, containerAccess, container.second);
 
-        result = containerAccess->keys(__jni_env, container.first, t0);
+        result = containerAccess->keys(__jni_env, ConstContainerInfo{_this, container.first}, t0).object;
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -342,7 +331,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 // QHash<Key, T>::keys() const
 extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QHash_keys__J)
 (JNIEnv *__jni_env,
- jclass,
+ jobject _this,
  QtJambiNativeID __this_nativeId)
 {
     jobject result{nullptr};
@@ -352,7 +341,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QHash<Key, T>::keys() const", container.first)
         QTJAMBI_CONTAINER_CAST(AbstractHashAccess, containerAccess, container.second);
 
-        result = containerAccess->keys(__jni_env, container.first);
+        result = containerAccess->keys(__jni_env, ConstContainerInfo{_this, container.first}).object;
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -362,7 +351,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 // QHash<Key, T>::operator==(const QHash & l) const
 extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QHash_operator_1equal__JLjava_util_Map_2)
 (JNIEnv *__jni_env,
- jclass,
+ jobject,
  QtJambiNativeID __this_nativeId,
  jobject l0)
 {
@@ -383,7 +372,7 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_cor
 // QHash<Key, T>::remove(const T & t)
 extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QHash_remove__JLjava_lang_Object_2)
 (JNIEnv *__jni_env,
- jclass,
+ jobject _this,
  QtJambiNativeID __this_nativeId,
  jobject t0)
 {
@@ -394,7 +383,7 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QH
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QHash<Key, T>::remove(const T & t)", container.first)
         QTJAMBI_CONTAINER_CAST(AbstractHashAccess, containerAccess, container.second);
 
-        result = containerAccess->remove(__jni_env, container.first, t0);
+        result = containerAccess->remove(__jni_env, ContainerInfo{_this, container.first}, t0);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -404,7 +393,7 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QH
 // QHash<Key, T>::reserve(int size)
 extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QHash_reserve__JI)
 (JNIEnv *__jni_env,
- jclass,
+ jobject _this,
  QtJambiNativeID __this_nativeId,
  jint size0)
 {
@@ -414,7 +403,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QH
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QHash<Key, T>::reserve(int size)", container.first)
         QTJAMBI_CONTAINER_CAST(AbstractHashAccess, containerAccess, container.second);
 
-        containerAccess->reserve(__jni_env, container.first, size0);
+        containerAccess->reserve(__jni_env, ContainerInfo{_this, container.first}, size0);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -423,7 +412,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QH
 // QHash<Key, T>::size() const
 extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QHash_size__J)
 (JNIEnv *__jni_env,
- jclass,
+ jobject,
  QtJambiNativeID __this_nativeId)
 {
     jint result{0};
@@ -443,7 +432,7 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QH
 // QHash<Key, T>::take(const T & t)
 extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QHash_take__JLjava_lang_Object_2)
 (JNIEnv *__jni_env,
- jclass,
+ jobject _this,
  QtJambiNativeID __this_nativeId,
  jobject t0)
 {
@@ -454,7 +443,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QHash<Key, T>::take(const T & t)", container.first)
         QTJAMBI_CONTAINER_CAST(AbstractHashAccess, containerAccess, container.second);
 
-        result = containerAccess->take(__jni_env, container.first, t0);
+        result = containerAccess->take(__jni_env, ContainerInfo{_this, container.first}, t0);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -463,7 +452,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 
 extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QHash_writeTo)
 (JNIEnv *__jni_env,
- jclass,
+ jobject,
  QtJambiNativeID __this_nativeId,
  QtJambiNativeID stream0)
 {
@@ -497,7 +486,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QH
 
 extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QHash_readFrom)
 (JNIEnv *__jni_env,
- jclass,
+ jobject,
  QtJambiNativeID __this_nativeId,
  QtJambiNativeID stream0)
 {
@@ -532,7 +521,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QH
 // QHash<Key, T>::value(const Key &key, const T &defaultValue) const
 extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QHash_value__JLjava_lang_Object_2Ljava_lang_Object_2)
 (JNIEnv *__jni_env,
- jclass,
+ jobject,
  QtJambiNativeID __this_nativeId,
  jobject k0,
  jobject t1)
@@ -554,7 +543,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 // QHash<Key, T>::values() const
 extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QHash_values__J)
 (JNIEnv *__jni_env,
- jclass,
+ jobject _this,
  QtJambiNativeID __this_nativeId)
 {
     jobject result{nullptr};
@@ -564,7 +553,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("values() const", container.first)
         QTJAMBI_CONTAINER_CAST(AbstractHashAccess, containerAccess, container.second);
 
-        result = containerAccess->values(__jni_env, container.first);
+        result = containerAccess->values(__jni_env, ConstContainerInfo{_this, container.first}).object;
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -573,7 +562,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 
 extern "C" Q_DECL_EXPORT jstring JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QHash_toString)
 (JNIEnv *__jni_env,
- jclass,
+ jobject,
  QtJambiNativeID __this_nativeId)
 {
     jstring result{nullptr};
@@ -611,7 +600,7 @@ extern "C" Q_DECL_EXPORT jstring JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 
 extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QHash_hashCode)
 (JNIEnv *__jni_env,
- jclass,
+ jobject,
  QtJambiNativeID __this_nativeId)
 {
     jint result{0};
@@ -639,312 +628,113 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QH
     return result;
 }
 
-// QMultiHash<Key, T>::uniqueKeys() const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiHash_uniqueKeys__J)
-(JNIEnv *__jni_env,
- jclass,
- QtJambiNativeID __this_nativeId)
+// QHash<Key,T>::operator=(QHash<Key,T>)
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QHash_assign)
+    (JNIEnv *__jni_env,
+     jobject _this,
+     QtJambiNativeID __this_nativeId,
+     jobject otherObj,
+     QtJambiNativeID other)
 {
-    jobject result{nullptr};
+    QTJAMBI_TRY{
+        QPair<void*,AbstractContainerAccess*> container1 = ContainerAPI::fromNativeId(__this_nativeId);
+        QtJambiAPI::checkNullPointer(__jni_env, container1.first, typeid(QHash<QVariant,QVariant>));
+        QPair<void*,AbstractContainerAccess*> container2 = ContainerAPI::fromNativeId(other);
+        QtJambiAPI::checkNullPointer(__jni_env, container2.first, typeid(QHash<QVariant,QVariant>));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QHash<Key,T>::operator=(QHash<Key,T>)", container1.first)
+        QTJAMBI_CONTAINER_CAST(AbstractHashAccess, container1Access, container1.second);
+        QTJAMBI_CONTAINER_CAST(AbstractHashAccess, container2Access, container2.second);
+        if(container1Access->keyMetaType()!=container2Access->keyMetaType())
+            JavaException::raiseIllegalArgumentException(__jni_env, QString("Container's key types mismatch: %1!=%2").arg(container1Access->keyMetaType().name(), container2Access->keyMetaType().name()) QTJAMBI_STACKTRACEINFO );
+        if(container1Access->valueMetaType()!=container2Access->valueMetaType())
+            JavaException::raiseIllegalArgumentException(__jni_env, QString("Container's value types mismatch: %1!=%2").arg(container1Access->valueMetaType().name(), container2Access->valueMetaType().name()) QTJAMBI_STACKTRACEINFO );
+        container1Access->assign(__jni_env, ContainerInfo{_this, container1.first}, ConstContainerAndAccessInfo(otherObj, container2.first, container2Access));
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+}
+
+// QHash<Key,T>::swap(QHash<Key,T>&)
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QHash_swap)
+    (JNIEnv *__jni_env,
+     jobject _this,
+     QtJambiNativeID __this_nativeId,
+     jobject otherObj,
+     QtJambiNativeID other)
+{
+    QTJAMBI_TRY{
+        QPair<void*,AbstractContainerAccess*> container1 = ContainerAPI::fromNativeId(__this_nativeId);
+        QtJambiAPI::checkNullPointer(__jni_env, container1.first, typeid(QHash<QVariant,QVariant>));
+        QPair<void*,AbstractContainerAccess*> container2 = ContainerAPI::fromNativeId(other);
+        QtJambiAPI::checkNullPointer(__jni_env, container2.first, typeid(QHash<QVariant,QVariant>));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QHash<Key,T>::swap(QHash<Key,T>&)", container1.first)
+        QTJAMBI_CONTAINER_CAST(AbstractHashAccess, container1Access, container1.second);
+        QTJAMBI_CONTAINER_CAST(AbstractHashAccess, container2Access, container2.second);
+        if(container1Access->keyMetaType()!=container2Access->keyMetaType())
+            JavaException::raiseIllegalArgumentException(__jni_env, QString("Container's key types mismatch: %1!=%2").arg(container1Access->keyMetaType().name(), container2Access->keyMetaType().name()) QTJAMBI_STACKTRACEINFO );
+        if(container1Access->valueMetaType()!=container2Access->valueMetaType())
+            JavaException::raiseIllegalArgumentException(__jni_env, QString("Container's value types mismatch: %1!=%2").arg(container1Access->valueMetaType().name(), container2Access->valueMetaType().name()) QTJAMBI_STACKTRACEINFO );
+        container1Access->swap(__jni_env, ContainerInfo{_this, container1.first}, ContainerAndAccessInfo(otherObj, container2.first, container2Access));
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+}
+
+extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QHash_isSharedWith__JJ)
+    (JNIEnv *__jni_env,
+     jobject,
+     QtJambiNativeID __this_nativeId,
+     QtJambiNativeID other)
+{
+    QTJAMBI_TRY{
+        QPair<void*,AbstractContainerAccess*> container1 = ContainerAPI::fromNativeId(__this_nativeId);
+        QtJambiAPI::checkNullPointer(__jni_env, container1.first, typeid(QHash<QVariant,QVariant>));
+        QPair<void*,AbstractContainerAccess*> container2 = ContainerAPI::fromNativeId(other);
+        QtJambiAPI::checkNullPointer(__jni_env, container2.first, typeid(QHash<QVariant,QVariant>));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QHash<K,T>::isSharedWith(QHash<K,T>)", container1.first)
+        QTJAMBI_CONTAINER_CAST(AbstractHashAccess, container1Access, container1.second);
+        QTJAMBI_CONTAINER_CAST(AbstractHashAccess, container2Access, container2.second);
+        if(container1Access && container2Access)
+            return container1Access->isSharedWith(container1.first, container2.first);
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+        return false;
+}
+
+extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QHash_isDetached__J)
+    (JNIEnv *__jni_env,
+     jobject,
+     QtJambiNativeID __this_nativeId)
+{
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QHash<QVariant,QVariant>));
-        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QMultiHash<Key, T>::uniqueKeys() const", container.first)
-        QTJAMBI_CONTAINER_CAST(AbstractMultiHashAccess, containerAccess, container.second);
-
-        result = containerAccess->uniqueKeys(__jni_env, container.first);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QHash<T>::isDetached()", container.first)
+        QTJAMBI_CONTAINER_CAST(AbstractHashAccess, containerAccess, container.second);
+        if(containerAccess)
+            return containerAccess->isDetached(container.first);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
-    return result;
+        return false;
 }
 
-// QMultiHash<Key, T>::unite(const T & t)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiHash_unite__JLjava_lang_Object_2)
-(JNIEnv *__jni_env,
- jclass,
- QtJambiNativeID __this_nativeId,
- jobject t0)
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QHash_detach__J)
+    (JNIEnv *__jni_env,
+     jobject _this,
+     QtJambiNativeID __this_nativeId)
 {
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QHash<QVariant,QVariant>));
-        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QMultiHash<Key, T>::unite(const T & t)", container.first)
-        QTJAMBI_CONTAINER_CAST(AbstractMultiHashAccess, containerAccess, container.second);
-
-        containerAccess->unite(__jni_env, container.first, t0);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QHash<T>::detach()", container.first)
+        QTJAMBI_CONTAINER_CAST(AbstractHashAccess, containerAccess, container.second);
+        if(containerAccess)
+            containerAccess->detach(ContainerInfo{_this, container.first});
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
-}
-
-// QMultiHash<Key, T>::values(const Key &key) const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiHash_valuesKey__JLjava_lang_Object_2)
-(JNIEnv *__jni_env,
- jclass,
- QtJambiNativeID __this_nativeId,
- jobject k0)
-{
-    jobject result{nullptr};
-    QTJAMBI_TRY{
-        QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
-        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QHash<QVariant,QVariant>));
-        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("values(const Key &key) const", container.first)
-        QTJAMBI_CONTAINER_CAST(AbstractMultiHashAccess, containerAccess, container.second);
-
-        result = containerAccess->values(__jni_env, container.first, k0);
-    }QTJAMBI_CATCH(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }QTJAMBI_TRY_END
-    return result;
-}
-
-// QMultiHash<Key, T>::contains(const Key & k, const T & value) const
-extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiHash_contains__JLjava_lang_Object_2Ljava_lang_Object_2)
-(JNIEnv *__jni_env,
- jclass,
- QtJambiNativeID __this_nativeId,
- jobject t0,
- jobject k1)
-{
-    jboolean result{false};
-    QTJAMBI_TRY{
-        QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
-        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QMultiHash<QVariant,QVariant>));
-        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QMultiHash<Key, T>::contains(const Key & k, const T & value) const", container.first)
-        QTJAMBI_CONTAINER_CAST(AbstractMultiHashAccess, containerAccess, container.second);
-
-        result = containerAccess->contains(__jni_env, container.first, t0, k1);
-    }QTJAMBI_CATCH(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }QTJAMBI_TRY_END
-    return result;
-}
-
-// QMultiHash<Key, T>::count(const Key & k, const T & value) const
-extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiHash_count__JLjava_lang_Object_2Ljava_lang_Object_2)
-(JNIEnv *__jni_env,
- jclass,
- QtJambiNativeID __this_nativeId,
- jobject t0,
- jobject k1)
-{
-    jint result{0};
-    QTJAMBI_TRY{
-        QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
-        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QMultiHash<QVariant,QVariant>));
-        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QMultiHash<Key, T>::contains(const Key & k, const T & value) const", container.first)
-        QTJAMBI_CONTAINER_CAST(AbstractMultiHashAccess, containerAccess, container.second);
-
-        result = containerAccess->count(__jni_env, container.first, t0, k1);
-    }QTJAMBI_CATCH(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }QTJAMBI_TRY_END
-    return result;
-}
-
-// QMultiHash<Key, T>::find(const Key & k, const T & value) const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiHash_find__JLjava_lang_Object_2Ljava_lang_Object_2)
-(JNIEnv *__jni_env,
- jclass,
- QtJambiNativeID __this_nativeId,
- jobject t0,
- jobject k1)
-{
-    jobject result{nullptr};
-    QTJAMBI_TRY{
-        QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
-        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QMultiHash<QVariant,QVariant>));
-        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QMultiHash<Key, T>::find(const Key & k, const T & value) const", container.first)
-        QTJAMBI_CONTAINER_CAST(AbstractMultiHashAccess, containerAccess, container.second);
-
-        result = containerAccess->constFind(__jni_env, __this_nativeId, container.first, t0, k1);
-    }QTJAMBI_CATCH(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }QTJAMBI_TRY_END
-    return result;
-}
-
-// QMultiHash<Key, T>::remove(const Key & k, const T & value)
-extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiHash_remove__JLjava_lang_Object_2Ljava_lang_Object_2)
-(JNIEnv *__jni_env,
- jclass,
- QtJambiNativeID __this_nativeId,
- jobject t0,
- jobject k1)
-{
-    jint result{0};
-    QTJAMBI_TRY{
-        QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
-        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QMultiHash<QVariant,QVariant>));
-        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QMultiHash<Key, T>::remove(const Key & k, const T & value)", container.first)
-        QTJAMBI_CONTAINER_CAST(AbstractMultiHashAccess, containerAccess, container.second);
-
-        result = containerAccess->remove(__jni_env, container.first, t0, k1);
-    }QTJAMBI_CATCH(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }QTJAMBI_TRY_END
-    return result;
-}
-
-// QMultiHash<Key, T>::replace(const Key & k, const T & value)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiHash_replace__JLjava_lang_Object_2Ljava_lang_Object_2)
-(JNIEnv *__jni_env,
- jclass,
- QtJambiNativeID __this_nativeId,
- jobject t0,
- jobject k1)
-{
-    QTJAMBI_TRY{
-        QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
-        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QMultiHash<QVariant,QVariant>));
-        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QMultiHash<Key, T>::replace(const Key & k, const T & value)", container.first)
-        QTJAMBI_CONTAINER_CAST(AbstractMultiHashAccess, containerAccess, container.second);
-
-        containerAccess->replace(__jni_env, container.first, t0, k1);
-    }QTJAMBI_CATCH(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }QTJAMBI_TRY_END
-}
-
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiHash_writeTo)
-(JNIEnv *__jni_env,
- jclass,
- QtJambiNativeID __this_nativeId,
- QtJambiNativeID stream0)
-{
-    QTJAMBI_TRY{
-        QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
-        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QMultiHash<QVariant,QVariant>));
-        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("operator << (QDataStream&, QMultiHash<K,V>)", container.first)
-        QTJAMBI_CONTAINER_CAST(AbstractMultiHashAccess, containerAccess, container.second);
-
-        QDataStream* stream = QtJambiAPI::objectFromNativeId<QDataStream>(stream0);
-        QtJambiAPI::checkNullPointer(__jni_env, stream);
-        QByteArray containerName = "QMultiHash<";
-        containerName += containerAccess->keyMetaType().name();
-        containerName += ",";
-        containerName += containerAccess->valueMetaType().name();
-        containerName += ">";
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-        int metaType = containerAccess->registerContainer(containerName);
-        if(!QMetaType::save(*stream, metaType, container.first)){
-#else
-        QMetaType metaType(containerAccess->registerContainer(containerName));
-        if(!metaType.save(*stream, container.first)){
-#endif
-            containerName.prepend("QDataStream& << ");
-            JavaException::raiseQNoImplementationException(__jni_env, containerName.constData() QTJAMBI_STACKTRACEINFO );
-        }
-    }QTJAMBI_CATCH(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }QTJAMBI_TRY_END
-}
-
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiHash_readFrom)
-(JNIEnv *__jni_env,
- jclass,
- QtJambiNativeID __this_nativeId,
- QtJambiNativeID stream0)
-{
-    QTJAMBI_TRY{
-        QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
-        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QMultiHash<QVariant,QVariant>));
-        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("operator >> (QDataStream&, QMultiHash<K,V>&)", container.first)
-        QTJAMBI_CONTAINER_CAST(AbstractMultiHashAccess, containerAccess, container.second);
-
-        QDataStream* stream = QtJambiAPI::objectFromNativeId<QDataStream>(stream0);
-        QtJambiAPI::checkNullPointer(__jni_env, stream);
-        QByteArray containerName = "QMultiHash<";
-        containerName += containerAccess->keyMetaType().name();
-        containerName += ",";
-        containerName += containerAccess->valueMetaType().name();
-        containerName += ">";
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-        int metaType = containerAccess->registerContainer(containerName);
-        if(!QMetaType::load(*stream, metaType, container.first)){
-#else
-        QMetaType metaType(containerAccess->registerContainer(containerName));
-        if(!metaType.load(*stream, container.first)){
-#endif
-            containerName.prepend("QDataStream& >> ");
-            JavaException::raiseQNoImplementationException(__jni_env, containerName.constData() QTJAMBI_STACKTRACEINFO );
-        }
-    }QTJAMBI_CATCH(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }QTJAMBI_TRY_END
-}
-
-extern "C" Q_DECL_EXPORT jstring JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiHash_toString)
-(JNIEnv *__jni_env,
- jclass,
- QtJambiNativeID __this_nativeId)
-{
-    jstring result{nullptr};
-    QTJAMBI_TRY{
-        QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
-        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QMultiHash<QVariant,QVariant>));
-        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("operator << (QDebug, QMultiHash<K,V>)", container.first)
-        QTJAMBI_CONTAINER_CAST(AbstractMultiHashAccess, containerAccess, container.second);
-
-        QString strg;
-        {
-            QDebug stream(&strg);
-            QByteArray containerName = "QMultiHash<";
-            containerName += containerAccess->keyMetaType().name();
-            containerName += ",";
-            containerName += containerAccess->valueMetaType().name();
-            containerName += ">";
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-            int metaType = containerAccess->registerContainer(containerName);
-            CoreAPI::appendToDebugStream(stream.nospace(), metaType, container.first);
-            if(strg.isEmpty()){
-                containerName.prepend("QDebug >> ");
-                JavaException::raiseQNoImplementationException(__jni_env, containerName.constData() QTJAMBI_STACKTRACEINFO );
-            }
-#else
-            QMetaType metaType(containerAccess->registerContainer(containerName));
-            if(!metaType.debugStream(stream.nospace(), container.first)){
-                containerName.prepend("QDebug >> ");
-                JavaException::raiseQNoImplementationException(__jni_env, containerName QTJAMBI_STACKTRACEINFO );
-            }
-#endif
-        }
-        result = qtjambi_cast<jstring>(__jni_env, strg);
-    }QTJAMBI_CATCH(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }QTJAMBI_TRY_END
-    return result;
-}
-
-extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiHash_hashCode)
-(JNIEnv *__jni_env,
- jclass,
- QtJambiNativeID __this_nativeId)
-{
-    jint result{0};
-    QTJAMBI_TRY{
-        QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
-        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QMultiHash<QVariant,QVariant>));
-        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("qHash(QMultiHash<K,V>)", container.first)
-        QTJAMBI_CONTAINER_CAST(AbstractMultiHashAccess, containerAccess, container.second);
-
-        QByteArray containerName = "QMultiHash<";
-        containerName += containerAccess->keyMetaType().name();
-        containerName += ",";
-        containerName += containerAccess->valueMetaType().name();
-        containerName += ">";
-        QMetaType metaType(containerAccess->registerContainer(containerName));
-        hash_type h = CoreAPI::computeHash(metaType, container.first);
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-        result = jint(quint64(h) ^ quint64(h) >> 32);
-#else
-        result = jint(h);
-#endif
-    }QTJAMBI_CATCH(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }QTJAMBI_TRY_END
-    return result;
 }
 
 // emitting (AbstractMetaClass::NormalFunctions|AbstractMetaClass::AbstractFunctions writeFinalFunction)

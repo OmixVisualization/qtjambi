@@ -248,7 +248,6 @@ class CppImplGenerator : public CppGenerator {
                                     const QString& __jni_env = "__jni_env",
                                     const QString& qtjambi_scope = "",
                                     Option option = NoOption);
-
         QString jniReturnName(const MetaFunction *java_function) const;
         bool shouldGenerate(const MetaClass *java_class) const override;
         QString default_return_statement_qt(const MetaType *java_type, AbstractGenerator::Option options = AbstractGenerator::NoOption);

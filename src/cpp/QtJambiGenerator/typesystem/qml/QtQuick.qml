@@ -344,6 +344,57 @@ TypeSystem{
             name: "TransformOrigin"
         }
 
+        ObjectType{
+            name: "UpdatePaintNodeData"
+            ExtraIncludes{
+                Include{
+                    fileName: "QtQuick/QSGTransformNode"
+                    location: Include.Global
+                }
+            }
+            ModifyField{
+                name: "transformNode"
+                read: true
+                write: true
+                ReferenceCount{
+                    action: ReferenceCount.Ignore
+                }
+            }
+        }
+
+        ValueType{
+            name: "ItemChangeData"
+            generate: false
+            CustomConstructor{
+                Text{content: "if(copy)\n"+
+                              "    return new(placement) QQuickItem::ItemChangeData(*copy);\n"+
+                              "else\n"+
+                              "    return new(placement) QQuickItem::ItemChangeData(false);"}
+            }
+            ModifyField{
+                name: "window"
+                read: true
+                write: false
+            }
+            ModifyField{
+                name: "item"
+                read: true
+                write: false
+            }
+            ModifyField{
+                name: "boolValue"
+                read: true
+                write: false
+                rename: "booleanValue"
+            }
+            ModifyField{
+                name: "realValue"
+                read: true
+                write: false
+                rename: "doubleValue"
+            }
+        }
+
         ModifyFunction{
             signature: "childMouseEventFilter(QQuickItem*,QEvent*)"
             noExcept: true
@@ -620,6 +671,14 @@ try{
         }
         Import{
             template: "QuickItem"
+        }
+        ModifyFunction{
+            signature: "grabToImage(QJSValue,QSize)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                threadAffinity: true
+            }
         }
         ModifyFunction{
             signature: "textureProvider()const"
@@ -1880,10 +1939,10 @@ if(%1.count()<=0)
                     codeClass: CodeClass.Native
                     Text{content: "switch(__qt_this->sizeOfIndex()){\n"+
                                   "case 4:\n"+
-                                  "    %out = DataJBuffer(%env, reinterpret_cast<qint32*>(%in), __qt_this->indexCount()).take();\n"+
+                                  "    %out = LocalDataJBuffer(%env, reinterpret_cast<qint32*>(%in), __qt_this->indexCount()).take();\n"+
                                   "    break;\n"+
                                   "case 2:\n"+
-                                  "    %out = DataJBuffer(%env, reinterpret_cast<qint16*>(%in), __qt_this->indexCount()).take();\n"+
+                                  "    %out = LocalDataJBuffer(%env, reinterpret_cast<qint16*>(%in), __qt_this->indexCount()).take();\n"+
                                   "    break;\n"+
                                   "default:\n"+
                                   "    break;\n"+
@@ -2478,39 +2537,6 @@ if(%1.count()<=0)
         }
     }
     
-    ValueType{
-        name: "QQuickItem::ItemChangeData"
-        generate: false
-        CustomConstructor{
-            Text{content: "if(copy)\n"+
-                          "    return new(placement) QQuickItem::ItemChangeData(*copy);\n"+
-                          "else\n"+
-                          "    return new(placement) QQuickItem::ItemChangeData(false);"}
-        }
-        ModifyField{
-            name: "window"
-            read: true
-            write: false
-        }
-        ModifyField{
-            name: "item"
-            read: true
-            write: false
-        }
-        ModifyField{
-            name: "boolValue"
-            read: true
-            write: false
-            rename: "booleanValue"
-        }
-        ModifyField{
-            name: "realValue"
-            read: true
-            write: false
-            rename: "doubleValue"
-        }
-    }
-    
     ObjectType{
         name: "QQuickImageProvider"
         ModifyFunction{
@@ -2542,24 +2568,6 @@ if(%1.count()<=0)
     
     ObjectType{
         name: "QQuickImageResponse"
-    }
-    
-    ObjectType{
-        name: "QQuickItem::UpdatePaintNodeData"
-        ExtraIncludes{
-            Include{
-                fileName: "QtQuick/QSGTransformNode"
-                location: Include.Global
-            }
-        }
-        ModifyField{
-            name: "transformNode"
-            read: true
-            write: true
-            ReferenceCount{
-                action: ReferenceCount.Ignore
-            }
-        }
     }
     
     ObjectType{
@@ -3465,6 +3473,80 @@ if(%1.count()<=0)
             }
         }
         since: [6, 2]
+        until: 6.7
+    }
+
+    InterfaceType{
+        name: "QNativeInterface::QSGMetalTexture"
+        packageName: "io.qt.quick.nativeinterface"
+        javaName: "QSGMetalTexture"
+        ppCondition: "QT_CONFIG(metal)"
+        isNativeInterface: true
+        generate: "no-shell"
+        Rejection{
+            className: "TypeInfo"
+        }
+        ModifyFunction{
+            signature: "QSGMetalTexture()"
+            remove: RemoveFlag.All
+        }
+        InjectCode{
+            target: CodeClass.Native
+            position: Position.Beginning
+            Text{content: "void* qtjambi_QSGMetalTexture_nativeTexture(JNIEnv *env, const void* ptr);\n"+
+                          "QSGTexture * qtjambi_QSGMetalTexture_fromNative(JNIEnv *env, void* texture, QQuickWindow* window, const QSize& size, QQuickWindow::CreateTextureOptions options);"}
+        }
+        ModifyFunction{
+            signature: "nativeTexture() const"
+            proxyCall: "qtjambi_QSGMetalTexture_nativeTexture"
+            ModifyArgument{
+                index: 0
+                replaceType: "io.qt.@Nullable QNativePointer"
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "jobject %out = QtJambiAPI::convertNativeToQNativePointer(%env, %in, QNativePointer::Type::Pointer, -1, 1);"}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "fromNative(objc_object *, QQuickWindow *, QSize, QQuickWindow::CreateTextureOptions)"
+            proxyCall: "qtjambi_QSGMetalTexture_fromNative"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+            ModifyArgument{
+                index: 1
+                replaceType: "io.qt.@Nullable QNativePointer"
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "void* %out = QtJambiAPI::convertQNativePointerToNative(%env, %in);"}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "fromNative(id<MTLTexture>, QQuickWindow *, QSize, QQuickWindow::CreateTextureOptions)"
+            proxyCall: "qtjambi_QSGMetalTexture_fromNative"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+            ModifyArgument{
+                index: 1
+                replaceType: "io.qt.@Nullable QNativePointer"
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "void* %out = QtJambiAPI::convertQNativePointerToNative(%env, %in);"}
+                }
+            }
+        }
+        since: 6.8
     }
     
     InterfaceType{

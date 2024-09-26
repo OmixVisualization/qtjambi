@@ -29,6 +29,7 @@
 ****************************************************************************/
 package io.qt.core;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -55,13 +56,35 @@ abstract class AbstractSequentialContainer<T> extends AbstractContainer<T> imple
     @Override
     public abstract AbstractSequentialContainer<T> clone();
     
+    abstract QMetaType elementMetaType();
+    
     /**
      * Returns an array containing all of the elements in this container.
      */
 	@Override
     @QtUninvokable
-    public final Object[] toArray() {
-        Object[] result = new Object[size()];
+    public final T[] toArray() {
+		Class<?> javaType = elementMetaType().javaType();
+		if(javaType==null) {
+			javaType = Object.class;
+		}else if(javaType.isPrimitive()) {
+			if(javaType==byte.class)
+				javaType = Byte.class;
+			else if(javaType==int.class)
+				javaType = Integer.class;
+			else if(javaType==long.class)
+				javaType = Long.class;
+			else if(javaType==float.class)
+				javaType = Float.class;
+			else if(javaType==double.class)
+				javaType = Double.class;
+			else if(javaType==boolean.class)
+				javaType = Boolean.class;
+			else
+				javaType = Object.class;
+		}
+        @SuppressWarnings("unchecked")
+		T[] result = (T[])Array.newInstance(javaType, size());
         int i = 0;
         for (T e : this) {
             result[i++] = e;

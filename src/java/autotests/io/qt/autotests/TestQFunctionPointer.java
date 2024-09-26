@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Test;
@@ -48,8 +49,10 @@ import io.qt.core.QDir;
 import io.qt.core.QEasingCurve;
 import io.qt.core.QFunctionPointer;
 import io.qt.core.QGenericArgument;
+import io.qt.core.QLibraryInfo;
 import io.qt.core.QList;
 import io.qt.core.QMap;
+import io.qt.core.QMessageLogContext;
 import io.qt.core.QMetaType;
 import io.qt.core.QObject;
 import io.qt.core.QOperatingSystemVersion;
@@ -58,6 +61,7 @@ import io.qt.core.QRect;
 import io.qt.core.QRectF;
 import io.qt.core.QStringList;
 import io.qt.core.QSysInfo;
+import io.qt.core.QVersionNumber;
 import io.qt.core.Qt;
 import io.qt.gui.QColor;
 import io.qt.gui.QFont;
@@ -83,6 +87,15 @@ public class TestQFunctionPointer extends ApplicationInitializer{
 			list.get(i).dispose();
 		}
 		list.clear();
+	}
+	
+	@AfterClass
+    public static void testDispose() throws Exception {
+		System.out.println("                            char.class.hashCode(): "+char.class.hashCode());
+		System.out.println("              System.identityHashCode(char.class): "+System.identityHashCode(char.class));
+		System.out.println("              QMessageLogContext.class.hashCode(): "+QMessageLogContext.class.hashCode());
+		System.out.println("System.identityHashCode(QMessageLogContext.class): "+System.identityHashCode(QMessageLogContext.class));
+		ApplicationInitializer.testDispose();
 	}
 	
 	@FunctionalInterface
@@ -229,6 +242,7 @@ public class TestQFunctionPointer extends ApplicationInitializer{
 	
 	@Test
     public void testReturningFunctions_char() throws Throwable {
+		Assume.assumeTrue("Cannot run on Qt5", QLibraryInfo.version().majorVersion()>=6);
 		QFunctionPointer fp = FunctionalTest.getFunction(35);
     	try {
 			QMetaType.Type char16 = QMetaType.Type.valueOf("Char16");

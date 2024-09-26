@@ -480,17 +480,6 @@ TypeSystem{
     
     ValueType{
         name: "QPlace"
-        InjectCode{
-            target: CodeClass.Native
-            position: Position.Beginning
-            Text{content: String.raw`
-namespace QHashPrivate {
-template <>
-constexpr inline bool HasQHashSingleArgOverload<QMap<int,QPlaceContent>> = false;
-}`
-            }
-            since: 6.8
-        }
     }
     
     ValueType{

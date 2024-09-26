@@ -79,7 +79,6 @@ hash_type qHash(const std::type_index& idx, hash_type seed = 0) Q_DECL_NOEXCEPT;
 hash_type qHash(const char *p, hash_type seed = 0) Q_DECL_NOEXCEPT;
 const QMetaObject* registeredOriginalMetaObject(const std::type_info& typeId);
 PtrDeleterFunction deleter(const std::type_info& typeId);
-PtrOwnerFunction registeredOwnerFunction(const std::type_info& typeId);
 const char* getInterface(const char*qt_name);
 const char * getQtName(const std::type_info& typeId);
 const char * getJavaName(const std::type_info& typeId);
@@ -158,41 +157,16 @@ QMap<QString,QPair<size_t,size_t>> getRegisteredTypeSizesAndAlignments();
 void registerTypeInfo(const std::type_info& typeId, QtJambiTypeInfo info, const char *qt_name, const char *java_name, EntryTypes entryTypes);
 void registerTypeAlias(const std::type_info& typeId, const char *qt_name, const char *java_name);
 void registerContainerTypeInfo(const std::type_info& typeId, QtJambiTypeInfo info, const char *qt_name, const char *java_name, const char *java_interface);
-void registerMetaTypeID(const std::type_info& typeId, const std::type_info& nonPointerTypeId, int qtMetaType);
+void registerMetaTypeID(const std::type_info& typeId,
+                        const std::type_info& nonPointerTypeId,
+                        int qtMetaType,
+                        AbstractContainerAccess* access = nullptr,
+                        const QSharedPointer<AbstractContainerAccess>& sharedAccess = {});
 QList<const PolymorphicIdHandler*> getPolymorphicIdHandlers(const std::type_info& polymorphicBaseTypeId);
 const char * registeredInterfaceID(const std::type_info& typeId);
 const char * registeredInterfaceIDForClassName(const QString& className);
 bool isQObject(const std::type_info& typeId);
 QList<jclass> getFlatClassHirarchy(JNIEnv *env, jclass clazz);
-
-#ifdef JOBJECT_REFCOUNT
-#  include <QtCore/QReadWriteLock>
-#  include <QtCore/QWriteLocker>
-    Q_GLOBAL_STATIC(QReadWriteLock, gRefCountLock);
-
-    static void jobjectRefCount(bool create)
-    {
-        QWriteLocker locker(gRefCountLock());
-
-        static int refs = 0;
-        QString s;
-        if (!create) {
-            s = QString("Deleting jobject reference: %1 references left").arg(--refs);
-        } else {
-            s = QString("Creating jobject reference: %1 references now").arg(++refs);
-        }
-
-        Q_ASSERT(refs >= 0);
-
-        fprintf(stderr, qPrintable(s));
-    }
-
-#  define REF_JOBJECT jobjectRefCount(true)
-#  define DEREF_JOBJECT jobjectRefCount(false)
-#else
-#  define REF_JOBJECT // noop
-#  define DEREF_JOBJECT // noop
-#endif // JOBJECT_REFCOUNT
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 
@@ -258,6 +232,8 @@ QMetaType createMetaType(QByteArrayView typeName,
                                         QMetaType::TypeFlags flags,
                                         const QMetaObject *metaObject,
                                         QtPrivate::QMetaTypeInterface::MetaObjectFn metaObjectFn);
+
+QSharedPointer<AbstractContainerAccess> findContainerAccess(const QMetaType& metaType);
 
 struct JQObjectWrapperPrivate;
 

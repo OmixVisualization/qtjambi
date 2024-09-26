@@ -44,10 +44,9 @@ import io.qt.QtUninvokable;
  * @see QList#end()
  */
 public final class QSequentialIterator<T> extends QSequentialConstIterator<T>{
-    
 	@NativeAccess
-    private QSequentialIterator(QtObject owner) { 
-    	super(owner);
+    private QSequentialIterator(QPrivateConstructor c, QtObject owner) { 
+    	super(c, owner);
 	}
     
 	/**
@@ -56,19 +55,22 @@ public final class QSequentialIterator<T> extends QSequentialConstIterator<T>{
 	 */
     @QtUninvokable
 	public final boolean setValue(T newValue) {
-    	if(!isValid())
-    		return false;
-    	return setValue(QtJambi_LibraryUtilities.internal.nativeId(this), newValue);
+    	return checkedSetValue(newValue);
     }
     
-    @QtUninvokable
-    private static native <T> boolean setValue(long __this__nativeId, T newValue);
-
-	/**
+    /**
 	 * Specifies if this type is constant iterator.
 	 */
 	@Override
 	boolean isConstant() {
 		return false;
 	}
+	
+	/**
+     * Returns a Java mutable iterator between this and the container's end.
+     */
+    @QtUninvokable
+    public final java.util.ListIterator<T> mutableIterator(){
+    	return toMutableJavaIterator();
+    }
 }

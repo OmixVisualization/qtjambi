@@ -45,15 +45,24 @@ const char * adaptFile(const char *file){
 #else
 #define PATHSEP '/'
 #endif
+    if(file){
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-    QByteArrayView _file(file);
-    auto idx = _file.lastIndexOf(PATHSEP);
-    if(idx>0)
-        idx = _file.lastIndexOf(PATHSEP, idx-1);
-    if(idx>0)
-        file += idx+1;
+        QByteArrayView _file(file);
+#else
+        QLatin1String _file(file);
 #endif
+        auto idx = _file.lastIndexOf(PATHSEP);
+        if(idx>0)
+            idx = _file.lastIndexOf(PATHSEP, idx-1);
+        if(idx>0)
+            file += idx+1;
+    }
     return file;
+}
+
+QDebug& operator<<(QDebug& debug, const DebugAPI::Printer& printer){
+    printer(debug);
+    return debug;
 }
 
 namespace DebugAPI{
@@ -63,7 +72,12 @@ Q_LOGGING_CATEGORY(debugAPICategory, "io.qtjambi.debugapi")
 Q_LOGGING_CATEGORY(debugAPIInternalMethodsCategory, "io.qtjambi.debugapi.internal")
 Q_LOGGING_CATEGORY(debugAPIJavaOverloadsCategory, "io.qtjambi.debugapi.java-overloads")
 Q_LOGGING_CATEGORY(debugAPINativeCallsCategory, "io.qtjambi.debugapi.native-calls")
+Q_LOGGING_CATEGORY(debugAPIConstructorCallsCategory, "io.qtjambi.debugapi.constructor-calls")
+Q_LOGGING_CATEGORY(debugAPIDestructorCallsCategory, "io.qtjambi.debugapi.desctructor-calls")
+Q_LOGGING_CATEGORY(debugAPIEventsCategory, "io.qtjambi.debugapi.events")
+Q_LOGGING_CATEGORY(debugAPICleanupCallsCategory, "io.qtjambi.debugapi.cleanup-calls")
 
+/*
 #if QT_VERSION < QT_VERSION_CHECK(6, 4, 0)
 #define QTJAMBI_DEBUG_MESSAGE_LOGGER(category) \
 for (bool qt_category_enabled = category().isDebugEnabled(); qt_category_enabled; qt_category_enabled = false) \
@@ -73,13 +87,17 @@ for (bool qt_category_enabled = category().isDebugEnabled(); qt_category_enabled
 for (QLoggingCategoryMacroHolder<QtDebugMsg> qt_category(category()); qt_category; qt_category.control = false) \
         QMessageLogger(adaptFile(file), line, function, qt_category.name()).debug().nospace().noquote()
 #endif
+*/
+#define QTJAMBI_DEBUG_MESSAGE_LOGGER(category) QMessageLogger(adaptFile(file), line, function, category.categoryName()).debug().nospace().noquote()
 
 bool enabledMethodTracePrints(){
-    static bool b = []()->bool{
-        if(JniEnvironment env{200})
-            return Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.enable-method-logs")) || qEnvironmentVariableIsSet("QTJAMBI_DEBUG_TRACE");
-        else return qEnvironmentVariableIsSet("QTJAMBI_DEBUG_TRACE");
-    }();
+    static ResettableBoolFlag b("io.qt.enable-method-logs");
+    static bool b2 = qEnvironmentVariableIsSet("QTJAMBI_DEBUG_TRACE");
+    return b || b2;
+}
+
+bool enabledEventPrints(){
+    static ResettableBoolFlag b("io.qt.enable-event-logs");
     return b;
 }
 
@@ -92,6 +110,14 @@ bool enabledMethodTracePrints(){
 #endif
 
 class MethodPrintPrivate{
+    enum Mode{
+        Printable,
+#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME)
+        MethodAndType,
+#endif
+        Message
+    };
+    const QLoggingCategory& m_category;
     MethodPrint::Type m_callType;
     const void* m_pointer;
     const char* m_method;
@@ -99,61 +125,114 @@ class MethodPrintPrivate{
     const char* m_file;
     int m_line;
     const char* m_function;
-    QByteArray* m_data = nullptr;
-    MethodPrintPrivate(MethodPrint::Type callType, const void* pointer, const char* method,
-                            OPTIONAL_LINK_NAME_K(const char* type)
-                            const char* file, int line, const char *function)
-      : m_callType(callType),
+    Printer m_printer;
+    Mode m_mode;
+    MethodPrintPrivate(const QLoggingCategory& category, MethodPrint::Type callType, const void* pointer, const char* message,
+                       const char* file, int line, const char *function)
+        : m_category(category),
+        m_callType(callType),
         m_pointer(pointer),
-        m_method(method),
-        OPTIONAL_LINK_NAME_K(m_type(type))
-        m_file(file),
-        m_line(line),
-        m_function(function){
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME)
-        printWithType(true, m_callType, m_pointer, m_method, m_type, m_file, m_line, m_function);
-#else
-        methodPrint(true, m_callType, m_pointer, m_method, m_file, m_line, m_function);
-#endif
-    }
-    MethodPrintPrivate(MethodPrint::Type callType,
-                       const char* file, int line, const char *function, QByteArray* data)
-        : m_callType(callType),
-        m_pointer(nullptr),
-        m_method(data->constData()),
+        m_method(message),
         OPTIONAL_LINK_NAME_K(m_type(nullptr))
         m_file(file),
         m_line(line),
         m_function(function),
-        m_data(data)
+        m_mode(Message)
     {
+        methodPrint(true, m_category, m_callType, m_pointer, m_method, m_file, m_line, m_function);
+    }
 #if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME)
-        printWithType(true, m_callType, m_pointer, m_method, m_type, m_file, m_line, m_function);
-#else
-        methodPrint(true, m_callType, m_pointer, m_method, m_file, m_line, m_function);
+    MethodPrintPrivate(const QLoggingCategory& category, MethodPrint::Type callType, const void* pointer, const char* method,
+                            const char* type, const char* file, int line, const char *function)
+        : m_category(category),
+        m_callType(callType),
+        m_pointer(pointer),
+        m_method(method),
+        m_type(type),
+        m_file(file),
+        m_line(line),
+        m_function(function),
+        m_mode(type ? MethodAndType : Message)
+    {
+        if(type)
+            printWithType(true, m_category, m_callType, m_pointer, m_method, m_type, m_file, m_line, m_function);
+        else
+            methodPrint(true, m_category, m_callType, m_pointer, m_method, m_file, m_line, m_function);
+    }
 #endif
+    MethodPrintPrivate(const QLoggingCategory& category,
+                       const char* file, int line, const char *function, Printer&& printer)
+        : m_category(category),
+        m_callType(MethodPrint::Internal),
+        m_pointer(nullptr),
+        m_method(nullptr),
+        OPTIONAL_LINK_NAME_K(m_type(nullptr))
+        m_file(file),
+        m_line(line),
+        m_function(function),
+        m_printer(std::move(printer)),
+        m_mode(Printable)
+    {
+        methodPrint(true, m_category, m_file, m_line, m_function, m_printer);
     }
 public:
     ~MethodPrintPrivate(){
+        switch(m_mode){
+        case Printable:
+            methodPrint(false, m_category, m_file, m_line, m_function, m_printer);
+            break;
 #if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME)
-        printWithType(false, m_callType, m_pointer, m_method, m_type, m_file, m_line, m_function);
-#else
-        methodPrint(false, m_callType, m_pointer, m_method, m_file, m_line, m_function);
+        case MethodAndType:
+            printWithType(false, m_category, m_callType, m_pointer, m_method, m_type, m_file, m_line, m_function);
+            break;
 #endif
-        if(m_data)
-            delete m_data;
-    }
-    static MethodPrintPrivate* create(MethodPrint::Type callType, const void* pointer, const char* method, const char* file, int line, const char *function){
-        if(enabledMethodTracePrints() && callType!=MethodPrint::Disabled){
-            return new MethodPrintPrivate(callType, pointer, method,
-                                               OPTIONAL_LINK_NAME_K(nullptr)
-                                               file, line, function);
-        }else{
-            return nullptr;
+        case Message:
+            methodPrint(false, m_category, m_callType, m_pointer, m_method, m_file, m_line, m_function);
+            break;
         }
     }
+    static const QLoggingCategory& category(MethodPrint::Type callType){
+        switch(callType){
+        case MethodPrint::JavaToNativeCall:
+            return debugAPINativeCallsCategory();
+        case MethodPrint::NativeToJavaCall:
+            return debugAPIJavaOverloadsCategory();
+        case MethodPrint::LibraryInitialization:
+            return debugAPIInternalMethodsCategory();
+        case MethodPrint::Internal:
+            return debugAPIInternalMethodsCategory();
+        case MethodPrint::ConstructorCall:
+            return debugAPIConstructorCallsCategory();
+        case MethodPrint::DestructorCall:
+            return debugAPIDestructorCallsCategory();
+        default:
+            return debugAPIInternalMethodsCategory();
+        }
+    }
+    static MethodPrintPrivate* create(MethodPrint::Type callType, const void* pointer, const char* message, const char* file, int line, const char *function){
+        if(enabledMethodTracePrints()){
+            switch(callType){
+            case MethodPrint::Disabled:
+                return nullptr;
+            default: break;
+            }
+            const QLoggingCategory& category = MethodPrintPrivate::category(callType);
+            if(!category.isDebugEnabled())
+                return nullptr;
+            return new MethodPrintPrivate(category, callType, pointer, message, file, line, function);
+        }
+        return nullptr;
+    }
     static MethodPrintPrivate* create(MethodPrint::Type callType, const QtJambiShell* shell, const char* method, const char* file, int line, const char *function){
-        if(enabledMethodTracePrints() && callType!=MethodPrint::Disabled){
+        if(enabledMethodTracePrints()){
+            switch(callType){
+            case MethodPrint::Disabled:
+                return nullptr;
+            default: break;
+            }
+            const QLoggingCategory& category = MethodPrintPrivate::category(callType);
+            if(!category.isDebugEnabled())
+                return nullptr;
             const void* pointer = nullptr;
             OPTIONAL_LINK_NAME(const char* type = nullptr;)
             if(QSharedPointer<QtJambiLink> link = reinterpret_cast<const QtJambiShellImpl*>(shell)->link()){
@@ -162,7 +241,7 @@ public:
                 pointer = link->pointer();
                 OPTIONAL_LINK_NAME(type = link->qtTypeName();)
             }
-            return new MethodPrintPrivate(callType, pointer, method,
+            return new MethodPrintPrivate(category, callType, pointer, method,
                                                OPTIONAL_LINK_NAME_K(type)
                                                file, line, function);
         }else{
@@ -170,7 +249,15 @@ public:
         }
     }
     static MethodPrintPrivate* create(MethodPrint::Type callType, QtJambiNativeID nativeID, const char* method, const char* file, int line, const char *function){
-        if(enabledMethodTracePrints() && callType!=MethodPrint::Disabled){
+        if(enabledMethodTracePrints()){
+            switch(callType){
+            case MethodPrint::Disabled:
+                return nullptr;
+            default: break;
+            }
+            const QLoggingCategory& category = MethodPrintPrivate::category(callType);
+            if(!category.isDebugEnabled())
+                return nullptr;
             const void* pointer = nullptr;
             OPTIONAL_LINK_NAME(const char* type = nullptr;)
             if(QSharedPointer<QtJambiLink> link = QtJambiLink::fromNativeId(nativeID)){
@@ -179,7 +266,7 @@ public:
                 pointer = link->pointer();
                 OPTIONAL_LINK_NAME(type = link->qtTypeName();)
             }
-            return new MethodPrintPrivate(callType, pointer, method,
+            return new MethodPrintPrivate(category, callType, pointer, method,
                                                OPTIONAL_LINK_NAME_K(type)
                                                file, line, function);
         }else{
@@ -187,7 +274,15 @@ public:
         }
     }
     static MethodPrintPrivate* create(MethodPrint::Type callType, const QtJambiShellInterface* shellInterface, const char* method, const char* file, int line, const char *function){
-        if(enabledMethodTracePrints() && callType!=MethodPrint::Disabled){
+        if(enabledMethodTracePrints()){
+            switch(callType){
+            case MethodPrint::Disabled:
+                return nullptr;
+            default: break;
+            }
+            const QLoggingCategory& category = MethodPrintPrivate::category(callType);
+            if(!category.isDebugEnabled())
+                return nullptr;
             const void* pointer = nullptr;
             OPTIONAL_LINK_NAME(const char* type = nullptr;)
             if(shellInterface){
@@ -197,32 +292,42 @@ public:
                     pointer = link->pointer();
                     OPTIONAL_LINK_NAME(type = link->qtTypeName();)
                 }
-                return new MethodPrintPrivate(callType, pointer, method,
+                return new MethodPrintPrivate(category, callType, pointer, method,
                                                    OPTIONAL_LINK_NAME_K(type)
                                                     file, line, function);
             }
         }
         return nullptr;
     }
-    static MethodPrintPrivate* create(MethodPrint::Type callType, const QSharedPointer<QtJambiLink>& link, const char* method, const char* file, int line, const char *function){
-        if(enabledMethodTracePrints() && callType!=MethodPrint::Disabled){
+    static MethodPrintPrivate* create(const QSharedPointer<QtJambiLink>& link, const char* method, const char* file, int line, const char *function){
+        if(enabledMethodTracePrints()){
+            const QLoggingCategory& category = debugAPICleanupCallsCategory();
+            if(!category.isDebugEnabled())
+                return nullptr;
             if(link && !link->isDebugMessagingDisabled()){
                 const void* pointer = link->pointer();
+                if(!pointer)
+                    pointer = link.data();
                 OPTIONAL_LINK_NAME(const char* type = link->qtTypeName();)
-                return new MethodPrintPrivate(callType, pointer, method,
+                return new MethodPrintPrivate(category, MethodPrint::Internal, pointer, method,
                                                    OPTIONAL_LINK_NAME_K(type)
                                                     file, line, function);
             }
         }
         return nullptr;
     }
-    static MethodPrintPrivate* create(MethodPrint::Type callType, const QWeakPointer<QtJambiLink>& wlink, const char* method, const char* file, int line, const char *function){
-        if(enabledMethodTracePrints() && callType!=MethodPrint::Disabled){
+    static MethodPrintPrivate* create(const QWeakPointer<QtJambiLink>& wlink, const char* method, const char* file, int line, const char *function){
+        if(enabledMethodTracePrints()){
+            const QLoggingCategory& category = debugAPICleanupCallsCategory();
+            if(!category.isDebugEnabled())
+                return nullptr;
             if(QSharedPointer<QtJambiLink> link = wlink){
                 if(!link->isDebugMessagingDisabled()){
                     const void* pointer = link->pointer();
+                    if(!pointer)
+                        pointer = link.data();
                     OPTIONAL_LINK_NAME(const char* type = link->qtTypeName();)
-                    return new MethodPrintPrivate(callType, pointer, method,
+                    return new MethodPrintPrivate(category, MethodPrint::Internal, pointer, method,
                                                        OPTIONAL_LINK_NAME_K(type)
                                                         file, line, function);
                 }
@@ -231,214 +336,228 @@ public:
         return nullptr;
     }
     static MethodPrintPrivate* create(MethodPrint::Type callType, const char* file, int line, const char *function, const char* message,...){
-        if(enabledMethodTracePrints() && callType!=MethodPrint::Disabled){
-            QByteArray* data = new QByteArray(QString::asprintf(message).toUtf8());
-            return new MethodPrintPrivate(callType,
-                                          file, line, function, data);
+        if(enabledMethodTracePrints()){
+            switch(callType){
+            case MethodPrint::Disabled:
+                return nullptr;
+            default: break;
+            }
+            const QLoggingCategory& category = MethodPrintPrivate::category(callType);
+            if(!category.isDebugEnabled())
+                return nullptr;
+            return new MethodPrintPrivate(category, file, line, function, [data = QString::asprintf(message)](QDebug& dbg) -> QDebug& {
+                return dbg << data;
+            });
         }
         return nullptr;
     }
-    static MethodPrintPrivate* create(MethodPrint::Type callType, const char* file, int line, const char *function, std::function<QByteArray()>&& supplier){
-        if(enabledMethodTracePrints() && callType!=MethodPrint::Disabled){
-            QByteArray* data = new QByteArray(supplier());
-            return new MethodPrintPrivate(callType,
-                                          file, line, function, data);
+    static MethodPrintPrivate* create(const QLoggingCategory& category, const char* file, int line, const char *function, const char* message,...){
+        if(enabledMethodTracePrints()){
+            if(!category.isDebugEnabled())
+                return nullptr;
+            return new MethodPrintPrivate(category, file, line, function, [data = QString::asprintf(message)](QDebug& dbg) -> QDebug& {
+                return dbg << data;
+            });
         }
         return nullptr;
     }
-    static void methodPrint(bool isEnter, MethodPrint::Type callType, const void* pointer, const char *method, const char *file, int line, const char *function)
+    static MethodPrintPrivate* create(MethodPrint::Type callType, const char* file, int line, const char *function, Printer&& printer){
+        if(enabledMethodTracePrints()){
+            switch(callType){
+            case MethodPrint::Disabled:
+                return nullptr;
+            default: break;
+            }
+            const QLoggingCategory& category = MethodPrintPrivate::category(callType);
+            if(!category.isDebugEnabled())
+                return nullptr;
+            return new MethodPrintPrivate(category, file, line, function, std::move(printer));
+        }
+        return nullptr;
+    }
+    static MethodPrintPrivate* create(const QLoggingCategory& category, const char* file, int line, const char *function, Printer&& printer){
+        if(enabledMethodTracePrints()){
+            if(!category.isDebugEnabled())
+                return nullptr;
+            return new MethodPrintPrivate(category, file, line, function, std::move(printer));
+        }
+        return nullptr;
+    }
+    static MethodPrintPrivate* createEventPrint(const char* file, int line, const char *function, QObject *receiver, QEvent *event){
+        if(enabledEventPrints()){
+            const QLoggingCategory& category = debugAPIEventsCategory();
+            if(!category.isDebugEnabled())
+                return nullptr;
+            QString receiverDbg;
+            QDebug(&receiverDbg).nospace().noquote() << receiver;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+            const char* enumValue = QEvent::staticMetaObject.enumerator(0).valueToKey(event->type());
+            if(enumValue){
+                return new MethodPrintPrivate(category, file, line, function, [enumValue, receiverDbg, receiver, event](QDebug& dbg){
+                    dbg << "QCoreApplication::notify(QObject *receiver, QEvent *event) with receiver: " << reinterpret_cast<void*>(receiver) << "=" << receiverDbg << ", event: " << reinterpret_cast<void*>(event) << "=QEvent::" << enumValue;
+                });
+            }
+#endif
+            const std::type_info* eventType = nullptr;
+            try{
+                eventType = &typeid(*event);
+            }catch(...){}
+            if(eventType){
+                return new MethodPrintPrivate(category, file, line, function, [receiverDbg, receiver, event, type = event->type(), eventTypeName = QtJambiAPI::typeName(*eventType)](QDebug& dbg){
+                    dbg << "QCoreApplication::notify(QObject *receiver, QEvent *event) with receiver: " << reinterpret_cast<void*>(receiver) << "=" << receiverDbg << ", event: " << reinterpret_cast<void*>(event) << "=QEvent::Type(type: " << int(type) << ", class: " << eventTypeName.constData() << ")";
+                });
+            }else{
+                return new MethodPrintPrivate(category, file, line, function, [receiverDbg, receiver, event, type = event->type()](QDebug& dbg){
+                    dbg << "QCoreApplication::notify(QObject *receiver, QEvent *event) with receiver: " << reinterpret_cast<void*>(receiver) << "=" << receiverDbg << ", event: " << reinterpret_cast<void*>(event) << "=QEvent::Type(" << int(type) << ")";
+                });
+            }
+        }
+        return nullptr;
+    }
+    static void methodPrint(bool isEnter, const QLoggingCategory& category, const char *file, int line, const char *function, const Printer& printer)
     {
+        QMessageLogger logger(adaptFile(file), line, function, category.categoryName());
+        QDebug dbg = logger.debug().nospace().noquote();
+        if(isEnter){
+            dbg << "ENTER: ";
+        }else{
+            dbg << "LEAVE: ";
+        }
+        dbg << printer << " in thread tid=" << quintptr(QThread::currentThreadId());
+    }
+    static void methodPrint(bool isEnter, const QLoggingCategory& category, MethodPrint::Type callType, const void* pointer, const char *method, const char *file, int line, const char *function)
+    {
+        QMessageLogger logger(adaptFile(file), line, function, category.categoryName());
+        QDebug dbg = logger.debug().nospace().noquote();
+        if(isEnter){
+            dbg << "ENTER: ";
+        }else{
+            dbg << "LEAVE: ";
+        }
         if(pointer){
             switch(callType){
             case MethodPrint::JavaToNativeCall:
-                if(isEnter){
-                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPINativeCallsCategory) << "ENTER: Java calling native method " << method << " on object " << pointer << " in thread tid=" << quintptr(QThread::currentThreadId());
-                }else{
-                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPINativeCallsCategory) << "LEAVE: Java calling native method " << method << " on object " << pointer << " in thread tid=" << quintptr(QThread::currentThreadId());
-                }
+                dbg << "Java calling native method " << method << " on object " << pointer;
                 break;
             case MethodPrint::NativeToJavaCall:
-                if(isEnter){
-                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIJavaOverloadsCategory) << "ENTER: Shell (object: " << pointer << ") calling java method " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
-                }else{
-                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIJavaOverloadsCategory) << "LEAVE: Shell (object: " << pointer << ") calling java method " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
-                }
+                dbg << "Shell (object: " << pointer << ") calling java method " << method;
                 break;
             case MethodPrint::LibraryInitialization:
-                if(isEnter){
-                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "ENTER: Initializing " << method << " on object " << pointer << " in thread tid=" << quintptr(QThread::currentThreadId());
-                }else{
-                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "LEAVE: Initializing " << method << " on object " << pointer << " in thread tid=" << quintptr(QThread::currentThreadId());
-                }
+                dbg << "Initializing " << method << " on object " << pointer;
                 break;
-            case MethodPrint::Internal:{
-                if(isEnter){
-                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "ENTER: " << method << " on object " << pointer << " in thread tid=" << quintptr(QThread::currentThreadId());
-                }else{
-                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "LEAVE: " << method << " on object " << pointer << " in thread tid=" << quintptr(QThread::currentThreadId());
-                }
+            case MethodPrint::Internal:
+                dbg << "" << method << " on object " << pointer;
                 break;
-            }
             case MethodPrint::ConstructorCall:
-                if(isEnter){
-                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "ENTER: Constructor call " << method << " on object " << pointer << " in thread tid=" << quintptr(QThread::currentThreadId());
-                }else{
-                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "LEAVE: Constructor call " << method << " on object " << pointer << " in thread tid=" << quintptr(QThread::currentThreadId());
-                }
+                dbg << "Constructor call " << method << " on object " << pointer;
                 break;
             case MethodPrint::DestructorCall:
-                if(isEnter){
-                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "ENTER: Destuctor call " << method << " on object " << pointer << " in thread tid=" << quintptr(QThread::currentThreadId());
-                }else{
-                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "LEAVE: Destuctor call " << method << " on object " << pointer << " in thread tid=" << quintptr(QThread::currentThreadId());
-                }
+                dbg << "Destuctor call " << method << " on object " << pointer;
                 break;
             default:break;
             }
         }else{
             switch(callType){
             case MethodPrint::JavaToNativeCall:
-                if(isEnter){
-                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIJavaOverloadsCategory) << "ENTER: Java calling native method " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
-                }else{
-                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIJavaOverloadsCategory) << "LEAVE: Java calling native method " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
-                }
+                dbg << "Java calling native method " << method;
                 break;
             case MethodPrint::NativeToJavaCall:
-                if(isEnter){
-                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIJavaOverloadsCategory) << "ENTER: Shell calling java method " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
-                }else{
-                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIJavaOverloadsCategory) << "LEAVE: Shell calling java method " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
-                }
+                dbg << "Shell calling java method " << method;
                 break;
             case MethodPrint::LibraryInitialization:
-                if(isEnter){
-                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "ENTER: Initializing " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
-                }else{
-                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "LEAVE: Initializing " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
-                }
+                dbg << "Initializing " << method;
                 break;
-            case MethodPrint::Internal:{
-                if(isEnter){
-                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "ENTER: " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
-                }else{
-                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "LEAVE: " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
-                }
+            case MethodPrint::Internal:
+                dbg << "" << method;
                 break;
-            }
             case MethodPrint::ConstructorCall:
-                if(isEnter){
-                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "ENTER: Constructor call " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
-                }else{
-                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "LEAVE: Constructor call " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
-                }
+                dbg << "Constructor call " << method;
                 break;
             case MethodPrint::DestructorCall:
-                if(isEnter){
-                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "ENTER: Destuctor call " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
-                }else{
-                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "LEAVE: Destuctor call " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
-                }
+                dbg << "Destuctor call " << method;
                 break;
             default:break;
             }
         }
+        dbg << " in thread tid=" << quintptr(QThread::currentThreadId());
     }
-    static void printImpl(const char *message, const char *file, int line, const char *function)
+    static void printImpl(const char *message, const char *file, int line, const char *function, const QLoggingCategory& category)
     {
-        QMessageLogger(adaptFile(file), line, function).debug(debugAPICategory).nospace() << message << " in thread tid=" << quintptr(QThread::currentThreadId());
+        QMessageLogger(adaptFile(file), line, function).debug(category).nospace().noquote() << message << " in thread tid=" << quintptr(QThread::currentThreadId());
     }
-    static void printImpl(const QString& message, const char *file, int line, const char *function)
+    static void printImpl(const QString& message, const char *file, int line, const char *function, const QLoggingCategory& category)
     {
-        QMessageLogger(adaptFile(file), line, function).debug(debugAPICategory) << message << " in thread tid=" << quintptr(QThread::currentThreadId());
+        QMessageLogger(adaptFile(file), line, function).debug(category).nospace().noquote() << message << " in thread tid=" << quintptr(QThread::currentThreadId());
+    }
+    static void printImpl(Printer&& printer, const char *file, int line, const char *function, const QLoggingCategory& category)
+    {
+        QMessageLogger(adaptFile(file), line, function).debug(category).nospace().noquote() << printer << " in thread tid=" << quintptr(QThread::currentThreadId());
     }
     static void print(const char *message, const char *file, int line, const char *function)
     {
-        if (enabledMethodTracePrints()) {
-            printImpl(message, file, line, function);
+        const QLoggingCategory& category = debugAPICategory();
+        if (enabledMethodTracePrints() && category.isDebugEnabled()) {
+            printImpl(message, file, line, function, category);
+        }
+    }
+    static void print(const char *file, int line, const char *function, Printer&& printer)
+    {
+        const QLoggingCategory& category = internalCategory();
+        if (enabledMethodTracePrints() && category.isDebugEnabled()) {
+            printImpl(std::move(printer), file, line, function, category);
+        }
+    }
+    static void printCleanupArgs(const char *file, int line, const char *function, const char *format,...)
+    {
+        const QLoggingCategory& category = debugAPICleanupCallsCategory();
+        if (enabledMethodTracePrints() && category.isDebugEnabled()) {
+            va_list args;
+            va_start(args, format);
+            QString string = QString::vasprintf(format, args);
+            va_end(args);
+            printImpl(string, file, line, function, category);
         }
     }
     static void printArgs(const char *file, int line, const char *function, const char *format,...)
     {
-        if (enabledMethodTracePrints()) {
-            printImpl(QString::asprintf(format), file, line, function);
+        const QLoggingCategory& category = internalCategory();
+        if (enabledMethodTracePrints() && category.isDebugEnabled()) {
+            va_list args;
+            va_start(args, format);
+            QString string = QString::vasprintf(format, args);
+            va_end(args);
+            printImpl(string, file, line, function, category);
         }
     }
 
 #if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME)
-    static void printWithType(bool isEnter, MethodPrint::Type callType, const void* pointer, const char *method, const char * typeName, const char *file, int line, const char *function)
+    static void printWithType(bool isEnter, const QLoggingCategory& category, MethodPrint::Type callType, const void* pointer, const char *method, const char * typeName, const char *file, int line, const char *function)
     {
-        if(typeName){
-            if(pointer){
-                switch(callType){
-                case MethodPrint::NativeToJavaCall:
-                    if(isEnter){
-                        QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIJavaOverloadsCategory) << "ENTER: Shell (object: " << pointer << " , type: " << typeName << ") calling java method " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
-                    }else{
-                        QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIJavaOverloadsCategory) << "LEAVE: Shell (object: " << pointer << " , type: " << typeName << ") calling java method " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
-                    }
-                    break;
-                case MethodPrint::Internal:
-                    if(isEnter){
-                        QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "ENTER: " << method << " on object " << pointer << " of type " << typeName << " in thread tid=" << quintptr(QThread::currentThreadId());
-                    }else{
-                        QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "LEAVE: " << method << " on object " << pointer << " of type " << typeName << " in thread tid=" << quintptr(QThread::currentThreadId());
-                    }
-                    break;
-                case MethodPrint::ConstructorCall:
-                    if(isEnter){
-                        QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "ENTER: Constructor call " << method << " on object " << pointer << " of type " << typeName << " in thread tid=" << quintptr(QThread::currentThreadId());
-                    }else{
-                        QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "LEAVE: Constructor call " << method << " on object " << pointer << " of type " << typeName << " in thread tid=" << quintptr(QThread::currentThreadId());
-                    }
-                    break;
-                case MethodPrint::DestructorCall:
-                    if(isEnter){
-                        QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "ENTER: Destuctor call " << method << " on object " << pointer << " of type " << typeName << " in thread tid=" << quintptr(QThread::currentThreadId());
-                    }else{
-                        QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "LEAVE: Destuctor call " << method << " on object " << pointer << " of type " << typeName << " in thread tid=" << quintptr(QThread::currentThreadId());
-                    }
-                    break;
-                default:
-                    break;
-                }
-            }else{
-                switch(callType){
-                case MethodPrint::NativeToJavaCall:
-                    if(isEnter){
-                        QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIJavaOverloadsCategory) << "ENTER: Shell (type: " << typeName << ") calling java method " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
-                    }else{
-                        QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIJavaOverloadsCategory) << "LEAVE: Shell (type: " << typeName << ") calling java method " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
-                    }
-                    break;
-                case MethodPrint::Internal:
-                    if(isEnter){
-                        QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "ENTER: " << method << " for object of type " << typeName << " in thread tid=" << quintptr(QThread::currentThreadId());
-                    }else{
-                        QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "LEAVE: " << method << " for object of type " << typeName << " in thread tid=" << quintptr(QThread::currentThreadId());
-                    }
-                    break;
-                case MethodPrint::ConstructorCall:
-                    if(isEnter){
-                        QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "ENTER: Constructor call " << method << " on object of type " << typeName << " in thread tid=" << quintptr(QThread::currentThreadId());
-                    }else{
-                        QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "LEAVE: Constructor call " << method << " on object of type " << typeName << " in thread tid=" << quintptr(QThread::currentThreadId());
-                    }
-                    break;
-                case MethodPrint::DestructorCall:
-                    if(isEnter){
-                        QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "ENTER: Destuctor call " << method << " on object of type " << typeName << " in thread tid=" << quintptr(QThread::currentThreadId());
-                    }else{
-                        QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "LEAVE: Destuctor call " << method << " on object of type " << typeName << " in thread tid=" << quintptr(QThread::currentThreadId());
-                    }
-                    break;
-                default:
-                    break;
-                }
-            }
+        Q_ASSERT(typeName);
+        QMessageLogger logger(adaptFile(file), line, function, category.categoryName());
+        QDebug dbg = logger.debug().nospace().noquote();
+        if(isEnter){
+            dbg << "ENTER: ";
         }else{
-            MethodPrintPrivate::methodPrint(isEnter, callType, pointer, method, file, line, function);
+            dbg << "LEAVE: ";
         }
+        switch(callType){
+        case MethodPrint::NativeToJavaCall:
+            dbg << "Shell (object: " << pointer << " , type: " << typeName << ") calling java method " << method;
+            break;
+        case MethodPrint::Internal:
+            dbg << "" << method << " on object " << pointer << " of type " << typeName;
+            break;
+        case MethodPrint::ConstructorCall:
+            dbg << "Constructor call " << method << " on object " << pointer << " of type " << typeName;
+            break;
+        case MethodPrint::DestructorCall:
+            dbg << "Destuctor call " << method << " on object " << pointer << " of type " << typeName;
+            break;
+        default:
+            break;
+        }
+        dbg << " in thread tid=" << quintptr(QThread::currentThreadId());
     }
 #endif
 };
@@ -448,8 +567,16 @@ void print(const char *message, const char *file, int line, const char *function
     MethodPrintPrivate::print(message, file, line, function);
 }
 
+void printCleanupArgs(const char *file, int line, const char *function, const char *format,...){
+    MethodPrintPrivate::printCleanupArgs(file, line, function, format);
+}
+
 void printArgs(const char *file, int line, const char *function, const char *format,...){
     MethodPrintPrivate::printArgs(file, line, function, format);
+}
+
+void print(const char *file, int line, const char *function, Printer&& printer){
+    MethodPrintPrivate::print(file, line, function, std::move(printer));
 }
 
 MethodPrint::MethodPrint(MethodPrint::Type callType, const void* pointer, const char* method, const char* file, int line, const char *function)
@@ -482,13 +609,13 @@ MethodPrint::~MethodPrint(){
     delete d;
 }
 
-MethodPrintFromLink::MethodPrintFromLink(MethodPrint::Type callType, const QSharedPointer<QtJambiLink>& link, const char* method, const char* file, int line, const char *function)
-    : MethodPrint(MethodPrintPrivate::create(callType, link, method, file, line, function))
+MethodPrintFromLink::MethodPrintFromLink(const QSharedPointer<QtJambiLink>& link, const char* method, const char* file, int line, const char *function)
+    : MethodPrint(MethodPrintPrivate::create(link, method, file, line, function))
 {
 }
 
-MethodPrintFromLink::MethodPrintFromLink(MethodPrint::Type callType, const QWeakPointer<QtJambiLink>& link, const char* method, const char* file, int line, const char *function)
-    : MethodPrint(MethodPrintPrivate::create(callType, link, method, file, line, function))
+MethodPrintFromLink::MethodPrintFromLink(const QWeakPointer<QtJambiLink>& link, const char* method, const char* file, int line, const char *function)
+    : MethodPrint(MethodPrintPrivate::create(link, method, file, line, function))
 {
 }
 
@@ -497,9 +624,67 @@ MethodPrintFromArgs::MethodPrintFromArgs(MethodPrint::Type callType, const char*
 {
 }
 
-MethodPrintFromSupplier::MethodPrintFromSupplier(MethodPrint::Type callType, const char* file, int line, const char *function, std::function<QByteArray()>&& supplier)
-    : MethodPrint(MethodPrintPrivate::create(callType, file, line, function, std::forward<std::function<QByteArray()>>(supplier)))
+MethodPrintFromArgs::MethodPrintFromArgs(const QLoggingCategory& category, const char* file, int line, const char *function, const char* message, ...)
+    : MethodPrint(MethodPrintPrivate::create(category, file, line, function, message))
 {
+}
+
+MethodPrintFromSupplier::MethodPrintFromSupplier(MethodPrint::Type callType, const char* file, int line, const char *function, Printer&& supplier)
+    : MethodPrint(MethodPrintPrivate::create(callType, file, line, function, std::forward<Printer>(supplier)))
+{
+}
+
+MethodPrintFromSupplier::MethodPrintFromSupplier(const QLoggingCategory& category, const char* file, int line, const char *function, Printer&& supplier)
+    : MethodPrint(MethodPrintPrivate::create(category, file, line, function, std::forward<Printer>(supplier)))
+{
+}
+
+EventPrint::EventPrint(const char* file, int line, const char *function, QObject *receiver, QEvent *event)
+    : MethodPrint(MethodPrintPrivate::createEventPrint(file, line, function, receiver, event))
+{
+}
+
+struct PrinterPrivate : QSharedData{
+    void* data = nullptr;
+    Printer::Invoker invoker;
+    Printer::Deleter deleter;
+    PrinterPrivate(void* _data, Printer::Invoker _invoker, Printer::Deleter _deleter = nullptr)
+        : QSharedData(), data(_data), invoker(_invoker), deleter(_deleter){
+        Q_ASSERT(_data);
+        Q_ASSERT(_invoker);
+    }
+    ~PrinterPrivate(){ if(deleter) deleter(data); }
+};
+
+Printer::Printer(FunctionPointer functor) noexcept
+    : d(!functor ? nullptr : new PrinterPrivate(
+            reinterpret_cast<void*>(functor),
+            [](void* data, QDebug& d){
+                FunctionPointer task = reinterpret_cast<FunctionPointer>(data);
+                (*task)(d);
+            })){}
+
+Printer::Printer() noexcept : d(){}
+Printer::~Printer() noexcept {}
+Printer::Printer(const Printer& other) noexcept : d(other.d) {}
+Printer::Printer(Printer&& other) noexcept : d(std::move(other.d)) {}
+Printer::Printer(void* data, Invoker invoker, Deleter deleter) noexcept
+    : d(!data ? nullptr : new PrinterPrivate(data, invoker, deleter)) {}
+Printer& Printer::operator=(const Printer& other) noexcept { d = other.d; return *this; }
+Printer& Printer::operator=(Printer&& other) noexcept { d = std::move(other.d); return *this; }
+bool Printer::operator==(const Printer& other) const noexcept { return d == other.d; }
+
+Printer::operator bool() const noexcept{
+    return d;
+}
+
+bool Printer::operator !() const noexcept{
+    return !d;
+}
+
+void Printer::operator()(QDebug& dbg) const{
+    if(d)
+        d->invoker(d->data, dbg);
 }
 
 }

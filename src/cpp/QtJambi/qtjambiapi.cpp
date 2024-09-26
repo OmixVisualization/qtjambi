@@ -408,6 +408,102 @@ void QtJambiAPI::setCppOwnership(JNIEnv *env, jobject object)
     }
 }
 
+bool QtJambiAPI::isSplitOwnership(JNIEnv *env, jobject object)
+{
+    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, object)){
+        return link->ownership()==QtJambiLink::Ownership::Split;
+    }
+    return false;
+}
+
+bool QtJambiAPI::isJavaOwnership(JNIEnv *env, jobject object)
+{
+    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, object)){
+        return link->ownership()==QtJambiLink::Ownership::Java;
+    }
+    return false;
+}
+
+bool QtJambiAPI::isCppOwnership(JNIEnv *env, jobject object)
+{
+    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, object)){
+        return link->ownership()==QtJambiLink::Ownership::Cpp;
+    }
+    return false;
+}
+
+bool QtJambiAPI::isSplitOwnership(QtJambiNativeID objectId)
+{
+    if(QSharedPointer<QtJambiLink> link = QtJambiLink::fromNativeId(objectId)){
+        return link->ownership()==QtJambiLink::Ownership::Split;
+    }
+    return false;
+}
+
+bool QtJambiAPI::isJavaOwnership(QtJambiNativeID objectId)
+{
+    if(QSharedPointer<QtJambiLink> link = QtJambiLink::fromNativeId(objectId)){
+        return link->ownership()==QtJambiLink::Ownership::Java;
+    }
+    return false;
+}
+
+bool QtJambiAPI::isCppOwnership(QtJambiNativeID objectId)
+{
+    if(QSharedPointer<QtJambiLink> link = QtJambiLink::fromNativeId(objectId)){
+        return link->ownership()==QtJambiLink::Ownership::Cpp;
+    }
+    return false;
+}
+
+bool QtJambiAPI::isSplitOwnership(const QObject* object)
+{
+    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForQObject(object)){
+        return link->ownership()==QtJambiLink::Ownership::Split;
+    }
+    return false;
+}
+
+bool QtJambiAPI::isJavaOwnership(const QObject* object)
+{
+    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForQObject(object)){
+        return link->ownership()==QtJambiLink::Ownership::Java;
+    }
+    return false;
+}
+
+bool QtJambiAPI::isCppOwnership(const QObject* object)
+{
+    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForQObject(object)){
+        return link->ownership()==QtJambiLink::Ownership::Cpp;
+    }
+    return false;
+}
+
+bool QtJambiAPI::isSplitOwnership(const void* object)
+{
+    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(object)){
+        return link->ownership()==QtJambiLink::Ownership::Split;
+    }
+    return false;
+}
+
+bool QtJambiAPI::isJavaOwnership(const void* object)
+{
+    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(object)){
+        return link->ownership()==QtJambiLink::Ownership::Java;
+    }
+    return false;
+}
+
+bool QtJambiAPI::isCppOwnership(const void* object)
+{
+    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(object)){
+        return link->ownership()==QtJambiLink::Ownership::Cpp;
+    }
+    return false;
+}
+
 void QtJambiAPI::setCppOwnershipAndInvalidate(JNIEnv *env, jobject object)
 {
     if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, object)){
@@ -436,6 +532,22 @@ void QtJambiAPI::setCppOwnership(JNIEnv *env, QtJambiNativeID objectId)
 {
     if(QSharedPointer<QtJambiLink> link = QtJambiLink::fromNativeId(objectId)){
         link->setCppOwnership(env);
+    }
+}
+
+void QtJambiAPI::changeSplitToCppOwnership(JNIEnv *env, QtJambiNativeID objectId)
+{
+    if(QSharedPointer<QtJambiLink> link = QtJambiLink::fromNativeId(objectId)){
+        if(link->ownership()==QtJambiLink::Ownership::Split)
+            link->setCppOwnership(env);
+    }
+}
+
+void QtJambiAPI::changeSplitToCppOwnership(JNIEnv *env, jobject object)
+{
+    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, object)){
+        if(link->ownership()==QtJambiLink::Ownership::Split)
+            link->setCppOwnership(env);
     }
 }
 
@@ -856,12 +968,46 @@ jobject QtJambiAPI::valueOfJavaMapEntry(JNIEnv *env, jobject entry)
     return Java::Runtime::Map$Entry::getValue(env,entry);
 }
 
+jobject QtJambiAPI::findObject(JNIEnv *env, const void * pointer)
+{
+    for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(pointer)){
+        if(link)
+            return link->getJavaObjectLocalRef(env);
+    }
+    return nullptr;
+}
+
+jobject QtJambiAPI::findObject(JNIEnv *env, const QObject* pointer)
+{
+    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForQObject(pointer)){
+        return link->getJavaObjectLocalRef(env);
+    }
+    return nullptr;
+}
+
+jobject QtJambiAPI::findFunctionPointerObject(JNIEnv *env, const void * pointer, const std::type_info& typeId){
+    if(FunctionalResolver resolver = registeredFunctionalResolver(typeId)){
+        bool success = false;
+        return resolver(env, &pointer, &success);
+    }else{
+        return findObject(env, pointer);
+    }
+}
+
 jobject QtJambiAPI::newJavaArrayList(JNIEnv *env, jint size) {
     return Java::Runtime::ArrayList::newInstance(env, size);
 }
 
 void QtJambiAPI::addToJavaCollection(JNIEnv *env, jobject list, jobject obj) {
     Java::Runtime::Collection::add(env, list, obj);
+}
+
+void QtJambiAPI::addAllToJavaCollection(JNIEnv *env, jobject list, jobject obj) {
+    Java::Runtime::Collection::addAll(env, list, obj);
+}
+
+void QtJambiAPI::setAtJavaList(JNIEnv *env, jobject list, jint index, jobject obj){
+    Java::Runtime::List::set(env, list, index, obj);
 }
 
 void QtJambiAPI::clearJavaCollection(JNIEnv *env, jobject collection)
@@ -874,9 +1020,9 @@ int QtJambiAPI::sizeOfJavaCollection(JNIEnv *env, jobject col)
     return int(Java::Runtime::Collection::size(env, col));
 }
 
-jobject QtJambiAPI::iteratorOfJavaCollection(JNIEnv *env, jobject col)
+jobject QtJambiAPI::iteratorOfJavaIterable(JNIEnv *env, jobject col)
 {
-    return Java::Runtime::Collection::iterator(env, col);
+    return Java::Runtime::Iterable::iterator(env, col);
 }
 
 jobject QtJambiAPI::nextOfJavaIterator(JNIEnv *env, jobject col)
@@ -1114,6 +1260,22 @@ bool QtJambiAPI::isJavaString(JNIEnv *env, jobject obj){
     return Java::Runtime::String::isInstanceOf(env, obj);
 }
 
+bool QtJambiAPI::isJavaCharSequence(JNIEnv *env, jobject obj){
+    return Java::Runtime::CharSequence::isInstanceOf(env, obj);
+}
+
+bool QtJambiAPI::isJavaList(JNIEnv *env, jobject obj){
+    return Java::Runtime::List::isInstanceOf(env, obj);
+}
+
+bool QtJambiAPI::isJavaCollection(JNIEnv *env, jobject obj){
+    return Java::Runtime::Collection::isInstanceOf(env, obj);
+}
+
+bool QtJambiAPI::isJavaIterable(JNIEnv *env, jobject obj){
+    return Java::Runtime::Iterable::isInstanceOf(env, obj);
+}
+
 bool QtJambiAPI::isQStringObject(JNIEnv *env, jobject obj){
     return Java::QtCore::QString::isInstanceOf(env, obj);
 }
@@ -1134,6 +1296,48 @@ bool QtJambiAPI::isQVariantObject(JNIEnv *env, jobject obj){
 
 bool QtJambiAPI::isQCharObject(JNIEnv *env, jobject obj){
     return Java::QtCore::QChar::isInstanceOf(env, obj);
+}
+
+#if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
+bool QtJambiAPI::isQSpanObject(JNIEnv *env, jobject obj){
+    return Java::QtCore::AbstractSpan::isInstanceOf(env, obj);
+}
+
+void QtJambiAPI::commitQSpanObject(JNIEnv *env, jobject obj){
+    if(obj)
+        Java::QtCore::AbstractSpan::commit(env, obj);
+}
+
+QPair<void*,jlong> QtJambiAPI::fromQSpanObject(JNIEnv *env, jobject obj, bool isConst, const QMetaType& metaType){
+    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, obj)){
+        if(AbstractSpanAccess* access = dynamic_cast<AbstractSpanAccess*>(link->containerAccess())){
+            bool constBreach = false;
+            if(!isConst)
+                constBreach = access->isConst();
+            QtJambiSpan* span = reinterpret_cast<QtJambiSpan*>(link->pointer());
+            if(span->size>=0){
+                if(compareMetaTypes(metaType, access->elementMetaType()) && !constBreach){
+                    return {const_cast<void*>(span->begin), span->size};
+                }else{
+                    JavaException::raiseIllegalArgumentException(env, QStringLiteral(u"Types mismatch. Expected: QSpan<%1%2>, given: QSpan<%3%4>").arg(isConst ? "const " : "", metaType.name(), access->isConst() ? "const " : "", access->elementMetaType().name()) QTJAMBI_STACKTRACEINFO );
+                }
+            }
+        }else if(!Java::QtCore::AbstractSpan::isInstanceOf(env, obj)){
+            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast object of type %1 to QSpan<%2%3>").arg(getObjectClassName(env, obj).replace('$', '.'), isConst ? "const " : "", metaType.name()) QTJAMBI_STACKTRACEINFO );
+        }
+    }else{
+        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral(u"Function call on incomplete object of type: QSpan") QTJAMBI_STACKTRACEINFO );
+    }
+    return {};
+}
+#endif //QT_VERSION >= QT_VERSION_CHECK(6,7,0)
+
+bool QtJambiAPI::isSequentialConstIterator(JNIEnv *env, jobject obj){
+    return Java::QtCore::QSequentialConstIterator::isInstanceOf(env, obj);
+}
+
+bool QtJambiAPI::isSequentialIterator(JNIEnv *env, jobject obj){
+    return Java::QtCore::QSequentialIterator::isInstanceOf(env, obj);
 }
 
 jstring QtJambiAPI::toJavaString(JNIEnv *env, jobject object)
@@ -1377,23 +1581,143 @@ QTJAMBI_EXPORT const char* qtjambi_build(){
 
 namespace PrivateFields{
 QTJAMBI_REPOSITORY_DECLARE_CLASS(Buffer,
-                                 QTJAMBI_REPOSITORY_DECLARE_INT_FIELD(capacity)
-                                 inline static jfieldID capacity_field(JNIEnv* env){
-                                    auto _this = __qt_get_this(env);
-                                    return _this.__capacity;
-                                 }
-                                 )
+    QTJAMBI_REPOSITORY_DECLARE_INT_FIELD(capacity)
+    inline static jfieldID capacity_field(JNIEnv* env){
+        auto _this = __qt_get_this(env);
+        return _this.__capacity;
+    }
+    )
 QTJAMBI_REPOSITORY_DECLARE_CLASS(DirectByteBuffer,
-                                 QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(att)
-                                 inline static jfieldID att_field(JNIEnv* env){
-                                    auto _this = __qt_get_this(env);
-                                    return _this.__att;
-                                 }
-                                 )
+    QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(att)
+    inline static jfieldID att_field(JNIEnv* env){
+        auto _this = __qt_get_this(env);
+        return _this.__att;
+    }
+    )
+QTJAMBI_REPOSITORY_DECLARE_CLASS(DirectShortBufferS,
+    QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(att)
+    inline static jfieldID att_field(JNIEnv* env){
+        auto _this = __qt_get_this(env);
+        return _this.__att;
+    }
+    )
+QTJAMBI_REPOSITORY_DECLARE_CLASS(DirectShortBufferU,
+    QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(att)
+    inline static jfieldID att_field(JNIEnv* env){
+        auto _this = __qt_get_this(env);
+        return _this.__att;
+    }
+    )
+QTJAMBI_REPOSITORY_DECLARE_CLASS(DirectIntBufferS,
+    QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(att)
+    inline static jfieldID att_field(JNIEnv* env){
+        auto _this = __qt_get_this(env);
+        return _this.__att;
+    }
+    )
+QTJAMBI_REPOSITORY_DECLARE_CLASS(DirectIntBufferU,
+    QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(att)
+    inline static jfieldID att_field(JNIEnv* env){
+        auto _this = __qt_get_this(env);
+        return _this.__att;
+    }
+    )
+QTJAMBI_REPOSITORY_DECLARE_CLASS(DirectLongBufferS,
+    QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(att)
+    inline static jfieldID att_field(JNIEnv* env){
+        auto _this = __qt_get_this(env);
+        return _this.__att;
+    }
+    )
+QTJAMBI_REPOSITORY_DECLARE_CLASS(DirectLongBufferU,
+    QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(att)
+    inline static jfieldID att_field(JNIEnv* env){
+        auto _this = __qt_get_this(env);
+        return _this.__att;
+    }
+    )
+QTJAMBI_REPOSITORY_DECLARE_CLASS(DirectCharBufferS,
+    QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(att)
+    inline static jfieldID att_field(JNIEnv* env){
+        auto _this = __qt_get_this(env);
+        return _this.__att;
+    }
+    )
+QTJAMBI_REPOSITORY_DECLARE_CLASS(DirectCharBufferU,
+    QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(att)
+    inline static jfieldID att_field(JNIEnv* env){
+        auto _this = __qt_get_this(env);
+        return _this.__att;
+    }
+    )
+QTJAMBI_REPOSITORY_DECLARE_CLASS(DirectFloatBufferS,
+    QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(att)
+    inline static jfieldID att_field(JNIEnv* env){
+        auto _this = __qt_get_this(env);
+        return _this.__att;
+    }
+    )
+QTJAMBI_REPOSITORY_DECLARE_CLASS(DirectFloatBufferU,
+    QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(att)
+    inline static jfieldID att_field(JNIEnv* env){
+        auto _this = __qt_get_this(env);
+        return _this.__att;
+    }
+    )
+QTJAMBI_REPOSITORY_DECLARE_CLASS(DirectDoubleBufferS,
+    QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(att)
+    inline static jfieldID att_field(JNIEnv* env){
+        auto _this = __qt_get_this(env);
+        return _this.__att;
+    }
+    )
+QTJAMBI_REPOSITORY_DECLARE_CLASS(DirectDoubleBufferU,
+    QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(att)
+    inline static jfieldID att_field(JNIEnv* env){
+        auto _this = __qt_get_this(env);
+        return _this.__att;
+    }
+    )
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/nio,Buffer,
                                 QTJAMBI_REPOSITORY_DEFINE_FIELD(capacity,I)
                                 )
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/nio,DirectByteBuffer,
+                                QTJAMBI_REPOSITORY_DEFINE_FIELD(att,Ljava/lang/Object;)
+                                )
+QTJAMBI_REPOSITORY_DEFINE_CLASS(java/nio,DirectShortBufferS,
+                                QTJAMBI_REPOSITORY_DEFINE_FIELD(att,Ljava/lang/Object;)
+                                )
+QTJAMBI_REPOSITORY_DEFINE_CLASS(java/nio,DirectShortBufferU,
+                                QTJAMBI_REPOSITORY_DEFINE_FIELD(att,Ljava/lang/Object;)
+                                )
+QTJAMBI_REPOSITORY_DEFINE_CLASS(java/nio,DirectIntBufferS,
+                                QTJAMBI_REPOSITORY_DEFINE_FIELD(att,Ljava/lang/Object;)
+                                )
+QTJAMBI_REPOSITORY_DEFINE_CLASS(java/nio,DirectIntBufferU,
+                                QTJAMBI_REPOSITORY_DEFINE_FIELD(att,Ljava/lang/Object;)
+                                )
+QTJAMBI_REPOSITORY_DEFINE_CLASS(java/nio,DirectLongBufferS,
+                                QTJAMBI_REPOSITORY_DEFINE_FIELD(att,Ljava/lang/Object;)
+                                )
+QTJAMBI_REPOSITORY_DEFINE_CLASS(java/nio,DirectLongBufferU,
+                                QTJAMBI_REPOSITORY_DEFINE_FIELD(att,Ljava/lang/Object;)
+                                )
+QTJAMBI_REPOSITORY_DEFINE_CLASS(java/nio,DirectCharBufferS,
+                                QTJAMBI_REPOSITORY_DEFINE_FIELD(att,Ljava/lang/Object;)
+                                )
+QTJAMBI_REPOSITORY_DEFINE_CLASS(java/nio,DirectCharBufferU,
+                                QTJAMBI_REPOSITORY_DEFINE_FIELD(att,Ljava/lang/Object;)
+                                )
+QTJAMBI_REPOSITORY_DEFINE_CLASS(java/nio,DirectFloatBufferS,
+                                QTJAMBI_REPOSITORY_DEFINE_FIELD(att,Ljava/lang/Object;)
+                                )
+QTJAMBI_REPOSITORY_DEFINE_CLASS(java/nio,DirectFloatBufferU,
+                                QTJAMBI_REPOSITORY_DEFINE_FIELD(att,Ljava/lang/Object;)
+                                )
+QTJAMBI_REPOSITORY_DEFINE_CLASS(java/nio,DirectDoubleBufferS,
+                                QTJAMBI_REPOSITORY_DEFINE_FIELD(att,Ljava/lang/Object;)
+                                )
+QTJAMBI_REPOSITORY_DEFINE_CLASS(java/nio,DirectDoubleBufferU,
                                 QTJAMBI_REPOSITORY_DEFINE_FIELD(att,Ljava/lang/Object;)
                                 )
 }
@@ -1418,21 +1742,138 @@ void QtJambiAPI::registerDependency(JNIEnv *env, jobject dependentObject, QtJamb
         if(QSharedPointer<QtJambiLink> _dependentLink = QtJambiLink::findLinkForJavaInterface(env, dependentObject)){
             _ownerLink->registerDependentObject(_dependentLink);
         }else if(Java::Runtime::Buffer::isInstanceOf(env, dependentObject)){
-            typedef void(*DirectByteBufferConnector)(JNIEnv *, jobject, const QSharedPointer<QtJambiLink>&);
+            typedef bool(*DirectByteBufferConnector)(JNIEnv *, jobject, const QSharedPointer<QtJambiLink>&);
             static DirectByteBufferConnector directByteBufferConnector = [](JNIEnv *env)->DirectByteBufferConnector{
                 try{
-                    if(PrivateFields::DirectByteBuffer::att_field(env))
-                        return [](JNIEnv *env, jobject dependentObject, const QSharedPointer<QtJambiLink>& _ownerLink){
+                    if(PrivateFields::DirectByteBuffer::att_field(env)
+                        && PrivateFields::DirectShortBufferU::att_field(env)
+                        && PrivateFields::DirectShortBufferS::att_field(env)
+                        && PrivateFields::DirectIntBufferU::att_field(env)
+                        && PrivateFields::DirectIntBufferS::att_field(env)
+                        && PrivateFields::DirectLongBufferU::att_field(env)
+                        && PrivateFields::DirectLongBufferS::att_field(env)
+                        && PrivateFields::DirectFloatBufferU::att_field(env)
+                        && PrivateFields::DirectFloatBufferS::att_field(env)
+                        && PrivateFields::DirectDoubleBufferU::att_field(env)
+                        && PrivateFields::DirectDoubleBufferS::att_field(env)
+                        && PrivateFields::DirectCharBufferU::att_field(env)
+                        && PrivateFields::DirectCharBufferS::att_field(env))
+                        return [](JNIEnv *env, jobject dependentObject, const QSharedPointer<QtJambiLink>& _ownerLink) -> bool {
+                            jobject ownerObject = _ownerLink->getJavaObjectLocalRef(env);
                             if(PrivateFields::DirectByteBuffer::isInstanceOf(env, dependentObject)
                                 && !PrivateFields::DirectByteBuffer::att(env, dependentObject)){
-                                PrivateFields::DirectByteBuffer::set_att(env, dependentObject, _ownerLink->getJavaObjectLocalRef(env));
+                                if(Java::QtCore::QList::isInstanceOf(env, ownerObject) || Java::QtCore::QByteArray::isInstanceOf(env, ownerObject)){
+                                    PrivateFields::DirectByteBuffer::set_att(env, dependentObject, Java::Runtime::Object::clone(env, ownerObject));
+                                    return true;
+                                }else{
+                                    PrivateFields::DirectByteBuffer::set_att(env, dependentObject, ownerObject);
+                                }
+                            }else if(PrivateFields::DirectShortBufferU::isInstanceOf(env, dependentObject)
+                                       && !PrivateFields::DirectShortBufferU::att(env, dependentObject)){
+                                if(Java::QtCore::QList::isInstanceOf(env, ownerObject) || Java::QtCore::QByteArray::isInstanceOf(env, ownerObject)){
+                                    PrivateFields::DirectShortBufferU::set_att(env, dependentObject, Java::Runtime::Object::clone(env, ownerObject));
+                                    return true;
+                                }else{
+                                    PrivateFields::DirectShortBufferU::set_att(env, dependentObject, ownerObject);
+                                }
+                            }else if(PrivateFields::DirectShortBufferS::isInstanceOf(env, dependentObject)
+                                       && !PrivateFields::DirectShortBufferS::att(env, dependentObject)){
+                                if(Java::QtCore::QList::isInstanceOf(env, ownerObject)){
+                                    PrivateFields::DirectShortBufferS::set_att(env, dependentObject, Java::Runtime::Object::clone(env, ownerObject));
+                                    return true;
+                                }else{
+                                    PrivateFields::DirectShortBufferS::set_att(env, dependentObject, ownerObject);
+                                }
+                            }else if(PrivateFields::DirectIntBufferU::isInstanceOf(env, dependentObject)
+                                       && !PrivateFields::DirectIntBufferU::att(env, dependentObject)){
+                                if(Java::QtCore::QList::isInstanceOf(env, ownerObject)){
+                                    PrivateFields::DirectIntBufferU::set_att(env, dependentObject, Java::Runtime::Object::clone(env, ownerObject));
+                                    return true;
+                                }else{
+                                    PrivateFields::DirectIntBufferU::set_att(env, dependentObject, ownerObject);
+                                }
+                            }else if(PrivateFields::DirectIntBufferS::isInstanceOf(env, dependentObject)
+                                       && !PrivateFields::DirectIntBufferS::att(env, dependentObject)){
+                                if(Java::QtCore::QList::isInstanceOf(env, ownerObject)){
+                                    PrivateFields::DirectIntBufferS::set_att(env, dependentObject, Java::Runtime::Object::clone(env, ownerObject));
+                                    return true;
+                                }else{
+                                    PrivateFields::DirectIntBufferS::set_att(env, dependentObject, ownerObject);
+                                }
+                            }else if(PrivateFields::DirectLongBufferU::isInstanceOf(env, dependentObject)
+                                       && !PrivateFields::DirectLongBufferU::att(env, dependentObject)){
+                                if(Java::QtCore::QList::isInstanceOf(env, ownerObject)){
+                                    PrivateFields::DirectLongBufferU::set_att(env, dependentObject, Java::Runtime::Object::clone(env, ownerObject));
+                                    return true;
+                                }else{
+                                    PrivateFields::DirectLongBufferU::set_att(env, dependentObject, ownerObject);
+                                }
+                            }else if(PrivateFields::DirectLongBufferS::isInstanceOf(env, dependentObject)
+                                       && !PrivateFields::DirectLongBufferS::att(env, dependentObject)){
+                                if(Java::QtCore::QList::isInstanceOf(env, ownerObject)){
+                                    PrivateFields::DirectLongBufferS::set_att(env, dependentObject, Java::Runtime::Object::clone(env, ownerObject));
+                                    return true;
+                                }else{
+                                    PrivateFields::DirectLongBufferS::set_att(env, dependentObject, ownerObject);
+                                }
+                            }else if(PrivateFields::DirectCharBufferU::isInstanceOf(env, dependentObject)
+                                       && !PrivateFields::DirectCharBufferU::att(env, dependentObject)){
+                                if(Java::QtCore::QList::isInstanceOf(env, ownerObject) || Java::QtCore::QString::isInstanceOf(env, ownerObject)){
+                                    PrivateFields::DirectCharBufferU::set_att(env, dependentObject, Java::Runtime::Object::clone(env, ownerObject));
+                                    return true;
+                                }else{
+                                    PrivateFields::DirectCharBufferU::set_att(env, dependentObject, ownerObject);
+                                }
+                            }else if(PrivateFields::DirectCharBufferS::isInstanceOf(env, dependentObject)
+                                       && !PrivateFields::DirectCharBufferS::att(env, dependentObject)){
+                                if(Java::QtCore::QList::isInstanceOf(env, ownerObject) || Java::QtCore::QString::isInstanceOf(env, ownerObject)){
+                                    PrivateFields::DirectCharBufferS::set_att(env, dependentObject, Java::Runtime::Object::clone(env, ownerObject));
+                                    return true;
+                                }else{
+                                    PrivateFields::DirectCharBufferS::set_att(env, dependentObject, ownerObject);
+                                }
+                            }else if(PrivateFields::DirectFloatBufferU::isInstanceOf(env, dependentObject)
+                                       && !PrivateFields::DirectFloatBufferU::att(env, dependentObject)){
+                                if(Java::QtCore::QList::isInstanceOf(env, ownerObject)){
+                                    PrivateFields::DirectFloatBufferU::set_att(env, dependentObject, Java::Runtime::Object::clone(env, ownerObject));
+                                    return true;
+                                }else{
+                                    PrivateFields::DirectFloatBufferU::set_att(env, dependentObject, ownerObject);
+                                }
+                            }else if(PrivateFields::DirectFloatBufferS::isInstanceOf(env, dependentObject)
+                                       && !PrivateFields::DirectFloatBufferS::att(env, dependentObject)){
+                                if(Java::QtCore::QList::isInstanceOf(env, ownerObject)){
+                                    PrivateFields::DirectFloatBufferS::set_att(env, dependentObject, Java::Runtime::Object::clone(env, ownerObject));
+                                    return true;
+                                }else{
+                                    PrivateFields::DirectFloatBufferS::set_att(env, dependentObject, ownerObject);
+                                }
+                            }else if(PrivateFields::DirectDoubleBufferU::isInstanceOf(env, dependentObject)
+                                       && !PrivateFields::DirectDoubleBufferU::att(env, dependentObject)){
+                                if(Java::QtCore::QList::isInstanceOf(env, ownerObject)){
+                                    PrivateFields::DirectDoubleBufferU::set_att(env, dependentObject, Java::Runtime::Object::clone(env, ownerObject));
+                                    return true;
+                                }else{
+                                    PrivateFields::DirectDoubleBufferU::set_att(env, dependentObject, ownerObject);
+                                }
+                            }else if(PrivateFields::DirectDoubleBufferS::isInstanceOf(env, dependentObject)
+                                       && !PrivateFields::DirectDoubleBufferS::att(env, dependentObject)){
+                                if(Java::QtCore::QList::isInstanceOf(env, ownerObject)){
+                                    PrivateFields::DirectDoubleBufferS::set_att(env, dependentObject, Java::Runtime::Object::clone(env, ownerObject));
+                                    return true;
+                                }else{
+                                    PrivateFields::DirectDoubleBufferS::set_att(env, dependentObject, ownerObject);
+                                }
                             }
+                            return false;
                         };
                 }catch(const JavaException&){
                 }
-                return [](JNIEnv *, jobject, const QSharedPointer<QtJambiLink>&){};
+                return [](JNIEnv *, jobject, const QSharedPointer<QtJambiLink>&) -> bool {return false;};
             }(env);
-            _ownerLink->addFinalization(env->NewWeakGlobalRef(dependentObject),
+            bool skip = directByteBufferConnector(env, dependentObject, _ownerLink);
+            if(!skip)
+                _ownerLink->addFinalization(env->NewWeakGlobalRef(dependentObject),
                                                             [](JNIEnv* _env, void* data){
                                                                 jobject buffer = _env->NewLocalRef(reinterpret_cast<jweak>(data));
                                                                 if(!_env->IsSameObject(buffer, nullptr)){
@@ -1442,7 +1883,6 @@ void QtJambiAPI::registerDependency(JNIEnv *env, jobject dependentObject, QtJamb
                                                             }, [](JNIEnv* _env, void* data){
                                                                 _env->DeleteWeakGlobalRef(reinterpret_cast<jweak>(data));
                                                             });
-            directByteBufferConnector(env, dependentObject, _ownerLink);
         }
     }
 }

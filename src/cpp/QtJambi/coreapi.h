@@ -120,8 +120,6 @@ QTJAMBI_EXPORT void ckeckLinkExtension(JNIEnv *env, QtJambiNativeID nativeId);
 
 QTJAMBI_EXPORT QReadWriteLock* objectDataLock();
 
-QTJAMBI_EXPORT jobject findObject(JNIEnv *env, const void * pointer);
-
 QTJAMBI_EXPORT QIODevice* newDirectAddressDevice(JNIEnv* env, jobject buffer, QObject *parent = nullptr);
 
 QTJAMBI_EXPORT jobject invokeMetaMethodOnGadget(JNIEnv * env, jobject _metaMethod, jobject object, jobjectArray argClassTypeArray, jobjectArray args);
@@ -245,5 +243,32 @@ QTJAMBI_EXPORT QList<const char*> getInterfaceIIDs(JNIEnv *env, jclass javaType)
 QTJAMBI_EXPORT jobject getExtraSignal(JNIEnv *env, QtJambiNativeID sender__id, QtJambiNativeID method__id);
 
 }
+
+struct QtJambiSpan{
+    const void* begin = nullptr;
+    qsizetype size = 0;
+    QTJAMBI_EXPORT static void deleter(void* ptr,bool);
+};
+
+struct ManagedSpanData{
+    typedef void(*CommitFunction)(ManagedSpanData*,JNIEnv*);
+    CommitFunction commitFunction = nullptr;
+};
+
+class QTJAMBI_EXPORT ManagedSpan : public QtJambiSpan{
+private:
+    QSharedPointer<ManagedSpanData> d;
+public:
+    ManagedSpan();
+    ManagedSpan(QSharedPointer<ManagedSpanData>&& _data);
+    ManagedSpan(const ManagedSpan&);
+    void commit(JNIEnv* env);
+    static void deleter(void* ptr,bool);
+protected:
+    template<typename Data>
+    Data* data(){
+        return static_cast<Data*>(d.data());
+    }
+};
 
 #endif // QTJAMBI_COREAPI_H

@@ -370,7 +370,7 @@ TypeSystem{
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: String.raw`
-JObjectArrayPointer<QRhiShaderResourceBinding> array(%env, %in,
+JConstObjectArrayPointer<QRhiShaderResourceBinding> array(%env, %in,
     [](QRhiShaderResourceBinding & pointer,JNIEnv *env, jobject element){
         pointer = qtjambi_cast<QRhiShaderResourceBinding>(env, element);
     }
@@ -564,21 +564,11 @@ if(%out_buffer.size()<array.size()*4)
     ObjectType{
         name: "QShader"
         ObjectType{
-            name: "NativeShaderInfo"
-            InjectCode{
-                target: CodeClass.Native
-                position: Position.Beginning
-                Text{content: String.raw`
-namespace QHashPrivate {
-template <>
-constexpr inline bool HasQHashSingleArgOverload<QMap<int,int>> = false;
-}`
-                }
-                since: 6.8
-            }
+            name: "SeparateToCombinedImageSamplerMapping"
         }
         ObjectType{
-            name: "SeparateToCombinedImageSamplerMapping"
+            name: "NativeShaderInfo"
+            since: 6.7
         }
         EnumType{
             name: "SerializedFormatVersion"
@@ -591,17 +581,6 @@ constexpr inline bool HasQHashSingleArgOverload<QMap<int,int>> = false;
         }
         EnumType{
             name: "Variant"
-        }
-        InjectCode{
-            target: CodeClass.Native
-            position: Position.Beginning
-            Text{content: String.raw`
-namespace QHashPrivate {
-template <>
-constexpr inline bool HasQHashSingleArgOverload<QMap<int,QPair<int,int>>> = false;
-}`
-            }
-            since: 6.8
         }
     }
     ObjectType{
@@ -696,7 +675,7 @@ constexpr inline bool HasQHashSingleArgOverload<QMap<int,QPair<int,int>>> = fals
                 ConversionRule{
                     codeClass: CodeClass.NativeSetter
                     Text{content: String.raw`
-                            JObjectArrayPointer<void*> %in_pointer(%env, %in, [](void*& ptr, JNIEnv *env, jobject obj){
+                            JConstObjectArrayPointer<void*> %in_pointer(%env, %in, [](void*& ptr, JNIEnv *env, jobject obj){
                                     ptr = QtJambiAPI::convertQNativePointerToNative(env, obj);
                                 });
                             __qt_this->slotCount = %in_pointer.size();
@@ -720,7 +699,7 @@ constexpr inline bool HasQHashSingleArgOverload<QMap<int,QPair<int,int>>> = fals
                     ConversionRule{
                         codeClass: CodeClass.Native
                         Text{content: String.raw`
-                                JObjectArrayPointer<void*> %in_pointer(%env, %in, [](void*& ptr, JNIEnv *env, jobject obj){
+                                JConstObjectArrayPointer<void*> %in_pointer(%env, %in, [](void*& ptr, JNIEnv *env, jobject obj){
                                         ptr = QtJambiAPI::convertQNativePointerToNative(env, obj);
                                     });
                                 int %2 = objects0_pointer.size();
@@ -756,7 +735,7 @@ constexpr inline bool HasQHashSingleArgOverload<QMap<int,QPair<int,int>>> = fals
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jobject %out = DataJBuffer(%env, %in, this->size()).take();"}
+                    Text{content: "jobject %out = LocalDataJBuffer(%env, %in, this->size()).take();"}
                 }
             }
             InjectCode{

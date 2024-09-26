@@ -28,6 +28,7 @@
 ****************************************************************************/
 package io.qt.autotests;
 
+import static io.qt.QtUtilities.loadQtLibrary;
 import static org.junit.Assume.assumeTrue;
 
 import org.junit.Assert;
@@ -35,6 +36,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.QtEnumerator;
+import io.qt.QtUtilities.LibraryRequirementMode;
 import io.qt.autotests.generated.General;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QLibraryInfo;
@@ -42,6 +44,7 @@ import io.qt.core.QMetaObject;
 import io.qt.core.QObject;
 import io.qt.core.QTimer;
 import io.qt.core.QUrl;
+import io.qt.core.QVersionNumber;
 import io.qt.core.Qt;
 import io.qt.gui.QGuiApplication;
 import io.qt.qml.QQmlApplicationEngine;
@@ -57,6 +60,8 @@ public class TestWebView extends ApplicationInitializer {
 		QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_UseSoftwareOpenGL);
     	General.canVulkan();// making sure it initializes
 		QtWebView.initialize();
+		if(QLibraryInfo.version().compareTo(new QVersionNumber(6,7,0))>=0)
+			loadQtLibrary("WebViewQuick", LibraryRequirementMode.Mandatory);
 		Thread timeoutThread = new Thread(()->{
 			try {
 				synchronized(TestWebView.class) {

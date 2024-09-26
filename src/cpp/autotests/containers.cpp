@@ -163,14 +163,17 @@ QVariant sequentialAt(const QVariant& variant, int index){
     if (variant.canConvert<QVariantList>()) {
         QSequentialIterable iterable = variant.value<QSequentialIterable>();
         return iterable.at(index);
+    }else{
+        return QVariant(QString("cannot convert %1 to QVariantList").arg(variant.metaType().name()));
     }
-    return QVariant();
 }
 
 QVariant sequentialRemoveFirst(QVariant variant){
     if (variant.canConvert<QVariantList>()) {
         QSequentialIterable iterable = variant.view<QSequentialIterable>();
         iterable.removeValue(QSequentialIterable::AtBegin);
+    }else{
+        return QVariant(QString("cannot convert %1 to QVariantList").arg(variant.metaType().name()));
     }
     return variant;
 }
@@ -179,6 +182,8 @@ QVariant sequentialRemoveLast(QVariant variant){
     if (variant.canConvert<QVariantList>()) {
         QSequentialIterable iterable = variant.view<QSequentialIterable>();
         iterable.removeValue(QSequentialIterable::AtEnd);
+    }else{
+        return QVariant(QString("cannot convert %1 to QVariantList").arg(variant.metaType().name()));
     }
     return variant;
 }
@@ -187,6 +192,8 @@ QVariant sequentialSetAt(QVariant variant, int index, const QVariant& value){
     if (variant.canConvert<QVariantList>()) {
         QSequentialIterable iterable = variant.view<QSequentialIterable>();
         iterable.set(index, value);
+    }else{
+        return QVariant(QString("cannot convert %1 to QVariantList").arg(variant.metaType().name()));
     }
     return variant;
 }
@@ -195,6 +202,8 @@ QVariant sequentialAppend(QVariant variant, const QVariant& value){
     if (variant.canConvert<QVariantList>()) {
         QSequentialIterable iterable = variant.view<QSequentialIterable>();
         iterable.addValue(value, QSequentialIterable::AtEnd);
+    }else{
+        return QVariant(QString("cannot convert %1 to QVariantList").arg(variant.metaType().name()));
     }
     return variant;
 }
@@ -203,6 +212,8 @@ QVariant sequentialPrepend(QVariant variant, const QVariant& value){
     if (variant.canConvert<QVariantList>()) {
         QSequentialIterable iterable = variant.view<QSequentialIterable>();
         iterable.addValue(value, QSequentialIterable::AtBegin);
+    }else{
+        return QVariant(QString("cannot convert %1 to QVariantList").arg(variant.metaType().name()));
     }
     return variant;
 }
@@ -211,6 +222,8 @@ QVariant associativeSetValue(QVariant variant, const QVariant& key, const QVaria
     if (variant.canConvert<QVariantHash>()) {
         QAssociativeIterable iterable = variant.view<QAssociativeIterable>();
         iterable.setValue(key, value);
+    }else{
+        return QVariant(QString("cannot convert %1 to QVariantHash").arg(variant.metaType().name()));
     }
     return variant;
 }
@@ -219,6 +232,8 @@ QVariant associativeInsertKey(QVariant variant, const QVariant& key){
     if (variant.canConvert<QVariantHash>()) {
         QAssociativeIterable iterable = variant.view<QAssociativeIterable>();
         iterable.insertKey(key);
+    }else{
+        return QVariant(QString("cannot convert %1 to QVariantHash").arg(variant.metaType().name()));
     }
     return variant;
 }
@@ -227,6 +242,8 @@ QVariant associativeRemoveKey(QVariant variant, const QVariant& key){
     if (variant.canConvert<QVariantHash>()) {
         QAssociativeIterable iterable = variant.view<QAssociativeIterable>();
         iterable.removeKey(key);
+    }else{
+        return QVariant(QString("cannot convert %1 to QVariantHash").arg(variant.metaType().name()));
     }
     return variant;
 }
@@ -239,7 +256,17 @@ QPair<QVariant,QVariant> associativeFindAndReplace(QVariant variant, const QVari
             QVariant r = it.value();
             it.value() = value;
             return {variant,r};
+        }else{
+            if(!key.canConvert(iterable.metaContainer().keyMetaType())){
+                return {variant,QVariant(QString("cannot convert %1 to %2").arg(key.metaType().name(), iterable.metaContainer().keyMetaType().name()))};
+            }
+            if(!iterable.metaContainer().canCreateIteratorAtKey()){
+                return {variant,QVariant(QString("QMetaContainer of %1 cannot create iterator at key").arg(variant.metaType().name()))};
+            }
+            return {variant,QVariant(QString("found iterator == end"))};
         }
+    }else{
+        return {variant,QVariant(QString("cannot convert %1 to QVariantHash").arg(variant.metaType().name()))};
     }
     return {variant,QVariant()};
 }
@@ -250,6 +277,12 @@ bool associativeFind(const QVariant& variant, const QVariant& key){
     if (variant.canConvert<QVariantHash>()) {
         QAssociativeIterable iterable = variant.value<QAssociativeIterable>();
         return iterable.find(key) != iterable.end();
+    }else{
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+        qWarning() << "cannot convert" << variant.metaType().name() << " to QVariantHash";
+#else
+        qWarning() << "cannot convert" << QMetaType::typeName(variant.userType()) << " to QVariantHash";
+#endif
     }
     return false;
 }
@@ -258,6 +291,12 @@ QVariant associativeValue(const QVariant& variant, const QVariant& key){
     if (variant.canConvert<QVariantHash>()) {
         QAssociativeIterable iterable = variant.value<QAssociativeIterable>();
         return iterable.value(key);
+    }else{
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+        qWarning() << "cannot convert" << variant.metaType().name() << " to QVariantHash";
+#else
+        qWarning() << "cannot convert" << QMetaType::typeName(variant.userType()) << " to QVariantHash";
+#endif
     }
     return QVariant();
 }
@@ -270,6 +309,11 @@ qsizetype containerSize(const QVariant& variant){
         QAssociativeIterable iterable = variant.value<QAssociativeIterable>();
         return iterable.size();
     }else{
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+        qWarning() << "cannot convert" << variant.metaType().name() << " to QVariantHash or QVariantList";
+#else
+        qWarning() << "cannot convert" << QMetaType::typeName(variant.userType()) << " to QVariantHash or QVariantList";
+#endif
         return 0;
     }
 }

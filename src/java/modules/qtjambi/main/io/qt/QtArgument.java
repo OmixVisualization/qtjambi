@@ -34,6 +34,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
+
+import io.qt.internal.ClassAnalyzerUtility;
 
 /**
  * <p>QtArgument is used to initialize an interface type or a set of inherited interface types with their 
@@ -73,7 +76,7 @@ public final class QtArgument {
 		private List<Arg> currentList;
 		
 		private Stream(Class<?> type) {
-			arguments = new HashMap<>();
+			arguments = new TreeMap<>(ClassAnalyzerUtility.COMPARATOR);
 			currentList = arguments.computeIfAbsent(type, key->new ArrayList<>());
 		}
 		

@@ -37,6 +37,10 @@
 #include <QtGraphs/QScatterDataItem>
 #include <QtGraphs/QSurfaceDataItem>
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+#include <QtGraphs/QGraphsLine>
+#endif
+
 #include <QtJambi/QtJambiAPI>
 #include <QtJambiGui/hashes.h>
 #include <QtCore/qhashfunctions.h>
@@ -65,9 +69,29 @@ inline hash_type qHash(const QSurfaceDataItem &value, hash_type seed = 0){
     return qHash(value.position(), seed);
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0) && defined(QTJAMBI_GENERATOR_RUNNING)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+#if defined(QTJAMBI_GENERATOR_RUNNING)
 bool operator==(const QBarDataRow& a, const QBarDataRow& b);
 hash_type qHash(const QBarDataRow &value, hash_type seed = 0);
 #endif
+inline hash_type qHash(const QGraphsLine &value, hash_type seed = 0){
+    struct CustomField
+    {
+        bool mainColorCustom : 1;
+        bool subColorCustom : 1;
+        bool labelTextColorCustom : 1;
+    };
+    const CustomField& customField = *reinterpret_cast<const CustomField*>(&value);
+    return qHashMulti(seed,
+                      customField.mainColorCustom,
+                      customField.subColorCustom,
+                      customField.labelTextColorCustom,
+                      value.mainColor(),
+                      value.subColor(),
+                      value.mainWidth(),
+                      value.subWidth(),
+                      value.labelTextColor());
+}
+#endif //QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
 
 #endif // QTJAMBI_DATAVIS3D_HASHES_H

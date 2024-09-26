@@ -109,6 +109,8 @@ QTJAMBI_EXPORT QFunctionPointer extractFunction(QVector<FunctionParamTypeInfo> f
                                                          const std::type_info& functionTypeId,
                                                          FunctionPointerDisposer disposer, QFunctionPointer caller);
 QTJAMBI_EXPORT QRecursiveMutex* functionPointerLock();
+QTJAMBI_EXPORT void registerFunctionPointerCleanup(void* ptr, void(*cleanup)(void*));
+QTJAMBI_EXPORT void unregisterFunctionPointerCleanup(void* ptr);
 QTJAMBI_EXPORT bool disposeFunction(QFunctionPointer fn);
 QTJAMBI_EXPORT void noFunctionAvailable(const std::type_info& functionTypeId);
 
@@ -129,17 +131,24 @@ class CallableHash{
     typedef typename QtJambiAPI::FunctionType<Ret,Args...>::type Fn;
 
     CallableHash();
+    ~CallableHash();
+    static void cleanup(void* ptr){
+        CallableHash* _this = reinterpret_cast<CallableHash*>(ptr);
+        _this->hashes.clear();
+        _this->freeFunctions.clear();
+        _this->s.clear();
+    }
 public:
     static CallableHash& instance();
 
-    inline Fn functionOf(hash_type hash){
+    Fn functionOf(hash_type hash) const{
         return Fn(hashes.key(hash));
     }
-    inline void insert(Fn fn, hash_type hash, Callable&& clb){
+    void insert(Fn fn, hash_type hash, Callable&& clb){
         hashes[qintptr(fn)] = hash;
         s[hash] = new storage<Callable>(std::forward<Callable>(clb));
     }
-    inline void dispose(Fn fn){
+    void dispose(Fn fn){
         if(hashes.contains(qintptr(fn))){
             hash_type hash = hashes.take(qintptr(fn));
             if(storage<Callable>* stor = s.take(hash))
@@ -147,7 +156,7 @@ public:
         }
         freeFunctions.removeAll(fn);
     }
-    inline void remove(hash_type hash){
+    void remove(hash_type hash){
         if(s.contains(hash)){
             if(storage<Callable>* stor = s.take(hash))
                 delete stor;
@@ -159,16 +168,16 @@ public:
             }
         }
     }
-    inline int size(){
+    int size() const{
         return hashes.size();
     }
-    inline Fn next(){
+    Fn next(){
         if(freeFunctions.isEmpty())
             return nullptr;
         Fn fn = freeFunctions.dequeue();
         return fn;
     }
-    inline storage<Callable>* value(Fn fn){
+    storage<Callable>* value(Fn fn){
         if(hashes.contains(qintptr(fn))){
             hash_type hash = hashes[qintptr(fn)];
             if(s.contains(hash))
@@ -213,13 +222,32 @@ CallableHash<count, Callable,Ret,Args...>::CallableHash() : hashes(), freeFuncti
 {
     freeFunctions.reserve(count);
     CallableHashInitializer<0, count, Callable, Ret, Args...>::initialize(freeFunctions);
+    registerFunctionPointerCleanup(this, &CallableHash::cleanup);
+}
+
+template<ushort count, typename Callable, typename Ret, typename... Args>
+CallableHash<count, Callable,Ret,Args...>::~CallableHash()
+{
+    unregisterFunctionPointerCleanup(this);
 }
 
 template<ushort count, typename Callable, typename Ret, typename... Args>
 Ret CallableHash<count, Callable,Ret,Args...>::caller(Fn fn, Args...args){
     storage<Callable>* stor = instance().value(fn);
-    if(!stor)
+    if(!stor){
         noFunctionAvailable(typeid(Ret(*)(Args...)));
+        if constexpr(std::is_same<Ret,void>::value){
+            return;
+        }else if constexpr(std::is_pointer<Ret>::value || std::is_null_pointer<Ret>::value){
+            return nullptr;
+        }else if constexpr(std::is_integral<Ret>::value || std::is_floating_point<Ret>::value){
+            return Ret{0};
+        }else if constexpr(std::is_default_constructible<Ret>::value){
+            return Ret{};
+        }else{
+            throw std::bad_function_call();
+        }
+    }
     return stor->callable(std::forward<Args>(args)...);
 };
 

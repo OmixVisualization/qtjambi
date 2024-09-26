@@ -75,6 +75,7 @@ struct MetaTypeSmartPointerHelper<DummyType,DummyType>{
 };
 }
 
+Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, gFunctionsLock, (QReadWriteLock::Recursive))
 typedef QHash<int,const QtPrivate::AbstractComparatorFunction *> ComparatorFunctions;
 Q_GLOBAL_STATIC(ComparatorFunctions, gComparatorFunctions)
 typedef QHash<int,const QtPrivate::AbstractDebugStreamFunction *> DebugStreamFunctions;
@@ -86,20 +87,24 @@ bool RegistryAPI::registerComparator(const QtPrivate::AbstractComparatorFunction
 #if !defined(Q_NO_TEMPLATE_FRIENDS) && !defined(Q_CC_MSVC)
     return QtPrivate::MetaTypeSmartPointerHelper<QtPrivate::DummyType,QtPrivate::DummyType>::registerComparatorFunction(f, typeId);
 #else
+    QWriteLocker locker(gFunctionsLock());
     gComparatorFunctions->insert(typeId, f);
     return true;
 #endif
 }
 
 const QtPrivate::AbstractComparatorFunction * registeredComparator(int typeId){
+    QReadLocker locker(gFunctionsLock());
     return gComparatorFunctions->value(typeId);
 }
 
 const QtPrivate::AbstractDebugStreamFunction * registeredDebugStreamOperator(int typeId){
+    QReadLocker locker(gFunctionsLock());
     return gDebugStreamFunctions->value(typeId);
 }
 
 const QtPrivate::AbstractDebugStreamFunction *CoreAPI::registeredDebugStreamOperator(int typeId){
+    QReadLocker locker(gFunctionsLock());
     return gDebugStreamFunctions->value(typeId);
 }
 
@@ -109,6 +114,7 @@ bool RegistryAPI::registerDebugStreamOperator(const QtPrivate::AbstractDebugStre
 #if !defined(Q_NO_TEMPLATE_FRIENDS) && !defined(Q_CC_MSVC)
     return QtPrivate::MetaTypeSmartPointerHelper<QtPrivate::DummyType,QtPrivate::DummyType>::registerDebugStreamOperatorFunction(f, typeId);
 #else
+    QWriteLocker locker(gFunctionsLock());
     gDebugStreamFunctions->insert(typeId, f);
     return true;
 #endif

@@ -223,7 +223,7 @@ public class TestExceptions extends ApplicationInitializer {
 			o.moveToThread(t);
 			QCoreApplication.postEvent(o, new QEvent(QEvent.Type.WinEventAct));
 			t.start();
-			t.join();
+			t.join(20000);
 		}
     }
     

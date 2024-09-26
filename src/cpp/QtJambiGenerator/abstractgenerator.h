@@ -104,6 +104,8 @@ class AbstractGenerator : public QObject {
             StrictNonNull                   = 0x20000000000,
             PlainShell                      = 0x40000000000,
             MShell                          = 0x80000000000,
+            IsReturnType                    = 0x100000000000,
+            IsNativeCall                    = 0x200000000000,
 
             ForceValueType                  = (ExcludeReference | ExcludeConst) & ~ForceConstReference
         };

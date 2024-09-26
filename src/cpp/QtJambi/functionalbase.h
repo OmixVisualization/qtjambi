@@ -43,6 +43,7 @@ public:
     FunctionalBase();
     virtual ~FunctionalBase() override;
     virtual void getFunctional(JNIEnv *,void*) = 0;
+    virtual bool isFunctionPointer() = 0;
 private:
     Q_DISABLE_COPY_MOVE(FunctionalBase)
     QAtomicInt m_ref;

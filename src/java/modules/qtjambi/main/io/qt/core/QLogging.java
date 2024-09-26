@@ -36,11 +36,11 @@ import java.util.EnumSet;
 import java.util.IllegalFormatException;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
+import io.qt.NativeAccess;
 import io.qt.NonNull;
 import io.qt.Nullable;
 import io.qt.QNoImplementationException;
@@ -115,6 +115,19 @@ public final class QLogging {
             	qInstallLoggingMessageHandler(supportedMessageTypes);
         }
     }
+    
+    @NativeAccess
+    private static QtMessageHandler installedMessageHandler;
+    
+    @NativeAccess
+    private static void acceptInstalled(io.qt.core.QtMsgType msgType, io.qt.core.QMessageLogContext context, java.lang.String message){
+    	installedMessageHandler.accept(msgType, context, message);
+    }
+    
+    @NativeAccess
+    private static void shutdown() {
+    	installedMessageHandler = null;
+    }
 
     /**
      * <p>Installs the specified message handler as a receiver for message notification.</p>
@@ -126,9 +139,9 @@ public final class QLogging {
     @QtUninvokable
     public static @Nullable QtMessageHandler qInstallMessageHandler(@Nullable QtMessageHandler handler, @StrictNonNull QtMsgType @StrictNonNull... supportedMessageTypes) {
     	if(supportedMessageTypes==null || supportedMessageTypes.length==0)
-    		return qInstallMessageHandler(EnumSet.allOf(QtMsgType.class), handler);
+    		return qInstallMessageHandler(handler, EnumSet.allOf(QtMsgType.class));
     	else
-    		return qInstallMessageHandler(EnumSet.copyOf(Arrays.asList(supportedMessageTypes)), handler);
+    		return qInstallMessageHandler(handler, EnumSet.copyOf(Arrays.asList(supportedMessageTypes)));
     }
     
     /**
@@ -180,8 +193,8 @@ public final class QLogging {
     }
     
 	@QtUninvokable
-    private static QtMessageHandler qInstallExceptionMessageHandler(Set<QtMsgType> supportedMessageTypes) {
-    	return qInstallMessageHandler(supportedMessageTypes, (messageType, context, message) -> {
+    private static QtMessageHandler qInstallExceptionMessageHandler(EnumSet<QtMsgType> supportedMessageTypes) {
+    	return qInstallMessageHandler((messageType, context, message) -> {
 			switch(messageType) {
 			case QtCriticalMsg:
 				throw new RuntimeException("Critical: " + message);
@@ -196,11 +209,11 @@ public final class QLogging {
 			default:
 				break;
 			}
-		});
+		}, supportedMessageTypes);
     }
     
     @QtUninvokable
-    private static QtMessageHandler qInstallLoggingMessageHandler(Set<QtMsgType> supportedMessageTypes) {
+    private static QtMessageHandler qInstallLoggingMessageHandler(EnumSet<QtMsgType> supportedMessageTypes) {
     	Map<QtMsgType,Level> messageLevels = new EnumMap<>(QtMsgType.class);
     	String value = System.getProperty("io.qt.log.debug.level");
 		Level level = Level.FINEST;
@@ -247,7 +260,7 @@ public final class QLogging {
 			}
     	}
 		messageLevels.put(QtMsgType.QtWarningMsg, level);
-    	return qInstallMessageHandler(supportedMessageTypes, (messageType, context, message) -> {
+    	return qInstallMessageHandler((messageType, context, message) -> {
 			LogRecord logRecord = new LogRecord(messageLevels.getOrDefault(messageType, Level.FINE), message);
 			String file = context.file();
 			logRecord.setSourceClassName(file!=null ? file : "");
@@ -258,11 +271,21 @@ public final class QLogging {
     		}else {
     			logger.log(logRecord);
     		}
-		});
+		}, supportedMessageTypes);
     }
     
     @QtUninvokable
-    private static native QtMessageHandler qInstallMessageHandler(Set<QtMsgType> supportedMessageTypes, QtMessageHandler handler);
+    private static QtMessageHandler qInstallMessageHandler(QtMessageHandler handler, EnumSet<QtMsgType> supportedMessageTypes) {
+    	QtMessageHandler previousInstalledMessageHandler = installedMessageHandler;
+    	installedMessageHandler = handler;
+    	QtMessageHandler previous = installMessageHandler(supportedMessageTypes, handler);
+    	if(previous==null)
+    		previous = previousInstalledMessageHandler;
+    	return previous;
+    }
+    
+    @QtUninvokable
+    private static native QtMessageHandler installMessageHandler(EnumSet<QtMsgType> supportedMessageTypes, QtMessageHandler handler);
 
     @QtUninvokable
     static void initialize() {

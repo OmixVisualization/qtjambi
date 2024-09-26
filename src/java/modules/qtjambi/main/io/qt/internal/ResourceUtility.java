@@ -75,6 +75,9 @@ final class ResourceUtility {
 	private ResourceUtility() {
 	}
 	
+	private static final int ExcludeFiles =          0x000004;
+	private static final int ExcludeDirs =           0x000008;
+	
 	private interface JarResourceFactoryInterface{
 		JarResource create(File fileToJarFile) throws IOException;
         JarResource create(URL urlToJarFile) throws IOException;
@@ -679,14 +682,14 @@ final class ResourceUtility {
         }
         
         @NativeAccess
-        private void entryList(List<String> result, int _filters, Collection<String> filterNames, String mentryName){
+        private void entryList(List<String> result, int _filters, Collection<String> filterNames, String mentryName, boolean isIteratorFlags){
             if (!mentryName.endsWith("/") && mentryName.length() > 0)
                 mentryName = mentryName + "/";
 
             Enumeration<JarEntry> entries = entries();
 
             HashSet<String> used = new HashSet<String>();
-            QDir.Filters filters = new QDir.Filters(_filters);
+//            QDir.Filters filters = new QDir.Filters(_filters);
             while (entries.hasMoreElements()) {
                 JarEntry entry = entries.nextElement();
 
@@ -708,20 +711,33 @@ final class ResourceUtility {
                         isDir = ResourceUtility.checkIsDirectory(this, entry);
                 }
 
-                if (!filters.testFlag(QDir.Filter.Readable))
-                    continue ;
-
-                if (!filters.testFlag(QDir.Filter.Dirs) && isDir)
-                    continue ;
-
-                if (!filters.testFlag(QDir.Filter.Files) && !isDir)
-                    continue ;
-
-                if (filterNames.size() > 0) {
-                    if ((!isDir || !filters.testFlag(QDir.Filter.AllDirs))
-                        && (!QDir.match(filterNames, entryName.substring(mentryName.length())))) {
-                        continue;
-                    }
+                if(!isIteratorFlags) {
+	                if ((_filters & QDir.Filter.Readable.value())==0)
+	                    continue ;
+	
+	                if ((_filters & QDir.Filter.Dirs.value())==0 && isDir)
+	                    continue ;
+	
+	                if ((_filters & QDir.Filter.Files.value())==0 && !isDir)
+	                    continue ;
+	
+	                if (filterNames.size() > 0) {
+	                    if ((!isDir || (_filters & QDir.Filter.AllDirs.value())==0)
+	                        && (!QDir.match(filterNames, entryName.substring(mentryName.length())))) {
+	                        continue;
+	                    }
+	                }
+                }else {
+                	if ((_filters & ExcludeDirs)==ExcludeDirs && isDir)
+	                    continue ;
+	
+	                if ((_filters & ExcludeFiles)==ExcludeFiles && !isDir)
+	                    continue ;
+	                if (filterNames.size() > 0) {
+	                    if (!QDir.match(filterNames, entryName.substring(mentryName.length()))) {
+	                        continue;
+	                    }
+	                }
                 }
 
                 if (entryName.endsWith("/") && entryName.length() > 1)

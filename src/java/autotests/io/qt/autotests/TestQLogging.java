@@ -60,7 +60,7 @@ import io.qt.core.QtMessageHandler;
 import io.qt.core.QtMsgType;
 import io.qt.widgets.QApplication;
 
-public class TestQMessageHandler extends UnitTestInitializer {
+public class TestQLogging extends UnitTestInitializer {
 	
     // We don't use ApplicationInitializer since that will by default initialize QMessageHandler
     @BeforeClass
@@ -93,7 +93,7 @@ public class TestQMessageHandler extends UnitTestInitializer {
         	QtMessageHandler oldHandler = qInstallMessageHandler(handler);
         	assertTrue(oldHandler!=handler);
         	assertTrue("not java ownership", General.internalAccess.isJavaOwnership(oldHandler));
-        	assertTrue("not cpp ownership", General.internalAccess.isCppOwnership(handler));
+        	assertTrue("not java ownership", General.internalAccess.isJavaOwnership(handler));
         	oldHandler = qInstallMessageHandler(null);
         	assertEquals(oldHandler, handler);
         	assertTrue("not java ownership", General.internalAccess.isJavaOwnership(handler));
@@ -126,21 +126,21 @@ public class TestQMessageHandler extends UnitTestInitializer {
             qDebug("debug sent");
             assertEquals("debug sent", lastMessage.get(QtMsgType.QtDebugMsg));
             if(QLibraryInfo.isDebugBuild()) {
-	            assertEquals(TestQMessageHandler.class.getName(), lastFile.get(QtMsgType.QtDebugMsg));
+	            assertEquals(TestQLogging.class.getName(), lastFile.get(QtMsgType.QtDebugMsg));
 	            assertEquals("testInstallHandler", lastFunction.get(QtMsgType.QtDebugMsg));
             }
 
             qWarning("warning sent");
             assertEquals("warning sent", lastMessage.get(QtMsgType.QtWarningMsg));
             if(QLibraryInfo.isDebugBuild()) {
-	            assertEquals(TestQMessageHandler.class.getName(), lastFile.get(QtMsgType.QtWarningMsg));
+	            assertEquals(TestQLogging.class.getName(), lastFile.get(QtMsgType.QtWarningMsg));
 	            assertEquals("testInstallHandler", lastFunction.get(QtMsgType.QtWarningMsg));
             }
 
             qCritical("critical sent");
             assertEquals("critical sent", lastMessage.get(QtMsgType.QtCriticalMsg));
             if(QLibraryInfo.isDebugBuild()) {
-	            assertEquals(TestQMessageHandler.class.getName(), lastFile.get(QtMsgType.QtCriticalMsg));
+	            assertEquals(TestQLogging.class.getName(), lastFile.get(QtMsgType.QtCriticalMsg));
 	            assertEquals("testInstallHandler", lastFunction.get(QtMsgType.QtCriticalMsg));
             }
             
@@ -151,21 +151,21 @@ public class TestQMessageHandler extends UnitTestInitializer {
             qDebug().append("debug").append("sent").close();
             assertEquals("debug sent", lastMessage.get(QtMsgType.QtDebugMsg));
             if(QLibraryInfo.isDebugBuild()) {
-	            assertEquals(TestQMessageHandler.class.getName(), lastFile.get(QtMsgType.QtDebugMsg));
+	            assertEquals(TestQLogging.class.getName(), lastFile.get(QtMsgType.QtDebugMsg));
 	            assertEquals("testInstallHandler", lastFunction.get(QtMsgType.QtDebugMsg));
             }
 
             qWarning().append("warning").append("sent").close();
             assertEquals("warning sent", lastMessage.get(QtMsgType.QtWarningMsg));
             if(QLibraryInfo.isDebugBuild()) {
-	            assertEquals(TestQMessageHandler.class.getName(), lastFile.get(QtMsgType.QtWarningMsg));
+	            assertEquals(TestQLogging.class.getName(), lastFile.get(QtMsgType.QtWarningMsg));
 	            assertEquals("testInstallHandler", lastFunction.get(QtMsgType.QtWarningMsg));
             }
 
             qCritical().append("critical").append("sent").close();
             assertEquals("critical sent", lastMessage.get(QtMsgType.QtCriticalMsg));
             if(QLibraryInfo.isDebugBuild()) {
-	            assertEquals(TestQMessageHandler.class.getName(), lastFile.get(QtMsgType.QtCriticalMsg));
+	            assertEquals(TestQLogging.class.getName(), lastFile.get(QtMsgType.QtCriticalMsg));
 	            assertEquals("testInstallHandler", lastFunction.get(QtMsgType.QtCriticalMsg));
             }
             
@@ -174,118 +174,124 @@ public class TestQMessageHandler extends UnitTestInitializer {
             lastFunction.clear();
             
             QLoggingCategory category = new QLoggingCategory("test");
-            QLoggingCategory.installFilter(_category->{
+            QLoggingCategory.CategoryFilter newFilter = _category->{
             	if("test".equals(_category.categoryName()))
         		_category.setEnabled(QtMsgType.QtWarningMsg, false);
-            });
-            assertFalse(category.isWarningEnabled());
-            
-            qCDebug(category, "debug sent");
-            assertEquals("debug sent", lastMessage.get(QtMsgType.QtDebugMsg));
-            if(QLibraryInfo.isDebugBuild()) {
-	            assertEquals(TestQMessageHandler.class.getName(), lastFile.get(QtMsgType.QtDebugMsg));
-	            assertEquals("testInstallHandler", lastFunction.get(QtMsgType.QtDebugMsg));
-            }
-
-            qCWarning(category, "warning sent");
-            assertEquals(null, lastMessage.get(QtMsgType.QtWarningMsg));
-            if(QLibraryInfo.isDebugBuild()) {
-	            assertEquals(null, lastFile.get(QtMsgType.QtWarningMsg));
-	            assertEquals(null, lastFunction.get(QtMsgType.QtWarningMsg));
-            }
-
-            qCCritical(category, "critical sent");
-            assertEquals("critical sent", lastMessage.get(QtMsgType.QtCriticalMsg));
-            if(QLibraryInfo.isDebugBuild()) {
-	            assertEquals(TestQMessageHandler.class.getName(), lastFile.get(QtMsgType.QtCriticalMsg));
-	            assertEquals("testInstallHandler", lastFunction.get(QtMsgType.QtCriticalMsg));
-            }
-            
-            lastMessage.clear();
-            lastFile.clear();
-            lastFunction.clear();
-            
-            qCDebug(category).append("debug").append("sent").close();
-            assertEquals("debug sent", lastMessage.get(QtMsgType.QtDebugMsg));
-            if(QLibraryInfo.isDebugBuild()) {
-	            assertEquals(TestQMessageHandler.class.getName(), lastFile.get(QtMsgType.QtDebugMsg));
-	            assertEquals("testInstallHandler", lastFunction.get(QtMsgType.QtDebugMsg));
-            }
-
-            qCWarning(category).append("warning").append("sent").close();
-            assertEquals(null, lastMessage.get(QtMsgType.QtWarningMsg));
-            if(QLibraryInfo.isDebugBuild()) {
-	            assertEquals(null, lastFile.get(QtMsgType.QtWarningMsg));
-	            assertEquals(null, lastFunction.get(QtMsgType.QtWarningMsg));
-            }
-
-            qCCritical(category).append("critical").append("sent").close();
-            assertEquals("critical sent", lastMessage.get(QtMsgType.QtCriticalMsg));
-            if(QLibraryInfo.isDebugBuild()) {
-	            assertEquals(TestQMessageHandler.class.getName(), lastFile.get(QtMsgType.QtCriticalMsg));
-	            assertEquals("testInstallHandler", lastFunction.get(QtMsgType.QtCriticalMsg));
-            }
-            
-            qCDebug(category, "This must not lead to crash: %s");
-            assertEquals("This must not lead to crash: %s", lastMessage.get(QtMsgType.QtDebugMsg));
-            qCCritical(category, "critical sent (%1$s,%2$s,%3$s,%4$s)", 5, 6, 7, 8.2);
-            assertEquals("critical sent (5,6,7,8.2)", lastMessage.get(QtMsgType.QtCriticalMsg));
-            
-            // should not crash
-            qWarning()
-            	.ws()
-            	.uppercasedigits()
-            	.uppercasebase()
-            	.showbase()
-            	.scientific()
-	            .right()
-	            .reset()
-	            .qSetRealNumberPrecision(2)
-	            .qSetPadChar('A')
-	            .qSetFieldWidth(4)
-	            .bin()
-	            .bom()
-	            .center()
-	            .dec()
-	            .endl()
-	            .fixed()
-	            .flush()
-	            .forcepoint()
-	            .forcesign()
-	            .left()
-	            .center()
-	            .hex()
-	            .oct()
-	            .lowercasebase()
-	            .lowercasedigits()
-	            .noforcepoint()
-	            .noforcesign()
-	            .noshowbase()
-	            .append("warning")
-	            .close();
-            
-            lastMessage.clear();
-            lastFile.clear();
-            lastFunction.clear();
-            
-            qInstallExceptionMessageHandler();
+            };
+            QLoggingCategory.CategoryFilter filter = QLoggingCategory.installFilter(newFilter);
+            QLoggingCategory.CategoryFilter oldFilter;
             try {
-				qWarning("EXN");
-				fail("Exception expected to be thrown.");
-			} catch (RuntimeException e) {
-			}
-            
-            try {
-				qWarning().append("EXN").close();
-				fail("Exception expected to be thrown.");
-			} catch (RuntimeException e) {
-			}
-            
-            try {
-				MessageHandler.sendWarning("EXN");
-				fail("Exception expected to be thrown.");
-			} catch (RuntimeException e) {
-			}
+            	assertFalse(category.isWarningEnabled());
+	            qCDebug(category, "debug sent");
+	            assertEquals("debug sent", lastMessage.get(QtMsgType.QtDebugMsg));
+	            if(QLibraryInfo.isDebugBuild()) {
+		            assertEquals(TestQLogging.class.getName(), lastFile.get(QtMsgType.QtDebugMsg));
+		            assertEquals("testInstallHandler", lastFunction.get(QtMsgType.QtDebugMsg));
+	            }
+	
+	            qCWarning(category, "warning sent");
+	            assertEquals(null, lastMessage.get(QtMsgType.QtWarningMsg));
+	            if(QLibraryInfo.isDebugBuild()) {
+		            assertEquals(null, lastFile.get(QtMsgType.QtWarningMsg));
+		            assertEquals(null, lastFunction.get(QtMsgType.QtWarningMsg));
+	            }
+	
+	            qCCritical(category, "critical sent");
+	            assertEquals("critical sent", lastMessage.get(QtMsgType.QtCriticalMsg));
+	            if(QLibraryInfo.isDebugBuild()) {
+		            assertEquals(TestQLogging.class.getName(), lastFile.get(QtMsgType.QtCriticalMsg));
+		            assertEquals("testInstallHandler", lastFunction.get(QtMsgType.QtCriticalMsg));
+	            }
+	            
+	            lastMessage.clear();
+	            lastFile.clear();
+	            lastFunction.clear();
+	            
+	            qCDebug(category).append("debug").append("sent").close();
+	            assertEquals("debug sent", lastMessage.get(QtMsgType.QtDebugMsg));
+	            if(QLibraryInfo.isDebugBuild()) {
+		            assertEquals(TestQLogging.class.getName(), lastFile.get(QtMsgType.QtDebugMsg));
+		            assertEquals("testInstallHandler", lastFunction.get(QtMsgType.QtDebugMsg));
+	            }
+	
+	            qCWarning(category).append("warning").append("sent").close();
+	            assertEquals(null, lastMessage.get(QtMsgType.QtWarningMsg));
+	            if(QLibraryInfo.isDebugBuild()) {
+		            assertEquals(null, lastFile.get(QtMsgType.QtWarningMsg));
+		            assertEquals(null, lastFunction.get(QtMsgType.QtWarningMsg));
+	            }
+	
+	            qCCritical(category).append("critical").append("sent").close();
+	            assertEquals("critical sent", lastMessage.get(QtMsgType.QtCriticalMsg));
+	            if(QLibraryInfo.isDebugBuild()) {
+		            assertEquals(TestQLogging.class.getName(), lastFile.get(QtMsgType.QtCriticalMsg));
+		            assertEquals("testInstallHandler", lastFunction.get(QtMsgType.QtCriticalMsg));
+	            }
+	            
+	            qCDebug(category, "This must not lead to crash: %s");
+	            assertEquals("This must not lead to crash: %s", lastMessage.get(QtMsgType.QtDebugMsg));
+	            qCCritical(category, "critical sent (%1$s,%2$s,%3$s,%4$s)", 5, 6, 7, 8.2);
+	            assertEquals("critical sent (5,6,7,8.2)", lastMessage.get(QtMsgType.QtCriticalMsg));
+	            
+	            // should not crash
+	            qWarning()
+	            	.ws()
+	            	.uppercasedigits()
+	            	.uppercasebase()
+	            	.showbase()
+	            	.scientific()
+		            .right()
+		            .reset()
+		            .qSetRealNumberPrecision(2)
+		            .qSetPadChar('A')
+		            .qSetFieldWidth(4)
+		            .bin()
+		            .bom()
+		            .center()
+		            .dec()
+		            .endl()
+		            .fixed()
+		            .flush()
+		            .forcepoint()
+		            .forcesign()
+		            .left()
+		            .center()
+		            .hex()
+		            .oct()
+		            .lowercasebase()
+		            .lowercasedigits()
+		            .noforcepoint()
+		            .noforcesign()
+		            .noshowbase()
+		            .append("warning")
+		            .close();
+	            
+	            lastMessage.clear();
+	            lastFile.clear();
+	            lastFunction.clear();
+	            
+	            qInstallExceptionMessageHandler();
+	            try {
+					qWarning("EXN");
+					fail("Exception expected to be thrown.");
+				} catch (RuntimeException e) {
+				}
+	            
+	            try {
+					qWarning().append("EXN").close();
+					fail("Exception expected to be thrown.");
+				} catch (RuntimeException e) {
+				}
+	            
+	            try {
+					MessageHandler.sendWarning("EXN");
+					fail("Exception expected to be thrown.");
+				} catch (RuntimeException e) {
+				}
+            }finally {
+            	oldFilter = QLoggingCategory.installFilter(filter);
+            }
+            assertEquals(newFilter, oldFilter);
         } finally {
         	qInstallMessageHandler(null);
         }
@@ -296,6 +302,6 @@ public class TestQMessageHandler extends UnitTestInitializer {
     private Map<QtMsgType,String> lastFunction = new EnumMap<>(QtMsgType.class);
 
     public static void main(String args[]) {
-        org.junit.runner.JUnitCore.main(TestQMessageHandler.class.getName());
+        org.junit.runner.JUnitCore.main(TestQLogging.class.getName());
     }
 }

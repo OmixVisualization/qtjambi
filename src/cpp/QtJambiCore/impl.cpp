@@ -64,13 +64,6 @@ QT_WARNING_DISABLE_DEPRECATED
 #endif
 #endif
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
-namespace QHashPrivate {
-template <>
-constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QVariant>> = false;
-}
-#endif
-
 #include <QtJambi/qtjambi_cast.h>
 
 QT_WARNING_DISABLE_GCC("-Wfloat-equal")
@@ -872,7 +865,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QDebug_debugStream)
 }
 
 extern "C" Q_DECL_EXPORT jobject JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QLogging_qInstallMessageHandler)
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QLogging_installMessageHandler)
 (JNIEnv *env, jclass, jobject supportedMessageTypes, jobject handler)
 {
     jobject _result{nullptr};
@@ -1826,7 +1819,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
         if(void* ptr = QtJambiAPI::fromNativeId(__this_nativeId)){
             jlong size = QMetaType::sizeOf(type0);
             if(size>0){
-                _result = DataJBuffer(__jni_env, ptr, size).take();
+                _result = LocalDataJBuffer(__jni_env, ptr, size).take();
                 QtJambiAPI::registerDependency(__jni_env, _result, __this_nativeId);
             }
         }
@@ -2060,6 +2053,22 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMetaObject_properties)
             }
         }
         _result = qtjambi_cast<jobject>(env, propertyList);
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(env);
+    }QTJAMBI_TRY_END
+    return _result;
+}
+
+extern "C" Q_DECL_EXPORT jint JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMetaObject_propertyOffset)
+    (JNIEnv * env, jobject, jlong metaObjectPointer)
+{
+    jint _result{0};
+    QTJAMBI_TRY{
+        if(metaObjectPointer){
+            const QMetaObject *metaObject = reinterpret_cast<const QMetaObject *>(metaObjectPointer);
+            _result = metaObject->propertyOffset();
+        }
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
     }QTJAMBI_TRY_END
@@ -2431,6 +2440,21 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMetaObject_methodCount)
     return result;
 }
 
+extern "C" Q_DECL_EXPORT jint JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMetaObject_methodOffset)
+    (JNIEnv * env, jclass, jlong metaObjectPointer)
+{
+    jint result = 0;
+    QTJAMBI_TRY{
+        if(const QMetaObject *metaObject = reinterpret_cast<const QMetaObject *>(metaObjectPointer)){
+            result = metaObject->methodOffset();
+        }
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(env);
+    }QTJAMBI_TRY_END
+    return result;
+}
+
 extern "C" Q_DECL_EXPORT jobject JNICALL
 QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMetaObject_constructor)
     (JNIEnv * env, jobject, jlong metaObjectPointer, jstring normalizedSignature)
@@ -2553,6 +2577,21 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMetaObject_enumeratorCount)
     QTJAMBI_TRY{
         if(const QMetaObject *metaObject = reinterpret_cast<const QMetaObject *>(metaObjectPointer)){
             result = metaObject->enumeratorCount();
+        }
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(env);
+    }QTJAMBI_TRY_END
+    return result;
+}
+
+extern "C" Q_DECL_EXPORT jint JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMetaObject_enumeratorOffset)
+    (JNIEnv * env, jclass, jlong metaObjectPointer)
+{
+    jint result = 0;
+    QTJAMBI_TRY{
+        if(const QMetaObject *metaObject = reinterpret_cast<const QMetaObject *>(metaObjectPointer)){
+            result = metaObject->enumeratorOffset();
         }
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
@@ -2856,6 +2895,27 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QF
     }QTJAMBI_TRY_END
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+
+extern "C" Q_DECL_EXPORT jobject JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMetaObject_metaType)
+    (JNIEnv * env, jclass, jlong metaObjectPointer)
+{
+    jobject result = nullptr;
+    QTJAMBI_TRY{
+        if(const QMetaObject *metaObject = reinterpret_cast<const QMetaObject *>(metaObjectPointer)){
+            result = qtjambi_cast<jobject>(env, metaObject->metaType());
+        }else{
+            result = qtjambi_cast<jobject>(env, QMetaType());
+        }
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(env);
+    }QTJAMBI_TRY_END
+    return result;
+}
+
+#endif
+
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 
 template<int functorType>
@@ -2873,7 +2933,7 @@ public:
                                      if constexpr(functorType=='L'){
                                          jobject result = Java::Runtime::Supplier::get(env, env->NewLocalRef(_f->object()));
                                          if(metaType.flags() & QMetaType::IsPointer){
-                                             jobject propertyObject = CoreAPI::findObject(env, dataPtr);
+                                             jobject propertyObject = QtJambiAPI::findObject(env, dataPtr);
                                              bool setIt = true;
                                              if(Java::QtCore::QPropertyData::isInstanceOf(env, propertyObject)){
                                                  jobject oldValue = Java::QtCore::QPropertyData::getValueBypassingBindings(env, propertyObject);
@@ -4212,7 +4272,7 @@ struct PrimitiveBindableInterfaceHelper : QtPrivate::QBindableInterface{
                                                     QTJAMBI_TRY_ANY{
                                                         if(JniEnvironment env{200}){
                                                             QTJAMBI_TRY{
-                                                                jobject property = CoreAPI::findObject(env, d);
+                                                                jobject property = QtJambiAPI::findObject(env, d);
                                                                 if(Property::isInstanceOf(env, property))
                                                                     *static_cast<T*>(value) = Property::value(env, property);
                                                             }QTJAMBI_CATCH(const JavaException& exn){
@@ -4225,7 +4285,7 @@ struct PrimitiveBindableInterfaceHelper : QtPrivate::QBindableInterface{
                                                     QTJAMBI_TRY_ANY{
                                                         if(JniEnvironment env{200}){
                                                             QTJAMBI_TRY{
-                                                                jobject property = CoreAPI::findObject(env, d);
+                                                                jobject property = QtJambiAPI::findObject(env, d);
                                                                 QT_WARNING_PUSH
                                                                 QT_WARNING_DISABLE_CLANG("-Wdouble-promotion")
                                                                 QT_WARNING_DISABLE_GCC("-Wdouble-promotion")
@@ -4243,7 +4303,7 @@ struct PrimitiveBindableInterfaceHelper : QtPrivate::QBindableInterface{
                                                     QTJAMBI_TRY_ANY{
                                                         if(JniEnvironment env{200}){
                                                             QTJAMBI_TRY{
-                                                                jobject property = CoreAPI::findObject(env, d);
+                                                                jobject property = QtJambiAPI::findObject(env, d);
                                                                 if(Property::isInstanceOf(env, property)){
                                                                     jobject binding = Property::binding(env, property);
                                                                     result = qtjambi_cast<QUntypedPropertyBinding>(env, binding);
@@ -4260,7 +4320,7 @@ struct PrimitiveBindableInterfaceHelper : QtPrivate::QBindableInterface{
                                                     QTJAMBI_TRY_ANY{
                                                         if(JniEnvironment env{200}){
                                                             QTJAMBI_TRY{
-                                                                jobject property = CoreAPI::findObject(env, d);
+                                                                jobject property = QtJambiAPI::findObject(env, d);
                                                                 if(Property::isInstanceOf(env, property)){
                                                                    jobject _binding = qtjambi_cast<jobject>(env, binding);
                                                                    jobject oldBinding = Property::setBinding(env, property, PropertyBinding::newInstance(env, _binding));
@@ -4278,7 +4338,7 @@ struct PrimitiveBindableInterfaceHelper : QtPrivate::QBindableInterface{
                                                     QTJAMBI_TRY_ANY{
                                                         if(JniEnvironment env{200}){
                                                             QTJAMBI_TRY{
-                                                                jobject property = CoreAPI::findObject(env, d);
+                                                                jobject property = QtJambiAPI::findObject(env, d);
                                                                 if(Property::isInstanceOf(env, property)){
                                                                     jobject binding = Property::makeBinding(env, property);
                                                                     result = qtjambi_cast<QUntypedPropertyBinding>(env, binding);
@@ -4294,7 +4354,7 @@ struct PrimitiveBindableInterfaceHelper : QtPrivate::QBindableInterface{
                                                 QTJAMBI_TRY_ANY{
                                                     if(JniEnvironment env{200}){
                                                         QTJAMBI_TRY{
-                                                           jobject property = CoreAPI::findObject(env, d);
+                                                           jobject property = QtJambiAPI::findObject(env, d);
                                                            if(Property::isInstanceOf(env, property)){
                                                                 jobject bindingData = Property::bindingData(env, property);
                                                                 if(QtPrivate::QPropertyBindingData* data = qtjambi_cast<QtPrivate::QPropertyBindingData*>(env, bindingData))
@@ -4626,7 +4686,7 @@ void signal_callback(QUntypedPropertyData *d){
         QTJAMBI_TRY_ANY{
             if(JniEnvironment env{200}){
                 QTJAMBI_TRY{
-                    jobject property = CoreAPI::findObject(env, d);
+                    jobject property = QtJambiAPI::findObject(env, d);
                     if(Property::isInstanceOf(env, property))
                         Property::emitSignal(env, property);
                 }QTJAMBI_CATCH(const JavaException& exn){
@@ -5630,7 +5690,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QB
 void __qt_construct_QByteArrayView_byte_array_int(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, bool, bool, bool)
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QByteArrayView(byte[])")
-    JByteArrayPointer* bufferData = new JByteArrayPointer(__jni_env, jbyteArray(__java_arguments[0].l));
+    JConstByteArrayPointer* bufferData = new JConstByteArrayPointer(__jni_env, jbyteArray(__java_arguments[0].l));
     if(bufferData->size()>0){
         jobject address = QtJambiAPI::toJavaLongObject(__jni_env, qintptr(bufferData));
         __jni_env->SetObjectArrayElement(jobjectArray(__java_arguments[3].l), 0, address);
@@ -5667,7 +5727,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QB
 (JNIEnv * __jni_env, jclass, jlong pointer)
 {
     QTJAMBI_TRY{
-        JByteArrayPointer* bufferData = reinterpret_cast<JByteArrayPointer*>(pointer);
+        JConstByteArrayPointer* bufferData = reinterpret_cast<JConstByteArrayPointer*>(pointer);
         delete bufferData;
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);

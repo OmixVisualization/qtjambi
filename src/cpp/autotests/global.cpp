@@ -61,13 +61,8 @@
 #include "general.h"
 #include <QtJambi/qtjambi_cast.h>
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
-namespace QHashPrivate {
-template <>
-constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QFileInfo>> = false;
-}
-#endif
-
+QT_WARNING_DISABLE_DEPRECATED
+QT_WARNING_DISABLE_GCC("-Wdeprecated-declarations")
 
 class UnknownKey{
 public:
@@ -85,7 +80,9 @@ public:
 bool operator ==(const UnknownClass&,const UnknownClass&){return false;}
 //bool operator <(const UnknownClass&,const UnknownClass&){return false;}
 uint qHash(const UnknownClass&){return 0;}
+#if QT_VERSION < QT_VERSION_CHECK(6, 8, 0)
 uint qHash(const QMap<QString,int>&){return 0;}
+#endif
 
 #ifndef QTJAMBI_NO_WIDGETS
 class CalendarWidgetAccessor: public QCalendarWidget {

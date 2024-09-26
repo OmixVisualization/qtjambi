@@ -189,7 +189,7 @@ struct qtjambi_jnitype_template4_cast<false, has_scope,
         if(!in)
             return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, has_scope, NativeType>::convert(env, scope, nullptr);
         NativeType list;
-        jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, in);
+        jobject iterator = QtJambiAPI::iteratorOfJavaIterable(env, in);
         while(QtJambiAPI::hasJavaIteratorNext(env, iterator)) {
             jobject element = QtJambiAPI::nextOfJavaIterator(env, iterator);
             list.insert(qtjambi_scoped_cast<has_scope,K,jobject>::cast(env, element, nullptr, scope));

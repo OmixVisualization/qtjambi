@@ -217,7 +217,8 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 ReferenceCount{
-                    action: ReferenceCount.Ignore
+                    action: ReferenceCount.Set
+                    variableName: "__rcContextObject"
                 }
             }
         }
@@ -226,9 +227,26 @@ TypeSystem{
             ModifyArgument{
                 index: 2
                 ReferenceCount{
-                    action: ReferenceCount.Ignore
+                    action: ReferenceCount.Put
+                    keyArgument: 1
+                    variableName: "__rcContextProperties"
                 }
+                until: 5
             }
+            Remove{since: 6}
+        }
+        ModifyFunction{
+            signature: "setContextProperty(QString,QVariant)"
+            ModifyArgument{
+                index: 2
+                AddImplicitCall{type: "io.qt.core.@Nullable QObject"}
+                since: 6
+            }
+        }
+        ModifyFunction{
+            signature: "importedScript(QString)const"
+            threadAffinity: true
+            since: 6
         }
     }
     
@@ -284,6 +302,20 @@ TypeSystem{
     
     ObjectType{
         name: "QJSManagedValue"
+        InjectCode{
+            position: Position.Comment
+            target: CodeClass.Java
+            Text{
+                content: String.raw`<p>Either each <code>QJSManagedValue</code> object or the <code>QJSEngine</code> object should be explicitly disposed by calling <code>dispose()</code> to avoid crashes during garbage collection.</p>`
+            }
+        }
+        threadAffinity: "%1->engine()"
+        ExtraIncludes{
+            Include{
+                fileName: "utils_p.h"
+                location: Include.Local
+            }
+        }
         EnumType{
             name: "Type"
             since: [6, 1]
@@ -291,10 +323,126 @@ TypeSystem{
         ModifyFunction{
             signature: "QJSManagedValue(QJSValue, QJSEngine *)"
             noImplicitArguments: true
+            ModifyArgument{
+                index: 2
+                threadAffinity: true
+            }
         }
         ModifyFunction{
             signature: "QJSManagedValue(QJSPrimitiveValue, QJSEngine *)"
             noImplicitArguments: true
+            ModifyArgument{
+                index: 2
+                threadAffinity: true
+            }
+        }
+        ModifyFunction{
+            signature: "QJSManagedValue(QVariant, QJSEngine *)"
+            noImplicitArguments: true
+            ModifyArgument{
+                index: 2
+                threadAffinity: true
+            }
+        }
+        ModifyFunction{
+            signature: "QJSManagedValue(QString, QJSEngine *)"
+            noImplicitArguments: true
+            ModifyArgument{
+                index: 2
+                threadAffinity: true
+            }
+        }
+        ModifyFunction{
+            signature: "property(QString) const"
+            threadAffinity: true
+        }
+        ModifyFunction{
+            signature: "property(quint32) const"
+            threadAffinity: true
+        }
+        ModifyFunction{
+            signature: "deleteProperty(QString)"
+            threadAffinity: true
+        }
+        ModifyFunction{
+            signature: "deleteProperty(quint32)"
+            threadAffinity: true
+        }
+        ModifyFunction{
+            signature: "setProperty(QString,QJSValue)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 2
+                threadAffinity: true
+            }
+        }
+        ModifyFunction{
+            signature: "setProperty(quint32,QJSValue)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 2
+                threadAffinity: true
+            }
+        }
+        ModifyFunction{
+            signature: "toJSValue() const"
+            threadAffinity: true
+        }
+        ModifyFunction{
+            signature: "prototype() const"
+            threadAffinity: true
+        }
+        ModifyFunction{
+            signature: "setPrototype(QJSManagedValue)"
+            ModifyArgument{
+                index: 1
+                threadAffinity: true
+            }
+        }
+        ModifyFunction{
+            signature: "call(QList<QJSValue>) const"
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                threadAffinity: true
+            }
+        }
+        ModifyFunction{
+            signature: "callWithInstance(QJSValue,QList<QJSValue>) const"
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                noImplicitCalls: true
+                threadAffinity: true
+            }
+            ModifyArgument{
+                index: 2
+                threadAffinity: true
+            }
+        }
+        ModifyFunction{
+            signature: "callAsConstructor(QList<QJSValue>) const"
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                threadAffinity: true
+            }
+        }
+        ModifyFunction{
+            signature: "jsMetaType() const"
+            threadAffinity: true
+        }
+        ModifyFunction{
+            signature: "jsMetaInstantiate(QList<QJSValue>) const"
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                threadAffinity: true
+            }
+        }
+        ModifyFunction{
+            signature: "toVariant() const"
+            threadAffinity: true
         }
         since: [6, 1]
     }
@@ -409,6 +557,20 @@ TypeSystem{
     
     ValueType{
         name: "QJSValue"
+        InjectCode{
+            position: Position.Comment
+            target: CodeClass.Java
+            Text{
+                content: String.raw`<p>Either each <code>QJSValue</code> object or the <code>QJSEngine</code> object should be explicitly disposed by calling <code>dispose()</code> to avoid crashes during garbage collection.</p>`
+            }
+        }
+        ExtraIncludes{
+            Include{
+                fileName: "utils_p.h"
+                location: Include.Local
+            }
+        }
+        threadAffinity: "getPointerOwner(%1)"
         EnumType{
             name: "SpecialValue"
         }
@@ -432,28 +594,102 @@ TypeSystem{
             remove: RemoveFlag.All
         }
         ModifyFunction{
+            signature: "QJSValue(QJSValue)"
+            ModifyArgument{
+                index: 1
+                threadAffinity: true
+            }
+        }
+        ModifyFunction{
+            signature: "QJSValue(QJSManagedValue&&)"
+            ModifyArgument{
+                index: 1
+                threadAffinity: true
+            }
+            since: 6.1
+        }
+        ModifyFunction{
+            signature: "operator=(QJSValue)"
+            threadAffinity: true
+        }
+        ModifyFunction{
+            signature: "property(const QString &) const"
+            threadAffinity: true
+        }
+        ModifyFunction{
             signature: "toUInt() const"
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "toBool () const"
-            rename: "toBoolean"
-        }
-        ModifyFunction{
-            signature: "isBool () const"
-            rename: "isBoolean"
-        }
-        ModifyFunction{
-            signature: "isVariant () const"
+            signature: "isVariant() const"
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "toNumber () const"
-            rename: "toDouble"
+            signature: "toBool() const"
+            rename: "toBoolean"
         }
         ModifyFunction{
-            signature: "toVariant () const"
-            rename: "toObject"
+            signature: "isBool() const"
+            rename: "isBoolean"
+        }
+        ModifyFunction{
+            signature: "toNumber() const"
+            Delegate{
+                name: "toDouble"
+                deprecated: true
+            }
+        }
+        ModifyFunction{
+            signature: "toVariant() const"
+            Delegate{
+                name: "toObject"
+                deprecated: true
+            }
+            threadAffinity: true
+        }
+        ModifyFunction{
+            signature: "toVariant(QJSValue::ObjectConversionBehavior) const"
+            threadAffinity: true
+            since: 6
+        }
+        ModifyFunction{
+            signature: "prototype() const"
+            threadAffinity: true
+        }
+        ModifyFunction{
+            signature: "setPrototype(QJSValue)"
+            ModifyArgument{
+                index: 1
+                threadAffinity: true
+            }
+        }
+        ModifyFunction{
+            signature: "deleteProperty(QString)"
+            threadAffinity: true
+        }
+        ModifyFunction{
+            signature: "property(QString) const"
+            threadAffinity: true
+        }
+        ModifyFunction{
+            signature: "property(quint32) const"
+            threadAffinity: true
+        }
+        ModifyFunction{
+            signature: "setProperty(QString,QJSValue)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 2
+                threadAffinity: true
+            }
+        }
+        ModifyFunction{
+            signature: "setProperty(quint32,QJSValue)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 2
+                threadAffinity: true
+            }
         }
         InjectCode{
             ImportFile{
@@ -464,8 +700,10 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "call(const QList<QJSValue> &)"
+            threadAffinity: true
             ModifyArgument{
                 index: 1
+                threadAffinity: true
                 ReplaceDefaultExpression{
                     expression: "java.util.Collections.emptyList()"
                 }
@@ -474,8 +712,15 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "callWithInstance(const QJSValue &, const QList<QJSValue> &)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                noImplicitCalls: true
+                threadAffinity: true
+            }
             ModifyArgument{
                 index: 2
+                threadAffinity: true
                 ReplaceDefaultExpression{
                     expression: "java.util.Collections.emptyList()"
                 }
@@ -484,8 +729,10 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "callAsConstructor(const QList<QJSValue> &)"
+            threadAffinity: true
             ModifyArgument{
                 index: 1
+                threadAffinity: true
                 ReplaceDefaultExpression{
                     expression: "java.util.Collections.emptyList()"
                 }
@@ -494,8 +741,10 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "call(const QList<QJSValue> &)const"
+            threadAffinity: true
             ModifyArgument{
                 index: 1
+                threadAffinity: true
                 ReplaceDefaultExpression{
                     expression: "java.util.Collections.emptyList()"
                 }
@@ -504,8 +753,15 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "callWithInstance(const QJSValue &, const QList<QJSValue> &)const"
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                noImplicitCalls: true
+                threadAffinity: true
+            }
             ModifyArgument{
                 index: 2
+                threadAffinity: true
                 ReplaceDefaultExpression{
                     expression: "java.util.Collections.emptyList()"
                 }
@@ -514,8 +770,10 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "callAsConstructor(const QList<QJSValue> &)const"
+            threadAffinity: true
             ModifyArgument{
                 index: 1
+                threadAffinity: true
                 ReplaceDefaultExpression{
                     expression: "java.util.Collections.emptyList()"
                 }
@@ -559,8 +817,21 @@ TypeSystem{
     
     ObjectType{
         name: "QJSValueIterator"
+        ExtraIncludes{
+            Include{
+                fileName: "utils_p.h"
+                location: Include.Local
+            }
+        }
         ModifyFunction{
-            signature: "operator= ( QJSValue & )"
+            signature: "QJSValueIterator(QJSValue)"
+            ModifyArgument{
+                index: 1
+                threadAffinity: true
+            }
+        }
+        ModifyFunction{
+            signature: "operator=( QJSValue & )"
             remove: RemoveFlag.All
         }
     }
@@ -640,6 +911,19 @@ TypeSystem{
     
     ObjectType{
         name: "QJSEngine"
+        isValueOwner: true
+        InjectCode{
+            position: Position.Comment
+            target: CodeClass.Java
+            Text{
+                content: String.raw`<p>Either the <code>QJSEngine</code> object or each associated <code>QJSValue</code> and <code>QJSManagedValue</code> object should be explicitly disposed by calling <code>dispose()</code> to avoid crashes during garbage collection.</p>`
+                since: 6.2
+            }
+            Text{
+                content: String.raw`<p>Either the <code>QJSEngine</code> object or each associated <code>QJSValue</code> object should be explicitly disposed by calling <code>dispose()</code> to avoid crashes during garbage collection.</p>`
+                until: 5
+            }
+        }
         ExtraIncludes{
             Include{
                 fileName: "utils_p.h"
@@ -683,7 +967,78 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
             remove: RemoveFlag.All
         }
         ModifyFunction{
+            signature: "globalObject() const"
+            threadAffinity: true
+        }
+        ModifyFunction{
+            signature: "evaluate(QString, QString, int)"
+            threadAffinity: true
+            until: 5
+        }
+        ModifyFunction{
+            signature: "evaluate(QString, QString, int, QStringList*)"
+            threadAffinity: true
+            since: 6
+        }
+        ModifyFunction{
+            signature: "importModule(QString)"
+            threadAffinity: true
+        }
+        ModifyFunction{
+            signature: "registerModule(QString, QJSValue)"
+            threadAffinity: true
+            since: 6
+        }
+        ModifyFunction{
+            signature: "newObject()"
+            threadAffinity: true
+        }
+        ModifyFunction{
+            signature: "newSymbol(QString)"
+            threadAffinity: true
+            since: 6
+        }
+        ModifyFunction{
+            signature: "newArray(uint)"
+            threadAffinity: true
+        }
+        ModifyFunction{
+            signature: "newQObject(QObject *)"
+            threadAffinity: true
+        }
+        ModifyFunction{
+            signature: "newQMetaObject(const QMetaObject*)"
+            threadAffinity: true
+        }
+        ModifyFunction{
+            signature: "newErrorObject(QJSValue::ErrorType,QString)"
+            threadAffinity: true
+        }
+        ModifyFunction{
+            signature: "installExtensions(QJSEngine::Extensions,QJSValue)"
+            threadAffinity: true
+        }
+        ModifyFunction{
+            signature: "throwError(QJSValue)"
+            threadAffinity: true
+            since: 6
+        }
+        ModifyFunction{
+            signature: "throwError(QString)"
+            threadAffinity: true
+        }
+        ModifyFunction{
+            signature: "throwError(QJSValue::ErrorType,QString)"
+            threadAffinity: true
+        }
+        ModifyFunction{
+            signature: "catchError()"
+            threadAffinity: true
+            since: 6
+        }
+        ModifyFunction{
             signature: "toManagedValue<T>(T)"
+            threadAffinity: true
             Instantiation{
                 proxyCall: "qtjambi_toManagedValue"
                 Argument{
@@ -703,6 +1058,7 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
         }
         ModifyFunction{
             signature: "fromManagedValue<T>(QJSManagedValue)"
+            threadAffinity: true
             Instantiation{
                 proxyCall: "qtjambi_fromManagedValue"
                 Argument{
@@ -728,6 +1084,7 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
         }
         ModifyFunction{
             signature: "toScriptValue<T>(T)"
+            threadAffinity: true
             Instantiation{
                 proxyCall: "qtjambi_toScriptValue"
                 Argument{
@@ -746,8 +1103,13 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
         }
         ModifyFunction{
             signature: "fromScriptValue<T>(QJSValue)"
+            threadAffinity: true
             Instantiation{
                 proxyCall: "qtjambi_fromScriptValue"
+                ModifyArgument{
+                    index: 1
+                    noImplicitCalls: true
+                }
                 Argument{
                     type: "QVariant"
                 }
@@ -798,6 +1160,7 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
         }
         ModifyFunction{
             signature: "fromVariant<T>(QVariant)"
+            threadAffinity: true
             Instantiation{
                 proxyCall: "qtjambi_fromVariant"
                 Argument{
@@ -829,6 +1192,7 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
 
         ModifyFunction{
             signature: "setObjectOwnership(QObject*,QJSEngine::ObjectOwnership)"
+            threadAffinity: true
             ModifyArgument{
                 index: 1
                 ReferenceCount{
@@ -890,6 +1254,19 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
     
     ObjectType{
         name: "QQmlEngine"
+        isValueOwner: true
+        InjectCode{
+            position: Position.Comment
+            target: CodeClass.Java
+            Text{
+                content: String.raw`<p>Either the <code>QQmlEngine</code> object or each associated <code>QJSValue</code> and <code>QJSManagedValue</code> object should be explicitly disposed by calling <code>dispose()</code> to avoid crashes during garbage collection.</p>`
+                since: 6.2
+            }
+            Text{
+                content: String.raw`<p>Either the <code>QQmlEngine</code> object or each associated <code>QJSValue</code> object should be explicitly disposed by calling <code>dispose()</code> to avoid crashes during garbage collection.</p>`
+                until: 5
+            }
+        }
         ExtraIncludes{
             Include{
                 fileName: "QtJambi/QmlAPI"
@@ -921,6 +1298,15 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
             }
 
             until: 5
+        }
+        ModifyFunction{
+            signature: "clearComponentCache()"
+            threadAffinity: true
+        }
+        ModifyFunction{
+            signature: "clearSingletons()"
+            threadAffinity: true
+            since: 6
         }
         ModifyFunction{
             signature: "addImageProvider(QString,QQmlImageProviderBase*)"
@@ -1045,6 +1431,7 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
         }
         ModifyFunction{
             signature: "singletonInstance<T>(int)"
+            threadAffinity: true
             Instantiation{
                 Argument{
                     type: "QJSValue"
@@ -1059,6 +1446,7 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
         }
         ModifyFunction{
             signature: "singletonInstance<T>(QAnyStringView,QAnyStringView)"
+            threadAffinity: true
             Instantiation{
                 Argument{
                     type: "QJSValue"
@@ -1084,6 +1472,19 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
     
     ObjectType{
         name: "QQmlApplicationEngine"
+        isValueOwner: true
+        InjectCode{
+            position: Position.Comment
+            target: CodeClass.Java
+            Text{
+                content: String.raw`<p>Either the <code>QQmlApplicationEngine</code> object or each associated <code>QJSValue</code> and <code>QJSManagedValue</code> object should be explicitly disposed by calling <code>dispose()</code> to avoid crashes during garbage collection.</p>`
+                since: 6.2
+            }
+            Text{
+                content: String.raw`<p>Either the <code>QQmlApplicationEngine</code> object or each associated <code>QJSValue</code> object should be explicitly disposed by calling <code>dispose()</code> to avoid crashes during garbage collection.</p>`
+                until: 5
+            }
+        }
         ExtraIncludes{
             Include{
                 fileName: "QtJambi/QmlAPI"
@@ -1105,6 +1506,7 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
         }
         ModifyFunction{
             signature: "loadData(const QByteArray &, const QUrl &)"
+            threadAffinity: true
             ModifyArgument{
                 index: 1
                 AddImplicitCall{type: "java.lang.@NonNull String"}
@@ -1597,10 +1999,21 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
             ReplaceType{
                 modifiedType: "io.qt.qml.QtQml$@NonNull QQmlAttachedPropertiesFunc"
             }
+            ReferenceCount{
+                action: ReferenceCount.Ignore
+            }
             ConversionRule{
                 codeClass: CodeClass.Native
                 Text{content: "QQmlAttachedPropertiesFunc %out = qtjambi_cast<QtQml::QQmlAttachedPropertiesFunc>(%env, %in);"}
             }
+        }
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.End
+            ArgumentMap{index: 0; metaName: "%0"}
+            ArgumentMap{index: 1; metaName: "%1"}
+            ArgumentMap{index: 2; metaName: "%2"}
+            Text{content: "if(%0!=null)\n    QtJambi_LibraryUtilities.internal.registerDependentObject(%2, %1);"}
         }
     }
     

@@ -114,6 +114,7 @@ class TypeEntry {
             QVariantType,
             SmartPointerType,
             InitializerListType,
+            QSpanType,
             JObjectWrapperType,
             QAndroidJniObjectType,
             JMapWrapperType,
@@ -275,6 +276,9 @@ class TypeEntry {
         }
         bool isInitializerList() const {
             return m_type == InitializerListType;
+        }
+        bool isQSpan() const {
+            return m_type == QSpanType;
         }
         bool isBasicValue() const {
             return m_type == BasicValueType;
@@ -853,6 +857,8 @@ class FunctionalTypeEntry : public TypeEntry {
         void setGenericClass(bool isGeneric) {
             m_generic_class = isGeneric;
         }
+        bool isFunctionPointer() const { return m_isFunctionPointer; }
+        void setFunctionPointer(bool isFunctionPointer) { m_isFunctionPointer = isFunctionPointer; }
     private:
         QString m_implements;
         QString m_package_name;
@@ -872,6 +878,7 @@ class FunctionalTypeEntry : public TypeEntry {
         CodeSnipList m_code_snips;
         QString m_functionName;
         uint m_generic_class : 1;
+        uint m_isFunctionPointer : 1;
 };
 
 class EnumTypeEntry : public TypeEntry {
@@ -1876,6 +1883,25 @@ class InitializerListTypeEntry: public ValueTypeEntry {
     private:
 };
 
+class QSpanTypeEntry: public ValueTypeEntry {
+public:
+    QSpanTypeEntry(const QString& name = QLatin1String("QSpan")) : ValueTypeEntry(name, QSpanType) {}
+
+    QString jniName() const override {
+        return strings_jobject;
+    }
+    QString targetLangName() const override {
+        return "QSpan";
+    }
+    QString javaPackage() const override {
+        return "io.qt.core";
+    }
+
+    bool isNativeIdBased() const override {
+        return true;
+    }
+private:
+};
 
 class ContainerTypeEntry : public ComplexTypeEntry {
     public:
@@ -1895,10 +1921,6 @@ class ContainerTypeEntry : public ComplexTypeEntry {
             MultiHashContainer,
             PairContainer,
             QDBusReplyContainer,
-            /*
-              For QDeclarative and QQml module.
-              This entry is to support the QDeclarativeListProperty / QQmlListProperty
-             */
             QQmlListPropertyContainer,
             QArrayDataContainer,
             QTypedArrayDataContainer,

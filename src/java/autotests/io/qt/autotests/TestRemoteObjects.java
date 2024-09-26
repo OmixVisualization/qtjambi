@@ -113,7 +113,7 @@ public class TestRemoteObjects extends UnitTestInitializer {
 		try {
 			if(pongThread!=null) {
 				pongThread.interrupt();
-				pongThread.join();
+				pongThread.join(2000);
 				pongThread.dispose();
 				pongThread = null;
 			}

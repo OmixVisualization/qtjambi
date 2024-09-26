@@ -136,6 +136,7 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaFunctional *java_class,
         }
     }
 #endif
+    const FunctionalTypeEntry *ftype = reinterpret_cast<const FunctionalTypeEntry *>(java_class->typeEntry());
     QString include_block = java_class->name().replace(u'$', u'_').toUpper() + "_SHELL_H";
     s << "#ifndef " << include_block << Qt::endl
       << "#define " << include_block << Qt::endl << Qt::endl;
@@ -173,7 +174,7 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaFunctional *java_class,
     writeInclude(s, java_class->typeEntry()->include(), included);
     writeInclude(s, Include(Include::IncludePath, QStringLiteral(u"QtJambi/QtJambiAPI")), included);
     writeInclude(s, Include(Include::IncludePath, QStringLiteral(u"QtJambi/FunctionalBase")), included);
-    if(java_class->isFunctionPointer() && !java_class->typeEntry()->getUsing().isEmpty()){
+    if(ftype->isFunctionPointer() && !java_class->typeEntry()->getUsing().isEmpty()){
         writeInclude(s, Include(Include::IncludePath, QStringLiteral(u"QtJambi/FunctionPointer")), included);
     }
     IncludeList list = java_class->typeEntry()->extraIncludes();
@@ -198,6 +199,7 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaFunctional *java_class,
       << "    " << shellClassName(java_class) << "();" << Qt::endl
       << "    ~" << shellClassName(java_class) << "() override;" << Qt::endl
       << "    void getFunctional(JNIEnv*, void*) override;" << Qt::endl
+      << "    bool isFunctionPointer() override;" << Qt::endl
       << "    static void operator delete(void * ptr) noexcept;" << Qt::endl << Qt::endl
       << "    class Functor final : private FunctorBase{" << Qt::endl
       << "    public:" << Qt::endl
@@ -227,7 +229,7 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaFunctional *java_class,
       << "private:" << Qt::endl
       << "    QtJambiShell* __shell() const override final;" << Qt::endl
       << "    friend class " << shellClassName(java_class) << "::Functor;" << Qt::endl;
-    if(java_class->isFunctionPointer()){
+    if(ftype->isFunctionPointer()){
         s << "    std::function<void()> m_functionPointerDeleter;" << Qt::endl
           << "    static std::function<const Functor*(" << java_class->typeEntry()->qualifiedCppName() << ")> reverseFunctionGetter;" << Qt::endl;
     }
@@ -753,7 +755,7 @@ void CppHeaderGenerator::writeFunctionOverride(QTextStream &s,
         s << Qt::endl << "#if " << pps.join(" && ") << Qt::endl;
     }
     s << "    ";
-    writeFunctionSignature(s, java_function, nullptr, prefix, Option(EnumAsInts | JNIProxyFunction | ShowStatic | UseNativeIds | UnderscoreSpaces | SkipRemovedArguments));
+    writeFunctionSignature(s, java_function, nullptr, prefix, Option((java_function->isFinal() ? NoOption : VirtualCall) | EnumAsInts | JNIProxyFunction | ShowStatic | UseNativeIds | UnderscoreSpaces | SkipRemovedArguments));
     s << ";" << Qt::endl;
     if(!pps.isEmpty()){
         s << "#endif //" << pps.join(" && ") << Qt::endl << Qt::endl;

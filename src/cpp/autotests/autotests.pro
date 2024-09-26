@@ -61,7 +61,7 @@ SOURCES += \
     tulip.cpp \
     variants.cpp \
     debugtools.cpp
-win32-msvc*: {
+win32-arm64-msvc* | win32-msvc*: {
     PRECOMPILED_HEADER = global.h
     CONFIG += precompile_header
     QMAKE_CXXFLAGS += /bigobj
@@ -78,3 +78,5 @@ CONFIG += warn_on
 
 RESOURCES += \
     resources.qrc
+
+OTHER_FILES += autotests.qml

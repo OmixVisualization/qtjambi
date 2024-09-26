@@ -37,58 +37,64 @@
 #include <QtCore/QQueue>
 #include "containeraccess.h"
 
+#if defined(QTJAMBI_GENERIC_ACCESS)
+
 namespace ContainerAccessAPI {
 
 template<size_t _align, size_t _size>
-class GenericVectorAccess : public AbstractVectorAccess{
+class GenericVectorAccess : public AbstractVectorAccess, public AbstractNestedSequentialAccess {
     typedef typename std::conditional<_size==0, void*, ContainerElement<_size, 0, false, _align>>::type T;
     MetaTypeInfo<0,_size==0> m_elementMetaTypeInfo;
     QtJambiUtils::InternalToExternalConverter m_internalToExternalConverter;
     QtJambiUtils::ExternalToInternalConverter m_externalToInternalConverter;
+    QSharedPointer<AbstractContainerAccess> m_elementNestedContainerAccess;
+    AbstractContainerAccess::DataType m_elementDataType;
+    PtrOwnerFunction m_elementOwnerFunction;
     GenericVectorAccess(
             const QMetaType& metaType,
             const QtJambiUtils::QHashFunction& hashFunction,
             const QtJambiUtils::InternalToExternalConverter& internalToExternalConverter,
-            const QtJambiUtils::ExternalToInternalConverter& externalToInternalConverter
+            const QtJambiUtils::ExternalToInternalConverter& externalToInternalConverter,
+            const QSharedPointer<AbstractContainerAccess>& elementNestedContainerAccess,
+            PtrOwnerFunction elementOwnerFunction
             )
-        :   AbstractVectorAccess(),
+        :   AbstractVectorAccess(), AbstractNestedSequentialAccess(),
           m_elementMetaTypeInfo(metaType, hashFunction),
           m_internalToExternalConverter(internalToExternalConverter),
-          m_externalToInternalConverter(externalToInternalConverter)
+          m_externalToInternalConverter(externalToInternalConverter),
+          m_elementNestedContainerAccess(elementNestedContainerAccess),
+          m_elementDataType(dataType(m_elementMetaTypeInfo.metaType(), m_elementNestedContainerAccess)),
+          m_elementOwnerFunction(elementOwnerFunction)
     {
     }
 
     GenericVectorAccess(const GenericVectorAccess<_align, _size>& other)
-        :   AbstractVectorAccess(),
+        :   AbstractVectorAccess(), AbstractNestedSequentialAccess(),
           m_elementMetaTypeInfo(other.m_elementMetaTypeInfo),
           m_internalToExternalConverter(other.m_internalToExternalConverter),
-          m_externalToInternalConverter(other.m_externalToInternalConverter)
+          m_externalToInternalConverter(other.m_externalToInternalConverter),
+          m_elementNestedContainerAccess(other.m_elementNestedContainerAccess),
+          m_elementDataType(other.m_elementDataType),
+          m_elementOwnerFunction(other.m_elementOwnerFunction)
     {
     }
 
 public:
     static AbstractVectorAccess* newInstance(const QMetaType& metaType,
-                                           const QtJambiUtils::QHashFunction& hashFunction,
-                                           const QtJambiUtils::InternalToExternalConverter& internalToExternalConverter,
-                                           const QtJambiUtils::ExternalToInternalConverter& externalToInternalConverter){
+                                             const QtJambiUtils::QHashFunction& hashFunction,
+                                             const QtJambiUtils::InternalToExternalConverter& internalToExternalConverter,
+                                             const QtJambiUtils::ExternalToInternalConverter& externalToInternalConverter,
+                                             const QSharedPointer<AbstractContainerAccess>& elementNestedContainerAccess,
+                                             PtrOwnerFunction elementOwnerFunction){
         return new GenericVectorAccess(metaType,
-                                      hashFunction,
-                                      internalToExternalConverter,
-                                      externalToInternalConverter);
+                                       hashFunction,
+                                       internalToExternalConverter,
+                                       externalToInternalConverter,
+                                       elementNestedContainerAccess,
+                                       elementOwnerFunction);
     }
 
     void dispose() override { delete this; }
-
-    void analyzeElements(const void* container, ElementAnalyzer analyzer, void* data) override {
-        for(auto iter = reinterpret_cast<const QVector<T>*>(container)->begin();
-            iter != reinterpret_cast<const QVector<T>*>(container)->end();
-            ++iter
-            ){
-            if(!analyzer(QtJambiPrivate::pointer_from<decltype(*iter)>::from(*iter), data)){
-                break;
-            }
-        }
-    }
 
     GenericVectorAccess<_align, _size>* clone() override{
         return new GenericVectorAccess<_align, _size>(*this);
@@ -97,87 +103,116 @@ public:
     size_t sizeOf() override {
         return sizeof(QVector<T>);
     }
-    void assign(void* container, const void* other) override {
-
-        QTJAMBI_ELEMENT_LOCKER
-        (*reinterpret_cast<QVector<T>*>(container)) = (*reinterpret_cast<const QVector<T>*>(other));
-
+    void assign(JNIEnv *, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override {
+        QTJAMBI_ELEMENT_LOCKER(this);
+        (*reinterpret_cast<QVector<T>*>(container.container)) = (*reinterpret_cast<const QVector<T>*>(other.container));
     }
-    void* constructContainer(void* placement, const void* copyOf = nullptr) override {
-        QTJAMBI_ELEMENT_LOCKER
-        if(copyOf){
-            return new(placement) QVector<T>(*reinterpret_cast<const QVector<T>*>(copyOf));
-        }else{
-            return new(placement) QVector<T>();
-        }
+    void assign(void* container, const void* other) override {
+        QTJAMBI_ELEMENT_LOCKER(this);
+            (*reinterpret_cast<QVector<T>*>(container)) = (*reinterpret_cast<const QVector<T>*>(other));
+    }
+    void* constructContainer(void* placement) override {
+        QTJAMBI_ELEMENT_LOCKER(this);
+        return new(placement) QVector<T>();
+    }
+    void* constructContainer(void* placement, const void* copyOf) override {
+        QTJAMBI_ELEMENT_LOCKER(this);
+        return new(placement) QVector<T>(*reinterpret_cast<const QVector<T>*>(copyOf));
+    }
+    void* constructContainer(JNIEnv *, void* placement, const ConstContainerAndAccessInfo& copyOf) override {
+        return constructContainer(placement, copyOf.container);
     }
     bool destructContainer(void* container) override {
-        QTJAMBI_ELEMENT_LOCKER
+        QTJAMBI_ELEMENT_LOCKER(this);
         reinterpret_cast<QVector<T>*>(container)->~QVector<T>();
         return true;
     }
     int registerContainer(const QByteArray& containerTypeName) override {
-        return QtJambiPrivate::registerSequentialContainerType<QVector<T>, _size>(containerTypeName, m_elementMetaTypeInfo.metaType());
+        return QtJambiPrivate::registerSequentialContainerType<QVector<T>, _size>(containerTypeName, m_elementMetaTypeInfo.metaType(), this);
     }
-    bool isConstant() override {return false;}
     const QMetaType& elementMetaType() override {return m_elementMetaTypeInfo.metaType();}
 
-    jobject end(JNIEnv * env, QtJambiNativeID ownerId, void* container) override {
+    DataType elementType() override {
+        return dataType(m_elementMetaTypeInfo.metaType(), m_elementNestedContainerAccess);
+    }
+
+    AbstractContainerAccess* elementNestedContainerAccess() override {
+        return m_elementNestedContainerAccess ? m_elementNestedContainerAccess->clone() : nullptr;
+    }
+    const QSharedPointer<AbstractContainerAccess>& sharedElementNestedContainerAccess() override {
+        return m_elementNestedContainerAccess;
+    }
+    bool hasNestedContainerAccess() override {
+        return !m_elementNestedContainerAccess.isNull();
+    }
+    bool hasNestedPointers() override {
+        if(hasNestedContainerAccess()){
+            if(auto daccess = dynamic_cast<AbstractSequentialAccess*>(m_elementNestedContainerAccess.data())){
+                return (daccess->elementType() & PointersMask) || daccess->hasNestedPointers();
+            }else if(auto daccess = dynamic_cast<AbstractAssociativeAccess*>(m_elementNestedContainerAccess.data())){
+                return (daccess->keyType() & PointersMask) || daccess->hasKeyNestedPointers() || (daccess->valueType() & PointersMask) || daccess->hasValueNestedPointers();
+            }else if(auto daccess = dynamic_cast<AbstractPairAccess*>(m_elementNestedContainerAccess.data())){
+                return (daccess->firstType() & PointersMask) || daccess->hasFirstNestedPointers() || (daccess->secondType() & PointersMask) || daccess->hasSecondNestedPointers();
+            }
+        }
+        return false;
+    }
+
+    jobject end(JNIEnv * env, const ExtendedContainerInfo& container) override {
         SequentialConstIteratorAccess<QVector, _align, _size, false, false>* access = new SequentialIteratorAccess<QVector, _align, _size, false>(
                     m_elementMetaTypeInfo, m_internalToExternalConverter, m_externalToInternalConverter);
         return QtJambiAPI::convertQSequentialIteratorToJavaObject(env,
-                                      ownerId,
-                                      new typename QVector<T>::iterator(reinterpret_cast<QVector<T> *>(container)->end()),
+                                      container.nativeId,
+                                      new typename QVector<T>::iterator(reinterpret_cast<QVector<T> *>(container.container)->end()),
                                       [](void* ptr,bool){ delete reinterpret_cast<typename QVector<T>::iterator*>(ptr); },
                                       access);
     }
 
-    jobject begin(JNIEnv * env, QtJambiNativeID ownerId, void* container) override {
+    jobject begin(JNIEnv * env, const ExtendedContainerInfo& container) override {
         SequentialConstIteratorAccess<QVector, _align, _size, false, false>* access = new SequentialIteratorAccess<QVector, _align, _size, false>(
                     m_elementMetaTypeInfo, m_internalToExternalConverter, m_externalToInternalConverter);
         return QtJambiAPI::convertQSequentialIteratorToJavaObject(env,
-                                      ownerId,
-                                      new typename QVector<T>::iterator(reinterpret_cast<QVector<T> *>(container)->begin()),
+                                      container.nativeId,
+                                      new typename QVector<T>::iterator(reinterpret_cast<QVector<T> *>(container.container)->begin()),
                                       [](void* ptr,bool){ delete reinterpret_cast<typename QVector<T>::iterator*>(ptr); },
                                       access);
     }
 
-    jobject constEnd(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override {
+    jobject constEnd(JNIEnv * env, const ConstExtendedContainerInfo& container) override {
         AbstractSequentialConstIteratorAccess* access = new SequentialConstIteratorAccess<QVector, _align, _size, false>(
                     m_elementMetaTypeInfo, m_internalToExternalConverter);
         return QtJambiAPI::convertQSequentialIteratorToJavaObject(env,
-                                      ownerId,
-                                      new typename QVector<T>::const_iterator(reinterpret_cast<const QVector<T> *>(container)->constEnd()),
+                                      container.nativeId,
+                                      new typename QVector<T>::const_iterator(reinterpret_cast<const QVector<T> *>(container.container)->constEnd()),
                                       [](void* ptr,bool){ delete reinterpret_cast<typename QVector<T>::const_iterator*>(ptr); },
                                       access);
     }
 
-    jobject constBegin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override {
+    jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) override {
         AbstractSequentialConstIteratorAccess* access = new SequentialConstIteratorAccess<QVector, _align, _size, false>(
                     m_elementMetaTypeInfo, m_internalToExternalConverter);
         return QtJambiAPI::convertQSequentialIteratorToJavaObject(env,
-                                      ownerId,
-                                      new typename QVector<T>::const_iterator(reinterpret_cast<const QVector<T> *>(container)->constBegin()),
+                                      container.nativeId,
+                                      new typename QVector<T>::const_iterator(reinterpret_cast<const QVector<T> *>(container.container)->constBegin()),
                                       [](void* ptr,bool){ delete reinterpret_cast<typename QVector<T>::const_iterator*>(ptr); },
                                       access);
     }
 
-    void appendVector(JNIEnv * env, void* container, jobject list) override {
-        void* ptr{nullptr};
-        if (ContainerAPI::getAsQVector(env, list, elementMetaType(), ptr)) {
-            QTJAMBI_ELEMENT_LOCKER
-            reinterpret_cast<QVector<T> *>(container)->append(*reinterpret_cast<QVector<T> *>(ptr));
+    void appendVector(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& containerInfo) override {
+        if (ContainerAPI::getAsQVector(env, containerInfo.object, elementMetaType(), containerInfo.container, containerInfo.access)) {
+            QTJAMBI_ELEMENT_LOCKER(this);
+            reinterpret_cast<QVector<T> *>(container.container)->append(*reinterpret_cast<QVector<T> *>(containerInfo.container));
         }else{
-            jobject iter = QtJambiAPI::iteratorOfJavaCollection(env, list);
+            jobject iter = QtJambiAPI::iteratorOfJavaIterable(env, containerInfo.object);
             while(QtJambiAPI::hasJavaIteratorNext(env, iter)){
-                insert(env, container, size(env, container), 1, QtJambiAPI::nextOfJavaIterator(env, iter));
+                insert(env, container, size(env, container.container), 1, QtJambiAPI::nextOfJavaIterator(env, iter));
             }
         }
     }
 
     jobject at(JNIEnv * env, const void* container, jint index) override {
 
-        QTJAMBI_ELEMENT_LOCKER
+        QTJAMBI_ELEMENT_LOCKER(this);
         const T& result = reinterpret_cast<const QVector<T> *>(container)->at(index);
 
         jvalue _value;
@@ -193,7 +228,7 @@ public:
         _result.l = nullptr;
         bool success = false;
 
-        QTJAMBI_ELEMENT_LOCKER
+        QTJAMBI_ELEMENT_LOCKER(this);
         {
             T qresult = reinterpret_cast<const QVector<T> *>(container)->value(index);
             success = m_internalToExternalConverter(env, nullptr, &qresult, _result, true);
@@ -210,7 +245,7 @@ public:
         _result.l = nullptr;
         bool success = false;
 
-        QTJAMBI_ELEMENT_LOCKER
+        QTJAMBI_ELEMENT_LOCKER(this);
         {
             T _qdefaultValue;
             void *_qdefaultValuePtr = &_qdefaultValue;
@@ -228,10 +263,10 @@ public:
         return nullptr;
     }
 
-    void swapItemsAt(JNIEnv *, void* container, jint index1, jint index2) override {
+    void swapItemsAt(JNIEnv *, const ContainerInfo& container, jint index1, jint index2) override {
 
-        QTJAMBI_ELEMENT_LOCKER
-        reinterpret_cast<QVector<T> *>(container)->swapItemsAt(index1, index2);
+        QTJAMBI_ELEMENT_LOCKER(this);
+        reinterpret_cast<QVector<T> *>(container.container)->swapItemsAt(index1, index2);
 
     }
 
@@ -240,7 +275,7 @@ public:
         _value.l = value;
         bool result = false;
 
-        QTJAMBI_ELEMENT_LOCKER
+        QTJAMBI_ELEMENT_LOCKER(this);
         {
             T _qvalue;
             void *_qvaluePtr = &_qvalue;
@@ -253,44 +288,44 @@ public:
 
     jint size(JNIEnv *, const void* container) override {
 
-        QTJAMBI_ELEMENT_LOCKER
+        QTJAMBI_ELEMENT_LOCKER(this);
         jint result = reinterpret_cast<const QVector<T> *>(container)->size();
 
         return result;
     }
 
-    void reserve(JNIEnv *, void* container, jint size) override {
+    void reserve(JNIEnv *, const ContainerInfo& container, jint size) override {
 
-        QTJAMBI_ELEMENT_LOCKER
-        reinterpret_cast<QVector<T> *>(container)->reserve(size);
+        QTJAMBI_ELEMENT_LOCKER(this);
+        reinterpret_cast<QVector<T> *>(container.container)->reserve(size);
 
     }
 
-    void replace(JNIEnv * env, void* container, jint index, jobject value) override {
+    void replace(JNIEnv * env, const ContainerInfo& container, jint index, jobject value) override {
         jvalue _value;
         _value.l = value;
 
-        QTJAMBI_ELEMENT_LOCKER
+        QTJAMBI_ELEMENT_LOCKER(this);
         {
             T _qvalue;
             void *_qvaluePtr = &_qvalue;
             if(m_externalToInternalConverter(env, nullptr, _value, _qvaluePtr, jValueType::l))
-                reinterpret_cast<QVector<T> *>(container)->replace(index, _qvalue);
+                reinterpret_cast<QVector<T> *>(container.container)->replace(index, _qvalue);
         }
 
     }
 
-    jint removeAll(JNIEnv * env, void* container, jobject value) override {
+    jint removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) override {
         jvalue _value;
         _value.l = value;
         jint count = 0;
 
-        QTJAMBI_ELEMENT_LOCKER
+        QTJAMBI_ELEMENT_LOCKER(this);
         {
             T _qvalue;
             void *_qvaluePtr = &_qvalue;
             if(m_externalToInternalConverter(env, nullptr, _value, _qvaluePtr, jValueType::l))
-                count = reinterpret_cast<QVector<T> *>(container)->removeAll(_qvalue);
+                count = reinterpret_cast<QVector<T> *>(container.container)->removeAll(_qvalue);
         }
 
         return count;
@@ -299,12 +334,12 @@ public:
     jboolean equal(JNIEnv * env, const void* container, jobject other) override {
         void* ptr{nullptr};
         if (ContainerAPI::getAsQVector(env, other, elementMetaType(), ptr)) {
-            QTJAMBI_ELEMENT_LOCKER
+            QTJAMBI_ELEMENT_LOCKER(this);
                 return *reinterpret_cast<const QVector<T> *>(container)==*reinterpret_cast<const QVector<T> *>(ptr);
         }else{
-            QTJAMBI_ELEMENT_LOCKER
+            QTJAMBI_ELEMENT_LOCKER(this);
             QVector<T> list;
-            jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, other);
+            jobject iterator = QtJambiAPI::iteratorOfJavaIterable(env, other);
             while(QtJambiAPI::hasJavaIteratorNext(env, iterator)){
                 jvalue _value;
                 _value.l = QtJambiAPI::nextOfJavaIterator(env, iterator);
@@ -318,20 +353,20 @@ public:
         return false;
     }
 
-    void move(JNIEnv *, void* container, jint index1, jint index2) override {
+    void move(JNIEnv *, const ContainerInfo& container, jint index1, jint index2) override {
 
-        QTJAMBI_ELEMENT_LOCKER
-        reinterpret_cast<QVector<T> *>(container)->move(index1, index2);
+        QTJAMBI_ELEMENT_LOCKER(this);
+        reinterpret_cast<QVector<T> *>(container.container)->move(index1, index2);
 
     }
 
-    jobject mid(JNIEnv * env, const void* container, jint index1, jint index2) override {
-
-        QTJAMBI_ELEMENT_LOCKER
-        jobject result = nullptr;
+    ContainerAndAccessInfo mid(JNIEnv * env, const ConstContainerAndAccessInfo& container, jint index1, jint index2) override {
+        QTJAMBI_ELEMENT_LOCKER(this);
+        ContainerAndAccessInfo result;
         {
-            const void* mid = new QVector<T>(reinterpret_cast<const QVector<T> *>(container)->mid(index1, index2));
-            result = objectFromQVector(env, mid, clone());
+            result.container = new QVector<T>(reinterpret_cast<const QVector<T> *>(container.container)->mid(index1, index2));
+            result.access = clone();
+            result.object = ContainerAPI::objectFromQVector(env, result.container, result.access);
         }
 
         return result;
@@ -340,7 +375,7 @@ public:
     jint lastIndexOf(JNIEnv * env, const void* container, jobject value, jint index) override {
         int idx = -1;
 
-        QTJAMBI_ELEMENT_LOCKER
+        QTJAMBI_ELEMENT_LOCKER(this);
         {
             T _qvalue;
             void *_qvaluePtr = &_qvalue;
@@ -356,7 +391,7 @@ public:
     jint indexOf(JNIEnv * env, const void* container, jobject value, jint index) override {
         int idx = -1;
 
-        QTJAMBI_ELEMENT_LOCKER
+        QTJAMBI_ELEMENT_LOCKER(this);
         {
             T _qvalue;
             void *_qvaluePtr = &_qvalue;
@@ -374,7 +409,7 @@ public:
         _value.l = value;
         bool result = false;
 
-        QTJAMBI_ELEMENT_LOCKER
+        QTJAMBI_ELEMENT_LOCKER(this);
         {
             T _qvalue;
             void *_qvaluePtr = &_qvalue;
@@ -390,7 +425,7 @@ public:
         _value.l = value;
         int result = 0;
 
-        QTJAMBI_ELEMENT_LOCKER
+        QTJAMBI_ELEMENT_LOCKER(this);
         {
             T _qvalue;
             void *_qvaluePtr = &_qvalue;
@@ -406,7 +441,7 @@ public:
         _value.l = value;
         bool result = false;
 
-        QTJAMBI_ELEMENT_LOCKER
+        QTJAMBI_ELEMENT_LOCKER(this);
         {
             T _qvalue;
             void *_qvaluePtr = &_qvalue;
@@ -417,67 +452,119 @@ public:
         return result;
     }
 
-    void clear(JNIEnv *, void* container) override {
+    void clear(JNIEnv *, const ContainerInfo& container) override {
 
-        QTJAMBI_ELEMENT_LOCKER
-        reinterpret_cast<QVector<T> *>(container)->clear();
+        QTJAMBI_ELEMENT_LOCKER(this);
+        reinterpret_cast<QVector<T> *>(container.container)->clear();
 
     }
 
     jint capacity(JNIEnv *, const void* container) override {
 
-        QTJAMBI_ELEMENT_LOCKER
+        QTJAMBI_ELEMENT_LOCKER(this);
         return reinterpret_cast<const QVector<T> *>(container)->capacity();
 
     }
 
-    void fill(JNIEnv * env, void* container, jobject value, jint size) override {
+    void fill(JNIEnv * env, const ContainerInfo& container, jobject value, jint size) override {
         jvalue _value;
         _value.l = value;
 
-        QTJAMBI_ELEMENT_LOCKER
+        QTJAMBI_ELEMENT_LOCKER(this);
         {
             T _qvalue;
             void *_qvaluePtr = &_qvalue;
             if(m_externalToInternalConverter(env, nullptr, _value, _qvaluePtr, jValueType::l))
-                reinterpret_cast<QVector<T> *>(container)->fill(_qvalue, size);
+                reinterpret_cast<QVector<T> *>(container.container)->fill(_qvalue, size);
         }
 
     }
 
-    void remove(JNIEnv *, void* container, jint index, jint n) override {
+    void remove(JNIEnv *, const ContainerInfo& container, jint index, jint n) override {
 
-        QTJAMBI_ELEMENT_LOCKER
-        reinterpret_cast<QVector<T> *>(container)->remove(index, n);
+        QTJAMBI_ELEMENT_LOCKER(this);
+        reinterpret_cast<QVector<T> *>(container.container)->remove(index, n);
 
     }
 
-    void insert(JNIEnv * env, void* container, jint index, jint n, jobject value) override {
+    void insert(JNIEnv * env, const ContainerInfo& container, jint index, jint n, jobject value) override {
         jvalue _value;
         _value.l = value;
 
-        QTJAMBI_ELEMENT_LOCKER
+        QTJAMBI_ELEMENT_LOCKER(this);
         {
             T _qvalue;
             void *_qvaluePtr = &_qvalue;
             if(m_externalToInternalConverter(env, nullptr, _value, _qvaluePtr, jValueType::l))
-                reinterpret_cast<QVector<T> *>(container)->insert(index, n, _qvalue);
+                reinterpret_cast<QVector<T> *>(container.container)->insert(index, n, _qvalue);
         }
 
     }
 
-    void resize(JNIEnv *, void* container, jint newSize) override {
+    void resize(JNIEnv *, const ContainerInfo& container, jint newSize) override {
 
-        QTJAMBI_ELEMENT_LOCKER
-        reinterpret_cast<QVector<T> *>(container)->resize(newSize);
+        QTJAMBI_ELEMENT_LOCKER(this);
+        reinterpret_cast<QVector<T> *>(container.container)->resize(newSize);
 
     }
 
-    void squeeze(JNIEnv *, void* container) override {
+    void squeeze(JNIEnv *, const ContainerInfo& container) override {
 
-        QTJAMBI_ELEMENT_LOCKER
-        reinterpret_cast<QVector<T> *>(container)->squeeze();
+        QTJAMBI_ELEMENT_LOCKER(this);
+        reinterpret_cast<QVector<T> *>(container.container)->squeeze();
 
+    }
+
+    bool isDetached(const void* container) override {
+        QTJAMBI_ELEMENT_LOCKER(this);
+        return reinterpret_cast<const QVector<T> *>(container)->isDetached();
+    }
+
+    void detach(const ContainerInfo& container) override {
+        QTJAMBI_ELEMENT_LOCKER(this);
+        reinterpret_cast<QVector<T> *>(container.container)->detach();
+    }
+
+    bool isSharedWith(const void* container, const void* container2) override {
+        QTJAMBI_ELEMENT_LOCKER(this);
+        return reinterpret_cast<const QVector<T> *>(container)->isSharedWith(*reinterpret_cast<const QVector<T> *>(container2));
+    }
+
+    void swap(JNIEnv *, const ContainerInfo& container, const ContainerAndAccessInfo& container2) override {
+        QTJAMBI_ELEMENT_LOCKER(this);
+        reinterpret_cast<QVector<T> *>(container.container)->swap(*reinterpret_cast<QVector<T> *>(container2.container));
+    }
+
+    class ElementIterator : public AbstractVectorAccess::ElementIterator{
+    public:
+        GenericVectorAccess* access;
+        typename QVector<T>::ConstIterator current;
+        typename QVector<T>::ConstIterator end;
+        ElementIterator(GenericVectorAccess* _access, const void* container)
+            : access(_access){
+            QTJAMBI_ELEMENT_LOCKER(access);
+            current = reinterpret_cast<const QVector<T>*>(container)->constBegin();
+            end = reinterpret_cast<const QVector<T>*>(container)->constEnd();
+        }
+        ~ElementIterator() override {};
+        bool hasNext() override {return current!=end;};
+        jobject next(JNIEnv * env) override {
+            QTJAMBI_ELEMENT_LOCKER(access);
+            jvalue v;
+            v.l = nullptr;
+            access->m_internalToExternalConverter(env, nullptr, &*current, v, true);
+            ++current;
+            return v.l;
+        }
+        const void* next() override {
+            QTJAMBI_ELEMENT_LOCKER(access);
+            const void* pointer = QtJambiPrivate::ContainerContentDeref<T, _size==0>::deref(*current);
+            ++current;
+            return pointer;
+        }
+    };
+    std::unique_ptr<AbstractVectorAccess::ElementIterator> elementIterator(const void* container) override {
+        return std::unique_ptr<AbstractVectorAccess::ElementIterator>(new ElementIterator(this, container));
     }
 };
 
@@ -495,4 +582,7 @@ struct SequentialContainerAccessFac<QStack,align,size,isStatic> : SequentialCont
 }
 
 #endif
+
+#endif //defined(QTJAMBI_GENERIC_ACCESS)
+
 #endif // CONTAINERACCESS_VECTOR_H

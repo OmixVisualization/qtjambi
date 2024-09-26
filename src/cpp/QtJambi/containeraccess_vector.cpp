@@ -30,13 +30,14 @@
 ****************************************************************************/
 
 #include "qtjambiapi.h"
-#include <QtCore/QReadWriteLock>
 #include <QtCore/QMap>
 #include <QtCore/QSharedPointer>
 #include "containeraccess_p.h"
 #include "functionpointer.h"
 #include "registryutil_p.h"
 #include "utils_p.h"
+#include "qtjambilink_p.h"
+#include "java_p.h"
 #include "coreapi.h"
 
 AutoVectorAccess::AutoVectorAccess(
@@ -44,14 +45,18 @@ AutoVectorAccess::AutoVectorAccess(
         size_t elementAlign,
         const QtJambiUtils::QHashFunction& hashFunction,
         const QtJambiUtils::InternalToExternalConverter& internalToExternalConverter,
-        const QtJambiUtils::ExternalToInternalConverter& externalToInternalConverter
+        const QtJambiUtils::ExternalToInternalConverter& externalToInternalConverter,
+        const QSharedPointer<AbstractContainerAccess>& elementNestedContainerAccess,
+        PtrOwnerFunction elementOwnerFunction,
+        AbstractContainerAccess::DataType elementDataType
         )
-    : AbstractVectorAccess(),
+    : AbstractVectorAccess(), AbstractNestedSequentialAccess(),
       m_elementMetaType(elementMetaType),
       m_elementAlign(elementAlign),
       m_hashFunction(hashFunction),
       m_internalToExternalConverter(internalToExternalConverter),
       m_externalToInternalConverter(externalToInternalConverter),
+      m_elementNestedContainerAccess(elementNestedContainerAccess),
       m_offset(0),
       m_isComplex(!AbstractContainerAccess::isPointerType(m_elementMetaType)
                   &&  (m_elementMetaType.id()!=QMetaType::Int)
@@ -69,7 +74,9 @@ AutoVectorAccess::AutoVectorAccess(
                   &&  (m_elementMetaType.id()!=QMetaType::Float)
                   &&  (m_elementMetaType.id()!=QMetaType::Short)
                   &&  (m_elementMetaType.id()!=QMetaType::UShort)
-                  && !(m_elementMetaType.flags() & QMetaType::IsEnumeration))
+                  && !(m_elementMetaType.flags() & QMetaType::IsEnumeration)),
+      m_elementOwnerFunction(elementOwnerFunction),
+      m_elementDataType(elementDataType)
 {
     Q_ASSERT(m_elementMetaType.id()!=QMetaType::UnknownType
             && m_elementMetaType.id()!=QMetaType::Void);
@@ -79,14 +86,17 @@ AutoVectorAccess::AutoVectorAccess(
 }
 
 AutoVectorAccess::AutoVectorAccess(const AutoVectorAccess& other)
-  : AbstractVectorAccess(),
+  : AbstractVectorAccess(), AbstractNestedSequentialAccess(),
     m_elementMetaType(other.m_elementMetaType.id()),
     m_elementAlign(other.m_elementAlign),
     m_hashFunction(other.m_hashFunction),
     m_internalToExternalConverter(other.m_internalToExternalConverter),
     m_externalToInternalConverter(other.m_externalToInternalConverter),
+    m_elementNestedContainerAccess(other.m_elementNestedContainerAccess),
     m_offset(other.m_offset),
-    m_isComplex(other.m_isComplex)
+    m_isComplex(other.m_isComplex),
+    m_elementOwnerFunction(other.m_elementOwnerFunction),
+    m_elementDataType(other.m_elementDataType)
 {
 }
 
@@ -97,17 +107,60 @@ const QMetaType& AutoVectorAccess::elementMetaType()
     return m_elementMetaType;
 }
 
-void AutoVectorAccess::dispose(){
-    delete this;
+AbstractContainerAccess::DataType AutoVectorAccess::elementType() {return m_elementDataType;}
+
+AbstractContainerAccess* AutoVectorAccess::elementNestedContainerAccess() {
+    return m_elementNestedContainerAccess ? m_elementNestedContainerAccess->clone() : nullptr;
+}
+const QSharedPointer<AbstractContainerAccess>& AutoVectorAccess::sharedElementNestedContainerAccess(){
+    return m_elementNestedContainerAccess;
+}
+bool AutoVectorAccess::hasNestedContainerAccess(){
+    return !m_elementNestedContainerAccess.isNull();
+}
+bool AutoVectorAccess::hasNestedPointers(){
+    if(hasNestedContainerAccess()){
+        if(auto daccess = dynamic_cast<AbstractSequentialAccess*>(m_elementNestedContainerAccess.data())){
+            return (daccess->elementType() & PointersMask) || daccess->hasNestedPointers();
+        }else if(auto daccess = dynamic_cast<AbstractAssociativeAccess*>(m_elementNestedContainerAccess.data())){
+            return (daccess->keyType() & PointersMask) || daccess->hasKeyNestedPointers() || (daccess->valueType() & PointersMask) || daccess->hasValueNestedPointers();
+        }else if(auto daccess = dynamic_cast<AbstractPairAccess*>(m_elementNestedContainerAccess.data())){
+            return (daccess->firstType() & PointersMask) || daccess->hasFirstNestedPointers() || (daccess->secondType() & PointersMask) || daccess->hasSecondNestedPointers();
+        }
+    }
+    return false;
 }
 
-void AutoVectorAccess::analyzeElements(const void* container, ElementAnalyzer analyzer, void* data){
-    QTypedArrayData<char> *const* vector = reinterpret_cast<QTypedArrayData<char> *const*>(container);
-    QTypedArrayData<char>* d = *vector;
-    for(int i=0; i<d->size; ++i){
-        if(!analyzer(d->data() + i * m_offset, data))
-            break;
+const QObject* AutoVectorAccess::getOwner(const void* container){
+    if(hasOwnerFunction() && size(container)>0){
+        auto iter = elementIterator(container);
+        if(m_elementOwnerFunction){
+            while(iter->hasNext()){
+                const void* current = iter->next();
+                if(const QObject* owner = m_elementOwnerFunction(current))
+                    return owner;
+            }
+        }else if(m_elementNestedContainerAccess){
+            while(iter->hasNext()){
+                const void* current = iter->next();
+                if(const QObject* owner = m_elementNestedContainerAccess->getOwner(current))
+                    return owner;
+            }
+        }
     }
+    return nullptr;
+}
+
+bool AutoVectorAccess::hasOwnerFunction(){
+    if(m_elementOwnerFunction && !(elementType() & PointersMask))
+        return true;
+    if(!(elementType() & PointersMask) && m_elementNestedContainerAccess && m_elementNestedContainerAccess->hasOwnerFunction())
+        return true;
+    return false;
+}
+
+void AutoVectorAccess::dispose(){
+    delete this;
 }
 
 AutoVectorAccess* AutoVectorAccess::clone(){
@@ -118,10 +171,78 @@ size_t AutoVectorAccess::sizeOf(){
     return sizeof(QVector<char>);
 }
 
+void* AutoVectorAccess::constructContainer(JNIEnv*, void* result, const ConstContainerAndAccessInfo& container) {
+    return constructContainer(result, container.container);
+}
+
+std::unique_ptr<AbstractVectorAccess::ElementIterator> AutoVectorAccess::elementIterator(const void* container) {
+    class ElementIterator : public AbstractVectorAccess::ElementIterator{
+        AutoVectorAccess* access;
+        char* current;
+        char* end;
+    public:
+        ElementIterator(AutoVectorAccess* _access, QTypedArrayData<char>* container)
+            : AbstractVectorAccess::ElementIterator(),
+            access(_access),
+            current(container->data()),
+            end(container->data() + container->size * access->m_offset)
+        {
+        }
+        bool hasNext() override{
+            return current!=end;
+        }
+        jobject next(JNIEnv * env) override{
+            void* data = current;
+            current += access->m_offset;
+            jvalue _value;
+            _value.l = nullptr;
+            access->m_internalToExternalConverter(env, nullptr, data, _value, true);
+            return _value.l;
+        }
+        const void* next() override {
+            void* data = current;
+            current += access->m_offset;
+            if(access->elementType() & AbstractContainerAccess::PointersMask){
+                return *reinterpret_cast<void**>(data);
+            }else{
+                return data;
+            }
+        }
+    };
+    return std::unique_ptr<AbstractVectorAccess::ElementIterator>(new ElementIterator(this, *reinterpret_cast<QTypedArrayData<char> *const*>(container)));
+}
+
+void* AutoVectorAccess::constructContainer(void* placement){
+    return new(placement) QArrayData*(QArrayData::sharedNull());
+}
+
 void* AutoVectorAccess::constructContainer(void* placement, const void* container){
-    void* result = new(placement) QArrayData*(QArrayData::sharedNull());
-    if(container)
-        assign(result, container);
+    void* result = constructContainer(placement);
+    QTypedArrayData<char> ** vector = reinterpret_cast<QTypedArrayData<char> **>(result);
+    QTypedArrayData<char>*& d = *vector;
+    QTypedArrayData<char>* d2 = *reinterpret_cast<QTypedArrayData<char> *const*>(container);
+    if (d2->ref.ref()) {
+        d = d2;
+    } else {
+        if (d2->capacityReserved) {
+            d = reinterpret_cast<QTypedArrayData<char>*>(QArrayData::allocate(m_offset, qMax<size_t>(m_elementAlign, alignof(QArrayData)), d2->alloc));
+            Q_CHECK_PTR(d);
+            d->capacityReserved = true;
+        } else {
+            d = reinterpret_cast<QTypedArrayData<char>*>(QArrayData::allocate(m_offset, qMax<size_t>(m_elementAlign, alignof(QArrayData)), d2->size));
+            Q_CHECK_PTR(d);
+        }
+        if (d->alloc) {
+            char *ddata = d->data();
+            char *xdata = d2->data();
+            d->size = d2->size;
+            for(int i=0, l=d->size; i<l; ++i){
+                void* src = ddata + i*m_offset;
+                void* dst = xdata + i*m_offset;
+                m_elementMetaType.construct(dst, src);
+            }
+        }
+    }
     return result;
 }
 
@@ -137,39 +258,18 @@ bool AutoVectorAccess::destructContainer(void* container) {
     return true;
 }
 
+void AutoVectorAccess::assign(JNIEnv *, const ContainerInfo& container, const ConstContainerAndAccessInfo& other){
+    assign(container.container, other.container);
+}
+
 void AutoVectorAccess::assign(void* container, const void* other)
 {
-    QTypedArrayData<char> ** vector = reinterpret_cast<QTypedArrayData<char> **>(container);
-    QTypedArrayData<char> *const* vector2 = reinterpret_cast<QTypedArrayData<char> *const*>(other);
-    QTypedArrayData<char>*& d = *vector;
-    QTypedArrayData<char>* d2 = *vector2;
-    if (d == QArrayData::sharedNull()) {
-        *vector = d2;
-        d2->ref.ref();
-    } else {
-        for(int i = 0; i<d->size; ++i){
-            m_elementMetaType.destruct(d->data() + i * m_offset);
-        }
-        uint newSize = d2->size;
-        const bool isTooSmall = newSize > d->alloc;
-        if (!isDetached(vector) || isTooSmall) {
-            QArrayData::AllocationOptions opt(isTooSmall ? QArrayData::Grow : QArrayData::Default);
-            realloc(vector, isTooSmall ? newSize : d->alloc, opt);
-        }
-
-        if (d->alloc) {
-            char *w = d->data() + newSize * m_offset;
-            char *i = d2->data() + d->size * m_offset;
-            char *b = d2->data();
-            while (i != b) {
-                i -= m_offset;
-                w -= m_offset;
-                m_elementMetaType.construct(w, i);
-            }
-            d->size = newSize;
-        }else{
-            d->size = 0;
-        }
+    if(*reinterpret_cast<QTypedArrayData<char> **>(container)!=*reinterpret_cast<QTypedArrayData<char> *const*>(other)){
+        void* tmp = createContainer(other);
+        QVector<char> & vector = *reinterpret_cast<QVector<char> *>(container);
+        QVector<char> & vector2 = *reinterpret_cast<QVector<char> *>(tmp);
+        vector.swap(vector2);
+        deleteContainer(tmp);
     }
 }
 
@@ -179,6 +279,7 @@ int AutoVectorAccess::registerContainer(const QByteArray& typeName)
     if(newMetaType==QMetaType::UnknownType){
         QSharedPointer<AutoVectorAccess> access(new AutoVectorAccess(*this), &containerDisposer);
         newMetaType = registerContainerMetaType(typeName,
+#if QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
                                        qtjambi_function_pointer<16,void(void*)>([access](void* ptr){
                                             access->destructContainer(ptr);
                                        }, qHash(typeName)),
@@ -189,13 +290,15 @@ int AutoVectorAccess::registerContainer(const QByteArray& typeName)
                                                 return new(result) QVector<char>();
                                             }
                                        },
+#endif //QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
                                        uint(sizeOf()),
                                        uint(alignof(QVector<char>)),
                                        QMetaType::NeedsConstruction
                                                    | QMetaType::NeedsDestruction
                                                    | QMetaType::MovableType,
                                        nullptr,
-                                       nullptr);
+                                       nullptr,
+                                       access);
         if(m_hashFunction){
             insertHashFunctionByMetaType(newMetaType,
                                             [access]
@@ -422,31 +525,34 @@ int AutoVectorAccess::registerContainer(const QByteArray& typeName)
                                                                                }, access->m_elementMetaType.id())
                                                );
         }
+    }else{
+        registerContainerAccess(newMetaType, this);
     }
     return newMetaType;
 }
 
 jobject AutoVectorAccess::createConstIterator(JNIEnv * env, QtJambiNativeID ownerId, void* iteratorPtr)
 {
-    size_t offset = m_offset;
     AutoSequentialConstIteratorAccess* containerAccess = new AutoSequentialConstIteratorAccess(m_internalToExternalConverter,
-                                                 [offset](void*ptr){
+                                                 [](AutoSequentialConstIteratorAccess* access, void*ptr){
                                                     char* cursor = *reinterpret_cast<char**>(ptr);
-                                                    *reinterpret_cast<char**>(ptr) = cursor+offset;
+                                                    *reinterpret_cast<char**>(ptr) = cursor+access->offset();
                                                  },
-                                                 [offset](void*ptr){
+                                                 [](AutoSequentialConstIteratorAccess* access, void*ptr){
                                                     char* cursor = *reinterpret_cast<char**>(ptr);
-                                                    *reinterpret_cast<char**>(ptr) = cursor-offset;
+                                                    *reinterpret_cast<char**>(ptr) = cursor-access->offset();
                                                  },
-                                                 [](const void*ptr)->const void*{
+                                                 [](AutoSequentialConstIteratorAccess*,const void*ptr)->const void*{
                                                     return *reinterpret_cast<void*const*>(ptr);
                                                  },
-                                                 [](const void*ptr1,const void*ptr2)->bool{
+                                                 [](AutoSequentialConstIteratorAccess*,const void*ptr1,const void*ptr2)->bool{
                                                     return *reinterpret_cast<void*const*>(ptr1)<*reinterpret_cast<void*const*>(ptr2);
                                                  },
-                                                 [](const void*ptr1,const void*ptr2)->bool{
+                                                 [](AutoSequentialConstIteratorAccess*,const void*ptr1,const void*ptr2)->bool{
                                                     return *reinterpret_cast<void*const*>(ptr1)==*reinterpret_cast<void*const*>(ptr2);
-                                                 }
+                                                 },
+                                                 m_elementMetaType,
+                                                 m_offset
                                             );
     return QtJambiAPI::convertQSequentialIteratorToJavaObject(env, ownerId, iteratorPtr, [](void* ptr,bool){
         delete reinterpret_cast<void**>(ptr);
@@ -455,75 +561,99 @@ jobject AutoVectorAccess::createConstIterator(JNIEnv * env, QtJambiNativeID owne
 
 jobject AutoVectorAccess::createIterator(JNIEnv * env, QtJambiNativeID ownerId, void* iteratorPtr)
 {
-    size_t offset = m_offset;
     AbstractSequentialIteratorAccess* containerAccess = new AutoSequentialIteratorAccess(m_internalToExternalConverter,
-                                                                   [offset](void*ptr){
+                                                                   [](AutoSequentialIteratorAccess* access, void*ptr){
                                                                       char* cursor = *reinterpret_cast<char**>(ptr);
-                                                                      *reinterpret_cast<char**>(ptr) = cursor+offset;
+                                                                      *reinterpret_cast<char**>(ptr) = cursor+access->offset();
                                                                    },
-                                                                   [offset](void*ptr){
+                                                                   [](AutoSequentialIteratorAccess* access, void*ptr){
                                                                       char* cursor = *reinterpret_cast<char**>(ptr);
-                                                                      *reinterpret_cast<char**>(ptr) = cursor-offset;
+                                                                      *reinterpret_cast<char**>(ptr) = cursor-access->offset();
                                                                    },
-                                                                   [](const void*ptr)->const void*{
+                                                                   [](AutoSequentialIteratorAccess*,const void*ptr)->const void*{
                                                                       return *reinterpret_cast<void*const*>(ptr);
                                                                    },
-                                                                   [](const void*ptr1,const void*ptr2)->bool{
+                                                                   [](AutoSequentialIteratorAccess*,const void*ptr1,const void*ptr2)->bool{
                                                                       return *reinterpret_cast<void*const*>(ptr1)<*reinterpret_cast<void*const*>(ptr2);
                                                                    },
-                                                                   [](const void*ptr1,const void*ptr2)->bool{
+                                                                   [](AutoSequentialIteratorAccess*,const void*ptr1,const void*ptr2)->bool{
                                                                       return *reinterpret_cast<void*const*>(ptr1)==*reinterpret_cast<void*const*>(ptr2);
                                                                    },
                                                                    m_externalToInternalConverter,
-                                                                   [](void*ptr)->void*{
+                                                                   [](AutoSequentialIteratorAccess*,void*ptr)->void*{
                                                                        return *reinterpret_cast<void**>(ptr);
-                                                                   }
+                                                                   },
+                                                                   m_elementMetaType,
+                                                                   m_offset
                                             );
     return QtJambiAPI::convertQSequentialIteratorToJavaObject(env, ownerId, iteratorPtr, [](void* ptr,bool){
         delete reinterpret_cast<void**>(ptr);
     }, containerAccess);
 }
 
-jobject AutoVectorAccess::end(JNIEnv * env, QtJambiNativeID ownerId, void* container)
+bool AutoVectorAccess::isDetached(const void* container){
+    return isDetached(reinterpret_cast<QTypedArrayData<char> *const*>(container));
+}
+
+void AutoVectorAccess::detach(const ContainerInfo& container){
+    QTypedArrayData<char> ** vector = reinterpret_cast<QTypedArrayData<char> **>(container.container);
+    detach(vector);
+}
+
+bool AutoVectorAccess::isSharedWith(const void* container, const void* container2){
+    QTypedArrayData<char> *const* vector = reinterpret_cast<QTypedArrayData<char> *const*>(container);
+    QTypedArrayData<char> *const* vector2 = reinterpret_cast<QTypedArrayData<char> *const*>(container2);
+    if(vector && vector2){
+        return (*vector)==(*vector2);
+    }
+    return false;
+}
+
+void AutoVectorAccess::swap(JNIEnv *, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
+    QVector<char> & vector = *reinterpret_cast<QVector<char> *>(container.container);
+    QVector<char> & vector2 = *reinterpret_cast<QVector<char> *>(container2.container);
+    vector.swap(vector2);
+}
+
+jobject AutoVectorAccess::end(JNIEnv * env, const ExtendedContainerInfo& container)
 {
-    QTypedArrayData<char> ** vector = reinterpret_cast<QTypedArrayData<char> **>(container);
+    QTypedArrayData<char> ** vector = reinterpret_cast<QTypedArrayData<char> **>(container.container);
     detach(vector);
     QTypedArrayData<char>* d = *vector;
     void* iteratorPtr = new void*(d->data() + d->size*m_offset);
-    return createIterator(env, ownerId, iteratorPtr);
+    return createIterator(env, container.nativeId, iteratorPtr);
 }
 
-jobject AutoVectorAccess::begin(JNIEnv * env, QtJambiNativeID ownerId, void* container)
+jobject AutoVectorAccess::begin(JNIEnv * env, const ExtendedContainerInfo& container)
 {
-    QTypedArrayData<char> ** vector = reinterpret_cast<QTypedArrayData<char> **>(container);
+    QTypedArrayData<char> ** vector = reinterpret_cast<QTypedArrayData<char> **>(container.container);
     detach(vector);
     QTypedArrayData<char>* d = *vector;
     void* iteratorPtr = new void*(d->data());
-    return createIterator(env, ownerId, iteratorPtr);
+    return createIterator(env, container.nativeId, iteratorPtr);
 }
 
-jobject AutoVectorAccess::constEnd(JNIEnv * env, QtJambiNativeID ownerId, const void* container)
+jobject AutoVectorAccess::constEnd(JNIEnv * env, const ConstExtendedContainerInfo& container)
 {
-    QTypedArrayData<char> *const* vector = reinterpret_cast<QTypedArrayData<char> *const*>(container);
+    QTypedArrayData<char> *const* vector = reinterpret_cast<QTypedArrayData<char> *const*>(container.container);
     QTypedArrayData<char>* d = *vector;
     void* iteratorPtr = new void*(d->data() + d->size*m_offset);
-    return createConstIterator(env, ownerId, iteratorPtr);
+    return createConstIterator(env, container.nativeId, iteratorPtr);
 }
 
-jobject AutoVectorAccess::constBegin(JNIEnv * env, QtJambiNativeID ownerId, const void* container)
+jobject AutoVectorAccess::constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container)
 {
-    QTypedArrayData<char> *const* vector = reinterpret_cast<QTypedArrayData<char> *const*>(container);
+    QTypedArrayData<char> *const* vector = reinterpret_cast<QTypedArrayData<char> *const*>(container.container);
     QTypedArrayData<char>* d = *vector;
     void* iteratorPtr = new void*(d->data());
-    return createConstIterator(env, ownerId, iteratorPtr);
+    return createConstIterator(env, container.nativeId, iteratorPtr);
 }
 
-void AutoVectorAccess::appendVector(JNIEnv * env, void* container, jobject list)
+void AutoVectorAccess::appendVector(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& containerInfo)
 {
-    void* ptr{nullptr};
-    if (ContainerAPI::getAsQVector(env, list, elementMetaType(), ptr)) {
-        QTypedArrayData<char> ** vector = reinterpret_cast<QTypedArrayData<char> **>(container);
-        QTypedArrayData<char> ** vector2 = reinterpret_cast<QTypedArrayData<char> **>(ptr);
+    if (ContainerAPI::getAsQVector(env, containerInfo.object, elementMetaType(), containerInfo.container, containerInfo.access)) {
+        QTypedArrayData<char> ** vector = reinterpret_cast<QTypedArrayData<char> **>(container.container);
+        QTypedArrayData<char> ** vector2 = reinterpret_cast<QTypedArrayData<char> **>(containerInfo.container);
         QTypedArrayData<char>*& d = *vector;
         QTypedArrayData<char>*& d2 = *vector2;
         if (d2->size==0) {
@@ -552,9 +682,9 @@ void AutoVectorAccess::appendVector(JNIEnv * env, void* container, jobject list)
             }
         }
     }else{
-        QTypedArrayData<char> ** vector = reinterpret_cast<QTypedArrayData<char> **>(container);
-        jobject iter = QtJambiAPI::iteratorOfJavaCollection(env, list);
-        reserve(env, container, jint((*vector)->size + QtJambiAPI::sizeOfJavaCollection(env, list)));
+        QTypedArrayData<char> ** vector = reinterpret_cast<QTypedArrayData<char> **>(container.container);
+        jobject iter = QtJambiAPI::iteratorOfJavaIterable(env, containerInfo.object);
+        reserve(env, container, jint((*vector)->size + QtJambiAPI::sizeOfJavaCollection(env, containerInfo.object)));
         while(QtJambiAPI::hasJavaIteratorNext(env, iter)){
             insert(env, container, (*vector)->size, 1, QtJambiAPI::nextOfJavaIterator(env, iter));
         }
@@ -674,7 +804,7 @@ QTypedArrayData<char>* AutoVectorAccess::unsharableEmpty(){
 bool AutoVectorAccess::isDetached(QTypedArrayData<char> *const* vector)
 {
     QTypedArrayData<char>* d = *vector;
-    return !d->ref.isShared();
+    return d && !d->ref.isShared();
 }
 
 void AutoVectorAccess::detach(QTypedArrayData<char> ** vector)
@@ -691,9 +821,9 @@ void AutoVectorAccess::detach(QTypedArrayData<char> ** vector)
     Q_ASSERT(isDetached(vector));
 }
 
-void AutoVectorAccess::swapItemsAt(JNIEnv *, void* container, jint i, jint j)
+void AutoVectorAccess::swapItemsAt(JNIEnv *, const ContainerInfo& container, jint i, jint j)
 {
-    QTypedArrayData<char> ** vector = reinterpret_cast<QTypedArrayData<char> **>(container);
+    QTypedArrayData<char> ** vector = reinterpret_cast<QTypedArrayData<char> **>(container.container);
     QTypedArrayData<char>*& d = *vector;
     Q_ASSERT_X(i >= 0 && i < d->size && j >= 0 && j < d->size,
                 "QVector<T>::swap", "index out of range");
@@ -726,6 +856,13 @@ jboolean AutoVectorAccess::startsWith(JNIEnv * env, const void* container, jobje
     return false;
 }
 
+qsizetype AutoVectorAccess::size(const void* container)
+{
+    QTypedArrayData<char> *const* vector = reinterpret_cast<QTypedArrayData<char> *const*>(container);
+    QTypedArrayData<char>* d = *vector;
+    return d->size;
+}
+
 jint AutoVectorAccess::size(JNIEnv *, const void* container)
 {
     QTypedArrayData<char> *const* vector = reinterpret_cast<QTypedArrayData<char> *const*>(container);
@@ -733,9 +870,9 @@ jint AutoVectorAccess::size(JNIEnv *, const void* container)
     return d->size;
 }
 
-void AutoVectorAccess::reserve(JNIEnv *, void* container, jint asize)
+void AutoVectorAccess::reserve(JNIEnv *, const ContainerInfo& container, jint asize)
 {
-    QTypedArrayData<char> ** vector = reinterpret_cast<QTypedArrayData<char> **>(container);
+    QTypedArrayData<char> ** vector = reinterpret_cast<QTypedArrayData<char> **>(container.container);
     QTypedArrayData<char>*& d = *vector;
     if (asize > int(d->alloc))
         realloc(vector, asize);
@@ -749,9 +886,9 @@ void AutoVectorAccess::reserve(JNIEnv *, void* container, jint asize)
 }
 
 
-void AutoVectorAccess::replace(JNIEnv * env, void* container, jint index, jobject value)
+void AutoVectorAccess::replace(JNIEnv * env, const ContainerInfo& container, jint index, jobject value)
 {
-        QTypedArrayData<char> ** vector = reinterpret_cast<QTypedArrayData<char> **>(container);
+        QTypedArrayData<char> ** vector = reinterpret_cast<QTypedArrayData<char> **>(container.container);
         QTypedArrayData<char>*& d = *vector;
         Q_ASSERT_X(index >= 0 && index < d->size, "QVector<T>::replace", "index out of range");
         detach(vector);
@@ -796,7 +933,7 @@ void AutoVectorAccess::erase(QTypedArrayData<char> ** vector, char* abegin, char
     }
 }
 
-jint AutoVectorAccess::removeAll(JNIEnv * env, void* container, jobject value)
+jint AutoVectorAccess::removeAll(JNIEnv * env, const ContainerInfo& container, jobject value)
 {
     QtJambiScope scope;
     jint removedCount = 0;
@@ -804,7 +941,7 @@ jint AutoVectorAccess::removeAll(JNIEnv * env, void* container, jobject value)
     jvalue _value;
     _value.l = value;
     if(m_externalToInternalConverter(env, &scope, _value, _qvaluePtr, jValueType::l)){
-        QTypedArrayData<char> ** vector = reinterpret_cast<QTypedArrayData<char> **>(container);
+        QTypedArrayData<char> ** vector = reinterpret_cast<QTypedArrayData<char> **>(container.container);
         QTypedArrayData<char>*& d = *vector;
         int index;
         do{
@@ -845,7 +982,7 @@ jboolean AutoVectorAccess::equal(JNIEnv * env, const void* container, jobject ot
     }else{
         if(d->size!=QtJambiAPI::sizeOfJavaCollection(env, other))
             return false;
-        jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, other);
+        jobject iterator = QtJambiAPI::iteratorOfJavaIterable(env, other);
         size_t i = 0;
         while(QtJambiAPI::hasJavaIteratorNext(env, iterator)){
             QtJambiScope scope;
@@ -863,11 +1000,11 @@ jboolean AutoVectorAccess::equal(JNIEnv * env, const void* container, jobject ot
     return false;
 }
 
-void AutoVectorAccess::move(JNIEnv *, void* container, jint from, jint to)
+void AutoVectorAccess::move(JNIEnv *, const ContainerInfo& container, jint from, jint to)
 {
     if (from == to)
         return;
-    QTypedArrayData<char> ** vector = reinterpret_cast<QTypedArrayData<char> **>(container);
+    QTypedArrayData<char> ** vector = reinterpret_cast<QTypedArrayData<char> **>(container.container);
     QTypedArrayData<char>*& d = *vector;
     Q_ASSERT_X(from >= 0 && from < d->size && to >= 0 && to < d->size,
                "QVector<T>::move", "index out of range");
@@ -882,34 +1019,50 @@ void AutoVectorAccess::move(JNIEnv *, void* container, jint from, jint to)
     m_elementMetaType.destroy(tmp);
 }
 
-jobject AutoVectorAccess::mid(JNIEnv * env, const void* container, jint _pos, jint _len)
+ContainerAndAccessInfo AutoVectorAccess::mid(JNIEnv * env, const ConstContainerAndAccessInfo& container, jint _pos, jint _len)
 {
+    ContainerAndAccessInfo result;
     using namespace QtPrivate;
     int pos = _pos;
     int alength = _len;
-    QTypedArrayData<char> *const* vector = reinterpret_cast<QTypedArrayData<char> *const*>(container);
+    QTypedArrayData<char> *const* vector = reinterpret_cast<QTypedArrayData<char> *const*>(container.container);
     QTypedArrayData<char>* d = *vector;
     switch (QContainerImplHelper::mid(d->size, &pos, &alength)) {
     case QContainerImplHelper::Null:
-    case QContainerImplHelper::Empty:
-        return ContainerAccessAPI::objectFromQVector(env, createContainer(), clone());
-    case QContainerImplHelper::Full:
-        return ContainerAccessAPI::objectFromQVector(env, createContainer(container), this);
+    case QContainerImplHelper::Empty:{
+        result.access = container.access->clone();
+        result.container = result.access->createContainer();
+        result.object = ContainerAPI::objectFromQVector(env, result.container, result.access);
+        return result;
+    }
+    case QContainerImplHelper::Full:{
+        result.access = container.access->clone();
+        result.container = result.access->createContainer();
+        result.object = ContainerAPI::objectFromQVector(env, result.container, result.access);
+        result.access->assign(env, result, container);
+        return result;
+    }
     case QContainerImplHelper::Subset:
         break;
     }
-    if (alength <= 0)
-        return ContainerAccessAPI::objectFromQVector(env, createContainer(), clone());
+    if (alength <= 0){
+        result.access = container.access->clone();
+        result.container = result.access->createContainer();
+        result.object = ContainerAPI::objectFromQVector(env, result.container, result.access);
+        return result;
+    }
 
-    void* midResult = createContainer();
-    reserve(env, midResult, alength);
-    QTypedArrayData<char> *const* midVector = reinterpret_cast<QTypedArrayData<char> *const*>(midResult);
+    result.access = container.access->clone();
+    result.container = result.access->createContainer();
+    reserve(env, result, alength);
+    QTypedArrayData<char> *const* midVector = reinterpret_cast<QTypedArrayData<char> *const*>(result.container);
     QTypedArrayData<char>* md = *midVector;
     for(int i=0; i<alength; ++i){
         m_elementMetaType.construct(md->data() + i * m_offset, d->data() + (pos+i) * m_offset);
     }
     md->size = alength;
-    return ContainerAccessAPI::objectFromQVector(env, midResult, clone());
+    result.object = ContainerAPI::objectFromQVector(env, result.container, result.access);
+    return result;
 }
 
 jint AutoVectorAccess::lastIndexOf(JNIEnv * env, const void* container, jobject value, jint index)
@@ -1018,9 +1171,9 @@ jboolean AutoVectorAccess::contains(JNIEnv * env, const void* container, jobject
     return false;
 }
 
-void AutoVectorAccess::clear(JNIEnv *, void* container)
+void AutoVectorAccess::clear(JNIEnv *, const ContainerInfo& container)
 {
-    QTypedArrayData<char> ** vector = reinterpret_cast<QTypedArrayData<char> **>(container);
+    QTypedArrayData<char> ** vector = reinterpret_cast<QTypedArrayData<char> **>(container.container);
     QTypedArrayData<char>*& d = *vector;
     if (!d->size)
         return;
@@ -1035,8 +1188,8 @@ jint AutoVectorAccess::capacity(JNIEnv *, const void* container){
     return (*vector)->alloc;
 }
 
-void AutoVectorAccess::fill(JNIEnv * env, void* container, jobject value, jint asize){
-    QTypedArrayData<char> ** vector = reinterpret_cast<QTypedArrayData<char> **>(container);
+void AutoVectorAccess::fill(JNIEnv * env, const ContainerInfo& container, jobject value, jint asize){
+    QTypedArrayData<char> ** vector = reinterpret_cast<QTypedArrayData<char> **>(container.container);
     QTypedArrayData<char>*& d = *vector;
     resize(env, container, asize < 0 ? d->size : asize);
     if (d->size) {
@@ -1053,8 +1206,8 @@ void AutoVectorAccess::fill(JNIEnv * env, void* container, jobject value, jint a
     }
 }
 
-void AutoVectorAccess::remove(JNIEnv *, void* container, jint index, jint n){
-    QTypedArrayData<char> ** vector = reinterpret_cast<QTypedArrayData<char> **>(container);
+void AutoVectorAccess::remove(JNIEnv *, const ContainerInfo& container, jint index, jint n){
+    QTypedArrayData<char> ** vector = reinterpret_cast<QTypedArrayData<char> **>(container.container);
     QTypedArrayData<char>*& d = *vector;
     if (index < 0 || index+n > d->size) {
         return;
@@ -1062,8 +1215,8 @@ void AutoVectorAccess::remove(JNIEnv *, void* container, jint index, jint n){
     erase(vector, d->data() + index * m_offset, d->data() + (index+n) * m_offset);
 }
 
-void AutoVectorAccess::insert(JNIEnv * env, void* container, jint index, jint n, jobject value){
-    QTypedArrayData<char> ** vector = reinterpret_cast<QTypedArrayData<char> **>(container);
+void AutoVectorAccess::insert(JNIEnv * env, const ContainerInfo& container, jint index, jint n, jobject value){
+    QTypedArrayData<char> ** vector = reinterpret_cast<QTypedArrayData<char> **>(container.container);
     QTypedArrayData<char>*& d = *vector;
     if (!isDetached(vector) || d->size + n > int(d->alloc))
         realloc(vector, d->size + n, QArrayData::Grow);
@@ -1093,9 +1246,9 @@ void AutoVectorAccess::insert(JNIEnv * env, void* container, jint index, jint n,
     d->size += n;
 }
 
-void AutoVectorAccess::resize(JNIEnv *, void* container, jint asize)
+void AutoVectorAccess::resize(JNIEnv *, const ContainerInfo& container, jint asize)
 {
-    QTypedArrayData<char> ** vector = reinterpret_cast<QTypedArrayData<char> **>(container);
+    QTypedArrayData<char> ** vector = reinterpret_cast<QTypedArrayData<char> **>(container.container);
     QTypedArrayData<char>*& d = *vector;
     if (asize == d->size)
         return detach(vector);
@@ -1115,13 +1268,13 @@ void AutoVectorAccess::resize(JNIEnv *, void* container, jint asize)
     d->size = asize;
 }
 
-void AutoVectorAccess::squeeze(JNIEnv *, void* container){
-    QTypedArrayData<char> ** vector = reinterpret_cast<QTypedArrayData<char> **>(container);
+void AutoVectorAccess::squeeze(JNIEnv *, const ContainerInfo& container){
+    QTypedArrayData<char> ** vector = reinterpret_cast<QTypedArrayData<char> **>(container.container);
     QTypedArrayData<char>*& d = *vector;
     if (d->size < int(d->alloc)) {
         if (!d->size) {
             QVector<char> empty;
-            assign(container, &empty);
+            assign(container.container, &empty);
             return;
         }
         realloc(vector, d->size);
@@ -1131,4 +1284,200 @@ void AutoVectorAccess::squeeze(JNIEnv *, void* container){
         // this checks avoid writing to such memory.
         d->capacityReserved = 0;
     }
+}
+
+PointerRCAutoVectorAccess* PointerRCAutoVectorAccess::clone(){
+    return new PointerRCAutoVectorAccess(*this);
+}
+
+void PointerRCAutoVectorAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
+    JniLocalFrame frame(env, 200);
+    jobject set = Java::Runtime::ArrayList::newInstance(env);
+    auto iterator = elementIterator(container.container);
+    while(iterator->hasNext()){
+        const void* content = iterator->next();
+        jobject obj{nullptr};
+        switch(elementType()){
+        case PointerToQObject:
+            if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForQObject(reinterpret_cast<const QObject*>(content))){
+                obj = link->getJavaObjectLocalRef(env);
+            }
+            break;
+        case FunctionPointer:
+            if(const std::type_info* typeId = getTypeByMetaType(elementMetaType())){
+                if(FunctionalResolver resolver = registeredFunctionalResolver(*typeId)){
+                    bool success = false;
+                    obj = resolver(env, content, &success);
+                    break;
+                }
+            }
+            Q_FALLTHROUGH();
+        case Pointer:
+            for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(content)){
+                obj = link->getJavaObjectLocalRef(env);
+                break;
+            }
+            break;
+        default:
+            break;
+        }
+        if(obj)
+            Java::Runtime::Collection::add(env, set, obj);
+    }
+    clearRC(env, container.object);
+    addAllRC(env, container.object, set);
+}
+
+void PointerRCAutoVectorAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
+    AutoVectorAccess::swap(env, container, container2);
+    if(PointerRCAutoVectorAccess* access = dynamic_cast<PointerRCAutoVectorAccess*>(container2.access)){
+        if(access!=this)
+            swapRC(env, container, container2);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void PointerRCAutoVectorAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
+    AutoVectorAccess::assign(env, container, container2);
+    if(PointerRCAutoVectorAccess* access = dynamic_cast<PointerRCAutoVectorAccess*>(container2.access)){
+        if(access!=this)
+            assignRC(env, container.object, container2.object);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void PointerRCAutoVectorAccess::appendVector(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& containerInfo) {
+    AutoVectorAccess::appendVector(env, container, containerInfo);
+    addAllRC(env, container.object, findContainer(env, containerInfo.object));
+}
+
+void PointerRCAutoVectorAccess::replace(JNIEnv * env, const ContainerInfo& container, jint index, jobject value) {
+    jobject oldValue = AutoVectorAccess::at(env, container.container, index);
+    AutoVectorAccess::replace(env, container, index, value);
+    if(oldValue && !AutoVectorAccess::contains(env, container.container, oldValue))
+        removeRC(env, container.object, oldValue);
+    if(value)
+        addRC(env, container.object, value);
+}
+
+jint PointerRCAutoVectorAccess::removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) {
+    jint result = AutoVectorAccess::removeAll(env, container, value);
+    removeRC(env, container.object, value, result);
+    return result;
+}
+
+void PointerRCAutoVectorAccess::clear(JNIEnv * env, const ContainerInfo& container) {
+    AutoVectorAccess::clear(env, container);
+    clearRC(env, container.object);
+}
+
+void PointerRCAutoVectorAccess::remove(JNIEnv * env, const ContainerInfo& container, jint index, jint n) {
+    jint size = AutoVectorAccess::size(env, container.container);
+    jobject removedValues = Java::Runtime::ArrayList::newInstance(env);
+    for(jint i = index; i<=index+n && i<size; ++i){
+        Java::Runtime::Collection::add(env, removedValues, AutoVectorAccess::at(env, container.container, i));
+    }
+    AutoVectorAccess::remove(env, container, index, n);
+    jobject iter = Java::Runtime::Collection::iterator(env, removedValues);
+    while(Java::Runtime::Iterator::hasNext(env, iter)){
+        jobject value = Java::Runtime::Iterator::next(env, iter);
+        removeRC(env, container.object, value);
+    }
+}
+
+void PointerRCAutoVectorAccess::insert(JNIEnv * env, const ContainerInfo& container, jint index, jint n, jobject value) {
+    AutoVectorAccess::insert(env, container, index, n, value);
+    addRC(env, container.object, value);
+}
+
+void PointerRCAutoVectorAccess::fill(JNIEnv * env, const ContainerInfo& container, jobject value, jint size){
+    jint oldSize = AutoVectorAccess::size(env, container.container);
+    AutoVectorAccess::fill(env, container, value, size);
+    for(;oldSize<size;++oldSize){
+        addRC(env, container.object, value);
+    }
+}
+
+NestedPointersRCAutoVectorAccess::NestedPointersRCAutoVectorAccess(NestedPointersRCAutoVectorAccess& other)
+    : AutoVectorAccess(other), ReferenceCountingSetContainer() {}
+
+NestedPointersRCAutoVectorAccess* NestedPointersRCAutoVectorAccess::clone(){
+    return new NestedPointersRCAutoVectorAccess(*this);
+}
+
+void NestedPointersRCAutoVectorAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
+    if(size(env, container.container)==0){
+        clearRC(env, container.object);
+    }else{
+        JniLocalFrame frame(env, 200);
+        jobject set = Java::Runtime::HashSet::newInstance(env);
+        auto access = elementNestedContainerAccess();
+        auto iterator = elementIterator(container.container);
+        while(iterator->hasNext()){
+            unfoldAndAddContainer(env, set, iterator->next(), elementType(), elementMetaType(), access);
+        }
+        if(access)
+            access->dispose();
+        addAllRC(env, container.object, set);
+    }
+}
+
+void NestedPointersRCAutoVectorAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
+    AutoVectorAccess::swap(env, container, container2);
+    if(NestedPointersRCAutoVectorAccess* access = dynamic_cast<NestedPointersRCAutoVectorAccess*>(container2.access)){
+        if(access!=this)
+            swapRC(env, container, container2);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void NestedPointersRCAutoVectorAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
+    AutoVectorAccess::assign(env, container, container2);
+    if(NestedPointersRCAutoVectorAccess* access = dynamic_cast<NestedPointersRCAutoVectorAccess*>(container2.access)){
+        if(access!=this)
+            assignRC(env, container.object, container2.object);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void NestedPointersRCAutoVectorAccess::appendVector(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& containerInfo) {
+    AutoVectorAccess::appendVector(env, container, containerInfo);
+    updateRC(env, container);
+}
+
+jint NestedPointersRCAutoVectorAccess::removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) {
+    jint result = AutoVectorAccess::removeAll(env, container, value);
+    if(result>0){
+        updateRC(env, container);
+    }
+    return result;
+}
+
+void NestedPointersRCAutoVectorAccess::clear(JNIEnv * env, const ContainerInfo& container) {
+    AutoVectorAccess::clear(env, container);
+    clearRC(env, container.object);
+}
+
+void NestedPointersRCAutoVectorAccess::remove(JNIEnv * env, const ContainerInfo& container, jint index, jint n) {
+    AutoVectorAccess::remove(env, container, index, n);
+    updateRC(env, container);
+}
+
+void NestedPointersRCAutoVectorAccess::insert(JNIEnv * env, const ContainerInfo& container, jint index, jint n, jobject value) {
+    AutoVectorAccess::insert(env, container, index, n, value);
+    addNestedValueRC(env, container.object, elementType(), hasNestedPointers(), value);
+}
+
+void NestedPointersRCAutoVectorAccess::fill(JNIEnv * env, const ContainerInfo& container, jobject value, jint size){
+    AutoVectorAccess::fill(env, container, value, size);
+    addNestedValueRC(env, container.object, elementType(), hasNestedPointers(), value);
+}
+
+void NestedPointersRCAutoVectorAccess::replace(JNIEnv * env, const ContainerInfo& container, jint index, jobject value){
+    AutoVectorAccess::replace(env, container, index, value);
+    updateRC(env, container);
 }

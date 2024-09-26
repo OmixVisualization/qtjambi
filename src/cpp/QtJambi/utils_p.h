@@ -56,6 +56,10 @@ bool isEquals(const QMetaType& keyMetaType, const void * ptr, const void* ptr2);
 #define typeid_not_equals(t1, t2) t1!=t2
 #endif
 
+void registerContainerAccess(int metaType, AbstractContainerAccess* access);
+void registerContainerAccess(int metaType, const QSharedPointer<AbstractContainerAccess>& sharedAccess);
+bool hasRegisteredContainerAccess(const QMetaType& metaType);
+QSharedPointer<AbstractContainerAccess> findContainerAccess(const QMetaType& metaType);
 
 QString getFunctionLibraryPath(QFunctionPointer function);
 
@@ -72,6 +76,11 @@ bool threadAffineEventNotify(void **data);
 void enableThreadAffinity(bool enabled);
 
 bool enabledDanglingPointerCheck(JNIEnv * env = nullptr);
+bool compareMetaTypes(const QMetaType& typeA, const QMetaType& typeB);
+void checkThreadOnQObject(JNIEnv *env, jobject object);
+void checkThreadOnQObject(JNIEnv *env, PtrOwnerFunction owner_function, const void *qt_object, jclass cls);
+
+void containerDisposer(AbstractContainerAccess* _access);
 
 const std::type_info* tryGetTypeInfo(JNIEnv *env, TypeInfoSupplier typeInfoSupplier, const void* ptr);
 const std::type_info* checkedGetTypeInfo(TypeInfoSupplier typeInfoSupplier, const void* ptr);
@@ -96,27 +105,104 @@ jobject internal_convertSmartPointerToJavaInterface(JNIEnv *env, const std::type
 class QtJambiLink;
 
 namespace DebugAPI{
+
+struct PrinterPrivate;
+
+class Printer{
+    typedef void(*Deleter)(void*);
+    typedef void(*Invoker)(void*,QDebug&);
+public:
+    typedef void(*FunctionPointer)(QDebug&);
+
+private:
+    explicit Printer(void* data, Invoker invoker, Deleter deleter) noexcept;
+public:
+    Printer() noexcept;
+    ~Printer() noexcept;
+    Printer(const Printer& other) noexcept;
+    Printer(Printer&& other) noexcept;
+    Printer(FunctionPointer functor) noexcept;
+    inline Printer(nullptr_t) noexcept : Printer(FunctionPointer(nullptr)) {}
+
+    Printer& operator=(const Printer& other) noexcept;
+    Printer& operator=(Printer&& other) noexcept;
+
+    template<typename Functor, typename std::enable_if<!std::is_pointer<Functor>::value, bool>::type = true
+             , typename std::enable_if<!std::is_same<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type, Printer>::value, bool>::type = true
+             , typename std::enable_if<!std::is_null_pointer<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type>::value, bool>::type = true
+             , typename std::enable_if<!std::is_same<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type, FunctionPointer>::value, bool>::type = true
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+             , typename std::enable_if<std::is_invocable<Functor,QDebug&>::value, bool>::type = true
+#endif
+             >
+    Printer(Functor&& functor) noexcept
+        : Printer(
+            new typename std::remove_reference<typename std::remove_cv<Functor>::type>::type(std::move(functor)),
+            [](void* data, QDebug& d){
+                typename std::remove_reference<typename std::remove_cv<Functor>::type>::type* fct = reinterpret_cast<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type*>(data);
+                (*fct)(d);
+            },
+            [](void* data){
+                delete reinterpret_cast<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type*>(data);
+            }
+            ){}
+    bool operator==(const Printer& other) const noexcept;
+    void operator()(QDebug&) const;
+    operator bool() const noexcept;
+    bool operator !() const noexcept;
+private:
+    friend PrinterPrivate;
+    QExplicitlySharedDataPointer<PrinterPrivate> d;
+};
+
 Q_DECLARE_LOGGING_CATEGORY(internalCategory)
 Q_DECLARE_LOGGING_CATEGORY(debugAPIJavaOverloadsCategory)
+Q_DECLARE_LOGGING_CATEGORY(debugAPIEventsCategory)
+Q_DECLARE_LOGGING_CATEGORY(debugAPICleanupCallsCategory)
+Q_DECLARE_LOGGING_CATEGORY(debugAPIInternalMethodsCategory)
+
 class MethodPrintFromLink : public MethodPrint
 {
 public:
-    MethodPrintFromLink(MethodPrint::Type callType, const QSharedPointer<QtJambiLink>& link, const char* method, const char* file, int line, const char *function);
-    MethodPrintFromLink(MethodPrint::Type callType, const QWeakPointer<QtJambiLink>& link, const char* method, const char* file, int line, const char *function);
+    MethodPrintFromLink(const QSharedPointer<QtJambiLink>& link, const char* method, const char* file, int line, const char *function);
+    MethodPrintFromLink(const QWeakPointer<QtJambiLink>& link, const char* method, const char* file, int line, const char *function);
 };
 
 class MethodPrintFromArgs : public MethodPrint
 {
 public:
     MethodPrintFromArgs(MethodPrint::Type callType, const char* file, int line, const char *function, const char* method, ...);
+    MethodPrintFromArgs(const QLoggingCategory& category, const char* file, int line, const char *function, const char* method, ...);
 };
 
 class MethodPrintFromSupplier : public MethodPrint
 {
 public:
-    MethodPrintFromSupplier(MethodPrint::Type callType, const char* file, int line, const char *function, std::function<QByteArray()>&& supplier);
+    MethodPrintFromSupplier(MethodPrint::Type callType, const char* file, int line, const char *function, Printer&& supplier);
+    MethodPrintFromSupplier(const QLoggingCategory& category, const char* file, int line, const char *function, Printer&& supplier);
 };
+
+class EventPrint : public MethodPrint
+{
+public:
+    EventPrint(const char* file, int line, const char *function, QObject *receiver, QEvent *event);
+};
+
+void printArgs(const char *file, int line, const char *function, const char *format,...);
+void print(const char *file, int line, const char *function, Printer&& printer);
+
 }
+
+#ifdef QTJAMBI_NO_METHOD_TRACE
+#define QTJAMBI_DEBUG_PRINT_ARGS(...)
+#define QTJAMBI_DEBUG_INTERNAL_PRINT(printer)
+#define QTJAMBI_INTERNAL_METHOD_CALL_PRINT(printer)
+#else
+#define QTJAMBI_DEBUG_PRINT_ARGS(...) DebugAPI::printArgs(__FILE__, __LINE__, Q_FUNC_INFO, __VA_ARGS__);
+#define QTJAMBI_DEBUG_INTERNAL_PRINT(printer) DebugAPI::print(__FILE__, __LINE__, Q_FUNC_INFO, printer);
+#define QTJAMBI_INTERNAL_METHOD_CALL_PRINT(printer) DebugAPI::MethodPrintFromSupplier __debug_method_print(DebugAPI::debugAPIInternalMethodsCategory(), __FILE__, __LINE__, Q_FUNC_INFO, printer);
+#endif
+
 
 class QtJambiExceptionUnraiser{
 public:
@@ -127,18 +213,20 @@ private:
     Q_DISABLE_COPY_MOVE(QtJambiExceptionUnraiser)
 };
 
+void reinitializeResettableFlag(JNIEnv * env, const char* property);
+
 struct ResettableBoolFlag{
     ResettableBoolFlag(const char* property);
     ResettableBoolFlag(JNIEnv * env, const char* property);
     ~ResettableBoolFlag();
     operator bool();
 private:
-    bool value;
+    qint8 value : 1;
+    void reinitialize(JNIEnv * env, const char* property);
 #ifdef Q_OS_ANDROID
-    void reinitialize(JNIEnv * env);
-    const char* m_property;
     friend void reinitializeResettableFlags(JNIEnv * env);
 #endif
+    friend void reinitializeResettableFlag(JNIEnv * env, const char* property);
     friend void clearResettableFlags();
 };
 

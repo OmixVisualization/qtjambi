@@ -235,18 +235,6 @@ TypeSystem{
         EnumType{
             name: "Error"
         }
-
-        InjectCode{
-            target: CodeClass.Native
-            position: Position.Beginning
-            Text{content: String.raw`
-namespace QHashPrivate {
-template <>
-constexpr inline bool HasQHashSingleArgOverload<QMap<QByteArray,QByteArray>> = false;
-}`
-            }
-            since: 6.8
-        }
     }
     
     ValueType{
@@ -279,17 +267,6 @@ constexpr inline bool HasQHashSingleArgOverload<QMap<QByteArray,QByteArray>> = f
                 name: "set"
                 deprecated: true
             }
-        }
-        InjectCode{
-            target: CodeClass.Native
-            position: Position.Beginning
-            Text{content: String.raw`
-namespace QHashPrivate {
-template <>
-constexpr inline bool HasQHashSingleArgOverload<QMap<QByteArray,QByteArray>> = false;
-}`
-            }
-            since: 6.8
         }
     }
     
@@ -1068,6 +1045,27 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/webengine/core,QWebEngineProfile$IconAvail
             }
         }
         ModifyFunction{
+            signature: "printToPdf(QJSValue)"
+            ModifyArgument{
+                index: 1
+                threadAffinity: true
+            }
+        }
+        ModifyFunction{
+            signature: "runJavaScript(QString,QJSValue)"
+            ModifyArgument{
+                index: 2
+                threadAffinity: true
+            }
+        }
+        ModifyFunction{
+            signature: "runJavaScript(QString,quint32,QJSValue)"
+            ModifyArgument{
+                index: 3
+                threadAffinity: true
+            }
+        }
+        ModifyFunction{
             signature: "runJavaScript(QString, const std::function<void(const QVariant &)> &)"
             ModifyArgument{
                 index: 2
@@ -1134,6 +1132,18 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/webengine/core,QWebEngineProfile$IconAvail
         targetType: "QtWebEngineCore"
         //since: 6.7
     }
+
+    ObjectType{
+        name: "QWebEnginePermission"
+        EnumType{
+            name: "Feature"
+        }
+        EnumType{
+            name: "State"
+        }
+
+        since: 6.8
+    }
     
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QWebEngineClientCertificateStore::QWebEngineClientCertificateStore', unmatched parameter type 'QtWebEngineCore::ClientCertificateStoreData*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QWebEngineNotification::QWebEngineNotification', unmatched parameter type 'const QSharedPointer<QtWebEngineCore::UserNotificationController>&'"}
@@ -1147,4 +1157,5 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/webengine/core,QWebEngineProfile$IconAvail
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QWebEngineFileSystemAccessRequest::QWebEngineFileSystemAccessRequest', unmatched parameter type 'QSharedPointer*'"}
     SuppressedWarning{text: "WARNING(CppImplGenerator) :: Value type 'QWebEngineFullScreenRequest' is missing a default constructor. If possible, use CustomConstructor{} element to specify default construction."}
     SuppressedWarning{text: "WARNING(CppImplGenerator) :: Value type 'QWebEngineFileSystemAccessRequest' is missing a default constructor. If possible, use CustomConstructor{} element to specify default construction."}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Final class 'QWebEngineDownloadRequest' set to non-final, as it is extended by other classes"}
 }

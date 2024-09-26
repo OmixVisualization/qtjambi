@@ -762,7 +762,7 @@ public class TestSignals extends ApplicationInitializer{
     		sender.intValueChanged.emit(5);
     	});
     	thread.start();
-    	thread.join();
+    	thread.join(2000);
     	QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
     	QApplication.sendPostedEvents();
     	QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());

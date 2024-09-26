@@ -41,6 +41,7 @@ SOURCES += \
     containeraccess_multihash.cpp \
     containeraccess_pair.cpp \
     containeraccess_set.cpp \
+    containeraccess_span.cpp \
     containers.cpp \
     convert.cpp \
     coreapi.cpp \
@@ -170,6 +171,12 @@ SOURCES += \
 HEADERS += \
     containeraccess_linkedlist.h \
     containeraccess_vector.h
+}else{
+#win32-arm64-msvc* | win32-msvc*: {
+SOURCES += \
+    containeraccess_multimap.cpp \
+    containeraccess_map.cpp
+#}
 }
 
 CONFIG(debug, debug|release) {

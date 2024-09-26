@@ -29,6 +29,7 @@
 
 #include <QtCore/QMutex>
 #include "utils_p.h"
+#include <QtJambi/CoreAPI>
 
 namespace Java{
 namespace QtLocation{
@@ -40,3 +41,11 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/location,QGeoServiceProviderFactory$Result
 )
 }
 }
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+namespace QtJambiLocationPrivate{
+hash_type variantHash(const QVariant& v, hash_type seed){
+    return CoreAPI::computeHash(v.metaType(), v.constData(), seed);
+}
+}
+#endif

@@ -163,6 +163,9 @@ public:
     bool nullness() const;
     void setNullability(bool newNullability);
 
+    QString logsOutputDirectory() const;
+    void setLogsOutputDirectory(const QString &newLogsOutputDirectory);
+
 signals:
     void headerFileNameChanged();
 
@@ -210,6 +213,8 @@ signals:
 
     void nullnessChanged();
 
+    void logsOutputDirectoryChanged();
+
 private:
     bool preprocess(QIODevice& target, const std::function<void(std::string,std::string,const QFileInfo&,bool)>& featureRegistry);
 
@@ -227,6 +232,7 @@ private:
     QString m_inputDirectory;
     QString m_cppOutputDirectory;
     QString m_javaOutputDirectory;
+    QString m_logsOutputDirectory;
     QString m_outputDirectory;
     bool m_printStdout;
     QString m_docsUrl;
@@ -271,6 +277,7 @@ private:
     Q_PROPERTY(bool useNativeIds READ useNativeIds WRITE setUseNativeIds NOTIFY useNativeIdsChanged)
     Q_PROPERTY(QString generateTypeSystemQML READ generateTypeSystemQML WRITE setGenerateTypeSystemQML NOTIFY generateTypeSystemQMLChanged)
     Q_PROPERTY(bool nullness READ nullness WRITE setNullability NOTIFY nullnessChanged)
+    Q_PROPERTY(QString logsOutputDirectory READ logsOutputDirectory WRITE setLogsOutputDirectory NOTIFY logsOutputDirectoryChanged FINAL)
 };
 
 #endif

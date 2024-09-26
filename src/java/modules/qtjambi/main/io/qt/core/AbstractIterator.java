@@ -45,22 +45,29 @@ abstract class AbstractIterator<T> extends QtObject{
 	
 	private final static Function<AbstractIterator<?>, java.util.Iterator<?>> iteratorFactory;
 	private final static Function<AbstractIterator<?>, java.util.Iterator<?>> diteratorFactory;
+	final static Function<AbstractIterator<?>, java.util.ListIterator<?>> mutableIteratorFactory;
 	
 	static {
 		if(Boolean.getBoolean("io.qt.enable-concurrent-container-modification-check")) {
 			@SuppressWarnings("unchecked")
-			Function<AbstractIterator<?>, java.util.Iterator<?>> _iteratorFactory = CheckingIncrementalIterator::new;
+			Function<AbstractIterator<?>, java.util.Iterator<?>> _iteratorFactory = CheckingIterator::new;
 			@SuppressWarnings("unchecked")
-			Function<AbstractIterator<?>, java.util.Iterator<?>> _diteratorFactory = CheckingDecrementalIterator::new;
+			Function<AbstractIterator<?>, java.util.Iterator<?>> _diteratorFactory = CheckingDescendingIterator::new;
 			iteratorFactory = _iteratorFactory;
 			diteratorFactory = _diteratorFactory;
+			@SuppressWarnings("unchecked")
+			Function<AbstractIterator<?>, java.util.ListIterator<?>> _miteratorFactory = CheckingMutableIterator::new;
+			mutableIteratorFactory = _miteratorFactory;
 		}else {
 			@SuppressWarnings("unchecked")
-			Function<AbstractIterator<?>, java.util.Iterator<?>> _iteratorFactory = IncrementalIterator::new;
+			Function<AbstractIterator<?>, java.util.Iterator<?>> _iteratorFactory = DefaultIterator::new;
 			@SuppressWarnings("unchecked")
-			Function<AbstractIterator<?>, java.util.Iterator<?>> _diteratorFactory = DecrementalIterator::new;
+			Function<AbstractIterator<?>, java.util.Iterator<?>> _diteratorFactory = DefaultDescendingIterator::new;
 			iteratorFactory = _iteratorFactory;
 			diteratorFactory = _diteratorFactory;
+			@SuppressWarnings("unchecked")
+			Function<AbstractIterator<?>, java.util.ListIterator<?>> _miteratorFactory = MutableIterator::new;
+			mutableIteratorFactory = _miteratorFactory;
 		}
 	}
 	
@@ -68,14 +75,23 @@ abstract class AbstractIterator<T> extends QtObject{
 	private final Function<QtObject,AbstractIterator<T>> beginSupplier;
 	private final Function<QtObject,AbstractIterator<T>> endSupplier;
 
-	/**
-     * {@inheritDoc}
-	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	AbstractIterator(QtObject owner) {
-		super((QPrivateConstructor)null);
+	AbstractIterator(QPrivateConstructor c, QtObject owner) {
+		super(c);
 		this.owner = owner;
-		if(owner instanceof AbstractSequentialContainer) {
+		if(owner==null) {
+			endSupplier = null;
+			beginSupplier = null;			
+		}else if(owner instanceof AbstractSpan) {
+			AbstractSpan span = (AbstractSpan)owner;
+			if(span.isConstSpan() || isConstant()) {
+				endSupplier = (Function)(Function<AbstractSpan,AbstractIterator<?>>)AbstractSpan::constEnd;
+				beginSupplier = (Function)(Function<AbstractSpan,AbstractIterator<?>>)AbstractSpan::constBegin;
+			}else {
+				endSupplier = (Function)(Function<AbstractSpan,AbstractIterator<?>>)AbstractSpan::end;
+				beginSupplier = (Function)(Function<AbstractSpan,AbstractIterator<?>>)AbstractSpan::begin;
+			}
+		}else if(owner instanceof AbstractSequentialContainer) {
 			if(isConstant()) {
 				endSupplier = (Function)(Function<AbstractSequentialContainer,AbstractIterator<?>>)AbstractSequentialContainer::constEnd;
 				beginSupplier = (Function)(Function<AbstractSequentialContainer,AbstractIterator<?>>)AbstractSequentialContainer::constBegin;
@@ -132,9 +148,6 @@ abstract class AbstractIterator<T> extends QtObject{
 		return beginSupplier==null ? null : beginSupplier.apply(owner);
 	}
 	
-    @QtUninvokable
-    private static native boolean operator_equal(long __this__nativeId, long o);
-    
     /**
      * Compares this iterator with other object.
      */
@@ -144,21 +157,21 @@ abstract class AbstractIterator<T> extends QtObject{
         if (other instanceof AbstractIterator) {
         	AbstractIterator<?> iter = (AbstractIterator<?>) other;
         	if(owner==iter.owner)
-        		return operator_equal(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(iter));
+        		return equals(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(iter));
         }
     	return false;
     }
     
-    private static class IncrementalIterator<E> implements java.util.Iterator<E>{
-    	final AbstractIterator<E> nativeIterator;
+    private static class DefaultIterator<E> implements java.util.Iterator<E>{
+    	final AbstractIterator<E> current;
 		final AbstractIterator<E> end;
     	private boolean hasNext;
 
-    	IncrementalIterator(AbstractIterator<E> nativeIterator) {
+    	DefaultIterator(AbstractIterator<E> current) {
 			super();
-			this.nativeIterator = nativeIterator;
-			end = nativeIterator.end();
-			hasNext = end!=null && !nativeIterator.equals(end);
+			this.current = current;
+			end = current.end();
+			hasNext = end!=null && !current.equals(end);
 		}
 
 		@Override
@@ -169,9 +182,9 @@ abstract class AbstractIterator<T> extends QtObject{
 		@Override
 		public E next() {
 			checkNext();
-            E e = nativeIterator._value();
-            nativeIterator.increment();
-            hasNext = end!=null && !nativeIterator.equals(end);
+            E e = current._value();
+            current.increment();
+            hasNext = end!=null && !current.equals(end);
             return e;
 		}
     	
@@ -181,26 +194,26 @@ abstract class AbstractIterator<T> extends QtObject{
 		}
     }
     
-    private static class CheckingIncrementalIterator<E> extends IncrementalIterator<E>{
-    	CheckingIncrementalIterator(AbstractIterator<E> nativeIterator) {
+    private static class CheckingIterator<E> extends DefaultIterator<E>{
+    	CheckingIterator(AbstractIterator<E> nativeIterator) {
 			super(nativeIterator);
 		}
 
 		void checkNext() {
     		super.checkNext();
-        	if(end!=null && !end.equals(nativeIterator.end()))
+        	if(end!=null && !end.equals(current.end()))
         		throw new ConcurrentModificationException();
 		}
     }
     
-    private static class DecrementalIterator<E> implements java.util.Iterator<E>{
-    	final AbstractIterator<E> nativeIterator;
+    private static class DefaultDescendingIterator<E> implements java.util.Iterator<E>{
+    	final AbstractIterator<E> current;
     	final AbstractIterator<E> begin;
     	private boolean hasNext;
 
-		public DecrementalIterator(AbstractIterator<E> nativeIterator) {
+		public DefaultDescendingIterator(AbstractIterator<E> nativeIterator) {
 			super();
-			this.nativeIterator = nativeIterator;
+			this.current = nativeIterator;
 			begin = nativeIterator.begin();
 			hasNext = begin!=null && !nativeIterator.equals(begin);
 		}
@@ -213,9 +226,9 @@ abstract class AbstractIterator<T> extends QtObject{
 		@Override
 		public E next() {
 			checkNext();
-			nativeIterator.decrement();
-            hasNext = begin!=null && !nativeIterator.equals(begin);
-			E e = nativeIterator._value();
+			current.decrement();
+            hasNext = begin!=null && !current.equals(begin);
+			E e = current._value();
             return e;
 		}
     	
@@ -225,18 +238,118 @@ abstract class AbstractIterator<T> extends QtObject{
 		}
     }
     
-    private static class CheckingDecrementalIterator<E> extends DecrementalIterator<E>{
-    	public CheckingDecrementalIterator(AbstractIterator<E> nativeIterator) {
+    private static class CheckingDescendingIterator<E> extends DefaultDescendingIterator<E>{
+    	public CheckingDescendingIterator(AbstractIterator<E> nativeIterator) {
 			super(nativeIterator);
 		}
 
 		void checkNext() {
     		super.checkNext();
-        	if(begin!=null && !begin.equals(nativeIterator.begin()))
+        	if(begin!=null && !begin.equals(current.begin()))
         		throw new ConcurrentModificationException();
 		}
     }
-    
+	
+	private static class MutableIterator<T> implements java.util.ListIterator<T>{
+		final AbstractIterator<T> current;
+		final AbstractIterator<T> begin;
+		final AbstractIterator<T> end;
+    	private int icursor;
+    	private boolean hasNext;
+    	private boolean hasPrevious;
+    	
+    	MutableIterator(AbstractIterator<T> current){
+    		if(current.isConstant())
+    			throw new RuntimeException("Cannot produce mutable iterator from read-only iterator.");
+    		this.current = current;
+    		begin = current.begin();
+    		end = current.end();
+        	hasNext = end!=null && !current.equals(end);
+        	hasPrevious = begin!=null && !current.equals(begin);
+    	}
+    	
+        @Override
+        public boolean hasNext() {
+        	return hasNext;
+        }
+
+        @Override
+        public T next() {
+        	if(!hasNext())
+                throw new NoSuchElementException();
+        	checkModification();
+        	T e = current._value();
+        	current.increment();
+        	hasNext = end!=null && !current.equals(end);
+        	hasPrevious = begin!=null && !current.equals(begin);
+        	icursor++;
+            return e;
+        }
+        
+        @Override
+        public T previous() {
+        	if(!hasPrevious())
+                throw new NoSuchElementException();
+        	checkModification();
+        	current.decrement();
+        	hasNext = end!=null && !current.equals(end);
+        	hasPrevious = begin!=null && !current.equals(begin);
+        	T e = current._value();
+        	icursor--;
+            return e;
+        }
+        
+		@Override
+        public void set(T e) {
+        	checkModification();
+        	if(icursor==0)
+        		throw new IndexOutOfBoundsException(-1);
+        	current.decrement();
+        	((QSequentialIterator<T>)current).setValue(e);
+        	current.increment();
+        }
+        
+        @Override
+        public int previousIndex() {
+        	return icursor-1;
+        }
+        
+        @Override
+        public int nextIndex() {
+        	return icursor;
+        }
+        
+        @Override
+        public boolean hasPrevious() {
+        	return hasPrevious;
+        }
+        
+		void checkModification() {
+		}
+
+		@Override
+		public void remove() {
+			throw new UnsupportedOperationException("remove");
+		}
+
+		@Override
+		public void add(T e) {
+			throw new UnsupportedOperationException("add");
+		}
+	}
+	
+	private static class CheckingMutableIterator<T> extends MutableIterator<T>{
+
+		CheckingMutableIterator(AbstractIterator<T> current) {
+			super(current);
+		}
+		
+		void checkModification() {
+			if(end!=null && !end.equals(current.end()))
+        		throw new ConcurrentModificationException();
+		}
+	}
+	
     /**
      * Returns a java iterator over the containers entries between this and end.
      */
@@ -254,7 +367,16 @@ abstract class AbstractIterator<T> extends QtObject{
     final java.util.Iterator<T> toJavaDescendingIterator(){
     	return (java.util.Iterator<T>)diteratorFactory.apply(this);
     }
-    
+	
+	/**
+     * Returns a java iterator over the containers entries between this and end.
+     */
+    @SuppressWarnings("unchecked")
+	@QtUninvokable
+	java.util.ListIterator<T> toMutableJavaIterator(){
+    	return (java.util.ListIterator<T>)mutableIteratorFactory.apply(this);
+    }
+
     /**
      * Advances the iterator to the next item in the container.
      */
@@ -284,6 +406,9 @@ abstract class AbstractIterator<T> extends QtObject{
     }
     @QtUninvokable
     static native <T> T value(long __this__nativeId);
+    
+    @QtUninvokable
+    private static native QMetaType valueType(long __this__nativeId);
 
     /**
 	 * Returns the value at iterator's position in the container or emptiness in case of <code>end</code>.
@@ -291,6 +416,14 @@ abstract class AbstractIterator<T> extends QtObject{
     @QtUninvokable
 	public final Optional<T> value() {
 		return !isValid() ? Optional.empty() : Optional.ofNullable(_value());
+	}
+    
+    /**
+	 * Returns the value type of the iterator.
+	 */
+    @QtUninvokable
+	public final QMetaType valueType() {
+    	return valueType(QtJambi_LibraryUtilities.internal.nativeId(this));
 	}
     
     /**
@@ -305,6 +438,20 @@ abstract class AbstractIterator<T> extends QtObject{
     		throw new NoSuchElementException();
     	}
 	}
+    
+    /**
+	 * Set the value at iterator's position in the container.
+	 * @param newValue the new value
+	 */
+    @QtUninvokable
+	final boolean checkedSetValue(T newValue) {
+    	if(isConstant() || !isValid())
+    		return false;
+    	return setValue(QtJambi_LibraryUtilities.internal.nativeId(this), newValue);
+    }
+    
+    @QtUninvokable
+    private static native <T> boolean setValue(long __this__nativeId, T newValue);
     
     @QtUninvokable
     private static native boolean canLess(long __this__nativeId);
@@ -326,7 +473,7 @@ abstract class AbstractIterator<T> extends QtObject{
 			} catch (Exception e) {
 			}
     	}
-		return owner!=end.owner || !operator_equal(nativeId, QtJambi_LibraryUtilities.internal.nativeId(end));
+		return owner!=end.owner || !equals(nativeId, QtJambi_LibraryUtilities.internal.nativeId(end));
     }
 	
 	private static class BeginEndFunctions{
@@ -408,4 +555,25 @@ abstract class AbstractIterator<T> extends QtObject{
             return io.qt.internal.CoreUtility.functionFromMethod(method);
         }
     }
+	
+    @QtUninvokable
+	private static native int hashCode(long id);
+	
+    @QtUninvokable
+	private static native boolean equals(long id, long other);
+    
+    @QtUninvokable
+	private static native String toString(long id);
+
+	@Override
+    @QtUninvokable
+	public final int hashCode() {
+		return hashCode(QtJambi_LibraryUtilities.internal.nativeId(this));
+	}
+
+	@Override
+    @QtUninvokable
+	public final String toString() {
+		return toString(QtJambi_LibraryUtilities.internal.nativeId(this));
+	}
 }

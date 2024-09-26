@@ -51,6 +51,7 @@ import java.lang.reflect.WildcardType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -92,7 +93,47 @@ public abstract class ClassAnalyzerUtility {
 		useAnnotatedType = _useAnnotatedType;
 	}
 	
-	private static final Map<Class<?>, Boolean> isClassGenerated = new HashMap<>();
+	public static final Comparator<Class<?>> COMPARATOR = (c1,c2)->{
+		if(c1!=null) {
+			if(c2!=null) {
+				if(c1.getClassLoader()==c2.getClassLoader()) {
+					return c1.getName().compareTo(c2.getName());
+				}else {
+					int id1 = System.identityHashCode(c1.getClassLoader());
+					int id2 = System.identityHashCode(c2.getClassLoader());
+					if(id1<id2)
+						return -1;
+					if(id1>id2)
+						return 1;
+					return c1.getName().compareTo(c2.getName());
+				}
+			}else {
+				return 1;
+			}
+		}else if(c2!=null){
+			return -1;
+		}else {
+			return 0;
+		}
+	};
+	private static final Comparator<QPair<Class<? extends QtObjectInterface>, Class<?>>> COMPARATOR2 = (p1,p2)->{
+		if(p1!=null) {
+			if(p2!=null) {
+				int cmp = COMPARATOR.compare(p1.first, p2.first);
+				if(cmp==0) {
+					cmp = COMPARATOR.compare(p1.second, p2.second);
+				}
+				return cmp;
+			}else {
+				return 1;
+			}
+		}else if(p2!=null){
+			return -1;
+		}else {
+			return 0;
+		}
+	};
+	private static final Map<Class<?>, Boolean> isClassGenerated = new TreeMap<>(COMPARATOR);
 	private static final Map<Class<?>, Function<Object,Object>> lambdaWriteReplaceHandles = Collections.synchronizedMap(new HashMap<>());
 	private static final Map<Class<?>, Function<QtObjectInterface,io.qt.MemberAccess<?>>> memberAccessFactories = Collections.synchronizedMap(new HashMap<>());
 	private static interface Check {

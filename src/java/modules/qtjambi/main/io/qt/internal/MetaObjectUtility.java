@@ -58,6 +58,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 import io.qt.NativeAccess;
@@ -110,6 +111,18 @@ final class MetaObjectUtility extends AbstractMetaObjectUtility{
     static <K,V> Function<? super K, ArrayList<V>> arrayListFactory(){
 		return key->new ArrayList<>();
 	}
+    
+    private final static Supplier<List<String>> intDescriptionListFactory = 
+    		Boolean.getBoolean("io.qt.enable-metaobject-logs") 
+	    		? ArrayList::new 
+	    		: ()-> new AbstractList<String>() {
+	                @Override
+	                public boolean add(String e) { return false; }
+	                @Override
+	                public String get(int index) {return null;}
+	                @Override
+	                public int size() {return 0; }
+	            };
 	
     /**
      * this method analyzes the given class for meta object data.
@@ -127,14 +140,7 @@ final class MetaObjectUtility extends AbstractMetaObjectUtility{
             }
             MetaObjectData metaObjectData = new MetaObjectData();
             metaObjectData.addStringDataAndReturnIndex("Reserving the first string for QDynamicMetaObject identification.");
-            List<String> intdataComments = /*new ArrayList<>();*/new AbstractList<String>() {
-                @Override
-                public boolean add(String e) { return false; }
-                @Override
-                public String get(int index) {return null;}
-                @Override
-                public int size() {return 0; }
-            };
+            List<String> intdataComments = intDescriptionListFactory.get();
             final String classname = clazz.getName().replace(".", "::").replace("$", "::");
             
             Hashtable<String,String> classInfos = new Hashtable<String, String>();
@@ -281,7 +287,7 @@ signalLoop:	    for (Field declaredField : declaredFields) {
 	                                    }
 	                				}
 	                			}else{
-	                				typeName = internalTypeNameOfClass(signalType.type, signalType.genericType);
+	                				typeName = internalTypeNameOfClass(signalType.type, signalType.genericType, signalType.annotatedType);
 	                				if(signalType.isPointer) {
 	                                    if(!typeName.isEmpty() && !typeName.endsWith("*")) {
 	                                        typeName += "*";
@@ -305,7 +311,7 @@ signalLoop:	    for (Field declaredField : declaredFields) {
 	    	                            		|| !(signalType.genericType instanceof Class 
 	    	                            				|| metaType.name().toString().equals(typeName))
 	    	                            		|| metaType.javaType()!=signalType.type) {
-	    	                                metaTypeId = registerMetaType(signalType.type, signalType.genericType, null, signalType.isPointer, signalType.isReference);
+	    	                                metaTypeId = registerMetaType(signalType.type, signalType.genericType, signalType.annotatedType, signalType.isPointer, signalType.isReference);
 	    	                                metaType = new QMetaType(metaTypeId);
 	    	                            }
 	    	                            if(metaTypeId!=QMetaType.Type.UnknownType.value())
@@ -454,7 +460,7 @@ signalLoop:	    for (Field declaredField : declaredFields) {
 	                                    }
 	                				}
 	                			}else{
-	                				typeName = internalTypeNameOfClass(signalType.type, signalType.genericType);
+	                				typeName = internalTypeNameOfClass(signalType.type, signalType.genericType, signalType.annotatedType);
 	                				if(signalType.isPointer) {
 	                                    if(!typeName.isEmpty() && !typeName.endsWith("*")) {
 	                                        typeName += "*";
@@ -632,7 +638,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                                     }
                 				}
                 			}else {
-                				typeName = internalTypeNameOfClass(parameterTypes[j], genericParameterTypes[j]);
+                				typeName = internalTypeNameOfClass(parameterTypes[j], genericParameterTypes[j], annotatedParameterTypes==null ? null : annotatedParameterTypes[j]);
                 				if(isPointer) {
                                     if(!typeName.isEmpty() && !typeName.endsWith("*")) {
                                         typeName += "*";
@@ -989,26 +995,26 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                 	List<ParameterInfo> methodParameterInfos = new ArrayList<>();
                 	boolean isPointer = false;
                     boolean isReference = false;
-                    if(ClassAnalyzerUtility.useAnnotatedType
-                    		&& (declaredMethod.getAnnotatedReturnType().isAnnotationPresent(QtPointerType.class)
+                    AnnotatedElement annotatedReturnType = null;
+                    if(ClassAnalyzerUtility.useAnnotatedType) {
+                    	annotatedReturnType = declaredMethod.getAnnotatedReturnType();
+                    }
+                    if(annotatedReturnType!=null
+                    		&& (annotatedReturnType.isAnnotationPresent(QtPointerType.class)
                             		|| declaredMethod.isAnnotationPresent(QtPointerType.class))) {
                     	isPointer = true;
                     }
                     QtReferenceType referenceType = null;
-                    if(ClassAnalyzerUtility.useAnnotatedType) {
-                    	if(declaredMethod.getAnnotatedReturnType()!=null)
-                    		referenceType = declaredMethod.getAnnotatedReturnType().getAnnotation(QtReferenceType.class);
-                    }
+                	if(annotatedReturnType!=null)
+                		referenceType = declaredMethod.getAnnotatedReturnType().getAnnotation(QtReferenceType.class);
                     if(referenceType==null)
                     	referenceType = declaredMethod.getAnnotation(QtReferenceType.class);
                     if(referenceType!=null && !referenceType.isConst()) {
                     	isReference = true;
                     }
                     QtMetaType metaTypeDecl = null;
-                    if(ClassAnalyzerUtility.useAnnotatedType) {
-                    	if(declaredMethod.getAnnotatedReturnType()!=null)
-                    		metaTypeDecl = declaredMethod.getAnnotatedReturnType().getAnnotation(QtMetaType.class);
-                    }
+                	if(annotatedReturnType!=null)
+                		metaTypeDecl = declaredMethod.getAnnotatedReturnType().getAnnotation(QtMetaType.class);
                     int metaTypeId = 0;
                     String typeName;
                     if(metaTypeDecl!=null) {
@@ -1037,7 +1043,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                             }
         				}
         			}else {
-        				typeName = internalTypeNameOfClass(declaredMethod.getReturnType(), declaredMethod.getGenericReturnType());
+        				typeName = internalTypeNameOfClass(declaredMethod.getReturnType(), declaredMethod.getGenericReturnType(), annotatedReturnType);
         				if(isPointer) {
                             if(!typeName.isEmpty() && !typeName.endsWith("*")) {
                                 typeName += "*";
@@ -1132,7 +1138,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                                 }
             				}
             			}else {
-            				typeName = internalTypeNameOfClass(parameterTypes[j], genericParameterTypes[j]);
+            				typeName = internalTypeNameOfClass(parameterTypes[j], genericParameterTypes[j], annotatedParameterTypes==null ? null : annotatedParameterTypes[j]);
             				if(isPointer) {
                                 if(!typeName.isEmpty() && !typeName.endsWith("*")) {
                                     typeName += "*";
@@ -1752,7 +1758,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                                 }
             				}
             			}else{
-            				typeName = internalTypeNameOfClass(propertyType, genericPropertyType);
+            				typeName = internalTypeNameOfClass(propertyType, genericPropertyType, annotatedPropertyType);
             				if(isPointer) {
                                 if(!typeName.isEmpty() && !typeName.endsWith("*")) {
                                     typeName += "*";
@@ -2023,7 +2029,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                 intdataComments.add("end of data");
             }
 
-            if(intdataComments instanceof ArrayList) {
+            if(!intdataComments.isEmpty()) {
                 List<String> nms = Arrays.asList(
                         "revision",
                         "className",
@@ -2088,11 +2094,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                                 System.out.printf("\t%1$s: %3$s=%2$s --> %4$s\n", i, metaObjectData.intData.get(i), intdataComments.get(i), strg);
                             }
                         }else {
-                            if(i<nms.size()) {
-                                System.out.printf("\t%1$s: %3$s=%2$s (%4$s)\n", i, metaObjectData.intData.get(i), intdataComments.get(i), nms.get(i));
-                            }else {
-                                System.out.printf("\t%1$s: %3$s=%2$s\n", i, metaObjectData.intData.get(i), intdataComments.get(i));
-                            }
+                            System.out.printf("\t%1$s: %3$s=%2$s\n", i, metaObjectData.intData.get(i), intdataComments.get(i));
                         }
                     } catch (IndexOutOfBoundsException e) {
                         System.out.printf("\t%1$s: %2$s\n", i, metaObjectData.intData.get(i));
@@ -2550,7 +2552,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
 		        do {
 		        	try {
 			        	Method superMethod = superclass.getDeclaredMethod(declaredMethod.getName(), declaredMethod.getParameterTypes());
-			        	if(superMethod!=null && !Modifier.isPrivate(superMethod.getModifiers()))
+			        	if(superMethod!=null && !Modifier.isPrivate(superMethod.getModifiers()) && superMethod.getDeclaringClass()==superclass)
 			        		return true;
 			        } catch (Throwable e) {
 			        }

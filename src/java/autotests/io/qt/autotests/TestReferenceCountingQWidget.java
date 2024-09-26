@@ -32,7 +32,6 @@ package io.qt.autotests;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -41,7 +40,7 @@ import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import io.qt.QtUtilities;
+import io.qt.autotests.generated.General;
 import io.qt.core.*;
 import io.qt.gui.*;
 import io.qt.widgets.*;
@@ -60,7 +59,7 @@ public class TestReferenceCountingQWidget extends ApplicationInitializer{
 		QGuiApplication.platformName();
 	}
 	
-	@Test public void testActionsNull() {
+	@Test public void testQWidgetActionsNull() {
         QWidget w = new QWidget();
         w.addAction((QAction)null);
         w.addActions(null);
@@ -68,13 +67,13 @@ public class TestReferenceCountingQWidget extends ApplicationInitializer{
         assertEquals(0, w.actions().size());
 	}
 	
-	@Test public void testAddActions() throws InterruptedException {
+	@Test public void testQWidgetAddActions() throws InterruptedException {
 		AtomicInteger counter = new AtomicInteger();
 		{
 			QWidget w = new QWidget();
 	        for (int i=0; i<COUNT; ++i) {
                 QAction act = new QAction("action" + i, null);
-                QtUtilities.getSignalOnDispose(act).connect(counter::incrementAndGet);
+                General.internalAccess.registerCleaner(act, counter::incrementAndGet);
                 w.addActions(QList.of(act));
                 QApplication.processEvents();
                 act = null;
@@ -94,9 +93,10 @@ public class TestReferenceCountingQWidget extends ApplicationInitializer{
 	            assertTrue(actions.get(i) != null);
 	            assertEquals("action" + i, actions.get(i).text());
 	        }
+            General.internalAccess.registerCleaner(w, counter::incrementAndGet);
 	        w = null;
 		}
-        for (int i = 0; i < 50 && counter.get()<COUNT; i++) {
+        for (int i = 0; i < 50 && counter.get()<COUNT+1; i++) {
             ApplicationInitializer.runGC();
             synchronized(getClass()) {
             	Thread.sleep(25);
@@ -104,16 +104,16 @@ public class TestReferenceCountingQWidget extends ApplicationInitializer{
             QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
             QCoreApplication.processEvents();
 		}
-        Assert.assertEquals(COUNT, counter.get());
+        Assert.assertEquals(COUNT+1, counter.get());
 	}
 	
-	@Test public void testInsertActions() throws InterruptedException {
+	@Test public void testQWidgetInsertActions() throws InterruptedException {
 		AtomicInteger counter = new AtomicInteger();
 		{
 			QWidget w = new QWidget();
 	        for (int i=0; i<COUNT; ++i) {
                 QAction act = new QAction("action" + i, null);
-                QtUtilities.getSignalOnDispose(act).connect(counter::incrementAndGet);
+                General.internalAccess.registerCleaner(act, counter::incrementAndGet);
                 w.insertActions(null, QList.of(act));
                 QApplication.processEvents();
                 act = null;
@@ -133,9 +133,10 @@ public class TestReferenceCountingQWidget extends ApplicationInitializer{
 	            assertTrue(actions.get(i) != null);
 	            assertEquals("action" + i, actions.get(i).text());
 	        }
+            General.internalAccess.registerCleaner(w, counter::incrementAndGet);
 	        w = null;
 		}
-        for (int i = 0; i < 50 && counter.get()<COUNT; i++) {
+        for (int i = 0; i < 50 && counter.get()<COUNT+1; i++) {
             ApplicationInitializer.runGC();
             synchronized(getClass()) {
             	Thread.sleep(25);
@@ -143,16 +144,16 @@ public class TestReferenceCountingQWidget extends ApplicationInitializer{
             QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
             QCoreApplication.processEvents();
 		}
-        Assert.assertEquals(COUNT, counter.get());
+        Assert.assertEquals(COUNT+1, counter.get());
 	}
 	
-	@Test public void testInsertAction() throws InterruptedException {
+	@Test public void testQWidgetInsertAction() throws InterruptedException {
 		AtomicInteger counter = new AtomicInteger();
 		{
 			QWidget w = new QWidget();
 	        for (int i=0; i<COUNT; ++i) {
                 QAction act = new QAction("action" + i, null);
-                QtUtilities.getSignalOnDispose(act).connect(counter::incrementAndGet);
+                General.internalAccess.registerCleaner(act, counter::incrementAndGet);
                 w.insertAction(null, act);
                 QApplication.processEvents();
                 act = null;
@@ -166,15 +167,17 @@ public class TestReferenceCountingQWidget extends ApplicationInitializer{
 	            QCoreApplication.processEvents();
 			}
 	        Assert.assertEquals(0, counter.get());
-	        List<QAction> actions = w.actions();
+	        QList<QAction> actions = w.actions();
 	        assertEquals(COUNT, actions.size());
 	        for (int i=0; i<COUNT; ++i) {
 	            assertTrue(actions.get(i) != null);
 	            assertEquals("action" + i, actions.get(i).text());
 	        }
+	        actions = null;
+            General.internalAccess.registerCleaner(w, counter::incrementAndGet);
 	        w = null;
 		}
-        for (int i = 0; i < 50 && counter.get()<COUNT; i++) {
+        for (int i = 0; i < 50 && counter.get()<COUNT+1; i++) {
             ApplicationInitializer.runGC();
             synchronized(getClass()) {
             	Thread.sleep(25);
@@ -182,15 +185,15 @@ public class TestReferenceCountingQWidget extends ApplicationInitializer{
             QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
             QCoreApplication.processEvents();
 		}
-        Assert.assertEquals(COUNT, counter.get());
+        Assert.assertEquals(COUNT+1, counter.get());
 	}
 	
-	@Test public void testAddActionTwice() throws InterruptedException {
+	@Test public void testQWidgetAddActionTwice() throws InterruptedException {
 		AtomicInteger counter = new AtomicInteger();
 		QWidget w = new QWidget();
         for (int i=0; i<COUNT; ++i) {
             QAction act = new QAction("action" + i, null);
-            QtUtilities.getSignalOnDispose(act).connect(counter::incrementAndGet);
+            General.internalAccess.registerCleaner(act, counter::incrementAndGet);
             w.addAction(act);
             w.addAction(act);
             QApplication.processEvents();
@@ -205,16 +208,19 @@ public class TestReferenceCountingQWidget extends ApplicationInitializer{
             QCoreApplication.processEvents();
 		}
         Assert.assertEquals(0, counter.get());
-        List<QAction> actions = new ArrayList<>(w.actions());
+        QList<QAction> actions = w.actions();
         assertEquals(COUNT, actions.size());
         for (int i=0; i<COUNT; ++i) {
-            assertTrue(actions.get(i) != null);
-            assertEquals("action" + i, actions.get(i).text());
-            w.removeAction(actions.get(i));
+        	QAction action = actions.removeFirst();
+            assertTrue(action != null);
+            assertEquals("action" + i, action.text());
+            w.removeAction(action);
+            assertTrue("QAction does not have java ownership", General.internalAccess.isJavaOwnership(action));
+            action = null;
             QApplication.processEvents();
         }
         actions = null;
-        for (int i = 0; i < 50 && counter.get()<COUNT; i++) {
+        for (int i = 0; i < 120 && counter.get()<COUNT; i++) {
             ApplicationInitializer.runGC();
             synchronized(getClass()) {
             	Thread.sleep(25);
@@ -226,12 +232,12 @@ public class TestReferenceCountingQWidget extends ApplicationInitializer{
         Assert.assertEquals(COUNT, counter.get());
 	}
 	
-	@Test public void testAddAndRemoveAction() throws InterruptedException {
+	@Test public void testQWidgetAddAndRemoveAction() throws InterruptedException {
 		AtomicInteger counter = new AtomicInteger();
 		QWidget w = new QWidget();
         for (int i=0; i<COUNT; ++i) {
             QAction act = new QAction("action" + i, null);
-            QtUtilities.getSignalOnDispose(act).connect(counter::incrementAndGet);
+            General.internalAccess.registerCleaner(act, counter::incrementAndGet);
             w.addAction(act);
             QApplication.processEvents();
             act = null;
@@ -245,16 +251,19 @@ public class TestReferenceCountingQWidget extends ApplicationInitializer{
             QCoreApplication.processEvents();
 		}
         Assert.assertEquals(0, counter.get());
-        List<QAction> actions = new ArrayList<>(w.actions());
+        QList<QAction> actions = w.actions();
         assertEquals(COUNT, actions.size());
         for (int i=0; i<COUNT; ++i) {
-            assertTrue(actions.get(i) != null);
-            assertEquals("action" + i, actions.get(i).text());
-            w.removeAction(actions.get(i));
+        	QAction action = actions.removeFirst();
+            assertTrue(action != null);
+            assertEquals("action" + i, action.text());
+            w.removeAction(action);
+            assertTrue("QAction does not have java ownership", General.internalAccess.isJavaOwnership(action));
+            action = null;
             QApplication.processEvents();
         }
         actions = null;
-        for (int i = 0; i < 50 && counter.get()<COUNT; i++) {
+        for (int i = 0; i < 120 && counter.get()<COUNT; i++) {
             ApplicationInitializer.runGC();
             synchronized(getClass()) {
             	Thread.sleep(25);
@@ -262,6 +271,133 @@ public class TestReferenceCountingQWidget extends ApplicationInitializer{
             QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
             QCoreApplication.processEvents();
 		}
+        assertEquals(0, w.actions().size());
         Assert.assertEquals(COUNT, counter.get());
+	}
+	
+	@Test 
+	public final void testQWidgetSetEffect() throws InterruptedException {
+		AtomicInteger counter = new AtomicInteger();
+		{
+			QWidget o = new QWidget();
+	        {
+	        	QGraphicsEffect effect = new QGraphicsBlurEffect();
+	        	General.internalAccess.registerCleaner(effect, counter::incrementAndGet);
+	        	o.setGraphicsEffect(effect);
+	            effect = null;
+	        }
+	        
+	        for (int i = 0; i < 20 && counter.get()==0; i++) {
+	            ApplicationInitializer.runGC();
+	            synchronized(ApplicationInitializer.class) {
+	            	Thread.sleep(25+i*10);
+	            }
+	            QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+	            QCoreApplication.processEvents();
+			}
+	        Assert.assertEquals(0, counter.get());
+	        assertTrue(o.graphicsEffect() != null);
+	        o = null;
+		}
+		for (int i = 0; i < 50 && counter.get()==0; i++) {
+            ApplicationInitializer.runGC();
+            synchronized(ApplicationInitializer.class) {
+            	Thread.sleep(25+i*10);
+            }
+            QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+            QCoreApplication.processEvents();
+		}
+        Assert.assertEquals(1, counter.get());
+        ApplicationInitializer.runGC();
+	}
+	
+	@Test 
+	public final void testQWidgetSetEffectNull() throws InterruptedException {
+		AtomicInteger counter = new AtomicInteger();
+		{
+			QWidget o = new QWidget();
+	        {
+	        	QGraphicsEffect effect = new QGraphicsBlurEffect();
+	        	General.internalAccess.registerCleaner(effect, counter::incrementAndGet);
+	        	o.setGraphicsEffect(effect);
+	        	o.setGraphicsEffect(null);
+	            effect = null;
+	        }
+	        
+	        for (int i = 0; i < 20 && counter.get()==0; i++) {
+	            ApplicationInitializer.runGC();
+	            synchronized(ApplicationInitializer.class) {
+	            	Thread.sleep(25+i*10);
+	            }
+	            QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+	            QCoreApplication.processEvents();
+			}
+	        Assert.assertEquals(1, counter.get());
+	        o = null;
+		}
+        ApplicationInitializer.runGC();
+	}
+	
+	@Test 
+	public final void testQWidgetSetStyle() throws InterruptedException {
+		AtomicInteger counter = new AtomicInteger();
+		{
+			QWidget w = new QWidget();
+	        {
+	        	QStyle style = new QCommonStyle();
+	        	General.internalAccess.registerCleaner(style, counter::incrementAndGet);
+	        	w.setStyle(style);
+	            style = null;
+	        }
+	        
+	        for (int i = 0; i < 20 && counter.get()==0; i++) {
+	            ApplicationInitializer.runGC();
+	            synchronized(ApplicationInitializer.class) {
+	            	Thread.sleep(25+i*10);
+	            }
+	            QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+	            QCoreApplication.processEvents();
+			}
+	        Assert.assertEquals(0, counter.get());
+	        assertTrue(w.style() != null);
+	        w = null;
+		}
+		for (int i = 0; i < 50 && counter.get()==0; i++) {
+            ApplicationInitializer.runGC();
+            synchronized(ApplicationInitializer.class) {
+            	Thread.sleep(25+i*10);
+            }
+            QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+            QCoreApplication.processEvents();
+		}
+        Assert.assertEquals(1, counter.get());
+        ApplicationInitializer.runGC();
+	}
+	
+	@Test 
+	public final void testQWidgetSetStyleNull() throws InterruptedException {
+		AtomicInteger counter = new AtomicInteger();
+		{
+			QWidget w = new QWidget();
+	        {
+	        	QStyle style = new QCommonStyle();
+	        	General.internalAccess.registerCleaner(style, counter::incrementAndGet);
+	        	w.setStyle(style);
+	        	w.setStyle(null);
+	            style = null;
+	        }
+	        
+	        for (int i = 0; i < 20 && counter.get()==0; i++) {
+	            ApplicationInitializer.runGC();
+	            synchronized(ApplicationInitializer.class) {
+	            	Thread.sleep(25+i*10);
+	            }
+	            QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+	            QCoreApplication.processEvents();
+			}
+	        Assert.assertEquals(1, counter.get());
+	        w = null;
+		}
+        ApplicationInitializer.runGC();
 	}
 }

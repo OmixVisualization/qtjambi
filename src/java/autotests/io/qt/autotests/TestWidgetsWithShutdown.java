@@ -93,7 +93,7 @@ public class TestWidgetsWithShutdown extends ApplicationInitializer{
     			}
 			});
 			thread.start();
-			thread.join();
+			thread.join(5000);
 		    Assert.assertTrue(exception[0] instanceof QThreadAffinityException);
 			exception[0] = null;
 	    	QTimer.singleShot(500, ()->{

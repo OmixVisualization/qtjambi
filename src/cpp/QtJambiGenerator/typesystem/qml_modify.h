@@ -119,6 +119,9 @@ public:
     bool getNoImplicitCalls() const;
     void setNoImplicitCalls(bool newNoImplicitCalls);
 
+    QString getComment() const;
+    void setComment(const QString &newComment);
+
 signals:
     void indexChanged();
 
@@ -136,6 +139,8 @@ signals:
 
     void noImplicitCallsChanged();
 
+    void commentChanged();
+
 private:
     QVariant index;
     QString replaceValue;
@@ -145,6 +150,7 @@ private:
     bool invalidateAfterUse = false;
     bool valueAsPointer = false;
     bool noImplicitCalls = false;
+    QString comment;
     Q_PROPERTY(QVariant index READ getIndex WRITE setIndex NOTIFY indexChanged)
     Q_PROPERTY(QString replaceValue READ getReplaceValue WRITE setReplaceValue NOTIFY replaceValueChanged)
     Q_PROPERTY(QVariant threadAffinity READ getThreadAffinity WRITE setThreadAffinity NOTIFY threadAffinityChanged)
@@ -153,6 +159,7 @@ private:
     Q_PROPERTY(bool invalidateAfterUse READ getInvalidateAfterUse WRITE setInvalidateAfterUse NOTIFY invalidateAfterUseChanged)
     Q_PROPERTY(bool valueAsPointer READ getValueAsPointer WRITE setValueAsPointer NOTIFY valueAsPointerChanged)
     Q_PROPERTY(bool noImplicitCalls READ getNoImplicitCalls WRITE setNoImplicitCalls NOTIFY noImplicitCallsChanged FINAL)
+    Q_PROPERTY(QString comment READ getComment WRITE setComment NOTIFY commentChanged FINAL)
 };
 
 class RemoveDefaultExpression : public AbstractObject
@@ -760,6 +767,9 @@ public:
     bool getInvalidateAfterUse() const;
     void setInvalidateAfterUse(bool newInvalidateAfterUse);
 
+    QString getComment() const;
+    void setComment(const QString &newComment);
+
 signals:
     void indexChanged();
 
@@ -773,6 +783,8 @@ signals:
 
     void invalidateAfterUseChanged();
 
+    void commentChanged();
+
 private:
     int index = std::numeric_limits<int>::max();
     QString defaultExpression;
@@ -780,12 +792,14 @@ private:
     QString type;
     QString jniType;
     bool invalidateAfterUse = false;
+    QString comment;
     Q_PROPERTY(int index READ getIndex WRITE setIndex NOTIFY indexChanged)
     Q_PROPERTY(QString defaultExpression READ getDefaultExpression WRITE setDefaultExpression NOTIFY defaultExpressionChanged)
     Q_PROPERTY(QString name READ getName WRITE setName NOTIFY nameChanged)
     Q_PROPERTY(QString type READ getType WRITE setType NOTIFY typeChanged)
     Q_PROPERTY(QString jniType READ getJniType WRITE setJniType NOTIFY jniTypeChanged)
     Q_PROPERTY(bool invalidateAfterUse READ getInvalidateAfterUse WRITE setInvalidateAfterUse NOTIFY invalidateAfterUseChanged)
+    Q_PROPERTY(QString comment READ getComment WRITE setComment NOTIFY commentChanged FINAL)
 };
 
 class AddTypeParameter : public AbstractObject
@@ -800,16 +814,23 @@ public:
     const QString &getExtending() const;
     void setExtending(const QString &newExtending);
 
+    QString getComment() const;
+    void setComment(const QString &newComment);
+
 signals:
     void nameChanged();
 
     void extendingChanged();
 
+    void commentChanged();
+
 private:
     QString name;
     QString extending;
+    QString comment;
     Q_PROPERTY(QString name READ getName WRITE setName NOTIFY nameChanged)
     Q_PROPERTY(QString extending READ getExtending WRITE setExtending NOTIFY extendingChanged)
+    Q_PROPERTY(QString comment READ getComment WRITE setComment NOTIFY commentChanged FINAL)
 };
 
 class Remove : public AbstractObject

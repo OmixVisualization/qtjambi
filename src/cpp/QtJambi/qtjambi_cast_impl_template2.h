@@ -87,7 +87,7 @@ struct qtjambi_jnitype_template2_cast<false, has_scope,
         if(!in)
             return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, has_scope, NativeType>::convert(env, scope, nullptr);
         NativeType list;
-        jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, in);
+        jobject iterator = QtJambiAPI::iteratorOfJavaIterable(env, in);
         while(QtJambiAPI::hasJavaIteratorNext(env, iterator)) {
             jobject element = QtJambiAPI::nextOfJavaIterator(env, iterator);
             list.push_back(qtjambi_scoped_cast<has_scope,T,jobject>::cast(env, element, nullptr, scope));
@@ -136,7 +136,7 @@ struct qtjambi_jnitype_template2_cast<false, has_scope,
         if(!in)
             return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, has_scope, NativeType>::convert(env, scope, nullptr);
         NativeType list;
-        jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, in);
+        jobject iterator = QtJambiAPI::iteratorOfJavaIterable(env, in);
         while(QtJambiAPI::hasJavaIteratorNext(env, iterator)) {
             jobject element = QtJambiAPI::nextOfJavaIterator(env, iterator);
             list.push_back(qtjambi_scoped_cast<has_scope,T,jobject>::cast(env, element, nullptr, scope));
@@ -186,7 +186,7 @@ struct qtjambi_jnitype_template2_cast<false, has_scope,
         if(!in)
             return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, has_scope, NativeType>::convert(env, scope, nullptr);
         NativeType list;
-        jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, in);
+        jobject iterator = QtJambiAPI::iteratorOfJavaIterable(env, in);
         while(QtJambiAPI::hasJavaIteratorNext(env, iterator)) {
             jobject element = QtJambiAPI::nextOfJavaIterator(env, iterator);
             list.push_back(qtjambi_scoped_cast<has_scope,T,jobject>::cast(env, element, nullptr, scope));
@@ -420,9 +420,9 @@ struct qtjambi_jnitype_template2_cast<true, has_scope,\
         return  QtJambiAPI::convert##TYPE##ToJavaObject(env,\
                                            scope ? scope->relatedNativeID() : InvalidNativeID,\
                                            ref_ptr<is_pointer, Container>::ref(in),\
-                                           CloneAssociativeContainer<TYPE,K,T, is_pointer>::function,\
+                                           CloneAssociativeContainer<TYPE,K,T, is_pointer && !is_const>::function,\
                                            DeleteAssociativeContainer<TYPE,K,T>::function,\
-                                           TYPE##Access<K,T,is_pointer && is_const>::newInstance()\
+                                           TYPE##Access<K,T>::newInstance()\
                               );\
      }\
 };\

@@ -269,6 +269,9 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(java/math,BigInteger,
     QTJAMBI_REPOSITORY_DEFINE_METHOD(longValue,()J)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(toByteArray,()[B)
 )
+QTJAMBI_REPOSITORY_DEFINE_CLASS(java/nio,DirectByteBuffer,
+                                QTJAMBI_REPOSITORY_DEFINE_FIELD(att,Ljava/lang/Object;)
+                                )
 }
 
 }
@@ -285,7 +288,7 @@ BigIntegerValue fromBigInteger(JNIEnv* env, jobject object)
     int bitLength = Java::Runtime::BigInteger::bitLength(env, object);
     if(bitLength<=64){
         jbyteArray data = jbyteArray(Java::Runtime::BigInteger::toByteArray(env, object));
-        JByteArrayPointer pointer(env, data, false);
+        JConstByteArrayPointer pointer(env, data);
         if(pointer.size()>=8){
             value.value = qFromBigEndian<quint64>(pointer.pointer()+(pointer.size()-8));
         }else{

@@ -37,6 +37,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.NonNull;
+import io.qt.QNativePointer;
 import io.qt.QNoNativeResourcesException;
 import io.qt.QtPrimitiveType;
 import io.qt.core.QAbstractListModel;

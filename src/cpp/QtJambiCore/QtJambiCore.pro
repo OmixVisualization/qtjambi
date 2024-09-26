@@ -38,9 +38,12 @@ HEADERS += \
 SOURCES +=\
     QHash_shell.cpp \
     QIterator_shell.cpp \
+    QMultiHash_shell.cpp \
+    QMultiMap_shell.cpp \
     QSet_shell.cpp \
     QMap_shell.cpp \
     QList_shell.cpp \
+    QSpan_shell.cpp \
     future.cpp \
     plugins.cpp \
     impl.cpp \

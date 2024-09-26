@@ -146,7 +146,7 @@ public class TestPerformance extends ApplicationInitializer {
 		host1 = null;
 		host2 = null;
 		host3 = null;
-//		System.gc();
+    	runGC();
 	}
 	
 //    @Test

@@ -76,8 +76,8 @@ struct MetaTypeRegistrationHelper<T,false>{
             flags |= QMetaType::WasDeclaredAsMetaType;
 
         id = QMetaType::registerNormalizedType(normalizedTypeName,
-                                       QtMetaTypePrivate::QMetaTypeFunctionHelper<T, std::is_arithmetic<T>::value || std::is_enum<T>::value || std::is_pointer<T>::value || supports_Destructor<T>::value>::Destruct,
-                                       QtMetaTypePrivate::QMetaTypeFunctionHelper<T, std::is_arithmetic<T>::value || std::is_enum<T>::value || std::is_pointer<T>::value || (supports_StandardConstructor<T>::value && supports_CopyConstructor<T>::value)>::Construct,
+                                       QtMetaTypePrivate::QMetaTypeFunctionHelper<T, std::is_arithmetic<T>::value || std::is_enum<T>::value || std::is_pointer<T>::value || is_destructible<T>::value>::Destruct,
+                                       QtMetaTypePrivate::QMetaTypeFunctionHelper<T, std::is_arithmetic<T>::value || std::is_enum<T>::value || std::is_pointer<T>::value || (is_default_constructible<T>::value && is_copy_constructible<T>::value)>::Construct,
                                        int(sizeof(T)),
                                        flags,
                                        QtPrivate::MetaObjectForType<T>::value());
@@ -105,6 +105,10 @@ int registerMetaType(){
 
 typedef void(* SmartPointerDeleter)(void *, bool);
 typedef void*(*SmartPointerGetter)(const void *);
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
+class AbstractSpanAccess;
+#endif //QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
 
 namespace ContainerAPI{
 
@@ -135,17 +139,27 @@ QTJAMBI_EXPORT bool testQMap(JNIEnv *env, jobject mapObject, const std::type_inf
 QTJAMBI_EXPORT bool testQHash(JNIEnv *env, jobject mapObject, const std::type_info& expectedKeyType, const QMetaType& expectedKeyMetaType, const std::type_info& expectedValueType, const QMetaType& expectedValueMetaType);
 
 QTJAMBI_EXPORT bool getAsQStack(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType, void* &pointer);
+QTJAMBI_EXPORT bool getAsQStack(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType, void* &pointer, AbstractContainerAccess*& access);
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 QTJAMBI_EXPORT bool getAsQVector(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType, void* &pointer);
+QTJAMBI_EXPORT bool getAsQVector(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType, void* &pointer, AbstractContainerAccess*& access);
 QTJAMBI_EXPORT bool getAsQLinkedList(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType, void* &pointer);
+QTJAMBI_EXPORT bool getAsQLinkedList(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType, void* &pointer, AbstractContainerAccess*& access);
 #endif
 QTJAMBI_EXPORT bool getAsQList(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType, void* &pointer);
+QTJAMBI_EXPORT bool getAsQList(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType, void* &pointer, AbstractContainerAccess*& access);
 QTJAMBI_EXPORT bool getAsQSet(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType, void* &pointer);
+QTJAMBI_EXPORT bool getAsQSet(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType, void* &pointer, AbstractContainerAccess*& access);
 QTJAMBI_EXPORT bool getAsQQueue(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType, void* &pointer);
+QTJAMBI_EXPORT bool getAsQQueue(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType, void* &pointer, AbstractContainerAccess*& access);
 QTJAMBI_EXPORT bool getAsQMultiMap(JNIEnv *env, jobject mapObject, const QMetaType& expectedKeyMetaType, const QMetaType& expectedValueMetaType, void* &pointer);
+QTJAMBI_EXPORT bool getAsQMultiMap(JNIEnv *env, jobject mapObject, const QMetaType& expectedKeyMetaType, const QMetaType& expectedValueMetaType, void* &pointer, AbstractContainerAccess*& access);
 QTJAMBI_EXPORT bool getAsQMultiHash(JNIEnv *env, jobject mapObject, const QMetaType& expectedKeyMetaType, const QMetaType& expectedValueMetaType, void* &pointer);
+QTJAMBI_EXPORT bool getAsQMultiHash(JNIEnv *env, jobject mapObject, const QMetaType& expectedKeyMetaType, const QMetaType& expectedValueMetaType, void* &pointer, AbstractContainerAccess*& access);
 QTJAMBI_EXPORT bool getAsQMap(JNIEnv *env, jobject mapObject, const QMetaType& expectedKeyMetaType, const QMetaType& expectedValueMetaType, void* &pointer);
+QTJAMBI_EXPORT bool getAsQMap(JNIEnv *env, jobject mapObject, const QMetaType& expectedKeyMetaType, const QMetaType& expectedValueMetaType, void* &pointer, AbstractContainerAccess*& access);
 QTJAMBI_EXPORT bool getAsQHash(JNIEnv *env, jobject mapObject, const QMetaType& expectedKeyMetaType, const QMetaType& expectedValueMetaType, void* &pointer);
+QTJAMBI_EXPORT bool getAsQHash(JNIEnv *env, jobject mapObject, const QMetaType& expectedKeyMetaType, const QMetaType& expectedValueMetaType, void* &pointer, AbstractContainerAccess*& access);
 
 QTJAMBI_EXPORT bool getAsQStack(JNIEnv *env, jobject collection, const std::type_info& expectedElementType, const QMetaType& expectedElementMetaType, void* &pointer);
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -159,6 +173,36 @@ QTJAMBI_EXPORT bool getAsQMultiMap(JNIEnv *env, jobject mapObject, const std::ty
 QTJAMBI_EXPORT bool getAsQMultiHash(JNIEnv *env, jobject mapObject, const std::type_info& expectedKeyType, const QMetaType& expectedKeyMetaType, const std::type_info& expectedValueType, const QMetaType& expectedValueMetaType, void* &pointer);
 QTJAMBI_EXPORT bool getAsQMap(JNIEnv *env, jobject mapObject, const std::type_info& expectedKeyType, const QMetaType& expectedKeyMetaType, const std::type_info& expectedValueType, const QMetaType& expectedValueMetaType, void* &pointer);
 QTJAMBI_EXPORT bool getAsQHash(JNIEnv *env, jobject mapObject, const std::type_info& expectedKeyType, const QMetaType& expectedKeyMetaType, const std::type_info& expectedValueType, const QMetaType& expectedValueMetaType, void* &pointer);
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
+QTJAMBI_EXPORT bool testQSpan(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType);
+QTJAMBI_EXPORT bool testQSpan(JNIEnv *env, jobject collection, const std::type_info& expectedElementType, const QMetaType& expectedElementMetaType);
+QTJAMBI_EXPORT bool getAsQSpan(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType, void* &pointer);
+QTJAMBI_EXPORT bool getAsQSpan(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType, void* &pointer, AbstractContainerAccess*& access);
+QTJAMBI_EXPORT bool getAsQSpan(JNIEnv *env, jobject collection, const std::type_info& expectedElementType, const QMetaType& expectedElementMetaType, void* &pointer);
+
+template<typename T>
+bool getAsQSpan(JNIEnv *env, jobject collection, QList<T> * &pointer, AbstractContainerAccess*& access){
+    return getAsQSpan(env, collection, QTJAMBI_METATYPE_FROM_TYPE2(T), reinterpret_cast<void*&>(pointer), access);
+}
+template<typename T>
+bool getAsQSpan(JNIEnv *env, jobject collection, QList<T> * &pointer){
+    return getAsQSpan(env, collection, QtJambiPrivate::qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T), reinterpret_cast<void*&>(pointer));
+}
+template<typename T>
+bool testQSpan(JNIEnv *env, jobject collection){
+    return testQSpan(env, collection, QtJambiPrivate::qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T));
+}
+
+QTJAMBI_EXPORT jobject objectFromQSpan(JNIEnv *__jni_env,
+                                       void*& listPtr,
+                                       AbstractContainerAccess*& setAccess);
+QTJAMBI_EXPORT jobject objectFromQSpan(JNIEnv *__jni_env,
+                                       void*& listPtr,
+                                       AbstractSpanAccess*& setAccess);
+#endif //QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
+
+QTJAMBI_EXPORT PtrOwnerFunction registeredOwnerFunction(const std::type_info& typeId);
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 template<typename T>
@@ -179,6 +223,16 @@ bool getAsQLinkedList(JNIEnv *env, jobject collection, QLinkedList<T> * &pointer
 template<typename T>
 bool getAsQVector(JNIEnv *env, jobject collection, QVector<T> * &pointer){
     return getAsQVector(env, collection, QtJambiPrivate::qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T), reinterpret_cast<void*&>(pointer));
+}
+
+template<typename T>
+bool getAsQLinkedList(JNIEnv *env, jobject collection, QLinkedList<T> * &pointer, AbstractContainerAccess*& access){
+    return getAsQLinkedList(env, collection, QTJAMBI_METATYPE_FROM_TYPE2(T), reinterpret_cast<void*&>(pointer), access);
+}
+
+template<typename T>
+bool getAsQVector(JNIEnv *env, jobject collection, QVector<T> * &pointer, AbstractContainerAccess*& access){
+    return getAsQVector(env, collection, QTJAMBI_METATYPE_FROM_TYPE2(T), reinterpret_cast<void*&>(pointer), access);
 }
 #endif
 
@@ -227,6 +281,28 @@ bool getAsQStack(JNIEnv *env, jobject collection, QStack<T> * &pointer){
     return getAsQStack(env, collection, QtJambiPrivate::qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T), reinterpret_cast<void*&>(pointer));
 }
 
+template<typename T>
+bool getAsQStack(JNIEnv *env, jobject collection, QStack<T> * &pointer, AbstractContainerAccess*& access){
+    return getAsQStack(env, collection, QTJAMBI_METATYPE_FROM_TYPE2(T), reinterpret_cast<void*&>(pointer), access);
+}
+
+QTJAMBI_EXPORT jobject objectFromQList(JNIEnv *__jni_env,
+                                       void*& listPtr,
+                                       AbstractContainerAccess*& setAccess);
+QTJAMBI_EXPORT jobject objectFromQList(JNIEnv *__jni_env,
+                                       void*& listPtr,
+                                       AbstractListAccess*& setAccess);
+
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+QTJAMBI_EXPORT jobject objectFromQVector(JNIEnv *__jni_env,
+                                         void*& listPtr,
+                                         AbstractContainerAccess*& setAccess);
+QTJAMBI_EXPORT jobject objectFromQVector(JNIEnv *__jni_env,
+                                         void*& listPtr,
+                                         AbstractVectorAccess*& setAccess);
+#endif
+
+
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 template<typename T>
 struct AsList{
@@ -247,7 +323,20 @@ template<typename T>
 bool getAsQList(JNIEnv *env, jobject collection, typename AsList<T>::Type2 * &pointer){
     return getAsQList(env, collection, QtJambiPrivate::qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T), reinterpret_cast<void*&>(pointer));
 }
+
+template<typename T>
+bool getAsQList(JNIEnv *env, jobject collection, typename AsList<T>::Type1 * &pointer, AbstractContainerAccess*& access){
+    return getAsQList(env, collection, QTJAMBI_METATYPE_FROM_TYPE2(T), reinterpret_cast<void*&>(pointer), access);
+}
+template<typename T>
+bool getAsQList(JNIEnv *env, jobject collection, typename AsList<T>::Type2 * &pointer, AbstractContainerAccess*& access){
+    return getAsQList(env, collection, QTJAMBI_METATYPE_FROM_TYPE2(T), reinterpret_cast<void*&>(pointer), access);
+}
 #else
+template<typename T>
+bool getAsQList(JNIEnv *env, jobject collection, QList<T> * &pointer, AbstractContainerAccess*& access){
+    return getAsQList(env, collection, QTJAMBI_METATYPE_FROM_TYPE2(T), reinterpret_cast<void*&>(pointer), access);
+}
 template<typename T>
 bool getAsQList(JNIEnv *env, jobject collection, QList<T> * &pointer){
     return getAsQList(env, collection, QtJambiPrivate::qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T), reinterpret_cast<void*&>(pointer));
@@ -255,8 +344,18 @@ bool getAsQList(JNIEnv *env, jobject collection, QList<T> * &pointer){
 #endif
 
 template<typename T>
+bool getAsQSet(JNIEnv *env, jobject collection, QSet<T> * &pointer, AbstractContainerAccess*& access){
+    return getAsQSet(env, collection, QTJAMBI_METATYPE_FROM_TYPE2(T), reinterpret_cast<void*&>(pointer), access);
+}
+
+template<typename T>
 bool getAsQSet(JNIEnv *env, jobject collection, QSet<T> * &pointer){
     return getAsQSet(env, collection, QtJambiPrivate::qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T), reinterpret_cast<void*&>(pointer));
+}
+
+template<typename T>
+bool getAsQQueue(JNIEnv *env, jobject collection, QQueue<T> * &pointer, AbstractContainerAccess*& access){
+    return getAsQQueue(env, collection, QTJAMBI_METATYPE_FROM_TYPE2(T), reinterpret_cast<void*&>(pointer), access);
 }
 
 template<typename T>
@@ -265,8 +364,18 @@ bool getAsQQueue(JNIEnv *env, jobject collection, QQueue<T> * &pointer){
 }
 
 template<typename K, typename V>
+bool getAsQMultiMap(JNIEnv *env, jobject mapObject, QMultiMap<K,V> * &pointer, AbstractContainerAccess*& access){
+    return getAsQMultiMap(env, mapObject, QTJAMBI_METATYPE_FROM_TYPE2(K), QTJAMBI_METATYPE_FROM_TYPE2(V), reinterpret_cast<void*&>(pointer), access);
+}
+
+template<typename K, typename V>
 bool getAsQMultiMap(JNIEnv *env, jobject mapObject, QMultiMap<K,V> * &pointer){
     return getAsQMultiMap(env, mapObject, QtJambiPrivate::qtjambi_type<K>::id(), QTJAMBI_METATYPE_FROM_TYPE2(K), QtJambiPrivate::qtjambi_type<V>::id(), QTJAMBI_METATYPE_FROM_TYPE2(V), reinterpret_cast<void*&>(pointer));
+}
+
+template<typename K, typename V>
+bool getAsQMultiHash(JNIEnv *env, jobject mapObject, QMultiHash<K,V> * &pointer, AbstractContainerAccess*& access){
+    return getAsQMultiHash(env, mapObject, QTJAMBI_METATYPE_FROM_TYPE2(K), QTJAMBI_METATYPE_FROM_TYPE2(V), reinterpret_cast<void*&>(pointer), access);
 }
 
 template<typename K, typename V>
@@ -275,8 +384,18 @@ bool getAsQMultiHash(JNIEnv *env, jobject mapObject, QMultiHash<K,V> * &pointer)
 }
 
 template<typename K, typename V>
+bool getAsQMap(JNIEnv *env, jobject mapObject, QMap<K,V> * &pointer, AbstractContainerAccess*& access){
+    return getAsQMap(env, mapObject, QTJAMBI_METATYPE_FROM_TYPE2(K), QTJAMBI_METATYPE_FROM_TYPE2(V), reinterpret_cast<void*&>(pointer), access);
+}
+
+template<typename K, typename V>
 bool getAsQMap(JNIEnv *env, jobject mapObject, QMap<K,V> * &pointer){
     return getAsQMap(env, mapObject, QtJambiPrivate::qtjambi_type<K>::id(), QTJAMBI_METATYPE_FROM_TYPE2(K), QtJambiPrivate::qtjambi_type<V>::id(), QTJAMBI_METATYPE_FROM_TYPE2(V), reinterpret_cast<void*&>(pointer));
+}
+
+template<typename K, typename V>
+bool getAsQHash(JNIEnv *env, jobject mapObject, QHash<K,V> * &pointer, AbstractContainerAccess*& access){
+    return getAsQHash(env, mapObject, QTJAMBI_METATYPE_FROM_TYPE2(K), QTJAMBI_METATYPE_FROM_TYPE2(V), reinterpret_cast<void*&>(pointer), access);
 }
 
 template<typename K, typename V>
@@ -295,6 +414,10 @@ enum class SequentialContainerType{
     QStack,
     QQueue,
     QSet
+#if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
+    ,QSpan
+    ,QConstSpan
+#endif
 };
 
 enum class AssociativeContainerType{
@@ -305,56 +428,136 @@ enum class AssociativeContainerType{
     QPair
 };
 
+struct ContainerInfo{
+    jobject object = nullptr;
+    void* container = nullptr;
+    ContainerInfo() = default;
+    ContainerInfo(jobject _object, void* _container) : object(_object), container(_container) {}
+};
+struct ExtendedContainerInfo : ContainerInfo{
+    QtJambiNativeID nativeId = QtJambiNativeID::Invalid;
+    ExtendedContainerInfo() = default;
+    ExtendedContainerInfo(jobject _object, void* _container, QtJambiNativeID _nativeId) : ContainerInfo(_object, _container), nativeId(_nativeId) {}
+};
+struct ContainerAndAccessInfo : ContainerInfo{
+    AbstractContainerAccess* access = nullptr;
+    ContainerAndAccessInfo() = default;
+    ContainerAndAccessInfo(jobject _object) : ContainerInfo{_object, nullptr}{}
+    ContainerAndAccessInfo(jobject _object, void* container, AbstractContainerAccess* _access) : ContainerInfo{_object, container}, access(_access) {}
+};
+struct ConstContainerInfo{
+    jobject object = nullptr;
+    const void* container = nullptr;
+    ConstContainerInfo() = default;
+    ConstContainerInfo(const ConstContainerInfo& other) : object(other.object), container(other.container) {}
+    ConstContainerInfo(const ContainerInfo& other) : object(other.object), container(other.container) {}
+    ConstContainerInfo(jobject _object, const void* _container) : object(_object), container(_container) {}
+};
+struct ConstExtendedContainerInfo : ConstContainerInfo{
+    QtJambiNativeID nativeId = QtJambiNativeID::Invalid;
+    ConstExtendedContainerInfo() = default;
+    ConstExtendedContainerInfo(const ConstExtendedContainerInfo& other) : ConstContainerInfo(other), nativeId(other.nativeId) {}
+    ConstExtendedContainerInfo(const ExtendedContainerInfo& other) : ConstContainerInfo(other), nativeId(other.nativeId) {}
+    ConstExtendedContainerInfo(jobject _object, void* _container, QtJambiNativeID _nativeId) : ConstContainerInfo(_object, _container), nativeId(_nativeId) {}
+};
+struct ConstContainerAndAccessInfo : ConstContainerInfo{
+    AbstractContainerAccess* access = nullptr;
+    ConstContainerAndAccessInfo() = default;
+    ConstContainerAndAccessInfo(jobject _object, const void* container, AbstractContainerAccess* _access) : ConstContainerInfo{_object, container}, access(_access) {}
+};
+
 class QTJAMBI_EXPORT AbstractContainerAccess{
 public:
+    enum DataType : quint8{
+        Value,
+        Pointer = 0x01,
+        PointerToQObject = 0x02,
+        FunctionPointer = 0x04,
+        PointersMask = 0x0f
+    };
     virtual void dispose();
     virtual AbstractContainerAccess* clone() = 0;
     virtual void assign(void* container, const void* other) = 0;
+    virtual void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) = 0;
     virtual size_t sizeOf() = 0;
-    virtual void* constructContainer(void* placement, const void* copyOf = nullptr) = 0;
+    virtual void* constructContainer(void* placement) = 0;
+    virtual void* constructContainer(void* placement, const void* copyOf) = 0;
+    virtual void* constructContainer(JNIEnv * env, void* placement, const ConstContainerAndAccessInfo& copyOf) = 0;
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     virtual void* constructContainer(void* placement, void* move) = 0;
+    virtual void* constructContainer(JNIEnv * env, void* placement, const ContainerAndAccessInfo& move) = 0;
     void* createContainer(void* moved);
+    void* createContainer(JNIEnv *env, const ContainerAndAccessInfo& moved);
 #endif
     virtual bool destructContainer(void* container) = 0;
     virtual int registerContainer(const QByteArray& containerTypeName) = 0;
     virtual const QObject* getOwner(const void* container);
-    void* createContainer(const void* copy = nullptr);
+    virtual bool hasOwnerFunction();
+    void* createContainer();
+    void* createContainer(const void* copy);
+    void* createContainer(JNIEnv *env, const ConstContainerAndAccessInfo& other);
     void deleteContainer(void* container);
     static bool isPointerType(const QMetaType& metaType);
-    static AbstractContainerAccess* create(JNIEnv* env, SequentialContainerType containerType, const QMetaType& memberMetaType);
-    static AbstractContainerAccess* create(JNIEnv* env, AssociativeContainerType mapType, const QMetaType& memberMetaType1, const QMetaType& memberMetaType2);
-    static AbstractContainerAccess* create(JNIEnv* env, SequentialContainerType containerType,
-                                                             const QMetaType& metaType,
-                                                             size_t align, size_t size,
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                              bool isStaticType,
-#endif
-                                                             bool isPointer,
-                                                             const QtJambiUtils::QHashFunction& hashFunction,
-                                                             const QtJambiUtils::InternalToExternalConverter& memberConverter,
-                                                             const QtJambiUtils::ExternalToInternalConverter& memberReConverter);
-    static AbstractContainerAccess* create(JNIEnv* env, AssociativeContainerType mapType,
-                                                            const QMetaType& memberMetaType1,
-                                                            size_t align1, size_t size1,
-                                                            bool isPointer1,
-                                                            const QtJambiUtils::QHashFunction& hashFunction1,
-                                                            const QtJambiUtils::InternalToExternalConverter& memberConverter1,
-                                                            const QtJambiUtils::ExternalToInternalConverter& memberReConverter1,
-                                                            const QMetaType& memberMetaType2,
-                                                            size_t align2, size_t size2,
-                                                            bool isPointer2,
-                                                            const QtJambiUtils::QHashFunction& hashFunction2,
-                                                            const QtJambiUtils::InternalToExternalConverter& memberConverter2,
-                                                            const QtJambiUtils::ExternalToInternalConverter& memberReConverter2);
-
     Q_DISABLE_COPY_MOVE(AbstractContainerAccess)
 protected:
+    static DataType dataType(const QMetaType& metaType, const QSharedPointer<AbstractContainerAccess>& access);
     AbstractContainerAccess();
     virtual ~AbstractContainerAccess();
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     static bool isStaticType(const QMetaType&);
 #endif
+};
+
+class QTJAMBI_EXPORT AbstractReferenceCountingContainer{
+protected:
+    AbstractReferenceCountingContainer() = default;
+    virtual ~AbstractReferenceCountingContainer();
+public:
+    virtual void updateRC(JNIEnv * env, const ContainerInfo& container) = 0;
+    void swapRC(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2);
+    jobject findContainer(JNIEnv * env, jobject container);
+    static void unfoldAndAddContainer(JNIEnv * env, jobject set, const void* data, AbstractContainerAccess::DataType dataType, const QMetaType& metaType, AbstractContainerAccess* access);
+    static void unfoldAndAddContainer(JNIEnv * env, jobject set, jobject value);
+};
+
+class QTJAMBI_EXPORT ReferenceCountingSetContainer : public AbstractReferenceCountingContainer{
+public:
+    ReferenceCountingSetContainer() = default;
+    jobject rcContainer(JNIEnv * env, jobject container);
+    void assignRC(JNIEnv * env, jobject container, jobject container2);
+    void assignUniqueRC(JNIEnv * env, jobject container, jobject container2);
+    void clearRC(JNIEnv * env, jobject container);
+    void addRC(JNIEnv * env, jobject container, jobject value);
+    void addUniqueRC(JNIEnv * env, jobject container, jobject value);
+    void removeRC(JNIEnv * env, jobject container, jobject value);
+    void removeRC(JNIEnv * env, jobject container, jobject value, int n);
+    void addAllRC(JNIEnv * env, jobject container, jobject container2);
+    void addAllUniqueRC(JNIEnv * env, jobject container, jobject container2);
+    void addNestedValueRC(JNIEnv * env, jobject container, AbstractContainerAccess::DataType dataType, bool isContainer, jobject value);
+};
+
+class QTJAMBI_EXPORT ReferenceCountingMapContainer : public AbstractReferenceCountingContainer{
+public:
+    ReferenceCountingMapContainer() = default;
+    jobject rcContainer(JNIEnv * env, jobject container);
+    void clearRC(JNIEnv * env, jobject container);
+    void assignRC(JNIEnv * env, jobject container, jobject container2);
+    void putAllRC(JNIEnv * env, jobject container, jobject container2);
+    void putRC(JNIEnv * env, jobject container, jobject key, jobject value);
+    void removeRC(JNIEnv * env, jobject container, jobject key, int n = 1);
+};
+
+class QTJAMBI_EXPORT ReferenceCountingMultiMapContainer : public AbstractReferenceCountingContainer{
+public:
+    ReferenceCountingMultiMapContainer() = default;
+    jobject rcContainer(JNIEnv * env, jobject container);
+    void clearRC(JNIEnv * env, jobject container);
+    void assignRC(JNIEnv * env, jobject container, jobject container2);
+    void putAllRC(JNIEnv * env, jobject container, jobject container2);
+    void putRC(JNIEnv * env, jobject container, jobject key, jobject value);
+    void removeRC(JNIEnv * env, jobject container, jobject key, int n = 1);
+    void removeRC(JNIEnv * env, jobject container, jobject key, jobject value, int n = 1);
+    static jobject newRCMultiMap(JNIEnv * env);
 };
 
 class QTJAMBI_EXPORT AbstractSequentialConstIteratorAccess : public AbstractContainerAccess{
@@ -369,14 +572,19 @@ public:
     virtual jboolean lessThan(JNIEnv * env, const void* iterator, const void* other) = 0;
     virtual bool canLess() = 0;
     virtual jboolean equals(JNIEnv * env, const void* iterator, const void* other) = 0;
+    virtual const QMetaType& valueMetaType() = 0;
 private:
     size_t sizeOf() final override;
-    void* constructContainer(void* placement, const void* copyOf = nullptr) final override;
+    void* constructContainer(void* placement) final override;
+    void* constructContainer(void* placement, const void* copyOf) final override;
+    void* constructContainer(JNIEnv *, void* result, const ConstContainerAndAccessInfo& container) final override;
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     void* constructContainer(void* placement, void* move) final override;
+    void* constructContainer(JNIEnv *, void* result, const ContainerAndAccessInfo& move) final override;
 #endif
     bool destructContainer(void* container) final override;
-    void assign(void*, const void*) final override;
+    void assign(void*, const void* ) final override;
+    void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) final override;
     int registerContainer(const QByteArray&) final override;
     Q_DISABLE_COPY_MOVE(AbstractSequentialConstIteratorAccess)
 };
@@ -397,6 +605,7 @@ protected:
     AbstractAssociativeConstIteratorAccess();
 public:
     virtual jobject key(JNIEnv * env, const void* iterator) = 0;
+    virtual const QMetaType& keyMetaType() = 0;
 private:
     Q_DISABLE_COPY_MOVE(AbstractAssociativeConstIteratorAccess)
 };
@@ -414,189 +623,256 @@ private:
 typedef bool (*ElementAnalyzer)(const void* element, void* data);
 typedef bool (*EntryAnalyzer)(const void* key, const void* value, void* data);
 
-class QTJAMBI_EXPORT AbstractListAccess : public AbstractContainerAccess{
+class QTJAMBI_EXPORT AbstractSequentialAccess : public AbstractContainerAccess{
+protected:
+    ~AbstractSequentialAccess() override;
+    AbstractSequentialAccess();
+public:
+    AbstractSequentialAccess* clone() override = 0;
+    virtual bool isDetached(const void* container) = 0;
+    virtual void detach(const ContainerInfo& container) = 0;
+    virtual bool isSharedWith(const void* container, const void* container2) = 0;
+    virtual void swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2) = 0;
+    virtual jint size(JNIEnv * env, const void* container) = 0;
+    virtual void clear(JNIEnv * env, const ContainerInfo& container) = 0;
+    virtual jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) = 0;
+    virtual jobject constEnd(JNIEnv * env, const ConstExtendedContainerInfo& container) = 0;
+    virtual const QMetaType& elementMetaType() = 0;
+    virtual DataType elementType() = 0;
+    virtual AbstractContainerAccess* elementNestedContainerAccess() = 0;
+    virtual bool hasNestedContainerAccess() = 0;
+    virtual bool hasNestedPointers() = 0;
+    class QTJAMBI_EXPORT ElementIterator{
+    public:
+        ElementIterator() = default;
+        virtual ~ElementIterator();
+        virtual bool hasNext() = 0;
+        virtual jobject next(JNIEnv * env) = 0;
+        virtual const void* next() = 0;
+    };
+    virtual std::unique_ptr<ElementIterator> elementIterator(const void*) = 0;
+    Q_DISABLE_COPY_MOVE(AbstractSequentialAccess)
+};
+
+#if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
+class QTJAMBI_EXPORT AbstractSpanAccess : public AbstractSequentialAccess{
+protected:
+    ~AbstractSpanAccess() override;
+    AbstractSpanAccess();
+public:
+    AbstractSpanAccess* clone() override = 0;
+    virtual bool isConst() = 0;
+    virtual jint size_bytes(JNIEnv * env, const void* container) = 0;
+    virtual jobject get(JNIEnv *,const void*,jint) = 0;
+    virtual bool set(JNIEnv *,const ContainerInfo&,jint,jobject) = 0;
+    virtual jobject begin(JNIEnv * env, const ExtendedContainerInfo& container) = 0;
+    virtual jobject end(JNIEnv * env, const ExtendedContainerInfo& container) = 0;
+    Q_DISABLE_COPY_MOVE(AbstractSpanAccess)
+private:
+    bool isDetached(const void* container) final override;
+    void detach(const ContainerInfo& container) final override;
+    bool isSharedWith(const void* container, const void* container2) final override;
+    void swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2) final override;
+    void clear(JNIEnv * env, const ContainerInfo& container) final override;
+};
+#endif //QT_VERSION >= QT_VERSION_CHECK(6,7,0)
+
+class QTJAMBI_EXPORT AbstractListAccess : public AbstractSequentialAccess{
 protected:
     ~AbstractListAccess() override;
     AbstractListAccess();
 public:
     AbstractListAccess* clone() override = 0;
-    virtual void analyzeElements(const void* container, ElementAnalyzer analyzer, void* data) = 0;
-    virtual bool isConstant() = 0;
-    virtual const QMetaType& elementMetaType() = 0;
-    virtual void appendList(JNIEnv * env, void* container, jobject list) = 0;
+#if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
+    virtual AbstractSpanAccess* createSpanAccess(bool isConst) = 0;
+#endif //QT_VERSION >= QT_VERSION_CHECK(6,7,0)
+    virtual void appendList(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& containerInfo) = 0;
     virtual jobject at(JNIEnv * env, const void* container, jint index) = 0;
     virtual jobject value(JNIEnv * env, const void* container, jint index) = 0;
     virtual jobject value(JNIEnv * env, const void* container, jint index, jobject defaultValue) = 0;
-    virtual void swapItemsAt(JNIEnv * env, void* container, jint index1, jint index2) = 0;
+    virtual void swapItemsAt(JNIEnv * env, const ContainerInfo& container, jint index1, jint index2) = 0;
     virtual jboolean startsWith(JNIEnv * env, const void* container, jobject value) = 0;
-    virtual jint size(JNIEnv * env, const void* container) = 0;
-    virtual void reserve(JNIEnv * env, void* container, jint size) = 0;
-    virtual void replace(JNIEnv * env, void* container, jint index, jobject value) = 0;
-    virtual void remove(JNIEnv * env, void* container, jint index, jint n) = 0;
-    virtual jint removeAll(JNIEnv * env, void* container, jobject value) = 0;
+    virtual void reserve(JNIEnv * env, const ContainerInfo& container, jint size) = 0;
+    virtual void replace(JNIEnv * env, const ContainerInfo& container, jint index, jobject value) = 0;
+    virtual void remove(JNIEnv * env, const ContainerInfo& container, jint index, jint n) = 0;
+    virtual jint removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) = 0;
     virtual jboolean equal(JNIEnv * env, const void* container, jobject other) = 0;
-    virtual void move(JNIEnv * env, void* container, jint index1, jint index2) = 0;
-    virtual jobject mid(JNIEnv * env, const void* container, jint index1, jint index2) = 0;
+    virtual void move(JNIEnv * env, const ContainerInfo& container, jint index1, jint index2) = 0;
+    virtual ContainerAndAccessInfo mid(JNIEnv * env, const ConstContainerAndAccessInfo& container, jint index1, jint index2) = 0;
     virtual jint lastIndexOf(JNIEnv * env, const void* container, jobject value, jint index) = 0;
-    virtual void insert(JNIEnv * env, void* container, jint index, jint n, jobject value) = 0;
+    virtual void insert(JNIEnv * env, const ContainerInfo& container, jint index, jint n, jobject value) = 0;
+    virtual bool append(void* container, const void* entry) = 0;
     virtual jint indexOf(JNIEnv * env, const void* container, jobject value, jint index) = 0;
     virtual jboolean endsWith(JNIEnv * env, const void* container, jobject value) = 0;
     virtual jint count(JNIEnv * env, const void* container, jobject value) = 0;
     virtual jboolean contains(JNIEnv * env, const void* container, jobject value) = 0;
-    virtual void clear(JNIEnv * env, void* container) = 0;
-    virtual jobject begin(JNIEnv * env, QtJambiNativeID ownerId, void* container) = 0;
-    virtual jobject end(JNIEnv * env, QtJambiNativeID ownerId, void* container) = 0;
-    virtual jobject constBegin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) = 0;
-    virtual jobject constEnd(JNIEnv * env, QtJambiNativeID ownerId, const void* container) = 0;
+    virtual jobject begin(JNIEnv * env, const ExtendedContainerInfo& container) = 0;
+    virtual jobject end(JNIEnv * env, const ExtendedContainerInfo& container) = 0;
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     virtual jint capacity(JNIEnv * env, const void* container) = 0;
-    virtual void fill(JNIEnv * env, void* container, jobject value, jint size) = 0;
-    virtual void resize(JNIEnv * env, void* container, jint newSize) = 0;
-    virtual void squeeze(JNIEnv * env, void* container) = 0;
+    virtual void fill(JNIEnv * env, const ContainerInfo& container, jobject value, jint size) = 0;
+    virtual void resize(JNIEnv * env, const ContainerInfo& container, jint newSize) = 0;
+    virtual void squeeze(JNIEnv * env, const ContainerInfo& container) = 0;
 #endif
     Q_DISABLE_COPY_MOVE(AbstractListAccess)
 };
 
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-class QTJAMBI_EXPORT AbstractVectorAccess : public AbstractContainerAccess{
+class QTJAMBI_EXPORT AbstractVectorAccess : public AbstractSequentialAccess{
 protected:
     ~AbstractVectorAccess() override;
     AbstractVectorAccess();
 public:
     AbstractVectorAccess* clone() override = 0;
-    virtual void analyzeElements(const void* container, ElementAnalyzer analyzer, void* data) = 0;
-    virtual bool isConstant() = 0;
-    virtual const QMetaType& elementMetaType() = 0;
-    virtual void appendVector(JNIEnv * env, void* container, jobject list) = 0;
+    virtual void appendVector(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& containerInfo) = 0;
     virtual jobject at(JNIEnv * env, const void* container, jint index) = 0;
     virtual jobject value(JNIEnv * env, const void* container, jint index) = 0;
     virtual jobject value(JNIEnv * env, const void* container, jint index, jobject defaultValue) = 0;
-    virtual void swapItemsAt(JNIEnv * env, void* container, jint index1, jint index2) = 0;
+    virtual void swapItemsAt(JNIEnv * env, const ContainerInfo& container, jint index1, jint index2) = 0;
     virtual jboolean startsWith(JNIEnv * env, const void* container, jobject value) = 0;
-    virtual jint size(JNIEnv * env, const void* container) = 0;
-    virtual void reserve(JNIEnv * env, void* container, jint size) = 0;
-    virtual void replace(JNIEnv * env, void* container, jint index, jobject value) = 0;
-    virtual jint removeAll(JNIEnv * env, void* container, jobject value) = 0;
+    virtual void reserve(JNIEnv * env, const ContainerInfo& container, jint size) = 0;
+    virtual void replace(JNIEnv * env, const ContainerInfo& container, jint index, jobject value) = 0;
+    virtual jint removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) = 0;
     virtual jboolean equal(JNIEnv * env, const void* container, jobject other) = 0;
-    virtual void move(JNIEnv * env, void* container, jint index1, jint index2) = 0;
-    virtual jobject mid(JNIEnv * env, const void* container, jint index1, jint index2) = 0;
+    virtual void move(JNIEnv * env, const ContainerInfo& container, jint index1, jint index2) = 0;
+    virtual ContainerAndAccessInfo mid(JNIEnv * env, const ConstContainerAndAccessInfo& container, jint index1, jint index2) = 0;
     virtual jint lastIndexOf(JNIEnv * env, const void* container, jobject value, jint index) = 0;
     virtual jint indexOf(JNIEnv * env, const void* container, jobject value, jint index) = 0;
     virtual jboolean endsWith(JNIEnv * env, const void* container, jobject value) = 0;
     virtual jint count(JNIEnv * env, const void* container, jobject value) = 0;
     virtual jboolean contains(JNIEnv * env, const void* container, jobject value) = 0;
-    virtual void clear(JNIEnv * env, void* container) = 0;
-    virtual jobject begin(JNIEnv * env, QtJambiNativeID ownerId, void* container) = 0;
-    virtual jobject end(JNIEnv * env, QtJambiNativeID ownerId, void* container) = 0;
-    virtual jobject constBegin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) = 0;
-    virtual jobject constEnd(JNIEnv * env, QtJambiNativeID ownerId, const void* container) = 0;
     virtual jint capacity(JNIEnv * env, const void* container) = 0;
-    virtual void fill(JNIEnv * env, void* container, jobject value, jint size) = 0;
-    virtual void remove(JNIEnv * env, void* container, jint index, jint n) = 0;
-    virtual void insert(JNIEnv * env, void* container, jint index, jint n, jobject value) = 0;
-    virtual void resize(JNIEnv * env, void* container, jint newSize) = 0;
-    virtual void squeeze(JNIEnv * env, void* container) = 0;
+    virtual void fill(JNIEnv * env, const ContainerInfo& container, jobject value, jint size) = 0;
+    virtual void remove(JNIEnv * env, const ContainerInfo& container, jint index, jint n) = 0;
+    virtual void insert(JNIEnv * env, const ContainerInfo& container, jint index, jint n, jobject value) = 0;
+    virtual void resize(JNIEnv * env, const ContainerInfo& container, jint newSize) = 0;
+    virtual void squeeze(JNIEnv * env, const ContainerInfo& container) = 0;
+    virtual jobject begin(JNIEnv * env, const ExtendedContainerInfo& container) = 0;
+    virtual jobject end(JNIEnv * env, const ExtendedContainerInfo& container) = 0;
     Q_DISABLE_COPY_MOVE(AbstractVectorAccess)
 };
 
-class QTJAMBI_EXPORT AbstractLinkedListAccess : public AbstractContainerAccess{
+class QTJAMBI_EXPORT AbstractLinkedListAccess : public AbstractSequentialAccess{
 protected:
     ~AbstractLinkedListAccess() override;
     AbstractLinkedListAccess();
 public:
     AbstractLinkedListAccess* clone() override = 0;
-    virtual void analyzeElements(const void* container, ElementAnalyzer analyzer, void* data) = 0;
-    virtual bool isConstant() = 0;
-    virtual const QMetaType& elementMetaType() = 0;
-    virtual void append(JNIEnv * env, void* container, jobject value) = 0;
+    virtual void append(JNIEnv * env, const ContainerInfo& container, jobject value) = 0;
     virtual jobject first(JNIEnv * env, const void* container) = 0;
     virtual jobject last(JNIEnv * env, const void* container) = 0;
-    virtual void clear(JNIEnv * env, void* container) = 0;
     virtual jboolean contains(JNIEnv * env, const void* container, jobject value) = 0;
     virtual jint count(JNIEnv * env, const void* container, jobject value) = 0;
     virtual jboolean endsWith(JNIEnv * env, const void* container, jobject value) = 0;
     virtual jboolean equal(JNIEnv * env, const void* container, jobject other) = 0;
-    virtual void prepend(JNIEnv * env, void* container, jobject value) = 0;
-    virtual void removeFirst(JNIEnv * env, void* container) = 0;
-    virtual jint removeAll(JNIEnv * env, void* container, jobject value) = 0;
-    virtual void removeLast(JNIEnv * env, void* container) = 0;
-    virtual jboolean removeOne(JNIEnv * env, void* container, jobject value) = 0;
-    virtual jint size(JNIEnv * env, const void* container) = 0;
+    virtual void prepend(JNIEnv * env, const ContainerInfo& container, jobject value) = 0;
+    virtual void removeFirst(JNIEnv * env, const ContainerInfo& container) = 0;
+    virtual jint removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) = 0;
+    virtual void removeLast(JNIEnv * env, const ContainerInfo& container) = 0;
+    virtual jboolean removeOne(JNIEnv * env, const ContainerInfo& container, jobject value) = 0;
     virtual jboolean startsWith(JNIEnv * env, const void* container, jobject value) = 0;
-    virtual jobject takeFirst(JNIEnv * env, void* container) = 0;
-    virtual jobject takeLast(JNIEnv * env, void* container) = 0;
-    virtual jobject begin(JNIEnv * env, QtJambiNativeID ownerId, void* container) = 0;
-    virtual jobject end(JNIEnv * env, QtJambiNativeID ownerId, void* container) = 0;
-    virtual jobject constBegin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) = 0;
-    virtual jobject constEnd(JNIEnv * env, QtJambiNativeID ownerId, const void* container) = 0;
+    virtual jobject takeFirst(JNIEnv * env, const ContainerInfo& container) = 0;
+    virtual jobject takeLast(JNIEnv * env, const ContainerInfo& container) = 0;
+    virtual jobject begin(JNIEnv * env, const ExtendedContainerInfo& container) = 0;
+    virtual jobject end(JNIEnv * env, const ExtendedContainerInfo& container) = 0;
     Q_DISABLE_COPY_MOVE(AbstractLinkedListAccess)
 };
 
 #endif
 
-class QTJAMBI_EXPORT AbstractSetAccess : public AbstractContainerAccess{
+class QTJAMBI_EXPORT AbstractSetAccess : public AbstractSequentialAccess{
 protected:
     ~AbstractSetAccess() override;
     AbstractSetAccess();
 public:
     AbstractSetAccess* clone() override = 0;
-    virtual void analyzeElements(const void* container, ElementAnalyzer analyzer, void* data) = 0;
-    virtual bool isConstant() = 0;
-    virtual const QMetaType& elementMetaType() = 0;
     virtual jint capacity(JNIEnv * env, const void* container) = 0;
-    virtual void clear(JNIEnv * env, void* container) = 0;
     virtual jboolean contains(JNIEnv * env, const void* container, jobject value) = 0;
-    virtual void insert(JNIEnv * env, void* container, jobject value) = 0;
-    virtual void intersect(JNIEnv * env, void* container, jobject other) = 0;
+    virtual void insert(JNIEnv * env, const ContainerInfo& container, jobject value) = 0;
+    virtual void intersect(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) = 0;
     virtual jboolean intersects(JNIEnv * env, const void* container, jobject other) = 0;
     virtual jboolean equal(JNIEnv * env, const void* container, jobject other) = 0;
-    virtual jboolean remove(JNIEnv * env, void* container, jobject value) = 0;
-    virtual void reserve(JNIEnv * env, void* container, jint newSize) = 0;
-    virtual jint size(JNIEnv * env, const void* container) = 0;
-    virtual void subtract(JNIEnv * env, void* container, jobject other) = 0;
-    virtual void unite(JNIEnv * env, void* container, jobject other) = 0;
-    virtual jobject values(JNIEnv * env, const void* container) = 0;
-    virtual jobject constBegin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) = 0;
-    virtual jobject constEnd(JNIEnv * env, QtJambiNativeID ownerId, const void* container) = 0;
+    virtual jboolean remove(JNIEnv * env, const ContainerInfo& container, jobject value) = 0;
+    virtual void reserve(JNIEnv * env, const ContainerInfo& container, jint newSize) = 0;
+    virtual void subtract(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) = 0;
+    virtual void unite(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) = 0;
+    virtual ContainerAndAccessInfo values(JNIEnv * env, const ConstContainerInfo& container) = 0;
     Q_DISABLE_COPY_MOVE(AbstractSetAccess)
 };
 
-class QTJAMBI_EXPORT AbstractMapAccess : public AbstractContainerAccess{
+class QTJAMBI_EXPORT AbstractAssociativeAccess : public AbstractContainerAccess{
+protected:
+    ~AbstractAssociativeAccess() override;
+    AbstractAssociativeAccess();
+public:
+    AbstractAssociativeAccess* clone() override = 0;
+    virtual bool isDetached(const void* container) = 0;
+    virtual void detach(const ContainerInfo& container) = 0;
+    virtual bool isSharedWith(const void* container, const void* container2) = 0;
+    virtual void swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2) = 0;
+    virtual const QMetaType& keyMetaType() = 0;
+    virtual const QMetaType& valueMetaType() = 0;
+    virtual DataType keyType() = 0;
+    virtual DataType valueType() = 0;
+    virtual AbstractContainerAccess* keyNestedContainerAccess() = 0;
+    virtual AbstractContainerAccess* valueNestedContainerAccess() = 0;
+    virtual bool hasKeyNestedContainerAccess() = 0;
+    virtual bool hasValueNestedContainerAccess() = 0;
+    virtual bool hasKeyNestedPointers() = 0;
+    virtual bool hasValueNestedPointers() = 0;
+    virtual void clear(JNIEnv *, const ContainerInfo& container) = 0;
+    virtual jint size(JNIEnv *,const void*) = 0;
+    virtual jobject begin(JNIEnv * env, const ExtendedContainerInfo& container) = 0;
+    virtual jobject end(JNIEnv * env, const ExtendedContainerInfo& container) = 0;
+    virtual jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) = 0;
+    virtual jobject constEnd(JNIEnv * env, const ConstExtendedContainerInfo& container) = 0;
+    virtual jboolean contains(JNIEnv *,const void*,jobject) = 0;
+    virtual jint count(JNIEnv *,const void*,jobject) = 0;
+    virtual jobject find(JNIEnv *,const ExtendedContainerInfo& container, jobject) = 0;
+    virtual jobject constFind(JNIEnv *,const ConstExtendedContainerInfo&,jobject) = 0;
+    virtual void insert(JNIEnv *, const ContainerInfo& container,jobject,jobject) = 0;
+    virtual jobject key(JNIEnv *,const void*,jobject,jobject) = 0;
+    virtual ContainerAndAccessInfo keys(JNIEnv *, const ConstContainerInfo& container) = 0;
+    virtual ContainerAndAccessInfo keys(JNIEnv *,const ConstContainerInfo& container,jobject) = 0;
+    virtual jboolean equal(JNIEnv *,const void*,jobject) = 0;
+    virtual jint remove(JNIEnv *, const ContainerInfo& container,jobject) = 0;
+    virtual jobject take(JNIEnv *, const ContainerInfo& container,jobject) = 0;
+    virtual jobject value(JNIEnv *,const void*,jobject,jobject) = 0;
+    virtual ContainerAndAccessInfo values(JNIEnv *, const ConstContainerInfo& container) = 0;
+    class QTJAMBI_EXPORT KeyValueIterator{
+    public:
+        KeyValueIterator() = default;
+        virtual ~KeyValueIterator();
+        virtual bool hasNext() = 0;
+        virtual QPair<jobject,jobject> next(JNIEnv * env) = 0;
+        virtual QPair<const void*,const void*> next() = 0;
+    };
+    virtual std::unique_ptr<KeyValueIterator> keyValueIterator(const void*) = 0;
+};
+
+class QTJAMBI_EXPORT AbstractHashAccess : public AbstractAssociativeAccess{
+protected:
+    ~AbstractHashAccess() override;;
+    AbstractHashAccess();;
+public:
+    AbstractHashAccess* clone() override = 0;
+    virtual jint capacity(JNIEnv *,const void*) = 0;
+    virtual void reserve(JNIEnv *, const ContainerInfo& container,jint) = 0;
+};
+
+class QTJAMBI_EXPORT AbstractMapAccess : public AbstractAssociativeAccess{
 protected:
     ~AbstractMapAccess() override;
     AbstractMapAccess();
 public:
     AbstractMapAccess* clone() override = 0;
-    virtual void analyzeEntries(const void* container, EntryAnalyzer analyzer, void* data) = 0;
-    virtual bool isConstant() = 0;
-    virtual const QMetaType& keyMetaType() = 0;
-    virtual const QMetaType& valueMetaType() = 0;
-    virtual void clear(JNIEnv *,void*) = 0;
-    virtual jboolean contains(JNIEnv *,const void*,jobject) = 0;
-    virtual jint count(JNIEnv *,const void*,jobject) = 0;
-    virtual jobject find(JNIEnv *,QtJambiNativeID,void*,jobject) = 0;
-    virtual jobject constFind(JNIEnv *,QtJambiNativeID,const void*,jobject) = 0;
     virtual jobject first(JNIEnv *,const void*) = 0;
     virtual jobject firstKey(JNIEnv *,const void*) = 0;
-    virtual void insert(JNIEnv *,void*,jobject,jobject) = 0;
-    virtual jobject key(JNIEnv *,const void*,jobject,jobject) = 0;
-    virtual jobject keys(JNIEnv *,const void*) = 0;
-    virtual jobject keys(JNIEnv *,const void*,jobject) = 0;
     virtual jobject last(JNIEnv *,const void*) = 0;
     virtual jobject lastKey(JNIEnv *,const void*) = 0;
-    virtual jobject constLowerBound(JNIEnv *,QtJambiNativeID,const void*,jobject) = 0;
-    virtual jboolean equal(JNIEnv *,const void*,jobject) = 0;
-    virtual jint remove(JNIEnv *,void*,jobject) = 0;
-    virtual jint size(JNIEnv *,const void*) = 0;
-    virtual jobject take(JNIEnv *,void*,jobject) = 0;
-    virtual jobject constUpperBound(JNIEnv *,QtJambiNativeID,const void*,jobject) = 0;
-    virtual jobject value(JNIEnv *,const void*,jobject,jobject) = 0;
-    virtual jobject values(JNIEnv *,const void*) = 0;
+    virtual jobject constLowerBound(JNIEnv *,const ConstExtendedContainerInfo&,jobject) = 0;
+    virtual jobject constUpperBound(JNIEnv *,const ConstExtendedContainerInfo&,jobject) = 0;
     virtual bool keyLessThan(JNIEnv *,jobject,jobject) = 0;
-    virtual jobject begin(JNIEnv * env, QtJambiNativeID ownerId, void* container) = 0;
-    virtual jobject end(JNIEnv * env, QtJambiNativeID ownerId, void* container) = 0;
-    virtual jobject constBegin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) = 0;
-    virtual jobject constEnd(JNIEnv * env, QtJambiNativeID ownerId, const void* container) = 0;
 };
 
 class QTJAMBI_EXPORT AbstractMultiMapAccess : public AbstractMapAccess{
@@ -605,55 +881,21 @@ protected:
     AbstractMultiMapAccess();;
 public:
     AbstractMultiMapAccess* clone() override = 0;
-    bool isConstant() override = 0;
     using AbstractMapAccess::contains;
     using AbstractMapAccess::count;
     using AbstractMapAccess::find;
     using AbstractMapAccess::constFind;
     using AbstractMapAccess::remove;
     using AbstractMapAccess::values;
-    virtual jobject uniqueKeys(JNIEnv *,const void*) = 0;
-    virtual void unite(JNIEnv *,void*,jobject) = 0;
-    virtual jobject values(JNIEnv *,const void*,jobject) = 0;
+    virtual ContainerAndAccessInfo uniqueKeys(JNIEnv *, const ConstContainerInfo& container) = 0;
+    virtual void unite(JNIEnv *, const ContainerInfo& container, ContainerAndAccessInfo&) = 0;
+    virtual ContainerAndAccessInfo values(JNIEnv *,const ConstContainerInfo& container,jobject) = 0;
     virtual jboolean contains(JNIEnv *,const void*,jobject,jobject) = 0;
     virtual jint count(JNIEnv *,const void*,jobject,jobject) = 0;
-    virtual jobject find(JNIEnv *,QtJambiNativeID,void*,jobject,jobject) = 0;
-    virtual jobject constFind(JNIEnv *,QtJambiNativeID,const void*,jobject,jobject) = 0;
-    virtual jint remove(JNIEnv *,void*,jobject,jobject) = 0;
-    virtual void replace(JNIEnv *,void*,jobject,jobject) = 0;
-};
-
-class QTJAMBI_EXPORT AbstractHashAccess : public AbstractContainerAccess{
-protected:
-    ~AbstractHashAccess() override;;
-    AbstractHashAccess();;
-public:
-    AbstractHashAccess* clone() override = 0;
-    virtual void analyzeEntries(const void* container, EntryAnalyzer analyzer, void* data) = 0;
-    virtual bool isConstant() = 0;
-    virtual const QMetaType& keyMetaType() = 0;
-    virtual const QMetaType& valueMetaType() = 0;
-    virtual jint capacity(JNIEnv *,const void*) = 0;
-    virtual void clear(JNIEnv *,void*) = 0;
-    virtual jboolean contains(JNIEnv *,const void*,jobject) = 0;
-    virtual jint count(JNIEnv *,const void*,jobject) = 0;
-    virtual jobject find(JNIEnv *,QtJambiNativeID,void*,jobject) = 0;
-    virtual jobject constFind(JNIEnv *,QtJambiNativeID,const void*,jobject) = 0;
-    virtual void insert(JNIEnv *,void*,jobject,jobject) = 0;
-    virtual jobject key(JNIEnv *,const void*,jobject,jobject) = 0;
-    virtual jobject keys(JNIEnv *,const void*) = 0;
-    virtual jobject keys(JNIEnv *,const void*,jobject) = 0;
-    virtual jboolean equal(JNIEnv *,const void*,jobject) = 0;
-    virtual jint remove(JNIEnv *,void*,jobject) = 0;
-    virtual void reserve(JNIEnv *,void*,jint) = 0;
-    virtual jint size(JNIEnv *,const void*) = 0;
-    virtual jobject take(JNIEnv *,void*,jobject) = 0;
-    virtual jobject value(JNIEnv *,const void*,jobject,jobject) = 0;
-    virtual jobject values(JNIEnv *,const void*) = 0;
-    virtual jobject begin(JNIEnv * env, QtJambiNativeID ownerId, void* container) = 0;
-    virtual jobject end(JNIEnv * env, QtJambiNativeID ownerId, void* container) = 0;
-    virtual jobject constBegin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) = 0;
-    virtual jobject constEnd(JNIEnv * env, QtJambiNativeID ownerId, const void* container) = 0;
+    virtual jobject find(JNIEnv *,const ExtendedContainerInfo& container, jobject,jobject) = 0;
+    virtual jobject constFind(JNIEnv *,const ConstExtendedContainerInfo&,jobject,jobject) = 0;
+    virtual jint remove(JNIEnv *, const ContainerInfo& container, jobject,jobject) = 0;
+    virtual void replace(JNIEnv *, const ContainerInfo& container, jobject,jobject) = 0;
 };
 
 class QTJAMBI_EXPORT AbstractMultiHashAccess : public AbstractHashAccess{
@@ -662,113 +904,58 @@ protected:
     AbstractMultiHashAccess();;
 public:
     AbstractMultiHashAccess* clone() override = 0;
-    bool isConstant() override = 0;
     using AbstractHashAccess::contains;
     using AbstractHashAccess::count;
     using AbstractHashAccess::find;
     using AbstractHashAccess::constFind;
     using AbstractHashAccess::remove;
     using AbstractHashAccess::values;
-    virtual jobject uniqueKeys(JNIEnv *,const void*) = 0;
-    virtual void unite(JNIEnv *,void*,jobject) = 0;
-    virtual jobject values(JNIEnv *,const void*,jobject) = 0;
+    virtual ContainerAndAccessInfo uniqueKeys(JNIEnv *, const ConstContainerInfo& container) = 0;
+    virtual void unite(JNIEnv *, const ContainerInfo& container, ContainerAndAccessInfo&) = 0;
+    virtual ContainerAndAccessInfo values(JNIEnv *,const ConstContainerInfo& container,jobject) = 0;
     virtual jboolean contains(JNIEnv *,const void*,jobject,jobject) = 0;
     virtual jint count(JNIEnv *,const void*,jobject,jobject) = 0;
-    virtual jobject find(JNIEnv *,QtJambiNativeID,void*,jobject,jobject) = 0;
-    virtual jobject constFind(JNIEnv *,QtJambiNativeID,const void*,jobject,jobject) = 0;
-    virtual jint remove(JNIEnv *,void*,jobject,jobject) = 0;
-    virtual void replace(JNIEnv *,void*,jobject,jobject) = 0;
+    virtual jobject find(JNIEnv *,const ExtendedContainerInfo& container, jobject,jobject) = 0;
+    virtual jobject constFind(JNIEnv *,const ConstExtendedContainerInfo&,jobject,jobject) = 0;
+    virtual jint remove(JNIEnv *, const ContainerInfo& container, jobject,jobject) = 0;
+    virtual void replace(JNIEnv *, const ContainerInfo& container, jobject,jobject) = 0;
 };
 
 class QTJAMBI_EXPORT AbstractPairAccess : public AbstractContainerAccess{
 protected:
     ~AbstractPairAccess() override;;
-    AbstractPairAccess();;
+    AbstractPairAccess();
 public:
     AbstractPairAccess* clone() override = 0;
-    virtual bool isConstant() = 0;
+    virtual void swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2) = 0;
+    virtual const QMetaType& firstMetaType() = 0;
+    virtual const QMetaType& secondMetaType() = 0;
+    virtual DataType firstType() = 0;
+    virtual DataType secondType() = 0;
+    virtual AbstractContainerAccess* firstNestedContainerAccess() = 0;
+    virtual AbstractContainerAccess* secondNestedContainerAccess() = 0;
+    virtual bool hasFirstNestedContainerAccess() = 0;
+    virtual bool hasSecondNestedContainerAccess() = 0;
+    virtual bool hasFirstNestedPointers() = 0;
+    virtual bool hasSecondNestedPointers() = 0;
     virtual jobject first(JNIEnv *,const void*) = 0;
     virtual jobject second(JNIEnv *,const void*) = 0;
     virtual void setFirst(JNIEnv *,void*,jobject) = 0;
     virtual void setSecond(JNIEnv *,void*,jobject) = 0;
+    virtual QPair<const void*,const void*> elements(const void*) = 0;
 };
 
 namespace ContainerAPI{
 
 QTJAMBI_EXPORT QPair<void*,AbstractContainerAccess*> fromNativeId(QtJambiNativeID nativeId);
 
+QTJAMBI_EXPORT QPair<void*,AbstractContainerAccess*> fromJavaOwner(JNIEnv *env, jobject object);
+
 }//namespace ContainerAPI
 
 
+#if defined(QTJAMBI_GENERIC_ACCESS)
 namespace QtJambiPrivate{
-
-template<template<typename> class Container>
-struct SequentialContainerAnalyzer{
-};
-
-template<>
-struct SequentialContainerAnalyzer<QList>{
-    static constexpr SequentialContainerType type = SequentialContainerType::QList;
-};
-
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-#ifdef QVECTOR_H
-template<>
-struct SequentialContainerAnalyzer<QVector>{
-    static constexpr SequentialContainerType type = SequentialContainerType::QVector;
-};
-#endif
-#ifdef QLINKEDLIST_H
-template<>
-struct SequentialContainerAnalyzer<QLinkedList>{
-    static constexpr SequentialContainerType type = SequentialContainerType::QLinkedList;
-};
-#endif
-#endif
-
-template<>
-struct SequentialContainerAnalyzer<QStack>{
-    static constexpr SequentialContainerType type = SequentialContainerType::QStack;
-};
-
-template<>
-struct SequentialContainerAnalyzer<QQueue>{
-    static constexpr SequentialContainerType type = SequentialContainerType::QQueue;
-};
-
-template<>
-struct SequentialContainerAnalyzer<QSet>{
-    static constexpr SequentialContainerType type = SequentialContainerType::QSet;
-};
-
-template<template<typename,typename> class Container>
-struct AssociativeContainerAnalyzer{
-};
-
-template<>
-struct AssociativeContainerAnalyzer<QMap>{
-    static constexpr AssociativeContainerType type = AssociativeContainerType::QMap;
-};
-
-template<>
-struct AssociativeContainerAnalyzer<QHash>{
-    static constexpr AssociativeContainerType type = AssociativeContainerType::QHash;
-};
-
-template<>
-struct AssociativeContainerAnalyzer<QMultiMap>{
-    static constexpr AssociativeContainerType type = AssociativeContainerType::QMultiMap;
-};
-
-template<>
-struct AssociativeContainerAnalyzer<QMultiHash>{
-    static constexpr AssociativeContainerType type = AssociativeContainerType::QMultiHash;
-};
-
-template<>
-struct AssociativeContainerAnalyzer<QPair>{
-    static constexpr AssociativeContainerType type = AssociativeContainerType::QPair;
-};
 
 typedef hash_type(*HashWrapper)(const void* ptr, hash_type seed, QtJambiUtils::QHashFunction hashFunction);
 typedef hash_type(*HashWrapper2)(const void* ptr, hash_type seed, QtJambiUtils::QHashFunction hashFunction1, QtJambiUtils::QHashFunction hashFunction2);
@@ -780,8 +967,8 @@ hash_type sequentialContainerHash(const void* ptr, hash_type seed, QtJambiUtils:
     hash_type prime = 31;
     hash_type result = seed;
     result = prime * result + qHash(container.size(), result);
-    for(typename Container::const_iterator iter = container.begin();
-        iter != container.end(); ++iter){
+    for(typename Container::const_iterator iter = container.cbegin();
+        iter != container.cend(); ++iter){
         result = prime * result + hashFunction(& (*iter), result);
     }
     return result;
@@ -795,7 +982,7 @@ hash_type associativeContainerHash(const void* ptr, hash_type seed, QtJambiUtils
     hash_type result = seed;
     result = prime * result + qHash(container.size(), result);
     for(typename Container::const_iterator iter = container.begin();
-        iter != container.end(); ++iter){
+         iter != container.end(); ++iter){
         result = prime * result + hashFunction1(&iter.key(), result);
         result = prime * result + hashFunction2(&iter.value(), result);
     }
@@ -852,10 +1039,26 @@ QTJAMBI_EXPORT int registerSequentialContainerType(const QByteArray& typeName,
                                                    const QtPrivate::AbstractDebugStreamFunction * debugStreamFunction,
                                                    const QtPrivate::AbstractComparatorFunction * comparator,
                                                    ConverterFunctionFactory1 createConverterFunction,
-                                                   HashWrapper hashWrapper);
+                                                   HashWrapper hashWrapper,
+                                                   AbstractSequentialAccess* access);
+
+QTJAMBI_EXPORT int registerAssociativeContainerType(const QByteArray& typeName,
+                                                    size_t containerSize, size_t containerAlign,
+                                                    bool isPointer1, const QMetaType& metaType1,
+                                                    bool isPointer2, const QMetaType& metaType2,
+                                                    QMetaType::Destructor destructor,
+                                                    QMetaType::Constructor constructor,
+                                                    QMetaType::SaveOperator saveOperator,
+                                                    QMetaType::LoadOperator loadOperator,
+                                                    const QtPrivate::AbstractDebugStreamFunction * debugStreamFunction,
+                                                    const QtPrivate::AbstractComparatorFunction * comparator,
+                                                    bool isPair,
+                                                    ConverterFunctionFactory2 createConverterFunction,
+                                                    HashWrapper2 hashWrapper,
+                                                    AbstractContainerAccess* access);
 
 template<typename Container, size_t size>
-int registerSequentialContainerType(const QByteArray& typeName, const QMetaType& metaType){
+int registerSequentialContainerType(const QByteArray& typeName, const QMetaType& metaType, AbstractSequentialAccess* access){
     int newMetaType = QMetaType::type(typeName);
     if(newMetaType==QMetaType::UnknownType){
         static QtPrivate::BuiltInEqualsComparatorFunction<Container> comparator;
@@ -895,27 +1098,15 @@ int registerSequentialContainerType(const QByteArray& typeName, const QMetaType&
                                                               };
                                                               return new Converter(metaTypeId);
                                                           },
-                                                      sequentialContainerHash<Container>);
+                                                      sequentialContainerHash<Container>,
+                                                      access
+                                                );
     }
     return newMetaType;
 }
 
-QTJAMBI_EXPORT int registerAssociativeContainerType(const QByteArray& typeName,
-                                                     size_t containerSize, size_t containerAlign,
-                                                     bool isPointer1, const QMetaType& metaType1,
-                                                     bool isPointer2, const QMetaType& metaType2,
-                                                     QMetaType::Destructor destructor,
-                                                     QMetaType::Constructor constructor,
-                                                     QMetaType::SaveOperator saveOperator,
-                                                     QMetaType::LoadOperator loadOperator,
-                                                     const QtPrivate::AbstractDebugStreamFunction * debugStreamFunction,
-                                                     const QtPrivate::AbstractComparatorFunction * comparator,
-                                                     bool isPair,
-                                                     ConverterFunctionFactory2 createConverterFunction,
-                                                     HashWrapper2 hashWrapper);
-
 template<typename Container, size_t size1, size_t size2>
-int registerAssociativeContainerType(const QByteArray& typeName, const QMetaType& metaType1, const QMetaType& metaType2){
+int registerAssociativeContainerType(const QByteArray& typeName, const QMetaType& metaType1, const QMetaType& metaType2, AbstractAssociativeAccess* access){
     int newMetaType = QMetaType::type(typeName);
     if(newMetaType==QMetaType::UnknownType){
         static QtPrivate::BuiltInEqualsComparatorFunction<Container> comparator;
@@ -959,7 +1150,8 @@ int registerAssociativeContainerType(const QByteArray& typeName, const QMetaType
                                                                   };
                                                                   return new Converter(metaTypeId1, metaTypeId2);
                                                               },
-                                                              associativeContainerHash<Container>
+                                                              associativeContainerHash<Container>,
+                                                              access
                                                         );
     }
     return newMetaType;
@@ -978,7 +1170,7 @@ QtMetaTypePrivate::VariantData getSecondImpl(const void * const *pair, int metaT
 }
 
 template<typename Container, size_t size1, size_t size2>
-int registerQPairType(const QByteArray& typeName, const QMetaType& metaType1, const QMetaType& metaType2){
+int registerQPairType(const QByteArray& typeName, const QMetaType& metaType1, const QMetaType& metaType2, AbstractPairAccess* access){
     int newMetaType = QMetaType::type(typeName);
     if(newMetaType==QMetaType::UnknownType){
         static QtPrivate::BuiltInEqualsComparatorFunction<Container> comparator;
@@ -1024,7 +1216,8 @@ int registerQPairType(const QByteArray& typeName, const QMetaType& metaType1, co
                                                               };
                                                               return new Converter(metaType1Id, metaType2Id);
                                                         },
-                                                        pairHashWrapper<Container>
+                                                        pairHashWrapper<Container>,
+                                                        access
                                                     );
     }
     return newMetaType;
@@ -1052,10 +1245,31 @@ QTJAMBI_EXPORT int registerSequentialContainerType(const QByteArray& typeName,
                                                    const QtMetaContainerPrivate::QMetaSequenceInterface *defaultInterface,
                                                    MetaSequenceIteratorFactory createMetaSequenceIterator,
                                                    MetaSequenceConstIteratorFactory createMetaSequenceConstIterator,
-                                                   HashWrapper hashWrapper);
+                                                   HashWrapper hashWrapper,
+                                                   AbstractSequentialAccess* access);
+
+QTJAMBI_EXPORT int registerAssociativeContainerType(const QByteArray& typeName,
+                                                    size_t containerSize, size_t containerAlign,
+                                                    bool isPointer1, const QMetaType& metaType1,
+                                                    bool isPointer2, const QMetaType& metaType2,
+                                                    QtPrivate::QMetaTypeInterface::DefaultCtrFn defaultCtr,
+                                                    QtPrivate::QMetaTypeInterface::CopyCtrFn copyCtr,
+                                                    QtPrivate::QMetaTypeInterface::MoveCtrFn moveCtr,
+                                                    QtPrivate::QMetaTypeInterface::DtorFn dtor,
+                                                    QtPrivate::QMetaTypeInterface::EqualsFn equals,
+                                                    QtPrivate::QMetaTypeInterface::LessThanFn lessThan,
+                                                    QtPrivate::QMetaTypeInterface::DebugStreamFn debugStream,
+                                                    QtPrivate::QMetaTypeInterface::DataStreamOutFn dataStreamOutFn,
+                                                    QtPrivate::QMetaTypeInterface::DataStreamInFn dataStreamInFn,
+                                                    const QtMetaContainerPrivate::QMetaAssociationInterface *defaultInterface,
+                                                    MetaAssociationIteratorFactory createMetaAssociationIterator,
+                                                    MetaAssociationConstIteratorFactory createMetaAssociationConstIterator,
+                                                    PairAccessFactory pairAccessFactory,
+                                                    HashWrapper2 hashWrapper,
+                                                    AbstractContainerAccess* access);
 
 template<typename Container, size_t size>
-static int registerSequentialContainerType(const QByteArray& typeName, const QMetaType& metaType){
+int registerSequentialContainerType(const QByteArray& typeName, const QMetaType& metaType, AbstractSequentialAccess* access){
     int newMetaType = QMetaType::fromName(typeName).id();
     if(newMetaType==QMetaType::UnknownType){
         static const QtMetaContainerPrivate::QMetaSequenceInterface defaultInterface = QtMetaContainerPrivate::QMetaSequenceInterface(QtMetaContainerPrivate::QMetaSequenceForContainer<Container>());
@@ -1078,32 +1292,15 @@ static int registerSequentialContainerType(const QByteArray& typeName, const QMe
                                                     *reinterpret_cast<QIterable<QMetaSequence>*>(target) = QIterable<QMetaSequence>(QMetaSequence(iface), reinterpret_cast<const Container*>(src));
                                                     return true;
                                                 },
-                                                sequentialContainerHash<Container>);
+                                                sequentialContainerHash<Container>,
+                                                access
+                                            );
     }
     return newMetaType;
 }
 
-QTJAMBI_EXPORT int registerAssociativeContainerType(const QByteArray& typeName,
-                                                     size_t containerSize, size_t containerAlign,
-                                                     bool isPointer1, const QMetaType& metaType1,
-                                                     bool isPointer2, const QMetaType& metaType2,
-                                                     QtPrivate::QMetaTypeInterface::DefaultCtrFn defaultCtr,
-                                                     QtPrivate::QMetaTypeInterface::CopyCtrFn copyCtr,
-                                                     QtPrivate::QMetaTypeInterface::MoveCtrFn moveCtr,
-                                                     QtPrivate::QMetaTypeInterface::DtorFn dtor,
-                                                     QtPrivate::QMetaTypeInterface::EqualsFn equals,
-                                                     QtPrivate::QMetaTypeInterface::LessThanFn lessThan,
-                                                     QtPrivate::QMetaTypeInterface::DebugStreamFn debugStream,
-                                                     QtPrivate::QMetaTypeInterface::DataStreamOutFn dataStreamOutFn,
-                                                     QtPrivate::QMetaTypeInterface::DataStreamInFn dataStreamInFn,
-                                                     const QtMetaContainerPrivate::QMetaAssociationInterface *defaultInterface,
-                                                     MetaAssociationIteratorFactory createMetaAssociationIterator,
-                                                     MetaAssociationConstIteratorFactory createMetaAssociationConstIterator,
-                                                     PairAccessFactory pairAccessFactory,
-                                                     HashWrapper2 hashWrapper);
-
 template<typename Container, size_t size1, size_t size2>
-int registerAssociativeContainerType(const QByteArray& typeName, const QMetaType& metaType1, const QMetaType& metaType2){
+int registerAssociativeContainerType(const QByteArray& typeName, const QMetaType& metaType1, const QMetaType& metaType2, AbstractAssociativeAccess* access){
     int newMetaType = QMetaType::fromName(typeName).id();
     if(newMetaType==QMetaType::UnknownType){
         static const QtMetaContainerPrivate::QMetaAssociationInterface defaultInterface = QtMetaContainerPrivate::QMetaAssociationInterface(QtMetaContainerPrivate::QMetaAssociationForContainer<Container>());
@@ -1127,14 +1324,15 @@ int registerAssociativeContainerType(const QByteArray& typeName, const QMetaType
                                                             return true;
                                                         },
                                                         nullptr,
-                                                        associativeContainerHash<Container>
+                                                        associativeContainerHash<Container>,
+                                                        access
         );
     }
     return newMetaType;
 }
 
 template<typename Container, size_t size1, size_t size2>
-static int registerQPairType(const QByteArray& typeName, const QMetaType& metaType1, const QMetaType& metaType2){
+static int registerQPairType(const QByteArray& typeName, const QMetaType& metaType1, const QMetaType& metaType2, AbstractPairAccess* access){
     int newMetaType = QMetaType::fromName(typeName).id();
     if(newMetaType==QMetaType::UnknownType){
         newMetaType = registerAssociativeContainerType(typeName, sizeof(Container), Q_ALIGNOF(Container), size1==0, metaType1, size2==0, metaType2,
@@ -1157,15 +1355,17 @@ static int registerQPairType(const QByteArray& typeName, const QMetaType& metaTy
                                                               result->_metaType_second = metaType2;
                                                               return true;
                                                         },
-                                                        pairHashWrapper<Container>
+                                                        pairHashWrapper<Container>,
+                                                        access
                                                     );
     }
     return newMetaType;
 }
-
 #endif
 
 }//namespace QtJambiPrivate
+
+#endif //defined(QTJAMBI_GENERIC_ACCESS)
 
 #endif // CONTAINERAPI_H
 

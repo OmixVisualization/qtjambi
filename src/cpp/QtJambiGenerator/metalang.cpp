@@ -248,6 +248,9 @@ void MetaFunction::setOriginalName(const QString &name) { m_original_name = name
 void MetaFunction::setOriginalSignature(const QString &signature) { m_original_signature = signature; }
 const QString& MetaFunction::originalSignature() const { return m_original_signature; }
 
+QString MetaFunction::returnValueComment() const { return m_returnValueComment; }
+void MetaFunction::setReturnValueComment(const QString& returnValueComment) { m_returnValueComment = returnValueComment; }
+
 MetaType *MetaFunction::type() const { return m_type; }
 void MetaFunction::setType(MetaType *type) { m_type = type; }
 
@@ -310,6 +313,7 @@ bool MetaFunction::needsCallThrough() const {
 
     for(const MetaArgument *arg : arguments()) {
         if (arg->type()->isArray()
+                || arg->type()->isQSpan()
                 || arg->type()->isTargetLangEnum()
                 || arg->type()->isTargetLangFlags()
                 || arg->type()->typeEntry()->isNativeIdBased()
@@ -358,6 +362,7 @@ bool MetaFunction::needsReturnScope() const {
                 type()->isCharString() // -> returning const char* from jstring
                 || (type()->isQString() && type()->isConstant() && !type()->indirections().isEmpty())  // -> returning const QString* from jstring
                 || (type()->isQVariant() && type()->isConstant() && !type()->indirections().isEmpty())  // -> returning const QVariant* from jobject
+//                || (type()->isQSpan() && !type()->instantiations().isEmpty() && !type()->instantiations()[0]->isConstant()) // -> QSpan<T>
                 )){
         return true;
     }
@@ -524,7 +529,8 @@ uint MetaFunction::compareTo(const MetaFunction *other) const {
                 break;
             }
             if(min_arg->type()->typeEntry()==max_arg->type()->typeEntry()
-                    && min_arg->type()->typeEntry()->isInitializerList()){
+                && (min_arg->type()->typeEntry()->isInitializerList()
+                    || min_arg->type()->typeEntry()->isQSpan())){
                 if(min_arg->type()->instantiations().size()==1
                         && max_arg->type()->instantiations().size()==1){
                     if (min_arg->type()->instantiations()[0]->typeEntry() != max_arg->type()->instantiations()[0]->typeEntry()
@@ -568,6 +574,7 @@ MetaFunction *MetaFunction::copy() const {
     cpy->setHref(href());
     cpy->setBrief(brief());
     cpy->setSince(since());
+    cpy->setReturnValueComment(returnValueComment());
 
     for(const MetaArgument *arg : arguments())
         cpy->addArgument(arg->copy());
@@ -940,6 +947,7 @@ bool MetaFunctional::needsReturnScope() const {
                 type()->isCharString() // -> returning const char* from jstring
                 || (type()->isQString() && type()->isConstant() && !type()->indirections().isEmpty())  // -> returning const QString* from jstring
                 || (type()->isQVariant() && type()->isConstant() && !type()->indirections().isEmpty())  // -> returning const QVariant* from jobject
+//                || (type()->isQSpan() && !type()->instantiations().isEmpty() && !type()->instantiations()[0]->isConstant()) // -> QSpan<T>
                 )){
         return true;
     }
@@ -1356,18 +1364,20 @@ OwnershipRule MetaFunctional::ownership(TS::Language language, int key) const {
     }
 
     if(key==0){
-        if(m_type && m_type->typeEntry()->isSmartPointer()){
-            const SmartPointerTypeEntry* pentry = static_cast<const SmartPointerTypeEntry*>(m_type->typeEntry());
-            switch(pentry->type()){
-            case SmartPointerTypeEntry::QScopedPointer:
-                if(language==TS::ShellCode){
-                    return OwnershipRule{TS::CppOwnership, QString()};
-                }else if(language==TS::NativeCode){
-                    return OwnershipRule{TS::TargetLangOwnership, QString()};
+        if(m_type){
+            if(m_type->typeEntry()->isSmartPointer()){
+                const SmartPointerTypeEntry* pentry = static_cast<const SmartPointerTypeEntry*>(m_type->typeEntry());
+                switch(pentry->type()){
+                case SmartPointerTypeEntry::QScopedPointer:
+                    if(language==TS::ShellCode){
+                        return OwnershipRule{TS::CppOwnership, QString()};
+                    }else if(language==TS::NativeCode){
+                        return OwnershipRule{TS::TargetLangOwnership, QString()};
+                    }
+                    break;
+                default:
+                    break;
                 }
-                break;
-            default:
-                break;
             }
         }
     }else{
@@ -1378,18 +1388,24 @@ OwnershipRule MetaFunctional::ownership(TS::Language language, int key) const {
                 break;
             }
         }
-        if(type && type->typeEntry()->isSmartPointer()){
-            const SmartPointerTypeEntry* pentry = static_cast<const SmartPointerTypeEntry*>(type->typeEntry());
-            switch(pentry->type()){
-            case SmartPointerTypeEntry::QScopedPointer:
-                if(language==TS::NativeCode){
-                    return OwnershipRule{TS::CppOwnership, QString()};
-                }else if(language==TS::ShellCode){
-                    return OwnershipRule{TS::TargetLangOwnership, QString()};
+        if(type){
+            if(type->isQSpan()){
+                if(language==TS::ShellCode){
+                    return OwnershipRule{TS::ForcedInvalidate, QString()};
                 }
-                break;
-            default:
-                break;
+            }else if(type->typeEntry()->isSmartPointer()){
+                const SmartPointerTypeEntry* pentry = static_cast<const SmartPointerTypeEntry*>(type->typeEntry());
+                switch(pentry->type()){
+                case SmartPointerTypeEntry::QScopedPointer:
+                    if(language==TS::NativeCode){
+                        return OwnershipRule{TS::CppOwnership, QString()};
+                    }else if(language==TS::ShellCode){
+                        return OwnershipRule{TS::TargetLangOwnership, QString()};
+                    }
+                    break;
+                default:
+                    break;
+                }
             }
         }
     }
@@ -1436,7 +1452,13 @@ bool MetaFunction::isUIThreadAffine() const {
         if (modification.isUIThreadAffine())
             return true;
     }
-
+    if(this->operatorType()!=OperatorType::None && !this->isConstant()){
+        const ComplexTypeEntry *entry = declaringClass()->typeEntry();
+        const QString& ownerCode = entry->threadAffinity();
+        if(ownerCode==QStringLiteral(u"main") || ownerCode==QStringLiteral(u"ui")){
+            return true;
+        }
+    }
     return false;
 }
 
@@ -1448,7 +1470,13 @@ bool MetaFunction::isPixmapThreadAffine() const {
         if (modification.isPixmapThreadAffine())
             return true;
     }
-
+    if(this->operatorType()!=OperatorType::None && !this->isConstant()){
+        const ComplexTypeEntry *entry = declaringClass()->typeEntry();
+        const QString& ownerCode = entry->threadAffinity();
+        if(ownerCode==QStringLiteral(u"pixmap")){
+            return true;
+        }
+    }
     return false;
 }
 
@@ -1460,7 +1488,13 @@ bool MetaFunction::isThreadAffine() const {
         if (modification.isThreadAffine())
             return true;
     }
-
+    if(this->operatorType()!=OperatorType::None && !this->isConstant()){
+        const ComplexTypeEntry *entry = declaringClass()->typeEntry();
+        const QString& ownerCode = entry->threadAffinity();
+        if(!ownerCode.isEmpty()){
+            return true;
+        }
+    }
     return false;
 }
 
@@ -1540,18 +1574,20 @@ OwnershipRule MetaFunction::ownership(const MetaClass *cls, TS::Language languag
     }
 
     if(key==0){
-        if(m_type && m_type->typeEntry()->isSmartPointer()){
-            const SmartPointerTypeEntry* pentry = static_cast<const SmartPointerTypeEntry*>(m_type->typeEntry());
-            switch(pentry->type()){
-            case SmartPointerTypeEntry::QScopedPointer:
-                if(language==TS::ShellCode){
-                    return OwnershipRule{TS::CppOwnership, QString()};
-                }else if(language==TS::NativeCode){
-                    return OwnershipRule{TS::TargetLangOwnership, QString()};
+        if(m_type){
+            if(m_type->typeEntry()->isSmartPointer()){
+                const SmartPointerTypeEntry* pentry = static_cast<const SmartPointerTypeEntry*>(m_type->typeEntry());
+                switch(pentry->type()){
+                case SmartPointerTypeEntry::QScopedPointer:
+                    if(language==TS::ShellCode){
+                        return OwnershipRule{TS::CppOwnership, QString()};
+                    }else if(language==TS::NativeCode){
+                        return OwnershipRule{TS::TargetLangOwnership, QString()};
+                    }
+                    break;
+                default:
+                    break;
                 }
-                break;
-            default:
-                break;
             }
         }
     }else{
@@ -1562,18 +1598,24 @@ OwnershipRule MetaFunction::ownership(const MetaClass *cls, TS::Language languag
                 break;
             }
         }
-        if(type && type->typeEntry()->isSmartPointer()){
-            const SmartPointerTypeEntry* pentry = static_cast<const SmartPointerTypeEntry*>(type->typeEntry());
-            switch(pentry->type()){
-            case SmartPointerTypeEntry::QScopedPointer:
-                if(language==TS::NativeCode){
-                    return OwnershipRule{TS::CppOwnership, QString()};
-                }else if(language==TS::ShellCode){
-                    return OwnershipRule{TS::TargetLangOwnership, QString()};
+        if(type){
+            if(type->isQSpan()){
+                if(language==TS::ShellCode){
+                    return OwnershipRule{TS::ForcedInvalidate, QString()};
                 }
-                break;
-            default:
-                break;
+            }else if(type->typeEntry()->isSmartPointer()){
+                const SmartPointerTypeEntry* pentry = static_cast<const SmartPointerTypeEntry*>(type->typeEntry());
+                switch(pentry->type()){
+                case SmartPointerTypeEntry::QScopedPointer:
+                    if(language==TS::NativeCode){
+                        return OwnershipRule{TS::CppOwnership, QString()};
+                    }else if(language==TS::ShellCode){
+                        return OwnershipRule{TS::TargetLangOwnership, QString()};
+                    }
+                    break;
+                default:
+                    break;
+                }
             }
         }
     }
@@ -3202,7 +3244,7 @@ const MetaFunction *MetaField::setter() const {
         MetaArgumentList arguments;
         MetaArgument *argument = new MetaArgument;
         argument->setType(type()->copy());
-        if(type()->getReferenceType()==MetaType::NoReference && !type()->isArray() && !type()->isSmartPointer() && !type()->isPrimitive() && type()->indirections().isEmpty()){
+        if(type()->getReferenceType()==MetaType::NoReference && !type()->isArray() && !type()->isSmartPointer() && !type()->isPrimitive() && !type()->isPrimitiveChar() && type()->indirections().isEmpty()){
             argument->type()->setReferenceType(MetaType::Reference);
             argument->type()->setConstant(true);
         }
@@ -3260,6 +3302,7 @@ const MetaFunction *MetaField::getter() const {
         if((attributes() & MetaAttributes::ConstExpr || (isStatic() && type()->isConstant() && type()->indirections().isEmpty()))
                 && (
                     type()->isPrimitive()
+                    || type()->isPrimitiveChar()
                     || type()->isEnum()
                     || type()->isQString()
                     || type()->isCharString()
@@ -3271,7 +3314,7 @@ const MetaFunction *MetaField::getter() const {
             m_getter->setVisibility(MetaAttributes::Private);
         }
         m_getter->setType(type()->copy());
-        if(type()->getReferenceType()==MetaType::NoReference && !type()->isArray() && !type()->isPrimitive() && !type()->isSmartPointer() && type()->indirections().isEmpty()){
+        if(type()->getReferenceType()==MetaType::NoReference && !type()->isArray() && !type()->isPrimitive() && !type()->isPrimitiveChar() && !type()->isSmartPointer() && type()->indirections().isEmpty()){
             m_getter->type()->setReferenceType(MetaType::Reference);
             m_getter->type()->setConstant(true);
         }
@@ -3922,7 +3965,11 @@ QString MetaType::normalizedSignature() const {
 }
 
 bool MetaType::hasNativeId() const {
-    return (isQObject() || isValue() || isObject() || isFunctional()) && typeEntry()->isNativeIdBased();
+    if(isQSpan() && m_instantiations.size()>0){
+        if(!m_instantiations[0]->isConstant())
+            return false;
+    }
+    return (isQObject() || isValue() || isQSpan() || isObject() || isFunctional()) && typeEntry()->isNativeIdBased();
 }
 
 

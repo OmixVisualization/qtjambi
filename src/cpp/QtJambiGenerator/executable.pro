@@ -65,6 +65,10 @@ CONFIG(debug, debug|release) {
     }
 }
 
+lessThan(QT_MAJOR_VERSION, 6):{
+    CONFIG += c++17
+}
+
 win32*:{
     CONFIG(debug, debug|release) {
         QTJAMBI_LIB_NAME = QtJambiGeneratord$$QT_MAJOR_VERSION

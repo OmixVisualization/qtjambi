@@ -29,6 +29,7 @@
 ****************************************************************************/
 package io.qt.core;
 
+import java.nio.*;
 import java.util.*;
 import java.util.function.*;
 import io.qt.*;
@@ -52,31 +53,36 @@ public class QVector<T> extends AbstractList<T> implements Cloneable
         super(p);
     }
     
-    public QVector(QMetaType.Type metaType) {
+    public QVector(QMetaType.@StrictNonNull Type metaType) {
 		this(new QMetaType(metaType));
 	}
     
-    public QVector(Class<T> elementType) {
+    public QVector(@Nullable Class<T> elementType) {
 		super(null);
 		QMetaType metaType = QMetaType.fromType(elementType);
 		initialize(elementType, QtJambi_LibraryUtilities.internal.nativeId(metaType), null);
 	}
     
-	public QVector(QMetaType metaType) {
+	public QVector(@StrictNonNull QMetaType metaType) {
 		super(null);
 		initialize(metaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaType), null);
 	}
     
-    public QVector(Collection<T> other) {
+    public QVector(@StrictNonNull Collection<T> other) {
 		super(null);
 		QMetaType metaType = QList.findElementMetaType(Objects.requireNonNull(other));
+		initialize(metaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaType), other);
+    }
+    
+    QVector(QMetaType metaType, Collection<T> other) {
+		super(null);
 		initialize(metaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaType), other);
     }
     
     /**
      * Creating a container of type QVariant.
      */
-    public static QVector<Object> createVariantVector(){
+    public static @NonNull QVector<Object> createVariantVector(){
         return new QVector<>(new QMetaType(QMetaType.Type.QVariant));
     }
 
@@ -87,19 +93,19 @@ public class QVector<T> extends AbstractList<T> implements Cloneable
      * Creates and returns a copy of this object.
      */
     @Override
-    public QVector<T> clone(){
+    public @NonNull QVector<T> clone(){
         return new QVector<>(this);
     }
     
     @QtUninvokable
-    private static native void onDispose(long listAccess);
+    private native void onDispose(long listAccess);
 
     @QtUninvokable
-    public final void append(java.util.Collection<T> t)    {
+    public final void append(java.util.@NonNull Collection<T> t)    {
         appendVector(QtJambi_LibraryUtilities.internal.nativeId(this), t);
     }
     @QtUninvokable
-    private static native <T> void appendVector(long __this__nativeId, java.util.Collection<T> t);
+    private native void appendVector(long __this__nativeId, java.util.Collection<T> t);
 
     @QtUninvokable
     public final void append(T t)    {
@@ -113,56 +119,56 @@ public class QVector<T> extends AbstractList<T> implements Cloneable
     }
 	
 	@QtUninvokable
-    private static native <T> void append(long __this__nativeId, T t);
+    private native void append(long __this__nativeId, T t);
 
     @QtUninvokable
     public final T at(int i)    {
         return at(QtJambi_LibraryUtilities.internal.nativeId(this), i);
     }
     @QtUninvokable
-    private static native <T> T at(long __this__nativeId, int i);
+    private native T at(long __this__nativeId, int i);
 
     @QtUninvokable
-    protected final QSequentialIterator<T> begin()    {
+    protected final @NonNull QSequentialIterator<T> begin()    {
         return begin(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    private static native <T> QSequentialIterator<T> begin(long __this__nativeId);
+    private native QSequentialIterator<T> begin(long __this__nativeId);
 
     @QtUninvokable
-    protected final QSequentialIterator<T> end()    {
+    protected final @NonNull QSequentialIterator<T> end()    {
         return end(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    private static native <T> QSequentialIterator<T> end(long __this__nativeId);
+    private native QSequentialIterator<T> end(long __this__nativeId);
 
     @QtUninvokable
-    protected final QSequentialConstIterator<T> constBegin()    {
+    protected final @NonNull QSequentialConstIterator<T> constBegin()    {
         return constBegin(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    private static native <T> QSequentialConstIterator<T> constBegin(long __this__nativeId);
+    private native QSequentialConstIterator<T> constBegin(long __this__nativeId);
 
     @QtUninvokable
-    protected final QSequentialConstIterator<T> constEnd()    {
+    protected final @NonNull QSequentialConstIterator<T> constEnd()    {
         return constEnd(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    private static native <T> QSequentialConstIterator<T> constEnd(long __this__nativeId);
+    private native QSequentialConstIterator<T> constEnd(long __this__nativeId);
 
     @QtUninvokable
     public final int capacity()    {
         return capacity(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    private static native <T> int capacity(long __this__nativeId);
+    private native int capacity(long __this__nativeId);
 
     @QtUninvokable
     public final void clear()    {
         clear(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    private static native <T> void clear(long __this__nativeId);
+    private native void clear(long __this__nativeId);
 
     @QtUninvokable
     public final boolean contains(Object t)    {
@@ -180,7 +186,7 @@ public class QVector<T> extends AbstractList<T> implements Cloneable
     	}
     }
     @QtUninvokable
-    private static native <T> boolean contains(long __this__nativeId, T t);
+    private native boolean contains(long __this__nativeId, Object t);
 
     @QtUninvokable
     public final int count()    {
@@ -198,7 +204,7 @@ public class QVector<T> extends AbstractList<T> implements Cloneable
     	}
     }
     @QtUninvokable
-    private static native <T> int count(long __this__nativeId, T t);
+    private native int count(long __this__nativeId, T t);
 
     @QtUninvokable
     public final boolean endsWith(T t)    {
@@ -211,7 +217,7 @@ public class QVector<T> extends AbstractList<T> implements Cloneable
         }
     }
     @QtUninvokable
-    private static native <T> boolean endsWith(long __this__nativeId, T t);
+    private native boolean endsWith(long __this__nativeId, T t);
 
     @QtUninvokable
     public final void fill(T t) {
@@ -228,7 +234,7 @@ public class QVector<T> extends AbstractList<T> implements Cloneable
     	}
     }
     @QtUninvokable
-    private static native <T> void fill(long __this__nativeId, T t, int size);
+    private native void fill(long __this__nativeId, T t, int size);
 
     @QtUninvokable
     public final T first()    {
@@ -255,7 +261,7 @@ public class QVector<T> extends AbstractList<T> implements Cloneable
     	}
     }
     @QtUninvokable
-    private static native <T> int indexOf(long __this__nativeId, T t, int from);
+    private native int indexOf(long __this__nativeId, T t, int from);
 
     @QtUninvokable
     public final void insert(int i, T t)    {
@@ -273,7 +279,7 @@ public class QVector<T> extends AbstractList<T> implements Cloneable
     	}
     }
     @QtUninvokable
-    private static native <T> void insert(long __this__nativeId, int i, int n, T t);
+    private native void insert(long __this__nativeId, int i, int n, T t);
 
     @QtUninvokable
     public final boolean isEmpty()    {
@@ -289,7 +295,7 @@ public class QVector<T> extends AbstractList<T> implements Cloneable
 		}
     }
     @QtUninvokable
-    private static native <T> T last(long __this__nativeId);
+    private native T last(long __this__nativeId);
 
     @SuppressWarnings("unchecked")
 	@QtUninvokable
@@ -324,7 +330,7 @@ public class QVector<T> extends AbstractList<T> implements Cloneable
     	}
     }
     @QtUninvokable
-    private static native <T> int lastIndexOf(long __this__nativeId, T t, int from);
+    private native int lastIndexOf(long __this__nativeId, T t, int from);
 
     @QtUninvokable
     public final int length()    {
@@ -332,22 +338,22 @@ public class QVector<T> extends AbstractList<T> implements Cloneable
     }
 
     @QtUninvokable
-    public final QVector<T> mid(int pos) {
+    public final @NonNull QVector<T> mid(int pos) {
         return mid(pos, (int)-1);
     }
     @QtUninvokable
-    public final QVector<T> mid(int pos, int length)    {
+    public final @NonNull QVector<T> mid(int pos, int length)    {
         return mid(QtJambi_LibraryUtilities.internal.nativeId(this), pos, length);
     }
     @QtUninvokable
-    private static native <T> QVector<T> mid(long __this__nativeId, int pos, int length);
+    private native QVector<T> mid(long __this__nativeId, int pos, int length);
 
     @QtUninvokable
     public final void move(int from, int to)    {
         move(QtJambi_LibraryUtilities.internal.nativeId(this), from, to);
     }
     @QtUninvokable
-    private static native <T> void move(long __this__nativeId, int from, int to);
+    private native void move(long __this__nativeId, int from, int to);
 
     @QtUninvokable
     public final void prepend(T t) {
@@ -365,7 +371,7 @@ public class QVector<T> extends AbstractList<T> implements Cloneable
         remove(QtJambi_LibraryUtilities.internal.nativeId(this), i, n);
     }
     @QtUninvokable
-    private static native void remove(long __this__nativeId, int i, int n);
+    private native void remove(long __this__nativeId, int i, int n);
 
     @QtUninvokable
     public final int removeAll(T t) {
@@ -383,7 +389,7 @@ public class QVector<T> extends AbstractList<T> implements Cloneable
     	}
     }
     @QtUninvokable
-    private static native <T> int removeAll(long __this__nativeId, T t);
+    private native int removeAll(long __this__nativeId, T t);
 
     @QtUninvokable
     public final void removeAt(int i) {
@@ -415,13 +421,13 @@ public class QVector<T> extends AbstractList<T> implements Cloneable
         return false;
     }
     @QtUninvokable
-    private static native <T> boolean removeOne(long __this__nativeId, T t);
+    private native boolean removeOne(long __this__nativeId, T t);
 
 	/**
      * <p>See <a href="https://doc.qt.io/qt/qvector.html#removeIf" class="member-name-class">QVector::<wbr>removeIf(Predicate)</a></p>
 	 */
     @QtUninvokable
-    public final boolean removeIf(Predicate<? super T> predicate)    {
+    public final boolean removeIf(@StrictNonNull Predicate<? super T> predicate)    {
         Objects.requireNonNull(predicate);
         boolean removed = false;
         for(T value : clone()) {
@@ -444,35 +450,35 @@ public class QVector<T> extends AbstractList<T> implements Cloneable
     	}
     }
     @QtUninvokable
-    private static native <T> void replace(long __this__nativeId, int i, T t);
+    private native void replace(long __this__nativeId, int i, T t);
 
     @QtUninvokable
     public final void reserve(int size) {
         reserve(QtJambi_LibraryUtilities.internal.nativeId(this), size);
     }
     @QtUninvokable
-    private static native <T> void reserve(long __this__nativeId, int size);
+    private native void reserve(long __this__nativeId, int size);
 
     @QtUninvokable
     public final void resize(int size) {
         resize(QtJambi_LibraryUtilities.internal.nativeId(this), size);
     }
     @QtUninvokable
-    private static native void resize(long __this__nativeId, int size);
+    private native void resize(long __this__nativeId, int size);
 
     @QtUninvokable
     public final void squeeze() {
         squeeze(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    private static native void squeeze(long __this__nativeId);
+    private native void squeeze(long __this__nativeId);
 
     @QtUninvokable
     public final int size() {
         return size(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    private static native <T> int size(long __this__nativeId);
+    private native int size(long __this__nativeId);
 
     @QtUninvokable
     public final boolean startsWith(T t) {
@@ -485,14 +491,14 @@ public class QVector<T> extends AbstractList<T> implements Cloneable
         }
     }
     @QtUninvokable
-    private static native <T> boolean startsWith(long __this__nativeId, T t);
+    private native boolean startsWith(long __this__nativeId, T t);
 
     @QtUninvokable
     public final T takeAt(int i) {
         return takeAt(QtJambi_LibraryUtilities.internal.nativeId(this), i);
     }
     @QtUninvokable
-    private static native <T> T takeAt(long __this__nativeId, int i);
+    private native T takeAt(long __this__nativeId, int i);
 
     @QtUninvokable
     public final T takeFirst() {
@@ -512,10 +518,10 @@ public class QVector<T> extends AbstractList<T> implements Cloneable
 		}
     }
     @QtUninvokable
-    private static native <T> T takeLast(long __this__nativeId);
+    private native T takeLast(long __this__nativeId);
 
     @QtUninvokable
-    public final QSet<T> toSet() {
+    public final @NonNull QSet<T> toSet() {
 		QSet<T> set = new QSet<>(elementMetaType());
 		set.unite(this);
         return set;
@@ -526,7 +532,7 @@ public class QVector<T> extends AbstractList<T> implements Cloneable
         return value(QtJambi_LibraryUtilities.internal.nativeId(this), i);
     }
     @QtUninvokable
-    private static native <T> T value(long __this__nativeId, int i);
+    private native T value(long __this__nativeId, int i);
 
     @QtUninvokable
     public final T value(int i, T defaultValue) {
@@ -539,7 +545,7 @@ public class QVector<T> extends AbstractList<T> implements Cloneable
     	}
     }
     @QtUninvokable
-    private static native <T> T valueDefault(long __this__nativeId, int i, T defaultValue);
+    private native T valueDefault(long __this__nativeId, int i, T defaultValue);
 
     /**
      * <p>See <code><a href="https://doc.qt.io/qt/qvector.html#operator-eq-eq" class="member-name-class">QVector::<wbr>operator==(QVector&lt;T>)const</a></code></p>
@@ -557,7 +563,7 @@ public class QVector<T> extends AbstractList<T> implements Cloneable
     }
 	
     @QtUninvokable
-    private static native boolean operator_equal(long __this__nativeId, java.util.Collection<?> l);
+    private native boolean operator_equal(long __this__nativeId, java.util.Collection<?> l);
 
     /**
      * Returns the objects's hash code computed by <code>qHash(QVector&lt;T>)</code>.
@@ -572,11 +578,11 @@ public class QVector<T> extends AbstractList<T> implements Cloneable
 		}
     }
     @QtUninvokable
-    private static native int hashCode(long __this__nativeId);
+    private native int hashCode(long __this__nativeId);
     
     @Override
     @QtUninvokable
-    public String toString() {
+    public @NonNull String toString() {
     	try {
 			return toString(QtJambi_LibraryUtilities.internal.nativeId(this));
 		} catch (QNoNativeResourcesException e) {
@@ -584,7 +590,7 @@ public class QVector<T> extends AbstractList<T> implements Cloneable
 		}
     }
     @QtUninvokable
-    private static native String toString(long __this__nativeId);
+    private native String toString(long __this__nativeId);
     
     @Override
     @QtUninvokable
@@ -635,13 +641,14 @@ public class QVector<T> extends AbstractList<T> implements Cloneable
     }
     
     @QtUninvokable
-    private static native <T> void swapItemsAt(long __this__nativeId, int i, int j);
+    private native void swapItemsAt(long __this__nativeId, int i, int j);
     
     /**
      * <p>See <code>operator&lt;&lt;(QDataStream&amp;,<wbr>QVector&lt;T>)</code></p>
      */
     @io.qt.QtUninvokable
-    public void writeTo(io.qt.core.QDataStream stream){
+    public void writeTo(io.qt.core.@StrictNonNull QDataStream stream){
+    	java.util.Objects.requireNonNull(stream, "Argument 'stream': null not expected.");
         writeTo(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(stream));
     }
     
@@ -652,7 +659,8 @@ public class QVector<T> extends AbstractList<T> implements Cloneable
      * <p>See <code>operator&gt;&gt;(QDataStream&amp;,<wbr>QVector&lt;T>&amp;)</code></p>
      */
     @io.qt.QtUninvokable
-    public void readFrom(io.qt.core.QDataStream stream){
+    public void readFrom(io.qt.core.@StrictNonNull QDataStream stream){
+    	java.util.Objects.requireNonNull(stream, "Argument 'stream': null not expected.");
         readFrom(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(stream));
     }
     
@@ -664,7 +672,7 @@ public class QVector<T> extends AbstractList<T> implements Cloneable
     	return elementMetaType(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @io.qt.QtUninvokable
-    private static native QMetaType elementMetaType(long containerAccess);
+    private native QMetaType elementMetaType(long containerAccess);
     
     /**
      * Returns a QVector containing given elements.
@@ -675,14 +683,323 @@ public class QVector<T> extends AbstractList<T> implements Cloneable
      * @return a {@code QVector} containing the specified element
      * @throws NullPointerException if elements are {@code null}
      */
+    @SuppressWarnings({ "unchecked" })
     @SafeVarargs
-    public static <T> QVector<T> of(T element0, T...elements) {
+    public static <T> @NonNull QVector<T> of(T element0, T @StrictNonNull...elements) {
         QMetaType metaType = QList.findElementMetaType(element0, elements);
-        QVector<T> result = new QVector<>(metaType);
-        result.add(element0);
-        for (T t : elements) {
-            result.add(t);
-        }
-        return result;
+		T[] allElements = (T[])new Object[elements.length+1];
+		System.arraycopy(elements, 0, allElements, 1, elements.length);
+		allElements[0] = element0;
+		return ofTyped(metaType, allElements);
     }
+    
+    /**
+     * Returns a QVector containing given elements.
+     *
+     * @param elements
+     * @return a {@code QVector} containing the specified element
+     */
+    public static @NonNull QVector<@QtPrimitiveType@NonNull Byte> ofByte(byte @StrictNonNull...elements) {
+		QVector<Byte> result = new QVector<>(byte.class);
+    	result.resize(elements.length);
+    	ByteBuffer data = QtJambi_LibraryUtilities.internal.mutableDataB(result);
+		data.put(elements, 0, elements.length);
+		QtJambi_LibraryUtilities.internal.truncateBuffer(result, data);
+		return result;
+	}
+    
+    /**
+     * Returns a QVector containing given elements.
+     *
+     * @param elements
+     * @return a {@code QVector} containing the specified element
+     */
+    public static @NonNull QVector<@QtPrimitiveType@NonNull Short> ofShort(short @StrictNonNull...elements) {
+		QVector<Short> result = new QVector<>(short.class);
+    	result.resize(elements.length);
+    	ShortBuffer data = QtJambi_LibraryUtilities.internal.mutableDataS(result);
+		data.put(elements, 0, elements.length);
+		QtJambi_LibraryUtilities.internal.truncateBuffer(result, data);
+		return result;
+	}
+    
+    /**
+     * Returns a QVector containing given elements.
+     *
+     * @param elements
+     * @return a {@code QVector} containing the specified element
+     */
+    public static @NonNull QVector<@QtPrimitiveType@NonNull Integer> ofInt(int @StrictNonNull...elements) {
+		QVector<Integer> result = new QVector<>(int.class);
+    	result.resize(elements.length);
+    	IntBuffer data = QtJambi_LibraryUtilities.internal.mutableDataI(result);
+		data.put(elements, 0, elements.length);
+		QtJambi_LibraryUtilities.internal.truncateBuffer(result, data);
+		return result;
+	}
+    
+    /**
+     * Returns a QVector containing given elements.
+     *
+     * @param elements
+     * @return a {@code QVector} containing the specified element
+     */
+    public static @NonNull QVector<@QtPrimitiveType@NonNull Long> ofLong(long @StrictNonNull...elements) {
+		QVector<Long> result = new QVector<>(long.class);
+    	result.resize(elements.length);
+    	LongBuffer data = QtJambi_LibraryUtilities.internal.mutableDataJ(result);
+		data.put(elements, 0, elements.length);
+		QtJambi_LibraryUtilities.internal.truncateBuffer(result, data);
+		return result;
+	}
+    
+    /**
+     * Returns a QVector containing given elements.
+     *
+     * @param elements
+     * @return a {@code QVector} containing the specified element
+     */
+    public static @NonNull QVector<@QtPrimitiveType@NonNull Character> ofChar(char @StrictNonNull...elements) {
+		QVector<Character> result = new QVector<>(char.class);
+    	result.resize(elements.length);
+    	CharBuffer data = QtJambi_LibraryUtilities.internal.mutableDataC(result);
+		data.put(elements, 0, elements.length);
+		QtJambi_LibraryUtilities.internal.truncateBuffer(result, data);
+		return result;
+	}
+    
+    /**
+     * Returns a QVector containing given elements.
+     *
+     * @param elements
+     * @return a {@code QVector} containing the specified element
+     */
+    public static @NonNull QVector<@QtPrimitiveType@NonNull Float> ofFloat(float @StrictNonNull...elements) {
+		QVector<Float> result = new QVector<>(float.class);
+    	result.resize(elements.length);
+    	FloatBuffer data = QtJambi_LibraryUtilities.internal.mutableDataF(result);
+		data.put(elements, 0, elements.length);
+		QtJambi_LibraryUtilities.internal.truncateBuffer(result, data);
+		return result;
+	}
+    
+    /**
+     * Returns a QVector containing given elements.
+     *
+     * @param elements
+     * @return a {@code QVector} containing the specified element
+     */
+    public static @NonNull QVector<@QtPrimitiveType@NonNull Double> ofDouble(double @StrictNonNull...elements) {
+		QVector<Double> result = new QVector<>(double.class);
+    	result.resize(elements.length);
+    	DoubleBuffer data = QtJambi_LibraryUtilities.internal.mutableDataD(result);
+		data.put(elements, 0, elements.length);
+		QtJambi_LibraryUtilities.internal.truncateBuffer(result, data);
+		return result;
+	}
+    
+    /**
+     * Returns a QVector containing given elements.
+     *
+     * @param elements
+     * @return a {@code QVector} containing the specified element
+     */
+    public static @NonNull QVector<@QtPrimitiveType@NonNull Boolean> ofBoolean(boolean @StrictNonNull...elements) {
+		QVector<Boolean> result = new QVector<>(boolean.class);
+    	result.reserve(elements.length);
+		for (boolean t : elements) {
+			result.append(t);
+		}
+		return result;
+	}
+    
+    /**
+     * Returns a QVector containing given elements.
+     *
+     * @param elements
+     * @return a {@code QVector} containing the specified element
+     */
+    public static @NonNull QVector<@QtPrimitiveType@NonNull Byte> ofBuffer(@StrictNonNull ByteBuffer elements) {
+		QVector<Byte> result = new QVector<>(byte.class);
+		result.resize(elements.remaining());
+		ByteBuffer data = QtJambi_LibraryUtilities.internal.mutableDataB(result);
+		data.put(elements);
+		QtJambi_LibraryUtilities.internal.truncateBuffer(result, data);
+		return result;
+	}
+    
+    /**
+     * Returns a QVector containing given elements.
+     *
+     * @param elements
+     * @return a {@code QVector} containing the specified element
+     */
+    public static @NonNull QVector<@QtPrimitiveType@NonNull Short> ofBuffer(@StrictNonNull ShortBuffer elements) {
+		QVector<Short> result = new QVector<>(short.class);
+		result.resize(elements.remaining());
+		ShortBuffer data = QtJambi_LibraryUtilities.internal.mutableDataS(result);
+		data.put(elements);
+		QtJambi_LibraryUtilities.internal.truncateBuffer(result, data);
+		return result;
+	}
+    
+    /**
+     * Returns a QVector containing given elements.
+     *
+     * @param elements
+     * @return a {@code QVector} containing the specified element
+     */
+    public static @NonNull QVector<@QtPrimitiveType@NonNull Integer> ofBuffer(@StrictNonNull IntBuffer elements) {
+		QVector<Integer> result = new QVector<>(int.class);
+		result.resize(elements.remaining());
+		IntBuffer data = QtJambi_LibraryUtilities.internal.mutableDataI(result);
+		data.put(elements);
+		QtJambi_LibraryUtilities.internal.truncateBuffer(result, data);
+		return result;
+	}
+    
+    /**
+     * Returns a QVector containing given elements.
+     *
+     * @param elements
+     * @return a {@code QVector} containing the specified element
+     */
+    public static @NonNull QVector<@QtPrimitiveType@NonNull Long> ofBuffer(@StrictNonNull LongBuffer elements) {
+		QVector<Long> result = new QVector<>(long.class);
+		result.resize(elements.remaining());
+		LongBuffer data = QtJambi_LibraryUtilities.internal.mutableDataJ(result);
+		data.put(elements);
+		QtJambi_LibraryUtilities.internal.truncateBuffer(result, data);
+		return result;
+	}
+    
+    /**
+     * Returns a QVector containing given elements.
+     *
+     * @param elements
+     * @return a {@code QVector} containing the specified element
+     */
+    public static @NonNull QVector<@QtPrimitiveType@NonNull Character> ofBuffer(@StrictNonNull CharBuffer elements) {
+		QVector<Character> result = new QVector<>(char.class);
+		result.resize(elements.remaining());
+		CharBuffer data = QtJambi_LibraryUtilities.internal.mutableDataC(result);
+		data.put(elements);
+		QtJambi_LibraryUtilities.internal.truncateBuffer(result, data);
+		return result;
+	}
+    
+    /**
+     * Returns a QVector containing given elements.
+     *
+     * @param elements
+     * @return a {@code QVector} containing the specified element
+     */
+    public static @NonNull QVector<@QtPrimitiveType@NonNull Float> ofBuffer(@StrictNonNull FloatBuffer elements) {
+		QVector<Float> result = new QVector<>(float.class);
+		result.resize(elements.remaining());
+		FloatBuffer data = QtJambi_LibraryUtilities.internal.mutableDataF(result);
+		data.put(elements);
+		QtJambi_LibraryUtilities.internal.truncateBuffer(result, data);
+		return result;
+	}
+    
+    /**
+     * Returns a QVector containing given elements.
+     *
+     * @param elements
+     * @return a {@code QVector} containing the specified element
+     */
+    public static @NonNull QVector<@QtPrimitiveType@NonNull Double> ofBuffer(@StrictNonNull DoubleBuffer elements) {
+		QVector<Double> result = new QVector<>(double.class);
+		result.resize(elements.remaining());
+		DoubleBuffer data = QtJambi_LibraryUtilities.internal.mutableDataD(result);
+		data.put(elements);
+		QtJambi_LibraryUtilities.internal.truncateBuffer(result, data);
+		return result;
+	}
+    
+    /**
+     * Returns a QVector containing given elements.
+     *
+     * @param <T> the {@code QVector}'s element type
+     * @param type the {@code QVector}'s element type
+     * @param elements all list elements to be added
+     * @return a {@code QVector} containing the specified element
+     *
+     */
+	@SafeVarargs
+    public static <T> @NonNull QVector<T> ofTyped(@Nullable Class<? super T> type, T @StrictNonNull...elements) {
+		QMetaType metaType = QList.findElementMetaType(type, elements);
+		return ofTyped(metaType, elements);
+	}
+    
+    /**
+     * Returns a QVector containing given elements.
+     *
+     * @param <T> the {@code QVector}'s element type
+     * @param metaType the {@code QVector}'s element type
+     * @param elements all list elements to be added
+     * @return a {@code QVector} containing the specified element
+     *
+     */
+	@SafeVarargs
+    public static <T> @NonNull QVector<T> ofTyped(@StrictNonNull QMetaType metaType, T @StrictNonNull...elements) {
+		if(metaType.id()==0)
+			throw new IllegalArgumentException("QMetaType::UnknownType cannot be type of QVector.");
+		if(metaType.id()==QMetaType.Type.Void.value())
+			throw new IllegalArgumentException("void cannot be type of QVector.");
+		return new QVector<>(metaType, Arrays.asList(elements));
+	}
+	
+	/**
+     * <p>See <code>QVector::<wbr>operator=(QVector&lt;T>)</code></p>
+     */
+    @QtUninvokable
+    public final void assign(@StrictNonNull QVector<T> other) {
+		assign(QtJambi_LibraryUtilities.internal.nativeId(this), other, QtJambi_LibraryUtilities.internal.nativeId(other));
+    }
+    
+    @QtUninvokable
+    private native void assign(long __this__nativeId, Object container, long other);
+    
+    /**
+     * <p>See <code>QVector::<wbr>swap(QVector&lt;T>&amp;)</code></p>
+     */
+    @QtUninvokable
+    public final void swap(@StrictNonNull QVector<T> other) {
+    	swap(QtJambi_LibraryUtilities.internal.nativeId(this), other, QtJambi_LibraryUtilities.internal.nativeId(other));
+    }
+    
+    @QtUninvokable
+    private native void swap(long __this__nativeId, Object container, long other);
+	
+	/**
+     * Returns true of both containers share the same data. 
+     */
+    @QtUninvokable
+    public final boolean isSharedWith(@StrictNonNull QVector<?> other) {
+		return isSharedWith(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(other));
+	}
+	@QtUninvokable
+    private native boolean isSharedWith(long __this__nativeId, long other);
+
+	/**
+     * Returns true if container is not shared. 
+     */
+    @QtUninvokable
+    public final boolean isDetached() {
+		return isDetached(QtJambi_LibraryUtilities.internal.nativeId(this));
+	}
+	@QtUninvokable
+    private native boolean isDetached(long __this__nativeId);
+	
+	/**
+     * Detached the container if it is shared.
+     */
+    @QtUninvokable
+    public final void detach() {
+    	detach(QtJambi_LibraryUtilities.internal.nativeId(this));
+	}
+	@QtUninvokable
+    private native boolean detach(long __this__nativeId);
 }

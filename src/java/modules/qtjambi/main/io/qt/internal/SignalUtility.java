@@ -494,8 +494,11 @@ abstract class SignalUtility {
 	            QMetaObject.Connection connection = connectNative(NativeUtility.checkedNativeId(senderObject), methodIndex, metaObjectId, 0, c, slot.parameterTypes().size(), flags);
 	            if(connection.isConnected()) {
 					SignalUtility.NativeConnection nativeConnection = (SignalUtility.NativeConnection)connection.clone();
+					WeakReference<QObject> senderWeak = new WeakReference<>(senderObject);
 					cleanable.setFinally(()->{
-						disconnectConnection(NativeUtility.nativeId(nativeConnection));
+						QObject sender = senderWeak.get();
+						if(sender!=null && !sender.isDisposed())
+							disconnectConnection(NativeUtility.nativeId(nativeConnection));
 					});
 				}
 				return connection;
@@ -685,8 +688,11 @@ abstract class SignalUtility {
 	            				conn, slot.getParameterCount()-(lambdaArgs==null ? 0 : lambdaArgs.size()), flags);
 				if(connection.isConnected() && cleanable!=null) {
 					SignalUtility.NativeConnection nativeConnection = (SignalUtility.NativeConnection)connection.clone();
+					WeakReference<QObject> senderWeak = new WeakReference<>(senderObject);
 					cleanable.setFinally(()->{
-						disconnectConnection(NativeUtility.nativeId(nativeConnection));
+						QObject sender = senderWeak.get();
+						if(sender!=null && !sender.isDisposed())
+							disconnectConnection(NativeUtility.nativeId(nativeConnection));
 					});
 				}
 				return connection;

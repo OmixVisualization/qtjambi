@@ -305,11 +305,10 @@ public class TestFileEngine extends ApplicationInitializer {
 		        QStringList direntList = dirtwo.entryList(); 
 		        int direntCount = direntList.size();
 		        if(direntCount == 2) {
-		            assertEquals(direntList.size(), 2);
 		            assertEquals("..", direntList.get(0));
 		            assertEquals("TestClassFunctionality_dir22", direntList.get(1));
 		        } else {
-		            assertEquals(direntList.size(), 1);
+		            assertEquals("number of files in directory classpath:TestClassFunctionality_dirtwo/", direntList.size(), 1);
 		            assertEquals("TestClassFunctionality_dir22", direntList.get(0));
 		        }
 
@@ -328,9 +327,9 @@ public class TestFileEngine extends ApplicationInitializer {
 	        if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows)) {
 	            // CHECKME FIXME On Windows we see ".." entry, we should explain why this is different and if necessary fix something
 	            // "..", "TestClassFunctionality_dir2", "TestClassFunctionality_file_in_dir.txt"
-	            assertEquals(dir.entryList().size(), 3);
+	            assertEquals("number of files in directory classpath:TestClassFunctionality_dir/", dir.entryList().size(), 3);
 	        } else {
-	            assertEquals(dir.entryList().size(), 2);
+	            assertEquals("number of files in directory classpath:TestClassFunctionality_dir/", dir.entryList().size(), 2);
 	        }
 	        boolean found = false;
 	        for(String oneName : dir.entryList()) {
@@ -401,8 +400,8 @@ public class TestFileEngine extends ApplicationInitializer {
 		assertTrue(info.isDir());
 		QStringList content = new QDir(":io/qt/autotests/generated/").entryList(QDir.Filter.NoFilter.asFlags(), QDir.SortFlag.NoSort.asFlags());
 		if(!QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android))
-			assertTrue(content.contains("General.class"));
-		assertTrue(content.contains("qjlogo.png"));
+			assertTrue("directory :io/qt/autotests/generated/ contains class", content.contains("General.class"));
+		assertTrue("directory :io/qt/autotests/generated/ contains image", content.contains("qjlogo.png"));
 		
         info = new QFileInfo(":io/qt/autotests/generated/qjlogo.png");
 		assertTrue(info.exists());
@@ -509,6 +508,14 @@ public class TestFileEngine extends ApplicationInitializer {
 				QResource.removeClassPath(tmpFile.getAbsolutePath());
 				tmpFile.delete();
 			}
+		}
+	}
+	
+	@Test
+    public void testDir(){
+		QDir dir = new QDir(":/");
+		for (String file : dir.entryList()) {
+			System.out.println(file);
 		}
 	}
 	

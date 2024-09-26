@@ -57,7 +57,7 @@
 #include "pp-scanner.h"
 
 class QByteArray;
-
+typedef decltype(std::declval<QString>().size()) StringSize;
 namespace rpp {
 
     enum PP_DIRECTIVE_TYPE {
@@ -563,17 +563,13 @@ namespace rpp {
                     definition += *__first++;
                 }
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                QByteArray macroName(macro_name->begin(), int(macro_name->size()));
-#else
-                QByteArrayView macroName(macro_name->begin(), macro_name->size());
-#endif
+                QByteArray macroName(macro_name->begin(), StringSize(macro_name->size()));
                 if(macroName.startsWith("QT_FEATURE_")){
                     definition = "1";
                 }else if(macroName.startsWith("QTJAMBI_FEATURE_")){
                     QByteArray feature("QT");
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0) || QT_VERSION < QT_VERSION_CHECK(6,5,0)
-                    feature.append(macro_name->begin()+7, macro_name->size()-7);
+#if QT_VERSION < QT_VERSION_CHECK(6,5,0)
+                    feature.append(macro_name->begin()+7, StringSize(macro_name->size()-7));
 #else
                     feature.append(macroName.mid(7));
 #endif
@@ -752,7 +748,7 @@ namespace rpp {
                             }
                         }else{
                             if(rpp::pp_macro * macro = env.resolve(_M_current_text.c_str(), _M_current_text.size())){
-                                if(macro->definition && !QLatin1String(macro->definition->begin(), macro->definition->size()).contains(QLatin1String(_M_current_text.c_str(), _M_current_text.size()))){
+                                if(macro->definition && !QLatin1String(macro->definition->begin(), StringSize(macro->definition->size())).contains(QLatin1String(_M_current_text.c_str(), StringSize(_M_current_text.size())))){
                                     std::string previous_text(_M_current_text);
                                     _M_current_text = std::string(macro->definition->begin(), macro->definition->end());
                                     eval_expression(macro->definition->begin(), macro->definition->end(), result);

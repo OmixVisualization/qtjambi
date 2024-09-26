@@ -460,4 +460,3 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_MetaTypeUtility_registerQmlListPrope
     }
     return QMetaType::UnknownType;
 }
-

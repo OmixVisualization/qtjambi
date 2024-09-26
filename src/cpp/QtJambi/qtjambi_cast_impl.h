@@ -30,9 +30,6 @@
 #ifndef QTJAMBI_CAST_IMPL_H
 #define QTJAMBI_CAST_IMPL_H
 
-#include "qtjambi_cast_impl_util.h"
-#include "qtjambi_cast_impl_container_sequential.h"
-#include "qtjambi_cast_impl_container_associative.h"
 #include "qtjambi_cast_impl_arithmetic.h"
 #include "qtjambi_cast_impl_enum.h"
 #include "qtjambi_cast_impl_jnitype.h"

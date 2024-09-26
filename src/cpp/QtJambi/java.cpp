@@ -38,36 +38,15 @@
 #include "registryutil_p.h"
 #include <QtCore/QMutex>
 
-typedef QList<void**> GlobalClassPointers;
-Q_GLOBAL_STATIC(GlobalClassPointers, gGlobalClassPointers)
-Q_GLOBAL_STATIC(QRecursiveMutex, gMutex)
-
-void clearGlobalClassPointersAtShutdown(JNIEnv *){
-    GlobalClassPointers globalClassPointers;
-    {
-        QRecursiveMutexLocker locker(gMutex());
-        Q_UNUSED(locker)
-        if(!gGlobalClassPointers.isDestroyed())
-            globalClassPointers.swap(*gGlobalClassPointers);
-    }
-    for(void** ptr : globalClassPointers){
-        *ptr = nullptr;
-    }
-}
-
 #ifdef POST_CLASS_REF_ACTION
 #undef POST_CLASS_REF_ACTION
 #endif
 #define POST_CLASS_REF_ACTION(class_ref) \
-{\
-    QRecursiveMutexLocker locker(gMutex());\
-    Q_UNUSED(locker)\
-    gGlobalClassPointers->append(reinterpret_cast<void**>(&class_ref));\
-}
+QtJambiPrivate::registerGlobalClassPointer(class_ref);\
 
 #define DEFINE_CLASS_REF(cls)\
     this->__##cls = getGlobalClassRef(env, jclass(env->GetStaticObjectField(this->class_ref, env->GetStaticFieldID(this->class_ref, #cls, "Ljava/lang/Class;") )), nullptr);\
-    POST_CLASS_REF_ACTION(this->__##cls)\
+    QtJambiPrivate::registerGlobalClassPointer(this->__##cls);\
     JavaException::check(env QTJAMBI_STACKTRACEINFO );
 
 namespace Java{
@@ -678,6 +657,11 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtMessageHandler,
     QTJAMBI_REPOSITORY_DEFINE_METHOD(accept,(Lio/qt/core/QtMsgType;Lio/qt/core/QMessageLogContext;Ljava/lang/String;)V)
 )
 
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QLogging,
+                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(acceptInstalled,(Lio/qt/core/QtMsgType;Lio/qt/core/QMessageLogContext;Ljava/lang/String;)V)
+                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(shutdown,()V)
+                                )
+
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QPair,
     QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/lang/Object;Ljava/lang/Object;)
     QTJAMBI_REPOSITORY_DEFINE_FIELD(first,Ljava/lang/Object;)
@@ -747,27 +731,27 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QStringList,
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QQueue,
     QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;)
-    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR2(Ljava/util/Collection;)
+    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR2(Lio/qt/core/QMetaType;Ljava/util/Collection;)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QList,
     QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;)
-    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR2(Ljava/util/Collection;)
+    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR2(Lio/qt/core/QMetaType;Ljava/util/Collection;)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QStack,
     QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;)
-    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR2(Ljava/util/Collection;)
+    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR2(Lio/qt/core/QMetaType;Ljava/util/Collection;)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QMap,
     QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;)
-    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR2(Ljava/util/Map;)
+    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR2(Lio/qt/core/QMetaType;Lio/qt/core/QMetaType;Ljava/util/Map;)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QHash,
     QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;)
-    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR2(Ljava/util/Map;)
+    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR2(Lio/qt/core/QMetaType;Lio/qt/core/QMetaType;Ljava/util/Map;)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QMultiMap,
@@ -784,19 +768,19 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QSet,
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QSequentialIterator,
-    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject;)
+    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;Lio/qt/QtObject;)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QAssociativeIterator,
-    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject;)
+    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;Lio/qt/QtObject;)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QSequentialConstIterator,
-    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject;)
+    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;Lio/qt/QtObject;)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QAssociativeConstIterator,
-    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject;)
+    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;Lio/qt/QtObject;)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_EMPTY_CLASS(io/qt/core,QByteArray)
@@ -838,6 +822,18 @@ QTJAMBI_REPOSITORY_DEFINE_EMPTY_CLASS(io/qt/core,QObject)
     QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QGenericArgument,
                                      QTJAMBI_REPOSITORY_DEFINE_FIELD(value,Ljava/lang/Object;)
                                      QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(metaType,(Ljava/lang/Object;)Lio/qt/core/QMetaType;))
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,AbstractSpan,
+                                    QTJAMBI_REPOSITORY_DEFINE_METHOD(commit,()V))
+#if QT_VERSION > QT_VERSION_CHECK(6,7,0)
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QConstSpan,
+                                    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;Lio/qt/QtObject;)
+                                    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR2(Lio/qt/QtObject$QPrivateConstructor;Lio/qt/core/QList;)
+                                    )
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QSpan,
+                                    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;Lio/qt/QtObject;)
+                                    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR2(Lio/qt/QtObject$QPrivateConstructor;Lio/qt/core/QList;)
+                                    )
+#endif
     QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QFunctionPointer,)
     QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QFunctionPointerUtil,
                                      QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(createProxy,(Ljava/lang/Class;)Lio/qt/QtObjectInterface;)
@@ -854,6 +850,9 @@ QTJAMBI_REPOSITORY_DEFINE_EMPTY_CLASS(io/qt/core,QObject)
     QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QVariant$Null,
         QTJAMBI_REPOSITORY_DEFINE_METHOD(metaTypeID,()I)
     )
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,AbstractContainer,
+                                    QTJAMBI_REPOSITORY_DEFINE_FIELD(__rcContainer,Ljava/lang/Object;)
+                                    )
 }
 
 namespace Runtime {
@@ -862,6 +861,7 @@ namespace Internal{
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/nio,ByteBuffer,
     QTJAMBI_REPOSITORY_DEFINE_METHOD(order,(Ljava/nio/ByteOrder;)Ljava/nio/ByteBuffer;)
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(allocateDirect,(I)Ljava/nio/ByteBuffer;)
+    QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(allocate,(I)Ljava/nio/ByteBuffer;)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/nio,Buffer,
@@ -981,6 +981,10 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(java/util,Collection,
     QTJAMBI_REPOSITORY_DEFINE_METHOD(remove,(Ljava/lang/Object;)Z)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(contains,(Ljava/lang/Object;)Z)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(iterator,()Ljava/util/Iterator;)
+)
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(java/lang,Iterable,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(iterator,()Ljava/util/Iterator;)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/util,Iterator,
@@ -1212,12 +1216,6 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(java/util,MissingResourceException,
 
 namespace QtJambi{
 
-QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,NativeUtility$NativeLink,
-    QTJAMBI_REPOSITORY_DEFINE_LONG_FIELD(native__id)
-    QTJAMBI_REPOSITORY_DEFINE_METHOD(detach,(JZ)V)
-    QTJAMBI_REPOSITORY_DEFINE_METHOD(reset,()V)
-)
-
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,MetaTypeUtility,
                                     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(debugObject,(Lio/qt/core/QDebug;Ljava/lang/Object;)V)
                                     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(writeSerializableJavaObject,(Lio/qt/core/QDataStream;Ljava/lang/Object;)V)
@@ -1225,9 +1223,7 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,MetaTypeUtility,
                                     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(analyzeExpectedTemplateName,(Ljava/lang/Class;[Lio/qt/core/QMetaType;)Ljava/lang/Object;)
                                 )
 
-QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,NativeUtility$Object,
-    QTJAMBI_REPOSITORY_DEFINE_FIELD(nativeLink,Lio/qt/internal/NativeUtility$NativeLink;)
-)
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,NativeUtility$Object,)
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,ClassAnalyzerUtility,
                                 QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(getImplementedInterfaceInfo,(Ljava/lang/Class;)Ljava/util/Map;)
@@ -1261,7 +1257,6 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,NativeUtility,
                                 QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(deleteAssociation,(Ljava/lang/Object;)Z)
                                 QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(deleteAssociationByHashCode,(I)Ljava/lang/Object;)
                                 QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(findAssociation,(Ljava/lang/Object;)Ljava/lang/Object;)
-                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(findInterfaceLink,(Lio/qt/QtObjectInterface;ZZ)Lio/qt/internal/NativeUtility$NativeLink;)
                                 QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(nativeId,(Lio/qt/internal/NativeUtility$Object;)J)
                                 QTJAMBI_REPOSITORY_DEFINE_RENAMED_STATIC_METHOD(nativeIdInterface,nativeId,(Lio/qt/QtObjectInterface;)J)
 )
@@ -1284,7 +1279,7 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,ResourceUtility$JarResource,
         QTJAMBI_REPOSITORY_DEFINE_METHOD(getName,()Ljava/lang/String;)
         QTJAMBI_REPOSITORY_DEFINE_METHOD(getOrReopen,()I)
         QTJAMBI_REPOSITORY_DEFINE_METHOD(put,()V)
-        QTJAMBI_REPOSITORY_DEFINE_METHOD(entryList,(Ljava/util/List;ILjava/util/Collection;Ljava/lang/String;)V)
+        QTJAMBI_REPOSITORY_DEFINE_METHOD(entryList,(Ljava/util/List;ILjava/util/Collection;Ljava/lang/String;Z)V)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,LibraryUtility,
@@ -1308,6 +1303,7 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,ReferenceUtility,
 QTJAMBI_REPOSITORY_DEFINE_CLASS_SC(io/qt/internal,ReferenceUtility$RCList)
 QTJAMBI_REPOSITORY_DEFINE_CLASS_SC(io/qt/internal,ReferenceUtility$RCSet)
 QTJAMBI_REPOSITORY_DEFINE_CLASS_SC(io/qt/internal,ReferenceUtility$RCMap)
+QTJAMBI_REPOSITORY_DEFINE_CLASS_SC(io/qt/internal,ReferenceUtility$RCMultiMap)
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,MetaObjectUtility,
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(analyze,(Ljava/lang/Class;)Lio/qt/internal/MetaObjectData;)

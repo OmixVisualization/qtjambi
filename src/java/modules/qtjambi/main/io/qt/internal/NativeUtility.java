@@ -39,6 +39,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -63,32 +64,14 @@ public abstract class NativeUtility {
 	private static final java.util.logging.Logger CLEANUP_LOGGER = java.util.logging.Logger.getLogger("io.qt.cleanup");
 	private static Function<java.lang.Object, QMetaObject.DisposedSignal> disposedSignalFactory;
 	private static final Map<Integer, NativeLink> interfaceLinks;
-	private static final Map<NativeLink, QMetaObject.DisposedSignal> disposedSignals;
+	private static final Map<Long, QMetaObject.DisposedSignal> disposedSignals;
 	private static final Thread cleanupRegistrationThread;
-	private static final Function<QtObjectInterface, NativeLink> new_NativeLink;
-	private static final Function<QtObjectInterface, PureInterfaceNativeLink> new_PureInterfaceNativeLink;
-	private static final Function<QtObjectInterface, ReferenceCountingNativeLink> new_ReferenceCountingNativeLink;
-	private static final BiFunction<QtObjectInterface, Map<Class<? extends QtObjectInterface>, io.qt.MemberAccess<?>>, MemberAccessReferenceCountingNativeLink> new_MemberAccessReferenceCountingNativeLink;
-	private static final BiFunction<QtObjectInterface, Map<Class<? extends QtObjectInterface>, io.qt.MemberAccess<?>>, MemberAccessPureInterfaceNativeLink> new_MemberAccessPureInterfaceNativeLink;
 	static {
 		interfaceLinks = Collections.synchronizedMap(new HashMap<>());
-		disposedSignals = Collections.synchronizedMap(new HashMap<>());
+		disposedSignals = Collections.synchronizedMap(new TreeMap<>());
 		cleanupRegistrationThread = new Thread(QueuedCleaner::cleanup);
 		cleanupRegistrationThread.setName("QtJambiCleanupThread");
 		cleanupRegistrationThread.setDaemon(true);
-		if(Boolean.getBoolean("io.qt.enable-cleanup-logs")) {
-			new_NativeLink = LoggingNativeLink::new;
-			new_ReferenceCountingNativeLink = ReferenceCountingLoggingNativeLink::new;
-			new_MemberAccessPureInterfaceNativeLink = MemberAccessPureInterfaceLoggingNativeLink::new;
-			new_PureInterfaceNativeLink = PureInterfaceLoggingNativeLink::new;
-			new_MemberAccessReferenceCountingNativeLink = MemberAccessReferenceCountingLoggingNativeLink::new;
-		}else {
-			new_NativeLink = NativeLink::new;
-			new_ReferenceCountingNativeLink = ReferenceCountingNativeLink::new;
-			new_MemberAccessPureInterfaceNativeLink = MemberAccessPureInterfaceNativeLink::new;
-			new_PureInterfaceNativeLink = PureInterfaceNativeLink::new;
-			new_MemberAccessReferenceCountingNativeLink = MemberAccessReferenceCountingNativeLink::new;
-		}
 		QtJambi_LibraryUtilities.initialize();
 		cleanupRegistrationThread.start();
 	}
@@ -140,6 +123,29 @@ public abstract class NativeUtility {
 			}
 		}
 	}
+	
+	static final class Factories{
+		static final Function<QtObjectInterface, NativeLink> new_NativeLink;
+		static final Function<QtObjectInterface, PureInterfaceNativeLink> new_PureInterfaceNativeLink;
+		static final Function<QtObjectInterface, ReferenceCountingNativeLink> new_ReferenceCountingNativeLink;
+		static final BiFunction<QtObjectInterface, Map<Class<? extends QtObjectInterface>, io.qt.MemberAccess<?>>, MemberAccessReferenceCountingNativeLink> new_MemberAccessReferenceCountingNativeLink;
+		static final BiFunction<QtObjectInterface, Map<Class<? extends QtObjectInterface>, io.qt.MemberAccess<?>>, MemberAccessPureInterfaceNativeLink> new_MemberAccessPureInterfaceNativeLink;
+		static {
+			if(Boolean.getBoolean("io.qt.enable-cleanup-logs")) {
+				new_NativeLink = LoggingNativeLink::new;
+				new_ReferenceCountingNativeLink = ReferenceCountingLoggingNativeLink::new;
+				new_MemberAccessPureInterfaceNativeLink = MemberAccessPureInterfaceLoggingNativeLink::new;
+				new_PureInterfaceNativeLink = PureInterfaceLoggingNativeLink::new;
+				new_MemberAccessReferenceCountingNativeLink = MemberAccessReferenceCountingLoggingNativeLink::new;
+			}else {
+				new_NativeLink = NativeLink::new;
+				new_ReferenceCountingNativeLink = ReferenceCountingNativeLink::new;
+				new_MemberAccessPureInterfaceNativeLink = MemberAccessPureInterfaceNativeLink::new;
+				new_PureInterfaceNativeLink = PureInterfaceNativeLink::new;
+				new_MemberAccessReferenceCountingNativeLink = MemberAccessReferenceCountingNativeLink::new;
+			}
+		}		
+	}
 
 	static class NativeLink extends QueuedCleaner<QtObjectInterface> {
 
@@ -147,39 +153,37 @@ public abstract class NativeUtility {
 			super(object);
 		}
 
-		private @NativeAccess long native__id = 0;
+		private long native__id = 0;
+		private QtObjectInterface referent__strong;
 
 		@NativeAccess
 		private final void detach(long native__id, boolean hasDisposedSignal) {
-			QMetaObject.DisposedSignal disposed = hasDisposedSignal ? takeSignalOnDispose(this) : null;
-			boolean detached = false;
 			synchronized (this) {
 				if (this.native__id == native__id) {
 					this.native__id = 0;
-					detached = true;
+					this.referent__strong = null;
+				}else {
+					return;
 				}
 			}
-			if (disposed != null) {
-				try {
-					if (detached)
+			if (hasDisposedSignal) {
+				QMetaObject.DisposedSignal disposed = takeSignalOnDispose(native__id);
+				if (disposed != null) {
+					try {
 						disposed.emitSignal();
+					} catch (Throwable e) {
+						CLEANUP_LOGGER.log(Level.WARNING, "Exception occurred during DisposedSignal emit.", e);
+					}
 					disposed.disconnect();
-				} catch (Throwable e) {
-					e.printStackTrace();
 				}
 			}
-			if (detached)
-				enqueue();
+			enqueue();
 		}
 
 		@Override
 		public synchronized void clean() {
 			if (native__id != 0) {
 				clean(native__id);
-			} else {
-				QMetaObject.DisposedSignal disposed = takeSignalOnDispose(this);
-				if (disposed != null)
-					disposed.disconnect();
 			}
 		}
 		
@@ -188,17 +192,23 @@ public abstract class NativeUtility {
 		}
 
 		@NativeAccess
-		private final synchronized void reset() {
-			if (native__id != 0 && hasDisposedSignal(native__id)) {
-				QMetaObject.DisposedSignal disposed = takeSignalOnDispose(this);
+		private final void reset(long native__id, boolean hasDisposedSignal) {
+			synchronized (this) {
+				if (this.native__id == native__id) {
+					this.native__id = 0;
+					this.referent__strong = null;
+				}else {
+					return;
+				}
+			}
+			if (hasDisposedSignal) {
+				QMetaObject.DisposedSignal disposed = takeSignalOnDispose(native__id);
 				if (disposed != null)
 					disposed.disconnect();
 			}
-			this.native__id = 0;
 		}
 
 		private static native void clean(long native__id);
-		private static native boolean hasDisposedSignal(long native__id);
 		private static native void setHasDisposedSignal(long native__id);
 
 		synchronized void dispose() {
@@ -224,7 +234,7 @@ public abstract class NativeUtility {
 
 		@Override
 		public final String toString() {
-			QtObjectInterface o = get();
+			QtObjectInterface o = super.get();
 			if (o != null) {
 				return AccessUtility.instance.getClass(o).getName() + "@" + Integer.toHexString(System.identityHashCode(o));
 			} else {
@@ -258,8 +268,42 @@ public abstract class NativeUtility {
 			return native__id == other.native__id;
 		}
 
-		public synchronized long nativeId() {
+		@NativeAccess
+		public final synchronized long nativeId() {
 			return native__id;
+		}
+		
+		@NativeAccess
+		public final synchronized void assignNativeId(long ptr) {
+			assignNativeId(native__id, ptr);
+		}
+		
+		private static native void assignNativeId(long native__id, long ptr);
+
+		@Override
+		@NativeAccess
+		public final synchronized QtObjectInterface get() {
+			return referent__strong==null ? super.get() : referent__strong;
+		}
+		
+		final synchronized QtObjectInterface weak() {
+			return super.get();
+		}
+
+		@NativeAccess
+		private final synchronized void releaseOwnership() {
+			this.referent__strong = null;
+		}
+		
+		@NativeAccess
+		private final synchronized void takeOwnership() {
+			this.referent__strong = super.get();
+		}
+		
+		@NativeAccess
+		private final void initialize(long nativeId){
+			if(native__id==0)
+				this.native__id = nativeId;
 		}
 	}
 	
@@ -488,13 +532,20 @@ public abstract class NativeUtility {
 			if (link == null && forceCreation) {
 				link = createNativeLink(iface);
 				if (link == null) {
-					link = new_PureInterfaceNativeLink.apply(iface);
+					link = Factories.new_PureInterfaceNativeLink.apply(iface);
 				}else if (initialize) {
 					initializeNativeObject(iface, link);
 				}
 			}
 			return link;
 		}else return null;
+	}
+	
+	@NativeAccess
+	private static void findAndAssignInterfaceLink(QtObjectInterface iface, boolean forceCreation, boolean initialize, long ptr) {
+		NativeLink nl = findInterfaceLink(iface, forceCreation, initialize);
+		if(nl!=null)
+			nl.assignNativeId(ptr);
 	}
 
 	/**
@@ -510,28 +561,36 @@ public abstract class NativeUtility {
 
 	private static QMetaObject.DisposedSignal getSignalOnDispose(NativeLink nativeLink, boolean forceCreation) {
 		if (nativeLink != null) {
-			if (forceCreation) {
-				long native__id = nativeLink.nativeId();
-				if(native__id!=0) {
+			long native__id = nativeLink.nativeId();
+			if(native__id!=0) {
+				if (forceCreation) {
 					NativeLink.setHasDisposedSignal(native__id);
 					try {
-						return disposedSignals.computeIfAbsent(nativeLink, lnk -> {
-							QtObjectInterface object = lnk.get();
+						return disposedSignals.computeIfAbsent(native__id, id -> {
+							Class<?> declaringClass;
+							if(nativeLink instanceof LoggingNativeLink) {
+								declaringClass = ((LoggingNativeLink) nativeLink).cls;
+							}else {
+								QtObjectInterface object = nativeLink.weak();
+								declaringClass = AccessUtility.instance.getClass(object);
+								object = null;
+							}
 							if(disposedSignalFactory==null)
 								disposedSignalFactory = SignalUtility.<QMetaObject.DisposedSignal>getSignalFactory(QMetaObject.DisposedSignal.class);
-							return disposedSignalFactory.apply(AccessUtility.instance.getClass(object));
+							return disposedSignalFactory.apply(declaringClass);
 						});
 					} catch (NullPointerException e) {
+						e.printStackTrace();
 					}
-				}
-			} else
-				return disposedSignals.get(nativeLink);
+				} else
+					return disposedSignals.get(native__id);
+			}
 		}
 		return null;
 	}
 
-	private static QMetaObject.DisposedSignal takeSignalOnDispose(NativeLink nativeLink) {
-		return disposedSignals.remove(nativeLink);
+	private static QMetaObject.DisposedSignal takeSignalOnDispose(long native__id) {
+		return disposedSignals.remove(native__id);
 	}
 
 	private static Map<Class<? extends QtObjectInterface>, io.qt.MemberAccess<?>> findMemberAccesses(QtObjectInterface object){
@@ -561,11 +620,11 @@ public abstract class NativeUtility {
 		Map<Class<? extends QtObjectInterface>, io.qt.MemberAccess<?>> memberAccesses = findMemberAccesses(object);
 		if (memberAccesses != null) {
 			if(memberAccesses.isEmpty())
-				return new_ReferenceCountingNativeLink.apply(object);
+				return Factories.new_ReferenceCountingNativeLink.apply(object);
 			else
-				return new_MemberAccessReferenceCountingNativeLink.apply(object, Collections.unmodifiableMap(memberAccesses));
+				return Factories.new_MemberAccessReferenceCountingNativeLink.apply(object, Collections.unmodifiableMap(memberAccesses));
 		} else {
-			return new_NativeLink.apply(object);
+			return Factories.new_NativeLink.apply(object);
 		}
 	}
 
@@ -573,9 +632,9 @@ public abstract class NativeUtility {
 		Map<Class<? extends QtObjectInterface>, io.qt.MemberAccess<?>> memberAccesses = findMemberAccesses(iface);
 		if (memberAccesses != null) {
 			if(memberAccesses.isEmpty())
-				return new_PureInterfaceNativeLink.apply(iface);
+				return Factories.new_PureInterfaceNativeLink.apply(iface);
 			else
-				return new_MemberAccessPureInterfaceNativeLink.apply(iface, Collections.unmodifiableMap(memberAccesses));
+				return Factories.new_MemberAccessPureInterfaceNativeLink.apply(iface, Collections.unmodifiableMap(memberAccesses));
 		} else {
 			return null;
 		}
@@ -629,6 +688,11 @@ public abstract class NativeUtility {
 	    }
 
 	    final @NativeAccess NativeLink nativeLink;
+	    
+	    @NativeAccess
+		private void assignNativeLink(long ptr) {
+	    	nativeLink.assignNativeId(ptr);
+	    }
 	}
 
 	protected static void disposeObject(NativeUtility.Object object) {
@@ -673,8 +737,33 @@ public abstract class NativeUtility {
 				}
 				if(reference instanceof QtObjectInterface) {
 					QMetaObject.DisposedSignal disposed = getSignalOnDispose((QtObjectInterface)reference, true);
-					if (disposed != null)
-						disposed.connect(this::clean);
+					if (disposed != null) {
+						if(LibraryUtility.operatingSystem==LibraryUtility.OperatingSystem.Android) {
+							WeakReference<AssociativeReference> weakThis = new WeakReference<>(this);
+							disposed.connect(()->{
+								AssociativeReference _this = weakThis.get();
+								if(_this!=null)
+									_this.enqueue();
+							});
+						}else {
+							disposed.connect(this::enqueue);
+						}
+					}
+				}
+				if(association instanceof QtObjectInterface) {
+					QMetaObject.DisposedSignal disposed = getSignalOnDispose((QtObjectInterface)association, true);
+					if (disposed != null) {
+						if(LibraryUtility.operatingSystem==LibraryUtility.OperatingSystem.Android) {
+							WeakReference<AssociativeReference> weakThis = new WeakReference<>(this);
+							disposed.connect(()->{
+								AssociativeReference _this = weakThis.get();
+								if(_this!=null)
+									_this.enqueue();
+							});
+						}else {
+							disposed.connect(this::enqueue);
+						}
+					}
 				}
 			}
 		}
@@ -1008,11 +1097,69 @@ public abstract class NativeUtility {
 		return nid;
 	}
 	
-	static java.nio.ByteBuffer mutableData(io.qt.core.QByteArray byteArray){
-		return mutableData(checkedNativeId(byteArray));
+	private native static java.nio.ByteBuffer mutableByteArrayData(long nid);
+	
+	private native static java.nio.CharBuffer mutableStringData(long nid);
+	
+	private native static java.nio.ByteBuffer mutableDataB(io.qt.QtObject iter, long nid);
+	
+	private native static java.nio.ShortBuffer mutableDataS(io.qt.QtObject iter, long nid);
+	
+	private native static java.nio.IntBuffer mutableDataI(io.qt.QtObject iter, long nid);
+	
+	private native static java.nio.LongBuffer mutableDataJ(io.qt.QtObject iter, long nid);
+	
+	private native static java.nio.CharBuffer mutableDataC(io.qt.QtObject iter, long nid);
+	
+	private native static java.nio.FloatBuffer mutableDataF(io.qt.QtObject iter, long nid);
+	
+	private native static java.nio.DoubleBuffer mutableDataD(io.qt.QtObject iter, long nid);
+	
+	private native static void truncateBuffer(long nid, java.nio.Buffer buffer);
+	
+	static void truncateBuffer(io.qt.QtObjectInterface owner, java.nio.Buffer buffer){
+		truncateBuffer(checkedNativeId(owner), buffer);
 	}
 	
-	private native static java.nio.ByteBuffer mutableData(long nid);
+	static void truncateBuffer(io.qt.QtObject owner, java.nio.Buffer buffer){
+		truncateBuffer(checkedNativeId(owner), buffer);
+	}
+	
+	static java.nio.ByteBuffer mutableData(io.qt.core.QByteArray byteArray){
+		return mutableByteArrayData(checkedNativeId(byteArray));
+	}
+	
+	static java.nio.CharBuffer mutableData(io.qt.core.QString string){
+		return mutableStringData(checkedNativeId(string));
+	}
+	
+	static <C extends QtObject & Iterable<Character>> java.nio.CharBuffer mutableDataC(C list){
+		return mutableDataC(list, checkedNativeId(list));
+	}
+    
+	static <C extends QtObject & Iterable<Byte>> java.nio.ByteBuffer mutableDataB(C list){
+		return mutableDataB(list, checkedNativeId(list));
+	}
+    
+	static <C extends QtObject & Iterable<Short>> java.nio.ShortBuffer mutableDataS(C list){
+		return mutableDataS(list, checkedNativeId(list));
+	}
+    
+	static <C extends QtObject & Iterable<Integer>> java.nio.IntBuffer mutableDataI(C list){
+		return mutableDataI(list, checkedNativeId(list));
+	}
+    
+	static <C extends QtObject & Iterable<Long>> java.nio.LongBuffer mutableDataJ(C list){
+		return mutableDataJ(list, checkedNativeId(list));
+	}
+    
+	static <C extends QtObject & Iterable<Float>> java.nio.FloatBuffer mutableDataF(C list){
+		return mutableDataF(list, checkedNativeId(list));
+	}
+    
+	static <C extends QtObject & Iterable<Double>> java.nio.DoubleBuffer mutableDataD(C list){
+		return mutableDataD(list, checkedNativeId(list));
+	}
 
 	static void registerDependentObject(QtObjectInterface dependentObject, QtObjectInterface owner) {
 		registerDependentObject(nativeId(dependentObject), nativeId(owner));
@@ -1056,7 +1203,7 @@ public abstract class NativeUtility {
 
 	private static native boolean isSplitOwnership(long native__id);
 
-	private static native boolean isJavaOwnership(long native__id);
+	static native boolean isJavaOwnership(long native__id);
 
 	private static native void invalidateObject(long native__id);
 	

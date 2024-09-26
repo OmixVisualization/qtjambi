@@ -43,11 +43,14 @@ import io.qt.core.QEventLoop;
 import io.qt.core.QObject;
 import io.qt.core.QThread;
 import io.qt.core.QUrl;
+import io.qt.qml.QJSEngine;
+import io.qt.qml.QJSValue;
 import io.qt.qml.QQmlComponent;
 import io.qt.qml.QQmlContext;
 import io.qt.qml.QQmlEngine;
 import io.qt.qml.QQmlIncubationController;
 import io.qt.qml.QQmlIncubator;
+import io.qt.qml.QtQml;
 import io.qt.quick.QQuickItem;
 
 public class TestQmlThreadAffinity extends ApplicationInitializer{
@@ -116,7 +119,7 @@ public class TestQmlThreadAffinity extends ApplicationInitializer{
 		loop.exec();
 		if(throwable!=null)
 			throw throwable;
-		thread.join();
+		thread.join(5000);
 		Assert.assertTrue(objects[0] instanceof QObject);
 		Assert.assertTrue(objects[1] instanceof QQuickItem);
 		Assert.assertTrue(objects[2] instanceof QQuickItem);
@@ -137,6 +140,102 @@ public class TestQmlThreadAffinity extends ApplicationInitializer{
 			fail("QThreadAffinityException expected to be thrown.");
 		}catch(QThreadAffinityException e) {}
 		thread.dispose();
+		engine.dispose();
+	}
+	
+	@Test
+    public void testQJSValue() throws Throwable{
+		Throwable[] exn = {null};
+		QtQml.qmlClearTypeRegistrations();
+		QQmlEngine engine = new QQmlEngine();
+		try {
+			QQmlComponent component = new QQmlComponent(engine);
+			component.setData(new QByteArray("import QtQuick 2.0\n Item {property var array: [1,2,3,4,5]}"), (QUrl)null);
+			QObject object = component.create();
+			Object array = object.property("array");
+			Assert.assertTrue(array instanceof QJSValue);
+			QJSValue myObject = (QJSValue)array;
+			Assert.assertTrue(myObject.isArray());
+			Runnable r = ()->{
+				try {
+					try {
+						object.property("array");
+						Assert.fail("QThreadAffinityException expected to be thrown");
+					} catch (QThreadAffinityException e) {
+					}
+					try {
+						engine.evaluate("");
+						Assert.fail("QThreadAffinityException expected to be thrown");
+					} catch (QThreadAffinityException e) {
+					}
+					try {
+						engine.fromScriptValue(new QJSValue(), null);
+						Assert.fail("QThreadAffinityException expected to be thrown");
+					} catch (QThreadAffinityException e) {
+					}
+					try {
+						engine.installExtensions(QJSEngine.Extension.ConsoleExtension.asFlags());
+						Assert.fail("QThreadAffinityException expected to be thrown");
+					} catch (QThreadAffinityException e) {
+					}
+					try {
+						engine.newArray();
+						Assert.fail("QThreadAffinityException expected to be thrown");
+					} catch (QThreadAffinityException e) {
+					}
+					try {
+						engine.newErrorObject(QJSValue.ErrorType.EvalError);
+						Assert.fail("QThreadAffinityException expected to be thrown");
+					} catch (QThreadAffinityException e) {
+					}
+					try {
+						engine.newObject();
+						Assert.fail("QThreadAffinityException expected to be thrown");
+					} catch (QThreadAffinityException e) {
+					}
+					try {
+						engine.newQMetaObject(QObject.staticMetaObject);
+						Assert.fail("QThreadAffinityException expected to be thrown");
+					} catch (QThreadAffinityException e) {
+					}
+					try {
+						engine.newQObject(object);
+						Assert.fail("QThreadAffinityException expected to be thrown");
+					} catch (QThreadAffinityException e) {
+					}
+					try {
+						engine.toScriptValue(object);
+						Assert.fail("QThreadAffinityException expected to be thrown");
+					} catch (QThreadAffinityException e) {
+					}
+					try {
+						engine.singletonInstance(0);
+						Assert.fail("QThreadAffinityException expected to be thrown");
+					} catch (QThreadAffinityException e) {
+					}
+					try {
+						engine.throwError("");
+						Assert.fail("QThreadAffinityException expected to be thrown");
+					} catch (QThreadAffinityException e) {
+					}
+					try {
+						engine.clearComponentCache();
+						Assert.fail("QThreadAffinityException expected to be thrown");
+					} catch (QThreadAffinityException e) {
+					}
+					engine.collectGarbage();
+				}catch(Throwable e){
+					exn[0] = e;
+				}
+			};
+			QThread thread1 = QThread.create(r);
+			thread1.start();
+			thread1.join(5000);
+			if(exn[0]!=null)
+				throw exn[0];
+		}finally {
+			engine.dispose();
+		}
 	}
 	
     public static void main(String args[]) {

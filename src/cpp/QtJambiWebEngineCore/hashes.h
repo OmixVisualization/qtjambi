@@ -169,6 +169,17 @@ inline hash_type qHash(const QWebEngineFileSystemAccessRequest& value, hash_type
 }
 #endif //defined(QTJAMBI_GENERATOR_RUNNING)
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+inline hash_type qHash(const QWebEnginePermission &value, hash_type seed = 0){
+    struct WebEnginePermission : QWebEnginePermission{
+        void* get() const{
+            return d_ptr.get();
+        }
+    };
+    return qHash(reinterpret_cast<const WebEnginePermission*>(&value)->get(), seed);
+}
+#endif //QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+
 #endif // QT_VERSION >= QT_VERSION_CHECK(6, 4, 0)
 
 #endif // QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)

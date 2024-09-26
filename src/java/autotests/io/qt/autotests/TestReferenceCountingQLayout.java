@@ -38,7 +38,7 @@ import org.junit.*;
 
 import io.qt.*;
 import io.qt.core.*;
-import io.qt.gui.QGuiApplication;
+import io.qt.gui.*;
 import io.qt.widgets.*;
 
 public class TestReferenceCountingQLayout extends ApplicationInitializer{

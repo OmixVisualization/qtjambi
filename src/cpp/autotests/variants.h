@@ -282,6 +282,10 @@ public:
 
     static void analyze(const JObjectWrapper& object);
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    static bool compare(QObject* object, const QString& property, const QVector<QObject*>& list);
+    static bool compare(QObject* object, const QString& property, const QLinkedList<QObject*>& list);
+#endif
     static bool compare(QObject* object, const QString& property, const QList<QObject*>& list);
 
     static bool compare(QObject* object, const QString& property, const QPair<QObject*,QObject*>& pair);

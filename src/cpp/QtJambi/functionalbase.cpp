@@ -49,9 +49,10 @@ public:
     {
         if(0==functional.m_ref++){
             if(QSharedPointer<QtJambiLink> link = m_link.toStrongRef()){
-                if(JniEnvironment env{200}){
+                if(functional.isFunctionPointer())
+                    link->setNeedsReferenceCounting(true);
+                else if(JniEnvironment env{200})
                     link->setCppOwnership(env);
-                }
             }
         }
     }
@@ -61,9 +62,9 @@ public:
             if(void* ptr = link->typedPointer(m_typeId)){
                 FunctionalBase* functional = reinterpret_cast<FunctionalBase*>(ptr);
                 if(--functional->m_ref==0){
-                    if(DefaultJniEnvironment env{200}){
+                    if(DefaultJniEnvironment env{200})
                         link->setJavaOwnership(env);
-                    }
+                    link->setNeedsReferenceCounting(false);
                 }
             }
         }

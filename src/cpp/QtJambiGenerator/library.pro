@@ -186,11 +186,15 @@ SOURCES += \
 
 
 
-QT = core xml network concurrent qml
+QT = core xml network qml
 CONFIG += qmltypes
 
 QML_IMPORT_NAME = QtJambiGenerator
 QML_IMPORT_MAJOR_VERSION = 1
+
+lessThan(QT_MAJOR_VERSION, 6):{
+    CONFIG += c++17
+}
 
 # These option changes are recommended since at least: win32-msvc.net
 win32-arm64-msvc* | win32-msvc* {
@@ -212,8 +216,6 @@ macx:{
         greaterThan(QT_MAJOR_VERSION, 6) | greaterThan(QT_MINOR_VERSION, 1):{
             QMAKE_APPLE_DEVICE_ARCHS = x86_64 arm64
         }
-    }else{
-        CONFIG += c++17
     }
 }
 
@@ -224,8 +226,6 @@ linux-clang* | linux-g++* | freebsd-clang* | freebsd-g++* | netbsd-clang* | netb
     QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF
     lessThan(QT_MAJOR_VERSION, 6):{
         QMAKE_CXXFLAGS += -fno-sized-deallocation
-    }else{
-        CONFIG += c++17
     }
 }
 

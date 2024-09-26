@@ -28,6 +28,8 @@
 ****************************************************************************/
 
 #include <QtCore/qcompilerdetection.h>
+QT_WARNING_DISABLE_GCC("-Wdeprecated-declarations")
+QT_WARNING_DISABLE_CLANG("-Wdeprecated-declarations")
 QT_WARNING_DISABLE_DEPRECATED
 
 #include <QtCore/QWriteLocker>
@@ -39,6 +41,9 @@ QT_WARNING_DISABLE_DEPRECATED
 #include <QtCore/QLibrary>
 #if defined(QTJAMBI_LIGHTWEIGHT_MODELINDEX)
 #include <QtCore/QModelIndex>
+#endif
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
+#include <QtCore/QSpan>
 #endif
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -61,9 +66,6 @@ QT_WARNING_DISABLE_DEPRECATED
 #endif
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-QT_WARNING_DISABLE_GCC("-Wdeprecated-declarations")
-QT_WARNING_DISABLE_DEPRECATED
-
 template<>
 inline bool qMapLessThanKey<QVariant>(const QVariant& v1, const QVariant& v2){
     return v1 < v2;
@@ -84,20 +86,24 @@ inline bool qMapLessThanKey<QVariant>(const QVariant& v1, const QVariant& v2){
 #define JNI_VERSION_1_8 JNI_VERSION_1_6
 #endif
 
-void shutdown(JNIEnv * env);
-void clearGlobalClassPointersAtShutdown(JNIEnv *env);
+void shutdown(JNIEnv * env, bool regular);
 void clearRegistryAtShutdown(JNIEnv * env);
-void clearTypeHandlersAtShutdown(JNIEnv *env);
-void clearMessageHandlerAtShutdown(JNIEnv *env);
+void clearVTablesAtShutdown();
+void clearTypeHandlersAtShutdown();
+void clearMessageHandlerAtShutdown(JNIEnv * env);
 void clearSuperTypesAtShutdown(JNIEnv *env);
 void clearMetaObjectsAtShutdown(JNIEnv * env);
 void clearFunctionPointersAtShutdown();
 void clearObjectsByFunctionPointerAtShutdown(JNIEnv* env);
+void clearTypeManagerAtShutdown();
+#if defined(QTJAMBI_GENERIC_ACCESS)
 void registerPointerContainerAccess();
+#endif //defined(QTJAMBI_GENERIC_ACCESS)
 JNIEnv *currentJNIEnvironment(bool initializeJavaThread = true);
 QObject* connectionSender(const QMetaObject::Connection* connection);
 void registerPluginImporter();
 void clearResettableFlags();
+void clear_type_entries();
 #ifdef Q_OS_ANDROID
 void reinitializeResettableFlags(JNIEnv * env);
 #endif
@@ -262,7 +268,7 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(JNI_OnLoad)(JavaVM
     }else{
         return JNI_VERSION_1_8;
     }
-    ::atexit([]{shutdown(nullptr);});
+    ::atexit([]{shutdown(nullptr, true);});
 
     JNIEnv * env = currentJNIEnvironment(vm);
 #if defined(Q_OS_ANDROID) && !defined(QT_NO_DEBUG)
@@ -288,8 +294,9 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(JNI_OnLoad)(JavaVM
                 enableThreadAffinity(false);
                 QInternal::registerCallback(QInternal::EventNotifyCallback, &simpleEventNotify);
             }
-
+#if defined(QTJAMBI_GENERIC_ACCESS)
             registerPointerContainerAccess();
+#endif //defined(QTJAMBI_GENERIC_ACCESS)
             //qtjambi_register_containeraccess_all();
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
             QtJambiVariant::registerHandler();
@@ -733,6 +740,10 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(JNI_OnLoad)(JavaVM
                 registerContainerTypeInfo<QSet<QVariant>>("QSet", "io/qt/core/QSet", "java/util/Set");
                 registerContainerTypeInfo<QStack<QVariant>>("QStack", "io/qt/core/QStack", "java/util/Deque");
                 registerEnumTypeInfo<QString::SectionFlag>("QString::SectionFlag", "io/qt/core/QString$SectionFlag", "QFlags<QtString::SectionFlag>", "QtString::SectionFlags", "io/qt/core/QString$SectionFlags");
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
+                registerUnspecificTypeInfo<QSpan<QVariant>>("QSpan", "io/qt/core/QSpan");
+                registerUnspecificTypeInfo<QSpan<QVariant>>("std::span", "io/qt/core/QSpan");
+#endif
             }
 #if defined(QTJAMBI_LIGHTWEIGHT_MODELINDEX)
             {
@@ -823,7 +834,7 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(JNI_OnLoad)(JavaVM
                     if(Java::QtJambi::LibraryUtility::isNativeDeployment(env)){
                         jobject pluginPaths = Java::QtJambi::LibraryUtility::pluginPaths(env);
                         // don't use qtjambi_cast here!
-                        jobject iter = QtJambiAPI::iteratorOfJavaCollection(env, pluginPaths);
+                        jobject iter = QtJambiAPI::iteratorOfJavaIterable(env, pluginPaths);
                         while(QtJambiAPI::hasJavaIteratorNext(env, iter)) {
                             jstring p = jstring(QtJambiAPI::nextOfJavaIterator(env, iter));
                             libraryPaths << QFileInfo(qtjambi_cast<QString>(env, p)).absoluteFilePath();
@@ -896,22 +907,21 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(JNI_OnLoad)(JavaVM
 extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(JNI_OnUnload)(JavaVM *, void *)
 {
     DefaultJniEnvironment env{32};
-    shutdown(env);
-    clearGlobalClassPointersAtShutdown(env);
-    clearRegistryAtShutdown(env);
+    shutdown(env, true);
     if(std::atomic<JavaVM *>* atm = getJVM())
         atm->store(nullptr);
 }
 
-void shutdown(JNIEnv * env)
+void shutdown(JNIEnv * env, bool regular)
 {
-    clearResettableFlags();
     if(std::atomic<bool>* atm = getJVMLoaded()){
         if(!atm->load())
             return;
+        clearResettableFlags();
+        if(regular)
+            clearMessageHandlerAtShutdown(env);
         JavaException exception;
         if(env){
-            clearMessageHandlerAtShutdown(env);
             try{
                 Java::Runtime::System::gc(env);
             }catch (const JavaException& exn) {
@@ -932,9 +942,11 @@ void shutdown(JNIEnv * env)
     #endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         clearSuperTypesAtShutdown(env);
         clearMetaObjectsAtShutdown(env);
-        clearTypeHandlersAtShutdown(env);
+        clearTypeHandlersAtShutdown();
         clearFunctionPointersAtShutdown();
         clearObjectsByFunctionPointerAtShutdown(env);
+        clearTypeManagerAtShutdown();
+        clear_type_entries();
         if(env){
             try{
                 Java::QtJambi::LibraryUtility::clear(env);
@@ -948,6 +960,22 @@ void shutdown(JNIEnv * env)
             }
         }
         atm->store(false);
+        {
+            QThread* currentThread = QThread::currentThread();
+            if(QtJambiLinkUserData *p = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, currentThread)){
+                if(QSharedPointer<QtJambiLink> link = p->link()){
+                    if(!link->isShell()){
+                        link->invalidate(env);
+                    }
+                }
+                p->clear();
+                QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, currentThread, nullptr);
+                delete p;
+            }
+        }
+        clearVTablesAtShutdown();
+        if(regular)
+            clearRegistryAtShutdown(env);
         if(exception)
             throw exception;
     }

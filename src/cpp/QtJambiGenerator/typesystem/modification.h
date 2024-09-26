@@ -158,6 +158,7 @@ struct ArgumentModification {
     QString arrayLengthExpression;
     QStringList implicitCalls;
     QStringList inhibitedImplicitCalls;
+    QString comment;
 };
 
 struct Modification {

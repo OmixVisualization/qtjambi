@@ -29,7 +29,7 @@
 **
 ****************************************************************************/
 
-#include <QtCore/QMutex>
+#include <QtCore/QReadWriteLock>
 #include "registryutil_p.h"
 #include "java_p.h"
 #include "utils_p.h"
@@ -43,22 +43,32 @@ struct SwitchTable{
 };
 
 typedef QHash<jint,jfieldID> EnumClassValuesHash;
-typedef QHash<jint,jboolean> EnumClassExtensibleHash;
+typedef QHash<jint,bool> EnumClassExtensibleHash;
 typedef QHash<QString,QList<SwitchTable>> SwitchTableFieldHash;
 Q_GLOBAL_STATIC(EnumClassValuesHash, enumClassValuesFields)
 Q_GLOBAL_STATIC(EnumClassExtensibleHash, enumClassExtensible)
 Q_GLOBAL_STATIC(SwitchTableFieldHash, gSwitchTableFields)
-Q_GLOBAL_STATIC(QMutex, gEnumLock)
+Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, gEnumLock, (QReadWriteLock::Recursive))
 
-jboolean isClassExtensible(JNIEnv *env, jint hashCode, jclass enumClass){
-    if(!enumClassExtensible->contains(hashCode)){
-        (*enumClassExtensible)[hashCode] = Java::Runtime::Class::isAnnotationPresent(env, enumClass, Java::QtJambi::QtExtensibleEnum::getClass(env));
+bool isClassExtensible(JNIEnv *env, jint hashCode, jclass enumClass){
+    {
+        QReadLocker locker(gEnumLock());
+        if(enumClassExtensible->contains(hashCode)){
+            return (*enumClassExtensible)[hashCode];
+        }
     }
+    bool result = Java::Runtime::Class::isAnnotationPresent(env, enumClass, Java::QtJambi::QtExtensibleEnum::getClass(env));
+    QWriteLocker locker(gEnumLock());
+    (*enumClassExtensible)[hashCode] = result;
     return (*enumClassExtensible)[hashCode];
 }
 
 jfieldID findValueField(jthrowable& t, JNIEnv *env, jint hashCode, jclass enumClass){
-    jfieldID valuesField = enumClassValuesFields->value(hashCode, nullptr);
+    jfieldID valuesField;
+    {
+        QReadLocker locker(gEnumLock());
+        valuesField = enumClassValuesFields->value(hashCode, nullptr);
+    }
     if(!valuesField){
         QString signature = QString("[L%1;").arg(QtJambiAPI::getClassName(env, enumClass).replace(QLatin1Char('.'), QLatin1Char('/')));
         valuesField = resolveField(env, "$VALUES", qPrintable(signature), enumClass, true);
@@ -82,8 +92,10 @@ jfieldID findValueField(jthrowable& t, JNIEnv *env, jint hashCode, jclass enumCl
                 break;
             }
         }
-        if(valuesField)
+        if(valuesField){
+            QWriteLocker locker(gEnumLock());
             (*enumClassValuesFields)[hashCode] = valuesField;
+        }
     }
     return valuesField;
 }
@@ -263,8 +275,6 @@ struct EnumResolver<8>{
 template<class jtype, template <typename,typename> class Map>
 jobject resolveEnum(JNIEnv *env, jint hashCode, jclass enumClass, jtype value, jstring entryName){
     if(Java::Runtime::Enum::isAssignableFrom(env, enumClass)){
-        QMutexLocker locker(gEnumLock());
-
         static QHash<jint, Map<jtype,jsize> > cachesByEnum = QHash<jint, Map<jtype,jsize> >();
         jobject object = nullptr;
         jthrowable t = nullptr;
@@ -313,6 +323,7 @@ jobject resolveEnum(JNIEnv *env, jint hashCode, jclass enumClass, jtype value, j
                 env->SetStaticObjectField(enumClass, valuesField, values);
                 JavaException::check(env QTJAMBI_STACKTRACEINFO );
                 className = className.replace(".", "$").replace("/", "$");
+                QReadLocker locker(gEnumLock());
                 const SwitchTableFieldHash& switchTableFields = *gSwitchTableFields;
                 for(const SwitchTable& st : switchTableFields[className]){
                     jintArray array = jintArray(env->GetStaticObjectField(st.clazz, st.field));
@@ -373,10 +384,10 @@ void registerSwitchTableFields(JNIEnv *env, jobject switchTableFields){
         if((table = name.startsWith(QStringLiteral(u"$SWITCH_TABLE$")))
             || name.startsWith(QStringLiteral(u"$SwitchMap$"))
             || (isEnumSwitchMapping = name.startsWith(QStringLiteral(u"$EnumSwitchMapping$")))){
-            QMutexLocker locker(gEnumLock());
             jclass declaringClass = Java::Runtime::Field::getDeclaringClass(env, field);
             declaringClass = getGlobalClassRef(env, declaringClass);
             SwitchTableFieldHash& switchTableFields = *gSwitchTableFields;
+            QWriteLocker locker(gEnumLock());
             if(isEnumSwitchMapping)
                 switchTableFields[QStringLiteral(u"$EnumSwitchMapping$")].append({env->FromReflectedField(field), declaringClass, table});
             else

@@ -3121,20 +3121,18 @@ TypeSystem{
     ObjectType{
         name: "QFormDataPartBuilder"
         ModifyFunction{
-            signature: "setBody(QByteArrayView,QAnyStringView)"
-            threadAffinity: true
+            signature: "setBody(QByteArrayView,QAnyStringView,QAnyStringView)"
             ModifyArgument{
                 index: 1
                 InhibitImplicitCall{type: "io.qt.core.@NonNull QByteArray"}
             }
         }
         ModifyFunction{
-            signature: "setBody<>(QByteArray,QAnyStringView)"
-            threadAffinity: true
+            signature: "setBody<>(QByteArray,QAnyStringView,QAnyStringView)"
             noImplicitArguments: true
         }
         ModifyFunction{
-            signature: "setBodyDevice(QIODevice*,QAnyStringView)"
+            signature: "setBodyDevice(QIODevice*,QAnyStringView,QAnyStringView)"
             ModifyArgument{
                 index: 1
                 ReferenceCount{

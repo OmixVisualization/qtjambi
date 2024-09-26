@@ -38,6 +38,8 @@
 #include "functionpointer.h"
 #include "utils_p.h"
 #include "registryutil_p.h"
+#include "qtjambilink_p.h"
+#include "java_p.h"
 #include "coreapi.h"
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -46,12 +48,11 @@ QT_WARNING_DISABLE_CLANG("-Wstrict-aliasing")
 #endif
 
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-void registerAccess(int newMetaType, const QSharedPointer<class AutoHashAccess>& access);
 QSharedPointer<class AutoHashAccess> getHashAccess(const QtPrivate::QMetaTypeInterface *iface);
 #endif
 
 AutoSetAccess::AutoSetAccess(const AutoSetAccess& other)
-    :AbstractSetAccess(),
+    :AbstractSetAccess(), AbstractNestedSequentialAccess(),
       m_hashAccess(other.m_hashAccess)
 {}
 
@@ -66,9 +67,12 @@ AutoSetAccess::AutoSetAccess(
 #endif
                 const QtJambiUtils::QHashFunction& hashFunction,
                 const QtJambiUtils::InternalToExternalConverter& internalToExternalConverter,
-                const QtJambiUtils::ExternalToInternalConverter& externalToInternalConverter
+                const QtJambiUtils::ExternalToInternalConverter& externalToInternalConverter,
+                const QSharedPointer<AbstractContainerAccess>& elementNestedContainerAccess,
+                PtrOwnerFunction elementOwnerFunction,
+                AbstractContainerAccess::DataType elementDataType
         )
-    : AbstractSetAccess(),
+    : AbstractSetAccess(), AbstractNestedSequentialAccess(),
       m_hashAccess(elementMetaType,
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
                    elementAlign,
@@ -76,6 +80,9 @@ AutoSetAccess::AutoSetAccess(
                    hashFunction,
                    internalToExternalConverter,
                    externalToInternalConverter,
+                   elementNestedContainerAccess,
+                   elementOwnerFunction,
+                   elementDataType,
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
                    QMetaType::Void,
                    0,
@@ -84,15 +91,30 @@ AutoSetAccess::AutoSetAccess(
 #endif
                    {},
                    {},
-                   {})
+                   {},
+                   {},
+                   nullptr,
+                   AbstractContainerAccess::Value)
 {
+}
+
+void* AutoSetAccess::constructContainer(JNIEnv*, void* result, const ConstContainerAndAccessInfo& container) {
+    return m_hashAccess.constructContainer(result, container.container);
 }
 
 void* AutoSetAccess::constructContainer(void* result, const void* container){
     return m_hashAccess.constructContainer(result, container);
 }
 
+void* AutoSetAccess::constructContainer(void* result){
+    return m_hashAccess.constructContainer(result);
+}
+
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+void* AutoSetAccess::constructContainer(JNIEnv*, void* result, const ContainerAndAccessInfo& container) {
+    return m_hashAccess.constructContainer(result, container.container);
+}
+
 void* AutoSetAccess::constructContainer(void* result, void* container){
     return m_hashAccess.constructContainer(result, container);
 }
@@ -104,6 +126,10 @@ size_t AutoSetAccess::sizeOf(){
 
 void AutoSetAccess::assign(void* container, const void* other){
     m_hashAccess.assign(container, other);
+}
+
+void AutoSetAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other){
+    m_hashAccess.assign(env, container, other);
 }
 
 bool AutoSetAccess::destructContainer(void* container){
@@ -124,6 +150,7 @@ int AutoSetAccess::registerContainer(const QByteArray& typeName)
 #endif
         newMetaType = registerContainerMetaType(typeName,
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
                                        qtjambi_function_pointer<16,void(void*)>([access](void* ptr){
                                             access->destructContainer(ptr);
                                        }, qHash(typeName)),
@@ -136,8 +163,9 @@ int AutoSetAccess::registerContainer(const QByteArray& typeName)
                                         }
                                         return new (result) QHashData const*(&QHashData::shared_null);
                                        },
+#endif //QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
                                        uint(sizeOf()),
-                                       uint(alignof(QSet<char>)),
+                                       ushort(alignof(QSet<char>)),
 #else
                                        AutoHashAccess::defaultCtr,
                                        AutoHashAccess::copyCtr,
@@ -149,9 +177,9 @@ int AutoSetAccess::registerContainer(const QByteArray& typeName)
                                        nullptr,
                                        (iface->debugStream
                                             || (iface->flags & QMetaType::IsPointer)
-                                            || (iface->flags & QMetaType::IsEnumeration)) ? AutoHashAccess::debugStreamFn : nullptr,
-                                       (iface->dataStreamOut || (iface->flags & QMetaType::IsEnumeration)) ? AutoHashAccess::dataStreamOutFn : nullptr,
-                                       (iface->dataStreamIn || (iface->flags & QMetaType::IsEnumeration)) ? AutoHashAccess::dataStreamInFn : nullptr,
+                                            || (iface->flags & QMetaType::IsEnumeration)) ? AutoHashAccess::debugStreamSetFn : nullptr,
+                                       (iface->dataStreamOut || (iface->flags & QMetaType::IsEnumeration)) ? AutoHashAccess::dataStreamOutSetFn : nullptr,
+                                       (iface->dataStreamIn || (iface->flags & QMetaType::IsEnumeration)) ? AutoHashAccess::dataStreamInSetFn : nullptr,
                                        nullptr,
                                        uint(sizeOf()),
                                        ushort(alignof(QSet<char>)),
@@ -165,7 +193,8 @@ int AutoSetAccess::registerContainer(const QByteArray& typeName)
                                                    | QMetaType::RelocatableType,
 #endif
                                        nullptr,
-                                       nullptr);
+                                       nullptr,
+                                       access);
         if(m_hashAccess.m_keyHashFunction){
             insertHashFunctionByMetaType(newMetaType,
                                             [access]
@@ -367,8 +396,8 @@ int AutoSetAccess::registerContainer(const QByteArray& typeName)
                                                                                     QHashData ** map = reinterpret_cast<QHashData **>(p);
                                                                                     int size = 0;
                                                                                     s >> size;
-                                                                                    access->clear(nullptr, p);
-                                                                                    access->reserve(nullptr, p, size);
+                                                                                    access->clear(nullptr, {nullptr, p});
+                                                                                    access->reserve(nullptr, {nullptr, p}, size);
                                                                                     QHashData*& d = *map;
                                                                                     Node*& e = reinterpret_cast<Node*&>(d);
                                                                                     for(int i=0; i<size; ++i){
@@ -397,29 +426,30 @@ int AutoSetAccess::registerContainer(const QByteArray& typeName)
             new(target) QIterable<QMetaSequence>(QMetaSequence(createMetaSequenceInterface(newMetaType)), reinterpret_cast<void const*const*>(src));
             return true;
         }, QMetaType(newMetaType), to);
-        registerAccess(newMetaType, access);
 #endif
+    }else{
+        registerContainerAccess(newMetaType, this);
     }
     return newMetaType;
 }
 
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 
-QReadWriteLock* _gLock();
-QMap<int, QtMetaContainerPrivate::QMetaSequenceInterface>& _gMetaSequenceHash();
+QReadWriteLock* containerAccessLock();
+QMap<int, QtMetaContainerPrivate::QMetaSequenceInterface>& metaSequenceHash();
 
 QtMetaContainerPrivate::QMetaSequenceInterface* AutoSetAccess::createMetaSequenceInterface(int newMetaType){
     {
-        QReadLocker locker(_gLock());
+        QReadLocker locker(containerAccessLock());
         Q_UNUSED(locker)
-        if(_gMetaSequenceHash().contains(newMetaType))
-           return &_gMetaSequenceHash()[newMetaType];
+        if(metaSequenceHash().contains(newMetaType))
+           return &metaSequenceHash()[newMetaType];
     }
     using namespace QtMetaContainerPrivate;
     QMetaSequenceInterface* metaSequenceInterface;
     {
-        QWriteLocker locker(_gLock());
-        metaSequenceInterface = &_gMetaSequenceHash()[newMetaType];
+        QWriteLocker locker(containerAccessLock());
+        metaSequenceInterface = &metaSequenceHash()[newMetaType];
     }
     QSharedPointer<class AutoHashAccess> access = getHashAccess(QMetaType(newMetaType).iface());
     metaSequenceInterface->valueMetaType = access->m_keyMetaType.iface();
@@ -440,7 +470,7 @@ QtMetaContainerPrivate::QMetaSequenceInterface* AutoSetAccess::createMetaSequenc
                     QSharedPointer<class AutoHashAccess> access = getHashAccess(QMetaType(newMetaType).iface());
                     if(!access)
                         return;
-                    access->clear(nullptr, c);
+                    access->clear(c);
                 }, newMetaType);
     metaSequenceInterface->createIteratorFn = qtjambi_function_pointer<16,void*(void *,QMetaContainerInterface::Position)>(
                 [newMetaType](void *c, QMetaContainerInterface::Position p) -> void* {
@@ -449,7 +479,8 @@ QtMetaContainerPrivate::QMetaSequenceInterface* AutoSetAccess::createMetaSequenc
                         QSharedPointer<class AutoHashAccess> access = getHashAccess(QMetaType(newMetaType).iface());
                         if(!access)
                             return nullptr;
-                        QHashData *const* map = reinterpret_cast<QHashData *const*>(c);
+                        QHashData ** map = reinterpret_cast<QHashData **>(c);
+                        access->detach(map);
                         QHashData* d = *map;
                         switch (p) {
                         case QMetaContainerInterface::Unspecified:
@@ -461,7 +492,7 @@ QtMetaContainerPrivate::QMetaSequenceInterface* AutoSetAccess::createMetaSequenc
                             return new iterator(d->end(*access));
                             break;
                         }
-                        return nullptr;
+                        return new iterator(*access);
                     }
                 ), access->m_keyMetaType.id();
     metaSequenceInterface->destroyIteratorFn = [](const void *i) {
@@ -495,7 +526,30 @@ QtMetaContainerPrivate::QMetaSequenceInterface* AutoSetAccess::createMetaSequenc
                     }
                     return counter;
                 };
-    metaSequenceInterface->createConstIteratorFn = QMetaSequenceInterface::CreateConstIteratorFn(metaSequenceInterface->createIteratorFn);
+    metaSequenceInterface->createConstIteratorFn = qtjambi_function_pointer<16,void*(const void *,QMetaContainerInterface::Position)>(
+        [newMetaType](const void *c, QMetaContainerInterface::Position p) -> void* {
+            if(!c)
+                return nullptr;
+            QSharedPointer<class AutoHashAccess> access = getHashAccess(QMetaType(newMetaType).iface());
+            if(!access)
+                return nullptr;
+            QHashData *const* map = reinterpret_cast<QHashData *const*>(c);
+            QHashData* d = *map;
+            if(d){
+                switch (p) {
+                case QMetaContainerInterface::Unspecified:
+                    return new iterator(d->end(*access));
+                case QMetaContainerInterface::AtBegin:
+                    return new iterator(d->begin(*access));
+                    break;
+                case QMetaContainerInterface::AtEnd:
+                    return new iterator(d->end(*access));
+                    break;
+                }
+            }
+            return new iterator(*access);
+        }
+        ), access->m_keyMetaType.id();
     metaSequenceInterface->destroyConstIteratorFn = metaSequenceInterface->destroyIteratorFn;
     metaSequenceInterface->compareConstIteratorFn = metaSequenceInterface->compareIteratorFn;
     metaSequenceInterface->copyConstIteratorFn = metaSequenceInterface->copyIteratorFn;
@@ -554,30 +608,54 @@ void AutoSetAccess::dispose(){ delete this; }
 
 AutoSetAccess* AutoSetAccess::clone(){ return new AutoSetAccess(*this); }
 
-void AutoSetAccess::analyzeElements(const void* container, ElementAnalyzer analyzer, void* data)
-{
-    struct Data{
-        ElementAnalyzer analyzer;
-        void* data;
-    } d;
-    d.analyzer = analyzer;
-    d.data = data;
-    m_hashAccess.analyzeEntries(container, [](const void* key, const void*, void* data) -> bool {
-        Data* d = reinterpret_cast<Data*>(data);
-        return d->analyzer(key, d->data);
-    }, &d);
+bool AutoSetAccess::isDetached(const void* container){
+    return m_hashAccess.isDetached(container);
+}
+
+void AutoSetAccess::detach(const ContainerInfo& container){
+    m_hashAccess.detach(container);
+}
+
+bool AutoSetAccess::isSharedWith(const void* container, const void* container2){
+    return m_hashAccess.isSharedWith(container, container2);
+}
+
+void AutoSetAccess::swap(JNIEnv *env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
+    m_hashAccess.swap(env, container, container2);
 }
 
 const QMetaType& AutoSetAccess::elementMetaType(){ return m_hashAccess.keyMetaType(); }
+AbstractContainerAccess::DataType AutoSetAccess::elementType(){ return m_hashAccess.keyType(); }
 
-jobject AutoSetAccess::constBegin(JNIEnv * env, QtJambiNativeID ownerId, const void* container)
-{
-    return m_hashAccess.constBegin(env, ownerId, container);
+AbstractContainerAccess* AutoSetAccess::elementNestedContainerAccess() {
+    return m_hashAccess.keyNestedContainerAccess();
+}
+const QSharedPointer<AbstractContainerAccess>& AutoSetAccess::sharedElementNestedContainerAccess(){
+    return m_hashAccess.sharedKeyNestedContainerAccess();
+}
+bool AutoSetAccess::hasNestedContainerAccess(){
+    return m_hashAccess.hasKeyNestedContainerAccess();
+}
+bool AutoSetAccess::hasNestedPointers(){
+    return m_hashAccess.hasKeyNestedPointers();
 }
 
-jobject AutoSetAccess::constEnd(JNIEnv * env, QtJambiNativeID ownerId, const void* container)
+const QObject* AutoSetAccess::getOwner(const void* container){
+    return m_hashAccess.getOwner(container);
+}
+
+bool AutoSetAccess::hasOwnerFunction(){
+    return m_hashAccess.hasOwnerFunction();
+}
+
+jobject AutoSetAccess::constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container)
 {
-    return m_hashAccess.constEnd(env, ownerId, container);
+    return m_hashAccess.constBegin(env, container);
+}
+
+jobject AutoSetAccess::constEnd(JNIEnv * env, const ConstExtendedContainerInfo& container)
+{
+    return m_hashAccess.constEnd(env, container);
 }
 
 jint AutoSetAccess::capacity(JNIEnv * env, const void* container)
@@ -585,7 +663,7 @@ jint AutoSetAccess::capacity(JNIEnv * env, const void* container)
     return m_hashAccess.capacity(env, container);
 }
 
-void AutoSetAccess::clear(JNIEnv * env, void* container)
+void AutoSetAccess::clear(JNIEnv * env, const ContainerInfo& container)
 {
     return m_hashAccess.clear(env, container);
 }
@@ -595,24 +673,28 @@ jboolean AutoSetAccess::contains(JNIEnv * env, const void* container, jobject va
     return m_hashAccess.contains(env, container, value);
 }
 
-void AutoSetAccess::insert(JNIEnv * env, void* container, jobject value)
+void AutoSetAccess::insert(JNIEnv * env, const ContainerInfo& container, jobject value)
 {
     m_hashAccess.insert(env, container, value, nullptr);
 }
 
-void AutoSetAccess::intersect(JNIEnv * env, void* container, jobject other)
+void AutoSetAccess::intersect(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other)
 {
     void* ptr{nullptr};
     bool deleteSet = false;
-    if (!ContainerAPI::getAsQSet(env, other, elementMetaType(), ptr)) {
+    if (ContainerAPI::getAsQSet(env, other.object, elementMetaType(), other.container, other.access)) {
+        ptr = other.container;
+    }else{
         deleteSet = true;
-        ptr = m_hashAccess.createContainer();
-        jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, other);
+        auto hashAccess = m_hashAccess.clone();
+        ptr = hashAccess->createContainer();
+        jobject iterator = QtJambiAPI::iteratorOfJavaIterable(env, other.object);
         while(QtJambiAPI::hasJavaIteratorNext(env, iterator)){
-            m_hashAccess.insert(env, ptr, QtJambiAPI::nextOfJavaIterator(env, iterator), nullptr);
+            hashAccess->insert(env, {nullptr, ptr}, QtJambiAPI::nextOfJavaIterator(env, iterator), nullptr);
         }
+        hashAccess->dispose();
     }
-    QHashData ** map = reinterpret_cast<QHashData **>(container);
+    QHashData ** map = reinterpret_cast<QHashData **>(container.container);
     m_hashAccess.detach(map);
     QHashData*& d = *map;
     QHashData ** map2 = reinterpret_cast<QHashData **>(ptr);
@@ -620,16 +702,16 @@ void AutoSetAccess::intersect(JNIEnv * env, void* container, jobject other)
     void* copy1;
     void* copy2;
     if ((d ? d->size : 0) <= (d2 ? d2->size : 0)) {
-        copy1 = m_hashAccess.createContainer(reinterpret_cast<const void *>(container));
+        copy1 = m_hashAccess.createContainer(reinterpret_cast<const void *>(container.container));
         copy2 = m_hashAccess.createContainer(reinterpret_cast<const void *>(ptr));
         m_hashAccess.detach(reinterpret_cast<QHashData **>(copy1));
         m_hashAccess.detach(reinterpret_cast<QHashData **>(copy2));
     }else{
         copy1 = m_hashAccess.createContainer(reinterpret_cast<const void *>(ptr));
-        copy2 = m_hashAccess.createContainer(reinterpret_cast<const void *>(container));
+        copy2 = m_hashAccess.createContainer(reinterpret_cast<const void *>(container.container));
         m_hashAccess.detach(reinterpret_cast<QHashData **>(copy1));
         m_hashAccess.detach(reinterpret_cast<QHashData **>(copy2));
-        m_hashAccess.assign(container, copy1);
+        m_hashAccess.assign(container.container, copy1);
     }
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     Node*& e = reinterpret_cast<Node*&>(d);
@@ -687,11 +769,13 @@ jboolean AutoSetAccess::intersects(JNIEnv * env, const void* container, jobject 
     bool deleteSet = false;
     if (!ContainerAPI::getAsQSet(env, other, elementMetaType(), ptr)) {
         deleteSet = true;
-        ptr = m_hashAccess.createContainer();
-        jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, other);
+        auto hashAccess = m_hashAccess.clone();
+        ptr = hashAccess->createContainer();
+        jobject iterator = QtJambiAPI::iteratorOfJavaIterable(env, other);
         while(QtJambiAPI::hasJavaIteratorNext(env, iterator)){
-            m_hashAccess.insert(env, ptr, QtJambiAPI::nextOfJavaIterator(env, iterator), nullptr);
+            hashAccess->insert(env, {nullptr, ptr}, QtJambiAPI::nextOfJavaIterator(env, iterator), nullptr);
         }
+        hashAccess->dispose();
     }
     QHashData *const* map = reinterpret_cast<QHashData *const*>(container);
     QHashData* d = *map;
@@ -750,11 +834,13 @@ jboolean AutoSetAccess::equal(JNIEnv * env, const void* container, jobject other
     bool deleteSet = false;
     if (!ContainerAPI::getAsQSet(env, other, elementMetaType(), ptr)) {
         deleteSet = true;
-        ptr = m_hashAccess.createContainer();
-        jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, other);
+        auto hashAccess = m_hashAccess.clone();
+        ptr = hashAccess->createContainer();
+        jobject iterator = QtJambiAPI::iteratorOfJavaIterable(env, other);
         while(QtJambiAPI::hasJavaIteratorNext(env, iterator)){
-            m_hashAccess.insert(env, ptr, QtJambiAPI::nextOfJavaIterator(env, iterator), nullptr);
+            hashAccess->insert(env, {nullptr, ptr}, QtJambiAPI::nextOfJavaIterator(env, iterator), nullptr);
         }
+        hashAccess->dispose();
     }
     bool result = m_hashAccess.equal(container, ptr);
     if(deleteSet)
@@ -762,12 +848,12 @@ jboolean AutoSetAccess::equal(JNIEnv * env, const void* container, jobject other
     return result;
 }
 
-jboolean AutoSetAccess::remove(JNIEnv * env, void* container, jobject value)
+jboolean AutoSetAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject value)
 {
     return m_hashAccess.remove(env, container, value);
 }
 
-void AutoSetAccess::reserve(JNIEnv * env, void* container, jint newSize)
+void AutoSetAccess::reserve(JNIEnv * env, const ContainerInfo& container, jint newSize)
 {
     m_hashAccess.reserve(env, container, newSize);
 }
@@ -777,19 +863,23 @@ jint AutoSetAccess::size(JNIEnv * env, const void* container)
     return m_hashAccess.size(env, container);
 }
 
-void AutoSetAccess::subtract(JNIEnv * env, void* container, jobject other)
+void AutoSetAccess::subtract(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other)
 {
     void* ptr{nullptr};
     bool deleteSet = false;
-    if (!ContainerAPI::getAsQSet(env, other, elementMetaType(), ptr)) {
+    if (ContainerAPI::getAsQSet(env, other.object, elementMetaType(), other.container, other.access)) {
+        ptr = other.container;
+    }else{
         deleteSet = true;
-        ptr = m_hashAccess.createContainer();
-        jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, other);
+        auto hashAccess = m_hashAccess.clone();
+        ptr = hashAccess->createContainer();
+        jobject iterator = QtJambiAPI::iteratorOfJavaIterable(env, other.object);
         while(QtJambiAPI::hasJavaIteratorNext(env, iterator)){
-            m_hashAccess.insert(env, ptr, QtJambiAPI::nextOfJavaIterator(env, iterator), nullptr);
+            hashAccess->insert(env, {nullptr, ptr}, QtJambiAPI::nextOfJavaIterator(env, iterator), nullptr);
         }
+        hashAccess->dispose();
     }
-    QHashData ** map = reinterpret_cast<QHashData **>(container);
+    QHashData ** map = reinterpret_cast<QHashData **>(container.container);
     m_hashAccess.detach(map);
     QHashData*& d = *map;
     QHashData *const* map2 = reinterpret_cast<QHashData *const*>(ptr);
@@ -839,14 +929,13 @@ void AutoSetAccess::subtract(JNIEnv * env, void* container, jobject other)
         m_hashAccess.deleteContainer(ptr);
 }
 
-void AutoSetAccess::unite(JNIEnv * env, void* container, jobject other)
+void AutoSetAccess::unite(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other)
 {
-    void* ptr{nullptr};
-    if (ContainerAPI::getAsQSet(env, other, elementMetaType(), ptr)) {
-        QHashData ** map = reinterpret_cast<QHashData **>(container);
+    if (ContainerAPI::getAsQSet(env, other.object, elementMetaType(), other.container, other.access)) {
+        QHashData ** map = reinterpret_cast<QHashData **>(container.container);
         m_hashAccess.detach(map);
         QHashData*& d = *map;
-        QHashData *const* map2 = reinterpret_cast<QHashData *const*>(ptr);
+        QHashData *const* map2 = reinterpret_cast<QHashData *const*>(other.container);
         QHashData* d2 = *map2;
         if(d && d2 && d!=d2){
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -874,14 +963,199 @@ void AutoSetAccess::unite(JNIEnv * env, void* container, jobject other)
 #endif
         }
     }else{
-        jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, other);
+        jobject iterator = QtJambiAPI::iteratorOfJavaIterable(env, other.object);
         while(QtJambiAPI::hasJavaIteratorNext(env, iterator)){
             m_hashAccess.insert(env, container, QtJambiAPI::nextOfJavaIterator(env, iterator), nullptr);
         }
     }
 }
 
-jobject AutoSetAccess::values(JNIEnv * env, const void* container)
+ContainerAndAccessInfo AutoSetAccess::values(JNIEnv * env, const ConstContainerInfo& container)
 {
     return m_hashAccess.keys(env, container);
+}
+
+std::unique_ptr<AbstractSetAccess::ElementIterator> AutoSetAccess::elementIterator(const void* container) {
+    class ElementIterator : public AbstractSetAccess::ElementIterator{
+        std::unique_ptr<AbstractHashAccess::KeyValueIterator> iter;
+    public:
+        ElementIterator(std::unique_ptr<AbstractHashAccess::KeyValueIterator>&& _iter) : iter(std::move(_iter)) {}
+        bool hasNext() override{
+            return iter->hasNext();
+        }
+        jobject next(JNIEnv * env) override{
+            return iter->next(env).first;
+        }
+        const void* next() override {
+            return iter->next().first;
+        }
+    };
+    return std::unique_ptr<AbstractSetAccess::ElementIterator>(new ElementIterator(m_hashAccess.keyValueIterator(container)));
+}
+
+PointerRCAutoSetAccess::PointerRCAutoSetAccess(PointerRCAutoSetAccess& other)
+    : AutoSetAccess(other), ReferenceCountingSetContainer() {}
+
+PointerRCAutoSetAccess* PointerRCAutoSetAccess::clone(){
+    return new PointerRCAutoSetAccess(*this);
+}
+
+void PointerRCAutoSetAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
+    JniLocalFrame frame(env, 200);
+    jobject set = Java::Runtime::HashSet::newInstance(env);
+    auto iterator = elementIterator(container.container);
+    while(iterator->hasNext()){
+        const void* content = iterator->next();
+        jobject obj{nullptr};
+        switch(elementType()){
+        case PointerToQObject:
+            if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForQObject(reinterpret_cast<const QObject*>(content))){
+                obj = link->getJavaObjectLocalRef(env);
+            }
+            break;
+        case FunctionPointer:
+            if(const std::type_info* typeId = getTypeByMetaType(elementMetaType())){
+                if(FunctionalResolver resolver = registeredFunctionalResolver(*typeId)){
+                    bool success = false;
+                    obj = resolver(env, content, &success);
+                    break;
+                }
+            }
+            Q_FALLTHROUGH();
+        case Pointer:
+            for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(content)){
+                obj = link->getJavaObjectLocalRef(env);
+                break;
+            }
+            break;
+        default:
+            break;
+        }
+        if(obj)
+            Java::Runtime::Collection::add(env, set, obj);
+    }
+    clearRC(env, container.object);
+    addAllRC(env, container.object, set);
+}
+
+void PointerRCAutoSetAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
+    AutoSetAccess::swap(env, container, container2);
+    if(PointerRCAutoSetAccess* access = dynamic_cast<PointerRCAutoSetAccess*>(container2.access)){
+        if(access!=this)
+            swapRC(env, container, container2);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void PointerRCAutoSetAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
+    AutoSetAccess::assign(env, container, container2);
+    if(PointerRCAutoSetAccess* access = dynamic_cast<PointerRCAutoSetAccess*>(container2.access)){
+        if(access!=this)
+            assignRC(env, container.object, container2.object);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void PointerRCAutoSetAccess::clear(JNIEnv * env, const ContainerInfo& container) {
+    AutoSetAccess::clear(env, container);
+    clearRC(env, container.object);
+}
+
+void PointerRCAutoSetAccess::insert(JNIEnv * env, const ContainerInfo& container, jobject value){
+    AutoSetAccess::insert(env, container, value);
+    addUniqueRC(env, container.object, value);
+}
+
+jboolean PointerRCAutoSetAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject value){
+    jboolean result = AutoSetAccess::remove(env, container, value);
+    if(value)
+        removeRC(env, container.object, value);
+    return result;
+}
+
+void PointerRCAutoSetAccess::intersect(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other){
+    AutoSetAccess::intersect(env, container, other);
+    updateRC(env, container);
+}
+
+void PointerRCAutoSetAccess::subtract(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other){
+    AutoSetAccess::subtract(env, container, other);
+    updateRC(env, container);
+}
+
+void PointerRCAutoSetAccess::unite(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other){
+    AutoSetAccess::unite(env, container, other);
+    updateRC(env, container);
+}
+
+NestedPointersRCAutoSetAccess::NestedPointersRCAutoSetAccess(NestedPointersRCAutoSetAccess& other)
+    : AutoSetAccess(other), ReferenceCountingSetContainer() {}
+
+NestedPointersRCAutoSetAccess* NestedPointersRCAutoSetAccess::clone(){
+    return new NestedPointersRCAutoSetAccess(*this);
+}
+
+void NestedPointersRCAutoSetAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
+    if(size(env, container.container)==0){
+        clearRC(env, container.object);
+    }else{
+        JniLocalFrame frame(env, 200);
+        jobject set = Java::Runtime::HashSet::newInstance(env);
+        auto access = elementNestedContainerAccess();
+        auto iterator = elementIterator(container.container);
+        while(iterator->hasNext()){
+            unfoldAndAddContainer(env, set, iterator->next(), elementType(), elementMetaType(), access);
+        }
+        if(access)
+            access->dispose();
+        addAllRC(env, container.object, set);
+    }
+}
+
+void NestedPointersRCAutoSetAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
+    AutoSetAccess::swap(env, container, container2);
+    if(NestedPointersRCAutoSetAccess* access = dynamic_cast<NestedPointersRCAutoSetAccess*>(container2.access)){
+        if(access!=this)
+            swapRC(env, container, container2);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void NestedPointersRCAutoSetAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
+    AutoSetAccess::assign(env, container, container2);
+    updateRC(env, container);
+}
+
+void NestedPointersRCAutoSetAccess::clear(JNIEnv * env, const ContainerInfo& container) {
+    AutoSetAccess::clear(env, container);
+    clearRC(env, container.object);
+}
+
+void NestedPointersRCAutoSetAccess::insert(JNIEnv * env, const ContainerInfo& container, jobject value){
+    AutoSetAccess::insert(env, container, value);
+    addNestedValueRC(env, container.object, elementType(), hasNestedPointers(), value);
+}
+
+jboolean NestedPointersRCAutoSetAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject value){
+    jboolean result = AutoSetAccess::remove(env, container, value);
+    updateRC(env, container);
+    return result;
+}
+
+void NestedPointersRCAutoSetAccess::intersect(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other){
+    AutoSetAccess::intersect(env, container, other);
+    updateRC(env, container);
+}
+
+void NestedPointersRCAutoSetAccess::subtract(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other){
+    AutoSetAccess::subtract(env, container, other);
+    updateRC(env, container);
+}
+
+void NestedPointersRCAutoSetAccess::unite(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other){
+    AutoSetAccess::unite(env, container, other);
+    updateRC(env, container);
 }

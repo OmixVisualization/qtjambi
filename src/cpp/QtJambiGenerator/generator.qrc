@@ -107,7 +107,7 @@
     <qresource prefix="/io/qtjambi/generator/targets">
         <file alias="all.qml">targets/all.qml</file>
         <file alias="all.h">targets/all.h</file>
-        <file alias="graphs.qml">targets/graphs.qml</file>
-        <file alias="graphs.h">targets/graphs.h</file>
+        <file alias="legacy.qml">targets/legacy.qml</file>
+        <file alias="legacy.h">targets/legacy.h</file>
     </qresource>
 </RCC>

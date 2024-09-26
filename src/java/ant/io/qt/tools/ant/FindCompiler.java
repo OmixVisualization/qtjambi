@@ -555,7 +555,7 @@ public class FindCompiler {
                         return Compiler.MSVC2019_arm64;
                     return Compiler.MSVC2019_x86;
                 }
-				if(stderr.contains("19.3")) {
+				if(stderr.contains("19.3") || stderr.contains("19.4")) {
                     if(stderr.contains("x64"))
                         return Compiler.MSVC2022_x64;
                     if(stderr.contains("ARM64"))

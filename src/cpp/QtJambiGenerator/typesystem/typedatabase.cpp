@@ -1036,6 +1036,10 @@ void TypeDatabase::initialize(const QString &filename, const QStringList &import
         }
 
         addType(new InitializerListTypeEntry());
+        if(qtVersion >= QVersionNumber(6,7,0)){
+            addType(new QSpanTypeEntry());
+            addType(new QSpanTypeEntry("std::span"));
+        }
         addType(new SmartPointerTypeEntry("QPointer", SmartPointerTypeEntry::QPointer));
         addType(new SmartPointerTypeEntry("QSharedPointer", SmartPointerTypeEntry::QSharedPointer));
         addType(new SmartPointerTypeEntry("QWeakPointer", SmartPointerTypeEntry::QWeakPointer));
@@ -1203,6 +1207,19 @@ InitializerListTypeEntry *TypeDatabase::findInitializerListType(const QString &n
     TypeEntry *type_entry = findType(template_name);
     if (type_entry && type_entry->isInitializerList())
         return static_cast<InitializerListTypeEntry *>(type_entry);
+    return nullptr;
+}
+
+QSpanTypeEntry *TypeDatabase::findQSpanType(const QString &name) const {
+    QString template_name = name;
+
+    auto pos = name.indexOf('<');
+    if (pos > 0)
+        template_name = name.left(pos);
+
+    TypeEntry *type_entry = findType(template_name);
+    if (type_entry && type_entry->isQSpan())
+        return static_cast<QSpanTypeEntry *>(type_entry);
     return nullptr;
 }
 

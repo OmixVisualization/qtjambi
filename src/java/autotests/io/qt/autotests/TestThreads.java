@@ -609,7 +609,7 @@ public class TestThreads extends ApplicationInitializer{
     		new Thread(()->{}).start();
     	});
     	thread.start();
-    	thread.join();
+    	thread.join(2000);
     	assertEquals(jthread[0], jthread[1]);
     	assertFalse(thread.isRunning());
     	if(!QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android))

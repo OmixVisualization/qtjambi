@@ -71,6 +71,44 @@ QT_WARNING_DISABLE_DEPRECATED
 
 #include "qtjambi_cast.h"
 
+#if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
+jobject QtJambiAPI::convertQSpanToJavaObject(JNIEnv *env,
+                                             QtJambiNativeID owner,
+                                             AbstractSpanAccess* containerAccess,
+                                             const void* begin,
+                                             jlong size)
+{
+    jobject returned = nullptr;
+    jobject obj = CoreAPI::javaObject(owner, env);
+    returned = containerAccess->isConst() ? Java::QtCore::QConstSpan::newInstance(env, nullptr, obj) : Java::QtCore::QSpan::newInstance(env, nullptr, obj);
+    QtJambiSpan* span = new QtJambiSpan{begin, qsizetype(size)};
+    const QSharedPointer<QtJambiLink>& link = containerAccess ? QtJambiLink::createLinkForOwnedContainer(env, returned, span,
+                                                                                         LINK_NAME_ARG("QSpan")
+                                                                                         owner,
+                                                                                         QtJambiSpan::deleter, containerAccess)
+                                                              : QtJambiLink::createLinkForOwnedObject(env, returned, span,
+                                                                                         LINK_NAME_ARG("QSpan")
+                                                                                         owner,
+                                                                                         QtJambiSpan::deleter);
+    if (!link) {
+        returned = nullptr;
+        if(containerAccess)
+            containerAccess->dispose();
+    }
+    return returned;
+}
+
+jobject QtJambiAPI::convertQSpanFromQListToJavaObject(JNIEnv *env,
+                                             const void* span,
+                                             CopyFunction copyFunction,
+                                             PtrDeleterFunction destructor_function,
+                                             AbstractListAccess* containerAccess,
+                                             bool isConst){
+    jobject list = QtJambiAPI::convertQListToJavaObject(env, InvalidNativeID, span, copyFunction, destructor_function, ListType::QList, containerAccess);
+    return isConst ? Java::QtCore::QConstSpan::newInstance2(env, nullptr, list) : Java::QtCore::QSpan::newInstance2(env, nullptr, list);
+}
+#endif
+
 jobject QtJambiAPI::convertQSequentialIteratorToJavaObject(JNIEnv *env,
                            QtJambiNativeID owner,
                            void* iteratorPtr,
@@ -81,11 +119,11 @@ jobject QtJambiAPI::convertQSequentialIteratorToJavaObject(JNIEnv *env,
     jobject returned = nullptr;
     jobject obj = CoreAPI::javaObject(owner, env);
     bool isMutable = dynamic_cast<AbstractSequentialIteratorAccess*>(containerAccess);
-    returned = isMutable ? Java::QtCore::QSequentialIterator::newInstance(env, obj)
-                         : Java::QtCore::QSequentialConstIterator::newInstance(env, obj);
+    returned = isMutable ? Java::QtCore::QSequentialIterator::newInstance(env, nullptr, obj)
+                         : Java::QtCore::QSequentialConstIterator::newInstance(env, nullptr, obj);
     const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForOwnedContainer(env, returned, iteratorPtr,
-                                                                                            LINK_NAME_ARG(isMutable ? "QSequentialIterator" : "QSequentialConstIterator")
-                                                                                            owner, destructor_function, containerAccess);
+                                                                                       LINK_NAME_ARG(isMutable ? "QSequentialIterator" : "QSequentialConstIterator")
+                                                                                       owner, destructor_function, containerAccess);
     if (!link) {
         returned = nullptr;
         containerAccess->dispose();
@@ -103,8 +141,8 @@ jobject QtJambiAPI::convertQAssociativeIteratorToJavaObject(JNIEnv *env,
     jobject returned = nullptr;
     jobject obj = CoreAPI::javaObject(owner, env);
     bool isMutable = dynamic_cast<AbstractAssociativeIteratorAccess*>(containerAccess);
-    returned = isMutable ? Java::QtCore::QAssociativeIterator::newInstance(env, obj)
-                         : Java::QtCore::QAssociativeConstIterator::newInstance(env, obj);
+    returned = isMutable ? Java::QtCore::QAssociativeIterator::newInstance(env, nullptr, obj)
+                         : Java::QtCore::QAssociativeConstIterator::newInstance(env, nullptr, obj);
     const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForOwnedContainer(env, returned, iteratorPtr,
                                                                                             LINK_NAME_ARG(isMutable ? "QAssociativeIterator" : "QAssociativeConstIterator")
                                                                                             owner, destructor_function, containerAccess);
@@ -179,12 +217,11 @@ jobject QtJambiAPI::convertQListToJavaObject(JNIEnv *env,
         }
     }
     if(listType==ListType::QList && containerAccess->elementMetaType().id()==QMetaType::QString){
-        bool isConst = containerAccess->isConstant();
         containerAccess->dispose();
-        return QtJambiAPI::convertQStringListToJavaObject(env, owner, listPtr, copyFunction, deleter, isConst);
+        return QtJambiAPI::convertQStringListToJavaObject(env, owner, listPtr, copyFunction, deleter);
     }
     jobject returned = nullptr;
-    containerAccess = checkContainerAccess(env, containerAccess);
+    CHECK_CONTAINER_ACCESS(env, containerAccess)
     QByteArray containerName;
     switch(listType){
     case QtJambiAPI::ListType::QQueue:
@@ -240,28 +277,128 @@ jobject QtJambiAPI::convertQListToJavaObject(JNIEnv *env,
     return returned;
 }
 
-jobject ContainerAccessAPI::objectFromQList(JNIEnv *env,
-                           const void* listPtr,
-                           AbstractContainerAccess* containerAccess
-                        )
+jobject ContainerAPI::objectFromQList(JNIEnv *env,
+                                      void*& listPtr,
+                                      AbstractContainerAccess*& containerAccess
+                                      )
 {
-    if(auto access = dynamic_cast<AbstractListAccess*>(containerAccess))
-        return QtJambiAPI::convertQListToJavaObject(env,
-                                  InvalidNativeID,
-                                  listPtr,
-                                  nullptr,
-                                  nullptr,
-                                  QtJambiAPI::ListType::QList,
-                                  access
-                             );
+    if(auto access = dynamic_cast<AbstractListAccess*>(containerAccess)){
+        jobject result = objectFromQList(env, listPtr, access);
+        containerAccess = result ? access : nullptr;
+        return result;
+    }
     return nullptr;
 }
+
+jobject ContainerAPI::objectFromQList(JNIEnv *env,
+                           void*& listPtr,
+                           AbstractListAccess*& containerAccess
+                        )
+{
+    for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(listPtr)){
+        if(link && link->createdByJava()){
+            jobject obj = link->getJavaObjectLocalRef(env);
+            if(Java::QtCore::QList::isInstanceOf(env, obj)){
+                containerAccess->dispose();
+                containerAccess = dynamic_cast<AbstractListAccess*>(link->containerAccess());
+                listPtr = link->pointer();
+                return obj;
+            }
+        }
+    }
+    QSharedPointer<QtJambiLink> link;
+    jobject returned = nullptr;
+    if(containerAccess->elementMetaType().id()==QMetaType::QString){
+        containerAccess->dispose();
+        containerAccess = QtJambiPrivate::QListAccess<QString>::newInstance();
+        returned = Java::QtCore::QStringList::newInstance(env, nullptr);
+        link = QtJambiLink::createLinkForContainer(env, returned, const_cast<void*>(listPtr),
+                                                   QMetaType(QMetaType::QStringList),
+                                                   false, false, containerAccess);
+    }else{
+        CHECK_CONTAINER_ACCESS(env, containerAccess)
+        QByteArray containerName;
+        returned = Java::QtCore::QList::newInstance(env, nullptr);
+        containerName = "QList<";
+        containerName += containerAccess->elementMetaType().name();
+        containerName += ">";
+        containerName = QMetaObject::normalizedType(containerName);
+        link = QtJambiLink::createLinkForContainer(env, returned, const_cast<void*>(listPtr),
+                                                   QMetaType(containerAccess->registerContainer(containerName)),
+                                                   false, false, containerAccess);
+    }
+    if (!link) {
+        returned = nullptr;
+        containerAccess->dispose();
+        containerAccess = nullptr;
+        listPtr = nullptr;
+    }
+    return returned;
+}
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
+jobject ContainerAPI::objectFromQSpan(JNIEnv *env,
+                                      void*& listPtr,
+                                      AbstractContainerAccess*& containerAccess
+                                      )
+{
+    if(auto access = dynamic_cast<AbstractSpanAccess*>(containerAccess)){
+        jobject result = objectFromQSpan(env, listPtr, access);
+        containerAccess = result ? access : nullptr;
+        return result;
+    }
+    return nullptr;
+}
+
+jobject ContainerAPI::objectFromQSpan(JNIEnv *env,
+                                      void*& listPtr,
+                                      AbstractSpanAccess*& containerAccess
+                                      )
+{
+    for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(listPtr)){
+        if(link && link->createdByJava()){
+            jobject obj = link->getJavaObjectLocalRef(env);
+            if(Java::QtCore::QConstSpan::isInstanceOf(env, obj)){
+                if(containerAccess->isConst() || Java::QtCore::QSpan::isInstanceOf(env, obj)){
+                    containerAccess->dispose();
+                    containerAccess = dynamic_cast<AbstractSpanAccess*>(link->containerAccess());
+                    listPtr = link->pointer();
+                    return obj;
+                }
+            }
+        }
+    }
+    QSharedPointer<QtJambiLink> link;
+    jobject returned = nullptr;
+    //CHECK_CONTAINER_ACCESS(env, containerAccess)
+    QByteArray containerName;
+    containerName = "QSpan<";
+    if(containerAccess->isConst()){
+        containerName += "const ";
+        returned = Java::QtCore::QConstSpan::newInstance(env, nullptr, nullptr);
+    }else{
+        returned = Java::QtCore::QSpan::newInstance(env, nullptr, nullptr);
+    }
+    containerName += containerAccess->elementMetaType().name();
+    containerName += ">";
+    containerName = QMetaObject::normalizedType(containerName);
+    link = QtJambiLink::createLinkForContainer(env, returned, const_cast<void*>(listPtr),
+                                               QMetaType(containerAccess->registerContainer(containerName)),
+                                               false, false, containerAccess);
+    if (!link) {
+        returned = nullptr;
+        containerAccess->dispose();
+        containerAccess = nullptr;
+        listPtr = nullptr;
+    }
+    return returned;
+}
+#endif //QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
 
 jobject QtJambiAPI::convertQStringListToJavaObject(JNIEnv *env,
                              void* ptr_shared_pointer,
                              SmartPointerDeleter sharedPointerDeleter,
-                             SmartPointerGetter sharedPointerGetter,
-                             bool isConstant
+                             SmartPointerGetter sharedPointerGetter
                         );
 
 jobject QtJambiAPI::convertQListToJavaObject(JNIEnv *env,
@@ -308,13 +445,12 @@ jobject QtJambiAPI::convertQListToJavaObject(JNIEnv *env,
         }
     }
     if(listType==ListType::QList && containerAccess->elementMetaType().id()==QMetaType::QString){
-        bool isConst = containerAccess->isConstant();
         containerAccess->dispose();
-        return QtJambiAPI::convertQStringListToJavaObject(env, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter, isConst);
+        return QtJambiAPI::convertQStringListToJavaObject(env, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter);
     }
 
     jobject returned = nullptr;
-    containerAccess = checkContainerAccess(env, containerAccess);
+    CHECK_CONTAINER_ACCESS(env, containerAccess)
     QByteArray containerName;
     switch(listType){
     case QtJambiAPI::ListType::QQueue:
@@ -350,8 +486,7 @@ jobject QtJambiAPI::convertQStringListToJavaObject(JNIEnv *env,
                            QtJambiNativeID owner,
                            const void* listPtr,
                            CopyFunction copyFunction,
-                           PtrDeleterFunction deleter,
-                           bool isConstant)
+                           PtrDeleterFunction deleter)
 {
     if(QtJambiAPI::fromNativeId(owner)==listPtr){
         if(jobject obj = CoreAPI::javaObject(owner, env)){
@@ -369,9 +504,7 @@ jobject QtJambiAPI::convertQStringListToJavaObject(JNIEnv *env,
         }
     }
     jobject returned = nullptr;
-    AbstractListAccess* containerAccess = isConstant
-            ? QtJambiPrivate::QListAccess<QString,true>::newInstance()
-            : QtJambiPrivate::QListAccess<QString,false>::newInstance();
+    AbstractListAccess* containerAccess = QtJambiPrivate::QListAccess<QString>::newInstance();
     returned = Java::QtCore::QStringList::newInstance(env, nullptr);
 
     QSharedPointer<QtJambiLink> link;
@@ -410,8 +543,7 @@ jobject QtJambiAPI::convertQStringListToJavaObject(JNIEnv *env,
 jobject QtJambiAPI::convertQStringListToJavaObject(JNIEnv *env,
                              void* ptr_shared_pointer,
                              SmartPointerDeleter sharedPointerDeleter,
-                             SmartPointerGetter sharedPointerGetter,
-                             bool isConstant
+                             SmartPointerGetter sharedPointerGetter
                         )
 {
     Q_ASSERT(sharedPointerGetter);
@@ -430,9 +562,7 @@ jobject QtJambiAPI::convertQStringListToJavaObject(JNIEnv *env,
         }
     }
 
-    AbstractListAccess* containerAccess = isConstant
-            ? QtJambiPrivate::QListAccess<QString,true>::newInstance()
-            : QtJambiPrivate::QListAccess<QString,false>::newInstance();
+    AbstractListAccess* containerAccess = QtJambiPrivate::QListAccess<QString>::newInstance();
 
     jobject returned = nullptr;
     returned = Java::QtCore::QStringList::newInstance(env, nullptr);
@@ -472,7 +602,7 @@ jobject QtJambiAPI::convertQSetToJavaObject(JNIEnv *env,
     }
 
     jobject returned = nullptr;
-    containerAccess = checkContainerAccess(env, containerAccess);
+    CHECK_CONTAINER_ACCESS(env, containerAccess)
     returned = Java::QtCore::QSet::newInstance(env, nullptr);
     QSharedPointer<QtJambiLink> link;
     QByteArray containerName = "QSet<";
@@ -538,7 +668,7 @@ jobject QtJambiAPI::convertQSetToJavaObject(JNIEnv *env,
     }
 
     jobject returned = nullptr;
-    containerAccess = checkContainerAccess(env, containerAccess);
+    CHECK_CONTAINER_ACCESS(env, containerAccess)
     returned = Java::QtCore::QSet::newInstance(env, nullptr);
     QByteArray containerName = "QSet<";
     containerName += containerAccess->elementMetaType().name();
@@ -581,7 +711,7 @@ jobject QtJambiAPI::convertQLinkedListToJavaObject(JNIEnv *env,
     }
 
     jobject returned = nullptr;
-    containerAccess = checkContainerAccess(env, containerAccess);
+    CHECK_CONTAINER_ACCESS(env, containerAccess)
     returned = Java::QtCore::QLinkedList::newInstance(env, nullptr);
     QSharedPointer<QtJambiLink> link;
     QByteArray containerName = "QLinkedList<";
@@ -647,7 +777,7 @@ jobject QtJambiAPI::convertQLinkedListToJavaObject(JNIEnv *env,
     }
 
     jobject returned = nullptr;
-    containerAccess = checkContainerAccess(env, containerAccess);
+    CHECK_CONTAINER_ACCESS(env, containerAccess)
     returned = Java::QtCore::QLinkedList::newInstance(env, nullptr);
     QByteArray containerName = "QLinkedList<";
     containerName += containerAccess->elementMetaType().name();
@@ -703,7 +833,7 @@ jobject QtJambiAPI::convertQVectorToJavaObject(JNIEnv *env,
     }
 
     jobject returned = nullptr;
-    containerAccess = checkContainerAccess(env, containerAccess);
+    CHECK_CONTAINER_ACCESS(env, containerAccess)
     QByteArray containerName;
     if(vectorType==QtJambiAPI::VectorType::QStack){
         returned = Java::QtCore::QStack::newInstance(env, nullptr);
@@ -749,18 +879,52 @@ jobject QtJambiAPI::convertQVectorToJavaObject(JNIEnv *env,
     return returned;
 }
 
-jobject ContainerAccessAPI::objectFromQVector(JNIEnv *env,
-                             const void* listPtr,
-                             AbstractContainerAccess* containerAccess)
+jobject ContainerAPI::objectFromQVector(JNIEnv *env,
+                             void*& listPtr,
+                             AbstractVectorAccess*& containerAccess)
 {
-    if(auto access = dynamic_cast<AbstractVectorAccess*>(containerAccess))
-        return QtJambiAPI::convertQVectorToJavaObject(env,
-                                    InvalidNativeID,
-                                    listPtr,
-                                    nullptr,
-                                    nullptr,
-                                    QtJambiAPI::VectorType::QVector,
-                                    access);
+    for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(listPtr)){
+        if(link && link->createdByJava()){
+            jobject obj = link->getJavaObjectLocalRef(env);
+            if(Java::QtCore::QVector::isInstanceOf(env, obj)){
+                containerAccess->dispose();
+                containerAccess = dynamic_cast<AbstractVectorAccess*>(link->containerAccess());
+                listPtr = link->pointer();
+                return obj;
+            }
+        }
+    }
+    QSharedPointer<QtJambiLink> link;
+    jobject returned = nullptr;
+    CHECK_CONTAINER_ACCESS(env, containerAccess)
+    QByteArray containerName;
+    returned = Java::QtCore::QVector::newInstance(env, nullptr);
+    containerName = "QVector<";
+    containerName += containerAccess->elementMetaType().name();
+    containerName += ">";
+    containerName = QMetaObject::normalizedType(containerName);
+    link = QtJambiLink::createLinkForContainer(env, returned, const_cast<void*>(listPtr),
+                                               QMetaType(containerAccess->registerContainer(containerName)),
+                                               false, false, containerAccess);
+    if (!link) {
+        returned = nullptr;
+        containerAccess->dispose();
+        containerAccess = nullptr;
+        listPtr = nullptr;
+    }
+    return returned;
+}
+
+jobject ContainerAPI::objectFromQVector(JNIEnv *env,
+                                      void*& listPtr,
+                                      AbstractContainerAccess*& containerAccess
+                                      )
+{
+    if(auto access = dynamic_cast<AbstractVectorAccess*>(containerAccess)){
+        jobject result = objectFromQVector(env, listPtr, access);
+        containerAccess = result ? access : nullptr;
+        return result;
+    }
     return nullptr;
 }
 
@@ -798,7 +962,7 @@ jobject QtJambiAPI::convertQVectorToJavaObject(JNIEnv *env,
     }
 
     jobject returned = nullptr;
-    containerAccess = checkContainerAccess(env, containerAccess);
+    CHECK_CONTAINER_ACCESS(env, containerAccess)
     QByteArray containerName;
     if(vectorType==QtJambiAPI::VectorType::QStack){
         returned = Java::QtCore::QStack::newInstance(env, nullptr);
@@ -847,7 +1011,7 @@ jobject QtJambiAPI::convertQHashToJavaObject(JNIEnv *env,
         }
     }
     jobject returned = nullptr;
-    containerAccess = checkContainerAccess(env, containerAccess);
+    CHECK_CONTAINER_ACCESS(env, containerAccess)
     returned = Java::QtCore::QHash::newInstance(env, nullptr);
     QByteArray containerName = "QHash<";
     containerName += containerAccess->keyMetaType().name();
@@ -915,7 +1079,7 @@ jobject QtJambiAPI::convertQHashToJavaObject(JNIEnv *env,
     }
 
     jobject returned = nullptr;
-    containerAccess = checkContainerAccess(env, containerAccess);
+    CHECK_CONTAINER_ACCESS(env, containerAccess)
     returned = Java::QtCore::QHash::newInstance(env, nullptr);
     QByteArray containerName = "QHash<";
     containerName += containerAccess->keyMetaType().name();
@@ -959,7 +1123,7 @@ jobject QtJambiAPI::convertQMultiHashToJavaObject(JNIEnv *env,
     }
 
     jobject returned = nullptr;
-    containerAccess = checkContainerAccess(env, containerAccess);
+    CHECK_CONTAINER_ACCESS(env, containerAccess)
     returned = Java::QtCore::QMultiHash::newInstance(env, nullptr);
     QSharedPointer<QtJambiLink> link;
     QByteArray containerName = "QMultiHash<";
@@ -1027,7 +1191,7 @@ jobject QtJambiAPI::convertQMultiHashToJavaObject(JNIEnv *env,
     }
 
     jobject returned = nullptr;
-    containerAccess = checkContainerAccess(env, containerAccess);
+    CHECK_CONTAINER_ACCESS(env, containerAccess)
     returned = Java::QtCore::QMultiHash::newInstance(env, nullptr);
     QByteArray containerName = "QMultiHash<";
     containerName += containerAccess->keyMetaType().name();
@@ -1070,7 +1234,7 @@ jobject QtJambiAPI::convertQMapToJavaObject(JNIEnv *env,
         }
     }
     jobject returned = nullptr;
-    containerAccess = checkContainerAccess(env, containerAccess);
+    CHECK_CONTAINER_ACCESS(env, containerAccess)
     returned = Java::QtCore::QMap::newInstance(env, nullptr);
     QByteArray containerName = "QMap<";
     containerName += containerAccess->keyMetaType().name();
@@ -1138,7 +1302,7 @@ jobject QtJambiAPI::convertQMapToJavaObject(JNIEnv *env,
     }
 
     jobject returned = nullptr;
-    containerAccess = checkContainerAccess(env, containerAccess);
+    CHECK_CONTAINER_ACCESS(env, containerAccess)
     returned = Java::QtCore::QMap::newInstance(env, nullptr);
     QByteArray containerName = "QMap<";
     containerName += containerAccess->keyMetaType().name();
@@ -1182,7 +1346,7 @@ jobject QtJambiAPI::convertQMultiMapToJavaObject(JNIEnv *env,
     }
 
     jobject returned = nullptr;
-    containerAccess = checkContainerAccess(env, containerAccess);
+    CHECK_CONTAINER_ACCESS(env, containerAccess)
     returned = Java::QtCore::QMultiMap::newInstance(env, nullptr);
     QByteArray containerName = "QMultiMap<";
     containerName += containerAccess->keyMetaType().name();
@@ -1250,7 +1414,7 @@ jobject QtJambiAPI::convertQMultiMapToJavaObject(JNIEnv *env,
     }
 
     jobject returned = nullptr;
-    containerAccess = checkContainerAccess(env, containerAccess);
+    CHECK_CONTAINER_ACCESS(env, containerAccess)
     returned = Java::QtCore::QMultiMap::newInstance(env, nullptr);
     QByteArray containerName = "QMultiMap<";
     containerName += containerAccess->keyMetaType().name();
@@ -1299,7 +1463,7 @@ void CoreAPI::initializeQList(JNIEnv *env, jobject object, jclass elementType, Q
         }
     }
     if(!containerAccess){
-        containerAccess = dynamic_cast<AbstractListAccess*>(AbstractContainerAccess::create(env, SequentialContainerType::QList, elementMetaType));
+        containerAccess = dynamic_cast<AbstractListAccess*>(ContainerAccessAPI::createContainerAccess(SequentialContainerType::QList, elementMetaType));
         if(!containerAccess){
             elementType = getGlobalClassRef(env, elementType);
             QByteArray qTypeName = elementMetaType.name();
@@ -1332,6 +1496,7 @@ void CoreAPI::initializeQList(JNIEnv *env, jobject object, jclass elementType, Q
             if(align==0 && !isPointer)
                 align = QtJambiTypeManager::getInternalAlignment(elementMetaType.name());
 #endif
+            QSharedPointer<AbstractContainerAccess> elementNestedContainerAccess = findContainerAccess(elementMetaType);
             QtJambiUtils::QHashFunction hashFunction = QtJambiTypeManager::findHashFunction(isPointer, elementMetaType.id());
             QtJambiUtils::InternalToExternalConverter internalToExternalConverter = QtJambiTypeManager::getInternalToExternalConverter(
                                                                                                                 env,
@@ -1346,7 +1511,14 @@ void CoreAPI::initializeQList(JNIEnv *env, jobject object, jclass elementType, Q
                                                                                                                 QLatin1String(qTypeName),
                                                                                                                 elementMetaType
                                                                                                             );
-            containerAccess = dynamic_cast<AbstractListAccess*>(AbstractContainerAccess::create(
+            const std::type_info* typeId = getTypeByQtName(elementMetaType.name());
+            if(!typeId){
+                typeId = getTypeByMetaType(elementMetaType);
+            }
+            PtrOwnerFunction elementOwnerFunction = nullptr;
+            if(typeId)
+                elementOwnerFunction = ContainerAPI::registeredOwnerFunction(*typeId);
+            containerAccess = dynamic_cast<AbstractListAccess*>(ContainerAccessAPI::createContainerAccess(
                                                                     env, SequentialContainerType::QList,
                                                                     elementMetaType,
                                                                     align, size,
@@ -1356,15 +1528,17 @@ void CoreAPI::initializeQList(JNIEnv *env, jobject object, jclass elementType, Q
                                                                     isPointer,
                                                                     hashFunction,
                                                                     internalToExternalConverter,
-                                                                    externalToInternalConverter));
+                                                                    externalToInternalConverter,
+                                                                    elementNestedContainerAccess,
+                                                                    elementOwnerFunction));
         }
         isNativeContainer = other && ContainerAPI::testQList(env, other, elementMetaType);
     }
-    containerAccess = checkContainerAccess(env, containerAccess);
+    CHECK_CONTAINER_ACCESS(env, containerAccess)
     void* listPtr;
     if(isNativeContainer){
         if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, other)){
-            listPtr = containerAccess->createContainer(reinterpret_cast<const void*>(link->pointer()));
+            listPtr = containerAccess->createContainer(env, ConstContainerAndAccessInfo{link->getJavaObjectLocalRef(env), link->pointer(), link->containerAccess()});
         }else{
             if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, other)){
                 containerAccess->dispose();
@@ -1388,11 +1562,11 @@ void CoreAPI::initializeQList(JNIEnv *env, jobject object, jclass elementType, Q
         containerAccess->deleteContainer(listPtr);
         containerAccess->dispose();
     }else if(!isNativeContainer && other){
-        jobject iter = QtJambiAPI::iteratorOfJavaCollection(env, other);
+        jobject iter = QtJambiAPI::iteratorOfJavaIterable(env, other);
         jint idx = 0;
-        containerAccess->reserve(env, listPtr, QtJambiAPI::sizeOfJavaCollection(env, other));
+        containerAccess->reserve(env, {object, listPtr}, QtJambiAPI::sizeOfJavaCollection(env, other));
         while(QtJambiAPI::hasJavaIteratorNext(env, iter)){
-            containerAccess->insert(env, listPtr, idx++, 1, QtJambiAPI::nextOfJavaIterator(env, iter));
+            containerAccess->insert(env, {object, listPtr}, idx++, 1, QtJambiAPI::nextOfJavaIterator(env, iter));
         }
     }
 }
@@ -1463,11 +1637,12 @@ void CoreAPI::initializeQSet(JNIEnv *env, jobject object, jclass elementType, Qt
                 containerAccess = QSetAccess<QObject*>::newInstance();
                 break;
             default: {
-                containerAccess = dynamic_cast<AbstractSetAccess*>(AbstractContainerAccess::create(env, SequentialContainerType::QSet, elementMetaType));
+                containerAccess = dynamic_cast<AbstractSetAccess*>(ContainerAccessAPI::createContainerAccess(SequentialContainerType::QSet, elementMetaType));
                 if(!containerAccess){
                     elementType = getGlobalClassRef(env, elementType);
                     QByteArray qTypeName = elementMetaType.name();
                     size_t size = size_t(elementMetaType.sizeOf());
+                    QSharedPointer<AbstractContainerAccess> elementNestedContainerAccess = findContainerAccess(elementMetaType);
                     bool isPointer = AbstractContainerAccess::isPointerType(elementMetaType);
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
                     size_t align = size_t(elementMetaType.alignOf());
@@ -1511,7 +1686,14 @@ void CoreAPI::initializeQSet(JNIEnv *env, jobject object, jclass elementType, Qt
                     if(!hashFunction){
                         Java::QtJambi::QNoImplementationException::throwNew(env, QString("Unable to create QSet of %1 because of missing hash function.").arg(QtJambiAPI::getClassName(env, elementType).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                     }
-                    containerAccess = dynamic_cast<AbstractSetAccess*>(AbstractContainerAccess::create(
+                    const std::type_info* typeId = getTypeByQtName(elementMetaType.name());
+                    if(!typeId){
+                        typeId = getTypeByMetaType(elementMetaType);
+                    }
+                    PtrOwnerFunction elementOwnerFunction = nullptr;
+                    if(typeId)
+                        elementOwnerFunction = ContainerAPI::registeredOwnerFunction(*typeId);
+                    containerAccess = dynamic_cast<AbstractSetAccess*>(ContainerAccessAPI::createContainerAccess(
                                                                            env, SequentialContainerType::QSet,
                                                                            elementMetaType,
                                                                            align, size,
@@ -1521,18 +1703,20 @@ void CoreAPI::initializeQSet(JNIEnv *env, jobject object, jclass elementType, Qt
                                                                            isPointer,
                                                                            hashFunction,
                                                                            internalToExternalConverter,
-                                                                           externalToInternalConverter));
+                                                                           externalToInternalConverter,
+                                                                           elementNestedContainerAccess,
+                                                                           elementOwnerFunction));
                 }
             }
             break;
         }
         isNativeContainer = other && ContainerAPI::testQSet(env, other, elementMetaType);
     }
-    containerAccess = checkContainerAccess(env, containerAccess);
+    CHECK_CONTAINER_ACCESS(env, containerAccess)
     void* listPtr;
     if(isNativeContainer){
         if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, other)){
-            listPtr = containerAccess->createContainer(reinterpret_cast<const void*>(link->pointer()));
+            listPtr = containerAccess->createContainer(env, ConstContainerAndAccessInfo{link->getJavaObjectLocalRef(env), link->pointer(), link->containerAccess()});
         }else{
             if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, other)){
                 containerAccess->dispose();
@@ -1555,9 +1739,9 @@ void CoreAPI::initializeQSet(JNIEnv *env, jobject object, jclass elementType, Qt
         containerAccess->deleteContainer(listPtr);
         containerAccess->dispose();
     }else if(!isNativeContainer && other){
-        jobject iter = QtJambiAPI::iteratorOfJavaCollection(env, other);
+        jobject iter = QtJambiAPI::iteratorOfJavaIterable(env, other);
         while(QtJambiAPI::hasJavaIteratorNext(env, iter)){
-            containerAccess->insert(env, listPtr, QtJambiAPI::nextOfJavaIterator(env, iter));
+            containerAccess->insert(env, {object, listPtr}, QtJambiAPI::nextOfJavaIterator(env, iter));
         }
     }
 }
@@ -1630,7 +1814,7 @@ void CoreAPI::initializeQLinkedList(JNIEnv *env, jobject object, jclass elementT
                 containerAccess = QLinkedListAccess<QObject*>::newInstance();
                 break;
             default: {
-                containerAccess = dynamic_cast<AbstractLinkedListAccess*>(AbstractContainerAccess::create(env, SequentialContainerType::QLinkedList, elementMetaType));
+                containerAccess = dynamic_cast<AbstractLinkedListAccess*>(ContainerAccessAPI::createContainerAccess(SequentialContainerType::QLinkedList, elementMetaType));
                 if(!containerAccess){
                     elementType = getGlobalClassRef(env, elementType);
                     size_t size = size_t(elementMetaType.sizeOf());
@@ -1656,6 +1840,7 @@ void CoreAPI::initializeQLinkedList(JNIEnv *env, jobject object, jclass elementT
                     }
                     if(align==0 && !isPointer)
                         align = QtJambiTypeManager::getInternalAlignment(elementMetaType.name());
+                    QSharedPointer<AbstractContainerAccess> elementNestedContainerAccess = findContainerAccess(elementMetaType);
                     QtJambiUtils::QHashFunction hashFunction = QtJambiTypeManager::findHashFunction(isPointer, elementMetaType.id());
                     QtJambiUtils::InternalToExternalConverter internalToExternalConverter = QtJambiTypeManager::getInternalToExternalConverter(
                                                                                                                         env,
@@ -1670,24 +1855,33 @@ void CoreAPI::initializeQLinkedList(JNIEnv *env, jobject object, jclass elementT
                                                                                                                         QLatin1String(elementMetaType.name()),
                                                                                                                         elementMetaType
                                                                                                                     );
-                    containerAccess = dynamic_cast<AbstractLinkedListAccess*>(AbstractContainerAccess::create(
+                    const std::type_info* typeId = getTypeByQtName(elementMetaType.name());
+                    if(!typeId){
+                        typeId = getTypeByMetaType(elementMetaType);
+                    }
+                    PtrOwnerFunction elementOwnerFunction = nullptr;
+                    if(typeId)
+                        elementOwnerFunction = ContainerAPI::registeredOwnerFunction(*typeId);
+                    containerAccess = dynamic_cast<AbstractLinkedListAccess*>(ContainerAccessAPI::createContainerAccess(
                                                                                   env, SequentialContainerType::QLinkedList,
                                                                                   elementMetaType,
                                                                                   align, size, isStaticType,
                                                                                   isPointer,
                                                                                   hashFunction,
                                                                                   internalToExternalConverter,
-                                                                                  externalToInternalConverter));
+                                                                                  externalToInternalConverter,
+                                                                                  elementNestedContainerAccess,
+                                                                                  elementOwnerFunction));
                 }
             }
         }
         isNativeContainer = other && ContainerAPI::testQLinkedList(env, other, elementMetaType);
     }
-    containerAccess = checkContainerAccess(env, containerAccess);
+    CHECK_CONTAINER_ACCESS(env, containerAccess)
     void* listPtr;
     if(isNativeContainer){
         if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, other)){
-            listPtr = containerAccess->createContainer(reinterpret_cast<const void*>(link->pointer()));
+            listPtr = containerAccess->createContainer(env, ConstContainerAndAccessInfo{link->getJavaObjectLocalRef(env), link->pointer(), link->containerAccess()});
         }else{
             if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, other)){
                 containerAccess->dispose();
@@ -1710,9 +1904,9 @@ void CoreAPI::initializeQLinkedList(JNIEnv *env, jobject object, jclass elementT
         containerAccess->deleteContainer(listPtr);
         containerAccess->dispose();
     }else if(!isNativeContainer && other){
-        jobject iter = QtJambiAPI::iteratorOfJavaCollection(env, other);
+        jobject iter = QtJambiAPI::iteratorOfJavaIterable(env, other);
         while(QtJambiAPI::hasJavaIteratorNext(env, iter)){
-            containerAccess->append(env, listPtr, QtJambiAPI::nextOfJavaIterator(env, iter));
+            containerAccess->append(env, {object, listPtr}, QtJambiAPI::nextOfJavaIterator(env, iter));
         }
     }
 }
@@ -1784,7 +1978,7 @@ void CoreAPI::initializeQVector(JNIEnv *env, jobject object, jclass elementType,
                 containerAccess = QVectorAccess<QObject*>::newInstance();
                 break;
             default: {
-                containerAccess = dynamic_cast<AbstractVectorAccess*>(AbstractContainerAccess::create(env, SequentialContainerType::QVector, elementMetaType));
+                containerAccess = dynamic_cast<AbstractVectorAccess*>(ContainerAccessAPI::createContainerAccess(SequentialContainerType::QVector, elementMetaType));
                 if(!containerAccess){
                     elementType = getGlobalClassRef(env, elementType);
                     size_t size = size_t(elementMetaType.sizeOf());
@@ -1810,6 +2004,7 @@ void CoreAPI::initializeQVector(JNIEnv *env, jobject object, jclass elementType,
                     }
                     if(align==0 && !isPointer)
                         align = QtJambiTypeManager::getInternalAlignment(elementMetaType.name());
+                    QSharedPointer<AbstractContainerAccess> elementNestedContainerAccess = findContainerAccess(elementMetaType);
                     QtJambiUtils::InternalToExternalConverter internalToExternalConverter = QtJambiTypeManager::getInternalToExternalConverter(
                                                                                                                         env,
                                                                                                                         QLatin1String(elementMetaType.name()),
@@ -1824,25 +2019,34 @@ void CoreAPI::initializeQVector(JNIEnv *env, jobject object, jclass elementType,
                                                                                                                         elementMetaType
                                                                                                                     );
                     QtJambiUtils::QHashFunction hashFunction = QtJambiTypeManager::findHashFunction(isPointer, elementMetaType.id());
-                    containerAccess = dynamic_cast<AbstractVectorAccess*>(AbstractContainerAccess::create(
+                    const std::type_info* typeId = getTypeByQtName(elementMetaType.name());
+                    if(!typeId){
+                        typeId = getTypeByMetaType(elementMetaType);
+                    }
+                    PtrOwnerFunction elementOwnerFunction = nullptr;
+                    if(typeId)
+                        elementOwnerFunction = ContainerAPI::registeredOwnerFunction(*typeId);
+                    containerAccess = dynamic_cast<AbstractVectorAccess*>(ContainerAccessAPI::createContainerAccess(
                                                                               env, SequentialContainerType::QVector,
                                                                               elementMetaType,
                                                                               align, size, isStaticType,
                                                                               isPointer,
                                                                               hashFunction,
                                                                               internalToExternalConverter,
-                                                                              externalToInternalConverter));
+                                                                              externalToInternalConverter,
+                                                                              elementNestedContainerAccess,
+                                                                              elementOwnerFunction));
                 }
             }
             break;
         }
         isNativeContainer = other && ContainerAPI::testQVector(env, other, elementMetaType);
     }
-    containerAccess = checkContainerAccess(env, containerAccess);
+    CHECK_CONTAINER_ACCESS(env, containerAccess)
     void* listPtr;
     if(isNativeContainer){
         if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, other)){
-            listPtr = containerAccess->createContainer(reinterpret_cast<const void*>(link->pointer()));
+            listPtr = containerAccess->createContainer(env, ConstContainerAndAccessInfo{link->getJavaObjectLocalRef(env), link->pointer(), link->containerAccess()});
         }else{
             if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, other)){
                 containerAccess->dispose();
@@ -1865,11 +2069,11 @@ void CoreAPI::initializeQVector(JNIEnv *env, jobject object, jclass elementType,
         containerAccess->deleteContainer(listPtr);
         containerAccess->dispose();
     }else if(!isNativeContainer && other){
-        jobject iter = QtJambiAPI::iteratorOfJavaCollection(env, other);
+        jobject iter = QtJambiAPI::iteratorOfJavaIterable(env, other);
         jint idx = 0;
-        containerAccess->reserve(env, listPtr, QtJambiAPI::sizeOfJavaCollection(env, other));
+        containerAccess->reserve(env, {object, listPtr}, QtJambiAPI::sizeOfJavaCollection(env, other));
         while(QtJambiAPI::hasJavaIteratorNext(env, iter)){
-            containerAccess->insert(env, listPtr, idx++, 1, QtJambiAPI::nextOfJavaIterator(env, iter));
+            containerAccess->insert(env, {object, listPtr}, idx++, 1, QtJambiAPI::nextOfJavaIterator(env, iter));
         }
     }
 }
@@ -1906,7 +2110,7 @@ void CoreAPI::initializeQHash(JNIEnv *env, jobject object, jclass keyType, QtJam
         }
     }
     if(!containerAccess)
-        containerAccess = dynamic_cast<AbstractHashAccess*>(AbstractContainerAccess::create(env, AssociativeContainerType::QHash, keyMetaType, valueMetaType));
+        containerAccess = dynamic_cast<AbstractHashAccess*>(ContainerAccessAPI::createContainerAccess(AssociativeContainerType::QHash, keyMetaType, valueMetaType));
     if(!containerAccess){
         size_t size1 = size_t(keyMetaType.sizeOf());
         bool isPointer1 = AbstractContainerAccess::isPointerType(keyMetaType);
@@ -1989,7 +2193,23 @@ void CoreAPI::initializeQHash(JNIEnv *env, jobject object, jclass keyType, QtJam
         if(!hashFunction1){
             Java::QtJambi::QNoImplementationException::throwNew(env, QString("Unable to create QHash for %1 because of missing hash function.").arg(QtJambiAPI::getClassName(env, keyType).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
         }
-        containerAccess = dynamic_cast<AbstractHashAccess*>(AbstractContainerAccess::create(
+        QSharedPointer<AbstractContainerAccess> keyNestedContainerAccess = findContainerAccess(keyMetaType);
+        QSharedPointer<AbstractContainerAccess> valueNestedContainerAccess = findContainerAccess(valueMetaType);
+        const std::type_info* typeId = getTypeByQtName(keyMetaType.name());
+        if(!typeId){
+            typeId = getTypeByMetaType(keyMetaType);
+        }
+        PtrOwnerFunction keyOwnerFunction = nullptr;
+        if(typeId)
+            keyOwnerFunction = ContainerAPI::registeredOwnerFunction(*typeId);
+        typeId = getTypeByQtName(qPrintable(valueMetaType.name()));
+        if(!typeId){
+            typeId = getTypeByMetaType(valueMetaType);
+        }
+        PtrOwnerFunction valueOwnerFunction = nullptr;
+        if(typeId)
+            valueOwnerFunction = ContainerAPI::registeredOwnerFunction(*typeId);
+        containerAccess = dynamic_cast<AbstractHashAccess*>(ContainerAccessAPI::createContainerAccess(
                                                                     env, AssociativeContainerType::QHash,
                                                                     keyMetaType,
                                                                     align1, size1,
@@ -1997,19 +2217,23 @@ void CoreAPI::initializeQHash(JNIEnv *env, jobject object, jclass keyType, QtJam
                                                                     hashFunction1,
                                                                     keyInternalToExternalConverter,
                                                                     keyExternalToInternalConverter,
+                                                                    keyNestedContainerAccess,
+                                                                    keyOwnerFunction,
                                                                     valueMetaType,
                                                                     align2, size2,
                                                                     isPointer2,
                                                                     hashFunction2,
                                                                     valueInternalToExternalConverter,
-                                                                    valueExternalToInternalConverter));
+                                                                    valueExternalToInternalConverter,
+                                                                    valueNestedContainerAccess,
+                                                                    valueOwnerFunction));
         isNativeContainer = other && ContainerAPI::testQHash(env, other, keyMetaType, valueMetaType);
     }
-    containerAccess = checkContainerAccess(env, containerAccess);
+    CHECK_CONTAINER_ACCESS(env, containerAccess)
     void* listPtr;
     if(isNativeContainer){
         if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, other)){
-            listPtr = containerAccess->createContainer(reinterpret_cast<const void*>(link->pointer()));
+            listPtr = containerAccess->createContainer(env, ConstContainerAndAccessInfo{link->getJavaObjectLocalRef(env), link->pointer(), link->containerAccess()});
         }else{
             if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, other)){
                 containerAccess->dispose();
@@ -2037,7 +2261,7 @@ void CoreAPI::initializeQHash(JNIEnv *env, jobject object, jclass keyType, QtJam
         jobject iter = QtJambiAPI::entrySetIteratorOfJavaMap(env, other);
         while(QtJambiAPI::hasJavaIteratorNext(env, iter)){
             jobject entry = QtJambiAPI::nextOfJavaIterator(env, iter);
-            containerAccess->insert(env, listPtr, QtJambiAPI::keyOfJavaMapEntry(env, entry), QtJambiAPI::valueOfJavaMapEntry(env, entry));
+            containerAccess->insert(env, {object, listPtr}, QtJambiAPI::keyOfJavaMapEntry(env, entry), QtJambiAPI::valueOfJavaMapEntry(env, entry));
         }
     }
 }
@@ -2073,7 +2297,7 @@ void CoreAPI::initializeQMultiHash(JNIEnv *env, jobject object, jclass keyType, 
         }
     }
     if(!containerAccess)
-        containerAccess = dynamic_cast<AbstractMultiHashAccess*>(AbstractContainerAccess::create(env, AssociativeContainerType::QMultiHash, keyMetaType, valueMetaType));
+        containerAccess = dynamic_cast<AbstractMultiHashAccess*>(ContainerAccessAPI::createContainerAccess(AssociativeContainerType::QMultiHash, keyMetaType, valueMetaType));
     if(!containerAccess){
         size_t size1 = size_t(keyMetaType.sizeOf());
         bool isPointer1 = AbstractContainerAccess::isPointerType(keyMetaType);
@@ -2154,7 +2378,23 @@ void CoreAPI::initializeQMultiHash(JNIEnv *env, jobject object, jclass keyType, 
 
         QtJambiUtils::QHashFunction hashFunction1 = QtJambiTypeManager::findHashFunction(isPointer1, keyMetaType.id());
         QtJambiUtils::QHashFunction hashFunction2 = QtJambiTypeManager::findHashFunction(isPointer2, valueMetaType.id());
-        containerAccess = dynamic_cast<AbstractMultiHashAccess*>(AbstractContainerAccess::create(
+        QSharedPointer<AbstractContainerAccess> keyNestedContainerAccess = findContainerAccess(keyMetaType);
+        QSharedPointer<AbstractContainerAccess> valueNestedContainerAccess = findContainerAccess(valueMetaType);
+        const std::type_info* typeId = getTypeByQtName(keyMetaType.name());
+        if(!typeId){
+            typeId = getTypeByMetaType(keyMetaType);
+        }
+        PtrOwnerFunction keyOwnerFunction = nullptr;
+        if(typeId)
+            keyOwnerFunction = ContainerAPI::registeredOwnerFunction(*typeId);
+        typeId = getTypeByQtName(qPrintable(valueMetaType.name()));
+        if(!typeId){
+            typeId = getTypeByMetaType(valueMetaType);
+        }
+        PtrOwnerFunction valueOwnerFunction = nullptr;
+        if(typeId)
+            valueOwnerFunction = ContainerAPI::registeredOwnerFunction(*typeId);
+        containerAccess = dynamic_cast<AbstractMultiHashAccess*>(ContainerAccessAPI::createContainerAccess(
                                                                      env, AssociativeContainerType::QMultiHash,
                                                                      keyMetaType,
                                                                      align1, size1,
@@ -2162,20 +2402,24 @@ void CoreAPI::initializeQMultiHash(JNIEnv *env, jobject object, jclass keyType, 
                                                                      hashFunction1,
                                                                      keyInternalToExternalConverter,
                                                                      keyExternalToInternalConverter,
+                                                                     keyNestedContainerAccess,
+                                                                     keyOwnerFunction,
                                                                      valueMetaType,
                                                                      align2, size2,
                                                                      isPointer2,
                                                                      hashFunction2,
                                                                      valueInternalToExternalConverter,
-                                                                     valueExternalToInternalConverter));
+                                                                     valueExternalToInternalConverter,
+                                                                     valueNestedContainerAccess,
+                                                                     valueOwnerFunction));
         isNativeContainer = other && ContainerAPI::testQMultiHash(env, other, keyMetaType, valueMetaType);
     }
-    containerAccess = checkContainerAccess(env, containerAccess);
+    CHECK_CONTAINER_ACCESS(env, containerAccess)
 
     void* listPtr;
     if(isNativeContainer){
         if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, other)){
-            listPtr = containerAccess->createContainer(reinterpret_cast<const void*>(link->pointer()));
+            listPtr = containerAccess->createContainer(env, ConstContainerAndAccessInfo{link->getJavaObjectLocalRef(env), link->pointer(), link->containerAccess()});
         }else{
             if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, other)){
                 containerAccess->dispose();
@@ -2204,9 +2448,9 @@ void CoreAPI::initializeQMultiHash(JNIEnv *env, jobject object, jclass keyType, 
         while(QtJambiAPI::hasJavaIteratorNext(env, iter)){
             jobject entry = QtJambiAPI::nextOfJavaIterator(env, iter);
             jobject list = QtJambiAPI::valueOfJavaMapEntry(env, entry);
-            jobject iter2 = QtJambiAPI::iteratorOfJavaCollection(env, list);
+            jobject iter2 = QtJambiAPI::iteratorOfJavaIterable(env, list);
             while(QtJambiAPI::hasJavaIteratorNext(env, iter2)){
-                containerAccess->insert(env, listPtr, QtJambiAPI::keyOfJavaMapEntry(env, entry), QtJambiAPI::nextOfJavaIterator(env, iter2));
+                containerAccess->insert(env, {object, listPtr}, QtJambiAPI::keyOfJavaMapEntry(env, entry), QtJambiAPI::nextOfJavaIterator(env, iter2));
             }
         }
     }
@@ -2243,7 +2487,7 @@ void CoreAPI::initializeQMap(JNIEnv *env, jobject object, jclass keyType, QtJamb
         }
     }
     if(!containerAccess)
-        containerAccess = dynamic_cast<AbstractMapAccess*>(AbstractContainerAccess::create(env, AssociativeContainerType::QMap, keyMetaType, valueMetaType));
+        containerAccess = dynamic_cast<AbstractMapAccess*>(ContainerAccessAPI::createContainerAccess(AssociativeContainerType::QMap, keyMetaType, valueMetaType));
     if(!containerAccess){
         size_t size1 = size_t(keyMetaType.sizeOf());
         bool isPointer1 = AbstractContainerAccess::isPointerType(keyMetaType);
@@ -2324,7 +2568,23 @@ void CoreAPI::initializeQMap(JNIEnv *env, jobject object, jclass keyType, QtJamb
 
         QtJambiUtils::QHashFunction hashFunction1 = QtJambiTypeManager::findHashFunction(isPointer1, keyMetaType.id());
         QtJambiUtils::QHashFunction hashFunction2 = QtJambiTypeManager::findHashFunction(isPointer2, valueMetaType.id());
-        containerAccess = dynamic_cast<AbstractMapAccess*>(AbstractContainerAccess::create(
+        QSharedPointer<AbstractContainerAccess> keyNestedContainerAccess = findContainerAccess(keyMetaType);
+        QSharedPointer<AbstractContainerAccess> valueNestedContainerAccess = findContainerAccess(valueMetaType);
+        const std::type_info* typeId = getTypeByQtName(keyMetaType.name());
+        if(!typeId){
+            typeId = getTypeByMetaType(keyMetaType);
+        }
+        PtrOwnerFunction keyOwnerFunction = nullptr;
+        if(typeId)
+            keyOwnerFunction = ContainerAPI::registeredOwnerFunction(*typeId);
+        typeId = getTypeByQtName(qPrintable(valueMetaType.name()));
+        if(!typeId){
+            typeId = getTypeByMetaType(valueMetaType);
+        }
+        PtrOwnerFunction valueOwnerFunction = nullptr;
+        if(typeId)
+            valueOwnerFunction = ContainerAPI::registeredOwnerFunction(*typeId);
+        containerAccess = dynamic_cast<AbstractMapAccess*>(ContainerAccessAPI::createContainerAccess(
                                                                     env, AssociativeContainerType::QMap,
                                                                     keyMetaType,
                                                                     align1, size1,
@@ -2332,19 +2592,23 @@ void CoreAPI::initializeQMap(JNIEnv *env, jobject object, jclass keyType, QtJamb
                                                                     hashFunction1,
                                                                     keyInternalToExternalConverter,
                                                                     keyExternalToInternalConverter,
+                                                                    keyNestedContainerAccess,
+                                                                    keyOwnerFunction,
                                                                     valueMetaType,
                                                                     align2, size2,
                                                                     isPointer2,
                                                                     hashFunction2,
                                                                     valueInternalToExternalConverter,
-                                                                    valueExternalToInternalConverter));
+                                                                    valueExternalToInternalConverter,
+                                                                    valueNestedContainerAccess,
+                                                                    valueOwnerFunction));
         isNativeContainer = other && ContainerAPI::testQMap(env, other, keyMetaType, valueMetaType);
     }
-    containerAccess = checkContainerAccess(env, containerAccess);
+    CHECK_CONTAINER_ACCESS(env, containerAccess)
     void* listPtr;
     if(isNativeContainer){
         if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, other)){
-            listPtr = containerAccess->createContainer(reinterpret_cast<const void*>(link->pointer()));
+            listPtr = containerAccess->createContainer(env, ConstContainerAndAccessInfo{link->getJavaObjectLocalRef(env), link->pointer(), link->containerAccess()});
         }else{
             if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, other)){
                 containerAccess->dispose();
@@ -2372,7 +2636,7 @@ void CoreAPI::initializeQMap(JNIEnv *env, jobject object, jclass keyType, QtJamb
         jobject iter = QtJambiAPI::entrySetIteratorOfJavaMap(env, other);
         while(QtJambiAPI::hasJavaIteratorNext(env, iter)){
             jobject entry = QtJambiAPI::nextOfJavaIterator(env, iter);
-            containerAccess->insert(env, listPtr, QtJambiAPI::keyOfJavaMapEntry(env, entry), QtJambiAPI::valueOfJavaMapEntry(env, entry));
+            containerAccess->insert(env, {object, listPtr}, QtJambiAPI::keyOfJavaMapEntry(env, entry), QtJambiAPI::valueOfJavaMapEntry(env, entry));
         }
     }
 }
@@ -2408,7 +2672,7 @@ void CoreAPI::initializeQMultiMap(JNIEnv *env, jobject object, jclass keyType, Q
         }
     }
     if(!containerAccess)
-        containerAccess = dynamic_cast<AbstractMultiMapAccess*>(AbstractContainerAccess::create(env, AssociativeContainerType::QMultiMap, keyMetaType, valueMetaType));
+        containerAccess = dynamic_cast<AbstractMultiMapAccess*>(ContainerAccessAPI::createContainerAccess(AssociativeContainerType::QMultiMap, keyMetaType, valueMetaType));
     if(!containerAccess){
         size_t size1 = size_t(keyMetaType.sizeOf());
         bool isPointer1 = AbstractContainerAccess::isPointerType(keyMetaType);
@@ -2489,7 +2753,23 @@ void CoreAPI::initializeQMultiMap(JNIEnv *env, jobject object, jclass keyType, Q
 
         QtJambiUtils::QHashFunction hashFunction1 = QtJambiTypeManager::findHashFunction(isPointer1, keyMetaType.id());
         QtJambiUtils::QHashFunction hashFunction2 = QtJambiTypeManager::findHashFunction(isPointer2, valueMetaType.id());
-        containerAccess = dynamic_cast<AbstractMultiMapAccess*>(AbstractContainerAccess::create(
+        QSharedPointer<AbstractContainerAccess> keyNestedContainerAccess = findContainerAccess(keyMetaType);
+        QSharedPointer<AbstractContainerAccess> valueNestedContainerAccess = findContainerAccess(valueMetaType);
+        const std::type_info* typeId = getTypeByQtName(keyMetaType.name());
+        if(!typeId){
+            typeId = getTypeByMetaType(keyMetaType);
+        }
+        PtrOwnerFunction keyOwnerFunction = nullptr;
+        if(typeId)
+            keyOwnerFunction = ContainerAPI::registeredOwnerFunction(*typeId);
+        typeId = getTypeByQtName(qPrintable(valueMetaType.name()));
+        if(!typeId){
+            typeId = getTypeByMetaType(valueMetaType);
+        }
+        PtrOwnerFunction valueOwnerFunction = nullptr;
+        if(typeId)
+            valueOwnerFunction = ContainerAPI::registeredOwnerFunction(*typeId);
+        containerAccess = dynamic_cast<AbstractMultiMapAccess*>(ContainerAccessAPI::createContainerAccess(
                                                                     env, AssociativeContainerType::QMultiMap,
                                                                     keyMetaType,
                                                                     align1, size1,
@@ -2497,19 +2777,23 @@ void CoreAPI::initializeQMultiMap(JNIEnv *env, jobject object, jclass keyType, Q
                                                                     hashFunction1,
                                                                     keyInternalToExternalConverter,
                                                                     keyExternalToInternalConverter,
+                                                                    keyNestedContainerAccess,
+                                                                    keyOwnerFunction,
                                                                     valueMetaType,
                                                                     align2, size2,
                                                                     isPointer2,
                                                                     hashFunction2,
                                                                     valueInternalToExternalConverter,
-                                                                    valueExternalToInternalConverter));
+                                                                    valueExternalToInternalConverter,
+                                                                    valueNestedContainerAccess,
+                                                                    valueOwnerFunction));
         isNativeContainer = other && ContainerAPI::testQMultiMap(env, other, keyMetaType, valueMetaType);
     }
-    containerAccess = checkContainerAccess(env, containerAccess);
+    CHECK_CONTAINER_ACCESS(env, containerAccess)
     void* listPtr;
     if(isNativeContainer){
         if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, other)){
-            listPtr = containerAccess->createContainer(reinterpret_cast<const void*>(link->pointer()));
+            listPtr = containerAccess->createContainer(env, ConstContainerAndAccessInfo{link->getJavaObjectLocalRef(env), link->pointer(), link->containerAccess()});
         }else{
             if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, other)){
                 containerAccess->dispose();
@@ -2539,22 +2823,69 @@ void CoreAPI::initializeQMultiMap(JNIEnv *env, jobject object, jclass keyType, Q
             while(QtJambiAPI::hasJavaIteratorNext(env, iter)){
                 jobject entry = QtJambiAPI::nextOfJavaIterator(env, iter);
                 jobject list = QtJambiAPI::valueOfJavaMapEntry(env, entry);
-                jobject iter2 = QtJambiAPI::iteratorOfJavaCollection(env, list);
+                jobject iter2 = QtJambiAPI::iteratorOfJavaIterable(env, list);
                 while(QtJambiAPI::hasJavaIteratorNext(env, iter2)){
-                    containerAccess->insert(env, listPtr, QtJambiAPI::keyOfJavaMapEntry(env, entry), QtJambiAPI::nextOfJavaIterator(env, iter2));
+                    containerAccess->insert(env, {object, listPtr}, QtJambiAPI::keyOfJavaMapEntry(env, entry), QtJambiAPI::nextOfJavaIterator(env, iter2));
                 }
             }
         }
     }
 }
 
-#define TEST_COLLECTION1(NAME) \
+bool compareMetaTypes(const QMetaType& typeA, const QMetaType& typeB){
+    if(typeA==typeB)
+        return true;
+    if(typeA==QMetaType::fromType<char>()){
+        return typeB==QMetaType::fromType<signed char>() || typeB==QMetaType::fromType<unsigned char>();
+    }
+    if(typeA==QMetaType::fromType<signed char>()){
+        return typeB==QMetaType::fromType<char>() || typeB==QMetaType::fromType<unsigned char>();
+    }
+    if(typeA==QMetaType::fromType<unsigned char>()){
+        return typeB==QMetaType::fromType<signed char>() || typeB==QMetaType::fromType<char>();
+    }
+    if(typeA==QMetaType::fromType<short>()){
+        return typeB==QMetaType::fromType<signed short>() || typeB==QMetaType::fromType<unsigned short>();
+    }
+    if(typeA==QMetaType::fromType<signed short>()){
+        return typeB==QMetaType::fromType<short>() || typeB==QMetaType::fromType<unsigned short>();
+    }
+    if(typeA==QMetaType::fromType<unsigned short>()){
+        return typeB==QMetaType::fromType<signed short>() || typeB==QMetaType::fromType<short>();
+    }
+    if(typeA==QMetaType::fromType<int>()){
+        return typeB==QMetaType::fromType<signed int>() || typeB==QMetaType::fromType<unsigned int>();
+    }
+    if(typeA==QMetaType::fromType<signed int>()){
+        return typeB==QMetaType::fromType<int>() || typeB==QMetaType::fromType<unsigned int>();
+    }
+    if(typeA==QMetaType::fromType<unsigned int>()){
+        return typeB==QMetaType::fromType<signed int>() || typeB==QMetaType::fromType<int>();
+    }
+    if(typeA==QMetaType::fromType<qint64>()){
+        return typeB==QMetaType::fromType<quint64>();
+    }
+    if(typeA==QMetaType::fromType<quint64>()){
+        return typeB==QMetaType::fromType<qint64>();
+    }
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    if(typeA==QMetaType::fromType<QChar>()){
+        return typeB==QMetaType::fromType<char16_t>();
+    }
+    if(typeA==QMetaType::fromType<char16_t>()){
+        return typeB==QMetaType::fromType<QChar>();
+    }
+#endif
+    return false;
+}
+
+#define TEST_COLLECTION1(NAME,JCLASS) \
 bool ContainerAPI::testQ##NAME(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType) {\
     if(collection && expectedElementMetaType.isValid()){\
-        if(Java::QtCore::Q##NAME::isInstanceOf(env,collection)){\
+        if(Java::QtCore::Q##JCLASS::isInstanceOf(env,collection)){\
             if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, collection)){\
                 if(Abstract##NAME##Access* containerAccess = dynamic_cast<Abstract##NAME##Access*>(link->containerAccess()))\
-                    return containerAccess->elementMetaType()==expectedElementMetaType;\
+                    return compareMetaTypes(containerAccess->elementMetaType(), expectedElementMetaType);\
             }else\
                 Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassName(env, collection).replace("$", ".")) QTJAMBI_STACKTRACEINFO );\
         }else if(!env->IsInstanceOf(collection, Java::Runtime::Collection::getClass(env)))\
@@ -2574,7 +2905,7 @@ bool ContainerAPI::testQ##NAME(JNIEnv *env, jobject mapObject, const QMetaType& 
         if(Java::QtCore::Q##NAME::isInstanceOf(env, mapObject)){\
             if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, mapObject)){\
                 if(Abstract##NAME##Access* containerAccess = dynamic_cast<Abstract##NAME##Access*>(link->containerAccess()))\
-                    return containerAccess->keyMetaType()==expectedKeyMetaType && containerAccess->valueMetaType()==expectedValueMetaType;\
+                    return compareMetaTypes(containerAccess->keyMetaType(), expectedKeyMetaType) && compareMetaTypes(containerAccess->valueMetaType(), expectedValueMetaType);\
             }else\
                 Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassName(env, mapObject).replace("$", ".")) QTJAMBI_STACKTRACEINFO );\
         }else if(!env->IsInstanceOf(mapObject, Java::Runtime::Map::getClass(env)))\
@@ -2594,7 +2925,7 @@ bool ContainerAPI::testQ##NAME(JNIEnv *env, jobject mapObject, const QMetaType& 
         if(Java::QtCore::Q##NAME::isInstanceOf(env, mapObject)){\
             if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, mapObject)){\
                 if(Abstract##NAME##Access* containerAccess = dynamic_cast<Abstract##NAME##Access*>(link->containerAccess()))\
-                    return containerAccess->keyMetaType()==expectedKeyMetaType && containerAccess->valueMetaType()==expectedValueMetaType;\
+                    return compareMetaTypes(containerAccess->keyMetaType(), expectedKeyMetaType) && compareMetaTypes(containerAccess->valueMetaType(), expectedValueMetaType);\
             }else\
                 Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassName(env, mapObject).replace("$", ".")) QTJAMBI_STACKTRACEINFO );\
         }else if(!env->IsInstanceOf(mapObject, Java::Runtime::Map::getClass(env)))\
@@ -2608,13 +2939,13 @@ bool ContainerAPI::testQ##NAME(JNIEnv *env, jobject mapObject, const std::type_i
     return ContainerAPI::testQ##NAME(env, mapObject, expectedKeyMetaType, expectedValueMetaType);\
 }
 
-#define GET_AS_COLLECTION1(NAME) \
+#define GET_AS_COLLECTION1(NAME,JCLASS) \
 bool ContainerAPI::getAsQ##NAME(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType, void* &pointer) {\
     if(collection && expectedElementMetaType.isValid()){\
-        if(Java::QtCore::Q##NAME::isInstanceOf(env,collection)){\
+        if(Java::QtCore::Q##JCLASS::isInstanceOf(env,collection)){\
             if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, collection)){\
                 if(Abstract##NAME##Access* containerAccess = dynamic_cast<Abstract##NAME##Access*>(link->containerAccess())){\
-                    if(containerAccess->elementMetaType()==expectedElementMetaType){\
+                    if(compareMetaTypes(containerAccess->elementMetaType(), expectedElementMetaType)){\
                         pointer = link->pointer();\
                         return true;\
                     }\
@@ -2623,6 +2954,24 @@ bool ContainerAPI::getAsQ##NAME(JNIEnv *env, jobject collection, const QMetaType
                 Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassName(env, collection).replace("$", ".")) QTJAMBI_STACKTRACEINFO );\
         }else if(!env->IsInstanceOf(collection, Java::Runtime::Collection::getClass(env)))\
             Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassName(env, collection).replace("$", "."), QtJambiAPI::getClassName(env, Java::Runtime::Collection::getClass(env)).replace("$", ".")) QTJAMBI_STACKTRACEINFO );\
+    }\
+    return false;\
+} \
+bool ContainerAPI::getAsQ##NAME(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType, void* &pointer, AbstractContainerAccess*& access) {\
+    if(collection && expectedElementMetaType.isValid()){\
+        if(Java::QtCore::Q##NAME::isInstanceOf(env,collection)){\
+            if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, collection)){\
+                if(Abstract##NAME##Access* containerAccess = dynamic_cast<Abstract##NAME##Access*>(link->containerAccess())){\
+                    if(compareMetaTypes(containerAccess->elementMetaType(), expectedElementMetaType)){\
+                        pointer = link->pointer();\
+                        access = containerAccess;\
+                        return true;\
+                }\
+            }\
+        }else\
+            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassName(env, collection).replace("$", ".")) QTJAMBI_STACKTRACEINFO );\
+    }else if(!env->IsInstanceOf(collection, Java::Runtime::Collection::getClass(env)))\
+        Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassName(env, collection).replace("$", "."), QtJambiAPI::getClassName(env, Java::Runtime::Collection::getClass(env)).replace("$", ".")) QTJAMBI_STACKTRACEINFO );\
     }\
     return false;\
 }
@@ -2638,7 +2987,7 @@ bool ContainerAPI::getAsQ##NAME(JNIEnv *env, jobject mapObject, const QMetaType&
         if(Java::QtCore::Q##NAME::isInstanceOf(env, mapObject)){\
             if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, mapObject)){\
                 if(Abstract##NAME##Access* containerAccess = dynamic_cast<Abstract##NAME##Access*>(link->containerAccess())){\
-                    if(containerAccess->keyMetaType()==expectedKeyMetaType && containerAccess->valueMetaType()==expectedValueMetaType){\
+                    if(compareMetaTypes(containerAccess->keyMetaType(), expectedKeyMetaType) && compareMetaTypes(containerAccess->valueMetaType(), expectedValueMetaType)){\
                        pointer = link->pointer();\
                        return true;\
                     }\
@@ -2647,6 +2996,24 @@ bool ContainerAPI::getAsQ##NAME(JNIEnv *env, jobject mapObject, const QMetaType&
                 Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassName(env, mapObject).replace("$", ".")) QTJAMBI_STACKTRACEINFO );\
         }else if(!env->IsInstanceOf(mapObject, Java::Runtime::Map::getClass(env)))\
             Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassName(env, mapObject).replace("$", "."), QtJambiAPI::getClassName(env, Java::Runtime::Map::getClass(env)).replace("$", ".")) QTJAMBI_STACKTRACEINFO );\
+    }\
+    return false;\
+}\
+bool ContainerAPI::getAsQ##NAME(JNIEnv *env, jobject mapObject, const QMetaType& expectedKeyMetaType, const QMetaType& expectedValueMetaType, void* &pointer, AbstractContainerAccess*& access) {\
+    if(mapObject && expectedKeyMetaType.isValid() && expectedValueMetaType.isValid()){\
+        if(Java::QtCore::Q##NAME::isInstanceOf(env, mapObject)){\
+            if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, mapObject)){\
+                if(Abstract##NAME##Access* containerAccess = dynamic_cast<Abstract##NAME##Access*>(link->containerAccess())){\
+                    if(compareMetaTypes(containerAccess->keyMetaType(), expectedKeyMetaType) && compareMetaTypes(containerAccess->valueMetaType(), expectedValueMetaType)){\
+                        pointer = link->pointer();\
+                        access = containerAccess;\
+                        return true;\
+                }\
+            }\
+        }else\
+            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassName(env, mapObject).replace("$", ".")) QTJAMBI_STACKTRACEINFO );\
+    }else if(!env->IsInstanceOf(mapObject, Java::Runtime::Map::getClass(env)))\
+        Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassName(env, mapObject).replace("$", "."), QtJambiAPI::getClassName(env, Java::Runtime::Map::getClass(env)).replace("$", ".")) QTJAMBI_STACKTRACEINFO );\
     }\
     return false;\
 }
@@ -2662,7 +3029,7 @@ bool ContainerAPI::getAsQ##NAME(JNIEnv *env, jobject mapObject, const QMetaType&
         if(Java::QtCore::Q##NAME::isInstanceOf(env, mapObject)){\
             if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, mapObject)){\
                 if(Abstract##NAME##Access* containerAccess = dynamic_cast<Abstract##NAME##Access*>(link->containerAccess())){\
-                    if(containerAccess->keyMetaType()==expectedKeyMetaType && containerAccess->valueMetaType()==expectedValueMetaType){\
+                    if(compareMetaTypes(containerAccess->keyMetaType(), expectedKeyMetaType) && compareMetaTypes(containerAccess->valueMetaType(), expectedValueMetaType)){\
                         pointer = link->pointer();\
                         return true;\
                     }\
@@ -2673,11 +3040,33 @@ bool ContainerAPI::getAsQ##NAME(JNIEnv *env, jobject mapObject, const QMetaType&
             Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassName(env, mapObject).replace("$", "."), QtJambiAPI::getClassName(env, Java::Runtime::Map::getClass(env)).replace("$", ".")) QTJAMBI_STACKTRACEINFO );\
     }\
     return false;\
+}\
+bool ContainerAPI::getAsQ##NAME(JNIEnv *env, jobject mapObject, const QMetaType& expectedKeyMetaType, const QMetaType& expectedValueMetaType, void* &pointer, AbstractContainerAccess*& access) {\
+    if(mapObject && expectedKeyMetaType.isValid() && expectedValueMetaType.isValid()){\
+        if(Java::QtCore::Q##NAME::isInstanceOf(env, mapObject)){\
+            if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, mapObject)){\
+                if(Abstract##NAME##Access* containerAccess = dynamic_cast<Abstract##NAME##Access*>(link->containerAccess())){\
+                    if(compareMetaTypes(containerAccess->keyMetaType(), expectedKeyMetaType) && compareMetaTypes(containerAccess->valueMetaType(), expectedValueMetaType)){\
+                        pointer = link->pointer();\
+                        access = containerAccess;\
+                        return true;\
+                }\
+            }\
+        }else\
+            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassName(env, mapObject).replace("$", ".")) QTJAMBI_STACKTRACEINFO );\
+    }else if(!env->IsInstanceOf(mapObject, Java::Runtime::Map::getClass(env)))\
+        Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassName(env, mapObject).replace("$", "."), QtJambiAPI::getClassName(env, Java::Runtime::Map::getClass(env)).replace("$", ".")) QTJAMBI_STACKTRACEINFO );\
+    }\
+    return false;\
 }
 
 #define GET_AS_MULTIMAP2(NAME) \
 bool ContainerAPI::getAsQ##NAME(JNIEnv *env, jobject mapObject, const std::type_info&, const QMetaType& expectedKeyMetaType, const std::type_info&, const QMetaType& expectedValueMetaType, void* &pointer) {\
         return ContainerAPI::getAsQ##NAME(env, mapObject, expectedKeyMetaType, expectedValueMetaType, pointer);\
+}
+
+PtrOwnerFunction ContainerAPI::registeredOwnerFunction(const std::type_info& typeId){
+    return ::registeredOwnerFunction(typeId);
 }
 
 bool ContainerAPI::testQQueue(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType) {
@@ -2686,21 +3075,27 @@ bool ContainerAPI::testQQueue(JNIEnv *env, jobject collection, const QMetaType& 
 bool ContainerAPI::getAsQQueue(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType, void* &pointer) {
     return ContainerAPI::getAsQList(env, collection, expectedElementMetaType, pointer);
 }
+bool ContainerAPI::getAsQQueue(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType, void* &pointer, AbstractContainerAccess*& access) {
+    return ContainerAPI::getAsQList(env, collection, expectedElementMetaType, pointer, access);
+}
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-TEST_COLLECTION1(Vector)
-TEST_COLLECTION1(LinkedList)
+TEST_COLLECTION1(Vector,Vector)
+TEST_COLLECTION1(LinkedList,LinkedList)
 TEST_COLLECTION2(Vector)
 TEST_COLLECTION2(LinkedList)
 bool ContainerAPI::testQStack(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType) {
     return ContainerAPI::testQVector(env, collection, expectedElementMetaType);
 }
 
-GET_AS_COLLECTION1(Vector)
-GET_AS_COLLECTION1(LinkedList)
+GET_AS_COLLECTION1(Vector,Vector)
+GET_AS_COLLECTION1(LinkedList,LinkedList)
 GET_AS_COLLECTION2(Vector)
 GET_AS_COLLECTION2(LinkedList)
 bool ContainerAPI::getAsQStack(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType, void* &pointer) {
     return ContainerAPI::getAsQVector(env, collection, expectedElementMetaType, pointer);
+}
+bool ContainerAPI::getAsQStack(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType, void* &pointer, AbstractContainerAccess*& access) {
+    return ContainerAPI::getAsQVector(env, collection, expectedElementMetaType, pointer, access);
 }
 #else
 bool ContainerAPI::testQStack(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType) {
@@ -2709,9 +3104,12 @@ bool ContainerAPI::testQStack(JNIEnv *env, jobject collection, const QMetaType& 
 bool ContainerAPI::getAsQStack(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType, void* &pointer) {
     return ContainerAPI::getAsQList(env, collection, expectedElementMetaType,pointer);
 }
+bool ContainerAPI::getAsQStack(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType, void* &pointer, AbstractContainerAccess*& access) {
+    return ContainerAPI::getAsQList(env, collection, expectedElementMetaType, pointer, access);
+}
 #endif // QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-TEST_COLLECTION1(List)
-TEST_COLLECTION1(Set)
+TEST_COLLECTION1(List,List)
+TEST_COLLECTION1(Set,Set)
 TEST_MULTIMAP1(MultiMap)
 TEST_MULTIMAP1(MultiHash)
 TEST_MAP1(Map)
@@ -2725,8 +3123,8 @@ TEST_MULTIMAP2(MultiHash)
 TEST_MAP2(Map)
 TEST_MAP2(Hash)
 
-GET_AS_COLLECTION1(List)
-GET_AS_COLLECTION1(Set)
+GET_AS_COLLECTION1(List,List)
+GET_AS_COLLECTION1(Set,Set)
 GET_AS_MULTIMAP1(MultiMap)
 GET_AS_MULTIMAP1(MultiHash)
 GET_AS_MAP1(Map)
@@ -2739,3 +3137,10 @@ GET_AS_MULTIMAP2(MultiMap)
 GET_AS_MULTIMAP2(MultiHash)
 GET_AS_MAP2(Map)
 GET_AS_MAP2(Hash)
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
+TEST_COLLECTION1(Span,ConstSpan)
+TEST_COLLECTION2(Span)
+GET_AS_COLLECTION1(Span,ConstSpan)
+GET_AS_COLLECTION2(Span)
+#endif

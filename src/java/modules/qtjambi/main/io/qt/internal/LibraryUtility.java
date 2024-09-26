@@ -1299,9 +1299,13 @@ final class LibraryUtility {
 	            	for(LibraryBundle spec : nativeDeployments) {
 	            		if(spec.compiler()!=null && qtjambiSpec.compiler()!=null && !spec.compiler().equals(qtjambiSpec.compiler())) {
 	            			if(operatingSystem==OperatingSystem.Windows) {
-		            			throw new WrongBuildException(String.format("Native deployments of different builts: %1$s (%2$s) and %3$s (%4$s)", 
-		            					qtjambiSpec.module(), qtjambiSpec.compiler(),  
-		            					spec.module(), spec.compiler()));
+	            				if((spec.compiler().startsWith("msvc20") && !qtjambiSpec.compiler().startsWith("msvc20"))
+	            						|| (qtjambiSpec.compiler().startsWith("msvc20") && !spec.compiler().startsWith("msvc20"))
+	            						|| (spec.compiler().endsWith("x64") && !qtjambiSpec.compiler().endsWith("x64"))
+	            						|| (qtjambiSpec.compiler().endsWith("x64") && !spec.compiler().endsWith("x64")))
+			            			throw new WrongBuildException(String.format("Native deployments of different builts: %1$s (%2$s) and %3$s (%4$s)", 
+			            					qtjambiSpec.module(), qtjambiSpec.compiler(),  
+			            					spec.module(), spec.compiler()));
 	            			}
 	            		}else if(!spec.configuration().equals(qtjambiSpec.configuration())) {
 	            			if(operatingSystem==OperatingSystem.Windows || spec.module()==null || !spec.module().startsWith("qt.")) {

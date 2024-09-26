@@ -114,6 +114,27 @@ struct qtjambi_jnitype_caster<forward, has_scope,
         : qtjambi_jnitype_template_cast_decider<forward, has_scope, JniType, NativeType, is_pointer, is_const, is_reference, sizeof...(Ts), Ts...>{
 };
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0) //&& defined(QSPAN_H)
+template<bool forward, bool has_scope,
+         typename JniType,
+         bool is_pointer, bool is_const, bool is_reference,
+         typename T, std::size_t E>
+struct qtjambi_jnitype_caster<forward, has_scope,
+                              JniType,
+                              QSpan<T,E>, /*is_arithmetic*/false, /*is_enum*/false, is_pointer, is_const, is_reference, /*is_function*/false, /*is_template*/false>
+    : qtjambi_jnitype_span_cast<forward, has_scope, JniType, is_pointer, is_const, is_reference, typename std::remove_cv<T>::type, E, std::is_const<T>::value>{
+};
+
+template<bool forward, bool has_scope,
+         bool is_pointer, bool is_const, bool is_reference,
+         typename T, std::size_t E>
+struct qtjambi_jnitype_caster<forward, has_scope,
+                              jobject,
+                              QSpan<T,E>, /*is_arithmetic*/false, /*is_enum*/false, is_pointer, is_const, is_reference, /*is_function*/false, /*is_template*/false>
+    : qtjambi_jnitype_span_cast<forward, has_scope, jobject, is_pointer, is_const, is_reference, typename std::remove_cv<T>::type, E, std::is_const<T>::value>{
+};
+#endif
+
 //template from any function pointer to jobject
 
 template<bool has_scope,
@@ -474,7 +495,7 @@ struct qtjambi_jnitype_use_pointer_decider_cast<has_scope, NativeType, is_const,
         if(!QtJambiAPI::convertJavaToNative(env, typeid(NativeType), nativeTypeName, in, &result, scope)){
             JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast object of type %1 to %2").arg(in ? QtJambiAPI::getObjectClassName(env, in) : QStringLiteral("null")).arg(QLatin1String(QtJambiAPI::typeName(typeid(NativeType)))) QTJAMBI_STACKTRACEINFO );
         }
-        return qtjambi_deref_value<NativeType, supports_StandardConstructor<NativeType>::value, supports_CopyConstructor<NativeType>::value, is_const, is_reference>::deref(env, result);
+        return qtjambi_deref_value<NativeType, is_default_constructible<NativeType>::value, is_copy_constructible<NativeType>::value, is_const, is_reference>::deref(env, result);
     }
 };
 
@@ -1738,9 +1759,8 @@ struct qtjambi_jnitype_caster<true, has_scope,
         return QtJambiAPI::convertQStringListToJavaObject(env,
                                   scope ? scope->relatedNativeID() : InvalidNativeID,
                                   ref_ptr<is_pointer, Container>::ref(in),
-                                  is_pointer ? nullptr : CopyFunction([](const void* ptr) -> void* { return new QStringList(*reinterpret_cast<const QStringList*>(ptr)); }),
-                                  [](void* ptr,bool) { delete reinterpret_cast<QStringList*>(ptr); },
-                                  is_pointer && is_const
+                                  is_pointer && !is_const ? nullptr : CopyFunction([](const void* ptr) -> void* { return new QStringList(*reinterpret_cast<const QStringList*>(ptr)); }),
+                                  [](void* ptr,bool) { delete reinterpret_cast<QStringList*>(ptr); }
                                 );
     }
 };

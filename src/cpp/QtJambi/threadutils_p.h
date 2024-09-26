@@ -48,7 +48,7 @@ typedef QExplicitlySharedDataPointer<EventDispatcherCheck> EventDispatcherCheckP
 class EventDispatcherCheck : public QSharedData {
 public:
     struct Data{
-        jobject m_jthreadObject;
+        jweak m_jthreadObject;
         jint m_hash;
         QPointer<QThread> m_thread;
         QWeakPointer<QtJambiLink> m_wlink;
@@ -73,7 +73,7 @@ public:
     QThreadUserData(JNIEnv *env, jobject threadGroup);
     ~QThreadUserData() override;
     QTJAMBI_OBJECTUSERDATA_ID_DECL
-    void initialize(QThread* thread);
+    void initialize(QThread* thread, bool isAdopted = false);
     void deleteAtThreadEnd(QObject* object);
     void doAtThreadEnd(QtJambiUtils::Runnable&& action);
     inline bool isDaemon() const { return m_isDaemon; }
@@ -97,7 +97,7 @@ public:
     };
     static Result ensureThreadUserDataLocked(QThread* thread);
 private:
-    void cleanup();
+    void cleanup(bool isInDestructor);
     QSharedPointer<QObject> m_threadDeleter;
     QList<QPointer<QObject>> m_objectsForDeletion;
     QList<QtJambiUtils::Runnable>* m_finalActions;
@@ -110,9 +110,10 @@ private:
     QMetaObject::Connection m_finishedConnection;
 
     enum ThreadType{
+        DefaultThread,
         ProcessMainThread,
         VirtualMainThread,
-        NoMainThread
+        AdoptedThread
     };
 
     ThreadType m_threadType;

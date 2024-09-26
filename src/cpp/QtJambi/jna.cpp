@@ -318,7 +318,7 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                         __jni_env->ReleaseStringUTFChars(jstring(val), chars);
                         void* ptr = byteArray;
                         if(argPointerOrReference==0){
-                            arg = DataJBuffer(__jni_env, ptr, jsize(sizeof(QByteArray))).take();
+                            arg = LocalDataJBuffer(__jni_env, ptr, jsize(sizeof(QByteArray))).take();
                             cleaners.append(Cleanup{[ptr](){ operator delete (ptr); }});
                         }else{
                             arg = Java::JNA::Pointer::newInstance(__jni_env, jlong(ptr));
@@ -330,7 +330,7 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                         QStringView* strg = new QStringView(chars);
                         void* ptr = strg;
                         if(argPointerOrReference==0){
-                            arg = DataJBuffer(__jni_env, ptr, jsize(sizeof(QStringView))).take();
+                            arg = LocalDataJBuffer(__jni_env, ptr, jsize(sizeof(QStringView))).take();
                             cleaners.append(Cleanup{[ptr, val, chars, __jni_env](){ operator delete (ptr); __jni_env->ReleaseStringChars(jstring(val), chars); }});
                         }else{
                             arg = Java::JNA::Pointer::newInstance(__jni_env, jlong(ptr));
@@ -343,7 +343,7 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                     *string = qtjambi_cast<QString>(__jni_env, val);
                     void* ptr = string;
                     if(argPointerOrReference==0){
-                        arg = DataJBuffer(__jni_env, ptr, jsize(sizeof(QString))).take();
+                        arg = LocalDataJBuffer(__jni_env, ptr, jsize(sizeof(QString))).take();
                         cleaners.append(Cleanup{[ptr](){ operator delete (ptr); }});
                     }else{
                         arg = Java::JNA::Pointer::newInstance(__jni_env, jlong(ptr));
@@ -814,7 +814,7 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                                         _argMetaType.reset(argMetaType = nullptr);
                                     if(argMetaType){
                                         ptr = argMetaType->create(ptr);
-                                        arg = DataJBuffer(__jni_env, ptr, jsize(size)).take();
+                                        arg = LocalDataJBuffer(__jni_env, ptr, jsize(size)).take();
                                         cleaners.append(Cleanup{[ptr](){ operator delete (ptr); }});
                                     }else{
                                         Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassName(__jni_env, argClassType).replace(QLatin1Char('$'), QLatin1Char('.'))) QTJAMBI_STACKTRACEINFO );
@@ -851,7 +851,7 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                                         }
                                     }
                                     if(argPointerOrReference==0 && !isReferenceMetaType){
-                                        arg = DataJBuffer(__jni_env, ptr, jsize(size)).take();
+                                        arg = LocalDataJBuffer(__jni_env, ptr, jsize(size)).take();
                                         cleaners.append(Cleanup{[ptr](){ operator delete (ptr); }});
                                     }else{
                                         arg = Java::JNA::Pointer::newInstance(__jni_env, ptr);
@@ -880,7 +880,7 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                                         else
                                             ptr = operator new(size);
                                         if(QtJambiAPI::convertJavaToNative(__jni_env, *typeId, val, ptr)){
-                                            arg = DataJBuffer(__jni_env, ptr, jsize(size)).take();
+                                            arg = LocalDataJBuffer(__jni_env, ptr, jsize(size)).take();
                                             cleaners.append(Cleanup{[ptr](){ operator delete (ptr); }});
                                         }else{
                                             Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassName(__jni_env, argClassType).replace(QLatin1Char('$'), QLatin1Char('.'))) QTJAMBI_STACKTRACEINFO );
@@ -960,7 +960,7 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                                     ptr = link->pointer();
                                     if(argPointerOrReference==0 && !isReferenceMetaType){
                                         ptr = argMetaType->create(ptr);
-                                        arg = DataJBuffer(__jni_env, ptr, jsize(size)).take();
+                                        arg = LocalDataJBuffer(__jni_env, ptr, jsize(size)).take();
                                         cleaners.append(Cleanup{[ptr](){ operator delete (ptr); }});
                                     }else{
                                         arg = Java::JNA::Pointer::newInstance(__jni_env, ptr);
@@ -989,7 +989,7 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                                         }
                                     }
                                     if(argPointerOrReference==0 && !isReferenceMetaType){
-                                        arg = DataJBuffer(__jni_env, ptr, jsize(size)).take();
+                                        arg = LocalDataJBuffer(__jni_env, ptr, jsize(size)).take();
                                         cleaners.append(Cleanup{[ptr](){ operator delete (ptr); }});
                                     }else{
                                         arg = Java::JNA::Pointer::newInstance(__jni_env, ptr);
@@ -1003,7 +1003,7 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                                     argMetaType = &plink->metaType();
                                     if(argMetaType->isValid()){
                                         ptr = argMetaType->create(link->pointer());
-                                        arg = DataJBuffer(__jni_env, ptr, jsize(size)).take();
+                                        arg = LocalDataJBuffer(__jni_env, ptr, jsize(size)).take();
                                         cleaners.append(Cleanup{[ptr](){ operator delete (ptr); }});
                                     }else{
                                         Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassName(__jni_env, argClassType).replace(QLatin1Char('$'), QLatin1Char('.'))) QTJAMBI_STACKTRACEINFO );
@@ -1712,10 +1712,11 @@ jobject CoreAPI::invokeFunctionPointer(JNIEnv * __jni_env, QFunctionPointer __qt
         short alignment = 1;
         const SuperTypeInfos infos = SuperTypeInfos::fromClass(__jni_env, returnClassType);
         if(infos.isEmpty()){
-            if(!returnMetaType)
-                _returnMetaType.reset(returnMetaType = new QMetaType(registerMetaType(__jni_env, returnClassType, false, false)));
-            if(!returnMetaType->isValid())
-                _returnMetaType.reset(returnMetaType = nullptr);
+            if(!returnMetaType){
+                int metaTypeId = registerMetaType(__jni_env, returnClassType, false, false);
+                if(metaTypeId!=0)
+                    _returnMetaType.reset(returnMetaType = new QMetaType(metaTypeId));
+            }
             if(returnMetaType){
                 returnTypeId = getTypeByMetaType(*returnMetaType);
                 size = size_t(returnMetaType->sizeOf());
@@ -1741,10 +1742,11 @@ jobject CoreAPI::invokeFunctionPointer(JNIEnv * __jni_env, QFunctionPointer __qt
                                 Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassName(__jni_env, returnClassType).replace(QLatin1Char('$'), QLatin1Char('.'))) QTJAMBI_STACKTRACEINFO );
                             __ffi_type.size = size;
                             __ffi_type.alignment = alignment;
-                            if(!returnMetaType)
-                                _returnMetaType.reset(returnMetaType = new QMetaType(registeredMetaTypeID(*returnTypeId)));
-                            if(!returnMetaType->isValid())
-                                _returnMetaType.reset(returnMetaType = nullptr);
+                            if(!returnMetaType){
+                                int metaTypeId = registeredMetaTypeID(*returnTypeId);
+                                if(metaTypeId!=0)
+                                    _returnMetaType.reset(returnMetaType = new QMetaType(metaTypeId));
+                            }
                         }else{
                             jnaReturnType = Java::JNA::Pointer::getClass(__jni_env);
                         }
@@ -1769,19 +1771,21 @@ jobject CoreAPI::invokeFunctionPointer(JNIEnv * __jni_env, QFunctionPointer __qt
                         Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassName(__jni_env, returnClassType).replace(QLatin1Char('$'), QLatin1Char('.'))) QTJAMBI_STACKTRACEINFO );
                     __ffi_type.size = size;
                     __ffi_type.alignment = alignment;
-                    if(!returnMetaType)
-                        _returnMetaType.reset(returnMetaType = new QMetaType(registeredMetaTypeID(*returnTypeId)));
-                    if(!returnMetaType->isValid())
-                        _returnMetaType.reset(returnMetaType = nullptr);
+                    if(!returnMetaType){
+                        int metaTypeId = registeredMetaTypeID(*returnTypeId);
+                        if(metaTypeId!=0)
+                            _returnMetaType.reset(returnMetaType = new QMetaType(metaTypeId));
+                    }
                 }else{
                     jnaReturnType = Java::JNA::Pointer::getClass(__jni_env);
                 }
                 break;
             default:
-                if(!returnMetaType)
-                    _returnMetaType.reset(returnMetaType = new QMetaType(registeredMetaTypeID(*returnTypeId)));
-                if(!returnMetaType->isValid())
-                    _returnMetaType.reset(returnMetaType = nullptr);
+                if(!returnMetaType){
+                    int metaTypeId = registeredMetaTypeID(*returnTypeId);
+                    if(metaTypeId!=0)
+                        _returnMetaType.reset(returnMetaType = new QMetaType(metaTypeId));
+                }
                 if(returnMetaType){
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                     if(returnMetaType->name().endsWith("*")
@@ -1896,7 +1900,7 @@ jobject CoreAPI::invokeFunctionPointer(JNIEnv * __jni_env, QFunctionPointer __qt
                 if(isAllocated)
                     operator delete(ptr);
             }
-        }else if(returnMetaType){
+        }else if(returnMetaType && !result){
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
             result = QtJambiAPI::convertQVariantToJavaObject(__jni_env, QVariant(returnMetaType->id(), ptr));
 #else
@@ -3347,7 +3351,7 @@ jobject CoreAPI::castFunctionPointer(JNIEnv * env, jobject function, jclass func
         if(DeletablePointerToObjectLink* plink = dynamic_cast<DeletablePointerToObjectLink*>(link.get())){
             if(plink->deleterFunction()==&delete_callback_pointer){
                 QFunctionPointer* ptr = nullptr;
-                if(const QSharedPointer<QtJambiLink>& link = QtJambiLink::findLinkForJavaInterface(env, function)){
+                if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, function)){
                     ptr = reinterpret_cast<QFunctionPointer*>(link->pointer());
                     if(ptr && *ptr){
                         if(Java::QtCore::QFunctionPointer::isSameClass(env, functionalInterface)){

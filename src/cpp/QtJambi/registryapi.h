@@ -248,6 +248,17 @@ struct MetaTypeStreamOperatorsHelper<T, true>{
     }
 };
 
+#ifdef QLINKEDLIST_H
+template<typename T>
+struct MetaTypeStreamOperatorsHelper<QLinkedList<T>, true>{
+    static void registerStreamOperators(int){}
+};
+template<typename T>
+struct MetaTypeComparatorHelper<QLinkedList<T>, false, false, true>{
+    static bool registerComparators(int){return false;}
+};
+#endif
+
 template<typename T,
          bool isSupported = !QMetaTypeId2<T>::IsBuiltIn && QMetaTypeId2<T>::Defined,
          bool hasDebugStream = supports_debugstream<T>::value>
@@ -365,7 +376,8 @@ QTJAMBI_EXPORT int registerMetaType( const std::type_info& typeId,
 #endif
                                      QMetaType::TypeFlags flags,
                                      const QMetaObject *metaObject,
-                                     AfterRegistrationFunction afterRegistrationFunction);
+                                     AfterRegistrationFunction afterRegistrationFunction,
+                                     AbstractContainerAccess* access = nullptr);
 
 template<typename T>
 int registerMetaTypeNoMetaObject(const char *typeName,
@@ -460,8 +472,8 @@ int registerMetaTypeNoMetaObject(const char *typeName)
 {
     return registerMetaTypeNoMetaObject<T>(typeName,
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                               QtMetaTypePrivate::QMetaTypeFunctionHelper<T>::Destruct,
-                               QtMetaTypePrivate::QMetaTypeFunctionHelper<T>::Construct
+                                QtMetaTypePrivate::QMetaTypeFunctionHelper<T,std::is_arithmetic<T>::value || std::is_enum<T>::value || std::is_pointer<T>::value || QtJambiPrivate::is_destructible<T>::value>::Destruct,
+                                QtMetaTypePrivate::QMetaTypeFunctionHelper<T,std::is_arithmetic<T>::value || std::is_enum<T>::value || std::is_pointer<T>::value || QtJambiPrivate::is_default_constructible<T>::value>::Construct
 #else
                                QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::defaultCtr,
                                QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::copyCtr,
@@ -742,6 +754,73 @@ int registerMetaType(const QByteArray& typeName,
 }
 
 template<typename T>
+int registerMetaType(const QByteArray& typeName,
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                     QMetaType::Destructor destructor,
+                     QMetaType::Constructor constructor,
+#else
+                     QtPrivate::QMetaTypeInterface::DefaultCtrFn defaultCtr,
+                     QtPrivate::QMetaTypeInterface::CopyCtrFn copyCtr,
+                     QtPrivate::QMetaTypeInterface::MoveCtrFn moveCtr,
+                     QtPrivate::QMetaTypeInterface::DtorFn dtor,
+                     QtPrivate::QMetaTypeInterface::EqualsFn equals,
+                     QtPrivate::QMetaTypeInterface::LessThanFn lessThan,
+                     QtPrivate::QMetaTypeInterface::DebugStreamFn debugStream,
+                     QtPrivate::QMetaTypeInterface::DataStreamOutFn dataStreamOutFn,
+                     QtPrivate::QMetaTypeInterface::DataStreamInFn dataStreamInFn,
+#endif
+                     AbstractContainerAccess* access)
+{
+    registerOperators<T>();
+    return registerMetaType(typeid(T),
+                            typeid(typename std::remove_pointer<T>::type),
+                            typeName,
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                            destructor,
+                            constructor,
+#else
+                            defaultCtr,
+                            copyCtr,
+                            moveCtr,
+                            dtor,
+                            equals,
+                            lessThan,
+                            debugStream,
+                            dataStreamOutFn,
+                            dataStreamInFn,
+                            QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::legacyRegisterOp,
+#endif
+                            sizeof(T),
+                            alignof(T),
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+                            QtPrivate::BuiltinMetaType<T>::value,
+#endif
+                            QMetaType::TypeFlags(QtPrivate::QMetaTypeTypeFlags<T>::Flags),
+                            QtPrivate::MetaObjectForType<T>::value(),
+                            [](int id){
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                                QtJambiPrivate::MetaTypeStreamOperatorsHelper<T>::registerStreamOperators(id);
+                                QtJambiPrivate::MetaTypeComparatorHelper<T>::registerComparators(id);
+                                QtJambiPrivate::MetaTypeDebugStreamOperatorHelper<T>::registerDebugStreamOperator(id);
+                                QtPrivate::SequentialContainerConverterHelper<T>::registerConverter(id);
+                                QtPrivate::AssociativeContainerConverterHelper<T>::registerConverter(id);
+                                QtPrivate::MetaTypePairHelper<T>::registerConverter(id);
+                                QtPrivate::MetaTypeSmartPointerHelper<T>::registerConverter(id);
+#else
+                                Q_UNUSED(id)
+                                QtPrivate::SequentialContainerTransformationHelper<T>::registerConverter();
+                                QtPrivate::AssociativeContainerTransformationHelper<T>::registerConverter();
+                                QtPrivate::SequentialContainerTransformationHelper<T>::registerMutableView();
+                                QtPrivate::AssociativeContainerTransformationHelper<T>::registerMutableView();
+                                QtPrivate::MetaTypePairHelper<T>::registerConverter();
+                                QtPrivate::MetaTypeSmartPointerHelper<T>::registerConverter();
+#endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                            },
+                            access
+                        );
+}
+
+template<typename T>
 int registerMetaType(const QByteArray& typeName)
 {
     return registerMetaType<T>(typeName,
@@ -760,6 +839,27 @@ int registerMetaType(const QByteArray& typeName)
                               QtPrivate::QDataStreamOperatorForType<T>::dataStreamIn
 #endif
                             );
+}
+
+template<typename T>
+int registerMetaType(const QByteArray& typeName, AbstractContainerAccess* access)
+{
+    return registerMetaType<T>(typeName,
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                               QtMetaTypePrivate::QMetaTypeFunctionHelper<T>::Destruct,
+                               QtMetaTypePrivate::QMetaTypeFunctionHelper<T>::Construct,
+#else
+                               QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::defaultCtr,
+                               QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::copyCtr,
+                               QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::moveCtr,
+                               QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::dtor,
+                               QtPrivate::QEqualityOperatorForType<T>::equals,
+                               QtPrivate::QLessThanOperatorForType<T>::lessThan,
+                               QtPrivate::QDebugStreamOperatorForType<T>::debugStream,
+                               QtPrivate::QDataStreamOperatorForType<T>::dataStreamOut,
+                               QtPrivate::QDataStreamOperatorForType<T>::dataStreamIn,
+#endif
+                               access);
 }
 
 QTJAMBI_EXPORT void registerContainerAccessFactory(const std::type_info& typeId, NewContainerAccessFunction factory);

@@ -55,8 +55,8 @@ import io.qt.QtUninvokable;
 public final class QAssociativeIterator<Key,T> extends QAssociativeConstIterator<Key,T>{
     
 	@NativeAccess
-    private QAssociativeIterator(QtObject owner) { 
-    	super(owner);
+    private QAssociativeIterator(QPrivateConstructor c, QtObject owner) { 
+    	super(c, owner);
 	}
     
 	/**
@@ -65,13 +65,8 @@ public final class QAssociativeIterator<Key,T> extends QAssociativeConstIterator
 	 */
     @QtUninvokable
 	public final boolean setValue(T newValue) {
-    	if(!isValid())
-    		return false;
-    	return setValue(QtJambi_LibraryUtilities.internal.nativeId(this), newValue);
+    	return checkedSetValue(newValue);
     }
-    
-    @QtUninvokable
-    static native <T> boolean setValue(long __this__nativeId, T newValue);
     
 	/**
 	 * Specifies if this type is constant iterator.

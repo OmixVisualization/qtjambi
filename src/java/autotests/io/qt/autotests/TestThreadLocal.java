@@ -42,7 +42,7 @@ public class TestThreadLocal extends ApplicationInitializer{
 		System.out.flush();
 		QThread qThread = QThread.create(PerformanceTests::acquireThreadLocal);
 		qThread.start();
-		qThread.join();
+		qThread.join(2000);
 		System.out.flush();
 		System.out.println("acquireThreadLocal in Java Thread");
 		System.out.flush();
@@ -51,7 +51,7 @@ public class TestThreadLocal extends ApplicationInitializer{
 			PerformanceTests.acquireThreadLocal();
 		});
 		jThread.start();
-		jThread.join();
+		jThread.join(2000);
 	}
 	
 	@Test
@@ -60,7 +60,7 @@ public class TestThreadLocal extends ApplicationInitializer{
 		System.out.flush();
 		QThread qThread = QThread.create(PerformanceTests::acquireQThreadStorage);
 		qThread.start();
-		qThread.join();
+		qThread.join(2000);
 		System.out.flush();
 		System.out.println("acquireQThreadStorage in Java Thread");
 		System.out.flush();
@@ -69,7 +69,7 @@ public class TestThreadLocal extends ApplicationInitializer{
 			PerformanceTests.acquireQThreadStorage();
 		});
 		jThread.start();
-		jThread.join();
+		jThread.join(2000);
 	}
 
     public static void main(String args[]) {

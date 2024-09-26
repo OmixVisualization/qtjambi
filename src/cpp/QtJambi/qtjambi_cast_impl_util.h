@@ -163,103 +163,493 @@ struct is_lightweight_java_type<QVariant> : std::true_type{
 };
 
 template<typename O>
-struct is_jni_type : std::false_type{
+struct jni_type{
+    static constexpr bool isValid = false;
+    static constexpr bool isArray = false;
+    static constexpr bool isPrimitiveArray = false;
 };
 
 template<>
-struct is_jni_type<jobject> : std::true_type{
+struct jni_type<jobject>{
+    static constexpr bool isValid = true;
+    static constexpr bool isArray = false;
+    static constexpr bool isPrimitiveArray = false;
 };
 
 template<>
-struct is_jni_type<jthrowable> : std::true_type{
+struct jni_type<jthrowable>{
+    static constexpr bool isValid = true;
+    static constexpr bool isArray = false;
+    static constexpr bool isPrimitiveArray = false;
 };
 
 template<>
-struct is_jni_type<jstring> : std::true_type{
+struct jni_type<jstring>{
+    static constexpr bool isValid = true;
+    static constexpr bool isArray = false;
+    static constexpr bool isPrimitiveArray = false;
 };
 
 template<>
-struct is_jni_type<jclass> : std::true_type{
+struct jni_type<jclass>{
+    static constexpr bool isValid = true;
+    static constexpr bool isArray = false;
+    static constexpr bool isPrimitiveArray = false;
 };
 
 template<>
-struct is_jni_type<jarray> : std::true_type{
+struct jni_type<jarray>{
+    static constexpr bool isValid = true;
+    static constexpr bool isArray = true;
+    static constexpr bool isPrimitiveArray = false;
 };
 
 template<>
-struct is_jni_type<jobjectArray> : std::true_type{
+struct jni_type<jobjectArray>{
+    static constexpr bool isValid = true;
+    static constexpr bool isArray = true;
+    static constexpr bool isPrimitiveArray = false;
+    static constexpr bool isIntegerArray = false;
+    static constexpr bool isFloatingPointArray = false;
+    typedef jobject ElementType;
 };
 
 template<>
-struct is_jni_type<jintArray> : std::true_type{
+struct jni_type<jintArray>{
+    static constexpr bool isValid = true;
+    static constexpr bool isArray = true;
+    static constexpr bool isPrimitiveArray = true;
+    static constexpr bool isIntegerArray = true;
+    static constexpr bool isFloatingPointArray = false;
+    static constexpr size_t primitiveSize = sizeof(jint);
+    static constexpr auto converterFunction = QtJambiAPI::toJIntArray;
+    typedef jint ElementType;
+
+    template<typename T, bool isConst = std::is_const<T>::value>
+    struct NativeFactory{
+    };
+    template<typename T, bool isConst = std::is_const<T>::value, bool isUnsigned = std::is_unsigned<T>::value>
+    struct JavaFactory{
+    };
+    template<typename T>
+    struct NativeFactory<T,true>{
+        typedef JConstIntArrayPointer type;
+    };
+    template<typename T>
+    struct NativeFactory<T,false>{
+        typedef JIntArrayPointer type;
+    };
+    template<typename T>
+    struct JavaFactory<T,true,false>{
+        typedef ConstInt32PointerArray type;
+    };
+    template<typename T>
+    struct JavaFactory<T,true,true>{
+        typedef ConstUInt32PointerArray type;
+    };
+    template<typename T>
+    struct JavaFactory<T,false,false>{
+        typedef Int32PointerArray type;
+    };
+    template<typename T>
+    struct JavaFactory<T,false,true>{
+        typedef UInt32PointerArray type;
+    };
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    template<bool isUnsigned>
+    struct JavaFactory<char32_t,true,isUnsigned>{
+        typedef ConstChar32PointerArray type;
+    };
+    template<bool isUnsigned>
+    struct JavaFactory<char32_t,false,isUnsigned>{
+        typedef Char32PointerArray type;
+    };
+#endif
 };
 
 template<>
-struct is_jni_type<jbyteArray> : std::true_type{
+struct jni_type<jbyteArray>{
+    static constexpr bool isValid = true;
+    static constexpr bool isArray = true;
+    static constexpr bool isPrimitiveArray = true;
+    static constexpr bool isIntegerArray = true;
+    static constexpr bool isFloatingPointArray = false;
+    static constexpr size_t primitiveSize = sizeof(jbyte);
+    static constexpr auto converterFunction = QtJambiAPI::toJByteArray;
+    typedef jbyte ElementType;
+
+    template<typename T, bool isConst = std::is_const<T>::value>
+    struct NativeFactory{
+    };
+    template<typename T, bool isConst = std::is_const<T>::value, bool isUnsigned = std::is_unsigned<T>::value>
+    struct JavaFactory{
+    };
+    template<typename T>
+    struct NativeFactory<T,true>{
+        typedef JConstByteArrayPointer type;
+    };
+    template<typename T>
+    struct NativeFactory<T,false>{
+        typedef JByteArrayPointer type;
+    };
+    template<typename T>
+    struct JavaFactory<T,true,false>{
+        typedef typename std::conditional<std::is_same<T,char>::value, ConstCharPointerArray, ConstInt8PointerArray>::type type;
+    };
+    template<typename T>
+    struct JavaFactory<T,true,true>{
+        typedef ConstUInt8PointerArray type;
+    };
+    template<typename T>
+    struct JavaFactory<T,false,false>{
+        typedef typename std::conditional<std::is_same<T,char>::value, CharPointerArray, Int8PointerArray>::type type;
+    };
+    template<typename T>
+    struct JavaFactory<T,false,true>{
+        typedef UInt8PointerArray type;
+    };
 };
 
 template<>
-struct is_jni_type<jshortArray> : std::true_type{
+struct jni_type<jshortArray>{
+    static constexpr bool isValid = true;
+    static constexpr bool isArray = true;
+    static constexpr bool isPrimitiveArray = true;
+    static constexpr bool isIntegerArray = true;
+    static constexpr bool isFloatingPointArray = false;
+    static constexpr size_t primitiveSize = sizeof(jshort);
+    static constexpr auto converterFunction = QtJambiAPI::toJShortArray;
+    typedef jshort ElementType;
+
+    template<typename T, bool isConst = std::is_const<T>::value>
+    struct NativeFactory{
+    };
+    template<typename T, bool isConst = std::is_const<T>::value, bool isUnsigned = std::is_unsigned<T>::value>
+    struct JavaFactory{
+    };
+    template<typename T>
+    struct NativeFactory<T,true>{
+        typedef JConstShortArrayPointer type;
+    };
+    template<typename T>
+    struct NativeFactory<T,false>{
+        typedef JShortArrayPointer type;
+    };
+    template<typename T>
+    struct JavaFactory<T,true,false>{
+        typedef ConstInt16PointerArray type;
+    };
+    template<typename T>
+    struct JavaFactory<T,true,true>{
+        typedef ConstUInt16PointerArray type;
+    };
+    template<typename T>
+    struct JavaFactory<T,false,false>{
+        typedef Int16PointerArray type;
+    };
+    template<typename T>
+    struct JavaFactory<T,false,true>{
+        typedef UInt16PointerArray type;
+    };
 };
 
 template<>
-struct is_jni_type<jlongArray> : std::true_type{
+struct jni_type<jlongArray>{
+    static constexpr bool isValid = true;
+    static constexpr bool isArray = true;
+    static constexpr bool isPrimitiveArray = true;
+    static constexpr bool isIntegerArray = true;
+    static constexpr bool isFloatingPointArray = false;
+    static constexpr size_t primitiveSize = sizeof(jlong);
+    static constexpr auto converterFunction = QtJambiAPI::toJLongArray;
+    typedef jlong ElementType;
+
+    template<typename T, bool isConst = std::is_const<T>::value>
+    struct NativeFactory{
+    };
+    template<typename T, bool isConst = std::is_const<T>::value, bool isUnsigned = std::is_unsigned<T>::value>
+    struct JavaFactory{
+    };
+    template<typename T>
+    struct NativeFactory<T,true>{
+        typedef JConstLongArrayPointer type;
+    };
+    template<typename T>
+    struct NativeFactory<T,false>{
+        typedef JLongArrayPointer type;
+    };
+    template<typename T>
+    struct JavaFactory<T,true,false>{
+        typedef ConstInt64PointerArray type;
+    };
+    template<typename T>
+    struct JavaFactory<T,true,true>{
+        typedef ConstUInt64PointerArray type;
+    };
+    template<typename T>
+    struct JavaFactory<T,false,false>{
+        typedef Int64PointerArray type;
+    };
+    template<typename T>
+    struct JavaFactory<T,false,true>{
+        typedef UInt64PointerArray type;
+    };
 };
 
 template<>
-struct is_jni_type<jcharArray> : std::true_type{
+struct jni_type<jcharArray>{
+    static constexpr bool isValid = true;
+    static constexpr bool isArray = true;
+    static constexpr bool isPrimitiveArray = true;
+    static constexpr bool isIntegerArray = false;
+    static constexpr bool isFloatingPointArray = false;
+    static constexpr size_t primitiveSize = sizeof(jchar);
+    static constexpr auto converterFunction = QtJambiAPI::toJCharArray;
+    typedef jchar ElementType;
+
+    template<typename T, bool isConst = std::is_const<T>::value>
+    struct NativeFactory{
+    };
+    template<typename T, bool isConst = std::is_const<T>::value>
+    struct JavaFactory{
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+        typedef typename std::conditional<std::is_same<T,QChar>::value,
+                                          typename std::conditional<isConst, ConstQCharPointerArray, QCharPointerArray>::type,
+                                          typename std::conditional<std::is_same<T,char16_t>::value,
+                                                                    typename std::conditional<isConst, ConstChar16PointerArray, Char16PointerArray>::type,
+                                                                    typename std::conditional<isConst, ConstWCharPointerArray, WCharPointerArray>::type
+                                                                    >::type
+                                          >::type type;
+#else
+        typedef typename std::conditional<std::is_same<T,QChar>::value,
+                                          typename std::conditional<isConst, ConstQCharPointerArray, QCharPointerArray>::type,
+                                          typename std::conditional<isConst, ConstWCharPointerArray, WCharPointerArray>::type>::type type;
+#endif
+    };
+    template<typename T>
+    struct NativeFactory<T,true>{
+        typedef JConstCharArrayPointer type;
+    };
+    template<typename T>
+    struct NativeFactory<T,false>{
+        typedef JCharArrayPointer type;
+    };
 };
 
 template<>
-struct is_jni_type<jbooleanArray> : std::true_type{
+struct jni_type<jbooleanArray>{
+    static constexpr bool isValid = true;
+    static constexpr bool isArray = true;
+    static constexpr bool isPrimitiveArray = true;
+    static constexpr bool isIntegerArray = false;
+    static constexpr bool isFloatingPointArray = false;
+    static constexpr size_t primitiveSize = sizeof(jboolean);
+    static constexpr auto converterFunction = QtJambiAPI::toJBooleanArray;
+    typedef jboolean ElementType;
+
+    template<typename T, bool isConst = std::is_const<T>::value>
+    struct NativeFactory{
+    };
+    template<typename T, bool isConst = std::is_const<T>::value>
+    struct JavaFactory{
+    };
+    template<typename T>
+    struct NativeFactory<T,true>{
+        typedef JConstBooleanArrayPointer type;
+    };
+    template<typename T>
+    struct NativeFactory<T,false>{
+        typedef JBooleanArrayPointer type;
+    };
+    template<typename T>
+    struct JavaFactory<T,true>{
+        typedef typename std::conditional<std::is_same<T,uchar>::value, ConstBool2PointerArray, ConstBoolPointerArray>::type type;
+    };
+    template<typename T>
+    struct JavaFactory<T,false>{
+        typedef typename std::conditional<std::is_same<T,uchar>::value, Bool2PointerArray, BoolPointerArray>::type type;
+    };
 };
 
 template<>
-struct is_jni_type<jdoubleArray> : std::true_type{
+struct jni_type<jdoubleArray>{
+    static constexpr bool isValid = true;
+    static constexpr bool isArray = true;
+    static constexpr bool isPrimitiveArray = true;
+    static constexpr bool isIntegerArray = false;
+    static constexpr bool isFloatingPointArray = true;
+    static constexpr size_t primitiveSize = sizeof(jdouble);
+    static constexpr auto converterFunction = QtJambiAPI::toJDoubleArray;
+    typedef jdouble ElementType;
+
+    template<typename T, bool isConst = std::is_const<T>::value>
+    struct NativeFactory{
+    };
+    template<typename T, bool isConst = std::is_const<T>::value>
+    struct JavaFactory{
+    };
+    template<typename T>
+    struct NativeFactory<T,true>{
+        typedef JConstDoubleArrayPointer type;
+    };
+    template<typename T>
+    struct NativeFactory<T,false>{
+        typedef JDoubleArrayPointer type;
+    };
+    template<typename T>
+    struct JavaFactory<T,true>{
+        typedef ConstDoublePointerArray type;
+    };
+    template<typename T>
+    struct JavaFactory<T,false>{
+        typedef DoublePointerArray type;
+    };
 };
 
 template<>
-struct is_jni_type<jfloatArray> : std::true_type{
+struct jni_type<jfloatArray>{
+    static constexpr bool isValid = true;
+    static constexpr bool isArray = true;
+    static constexpr bool isPrimitiveArray = true;
+    static constexpr bool isFloatingPointArray = true;
+    static constexpr size_t primitiveSize = sizeof(jfloat);
+    static constexpr auto converterFunction = QtJambiAPI::toJFloatArray;
+    typedef jfloat ElementType;
+
+    template<typename T, bool isConst = std::is_const<T>::value>
+    struct NativeFactory{
+    };
+    template<typename T, bool isConst = std::is_const<T>::value>
+    struct JavaFactory{
+    };
+    template<typename T>
+    struct NativeFactory<T,true>{
+        typedef JConstFloatArrayPointer type;
+    };
+    template<typename T>
+    struct NativeFactory<T,false>{
+        typedef JFloatArrayPointer type;
+    };
+    template<typename T>
+    struct JavaFactory<T,true>{
+        typedef ConstFloatPointerArray type;
+    };
+    template<typename T>
+    struct JavaFactory<T,false>{
+        typedef FloatPointerArray type;
+    };
 };
 
 template<typename O>
-struct is_jni_array_type : std::false_type{
+struct is_jni_array_type : std::conditional<jni_type<O>::isArray, std::true_type, std::false_type>::type {
+};
+
+template<typename O>
+struct is_jni_type : std::conditional<jni_type<O>::isValid, std::true_type, std::false_type>::type {
+};
+
+template<typename T, bool isIntegral = std::is_integral<T>::value, bool isFP = std::is_floating_point<T>::value, size_t size = sizeof(T)>
+struct jni_type_decider_impl{
+    static constexpr bool isPrimitive = false;
+    typedef jobject JType;
+    typedef jobjectArray JArrayType;
+    static constexpr auto readJavaOptional = QtJambiAPI::readJavaOptional;
+    static constexpr auto newJavaOptional = QtJambiAPI::newJavaOptional;
+};
+
+template<typename T>
+struct jni_type_decider : jni_type_decider_impl<typename std::remove_cv<T>::type>{
 };
 
 template<>
-struct is_jni_array_type<jobjectArray> : std::true_type{
+struct jni_type_decider_impl<bool, std::is_integral<bool>::value, std::is_floating_point<bool>::value, sizeof(bool)>{
+    static constexpr bool isPrimitive = true;
+    typedef jboolean JType;
+    typedef jbooleanArray JArrayType;
+    static constexpr auto readJavaOptional = QtJambiAPI::readJavaOptional;
+    static constexpr auto newJavaOptional = QtJambiAPI::newJavaOptional;
 };
 
 template<>
-struct is_jni_array_type<jintArray> : std::true_type{
+struct jni_type_decider_impl<QChar, std::is_integral<QChar>::value, std::is_floating_point<QChar>::value, sizeof(jchar)>{
+    static constexpr bool isPrimitive = true;
+    typedef jchar JType;
+    typedef jcharArray JArrayType;
+    static constexpr auto readJavaOptional = QtJambiAPI::readJavaOptional;
+    static constexpr auto newJavaOptional = QtJambiAPI::newJavaOptional;
 };
 
 template<>
-struct is_jni_array_type<jbyteArray> : std::true_type{
+struct jni_type_decider_impl<wchar_t, std::is_integral<wchar_t>::value, std::is_floating_point<wchar_t>::value, sizeof(jchar)>{
+    static constexpr bool isPrimitive = true;
+    typedef jchar JType;
+    typedef jcharArray JArrayType;
+    static constexpr auto readJavaOptional = QtJambiAPI::readJavaOptional;
+    static constexpr auto newJavaOptional = QtJambiAPI::newJavaOptional;
 };
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 template<>
-struct is_jni_array_type<jshortArray> : std::true_type{
+struct jni_type_decider_impl<char16_t, std::is_integral<char16_t>::value, std::is_floating_point<char16_t>::value, sizeof(jchar)>{
+    static constexpr bool isPrimitive = true;
+    typedef jchar JType;
+    typedef jcharArray JArrayType;
+    static constexpr auto readJavaOptional = QtJambiAPI::readJavaOptional;
+    static constexpr auto newJavaOptional = QtJambiAPI::newJavaOptional;
+};
+#endif
+
+template<typename T>
+struct jni_type_decider_impl<T, true, false, sizeof(jbyte)>{
+    static constexpr bool isPrimitive = true;
+    typedef jbyte JType;
+    typedef jbyteArray JArrayType;
+    static constexpr auto readJavaOptional = QtJambiAPI::readJavaOptional;
+    static constexpr auto newJavaOptional = QtJambiAPI::newJavaOptional;
 };
 
-template<>
-struct is_jni_array_type<jlongArray> : std::true_type{
+template<typename T>
+struct jni_type_decider_impl<T, true, false, sizeof(jshort)>{
+    static constexpr bool isPrimitive = true;
+    typedef jshort JType;
+    typedef jshortArray JArrayType;
+    static constexpr auto readJavaOptional = QtJambiAPI::readJavaOptional;
+    static constexpr auto newJavaOptional = QtJambiAPI::newJavaOptional;
 };
 
-template<>
-struct is_jni_array_type<jcharArray> : std::true_type{
+template<typename T>
+struct jni_type_decider_impl<T, true, false, sizeof(jint)>{
+    static constexpr bool isPrimitive = true;
+    typedef jint JType;
+    typedef jintArray JArrayType;
+    static constexpr auto readJavaOptional = QtJambiAPI::readJavaOptionalInt;
+    static constexpr auto newJavaOptional = QtJambiAPI::newJavaOptionalInt;
 };
 
-template<>
-struct is_jni_array_type<jbooleanArray> : std::true_type{
+template<typename T>
+struct jni_type_decider_impl<T, true, false, sizeof(jlong)>{
+    typedef jlong JType;
+    typedef jlongArray JArrayType;
+    static constexpr auto readJavaOptional = QtJambiAPI::readJavaOptionalLong;
+    static constexpr auto newJavaOptional = QtJambiAPI::newJavaOptionalLong;
 };
 
-template<>
-struct is_jni_array_type<jdoubleArray> : std::true_type{
+template<typename T>
+struct jni_type_decider_impl<T, false, true, sizeof(jdouble)>{
+    static constexpr bool isPrimitive = true;
+    typedef jdouble JType;
+    typedef jdoubleArray JArrayType;
+    static constexpr auto readJavaOptional = QtJambiAPI::readJavaOptionalDouble;
+    static constexpr auto newJavaOptional = QtJambiAPI::newJavaOptionalDouble;
 };
 
-template<>
-struct is_jni_array_type<jfloatArray> : std::true_type{
+template<typename T>
+struct jni_type_decider_impl<T, false, true, sizeof(jfloat)>{
+    static constexpr bool isPrimitive = true;
+    typedef jfloat JType;
+    typedef jfloatArray JArrayType;
+    static constexpr auto readJavaOptional = QtJambiAPI::readJavaOptional;
+    static constexpr auto newJavaOptional = QtJambiAPI::newJavaOptional;
 };
 
 template<bool is_reference,typename O>
@@ -651,6 +1041,11 @@ struct qtjambi_ownership_decider<K,true,false>{
     {
         QtJambiAPI::setCppOwnershipForTopLevelObject(env, qo);
     }
+};
+
+template<typename Out>
+struct qtjambi_construct_from_argument{
+    typedef Out create;
 };
 
 } // namespace QtJambiPrivate

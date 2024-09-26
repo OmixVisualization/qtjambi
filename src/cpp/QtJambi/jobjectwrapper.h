@@ -102,6 +102,7 @@ private:
     void* array();
     void commitArray();
     jsize arrayLength() const;
+    void swap(JObjectWrapper& other);
     QExplicitlySharedDataPointer<JObjectWrapperData> m_data;
     friend class JEnumWrapper;
     friend class JMapWrapper;
@@ -124,6 +125,9 @@ private:
     friend JArrayAccessRef<jboolean>;
     friend JArrayAccessRef<jdouble>;
     friend JArrayAccessRef<jfloat>;
+    friend class RCSet;
+    friend class RCMap;
+    friend class RCMultiMap;
 };
 Q_DECLARE_METATYPE(JObjectWrapper)
 

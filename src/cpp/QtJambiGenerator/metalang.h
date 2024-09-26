@@ -233,6 +233,7 @@ class MetaType {
             IteratorPattern,
             SmartPointerPattern,
             InitializerListPattern,
+            QSpanPattern,
             QVariantPattern,
             JObjectWrapperPattern,
             ArrayPattern,
@@ -285,6 +286,8 @@ class MetaType {
         // returns true if the typs is used as a non complex primitive, no & or *'s
         bool isPrimitive() const { return m_pattern == PrimitivePattern; }
 
+        bool isPrimitiveChar() const { return isQChar() && m_type_entry && m_type_entry->isQChar(); }
+
         bool isNullPtr() const { return m_pattern == NullptrPattern; }
 
         // returns true if the type is used as an enum
@@ -307,6 +310,8 @@ class MetaType {
 
         // returns true if the type is used as an initializer list
         bool isInitializerList() const { return m_pattern == InitializerListPattern; }
+
+        bool isQSpan() const { return m_pattern == QSpanPattern; }
 
         // returns true if the type is used as a value type (X or const X &)
         bool isValue() const { return m_pattern == ValuePattern; }
@@ -470,24 +475,26 @@ class MetaArgument : public MetaVariable {
         MetaArgument() : m_argument_index(0) { }
         virtual ~MetaArgument(){}
 
-        const QString& defaultValueExpression() const { return m_expression; }
-        void setDefaultValueExpression(const QString &expr) { m_expression = expr; }
+        inline const QString& defaultValueExpression() const { return m_expression; }
+        inline void setDefaultValueExpression(const QString &expr) { m_expression = expr; }
 
-        const QString& originalDefaultValueExpression() const { return m_original_expression; }
-        void setOriginalDefaultValueExpression(const QString &expr) { m_original_expression = expr; }
+        inline const QString& originalDefaultValueExpression() const { return m_original_expression; }
+        inline void setOriginalDefaultValueExpression(const QString &expr) { m_original_expression = expr; }
 
-        QString toString() const {
+        inline QString toString() const {
             return type()->name() + " " + MetaVariable::name() +
                    (m_expression.isEmpty() ? "" :  " = " + m_expression);
         }
 
-        int argumentIndex() const { return m_argument_index; }
-        void setArgumentIndex(int argIndex) { m_argument_index = argIndex; }
+        inline int argumentIndex() const { return m_argument_index; }
+        inline void setArgumentIndex(int argIndex) { m_argument_index = argIndex; }
 
         virtual QString argumentName() const; // is overridden by java meta type to exclude java key words
         QString modifiedArgumentName() const;
         QString indexedName() const;
-        void setModifiedName(const QString &javaName) { m_modifiedName = javaName; }
+        inline void setModifiedName(const QString &javaName) { m_modifiedName = javaName; }
+        inline QString comment() const { return m_comment; }
+        inline void setComment(const QString &comment) { m_comment = comment; }
 
         MetaArgument *copy() const;
 
@@ -498,6 +505,7 @@ class MetaArgument : public MetaVariable {
         QString name() const;
 
         QString m_modifiedName;
+        QString m_comment;
         QString m_expression;
         QString m_original_expression;
         int m_argument_index;
@@ -777,6 +785,9 @@ class MetaFunction : public MetaAttributes {
     int returnScopeIndex() const;
     void setReturnScopeIndex(int newReturnScopeIndex);
 
+    QString returnValueComment() const;
+    void setReturnValueComment(const QString& returnValueComment);
+
 private:
     QString m_name;
     QString m_original_name;
@@ -808,6 +819,7 @@ private:
     MetaType::ReferenceType m_functionReferenceType;
     QPair<MetaFunction*,FunctionModification> m_functionTemplate;
     int m_returnScopeIndex = -1;
+    QString m_returnValueComment;
 };
 
 class MetaEnum;
@@ -889,7 +901,7 @@ class MetaEnum : public MetaAttributes {
 
 class MetaFunctional : public MetaAttributes {
     public:
-        MetaFunctional() : MetaAttributes(), m_base_type_name(), m_type_entry(nullptr), m_class(nullptr), m_type(nullptr), m_arguments(), m_isFunctionPointer(false) {}
+        MetaFunctional() : MetaAttributes(), m_base_type_name(), m_type_entry(nullptr), m_class(nullptr), m_type(nullptr), m_arguments() {}
 
         QString name() const { return m_type_entry->targetLangName(); }
         QString qualifier() const { return m_type_entry->javaQualifier(); }
@@ -933,8 +945,6 @@ class MetaFunctional : public MetaAttributes {
         QString conversionRule(TS::Language language, int idx) const;
         bool hasConversionRule(TS::Language language, int idx) const;
         bool resetObjectAfterUse(int argument_idx) const;
-        bool isFunctionPointer() const { return m_isFunctionPointer; }
-        void setFunctionPointer(bool isFunctionPointer) { m_isFunctionPointer = isFunctionPointer; }
         bool isNoExcept() const;
         bool isBlockExceptions() const;
         bool isRethrowExceptions() const;
@@ -951,7 +961,6 @@ class MetaFunctional : public MetaAttributes {
         QString m_typeSignature;
         QString m_javaFunctionalInterface;
         QList<uint> m_javaFunctionalInterfaceParameterTypes;
-        uint m_isFunctionPointer : 1;
 };
 
 typedef QList<MetaEnum *> MetaEnumList;

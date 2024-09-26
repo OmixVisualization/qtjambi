@@ -7,18 +7,6 @@ uint qHash(const std::pair<const int&,const int&>&);
 uint qHash(const std::pair<const short&,const double&>&);
 uint qHash(const std::pair<const float&,const double&>&);
 #endif
-#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
-namespace QHashPrivate {
-template <>
-constexpr inline bool HasQHashSingleArgOverload<QMap<int, QString>> = false;
-template <>
-constexpr inline bool HasQHashSingleArgOverload<QMap<int, int>> = false;
-template <>
-constexpr inline bool HasQHashSingleArgOverload<QMap<QString, int>> = false;
-template <>
-constexpr inline bool HasQHashSingleArgOverload<QMap<QString, QString>> = false;
-}
-#endif
 
 #include <QtJambiCore/hashes.h>
 

@@ -46,11 +46,15 @@
 #define qAsConst std::as_const
 #endif
 
+#define QTJAMBI_INTERNAL_METHOD_CALL(methodname)\
+DebugAPI::MethodPrint __debug_method_print(DebugAPI::MethodPrint::Internal, methodname, __FILE__, __LINE__, Q_FUNC_INFO);
+
 Q_GLOBAL_STATIC_WITH_ARGS(std::atomic<JavaVM *>, gJavaVM, (nullptr))
 
 Q_GLOBAL_STATIC_WITH_ARGS(std::atomic<bool>, gIsJVMLoaded, (false))
 
-Q_GLOBAL_STATIC(QVector<ResettableBoolFlag*>, gResettableFlags)
+typedef QHash<ResettableBoolFlag*,const char*> ResettableFlagsHash;
+Q_GLOBAL_STATIC(ResettableFlagsHash, gResettableFlags)
 Q_GLOBAL_STATIC(QMutex, gResettableFlagsMutex)
 
 std::atomic<bool>* getJVMLoaded(){
@@ -61,38 +65,50 @@ std::atomic<JavaVM *>* getJVM(){
     return gJavaVM();
 }
 
-void registerResettableFlag(ResettableBoolFlag* flag){
+void registerResettableFlag(ResettableBoolFlag* flag, const char* property){
     QMutexLocker locker(gResettableFlagsMutex());
-    gResettableFlags->append(flag);
+    (*gResettableFlags)[flag] = property;
 }
 
 void unregisterResettableFlag(ResettableBoolFlag* flag){
     if(!gResettableFlagsMutex.isDestroyed()){
         QMutexLocker locker(gResettableFlagsMutex());
-        gResettableFlags->removeAll(flag);
+        gResettableFlags->remove(flag);
     }
 }
 
 void clearResettableFlags(){
-    QVector<ResettableBoolFlag*> envPointers;
+    ResettableFlagsHash envPointers;
     if(!gResettableFlagsMutex.isDestroyed()){
         QMutexLocker locker(gResettableFlagsMutex());
         envPointers.swap(*gResettableFlags);
     }
-    for(ResettableBoolFlag* flag : envPointers){
-        flag->value = false;
+    for(auto iter = envPointers.keyValueBegin(), end = envPointers.keyValueEnd(); iter!=end; ++iter){
+        iter->first->value = false;
+    }
+}
+
+void reinitializeResettableFlag(JNIEnv * env, const char* property){
+    ResettableFlagsHash envPointers;
+    if(!gResettableFlagsMutex.isDestroyed()){
+        QMutexLocker locker(gResettableFlagsMutex());
+        envPointers = *gResettableFlags;
+    }
+    for(auto iter = envPointers.keyValueBegin(), end = envPointers.keyValueEnd(); iter!=end; ++iter){
+        if(qstrcmp(property, iter->second)==0)
+            iter->first->reinitialize(env, iter->second);
     }
 }
 
 #ifdef Q_OS_ANDROID
 void reinitializeResettableFlags(JNIEnv * env){
-    QVector<ResettableBoolFlag*> envPointers;
+    ResettableFlagsHash envPointers;
     if(!gResettableFlagsMutex.isDestroyed()){
         QMutexLocker locker(gResettableFlagsMutex());
         envPointers = *gResettableFlags;
     }
-    for(ResettableBoolFlag* flag : qAsConst(envPointers)){
-        flag->reinitialize(env);
+    for(auto iter = envPointers.keyValueBegin(), end = envPointers.keyValueEnd(); iter!=end; ++iter){
+        iter->first->reinitialize(env, iter->second);
     }
 }
 #endif
@@ -106,10 +122,10 @@ void thread_detacher_cleaner(EventDispatcherCheck::Data* threadData) {
              : QtJambiObjectData(),
                m_threadData(threadData)
          {
-             QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("ThreadDetacher::ThreadDetacher()", this)
+             QTJAMBI_INTERNAL_METHOD_CALL("ThreadDetacher::ThreadDetacher()")
          }
          ~ThreadDetacher() override {
-             QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("ThreadDetacher::~ThreadDetacher()", this)
+             QTJAMBI_INTERNAL_METHOD_CALL("ThreadDetacher::~ThreadDetacher()")
              JavaVM *vm = nullptr;
              if(std::atomic<JavaVM *>* atm = gJavaVM)
                  vm = atm->load();
@@ -125,22 +141,76 @@ void thread_detacher_cleaner(EventDispatcherCheck::Data* threadData) {
                         int result = vm->GetEnv( reinterpret_cast<void **>(&env), JNI_VERSION_1_8);
                         if(result==JNI_OK &&  env){
                             JniLocalFrame __jniLocalFrame(env, 200);
-                            Q_ASSERT(link->isQObject());
-                            if(!link->qobject() || !link->qobject()->parent())
-                               link->setJavaOwnership(env);
-                            if(m_threadData->m_jthreadObject){
-                                try{
-                                    Java::QtJambi::ThreadUtility::setThreadInterruptible(env, nullptr, m_threadData->m_jthreadObject, false);
-                                } catch (const JavaException& exn) {
-                                    exn.report(env);
-                                }
-                                try {
-                                    Java::QtJambi::NativeUtility::deleteAssociation(env, m_threadData->m_jthreadObject);
-                                } catch (const JavaException& exn) {
-                                    exn.report(env);
-                                }
-                                env->DeleteGlobalRef(m_threadData->m_jthreadObject);
+                            if(link){
+                                Q_ASSERT(link->isQObject());
+                                if(!link->qobject() || !link->qobject()->parent())
+                                   link->setJavaOwnership(env);
                             }
+                            if(m_threadData->m_jthreadObject){
+                                jobject jthreadObject = env->NewLocalRef(m_threadData->m_jthreadObject);
+                                env->DeleteWeakGlobalRef(m_threadData->m_jthreadObject);
+                                m_threadData->m_jthreadObject = nullptr;
+                                if(jthreadObject){
+                                    try{
+                                        Java::QtJambi::ThreadUtility::setThreadInterruptible(env, nullptr, jthreadObject, false);
+                                    } catch (const JavaException& exn) {
+                                        exn.report(env);
+                                    }
+                                    try {
+                                        Java::QtJambi::NativeUtility::deleteAssociation(env, jthreadObject);
+                                    } catch (const JavaException& exn) {
+                                        exn.report(env);
+                                    }
+                                    env->DeleteLocalRef(jthreadObject);
+                                }
+                            }
+                        }else{
+                            class ThreadPurger : public QObject{
+                                QSharedPointer<QtJambiLink> m_link;
+                                jweak m_jthreadObject;
+                            public:
+                                ThreadPurger(QSharedPointer<QtJambiLink> &&link, jweak jthreadObject)
+                                    : QObject(),
+                                    m_link(std::move(link)),
+                                    m_jthreadObject(jthreadObject){
+                                    QTJAMBI_INTERNAL_METHOD_CALL("ThreadPurger::ThreadPurger()")
+                                }
+                                ~ThreadPurger() override{
+                                    QTJAMBI_INTERNAL_METHOD_CALL("ThreadPurger::~ThreadPurger()")
+                                    if(JniEnvironment env{200}){
+                                        if(m_link){
+                                            Q_ASSERT(m_link->isQObject());
+                                            if(!m_link->qobject() || !m_link->qobject()->parent())
+                                                m_link->setJavaOwnership(env);
+                                        }
+                                        if(m_jthreadObject){
+                                            jobject jthreadObject = env->NewLocalRef(m_jthreadObject);
+                                            env->DeleteWeakGlobalRef(m_jthreadObject);
+                                            m_jthreadObject = nullptr;
+                                            if(jthreadObject){
+                                                try{
+                                                    Java::QtJambi::ThreadUtility::setThreadInterruptible(env, nullptr, jthreadObject, false);
+                                                } catch (const JavaException& exn) {
+                                                    exn.report(env);
+                                                }
+                                                try {
+                                                    Java::QtJambi::NativeUtility::deleteAssociation(env, jthreadObject);
+                                                } catch (const JavaException& exn) {
+                                                    exn.report(env);
+                                                }
+                                                env->DeleteLocalRef(jthreadObject);
+                                            }
+                                        }
+                                    }else{
+                                        QTJAMBI_DEBUG_PRINT("Unable to cleanup thread due to missing JNI")
+                                    }
+                                }
+                            };
+                            ThreadPurger* referenceDeleter = new ThreadPurger(std::move(link), m_threadData->m_jthreadObject);
+                            referenceDeleter->moveToThread(QCoreApplicationPrivate::mainThread());
+                            referenceDeleter->deleteLater();
+                            m_threadData->m_wlink = QWeakPointer<QtJambiLink>{};
+                            m_threadData->m_jthreadObject = nullptr;
                         }
                   }
                   while(!m_threadData->m_finalActions.isEmpty()){
@@ -271,9 +341,9 @@ JNIEnv *currentJNIEnvironment(JavaVM *vm, bool initializeJavaThread = true){
                     threadData->clearContextClassLoader(env);
                     contextClassLoader = nullptr;
                 }
-                QSharedPointer<QtJambiLink> link;
                 if(jobject qthreadObject = qtjambi_cast<jobject>(env, currentThread)){
-                    link = QtJambiLink::findLinkForJavaObject(env, qthreadObject);
+                    QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, qthreadObject);
+                    link->setNoThreadInitializationOnPurge(true);
                     if(jobject jthrd = Java::QtCore::QThread::javaThread(env, qthreadObject)){
                         env->DeleteLocalRef(jthrd);
                     }else{
@@ -303,6 +373,8 @@ JNIEnv *currentJNIEnvironment(JavaVM *vm, bool initializeJavaThread = true){
                 }
                 env->DeleteLocalRef(jthread);
                 jthread = nullptr;
+            }else if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForQObject(currentThread)){
+                link->setNoThreadInitializationOnPurge(true);
             }
         }
         bool init = false;
@@ -350,11 +422,8 @@ JNIEnv *fastJNIEnvironment(){
 ResettableBoolFlag::operator bool() { return value; }
 
 ResettableBoolFlag::ResettableBoolFlag(const char* property) : value(0)
-#ifdef Q_OS_ANDROID
-    , m_property(property)
-#endif
 {
-    registerResettableFlag(this);
+    registerResettableFlag(this, property);
     JavaVM *vm = nullptr;
     if(std::atomic<JavaVM *>* atm = gJavaVM)
         vm = atm->load();
@@ -368,11 +437,8 @@ ResettableBoolFlag::ResettableBoolFlag(const char* property) : value(0)
 }
 
 ResettableBoolFlag::ResettableBoolFlag(JNIEnv * env, const char* property) : value(0)
-#ifdef Q_OS_ANDROID
-    , m_property(property)
-#endif
 {
-    registerResettableFlag(this);
+    registerResettableFlag(this, property);
     if(env){
         JniLocalFrame frame(env, 24);
         value = Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF(property));
@@ -384,11 +450,9 @@ ResettableBoolFlag::~ResettableBoolFlag(){
     unregisterResettableFlag(this);
 }
 
-#ifdef Q_OS_ANDROID
-void ResettableBoolFlag::reinitialize(JNIEnv * env){
-    value = Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF(m_property));
+void ResettableBoolFlag::reinitialize(JNIEnv * env, const char* property){
+    value = Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF(property));
 }
-#endif
 
 JNIEnv *currentJNIEnvironment(bool initializeJavaThread = true){
     static ResettableBoolFlag useFastEnv("io.qt.experimental.fast-jni");

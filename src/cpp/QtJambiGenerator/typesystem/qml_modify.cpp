@@ -141,6 +141,19 @@ void ModifyArgument::setNoImplicitCalls(bool newNoImplicitCalls)
     emit noImplicitCallsChanged();
 }
 
+QString ModifyArgument::getComment() const
+{
+    return comment;
+}
+
+void ModifyArgument::setComment(const QString &newComment)
+{
+    if (comment == newComment)
+        return;
+    comment = newComment;
+    emit commentChanged();
+}
+
 const QString &ReplaceDefaultExpression::getExpression() const
 {
     return expression;
@@ -804,6 +817,19 @@ void AddArgument::setInvalidateAfterUse(bool newInvalidateAfterUse)
     emit invalidateAfterUseChanged();
 }
 
+QString AddArgument::getComment() const
+{
+    return comment;
+}
+
+void AddArgument::setComment(const QString &newComment)
+{
+    if (comment == newComment)
+        return;
+    comment = newComment;
+    emit commentChanged();
+}
+
 const QString &AddTypeParameter::getName() const
 {
     return name;
@@ -828,6 +854,19 @@ void AddTypeParameter::setExtending(const QString &newExtending)
         return;
     extending = newExtending;
     emit extendingChanged();
+}
+
+QString AddTypeParameter::getComment() const
+{
+    return comment;
+}
+
+void AddTypeParameter::setComment(const QString &newComment)
+{
+    if (comment == newComment)
+        return;
+    comment = newComment;
+    emit commentChanged();
 }
 
 const QString &ModifyFunction::getSignature() const

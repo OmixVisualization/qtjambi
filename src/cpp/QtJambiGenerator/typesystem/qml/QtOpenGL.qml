@@ -1981,7 +1981,7 @@ TypeSystem{
                                   "                                        pointer = nullptr;\n"+
                                   "                                    },\n"+
                                   "                                    [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                        return DataJBuffer(env, ptr, INT_MAX).take();\n"+
+                                  "                                        return LocalDataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                    }\n"+
                                   "                                );\n"+
                                   "if(%out.size()==0){\n"+
@@ -2069,7 +2069,7 @@ TypeSystem{
                                   "                                        pointer = nullptr;\n"+
                                   "                                    },\n"+
                                   "                                    [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                        return DataJBuffer(env, ptr, INT_MAX).take();\n"+
+                                  "                                        return LocalDataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                    }\n"+
                                   "                                );\n"+
                                   "if(%out.size()==0){\n"+
@@ -2110,7 +2110,7 @@ TypeSystem{
                                   "                                        pointer = bufferData->data<void>();\n"+
                                   "                                    },\n"+
                                   "                                    [](JNIEnv * env, const void* const& ptr) -> jobject {\n"+
-                                  "                                        return DataJBuffer(env, ptr, INT_MAX).take();\n"+
+                                  "                                        return LocalDataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                    }\n"+
                                   "                                );\n"+
                                   "if(%out.size()==0){\n"+
@@ -2151,7 +2151,7 @@ TypeSystem{
                                   "                                        pointer = bufferData->data<void>();\n"+
                                   "                                    },\n"+
                                   "                                    [](JNIEnv * env, const void* const& ptr) -> jobject {\n"+
-                                  "                                        return DataJBuffer(env, ptr, INT_MAX).take();\n"+
+                                  "                                        return LocalDataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                    }\n"+
                                   ");"}
                 }
@@ -2229,7 +2229,7 @@ TypeSystem{
                                   "                                        pointer = nullptr;\n"+
                                   "                                    },\n"+
                                   "                                    [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                        return DataJBuffer(env, ptr, INT_MAX).take();\n"+
+                                  "                                        return LocalDataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                    }\n"+
                                   "                                );\n"+
                                   "if(%out.size()==0){\n"+
@@ -2256,7 +2256,7 @@ TypeSystem{
                                   "                                        pointer = nullptr;\n"+
                                   "                                    },\n"+
                                   "                                    [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                        return DataJBuffer(env, ptr, INT_MAX).take();\n"+
+                                  "                                        return LocalDataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                    }\n"+
                                   "                                );\n"+
                                   "if(%out.size()==0){\n"+
@@ -2295,7 +2295,7 @@ TypeSystem{
                                   "                                        pointer = nullptr;\n"+
                                   "                                    },\n"+
                                   "                                    [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                        return DataJBuffer(env, ptr, INT_MAX).take();\n"+
+                                  "                                        return LocalDataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                    }\n"+
                                   ");"}
                 }
@@ -2319,7 +2319,7 @@ TypeSystem{
                                   "                                        pointer = nullptr;\n"+
                                   "                                    },\n"+
                                   "                                    [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                        return DataJBuffer(env, ptr, INT_MAX).take();\n"+
+                                  "                                        return LocalDataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                    }\n"+
                                   "                                );\n"+
                                   "if(%out.size()==0){\n"+
@@ -2358,7 +2358,7 @@ TypeSystem{
                                   "                                        pointer = nullptr;\n"+
                                   "                                    },\n"+
                                   "                                    [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                        return DataJBuffer(env, ptr, INT_MAX).take();\n"+
+                                  "                                        return LocalDataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                    }\n"+
                                   ");"}
                 }
@@ -2534,7 +2534,7 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "JIntArrayPointer %out(%env, %in, true);"}
+                    Text{content: "JIntArrayPointer %out(%env, %in);"}
                 }
             }
         }
@@ -2602,7 +2602,7 @@ TypeSystem{
                                   "                                        pointer = bufferData->data<void>();\n"+
                                   "                                    },\n"+
                                   "                                    [](JNIEnv * env, const void* const& ptr) -> jobject {\n"+
-                                  "                                        return DataJBuffer(env, ptr, INT_MAX).take();\n"+
+                                  "                                        return LocalDataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                    }\n"+
                                   ");"}
                 }
@@ -2647,7 +2647,7 @@ TypeSystem{
                                   "                                        pointer = bufferData->data<void>();\n"+
                                   "                                    },\n"+
                                   "                                    [](JNIEnv * env, const void* const& ptr) -> jobject {\n"+
-                                  "                                        return DataJBuffer(env, ptr, INT_MAX).take();\n"+
+                                  "                                        return LocalDataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                    }\n"+
                                   ");"}
                 }
@@ -2791,6 +2791,13 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "glDebugMessageCallback(GLDEBUGPROC, const void *)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    action: ReferenceCount.Set
+                    variableName: "__rcDebugMessageCallback"
+                }
+            }
             ModifyArgument{
                 index: 2
                 RemoveArgument{
@@ -3040,6 +3047,21 @@ TypeSystem{
                     ownership: Ownership.Dependent
                 }
             }
+            until: 6.7
+        }
+        ModifyFunction{
+            signature: "glMapNamedBufferRange(GLuint,GLintptr,GLsizeiptr,GLbitfield)"
+            ModifyArgument{
+                index: 0
+                AsBuffer{
+                    lengthExpression: "INT_MAX"
+                }
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Dependent
+                }
+            }
+            since: 6.8
         }
         ModifyFunction{
             signature: "glGetNamedBufferPointerv(GLuint, GLenum, void **)"
@@ -3055,7 +3077,7 @@ TypeSystem{
                                   "                                        pointer = nullptr;\n"+
                                   "                                    },\n"+
                                   "                                    [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                        return DataJBuffer(env, ptr, INT_MAX).take();\n"+
+                                  "                                        return LocalDataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                    }\n"+
                                   ");"}
                 }
@@ -3931,7 +3953,7 @@ TypeSystem{
                                   "                                        pointer = nullptr;\n"+
                                   "                                    },\n"+
                                   "                                    [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                        return DataJBuffer(env, ptr, INT_MAX).take();\n"+
+                                  "                                        return LocalDataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                    }\n"+
                                   ");"}
                 }

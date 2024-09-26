@@ -59,8 +59,6 @@ import io.qt.core.QVersionNumber;
 import io.qt.core.Qt;
 import io.qt.core.Qt.CursorShape;
 import io.qt.gui.*;
-import io.qt.printsupport.QPrinter;
-import io.qt.printsupport.QPrinterInfo;
 import io.qt.widgets.*;
 
 public class TestThreadAffinity extends ApplicationInitializer{
@@ -174,30 +172,6 @@ public class TestThreadAffinity extends ApplicationInitializer{
 		QThread thread = QThread.create(()->{
 			for (int i = 0; i < COUNT; i++) {
 				QColormap value = new QColormap(QColormap.instance());
-				QtUtilities.getSignalOnDispose(value).connect(counter::incrementAndGet);
-			}
-		});
-		thread.finished.connect(loop::quit);
-		thread.start();
-		loop.exec();
-		for (int i = 0; i < 20 && counter.get()!=COUNT; i++) {
-            ApplicationInitializer.runGC();
-            synchronized(getClass()) {
-            	Thread.sleep(100);
-            }
-		}
-        Assert.assertEquals(COUNT, counter.get());
-	}
-	
-	@Test
-    public void testQPrinter() throws InterruptedException {
-		int COUNT = 10;
-		AtomicInteger counter = new AtomicInteger();
-		QEventLoop loop = new QEventLoop();
-		QPrinterInfo pi = QPrinterInfo.defaultPrinter();
-		QThread thread = QThread.create(()->{
-			for (int i = 0; i < COUNT; i++) {
-				QPrinter value = new QPrinter(pi);
 				QtUtilities.getSignalOnDispose(value).connect(counter::incrementAndGet);
 			}
 		});
@@ -703,7 +677,7 @@ public class TestThreadAffinity extends ApplicationInitializer{
 			}
     	});
     	thread.start();
-    	thread.join();
+    	thread.join(2000);
     	assertTrue(exn[0] instanceof QThreadAffinityException);
     }
     
@@ -738,7 +712,7 @@ public class TestThreadAffinity extends ApplicationInitializer{
 			}
     	});
     	thread.start();
-    	thread.join();
+    	thread.join(2000);
     	QCoreApplication.sendPostedEvents();
     	assertTrue(t[0] instanceof QThreadAffinityException);
     	assertEquals("TEST", result[0]);
@@ -756,7 +730,7 @@ public class TestThreadAffinity extends ApplicationInitializer{
     	Throwable[] occurred = {null};
     	thread.setUncaughtExceptionHandler((t,e)->{occurred[0] = e;});
     	thread.start();
-    	thread.join();
+    	thread.join(2000);
     	Assert.assertTrue(occurred[0] instanceof QThreadAffinityException);
     	occurred[0] = null;
     	thread = QThread.create(()->{
@@ -764,7 +738,7 @@ public class TestThreadAffinity extends ApplicationInitializer{
 		});
     	thread.setUncaughtExceptionHandler((t,e)->{occurred[0] = e;});
     	thread.start();
-    	thread.join();
+    	thread.join(2000);
     	Assert.assertTrue(occurred[0] instanceof QThreadAffinityException);
     	occurred[0] = null;
     	
@@ -773,7 +747,7 @@ public class TestThreadAffinity extends ApplicationInitializer{
 		});
     	thread.setUncaughtExceptionHandler((t,e)->{occurred[0] = e;});
     	thread.start();
-    	thread.join();
+    	thread.join(2000);
     	Assert.assertTrue(occurred[0] instanceof QThreadAffinityException);
     	occurred[0] = null;
     }

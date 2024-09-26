@@ -35,13 +35,6 @@ TypeSystem{
     qtLibrary: "QtGraphs"
     module: "qtjambi.graphs"
     description: "Provides functionality for visualizing data in 3D as bar, scatter, and surface graphs."
-    LoadTypeSystem{name: "QtCore";              unless: "QTJAMBI_NO_CORE"}
-    LoadTypeSystem{name: "QtOpenGL";            unless: "QTJAMBI_NO_OPENGL"}
-    LoadTypeSystem{name: "QtWidgets";           unless: "QTJAMBI_NO_WIDGETS"}
-    LoadTypeSystem{name: "QtQml";               unless: "QTJAMBI_NO_QML"}
-    LoadTypeSystem{name: "QtQuick";             unless: "QTJAMBI_NO_QUICK"}
-    LoadTypeSystem{name: "QtQuickWidgets";      unless: "QTJAMBI_NO_QUICKWIDGETS"}
-    LoadTypeSystem{name: "QtNetwork";           unless: "QTJAMBI_NO_NETWORK"}
     Rejection{
         className: "*"
         functionName: "dptr"
@@ -1315,6 +1308,42 @@ TypeSystem{
         EnumType{
             name: "LabelsPosition"
         }
+        ModifyFunction{
+            signature: "remove(QBarSet *)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                threadAffinity: true
+                ReferenceCount{
+                    variableName: "__rcInsertedSets"
+                    action: ReferenceCount.Take
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "take(QBarSet *)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                threadAffinity: true
+                ReferenceCount{
+                    variableName: "__rcInsertedSets"
+                    action: ReferenceCount.Take
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "insert(int,QBarSet *)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 2
+                threadAffinity: true
+                ReferenceCount{
+                    variableName: "__rcInsertedSets"
+                    action: ReferenceCount.Add
+                }
+            }
+        }
         since: 6.7
         until: 6.7
     }
@@ -1376,21 +1405,66 @@ TypeSystem{
             }
         }
         ModifyFunction{
+            signature: "insert(int,QBarSet*)"
+            ModifyArgument{
+                index: 2
+                ReferenceCount{
+                    variableName: "__rcInsertedSets"
+                    action: ReferenceCount.Add
+                }
+            }
+            until: 6.7
+        }
+        ModifyFunction{
             signature: "insert(qsizetype,QBarSet*)"
             ModifyArgument{
                 index: 2
                 ReferenceCount{
-                    variableName: "__rcBarSet"
+                    variableName: "__rcInsertedSets"
                     action: ReferenceCount.Add
                 }
             }
+            since: 6.8
+        }
+        ModifyFunction{
+            signature: "replace(qsizetype,QBarSet*)"
+            ModifyArgument{
+                index: 2
+                ReferenceCount{
+                    variableName: "__rcInsertedSets"
+                    action: ReferenceCount.Add
+                }
+            }
+            since: 6.8
+        }
+        ModifyFunction{
+            signature: "replace(QBarSet*,QBarSet*)"
+            ModifyArgument{
+                index: 2
+                ReferenceCount{
+                    variableName: "__rcInsertedSets"
+                    action: ReferenceCount.Add
+                }
+            }
+            since: 6.8
+        }
+        ModifyFunction{
+            signature: "replace(QList<QBarSet*>)"
+            ModifyArgument{
+                index: 2
+                ReferenceCount{
+                    variableName: "__rcInsertedSets"
+                    action: ReferenceCount.AddAll
+                }
+            }
+            since: 6.8
         }
         ModifyFunction{
             signature: "remove(QBarSet*)"
             ModifyArgument{
                 index: 1
                 ReferenceCount{
-                    variableName: "__rcBarSet"
+                    variableName: "__rcInsertedSets"
                     action: ReferenceCount.Take
                 }
             }
@@ -1400,7 +1474,7 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 ReferenceCount{
-                    variableName: "__rcBarSet"
+                    variableName: "__rcInsertedSets"
                     action: ReferenceCount.Take
                 }
             }
@@ -1481,8 +1555,36 @@ TypeSystem{
         since: 6.8
     }
 
+    ObjectType{
+        name: "QGraphsLine"
+        ModifyFunction{
+            signature: "create(QJSValue)"
+            ModifyArgument{
+                index: 1
+                threadAffinity: true
+            }
+        }
+        ModifyFunction{
+            signature: "swap(QGraphsLine &)"
+            remove: RemoveFlag.All
+        }
+        since: 6.8
+    }
+
+    ObjectType{
+        name: "QQuickGraphsLineValueType"
+        ModifyFunction{
+            signature: "create(QJSValue)"
+            ModifyArgument{
+                index: 1
+                threadAffinity: true
+            }
+        }
+        since: 6.8
+    }
+
     NamespaceType{
-        name: "QGraphs3D"
+        name: "QtGraphs3D"
         EnumType{
             name: "SelectionFlag"
         }
@@ -1506,6 +1608,259 @@ TypeSystem{
                 fileName: "QtGraphs/qutils.h"
                 location: Include.Global
             }
+        }
+        since: 6.8
+    }
+
+    ObjectType{
+        name: "QBarModelMapper"
+        ModifyFunction{
+            signature: "setModel(QAbstractItemModel *)"
+            access: Modification.NonFinal
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                threadAffinity: true
+                ReferenceCount{
+                    variableName: "__rcModel"
+                    action: ReferenceCount.Set
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "setSeries(QBarSeries *)"
+            access: Modification.NonFinal
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                threadAffinity: true
+                ReferenceCount{
+                    variableName: "__rcSeries"
+                    action: ReferenceCount.Set
+                }
+            }
+        }
+        since: 6.8
+    }
+
+    ObjectType{
+        name: "QXYModelMapper"
+        ModifyFunction{
+            signature: "setModel(QAbstractItemModel *)"
+            access: Modification.NonFinal
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                threadAffinity: true
+                ReferenceCount{
+                    variableName: "__rcModel"
+                    action: ReferenceCount.Set
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "setSeries(QXYSeries *)"
+            access: Modification.NonFinal
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                threadAffinity: true
+                ReferenceCount{
+                    variableName: "__rcSeries"
+                    action: ReferenceCount.Set
+                }
+            }
+        }
+        since: 6.8
+    }
+
+    ObjectType{
+        name: "QPieModelMapper"
+        ModifyFunction{
+            signature: "setModel(QAbstractItemModel *)"
+            access: Modification.NonFinal
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                threadAffinity: true
+                ReferenceCount{
+                    variableName: "__rcModel"
+                    action: ReferenceCount.Set
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "setSeries(QPieSeries *)"
+            access: Modification.NonFinal
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                threadAffinity: true
+                ReferenceCount{
+                    variableName: "__rcSeries"
+                    action: ReferenceCount.Set
+                }
+            }
+        }
+        since: 6.8
+    }
+
+    ObjectType{
+        name: "QDateTimeAxis"
+        since: 6.8
+    }
+
+    ObjectType{
+        name: "QValueAxis"
+        since: 6.8
+    }
+
+    ObjectType{
+        name: "QAreaSeries"
+        ModifyFunction{
+            signature: "setLowerSeries(QXYSeries *)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                threadAffinity: true
+                ReferenceCount{
+                    variableName: "__rcLowerSeries"
+                    action: ReferenceCount.Set
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "setUpperSeries(QXYSeries *)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                threadAffinity: true
+                ReferenceCount{
+                    variableName: "__rcUpperSeries"
+                    action: ReferenceCount.Set
+                }
+            }
+        }
+        since: 6.8
+    }
+
+    ObjectType{
+        name: "QLineSeries"
+        since: 6.8
+    }
+
+    ObjectType{
+        name: "QPieSeries"
+        ModifyFunction{
+            signature: "append(QPieSlice*)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                threadAffinity: true
+                ReferenceCount{
+                    action: ReferenceCount.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "append(QList<QPieSlice*>)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                threadAffinity: true
+                ReferenceCount{
+                    action: ReferenceCount.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "take(QPieSlice*)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                threadAffinity: true
+                ReferenceCount{
+                    action: ReferenceCount.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "remove(QPieSlice*)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                threadAffinity: true
+                ReferenceCount{
+                    action: ReferenceCount.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "insert(qsizetype,QPieSlice*)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 2
+                threadAffinity: true
+                ReferenceCount{
+                    action: ReferenceCount.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "operator<<(QPieSlice*)"
+            remove: RemoveFlag.All
+        }
+        since: 6.8
+    }
+
+    ObjectType{
+        name: "QPieSlice"
+        since: 6.8
+    }
+
+    ObjectType{
+        name: "QScatterSeries"
+        since: 6.8
+    }
+
+    ObjectType{
+        name: "QSplineSeries"
+        ModifyFunction{
+            signature: "getControlPoints()"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                threadAffinity: true
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Dependent
+                }
+            }
+        }
+        since: 6.8
+    }
+
+    ObjectType{
+        name: "QXYSeries"
+        ModifyFunction{
+            signature: "setPointDelegate(QQmlComponent*)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                threadAffinity: true
+                ReferenceCount{
+                    variableName: "__rcPointDelegate"
+                    action: ReferenceCount.Set
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "operator<<(QPointF)"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "operator<<(QList<QPointF>)"
+            remove: RemoveFlag.All
         }
         since: 6.8
     }

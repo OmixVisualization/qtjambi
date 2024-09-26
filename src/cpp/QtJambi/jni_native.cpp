@@ -33,6 +33,7 @@
 #include "qtjambishell_p.h"
 #include "supertypeinfo_p.h"
 #include "java_p.h"
+#include "containerapi.h"
 #include "qtjambi_cast.h"
 
 extern "C" Q_DECL_EXPORT void
@@ -57,20 +58,6 @@ JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_NativeUtility_00024NativeLin
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
     }
-}
-
-extern "C" Q_DECL_EXPORT bool
-JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_NativeUtility_00024NativeLink_hasDisposedSignal)
-    (JNIEnv *env, jclass, QtJambiNativeID native_id)
-{
-    try{
-        if(QSharedPointer<QtJambiLink> link = QtJambiLink::fromNativeId(native_id)){
-            return link->hasDisposedSignal();
-        }
-    }catch(const JavaException& exn){
-        exn.raiseInJava(env);
-    }
-    return false;
 }
 
 extern "C" Q_DECL_EXPORT void
@@ -99,6 +86,14 @@ JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_NativeUtility_00024NativeLin
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
     }
+}
+
+extern "C" Q_DECL_EXPORT void
+    JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_NativeUtility_00024NativeLink_assignNativeId)
+    (JNIEnv *, jclass, QtJambiNativeID native_id, jlong ptr)
+{
+    if(!!native_id)
+        *reinterpret_cast<QSharedPointer<QtJambiLink>*>(ptr) = reinterpret_cast<QtJambiLink*>(native_id)->getStrongPointer();
 }
 
 extern "C" Q_DECL_EXPORT void
@@ -323,8 +318,25 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_NativeUtility_getInterfaceInfos)
     }
 }
 
+void truncateBuffer(JNIEnv *env, jobject buffer);
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_NativeUtility_truncateBuffer)
+    (JNIEnv *env, jclass, QtJambiNativeID nid, jobject buffer)
+{
+    QTJAMBI_TRY {
+        if(QSharedPointer<QtJambiLink> _ownerLink = QtJambiLink::fromNativeId(nid)){
+            _ownerLink->removeFinalization(env, buffer, true);
+        }else{
+            truncateBuffer(env, buffer);
+        }
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(env);
+    }QTJAMBI_TRY_END
+}
+
 extern "C" Q_DECL_EXPORT jobject JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_NativeUtility_mutableData)
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_NativeUtility_mutableByteArrayData)
     (JNIEnv *env, jclass, QtJambiNativeID nid)
 {
     jobject __java_return_value{0};
@@ -333,7 +345,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_NativeUtility_mutableData)
         QtJambiAPI::checkNullPointer(env, __qt_this);
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QByteArray::data()", __qt_this)
         char* __qt_return_value = __qt_this->data();
-        DataJBuffer d(env, __qt_return_value, jlong(__qt_this->capacity()));
+        LocalDataJBuffer d(env, __qt_return_value, jlong(__qt_this->capacity()));
         if(__qt_this->size()<__qt_this->capacity())
             d.setLimit(jsize(__qt_this->size()));
         __java_return_value = d.take();
@@ -341,6 +353,65 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_NativeUtility_mutableData)
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
     }QTJAMBI_TRY_END
-        return __java_return_value;
+    return __java_return_value;
 }
 
+extern "C" Q_DECL_EXPORT jobject JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_NativeUtility_mutableStringData)
+    (JNIEnv *env, jclass, QtJambiNativeID nid)
+{
+    jobject __java_return_value{0};
+    QTJAMBI_TRY {
+        QString *__qt_this = QtJambiAPI::objectFromNativeId<QString>(nid);
+        QtJambiAPI::checkNullPointer(env, __qt_this);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QString::data()", __qt_this)
+        QChar* __qt_return_value = __qt_this->data();
+        LocalDataJBuffer d(env, __qt_return_value, jlong(__qt_this->capacity()));
+        if(__qt_this->size()<__qt_this->capacity())
+            d.setLimit(jsize(__qt_this->size()));
+        __java_return_value = d.take();
+        QtJambiAPI::registerDependency(env, __java_return_value, nid);
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(env);
+    }QTJAMBI_TRY_END
+    return __java_return_value;
+}
+
+#define MUTABLE_LIST_IMPL(TYPE,type,CONTAINER)\
+extern "C" Q_DECL_EXPORT jobject JNICALL\
+    Java_io_qt_internal_NativeUtility_mutableData##TYPE\
+    (JNIEnv *env, jclass, jobject iter, QtJambiNativeID nid)\
+{\
+        Q_UNUSED(iter)\
+        jobject __java_return_value{0};\
+        QTJAMBI_TRY {\
+            QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(nid);\
+            if(dynamic_cast<Abstract##CONTAINER##Access*>(container.second)){\
+                Q##CONTAINER<type> *__qt_this = reinterpret_cast<Q##CONTAINER<type>*>(container.first);\
+                QtJambiAPI::checkNullPointer(env, __qt_this);\
+                type* __qt_return_value = __qt_this->data();\
+                LocalDataJBuffer d(env, __qt_return_value, jlong(__qt_this->capacity()));\
+                if(__qt_this->size()<__qt_this->capacity())\
+                d.setLimit(jsize(__qt_this->size()));\
+                __java_return_value = d.take();\
+                QtJambiAPI::registerDependency(env, __java_return_value, nid);\
+        }\
+    }QTJAMBI_CATCH(const JavaException& exn){\
+            exn.raiseInJava(env);\
+    }QTJAMBI_TRY_END\
+        return __java_return_value;\
+}
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#define MUTABLE_LIST(TYPE,type) MUTABLE_LIST_IMPL(TYPE,type,List)
+#else
+#define MUTABLE_LIST(TYPE,type) MUTABLE_LIST_IMPL(TYPE,type,Vector)
+#endif
+
+MUTABLE_LIST(B,char)
+MUTABLE_LIST(S,qint16)
+MUTABLE_LIST(I,qint32)
+MUTABLE_LIST(J,qint64)
+MUTABLE_LIST(C,QChar)
+MUTABLE_LIST(F,float)
+MUTABLE_LIST(D,double)

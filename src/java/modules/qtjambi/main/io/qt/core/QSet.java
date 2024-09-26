@@ -29,17 +29,11 @@
 ****************************************************************************/
 package io.qt.core;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.Predicate;
-
-import io.qt.NativeAccess;
-import io.qt.QNoImplementationException;
-import io.qt.QNoNativeResourcesException;
-import io.qt.QtUninvokable;
+import java.nio.*;
+import java.util.*;
+import java.util.function.*;
+import io.qt.*;
+import io.qt.core.QtJambi_LibraryUtilities;
 
 /**
  * <p>Java wrapper for Qt class <code><a href="https://doc.qt.io/qt/qset.html">QSet</a></code></p>
@@ -66,7 +60,7 @@ public class QSet<T> extends AbstractSequentialContainer<T> implements Set<T>, C
      * <p>See <code><a href="https://doc.qt.io/qt/qset.html#QSet">QSet::<wbr>QSet()</a></code></p>
      * @param elementType the type T
      */
-	public QSet(Class<T> elementType) {
+	public QSet(@Nullable Class<T> elementType) {
 		super(null);
 		QMetaType metaType = QMetaType.fromType(elementType);
 		initialize(elementType, QtJambi_LibraryUtilities.internal.nativeId(metaType), null);
@@ -77,7 +71,7 @@ public class QSet<T> extends AbstractSequentialContainer<T> implements Set<T>, C
      * <p>See <code><a href="https://doc.qt.io/qt/qset.html#QSet">QSet::<wbr>QSet()</a></code></p>
      * @param metaType the type T
      */
-	public QSet(QMetaType.Type metaType) {
+	public QSet(QMetaType.@StrictNonNull Type metaType) {
 		this(new QMetaType(metaType));
 	}
     
@@ -86,7 +80,7 @@ public class QSet<T> extends AbstractSequentialContainer<T> implements Set<T>, C
      * <p>See <code><a href="https://doc.qt.io/qt/qset.html#QSet">QSet::<wbr>QSet()</a></code></p>
      * @param metaType the type T
      */
-	public QSet(QMetaType metaType) {
+	public QSet(@StrictNonNull QMetaType metaType) {
 		super(null);
 		initialize(metaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaType), null);
 	}
@@ -96,9 +90,14 @@ public class QSet<T> extends AbstractSequentialContainer<T> implements Set<T>, C
      * <p>See <code><a href="https://doc.qt.io/qt/qset.html#QSet">QSet::<wbr>QSet(const QSet&lt;T> &amp;)</a></code></p>
      * @param other container
      */
-    public QSet(Collection<T> other) {
+    public QSet(@StrictNonNull Collection<T> other) {
         super(null);
 		QMetaType metaType = QList.findElementMetaType(Objects.requireNonNull(other));
+		initialize(metaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaType), other);
+    }
+    
+    private QSet(QMetaType metaType, Collection<T> other) {
+        super(null);
 		initialize(metaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaType), other);
     }
     
@@ -109,7 +108,7 @@ public class QSet<T> extends AbstractSequentialContainer<T> implements Set<T>, C
      * Creates and returns a copy of this object.
      */
     @Override
-	public QSet<T> clone(){
+	public @NonNull QSet<T> clone(){
 		return new QSet<>(this);
 	}
     
@@ -119,11 +118,11 @@ public class QSet<T> extends AbstractSequentialContainer<T> implements Set<T>, C
      * @return begin
      */
     @QtUninvokable
-    protected final QSequentialConstIterator<T> constBegin()    {
+    protected final @NonNull QSequentialConstIterator<T> constBegin()    {
         return constBegin(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    private static native <T> QSequentialConstIterator<T> constBegin(long __this__nativeId);
+    private native QSequentialConstIterator<T> constBegin(long __this__nativeId);
 
     /**
      * <p>See <code><a href="https://doc.qt.io/qt/qset.html#capacity">QSet::<wbr>capacity()const</a></code></p>
@@ -133,7 +132,7 @@ public class QSet<T> extends AbstractSequentialContainer<T> implements Set<T>, C
         return capacity(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    private static native <T> int capacity(long __this__nativeId);
+    private native int capacity(long __this__nativeId);
 
     /**
      * <p>See <code><a href="https://doc.qt.io/qt/qset.html#clear">QSet::<wbr>clear()</a></code></p>
@@ -143,7 +142,7 @@ public class QSet<T> extends AbstractSequentialContainer<T> implements Set<T>, C
         clear(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    private static native <T> void clear(long __this__nativeId);
+    private native void clear(long __this__nativeId);
 
     /**
      * <p>See <code><a href="https://doc.qt.io/qt/qset.html#contains">QSet::<wbr>contains(T)const</a></code></p>
@@ -164,7 +163,7 @@ public class QSet<T> extends AbstractSequentialContainer<T> implements Set<T>, C
     	}
     }
     @QtUninvokable
-    private static native <T> boolean contains(long __this__nativeId, T t);
+    private native boolean contains(long __this__nativeId, Object t);
 
     /**
      * <p>See <code><a href="https://doc.qt.io/qt/qset.html#count">QSet::<wbr>count()const</a></code></p>
@@ -180,11 +179,11 @@ public class QSet<T> extends AbstractSequentialContainer<T> implements Set<T>, C
      * @return end
      */
     @QtUninvokable
-    protected final QSequentialConstIterator<T> constEnd()    {
+    protected final @NonNull QSequentialConstIterator<T> constEnd()    {
         return constEnd(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    private static native <T> QSequentialConstIterator<T> constEnd(long __this__nativeId);
+    private native QSequentialConstIterator<T> constEnd(long __this__nativeId);
 
     /**
      * <p>See <code><a href="https://doc.qt.io/qt/qset.html#insert">QSet::<wbr>insert(T)</a></code></p>
@@ -200,27 +199,27 @@ public class QSet<T> extends AbstractSequentialContainer<T> implements Set<T>, C
     	}
     }
     @QtUninvokable
-    private static native <T> void insert(long __this__nativeId, T t);
+    private native void insert(long __this__nativeId, T t);
 
     /**
      * <p>See <code><a href="https://doc.qt.io/qt/qset.html#intersect">QSet::<wbr>intersect(QSet&lt;T>)</a></code></p>
      */
     @QtUninvokable
-    public final void intersect(java.util.Collection<T> other)    {
+    public final void intersect(java.util.@NonNull Collection<T> other)    {
         intersect(QtJambi_LibraryUtilities.internal.nativeId(this), other);
     }
     @QtUninvokable
-    private static native <T> void intersect(long __this__nativeId, java.util.Collection<T> other);
+    private native void intersect(long __this__nativeId, java.util.Collection<T> other);
 
     /**
      * <p>See <code><a href="https://doc.qt.io/qt/qset.html#intersects">QSet::<wbr>intersects(QSet&lt;T>)const</a></code></p>
      */
     @QtUninvokable
-    public final boolean intersects(java.util.Collection<T> other)    {
+    public final boolean intersects(java.util.@NonNull Collection<T> other)    {
         return intersects(QtJambi_LibraryUtilities.internal.nativeId(this), other);
     }
     @QtUninvokable
-    private static native <T> boolean intersects(long __this__nativeId, java.util.Collection<T> other);
+    private native boolean intersects(long __this__nativeId, java.util.Collection<T> other);
 
     /**
      * <p>See <code><a href="https://doc.qt.io/qt/qset.html#isEmpty">QSet::<wbr>isEmpty()const</a></code></p>
@@ -249,13 +248,13 @@ public class QSet<T> extends AbstractSequentialContainer<T> implements Set<T>, C
     	}
     }
     @QtUninvokable
-    private static native <T> boolean remove(long __this__nativeId, T t);
+    private native boolean remove(long __this__nativeId, Object t);
     
     /**
      * <p>See <code><a href="https://doc.qt.io/qt/qset.html#removeIf">QSet::<wbr>removeIf(Predicate)</a></code></p>
 	 */
     @QtUninvokable
-    public final boolean removeIf(Predicate<? super T> predicate)    {
+    public final boolean removeIf(@StrictNonNull Predicate<? super T> predicate)    {
         Objects.requireNonNull(predicate);
         boolean removed = false;
         QSet<T> clone = clone();
@@ -278,7 +277,7 @@ public class QSet<T> extends AbstractSequentialContainer<T> implements Set<T>, C
         reserve(QtJambi_LibraryUtilities.internal.nativeId(this), size);
     }
     @QtUninvokable
-    private static native <T> void reserve(long __this__nativeId, int size);
+    private native void reserve(long __this__nativeId, int size);
 
     /**
      * <p>See <code><a href="https://doc.qt.io/qt/qset.html#size">QSet::<wbr>size()const</a></code></p>
@@ -288,37 +287,59 @@ public class QSet<T> extends AbstractSequentialContainer<T> implements Set<T>, C
         return size(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    private static native <T> int size(long __this__nativeId);
+    private native int size(long __this__nativeId);
 
     /**
      * <p>See <code><a href="https://doc.qt.io/qt/qset.html#subtract">QSet::<wbr>subtract(QSet&lt;T>)</a></code></p>
      */
     @QtUninvokable
-    public final void subtract(java.util.Collection<T> other)    {
+    public final void subtract(java.util.@NonNull Collection<T> other)    {
         subtract(QtJambi_LibraryUtilities.internal.nativeId(this), other);
     }
     @QtUninvokable
-    private static native <T> void subtract(long __this__nativeId, java.util.Collection<T> other);
+    private native void subtract(long __this__nativeId, java.util.Collection<T> other);
 
     /**
      * <p>See <code><a href="https://doc.qt.io/qt/qset.html#unite">QSet::<wbr>unite(QSet&lt;T>)</a></code></p>
      */
     @QtUninvokable
-    public final void unite(java.util.Collection<T> other)    {
+    public final void unite(java.util.@NonNull Collection<T> other)    {
         unite(QtJambi_LibraryUtilities.internal.nativeId(this), other);
     }
     @QtUninvokable
-    private static native <T> void unite(long __this__nativeId, java.util.Collection<T> other);
+    private native void unite(long __this__nativeId, java.util.Collection<T> other);
 
     /**
      * <p>See <code><a href="https://doc.qt.io/qt/qset.html#values">QSet::<wbr>values()const</a></code></p>
      */
     @QtUninvokable
-    public final QList<T> values()    {
+    public final @NonNull QList<T> values()    {
         return values(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    private static native <T> QList<T> values(long __this__nativeId);
+    private native QList<T> values(long __this__nativeId);
+    
+    /**
+     * <p>See <code>QSet::<wbr>operator=(QSet&lt;T>)</code></p>
+     */
+    @QtUninvokable
+    public final void assign(@StrictNonNull QSet<T> other) {
+		assign(QtJambi_LibraryUtilities.internal.nativeId(this), other, QtJambi_LibraryUtilities.internal.nativeId(other));
+    }
+    
+    @QtUninvokable
+    private native void assign(long __this__nativeId, Object container, long other);
+    
+    /**
+     * <p>See <code>QSet::<wbr>swap(QSet&lt;T>)</code></p>
+     */
+    @QtUninvokable
+    public final void swap(@StrictNonNull QSet<T> other) {
+    	swap(QtJambi_LibraryUtilities.internal.nativeId(this), other, QtJambi_LibraryUtilities.internal.nativeId(other));
+    }
+    
+    @QtUninvokable
+    private native void swap(long __this__nativeId, Object otherObj, long other);
 
     /**
      * <p>See <code><a href="https://doc.qt.io/qt/qset.html#operator-eq-eq">QSet::<wbr>operator==(QSet&lt;T>)const</a></code></p>
@@ -333,7 +354,7 @@ public class QSet<T> extends AbstractSequentialContainer<T> implements Set<T>, C
     }
 
     @QtUninvokable
-    private static native boolean operator_equal(long __this__nativeId, java.util.Collection<?> l);
+    private native boolean operator_equal(long __this__nativeId, java.util.Collection<?> l);
 
     /**
      * Returns the objects's hash code computed by <code>qHash(QSet&lt;T>)</code>.
@@ -348,14 +369,14 @@ public class QSet<T> extends AbstractSequentialContainer<T> implements Set<T>, C
 		}
     }
     @QtUninvokable
-    private static native int hashCode(long __this__nativeId);
+    private native int hashCode(long __this__nativeId);
     
     /**
      * Returns the string representation of the object given by <code>QVariant(this).toString()</code>.
      */
     @Override
     @QtUninvokable
-    public String toString() {
+    public @NonNull String toString() {
     	try {
 			return toString(QtJambi_LibraryUtilities.internal.nativeId(this));
 		} catch (QNoImplementationException e) {
@@ -365,7 +386,7 @@ public class QSet<T> extends AbstractSequentialContainer<T> implements Set<T>, C
 		}
     }
     @QtUninvokable
-    private static native String toString(long __this__nativeId);
+    private native String toString(long __this__nativeId);
     
     /**
      * Adds the specified element to this set if it is not already present
@@ -389,7 +410,8 @@ public class QSet<T> extends AbstractSequentialContainer<T> implements Set<T>, C
      * <p>See <code><a href="https://doc.qt.io/qt/qset.html#operator-lt-lt">operator&lt;&lt;(QDataStream&amp;,<wbr>QSet&lt;T>)</a></code></p>
      */
     @io.qt.QtUninvokable
-    public void writeTo(io.qt.core.QDataStream stream){
+    public void writeTo(io.qt.core.@StrictNonNull QDataStream stream){
+    	java.util.Objects.requireNonNull(stream, "Argument 'stream': null not expected.");
         writeTo(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(stream));
     }
     
@@ -400,7 +422,8 @@ public class QSet<T> extends AbstractSequentialContainer<T> implements Set<T>, C
      * <p>See <code><a href="https://doc.qt.io/qt/qset.html#operator-gt-gt">operator&gt;&gt;(QDataStream&amp;,<wbr>QSet&lt;T>&amp;)</a></code></p>
      */
     @io.qt.QtUninvokable
-    public void readFrom(io.qt.core.QDataStream stream){
+    public void readFrom(io.qt.core.@StrictNonNull QDataStream stream){
+    	java.util.Objects.requireNonNull(stream, "Argument 'stream': null not expected.");
         readFrom(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(stream));
     }
     
@@ -412,7 +435,7 @@ public class QSet<T> extends AbstractSequentialContainer<T> implements Set<T>, C
     	return elementMetaType(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @io.qt.QtUninvokable
-    private static native QMetaType elementMetaType(long __this_nativeId);
+    private native QMetaType elementMetaType(long __this_nativeId);
     
     /**
      * Returns a QSet containing given elements.
@@ -423,15 +446,257 @@ public class QSet<T> extends AbstractSequentialContainer<T> implements Set<T>, C
      * @return a {@code QSet} containing the specified element
      * @throws NullPointerException if elements are {@code null}
      */
+    @SuppressWarnings({ "unchecked" })
     @SafeVarargs
-    public static <T> QSet<T> of(T element0, T...elements) {
-		QMetaType metaType = QList.findElementMetaType(element0, elements);
-		QSet<T> result = new QSet<>(metaType);
-		result.add(element0);
-		for (T t : elements) {
-			result.add(t);
+    public static <T> @NonNull QSet<T> of(T element0, T @StrictNonNull...elements) {
+        QMetaType metaType = QList.findElementMetaType(element0, elements);
+		T[] allElements = (T[])new Object[elements.length+1];
+		System.arraycopy(elements, 0, allElements, 1, elements.length);
+		allElements[0] = element0;
+		return ofTyped(metaType, allElements);
+    }
+    
+    /**
+     * Returns a QSet containing given elements.
+     *
+     * @param elements
+     * @return a {@code QSet} containing the specified element
+     */
+    public static @NonNull QSet<@QtPrimitiveType@NonNull Byte> ofByte(byte @StrictNonNull...elements) {
+		QSet<Byte> result = new QSet<>(byte.class);
+		for (byte t : elements) {
+			result.insert(t);
 		}
 		return result;
+	}
+    
+    /**
+     * Returns a QSet containing given elements.
+     *
+     * @param elements
+     * @return a {@code QSet} containing the specified element
+     */
+    public static @NonNull QSet<@QtPrimitiveType@NonNull Short> ofShort(short @StrictNonNull...elements) {
+		QSet<Short> result = new QSet<>(short.class);
+		for (short t : elements) {
+			result.insert(t);
+		}
+		return result;
+	}
+    
+    /**
+     * Returns a QSet containing given elements.
+     *
+     * @param elements
+     * @return a {@code QSet} containing the specified element
+     */
+    public static @NonNull QSet<@QtPrimitiveType@NonNull Integer> ofInt(int @StrictNonNull...elements) {
+		QSet<Integer> result = new QSet<>(int.class);
+		for (int t : elements) {
+			result.insert(t);
+		}
+		return result;
+	}
+    
+    /**
+     * Returns a QSet containing given elements.
+     *
+     * @param elements
+     * @return a {@code QSet} containing the specified element
+     */
+    public static @NonNull QSet<@QtPrimitiveType@NonNull Long> ofLong(long @StrictNonNull...elements) {
+		QSet<Long> result = new QSet<>(long.class);
+		for (long t : elements) {
+			result.insert(t);
+		}
+		return result;
+	}
+    
+    /**
+     * Returns a QSet containing given elements.
+     *
+     * @param elements
+     * @return a {@code QSet} containing the specified element
+     */
+    public static @NonNull QSet<@QtPrimitiveType@NonNull Character> ofChar(char @StrictNonNull...elements) {
+		QSet<Character> result = new QSet<>(char.class);
+		for (char t : elements) {
+			result.insert(t);
+		}
+		return result;
+	}
+    
+    /**
+     * Returns a QSet containing given elements.
+     *
+     * @param elements
+     * @return a {@code QSet} containing the specified element
+     */
+    public static @NonNull QSet<@QtPrimitiveType@NonNull Float> ofFloat(float @StrictNonNull...elements) {
+		QSet<Float> result = new QSet<>(float.class);
+		for (float t : elements) {
+			result.insert(t);
+		}
+		return result;
+	}
+    
+    /**
+     * Returns a QSet containing given elements.
+     *
+     * @param elements
+     * @return a {@code QSet} containing the specified element
+     */
+    public static @NonNull QSet<@QtPrimitiveType@NonNull Double> ofDouble(double @StrictNonNull...elements) {
+		QSet<Double> result = new QSet<>(double.class);
+		for (double t : elements) {
+			result.insert(t);
+		}
+		return result;
+	}
+    
+    /**
+     * Returns a QSet containing given elements.
+     *
+     * @param elements
+     * @return a {@code QSet} containing the specified element
+     */
+    public static @NonNull QSet<@QtPrimitiveType@NonNull Boolean> ofBoolean(boolean @StrictNonNull...elements) {
+		QSet<Boolean> result = new QSet<>(boolean.class);
+		for (boolean t : elements) {
+			result.insert(t);
+		}
+		return result;
+	}
+    
+    /**
+     * Returns a QSet containing given elements.
+     *
+     * @param elements
+     * @return a {@code QSet} containing the specified element
+     */
+    public static @NonNull QSet<@QtPrimitiveType@NonNull Byte> ofBuffer(@StrictNonNull ByteBuffer elements) {
+		QSet<Byte> result = new QSet<>(byte.class);
+		while(elements.hasRemaining()) {
+			result.insert(elements.get());
+		}
+		return result;
+	}
+    
+    /**
+     * Returns a QSet containing given elements.
+     *
+     * @param elements
+     * @return a {@code QSet} containing the specified element
+     */
+    public static @NonNull QSet<@QtPrimitiveType@NonNull Short> ofBuffer(@StrictNonNull ShortBuffer elements) {
+		QSet<Short> result = new QSet<>(short.class);
+		while(elements.hasRemaining()) {
+			result.insert(elements.get());
+		}
+		return result;
+	}
+    
+    /**
+     * Returns a QSet containing given elements.
+     *
+     * @param elements
+     * @return a {@code QSet} containing the specified element
+     */
+    public static @NonNull QSet<@QtPrimitiveType@NonNull Integer> ofBuffer(@StrictNonNull IntBuffer elements) {
+		QSet<Integer> result = new QSet<>(int.class);
+		while(elements.hasRemaining()) {
+			result.insert(elements.get());
+		}
+		return result;
+	}
+    
+    /**
+     * Returns a QSet containing given elements.
+     *
+     * @param elements
+     * @return a {@code QSet} containing the specified element
+     */
+    public static @NonNull QSet<@QtPrimitiveType@NonNull Long> ofBuffer(@StrictNonNull LongBuffer elements) {
+		QSet<Long> result = new QSet<>(long.class);
+		while(elements.hasRemaining()) {
+			result.insert(elements.get());
+		}
+		return result;
+	}
+    
+    /**
+     * Returns a QSet containing given elements.
+     *
+     * @param elements
+     * @return a {@code QSet} containing the specified element
+     */
+    public static @NonNull QSet<@QtPrimitiveType@NonNull Character> ofBuffer(@StrictNonNull CharBuffer elements) {
+		QSet<Character> result = new QSet<>(char.class);
+		while(elements.hasRemaining()) {
+			result.insert(elements.get());
+		}
+		return result;
+	}
+    
+    /**
+     * Returns a QSet containing given elements.
+     *
+     * @param elements
+     * @return a {@code QSet} containing the specified element
+     */
+    public static @NonNull QSet<@QtPrimitiveType@NonNull Float> ofBuffer(@StrictNonNull FloatBuffer elements) {
+		QSet<Float> result = new QSet<>(float.class);
+		while(elements.hasRemaining()) {
+			result.insert(elements.get());
+		}
+		return result;
+	}
+    
+    /**
+     * Returns a QSet containing given elements.
+     *
+     * @param elements
+     * @return a {@code QSet} containing the specified element
+     */
+    public static @NonNull QSet<@QtPrimitiveType@NonNull Double> ofBuffer(@StrictNonNull DoubleBuffer elements) {
+		QSet<Double> result = new QSet<>(double.class);
+		while(elements.hasRemaining()) {
+			result.insert(elements.get());
+		}
+		return result;
+	}
+    
+    /**
+     * Returns a QSet containing given elements.
+     *
+     * @param <T> the {@code QSet}'s element type
+     * @param type the {@code QSet}'s element type
+     * @param elements all list elements to be added
+     * @return a {@code QSet} containing the specified element
+     *
+     */
+	@SafeVarargs
+    public static <T> @NonNull QSet<T> ofTyped(@Nullable Class<? super T> type, T @StrictNonNull...elements) {
+		QMetaType metaType = QList.findElementMetaType(type, elements);
+		return ofTyped(metaType, elements);
+	}
+    
+    /**
+     * Returns a QSet containing given elements.
+     *
+     * @param <T> the {@code QSet}'s element type
+     * @param metaType the {@code QSet}'s element type
+     * @param elements all list elements to be added
+     * @return a {@code QSet} containing the specified element
+     *
+     */
+	@SafeVarargs
+    public static <T> @NonNull QSet<T> ofTyped(@StrictNonNull QMetaType metaType, T @StrictNonNull...elements) {
+		if(metaType.id()==0)
+			throw new IllegalArgumentException("QMetaType::UnknownType cannot be type of QSet.");
+		if(metaType.id()==QMetaType.Type.Void.value())
+			throw new IllegalArgumentException("void cannot be type of QSet.");
+		return new QSet<>(metaType, Arrays.asList(elements));
 	}
     
     static RuntimeException handleException(RuntimeException e, QMetaType elementMetaType, Object value) {

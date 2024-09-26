@@ -62,6 +62,7 @@ public class GeneratorTask extends Task {
 	private String qtjambiVersion;
 	private String nullness;
 	private String kotlinPropertyDelegates;
+	private boolean legacy;
     private List<String> commandList = new ArrayList<String>();
 
     private List<String> searchPath(boolean generator_debug) {
@@ -195,6 +196,8 @@ public class GeneratorTask extends Task {
 		        commandList.add(headerFile.getAbsolutePath());
         	}
         }
+        if(legacy)
+        	commandList.add("--legacy-modules");
 
         return true;
     }
@@ -257,7 +260,8 @@ public class GeneratorTask extends Task {
         File dirExecute = null;
         if(dir != null)
             dirExecute = new File(dir);
-        Exec.execute(this, thisCommandList, dirExecute, getProject(), qtBinDirectory, qtLibDirectory, new File(outputDirectory+"/generator.out.txt"), new File(outputDirectory+"/generator.err.txt"));
+        new File(outputDirectory+(legacy ? "/logs_legacy" : "/logs")).mkdirs();
+        Exec.execute(this, thisCommandList, dirExecute, getProject(), qtBinDirectory, qtLibDirectory, new File(outputDirectory+(legacy ? "/logs_legacy" : "/logs")+"/generator.out.txt"), new File(outputDirectory+(legacy ? "/logs_legacy" : "/logs")+"/generator.err.txt"));
     }
 
     public void setHeader(String header) {
@@ -356,5 +360,13 @@ public class GeneratorTask extends Task {
 
 	public void setKotlinPropertyDelegates(String kotlinPropertyDelegates) {
 		this.kotlinPropertyDelegates = kotlinPropertyDelegates;
+	}
+
+	public boolean getLegacy() {
+		return legacy;
+	}
+
+	public void setLegacy(boolean legacy) {
+		this.legacy = legacy;
 	}
 }

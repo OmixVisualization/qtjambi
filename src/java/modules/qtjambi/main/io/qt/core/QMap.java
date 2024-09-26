@@ -29,29 +29,12 @@
 ****************************************************************************/
 package io.qt.core;
 
-import java.util.AbstractMap.SimpleImmutableEntry;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.NavigableMap;
-import java.util.NavigableSet;
-import java.util.Objects;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.function.BiPredicate;
-import java.util.function.Predicate;
+import java.util.AbstractMap.*;
+import java.util.*;
+import java.util.function.*;
 
-import io.qt.NativeAccess;
-import io.qt.QFlags;
-import io.qt.QNoImplementationException;
-import io.qt.QNoNativeResourcesException;
-import io.qt.QtByteEnumerator;
-import io.qt.QtEnumerator;
-import io.qt.QtLongEnumerator;
-import io.qt.QtShortEnumerator;
-import io.qt.QtUninvokable;
+import io.qt.*;
+import io.qt.core.QtJambi_LibraryUtilities;
 
 /**
  * <p>Java wrapper for Qt class <a href="https://doc.qt.io/qt/qmap.html"><code>QMap</code></a></p>
@@ -78,7 +61,7 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
      * @param keyType the type K
      * @param valueMetaType the type V
      */
-	public QMap(Class<Key> keyType, QMetaType.Type valueMetaType) {
+	public QMap(@Nullable Class<Key> keyType, QMetaType.@StrictNonNull Type valueMetaType) {
 		this(keyType, new QMetaType(valueMetaType));
 	}
 	
@@ -88,7 +71,7 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
      * @param keyMetaType the type K
      * @param valueType the type V
      */
-	public QMap(QMetaType.Type keyMetaType, Class<T> valueType) {
+	public QMap(QMetaType.@StrictNonNull Type keyMetaType, @Nullable Class<T> valueType) {
 		this(new QMetaType(keyMetaType), valueType);
 	}
 	
@@ -98,7 +81,7 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
      * @param keyMetaType the type K
      * @param valueMetaType the type V
      */
-	public QMap(QMetaType.Type keyMetaType, QMetaType valueMetaType) {
+	public QMap(QMetaType.@StrictNonNull Type keyMetaType, @StrictNonNull QMetaType valueMetaType) {
 		this(new QMetaType(keyMetaType), valueMetaType);
 	}
 	
@@ -108,7 +91,7 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
      * @param keyMetaType the type K
      * @param valueMetaType the type V
      */
-	public QMap(QMetaType keyMetaType, QMetaType.Type valueMetaType) {
+	public QMap(@StrictNonNull QMetaType keyMetaType, QMetaType.@StrictNonNull Type valueMetaType) {
 		this(keyMetaType, new QMetaType(valueMetaType));
 	}
 	
@@ -118,7 +101,7 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
      * @param keyMetaType the type K
      * @param valueMetaType the type V
      */
-	public QMap(QMetaType.Type keyMetaType, QMetaType.Type valueMetaType) {
+	public QMap(QMetaType.@StrictNonNull Type keyMetaType, QMetaType.@StrictNonNull Type valueMetaType) {
 		this(new QMetaType(keyMetaType), new QMetaType(valueMetaType));
 	}
     
@@ -128,10 +111,18 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
      * @param keyType the type K
      * @param valueType the type V
      */
-    public QMap(Class<Key> keyType, Class<T> valueType) {
+    public QMap(@Nullable Class<Key> keyType, @Nullable Class<T> valueType) {
 		super(null);
 		QMetaType keyMetaType = QMetaType.fromType(keyType);
 		QMetaType valueMetaType = QMetaType.fromType(valueType);
+		if(keyMetaType.id()==0)
+			throw new IllegalArgumentException("QMetaType::UnknownType cannot be key type of QMap.");
+		if(keyMetaType.id()==QMetaType.Type.Void.value())
+			throw new IllegalArgumentException("void cannot be key type of QMap.");
+		if(valueMetaType.id()==0)
+			throw new IllegalArgumentException("QMetaType::UnknownType cannot be value type of QMap.");
+		if(valueMetaType.id()==QMetaType.Type.Void.value())
+			throw new IllegalArgumentException("void cannot be value type of QMap.");
 		initialize(keyType, QtJambi_LibraryUtilities.internal.nativeId(keyMetaType), valueType, QtJambi_LibraryUtilities.internal.nativeId(valueMetaType), null);
 	}
     
@@ -140,9 +131,17 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
      * <p>See <a href="https://doc.qt.io/qt/qmap.html#QMap-2">QMap::<wbr>QMap(const QMap&lt;Key, T> &amp;)</a></p>
      * @param other map
      */
-    public QMap(Map<Key,T> other) {
+    public QMap(@StrictNonNull Map<Key,T> other) {
 		super(null);
 		QPair<QMetaType, QMetaType> metaTypes = QMap.findMapMetaType(Objects.requireNonNull(other));
+		if(metaTypes.first==null || metaTypes.first.id()==0)
+			throw new IllegalArgumentException("QMetaType::UnknownType cannot be key type of QMap.");
+		if(metaTypes.first.id()==QMetaType.Type.Void.value())
+			throw new IllegalArgumentException("void cannot be key type of QMap.");
+		if(metaTypes.second==null || metaTypes.second.id()==0)
+			throw new IllegalArgumentException("QMetaType::UnknownType cannot be value type of QMap.");
+		if(metaTypes.second.id()==QMetaType.Type.Void.value())
+			throw new IllegalArgumentException("void cannot be value type of QMap.");
 		initialize(metaTypes.first.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaTypes.first), metaTypes.second.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaTypes.second), other);
 	}
     
@@ -152,9 +151,17 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
      * @param keyType the type K
      * @param valueMetaType the type V
      */
-	public QMap(Class<Key> keyType, QMetaType valueMetaType) {
+	public QMap(@Nullable Class<Key> keyType, @StrictNonNull QMetaType valueMetaType) {
 		super(null);
 		QMetaType keyMetaType = QMetaType.fromType(keyType);
+		if(keyMetaType.id()==0)
+			throw new IllegalArgumentException("QMetaType::UnknownType cannot be key type of QMap.");
+		if(keyMetaType.id()==QMetaType.Type.Void.value())
+			throw new IllegalArgumentException("void cannot be key type of QMap.");
+		if(valueMetaType.id()==0)
+			throw new IllegalArgumentException("QMetaType::UnknownType cannot be value type of QMap.");
+		if(valueMetaType.id()==QMetaType.Type.Void.value())
+			throw new IllegalArgumentException("void cannot be value type of QMap.");
 		initialize(keyType, QtJambi_LibraryUtilities.internal.nativeId(keyMetaType), valueMetaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(valueMetaType), null);
 	}
     
@@ -164,9 +171,17 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
      * @param keyMetaType the type K
      * @param valueType the type V
      */
-	public QMap(QMetaType keyMetaType, Class<T> valueType) {
+	public QMap(@StrictNonNull QMetaType keyMetaType, @Nullable Class<T> valueType) {
 		super(null);
 		QMetaType valueMetaType = QMetaType.fromType(valueType);
+		if(keyMetaType.id()==0)
+			throw new IllegalArgumentException("QMetaType::UnknownType cannot be key type of QMap.");
+		if(keyMetaType.id()==QMetaType.Type.Void.value())
+			throw new IllegalArgumentException("void cannot be key type of QMap.");
+		if(valueMetaType.id()==0)
+			throw new IllegalArgumentException("QMetaType::UnknownType cannot be value type of QMap.");
+		if(valueMetaType.id()==QMetaType.Type.Void.value())
+			throw new IllegalArgumentException("void cannot be value type of QMap.");
 		initialize(keyMetaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(keyMetaType), valueType, QtJambi_LibraryUtilities.internal.nativeId(valueMetaType), null);
 	}
     
@@ -176,9 +191,22 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
      * @param keyMetaType the type K
      * @param valueMetaType the type V
      */
-	public QMap(QMetaType keyMetaType, QMetaType valueMetaType) {
+	public QMap(@StrictNonNull QMetaType keyMetaType, @StrictNonNull QMetaType valueMetaType) {
 		super(null);
+		if(keyMetaType.id()==0)
+			throw new IllegalArgumentException("QMetaType::UnknownType cannot be key type of QMap.");
+		if(keyMetaType.id()==QMetaType.Type.Void.value())
+			throw new IllegalArgumentException("void cannot be key type of QMap.");
+		if(valueMetaType.id()==0)
+			throw new IllegalArgumentException("QMetaType::UnknownType cannot be value type of QMap.");
+		if(valueMetaType.id()==QMetaType.Type.Void.value())
+			throw new IllegalArgumentException("void cannot be value type of QMap.");
 		initialize(keyMetaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(keyMetaType), valueMetaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(valueMetaType), null);
+	}
+	
+	private QMap(QMetaType keyMetaType, QMetaType valueMetaType, Map<Key,T> other) {
+		super(null);
+		initialize(keyMetaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(keyMetaType), valueMetaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(valueMetaType), other);
 	}
     
     static boolean checkContainerType(QMetaType keyMetaType, QMetaType valueMetaType, java.util.Map<?, ?> container) {
@@ -251,7 +279,7 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
      * Creating a <code>QMap</code> with <code>QVariant</code> type ({@code QMap<QString,QVariant>}).
      * <p>See <a href="https://doc.qt.io/qt/qmap.html#QMap"><code>QMap::<wbr>QMap()</code></a></p>
      */
-    public static QMap<String,Object> createVariantMap() {
+    public static @NonNull QMap<@NonNull String,Object> createVariantMap() {
     	return new QMap<>(new QMetaType(QMetaType.Type.QString), new QMetaType(QMetaType.Type.QVariant));
     }
     
@@ -263,7 +291,7 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
      * <p>See <a href="https://doc.qt.io/qt/qmap.html#QMap-4"><code>QMap::<wbr>QMap(const QMap&lt;Key, T> &amp;)</code></a></p>
      */
     @Override
-	public QMap<Key,T> clone(){
+	public @NonNull QMap<Key,T> clone(){
 		return new QMap<>(this);
 	}
 
@@ -275,7 +303,7 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
         clear(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    static native void clear(long __this__nativeId);
+    private native void clear(long __this__nativeId);
 
     /**
      * <p>See <code><a href="https://doc.qt.io/qt/qmap.html#contains">QMap::<wbr>contains(Key)const</a></code></p>
@@ -291,7 +319,7 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
         }
     }
     @QtUninvokable
-    static native <Key> boolean contains(long __this__nativeId, Key key);
+    private native boolean contains(long __this__nativeId, Object key);
 
     /**
      * <p>See <code><a href="https://doc.qt.io/qt/qmap.html#count-1">QMap::<wbr>count()const</a></code></p>
@@ -315,7 +343,7 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
         }
     }
     @QtUninvokable
-    static native <Key> int count(long __this__nativeId, Key key);
+    private native int count(long __this__nativeId, Key key);
     
     /**
      * Provides a mutable C++ iterator to the containers begin.
@@ -323,11 +351,11 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
      * @return begin
      */
 	@QtUninvokable
-    protected final io.qt.core.QAssociativeIterator<Key,T> begin()    {
+    protected final io.qt.core.@NonNull QAssociativeIterator<Key,T> begin()    {
         return begin(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    static native <Key,T> io.qt.core.QAssociativeIterator<Key,T> begin(long __this__nativeId);
+    private native io.qt.core.QAssociativeIterator<Key,T> begin(long __this__nativeId);
 
     /**
      * Provides a mutable C++ iterator to the containers end.
@@ -335,11 +363,11 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
      * @return end
      */
     @QtUninvokable
-    protected final io.qt.core.QAssociativeIterator<Key,T> end()    {
+    protected final io.qt.core.@NonNull QAssociativeIterator<Key,T> end()    {
         return end(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    static native <Key,T> io.qt.core.QAssociativeIterator<Key,T> end(long __this__nativeId);
+    private native io.qt.core.QAssociativeIterator<Key,T> end(long __this__nativeId);
     
     /**
      * Provides a constant C++ iterator to the containers begin.
@@ -347,11 +375,11 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
      * @return begin
      */
 	@QtUninvokable
-    protected final io.qt.core.QAssociativeConstIterator<Key,T> constBegin()    {
+    protected final io.qt.core.@NonNull QAssociativeConstIterator<Key,T> constBegin()    {
         return constBegin(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    static native <Key,T> io.qt.core.QAssociativeConstIterator<Key,T> constBegin(long __this__nativeId);
+    private native io.qt.core.QAssociativeConstIterator<Key,T> constBegin(long __this__nativeId);
 
     /**
      * Provides a constant C++ iterator to the containers end.
@@ -359,18 +387,18 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
      * @return end
      */
     @QtUninvokable
-    protected final io.qt.core.QAssociativeConstIterator<Key,T> constEnd()    {
+    protected final io.qt.core.@NonNull QAssociativeConstIterator<Key,T> constEnd()    {
         return constEnd(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    static native <Key,T> io.qt.core.QAssociativeConstIterator<Key,T> constEnd(long __this__nativeId);
+    private native io.qt.core.QAssociativeConstIterator<Key,T> constEnd(long __this__nativeId);
 
     /**
      * <p>See <code><a href="https://doc.qt.io/qt/qmap.html#find">QMap::<wbr>find(Key)const</a></code></p>
      * @return iterator
      */
     @QtUninvokable
-    public final io.qt.core.QAssociativeConstIterator<Key,T> find(Key key)    {
+    public final io.qt.core.@NonNull QAssociativeConstIterator<Key,T> find(Key key)    {
         try{
         	return find(QtJambi_LibraryUtilities.internal.nativeId(this), key);
     	}catch(QNoNativeResourcesException e) {
@@ -380,7 +408,7 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
         }
     }
     @QtUninvokable
-    static native <Key,T> io.qt.core.QAssociativeConstIterator<Key,T> find(long __this__nativeId, Key key);
+    private native io.qt.core.QAssociativeConstIterator<Key,T> find(long __this__nativeId, Key key);
 
     /**
      * <p>See <code><a href="https://doc.qt.io/qt/qmap.html#first-1">QMap::<wbr>first()const</a></code></p>
@@ -390,7 +418,7 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
         return first(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    static native <T> T first(long __this__nativeId);
+    private native T first(long __this__nativeId);
 
     /**
      * <p>See <code><a href="https://doc.qt.io/qt/qmap.html#firstKey">QMap::<wbr>firstKey()const</a></code></p>
@@ -400,7 +428,7 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
         return firstKey(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    static native <Key> Key firstKey(long __this__nativeId);
+    private native Key firstKey(long __this__nativeId);
 
     /**
      * <p>See <code><a href="https://doc.qt.io/qt/qmap.html#insert">QMap::<wbr>insert(Key,T)</a></code></p>
@@ -416,7 +444,7 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
         }
     }
     @QtUninvokable
-    static native <Key,T> void insert(long __this__nativeId, Key key, T value);
+    private native void insert(long __this__nativeId, Key key, T value);
 
     /**
      * <p>See <code><a href="https://doc.qt.io/qt/qmap.html#isEmpty">QMap::<wbr>isEmpty()const</a></code></p>
@@ -448,7 +476,7 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
         }
     }
     @QtUninvokable
-    static native <Key,T> Key key(long __this__nativeId, T value, Key defaultKey);
+    private native Key key(long __this__nativeId, T value, Key defaultKey);
 
 	/**
 	 * Returns a {@link List} of the keys contained in this associative container.
@@ -456,17 +484,17 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
 	 * @return list of keys
 	 */
     @QtUninvokable
-    public final QList<Key> keys()    {
+    public final @NonNull QList<Key> keys()    {
         return keys(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    static native <Key> QList<Key> keys(long __this__nativeId);
+    private native QList<Key> keys(long __this__nativeId);
 
 	/**
      * <p>See <a href="https://doc.qt.io/qt/qmap.html#keys-1"><code>QMap::<wbr>keys(T)const</code></a></p>
 	 */
     @QtUninvokable
-    public final QList<Key> keys(T value)    {
+    public final @NonNull QList<Key> keys(T value)    {
         try{
         	return keysForValue(QtJambi_LibraryUtilities.internal.nativeId(this), value);
     	}catch(QNoNativeResourcesException e) {
@@ -476,7 +504,7 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
         }
     }
     @QtUninvokable
-    static native <Key,T> QList<Key> keysForValue(long __this__nativeId, T value);
+    private native QList<Key> keysForValue(long __this__nativeId, Object value);
 
 	/**
      * <p>See <code><a href="https://doc.qt.io/qt/qmap.html#last-1">QMap::<wbr>last()const</a></code></p>
@@ -486,7 +514,7 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
         return last(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    static native <T> T last(long __this__nativeId);
+    private native T last(long __this__nativeId);
 
 	/**
      * <p>See <code><a href="https://doc.qt.io/qt/qmap.html#lastKey">QMap::<wbr>lastKey()const</a></code></p>
@@ -496,13 +524,13 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
         return lastKey(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    static native <Key> Key lastKey(long __this__nativeId);
+    private native Key lastKey(long __this__nativeId);
 
 	/**
      * <p>See <code><a href="https://doc.qt.io/qt/qmap.html#lowerBound">QMap::<wbr>lowerBound(Key)const</a></code></p>
 	 */
     @QtUninvokable
-    public final io.qt.core.QAssociativeConstIterator<Key,T> lowerBound(Key key)    {
+    public final io.qt.core.@NonNull QAssociativeConstIterator<Key,T> lowerBound(Key key)    {
         try{
         	return lowerBound(QtJambi_LibraryUtilities.internal.nativeId(this), key);
     	}catch(QNoNativeResourcesException e) {
@@ -512,16 +540,16 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
         }
     }
     @QtUninvokable
-    static native <Key,T> io.qt.core.QAssociativeConstIterator<Key,T> lowerBound(long __this__nativeId, Key key);
+    private native io.qt.core.QAssociativeConstIterator<Key,T> lowerBound(long __this__nativeId, Key key);
 
 	/**
      * <p>See <code><a href="https://doc.qt.io/qt/qmap.html#removeIf">QMap::<wbr>removeIf(Predicate)</a></code></p>
 	 */
     @QtUninvokable
-    public final int removeIf(Predicate<Key> predicate)    {
+    public final int removeIf(@StrictNonNull Predicate<Key> predicate)    {
     	List<Key> keys = new ArrayList<>();
     	final long nativeId = QtJambi_LibraryUtilities.internal.nativeId(this);
-    	for(Key key : QHash.<Key>keys(nativeId)) {
+    	for(Key key : keys(nativeId)) {
     		if(predicate.test(key))
     			keys.add(key);
     	}
@@ -536,10 +564,10 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
      * <p>See <code><a href="https://doc.qt.io/qt/qmap.html#removeIf">QMap::<wbr>removeIf(Predicate)</a></code></p>
 	 */
     @QtUninvokable
-    public final int removeIf(BiPredicate<Key,T> predicate)    {
+    public final int removeIf(@StrictNonNull BiPredicate<Key,T> predicate)    {
     	List<QPair<Key,T>> pairs = new ArrayList<>();
     	final long nativeId = QtJambi_LibraryUtilities.internal.nativeId(this);
-    	for(QPair<Key,T> pair : QHash.<Key,T>constBegin(nativeId)) {
+    	for(QPair<Key,T> pair : constBegin(nativeId)) {
     		if(predicate.test(pair.first, pair.second))
     			pairs.add(pair);
     	}
@@ -569,7 +597,7 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
     	}
     }
     @QtUninvokable
-    static native <Key,T> int remove(long __this__nativeId, Key key);
+    private native int remove(long __this__nativeId, Object key);
 
 	/**
      * <p>See <code><a href="https://doc.qt.io/qt/qmap.html#size">QMap::<wbr>size()const</a></code></p>
@@ -579,7 +607,7 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
         return size(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    static native int size(long __this__nativeId);
+    private native int size(long __this__nativeId);
 
 	/**
      * <p>See <code><a href="https://doc.qt.io/qt/qmap.html#take">QMap::<wbr>take(Key)</a></code></p>
@@ -595,13 +623,13 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
     	}
     }
     @QtUninvokable
-    static native <Key,T> T take(long __this__nativeId, Key key);
+    private native T take(long __this__nativeId, Key key);
 
 	/**
      * <p>See <code><a href="https://doc.qt.io/qt/qmap.html#upperBound">QMap::<wbr>upperBound(Key)const</a></code></p>
 	 */
     @QtUninvokable
-    public final io.qt.core.QAssociativeConstIterator<Key,T> upperBound(Key key)    {
+    public final io.qt.core.@NonNull QAssociativeConstIterator<Key,T> upperBound(Key key)    {
         try{
         	return upperBound(QtJambi_LibraryUtilities.internal.nativeId(this), key);
     	}catch(QNoNativeResourcesException e) {
@@ -611,7 +639,7 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
         }
     }
     @QtUninvokable
-    static native <Key,T> io.qt.core.QAssociativeConstIterator<Key,T> upperBound(long __this__nativeId, Key key);
+    private native io.qt.core.QAssociativeConstIterator<Key,T> upperBound(long __this__nativeId, Key key);
 
 	/**
      * <p>See <code><a href="https://doc.qt.io/qt/qmap.html#value">QMap::<wbr>value(Key)const</a></code></p>
@@ -635,17 +663,17 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
         }
     }
     @QtUninvokable
-    static native <Key,T> T value(long __this__nativeId, Key key, T defaultValue);
+    private native T value(long __this__nativeId, Object key, Object defaultValue);
 
 	/**
      * <p>See <code><a href="https://doc.qt.io/qt/qmap.html#values">QMap::<wbr>values()const</a></code></p>
 	 */
     @QtUninvokable
-    public final QList<T> values()    {
+    public final @NonNull QList<T> values()    {
         return values(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    static native <T> QList<T> values(long __this__nativeId);
+    private native QList<T> values(long __this__nativeId);
 
     /**
      * <p>See <code><a href="https://doc.qt.io/qt/qmap.html#operator-eq-eq">operator==<wbr>(QMap&lt;Key,T>,QMap&lt;Key,T>)</a></code></p>
@@ -659,7 +687,7 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
         return false;
     }
     @QtUninvokable
-    static native boolean operator_equal(long __this__nativeId, java.util.Map<?,?> other);
+    private native boolean operator_equal(long __this__nativeId, java.util.Map<?,?> other);
 
     /**
      * Returns the objects's hash code computed by <code>qHash(QMap&lt;Key,T>)</code>.
@@ -674,14 +702,14 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
 		}
     }
     @QtUninvokable
-    private static native int hashCode(long __this__nativeId);
+    private native int hashCode(long __this__nativeId);
     
     /**
      * Returns the string representation of the object given by <code>QVariant(this).toString()</code>.
      */
     @Override
     @QtUninvokable
-    public String toString() {
+    public @NonNull String toString() {
     	try {
 			return toString(QtJambi_LibraryUtilities.internal.nativeId(this));
 		} catch (QNoImplementationException e) {
@@ -692,14 +720,14 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
     }
     
     @QtUninvokable
-    private static native String toString(long __this__nativeId);
+    private native String toString(long __this__nativeId);
     
     /**
      * Returns the maps comparator.
      */
 	@Override
     @QtUninvokable
-    public final java.util.Comparator<Key> comparator(){
+    public final java.util.@NonNull Comparator<Key> comparator(){
     	return createComparator(keyMetaType().javaType(), this);
     }
 	
@@ -846,7 +874,7 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
     @QtUninvokable
     public final boolean containsValue(Object value){
     	try {
-    		return keysForValue(QtJambi_LibraryUtilities.internal.nativeId(this), value).isEmpty();
+    		return !keysForValue(QtJambi_LibraryUtilities.internal.nativeId(this), value).isEmpty();
     	}catch(QNoNativeResourcesException e) {
     		throw e;
     	}catch(IllegalArgumentException e) {
@@ -863,7 +891,8 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
      * <p>See <code><a href="https://doc.qt.io/qt/qmap.html#operator-lt-lt">operator&lt;&lt;(QDataStream&amp;,<wbr>QMap&lt;Key,T>)</a></code></p>
      */
     @io.qt.QtUninvokable
-    public void writeTo(io.qt.core.QDataStream stream){
+    public void writeTo(io.qt.core.@StrictNonNull QDataStream stream){
+    	java.util.Objects.requireNonNull(stream, "Argument 'stream': null not expected.");
         writeTo(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(stream));
     }
     
@@ -874,7 +903,8 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
      * <p>See <code><a href="https://doc.qt.io/qt/qmap.html#operator-gt-gt">operator&gt;&gt;(QDataStream&amp;,<wbr>QMap&lt;Key,T>&amp;)</a></code></p>
      */
     @io.qt.QtUninvokable
-    public void readFrom(io.qt.core.QDataStream stream){
+    public void readFrom(io.qt.core.@StrictNonNull QDataStream stream){
+    	java.util.Objects.requireNonNull(stream, "Argument 'stream': null not expected.");
         readFrom(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(stream));
     }
     
@@ -886,14 +916,14 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
     	return keyMetaType(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @io.qt.QtUninvokable
-    static native QMetaType keyMetaType(long __this_nativeId);
+    private native QMetaType keyMetaType(long __this_nativeId);
     
     @io.qt.QtUninvokable
     final QMetaType valueMetaType() {
     	return valueMetaType(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @io.qt.QtUninvokable
-    static native QMetaType valueMetaType(long __this_nativeId);
+    private native QMetaType valueMetaType(long __this_nativeId);
     
     /**
      * Returns a QMap containing a single mapping.
@@ -905,12 +935,10 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
      * @return a {@code QMap} containing the specified mapping
      * @throws NullPointerException if the key or the value is {@code null}
      */
-    public static <Key,T> QMap<Key,T> of(Key k1, T t1) {
-    	QMap<Key,T> result = new QMap<>(
+    public static <Key,T> @NonNull QMap<Key,T> of(Key k1, T t1) {
+    	return ofTyped(
     			QList.findElementMetaType(k1), 
-    			QList.findElementMetaType(t1));
-    	result.insert(k1, t1);
-        return result;
+    			QList.findElementMetaType(t1), k1, t1);
     }
 
     /**
@@ -925,13 +953,12 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
      * @return a {@code QMap} containing the specified mappings
      * @throws NullPointerException if any key or value is {@code null}
      */
-    public static <Key,T> QMap<Key,T> of(Key k1, T t1, Key k2, T t2) {
-    	QMap<Key,T> result = new QMap<>(
+    public static <Key,T> @NonNull QMap<Key,T> of(Key k1, T t1, Key k2, T t2) {
+    	return ofTyped(
     			QList.findElementMetaType(k1, k2), 
-    			QList.findElementMetaType(t1, t2));
-    	result.insert(k1, t1);
-    	result.insert(k2, t2);
-        return result;
+    			QList.findElementMetaType(t1, t2),
+    			k1, t1,
+    			k2, t2);
     }
 
     /**
@@ -948,14 +975,13 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
      * @return a {@code QMap} containing the specified mappings
      * @throws NullPointerException if any key or value is {@code null}
      */
-    public static <Key,T> QMap<Key,T> of(Key k1, T t1, Key k2, T t2, Key k3, T t3) {
-    	QMap<Key,T> result = new QMap<>(
+    public static <Key,T> @NonNull QMap<Key,T> of(Key k1, T t1, Key k2, T t2, Key k3, T t3) {
+    	return ofTyped(
     			QList.findElementMetaType(k1, k2, k3), 
-    			QList.findElementMetaType(t1, t2, t3));
-    	result.insert(k1, t1);
-    	result.insert(k2, t2);
-    	result.insert(k3, t3);
-        return result;
+    			QList.findElementMetaType(t1, t2, t3),
+    			k1, t1,
+    			k2, t2,
+    			k3, t3);
     }
 
     /**
@@ -974,15 +1000,14 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
      * @return a {@code QMap} containing the specified mappings
      * @throws NullPointerException if any key or value is {@code null}
      */
-    public static <Key,T> QMap<Key,T> of(Key k1, T t1, Key k2, T t2, Key k3, T t3, Key k4, T t4) {
-    	QMap<Key,T> result = new QMap<>(
+    public static <Key,T> @NonNull QMap<Key,T> of(Key k1, T t1, Key k2, T t2, Key k3, T t3, Key k4, T t4) {
+    	return ofTyped(
     			QList.findElementMetaType(k1, k2, k3, k4), 
-    			QList.findElementMetaType(t1, t2, t3, t4));
-    	result.insert(k1, t1);
-    	result.insert(k2, t2);
-    	result.insert(k3, t3);
-    	result.insert(k4, t4);
-        return result;
+    			QList.findElementMetaType(t1, t2, t3, t4),
+    			k1, t1,
+    			k2, t2,
+    			k3, t3,
+    			k4, t4);
     }
 
     /**
@@ -1003,16 +1028,15 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
      * @return a {@code QMap} containing the specified mappings
      * @throws NullPointerException if any key or value is {@code null}
      */
-    public static <Key,T> QMap<Key,T> of(Key k1, T t1, Key k2, T t2, Key k3, T t3, Key k4, T t4, Key k5, T t5) {
-    	QMap<Key,T> result = new QMap<>(
+    public static <Key,T> @NonNull QMap<Key,T> of(Key k1, T t1, Key k2, T t2, Key k3, T t3, Key k4, T t4, Key k5, T t5) {
+    	return ofTyped(
     			QList.findElementMetaType(k1, k2, k3, k4, k5), 
-    			QList.findElementMetaType(t1, t2, t3, t4, t5));
-    	result.insert(k1, t1);
-    	result.insert(k2, t2);
-    	result.insert(k3, t3);
-    	result.insert(k4, t4);
-    	result.insert(k5, t5);
-        return result;
+    			QList.findElementMetaType(t1, t2, t3, t4, t5),
+    			k1, t1,
+    			k2, t2,
+    			k3, t3,
+    			k4, t4,
+    			k5, t5);
     }
 
     /**
@@ -1035,17 +1059,16 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
      * @return a {@code QMap} containing the specified mappings
      * @throws NullPointerException if any key or value is {@code null}
      */
-    public static <Key,T> QMap<Key,T> of(Key k1, T t1, Key k2, T t2, Key k3, T t3, Key k4, T t4, Key k5, T t5, Key k6, T t6) {
-    	QMap<Key,T> result = new QMap<>(
+    public static <Key,T> @NonNull QMap<Key,T> of(Key k1, T t1, Key k2, T t2, Key k3, T t3, Key k4, T t4, Key k5, T t5, Key k6, T t6) {
+    	return ofTyped(
     			QList.findElementMetaType(k1, k2, k3, k4, k5, k6), 
-    			QList.findElementMetaType(t1, t2, t3, t4, t5, t6));
-    	result.insert(k1, t1);
-    	result.insert(k2, t2);
-    	result.insert(k3, t3);
-    	result.insert(k4, t4);
-    	result.insert(k5, t5);
-    	result.insert(k6, t6);
-        return result;
+    			QList.findElementMetaType(t1, t2, t3, t4, t5, t6),
+    			k1, t1,
+    			k2, t2,
+    			k3, t3,
+    			k4, t4,
+    			k5, t5,
+    			k6, t6);
     }
 
     /**
@@ -1070,19 +1093,18 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
      * @return a {@code QMap} containing the specified mappings
      * @throws NullPointerException if any key or value is {@code null}
      */
-    public static <Key,T> QMap<Key,T> of(Key k1, T t1, Key k2, T t2, Key k3, T t3, Key k4, T t4, Key k5, T t5,
+    public static <Key,T> @NonNull QMap<Key,T> of(Key k1, T t1, Key k2, T t2, Key k3, T t3, Key k4, T t4, Key k5, T t5,
                                Key k6, T t6, Key k7, T t7) {
-    	QMap<Key,T> result = new QMap<>(
+    	return ofTyped(
     			QList.findElementMetaType(k1, k2, k3, k4, k5, k6, k7), 
-    			QList.findElementMetaType(t1, t2, t3, t4, t5, t6, t7));
-    	result.insert(k1, t1);
-    	result.insert(k2, t2);
-    	result.insert(k3, t3);
-    	result.insert(k4, t4);
-    	result.insert(k5, t5);
-    	result.insert(k6, t6);
-    	result.insert(k7, t7);
-        return result;
+    			QList.findElementMetaType(t1, t2, t3, t4, t5, t6, t7),
+    			k1, t1,
+    			k2, t2,
+    			k3, t3,
+    			k4, t4,
+    			k5, t5,
+    			k6, t6,
+    			k7, t7);
     }
 
     /**
@@ -1109,11 +1131,641 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
      * @return a {@code QMap} containing the specified mappings
      * @throws NullPointerException if any key or value is {@code null}
      */
-    public static <Key,T> QMap<Key,T> of(Key k1, T t1, Key k2, T t2, Key k3, T t3, Key k4, T t4, Key k5, T t5,
+    public static <Key,T> @NonNull QMap<Key,T> of(Key k1, T t1, Key k2, T t2, Key k3, T t3, Key k4, T t4, Key k5, T t5,
                                Key k6, T t6, Key k7, T t7, Key k8, T t8) {
-    	QMap<Key,T> result = new QMap<>(
+    	return ofTyped(
     			QList.findElementMetaType(k1, k2, k3, k4, k5, k6, k7, k8), 
-    			QList.findElementMetaType(t1, t2, t3, t4, t5, t6, t7, t8));
+    			QList.findElementMetaType(t1, t2, t3, t4, t5, t6, t7, t8),
+    			k1, t1,
+    			k2, t2,
+    			k3, t3,
+    			k4, t4,
+    			k5, t5,
+    			k6, t6,
+    			k7, t7,
+    			k8, t8);
+    }
+
+    /**
+     * Returns a QMap containing nine mappings.
+     *
+     * @param <Key> the {@code QMap}'s key type
+     * @param <T> the {@code QMap}'s value type
+     * @param k1 the first mapping's key
+     * @param t1 the first mapping's value
+     * @param k2 the second mapping's key
+     * @param t2 the second mapping's value
+     * @param k3 the third mapping's key
+     * @param t3 the third mapping's value
+     * @param k4 the fourth mapping's key
+     * @param t4 the fourth mapping's value
+     * @param k5 the fifth mapping's key
+     * @param t5 the fifth mapping's value
+     * @param k6 the sixth mapping's key
+     * @param t6 the sixth mapping's value
+     * @param k7 the seventh mapping's key
+     * @param t7 the seventh mapping's value
+     * @param k8 the eighth mapping's key
+     * @param t8 the eighth mapping's value
+     * @param k9 the ninth mapping's key
+     * @param t9 the ninth mapping's value
+     * @return a {@code QMap} containing the specified mappings
+     * @throws NullPointerException if any key or value is {@code null}
+     */
+    public static <Key,T> @NonNull QMap<Key,T> of(Key k1, T t1, Key k2, T t2, Key k3, T t3, Key k4, T t4, Key k5, T t5,
+                               Key k6, T t6, Key k7, T t7, Key k8, T t8, Key k9, T t9) {
+    	return ofTyped(
+    			QList.findElementMetaType(k1, k2, k3, k4, k5, k6, k7, k8, k9), 
+    			QList.findElementMetaType(t1, t2, t3, t4, t5, t6, t7, t8, t9),
+    			k1, t1,
+    			k2, t2,
+    			k3, t3,
+    			k4, t4,
+    			k5, t5,
+    			k6, t6,
+    			k7, t7,
+    			k8, t8,
+    			k9, t9);
+    }
+
+    /**
+     * Returns a QMap containing ten mappings.
+     *
+     * @param <Key> the {@code QMap}'s key type
+     * @param <T> the {@code QMap}'s value type
+     * @param k1 the first mapping's key
+     * @param t1 the first mapping's value
+     * @param k2 the second mapping's key
+     * @param t2 the second mapping's value
+     * @param k3 the third mapping's key
+     * @param t3 the third mapping's value
+     * @param k4 the fourth mapping's key
+     * @param t4 the fourth mapping's value
+     * @param k5 the fifth mapping's key
+     * @param t5 the fifth mapping's value
+     * @param k6 the sixth mapping's key
+     * @param t6 the sixth mapping's value
+     * @param k7 the seventh mapping's key
+     * @param t7 the seventh mapping's value
+     * @param k8 the eighth mapping's key
+     * @param t8 the eighth mapping's value
+     * @param k9 the ninth mapping's key
+     * @param t9 the ninth mapping's value
+     * @param k10 the tenth mapping's key
+     * @param t10 the tenth mapping's value
+     * @return a {@code QMap} containing the specified mappings
+     * @throws NullPointerException if any key or value is {@code null}
+     */
+    public static <Key,T> @NonNull QMap<Key,T> of(Key k1, T t1, Key k2, T t2, Key k3, T t3, Key k4, T t4, Key k5, T t5,
+                               Key k6, T t6, Key k7, T t7, Key k8, T t8, Key k9, T t9, Key k10, T t10) {
+    	return ofTyped(
+    			QList.findElementMetaType(k1, k2, k3, k4, k5, k6, k7, k8, k9, k10), 
+    			QList.findElementMetaType(t1, t2, t3, t4, t5, t6, t7, t8, t9, t10),
+    			k1, t1,
+    			k2, t2,
+    			k3, t3,
+    			k4, t4,
+    			k5, t5,
+    			k6, t6,
+    			k7, t7,
+    			k8, t8,
+    			k9, t9,
+    			k10, t10);
+    }
+    
+    /**
+     * Returns a QMap containing a single mapping.
+     *
+     * @param <Key> the {@code QMap}'s key type
+     * @param <T> the {@code QMap}'s value type
+     * @param keyType key type
+     * @param valueType value type
+     * @param k1 the mapping's key
+     * @param t1 the mapping's value
+     * @return a {@code QMap} containing the specified mapping
+     */
+    public static <Key,T> @NonNull QMap<Key,T> ofTyped(@Nullable Class<Key> keyType, @Nullable Class<T> valueType, Key k1, T t1) {
+    	return ofTyped(
+    			QList.findElementMetaType(keyType, k1), 
+    			QList.findElementMetaType(valueType, t1),
+    			k1, t1);
+    }
+
+    /**
+     * Returns a QMap containing two mappings.
+     *
+     * @param <Key> the {@code QMap}'s key type
+     * @param <T> the {@code QMap}'s value type
+     * @param keyType key type
+     * @param valueType value type
+     * @param k1 the first mapping's key
+     * @param t1 the first mapping's value
+     * @param k2 the second mapping's key
+     * @param t2 the second mapping's value
+     * @return a {@code QMap} containing the specified mappings
+     */
+    public static <Key,T> @NonNull QMap<Key,T> ofTyped(@Nullable Class<Key> keyType, @Nullable Class<T> valueType, Key k1, T t1, Key k2, T t2) {
+    	return ofTyped(
+    			QList.findElementMetaType(keyType, k1, k2), 
+    			QList.findElementMetaType(valueType, t1, t2), k1, t1, k2, t2);
+    }
+
+    /**
+     * Returns a QMap containing three mappings.
+     *
+     * @param <Key> the {@code QMap}'s key type
+     * @param <T> the {@code QMap}'s value type
+     * @param keyType key type
+     * @param valueType value type
+     * @param k1 the first mapping's key
+     * @param t1 the first mapping's value
+     * @param k2 the second mapping's key
+     * @param t2 the second mapping's value
+     * @param k3 the third mapping's key
+     * @param t3 the third mapping's value
+     * @return a {@code QMap} containing the specified mappings
+     */
+    public static <Key,T> @NonNull QMap<Key,T> ofTyped(@Nullable Class<Key> keyType, @Nullable Class<T> valueType, Key k1, T t1, Key k2, T t2, Key k3, T t3) {
+    	return ofTyped(
+    			QList.findElementMetaType(keyType, k1, k2, k3), 
+    			QList.findElementMetaType(valueType, t1, t2, t3), 
+    			k1, t1,
+    			k2, t2,
+    			k3, t3);
+    }
+
+    /**
+     * Returns a QMap containing four mappings.
+     *
+     * @param <Key> the {@code QMap}'s key type
+     * @param <T> the {@code QMap}'s value type
+     * @param keyType key type
+     * @param valueType value type
+     * @param k1 the first mapping's key
+     * @param t1 the first mapping's value
+     * @param k2 the second mapping's key
+     * @param t2 the second mapping's value
+     * @param k3 the third mapping's key
+     * @param t3 the third mapping's value
+     * @param k4 the fourth mapping's key
+     * @param t4 the fourth mapping's value
+     * @return a {@code QMap} containing the specified mappings
+     */
+    public static <Key,T> @NonNull QMap<Key,T> ofTyped(@Nullable Class<Key> keyType, @Nullable Class<T> valueType, Key k1, T t1, Key k2, T t2, Key k3, T t3, Key k4, T t4) {
+    	return ofTyped(
+    			QList.findElementMetaType(keyType, k1, k2, k3, k4), 
+    			QList.findElementMetaType(valueType, t1, t2, t3, t4),
+    			k1, t1,
+    			k2, t2,
+    			k3, t3,
+    			k4, t4);
+    }
+
+    /**
+     * Returns a QMap containing five mappings.
+     *
+     * @param <Key> the {@code QMap}'s key type
+     * @param <T> the {@code QMap}'s value type
+     * @param keyType key type
+     * @param valueType value type
+     * @param k1 the first mapping's key
+     * @param t1 the first mapping's value
+     * @param k2 the second mapping's key
+     * @param t2 the second mapping's value
+     * @param k3 the third mapping's key
+     * @param t3 the third mapping's value
+     * @param k4 the fourth mapping's key
+     * @param t4 the fourth mapping's value
+     * @param k5 the fifth mapping's key
+     * @param t5 the fifth mapping's value
+     * @return a {@code QMap} containing the specified mappings
+     */
+    public static <Key,T> @NonNull QMap<Key,T> ofTyped(@Nullable Class<Key> keyType, @Nullable Class<T> valueType, Key k1, T t1, Key k2, T t2, Key k3, T t3, Key k4, T t4, Key k5, T t5) {
+    	return ofTyped(
+    			QList.findElementMetaType(keyType, k1, k2, k3, k4, k5), 
+    			QList.findElementMetaType(valueType, t1, t2, t3, t4, t5),
+    			k1, t1,
+    			k2, t2,
+    			k3, t3,
+    			k4, t4,
+    			k5, t5);
+    }
+
+    /**
+     * Returns a QMap containing six mappings.
+     *
+     * @param <Key> the {@code QMap}'s key type
+     * @param <T> the {@code QMap}'s value type
+     * @param keyType key type
+     * @param valueType value type
+     * @param k1 the first mapping's key
+     * @param t1 the first mapping's value
+     * @param k2 the second mapping's key
+     * @param t2 the second mapping's value
+     * @param k3 the third mapping's key
+     * @param t3 the third mapping's value
+     * @param k4 the fourth mapping's key
+     * @param t4 the fourth mapping's value
+     * @param k5 the fifth mapping's key
+     * @param t5 the fifth mapping's value
+     * @param k6 the sixth mapping's key
+     * @param t6 the sixth mapping's value
+     * @return a {@code QMap} containing the specified mappings
+     */
+    public static <Key,T> @NonNull QMap<Key,T> ofTyped(@Nullable Class<Key> keyType, @Nullable Class<T> valueType, Key k1, T t1, Key k2, T t2, Key k3, T t3, Key k4, T t4, Key k5, T t5, Key k6, T t6) {
+    	return ofTyped(
+    			QList.findElementMetaType(keyType, k1, k2, k3, k4, k5, k6), 
+    			QList.findElementMetaType(valueType, t1, t2, t3, t4, t5, t6),
+    			k1, t1,
+    			k2, t2,
+    			k3, t3,
+    			k4, t4,
+    			k5, t5,
+    			k6, t6);
+    }
+
+    /**
+     * Returns a QMap containing seven mappings.
+     *
+     * @param <Key> the {@code QMap}'s key type
+     * @param <T> the {@code QMap}'s value type
+     * @param keyType key type
+     * @param valueType value type
+     * @param k1 the first mapping's key
+     * @param t1 the first mapping's value
+     * @param k2 the second mapping's key
+     * @param t2 the second mapping's value
+     * @param k3 the third mapping's key
+     * @param t3 the third mapping's value
+     * @param k4 the fourth mapping's key
+     * @param t4 the fourth mapping's value
+     * @param k5 the fifth mapping's key
+     * @param t5 the fifth mapping's value
+     * @param k6 the sixth mapping's key
+     * @param t6 the sixth mapping's value
+     * @param k7 the seventh mapping's key
+     * @param t7 the seventh mapping's value
+     * @return a {@code QMap} containing the specified mappings
+     */
+    public static <Key,T> @NonNull QMap<Key,T> ofTyped(@Nullable Class<Key> keyType, @Nullable Class<T> valueType, Key k1, T t1, Key k2, T t2, Key k3, T t3, Key k4, T t4, Key k5, T t5,
+                               Key k6, T t6, Key k7, T t7) {
+    	return ofTyped(
+    			QList.findElementMetaType(keyType, k1, k2, k3, k4, k5, k6, k7), 
+    			QList.findElementMetaType(valueType, t1, t2, t3, t4, t5, t6, t7),
+    			k1, t1,
+    			k2, t2,
+    			k3, t3,
+    			k4, t4,
+    			k5, t5,
+    			k6, t6,
+    			k7, t7);
+    }
+
+    /**
+     * Returns a QMap containing eight mappings.
+     *
+     * @param <Key> the {@code QMap}'s key type
+     * @param <T> the {@code QMap}'s value type
+     * @param keyType key type
+     * @param valueType value type
+     * @param k1 the first mapping's key
+     * @param t1 the first mapping's value
+     * @param k2 the second mapping's key
+     * @param t2 the second mapping's value
+     * @param k3 the third mapping's key
+     * @param t3 the third mapping's value
+     * @param k4 the fourth mapping's key
+     * @param t4 the fourth mapping's value
+     * @param k5 the fifth mapping's key
+     * @param t5 the fifth mapping's value
+     * @param k6 the sixth mapping's key
+     * @param t6 the sixth mapping's value
+     * @param k7 the seventh mapping's key
+     * @param t7 the seventh mapping's value
+     * @param k8 the eighth mapping's key
+     * @param t8 the eighth mapping's value
+     * @return a {@code QMap} containing the specified mappings
+     */
+    public static <Key,T> @NonNull QMap<Key,T> ofTyped(@Nullable Class<Key> keyType, @Nullable Class<T> valueType, Key k1, T t1, Key k2, T t2, Key k3, T t3, Key k4, T t4, Key k5, T t5,
+                               Key k6, T t6, Key k7, T t7, Key k8, T t8) {
+    	return ofTyped(
+    			QList.findElementMetaType(keyType, k1, k2, k3, k4, k5, k6, k7, k8), 
+    			QList.findElementMetaType(valueType, t1, t2, t3, t4, t5, t6, t7, t8),
+    			k1, t1,
+    			k2, t2,
+    			k3, t3,
+    			k4, t4,
+    			k5, t5,
+    			k6, t6,
+    			k7, t7,
+    			k8, t8);
+    }
+
+    /**
+     * Returns a QMap containing nine mappings.
+     *
+     * @param <Key> the {@code QMap}'s key type
+     * @param <T> the {@code QMap}'s value type
+     * @param keyType key type
+     * @param valueType value type
+     * @param k1 the first mapping's key
+     * @param t1 the first mapping's value
+     * @param k2 the second mapping's key
+     * @param t2 the second mapping's value
+     * @param k3 the third mapping's key
+     * @param t3 the third mapping's value
+     * @param k4 the fourth mapping's key
+     * @param t4 the fourth mapping's value
+     * @param k5 the fifth mapping's key
+     * @param t5 the fifth mapping's value
+     * @param k6 the sixth mapping's key
+     * @param t6 the sixth mapping's value
+     * @param k7 the seventh mapping's key
+     * @param t7 the seventh mapping's value
+     * @param k8 the eighth mapping's key
+     * @param t8 the eighth mapping's value
+     * @param k9 the ninth mapping's key
+     * @param t9 the ninth mapping's value
+     * @return a {@code QMap} containing the specified mappings
+     */
+    public static <Key,T> @NonNull QMap<Key,T> ofTyped(@Nullable Class<Key> keyType, @Nullable Class<T> valueType, Key k1, T t1, Key k2, T t2, Key k3, T t3, Key k4, T t4, Key k5, T t5,
+                               Key k6, T t6, Key k7, T t7, Key k8, T t8, Key k9, T t9) {
+    	return ofTyped(
+    			QList.findElementMetaType(keyType, k1, k2, k3, k4, k5, k6, k7, k8, k9), 
+    			QList.findElementMetaType(valueType, t1, t2, t3, t4, t5, t6, t7, t8, t9),
+    			k1, t1, k2, t2,
+    			k3, t3,
+    			k4, t4,
+    			k5, t5,
+    			k6, t6,
+    			k7, t7,
+    			k8, t8,
+    			k9, t9);
+    }
+
+    /**
+     * Returns a QMap containing ten mappings.
+     *
+     * @param <Key> the {@code QMap}'s key type
+     * @param <T> the {@code QMap}'s value type
+     * @param keyType key type
+     * @param valueType value type
+     * @param k1 the first mapping's key
+     * @param t1 the first mapping's value
+     * @param k2 the second mapping's key
+     * @param t2 the second mapping's value
+     * @param k3 the third mapping's key
+     * @param t3 the third mapping's value
+     * @param k4 the fourth mapping's key
+     * @param t4 the fourth mapping's value
+     * @param k5 the fifth mapping's key
+     * @param t5 the fifth mapping's value
+     * @param k6 the sixth mapping's key
+     * @param t6 the sixth mapping's value
+     * @param k7 the seventh mapping's key
+     * @param t7 the seventh mapping's value
+     * @param k8 the eighth mapping's key
+     * @param t8 the eighth mapping's value
+     * @param k9 the ninth mapping's key
+     * @param t9 the ninth mapping's value
+     * @param k10 the tenth mapping's key
+     * @param t10 the tenth mapping's value
+     * @return a {@code QMap} containing the specified mappings
+     */
+    public static <Key,T> @NonNull QMap<Key,T> ofTyped(@Nullable Class<Key> keyType, @Nullable Class<T> valueType, Key k1, T t1, Key k2, T t2, Key k3, T t3, Key k4, T t4, Key k5, T t5,
+                               Key k6, T t6, Key k7, T t7, Key k8, T t8, Key k9, T t9, Key k10, T t10) {
+    	return ofTyped(
+    			QList.findElementMetaType(keyType, k1, k2, k3, k4, k5, k6, k7, k8, k9, k10), 
+    			QList.findElementMetaType(valueType, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10),
+    			k1, t1,
+    			k2, t2,
+    			k3, t3,
+    			k4, t4,
+    			k5, t5,
+    			k6, t6,
+    			k7, t7,
+    			k8, t8,
+    			k9, t9,
+    			k10, t10);
+    }
+    
+    /**
+     * Returns a QMap containing a single mapping.
+     *
+     * @param <Key> the {@code QMap}'s key type
+     * @param <T> the {@code QMap}'s value type
+     * @param keyType key type
+     * @param valueType value type
+     * @param k1 the mapping's key
+     * @param t1 the mapping's value
+     * @return a {@code QMap} containing the specified mapping
+     */
+    public static <Key,T> @NonNull QMap<Key,T> ofTyped(@StrictNonNull QMetaType keyType, @StrictNonNull QMetaType valueType, Key k1, T t1) {
+		if(keyType.id()==0)
+			throw new IllegalArgumentException("QMetaType::UnknownType cannot be key type of QMap.");
+		if(keyType.id()==QMetaType.Type.Void.value())
+			throw new IllegalArgumentException("void cannot be key type of QMap.");
+		if(valueType.id()==0)
+			throw new IllegalArgumentException("QMetaType::UnknownType cannot be value type of QMap.");
+		if(valueType.id()==QMetaType.Type.Void.value())
+			throw new IllegalArgumentException("void cannot be value type of QMap.");
+    	return new QMap<>(keyType, valueType, Collections.singletonMap(k1, t1));
+    }
+
+    /**
+     * Returns a QMap containing two mappings.
+     *
+     * @param <Key> the {@code QMap}'s key type
+     * @param <T> the {@code QMap}'s value type
+     * @param keyType key type
+     * @param valueType value type
+     * @param k1 the first mapping's key
+     * @param t1 the first mapping's value
+     * @param k2 the second mapping's key
+     * @param t2 the second mapping's value
+     * @return a {@code QMap} containing the specified mappings
+     */
+    public static <Key,T> @NonNull QMap<Key,T> ofTyped(@StrictNonNull QMetaType keyType, @StrictNonNull QMetaType valueType, Key k1, T t1, Key k2, T t2) {
+    	QMap<Key,T> result = new QMap<>(keyType, valueType);
+    	result.insert(k1, t1);
+    	result.insert(k2, t2);
+        return result;
+    }
+
+    /**
+     * Returns a QMap containing three mappings.
+     *
+     * @param <Key> the {@code QMap}'s key type
+     * @param <T> the {@code QMap}'s value type
+     * @param keyType key type
+     * @param valueType value type
+     * @param k1 the first mapping's key
+     * @param t1 the first mapping's value
+     * @param k2 the second mapping's key
+     * @param t2 the second mapping's value
+     * @param k3 the third mapping's key
+     * @param t3 the third mapping's value
+     * @return a {@code QMap} containing the specified mappings
+     */
+    public static <Key,T> @NonNull QMap<Key,T> ofTyped(@StrictNonNull QMetaType keyType, @StrictNonNull QMetaType valueType, Key k1, T t1, Key k2, T t2, Key k3, T t3) {
+    	QMap<Key,T> result = new QMap<>(keyType, valueType);
+    	result.insert(k1, t1);
+    	result.insert(k2, t2);
+    	result.insert(k3, t3);
+        return result;
+    }
+
+    /**
+     * Returns a QMap containing four mappings.
+     *
+     * @param <Key> the {@code QMap}'s key type
+     * @param <T> the {@code QMap}'s value type
+     * @param keyType key type
+     * @param valueType value type
+     * @param k1 the first mapping's key
+     * @param t1 the first mapping's value
+     * @param k2 the second mapping's key
+     * @param t2 the second mapping's value
+     * @param k3 the third mapping's key
+     * @param t3 the third mapping's value
+     * @param k4 the fourth mapping's key
+     * @param t4 the fourth mapping's value
+     * @return a {@code QMap} containing the specified mappings
+     */
+    public static <Key,T> @NonNull QMap<Key,T> ofTyped(@StrictNonNull QMetaType keyType, @StrictNonNull QMetaType valueType, Key k1, T t1, Key k2, T t2, Key k3, T t3, Key k4, T t4) {
+    	QMap<Key,T> result = new QMap<>(keyType, valueType);
+    	result.insert(k1, t1);
+    	result.insert(k2, t2);
+    	result.insert(k3, t3);
+    	result.insert(k4, t4);
+        return result;
+    }
+
+    /**
+     * Returns a QMap containing five mappings.
+     *
+     * @param <Key> the {@code QMap}'s key type
+     * @param <T> the {@code QMap}'s value type
+     * @param keyType key type
+     * @param valueType value type
+     * @param k1 the first mapping's key
+     * @param t1 the first mapping's value
+     * @param k2 the second mapping's key
+     * @param t2 the second mapping's value
+     * @param k3 the third mapping's key
+     * @param t3 the third mapping's value
+     * @param k4 the fourth mapping's key
+     * @param t4 the fourth mapping's value
+     * @param k5 the fifth mapping's key
+     * @param t5 the fifth mapping's value
+     * @return a {@code QMap} containing the specified mappings
+     */
+    public static <Key,T> @NonNull QMap<Key,T> ofTyped(@StrictNonNull QMetaType keyType, @StrictNonNull QMetaType valueType, Key k1, T t1, Key k2, T t2, Key k3, T t3, Key k4, T t4, Key k5, T t5) {
+    	QMap<Key,T> result = new QMap<>(keyType, valueType);
+    	result.insert(k1, t1);
+    	result.insert(k2, t2);
+    	result.insert(k3, t3);
+    	result.insert(k4, t4);
+    	result.insert(k5, t5);
+        return result;
+    }
+
+    /**
+     * Returns a QMap containing six mappings.
+     *
+     * @param <Key> the {@code QMap}'s key type
+     * @param <T> the {@code QMap}'s value type
+     * @param keyType key type
+     * @param valueType value type
+     * @param k1 the first mapping's key
+     * @param t1 the first mapping's value
+     * @param k2 the second mapping's key
+     * @param t2 the second mapping's value
+     * @param k3 the third mapping's key
+     * @param t3 the third mapping's value
+     * @param k4 the fourth mapping's key
+     * @param t4 the fourth mapping's value
+     * @param k5 the fifth mapping's key
+     * @param t5 the fifth mapping's value
+     * @param k6 the sixth mapping's key
+     * @param t6 the sixth mapping's value
+     * @return a {@code QMap} containing the specified mappings
+     */
+    public static <Key,T> @NonNull QMap<Key,T> ofTyped(@StrictNonNull QMetaType keyType, @StrictNonNull QMetaType valueType, Key k1, T t1, Key k2, T t2, Key k3, T t3, Key k4, T t4, Key k5, T t5, Key k6, T t6) {
+    	QMap<Key,T> result = new QMap<>(keyType, valueType);
+    	result.insert(k1, t1);
+    	result.insert(k2, t2);
+    	result.insert(k3, t3);
+    	result.insert(k4, t4);
+    	result.insert(k5, t5);
+    	result.insert(k6, t6);
+        return result;
+    }
+
+    /**
+     * Returns a QMap containing seven mappings.
+     *
+     * @param <Key> the {@code QMap}'s key type
+     * @param <T> the {@code QMap}'s value type
+     * @param keyType key type
+     * @param valueType value type
+     * @param k1 the first mapping's key
+     * @param t1 the first mapping's value
+     * @param k2 the second mapping's key
+     * @param t2 the second mapping's value
+     * @param k3 the third mapping's key
+     * @param t3 the third mapping's value
+     * @param k4 the fourth mapping's key
+     * @param t4 the fourth mapping's value
+     * @param k5 the fifth mapping's key
+     * @param t5 the fifth mapping's value
+     * @param k6 the sixth mapping's key
+     * @param t6 the sixth mapping's value
+     * @param k7 the seventh mapping's key
+     * @param t7 the seventh mapping's value
+     * @return a {@code QMap} containing the specified mappings
+     */
+    public static <Key,T> @NonNull QMap<Key,T> ofTyped(@StrictNonNull QMetaType keyType, @StrictNonNull QMetaType valueType, Key k1, T t1, Key k2, T t2, Key k3, T t3, Key k4, T t4, Key k5, T t5,
+                               Key k6, T t6, Key k7, T t7) {
+    	QMap<Key,T> result = new QMap<>(keyType, valueType);
+    	result.insert(k1, t1);
+    	result.insert(k2, t2);
+    	result.insert(k3, t3);
+    	result.insert(k4, t4);
+    	result.insert(k5, t5);
+    	result.insert(k6, t6);
+    	result.insert(k7, t7);
+        return result;
+    }
+
+    /**
+     * Returns a QMap containing eight mappings.
+     *
+     * @param <Key> the {@code QMap}'s key type
+     * @param <T> the {@code QMap}'s value type
+     * @param keyType key type
+     * @param valueType value type
+     * @param k1 the first mapping's key
+     * @param t1 the first mapping's value
+     * @param k2 the second mapping's key
+     * @param t2 the second mapping's value
+     * @param k3 the third mapping's key
+     * @param t3 the third mapping's value
+     * @param k4 the fourth mapping's key
+     * @param t4 the fourth mapping's value
+     * @param k5 the fifth mapping's key
+     * @param t5 the fifth mapping's value
+     * @param k6 the sixth mapping's key
+     * @param t6 the sixth mapping's value
+     * @param k7 the seventh mapping's key
+     * @param t7 the seventh mapping's value
+     * @param k8 the eighth mapping's key
+     * @param t8 the eighth mapping's value
+     * @return a {@code QMap} containing the specified mappings
+     */
+    public static <Key,T> @NonNull QMap<Key,T> ofTyped(@StrictNonNull QMetaType keyType, @StrictNonNull QMetaType valueType, Key k1, T t1, Key k2, T t2, Key k3, T t3, Key k4, T t4, Key k5, T t5,
+                               Key k6, T t6, Key k7, T t7, Key k8, T t8) {
+    	QMap<Key,T> result = new QMap<>(keyType, valueType);
     	result.insert(k1, t1);
     	result.insert(k2, t2);
     	result.insert(k3, t3);
@@ -1149,13 +1801,10 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
      * @param k9 the ninth mapping's key
      * @param t9 the ninth mapping's value
      * @return a {@code QMap} containing the specified mappings
-     * @throws NullPointerException if any key or value is {@code null}
      */
-    public static <Key,T> QMap<Key,T> of(Key k1, T t1, Key k2, T t2, Key k3, T t3, Key k4, T t4, Key k5, T t5,
+    public static <Key,T> @NonNull QMap<Key,T> ofTyped(@StrictNonNull QMetaType keyType, @StrictNonNull QMetaType valueType, Key k1, T t1, Key k2, T t2, Key k3, T t3, Key k4, T t4, Key k5, T t5,
                                Key k6, T t6, Key k7, T t7, Key k8, T t8, Key k9, T t9) {
-    	QMap<Key,T> result = new QMap<>(
-    			QList.findElementMetaType(k1, k2, k3, k4, k5, k6, k7, k8, k9), 
-    			QList.findElementMetaType(t1, t2, t3, t4, t5, t6, t7, t8, t9));
+    	QMap<Key,T> result = new QMap<>(keyType, valueType);
     	result.insert(k1, t1);
     	result.insert(k2, t2);
     	result.insert(k3, t3);
@@ -1173,6 +1822,8 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
      *
      * @param <Key> the {@code QMap}'s key type
      * @param <T> the {@code QMap}'s value type
+     * @param keyType key type
+     * @param valueType value type
      * @param k1 the first mapping's key
      * @param t1 the first mapping's value
      * @param k2 the second mapping's key
@@ -1194,13 +1845,10 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
      * @param k10 the tenth mapping's key
      * @param t10 the tenth mapping's value
      * @return a {@code QMap} containing the specified mappings
-     * @throws NullPointerException if any key or value is {@code null}
      */
-    public static <Key,T> QMap<Key,T> of(Key k1, T t1, Key k2, T t2, Key k3, T t3, Key k4, T t4, Key k5, T t5,
+    public static <Key,T> @NonNull QMap<Key,T> ofTyped(@StrictNonNull QMetaType keyType, @StrictNonNull QMetaType valueType, Key k1, T t1, Key k2, T t2, Key k3, T t3, Key k4, T t4, Key k5, T t5,
                                Key k6, T t6, Key k7, T t7, Key k8, T t8, Key k9, T t9, Key k10, T t10) {
-    	QMap<Key,T> result = new QMap<>(
-    			QList.findElementMetaType(k1, k2, k3, k4, k5, k6, k7, k8, k9, k10), 
-    			QList.findElementMetaType(t1, t2, t3, t4, t5, t6, t7, t8, t9, t10));
+    	QMap<Key,T> result = new QMap<>(keyType, valueType);
     	result.insert(k1, t1);
     	result.insert(k2, t2);
     	result.insert(k3, t3);
@@ -1240,10 +1888,83 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
      *         the {@code entries} array is {@code null}
      */
     @SafeVarargs
-    public static <Key,T> QMap<Key,T> ofEntries(Map.Entry<? extends Key, ? extends T> entry0, Map.Entry<? extends Key, ? extends T>... entries) {
+    public static <Key,T> @NonNull QMap<Key,T> ofEntries(Map.@StrictNonNull Entry<? extends Key, ? extends T> entry0, Map.@StrictNonNull Entry<? extends Key, ? extends T> @StrictNonNull... entries) {
     	QPair<QMetaType, QMetaType> metaTypes = findMapMetaType(entry0, entries);
     	QMap<Key,T> result = new QMap<>(metaTypes.first, metaTypes.second);
     	result.insert(entry0.getKey(), entry0.getValue());
+    	for (Map.Entry<? extends Key, ? extends T> entry : entries) {
+        	result.insert(entry.getKey(), entry.getValue());
+		}
+        return result;
+    }
+
+    /**
+     * Returns a QMap containing keys and values extracted from the given entries.
+     *
+     * @apiNote
+     * It is convenient to create the map entries using the {@link Map#entry Map.entry()} method.
+     * For example,
+     *
+     * <pre>{@code
+     *     import static java.util.Map.entry;
+     *
+     *     QMap<Integer,String> map = QMap.ofTypedEntries(
+     *         int.class,
+     *         String.class,
+     *         entry(1, "a"),
+     *         entry(2, "b"),
+     *         entry(3, "c"),
+     *         ...
+     *         entry(26, "z"));
+     * }</pre>
+     *
+     * @param <Key> the {@code QMap}'s key type
+     * @param <T> the {@code QMap}'s value type
+     * @param keyType key type
+     * @param valueType value type
+     * @param entries {@code java.util.Map.Entry}s containing the keys and values from which the map is populated
+     * @return a {@code QMap} containing the specified mappings
+     * @throws NullPointerException if any entry, key, or value is {@code null}, or if
+     *         the {@code entries} array is {@code null}
+     */
+    @SafeVarargs
+    public static <Key,T> @NonNull QMap<Key,T> ofTypedEntries(@Nullable Class<Key> keyType, @Nullable Class<T> valueType, Map.Entry<? extends Key, ? extends T>... entries) {
+    	QPair<QMetaType, QMetaType> metaTypes = findMapMetaType(keyType, valueType, entries);
+        return ofTypedEntries(metaTypes.first, metaTypes.second, entries);
+    }
+
+    /**
+     * Returns a QMap containing keys and values extracted from the given entries.
+     *
+     * @apiNote
+     * It is convenient to create the map entries using the {@link Map#entry Map.entry()} method.
+     * For example,
+     *
+     * <pre>{@code
+     *     import static java.util.Map.entry;
+     *
+     *     QMap<Integer,String> map = QMap.ofTypedEntries(
+     *         QMetaType.fromType(int.class),
+     *         QMetaType.fromType(String.class),
+     *         entry(1, "a"),
+     *         entry(2, "b"),
+     *         entry(3, "c"),
+     *         ...
+     *         entry(26, "z"));
+     * }</pre>
+     *
+     * @param <Key> the {@code QMap}'s key type
+     * @param <T> the {@code QMap}'s value type
+     * @param keyType key type
+     * @param valueType value type
+     * @param entries {@code java.util.Map.Entry}s containing the keys and values from which the map is populated
+     * @return a {@code QMap} containing the specified mappings
+     * @throws NullPointerException if any entry, key, or value is {@code null}, or if
+     *         the {@code entries} array is {@code null}
+     */
+    @SafeVarargs
+    public static <Key,T> @NonNull QMap<Key,T> ofTypedEntries(@StrictNonNull QMetaType keyType, @StrictNonNull QMetaType valueType, Map.Entry<? extends Key, ? extends T>... entries) {
+    	QMap<Key,T> result = new QMap<>(keyType, valueType);
     	for (Map.Entry<? extends Key, ? extends T> entry : entries) {
         	result.insert(entry.getKey(), entry.getValue());
 		}
@@ -1276,10 +1997,81 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
      *         the {@code pairs} array is {@code null}
      */
     @SafeVarargs
-    public static <Key,T> QMap<Key,T> ofPairs(QPair<? extends Key, ? extends T> pair0, QPair<? extends Key, ? extends T>... pairs) {
+    public static <Key,T> @NonNull QMap<Key,T> ofPairs(@StrictNonNull QPair<? extends Key, ? extends T> pair0, @StrictNonNull QPair<? extends Key, ? extends T> @StrictNonNull... pairs) {
     	QPair<QMetaType, QMetaType> metaTypes = findMapMetaType(pair0, pairs);
     	QMap<Key,T> result = new QMap<>(metaTypes.first, metaTypes.second);
     	result.insert(pair0.first, pair0.second);
+    	for (QPair<? extends Key, ? extends T> entry : pairs) {
+        	result.insert(entry.first, entry.second);
+		}
+        return result;
+    }
+
+    /**
+     * Returns a QMap containing keys and values extracted from the given pairs.
+     *
+     * @apiNote
+     * It is convenient to create the pair using the {@link QPair#pair(Object, Object)} method.
+     * For example,
+     *
+     * <pre>{@code
+     *     import static java.util.QPair.pair;
+     *
+     *     QMap<Integer,String> map = QMap.ofTypedPairs(
+     *         int.class,
+     *         String.class,
+     *         pair(1, "a"),
+     *         pair(2, "b"),
+     *         pair(3, "c"),
+     *         ...
+     *         pair(26, "z"));
+     * }</pre>
+     *
+     * @param <Key> the {@code QMap}'s key type
+     * @param <T> the {@code QMap}'s value type
+     * @param pairs {@code QPair}s containing the keys and values from which the map is populated
+     * @return a {@code QMap} containing the specified mappings
+     * @throws NullPointerException if any pair, key, or value is {@code null}, or if
+     *         the {@code pairs} array is {@code null}
+     */
+    @SafeVarargs
+    public static <Key,T> @NonNull QMap<Key,T> ofTypedPairs(@Nullable Class<Key> keyType, @Nullable Class<T> valueType, QPair<? extends Key, ? extends T>... pairs) {
+    	QPair<QMetaType, QMetaType> metaTypes = findMapMetaType(keyType, valueType, pairs);
+        return ofTypedPairs(metaTypes.first, metaTypes.second, pairs);
+    }
+    
+
+
+    /**
+     * Returns a QMap containing keys and values extracted from the given pairs.
+     *
+     * @apiNote
+     * It is convenient to create the pair using the {@link QPair#pair(Object, Object)} method.
+     * For example,
+     *
+     * <pre>{@code
+     *     import static java.util.QPair.pair;
+     *
+     *     QMap<Integer,String> map = QMap.ofTypedPairs(
+     *         QMetaType.fromType(int.class),
+     *         QMetaType.fromType(String.class),
+     *         pair(1, "a"),
+     *         pair(2, "b"),
+     *         pair(3, "c"),
+     *         ...
+     *         pair(26, "z"));
+     * }</pre>
+     *
+     * @param <Key> the {@code QMap}'s key type
+     * @param <T> the {@code QMap}'s value type
+     * @param pairs {@code QPair}s containing the keys and values from which the map is populated
+     * @return a {@code QMap} containing the specified mappings
+     * @throws NullPointerException if any pair, key, or value is {@code null}, or if
+     *         the {@code pairs} array is {@code null}
+     */
+    @SafeVarargs
+    public static <Key,T> @NonNull QMap<Key,T> ofTypedPairs(@StrictNonNull QMetaType keyType, @StrictNonNull QMetaType valueType, QPair<? extends Key, ? extends T>... pairs) {
+    	QMap<Key,T> result = new QMap<>(keyType, valueType);
     	for (QPair<? extends Key, ? extends T> entry : pairs) {
         	result.insert(entry.first, entry.second);
 		}
@@ -1315,9 +2107,9 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
     @SafeVarargs
 	static QPair<QMetaType,QMetaType> findMapMetaType(QPair<?,?> entry0, QPair<?,?>... entries){
     	QMetaType keyMetaType = QList.getMetaType(entry0.first);
-    	Class<?> keyType = entry0==null ? null : entry0.first.getClass();
+    	Class<?> keyType = entry0==null ? null : QtJambi_LibraryUtilities.internal.getClass(entry0.first);
     	QMetaType valueMetaType = QList.getMetaType(entry0.second);
-    	Class<?> valueType = entry0==null ? null : entry0.second.getClass();
+    	Class<?> valueType = entry0==null ? null : QtJambi_LibraryUtilities.internal.getClass(entry0.second);
     	for(QPair<?,?> e : entries) {
     		if(keyMetaType!=null) {
 	    		QMetaType _result = QList.getMetaType(e.first);
@@ -1337,9 +2129,9 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
     		}
     		if(e.first!=null) {
     			if(keyType==null) {
-    				keyType = e.first.getClass();
+    				keyType = QtJambi_LibraryUtilities.internal.getClass(e.first);
     			}else {
-    				Class<?> type2 = e.first.getClass();
+    				Class<?> type2 = QtJambi_LibraryUtilities.internal.getClass(e.first);
     				if(type2!=keyType) {
     					if(type2.isAssignableFrom(keyType)) {
     						keyType = type2;
@@ -1353,9 +2145,9 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
 			}
     		if(e.second!=null) {
     			if(valueType==null) {
-    				valueType = e.second.getClass();
+    				valueType = QtJambi_LibraryUtilities.internal.getClass(e.second);
     			}else {
-    				Class<?> type2 = e.second.getClass();
+    				Class<?> type2 = QtJambi_LibraryUtilities.internal.getClass(e.second);
     				if(type2!=valueType) {
     					if(type2.isAssignableFrom(valueType)) {
     						valueType = type2;
@@ -1378,9 +2170,9 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
     @SafeVarargs
 	static QPair<QMetaType,QMetaType> findMapMetaType(Map.Entry<?,?> entry0, Map.Entry<?,?>... entries){
     	QMetaType keyMetaType = QList.getMetaType(entry0.getKey());
-    	Class<?> keyType = entry0==null ? null : entry0.getKey().getClass();
+    	Class<?> keyType = entry0==null ? null : QtJambi_LibraryUtilities.internal.getClass(entry0.getKey());
     	QMetaType valueMetaType = QList.getMetaType(entry0.getValue());
-    	Class<?> valueType = entry0==null ? null : entry0.getValue().getClass();
+    	Class<?> valueType = entry0==null ? null : QtJambi_LibraryUtilities.internal.getClass(entry0.getValue());
     	for(Map.Entry<?,?> e : entries) {
     		if(keyMetaType!=null) {
 	    		QMetaType _result = QList.getMetaType(e.getKey());
@@ -1400,9 +2192,9 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
     		}
     		if(e.getKey()!=null) {
     			if(keyType==null) {
-    				keyType = e.getKey().getClass();
+    				keyType = QtJambi_LibraryUtilities.internal.getClass(e.getKey());
     			}else {
-    				Class<?> type2 = e.getKey().getClass();
+    				Class<?> type2 = QtJambi_LibraryUtilities.internal.getClass(e.getKey());
     				if(type2!=keyType) {
     					if(type2.isAssignableFrom(keyType)) {
     						keyType = type2;
@@ -1416,9 +2208,131 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
 			}
     		if(e.getValue()!=null) {
     			if(valueType==null) {
-    				valueType = e.getValue().getClass();
+    				valueType = QtJambi_LibraryUtilities.internal.getClass(e.getValue());
     			}else {
-    				Class<?> type2 = e.getValue().getClass();
+    				Class<?> type2 = QtJambi_LibraryUtilities.internal.getClass(e.getValue());
+    				if(type2!=valueType) {
+    					if(type2.isAssignableFrom(valueType)) {
+    						valueType = type2;
+    					}else if(!valueType.isAssignableFrom(type2)) {
+    						do{
+    							valueType = keyType.getSuperclass();
+    						}while(!valueType.isAssignableFrom(type2));
+    					}
+    				}
+    			}
+			}
+    	}
+    	if(keyMetaType==null)
+    		keyMetaType = QMetaType.fromType(keyType);
+    	if(valueMetaType==null)
+    		valueMetaType = QMetaType.fromType(valueType);
+    	return new QPair<>(keyMetaType, valueMetaType);
+    }
+    
+    @SafeVarargs
+	static QPair<QMetaType,QMetaType> findMapMetaType(Class<?> keyType, Class<?> valueType, QPair<?,?>... entries){
+    	QMetaType keyMetaType = QList.findElementMetaType(keyType);
+    	QMetaType valueMetaType = QList.findElementMetaType(valueType);
+    	for(QPair<?,?> e : entries) {
+    		if(keyMetaType!=null) {
+	    		QMetaType _result = QList.getMetaType(e.first);
+	    		if(!keyMetaType.isValid() || keyMetaType.id()==QMetaType.Type.Nullptr.value())
+	    			keyMetaType = _result;
+	    		if(!_result.equals(keyMetaType)) {
+	    			keyMetaType = null;
+	    		}
+    		}
+    		if(valueMetaType!=null) {
+	    		QMetaType _result = QList.getMetaType(e.second);
+	    		if(!valueMetaType.isValid() || valueMetaType.id()==QMetaType.Type.Nullptr.value())
+	    			valueMetaType = _result;
+	    		if(!_result.equals(valueMetaType)) {
+	    			valueMetaType = null;
+	    		}
+    		}
+    		if(e.first!=null) {
+    			if(keyType==null) {
+    				keyType = QtJambi_LibraryUtilities.internal.getClass(e.first);
+    			}else {
+    				Class<?> type2 = QtJambi_LibraryUtilities.internal.getClass(e.first);
+    				if(type2!=keyType) {
+    					if(type2.isAssignableFrom(keyType)) {
+    						keyType = type2;
+    					}else if(!keyType.isAssignableFrom(type2)) {
+    						do{
+    							keyType = keyType.getSuperclass();
+    						}while(!keyType.isAssignableFrom(type2));
+    					}
+    				}
+    			}
+			}
+    		if(e.second!=null) {
+    			if(valueType==null) {
+    				valueType = QtJambi_LibraryUtilities.internal.getClass(e.second);
+    			}else {
+    				Class<?> type2 = QtJambi_LibraryUtilities.internal.getClass(e.second);
+    				if(type2!=valueType) {
+    					if(type2.isAssignableFrom(valueType)) {
+    						valueType = type2;
+    					}else if(!valueType.isAssignableFrom(type2)) {
+    						do{
+    							valueType = keyType.getSuperclass();
+    						}while(!valueType.isAssignableFrom(type2));
+    					}
+    				}
+    			}
+			}
+    	}
+    	if(keyMetaType==null)
+    		keyMetaType = QMetaType.fromType(keyType);
+    	if(valueMetaType==null)
+    		valueMetaType = QMetaType.fromType(valueType);
+    	return new QPair<>(keyMetaType, valueMetaType);
+    }
+    
+    @SafeVarargs
+	static QPair<QMetaType,QMetaType> findMapMetaType(Class<?> keyType, Class<?> valueType, Map.Entry<?,?>... entries){
+    	QMetaType keyMetaType = QList.findElementMetaType(keyType);
+    	QMetaType valueMetaType = QList.findElementMetaType(valueType);
+    	for(Map.Entry<?,?> e : entries) {
+    		if(keyMetaType!=null) {
+	    		QMetaType _result = QList.getMetaType(e.getKey());
+	    		if(!keyMetaType.isValid() || keyMetaType.id()==QMetaType.Type.Nullptr.value())
+	    			keyMetaType = _result;
+	    		if(!_result.equals(keyMetaType)) {
+	    			keyMetaType = null;
+	    		}
+    		}
+    		if(valueMetaType!=null) {
+	    		QMetaType _result = QList.getMetaType(e.getValue());
+	    		if(!valueMetaType.isValid() || valueMetaType.id()==QMetaType.Type.Nullptr.value())
+	    			valueMetaType = _result;
+	    		if(!_result.equals(valueMetaType)) {
+	    			valueMetaType = null;
+	    		}
+    		}
+    		if(e.getKey()!=null) {
+    			if(keyType==null) {
+    				keyType = QtJambi_LibraryUtilities.internal.getClass(e.getKey());
+    			}else {
+    				Class<?> type2 = QtJambi_LibraryUtilities.internal.getClass(e.getKey());
+    				if(type2!=keyType) {
+    					if(type2.isAssignableFrom(keyType)) {
+    						keyType = type2;
+    					}else if(!keyType.isAssignableFrom(type2)) {
+    						do{
+    							keyType = keyType.getSuperclass();
+    						}while(!keyType.isAssignableFrom(type2));
+    					}
+    				}
+    			}
+			}
+    		if(e.getValue()!=null) {
+    			if(valueType==null) {
+    				valueType = QtJambi_LibraryUtilities.internal.getClass(e.getValue());
+    			}else {
+    				Class<?> type2 = QtJambi_LibraryUtilities.internal.getClass(e.getValue());
     				if(type2!=valueType) {
     					if(type2.isAssignableFrom(valueType)) {
     						valueType = type2;
@@ -1466,9 +2380,9 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
         		}
         		if(key!=null) {
         			if(keyType==null) {
-        				keyType = key.getClass();
+        				keyType = QtJambi_LibraryUtilities.internal.getClass(key);
         			}else {
-        				Class<?> type2 = key.getClass();
+        				Class<?> type2 = QtJambi_LibraryUtilities.internal.getClass(key);
         				if(type2!=keyType) {
         					if(type2.isAssignableFrom(keyType)) {
         						keyType = type2;
@@ -1490,9 +2404,9 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
         		}
         		if(value!=null) {
         			if(valueType==null) {
-        				valueType = value.getClass();
+        				valueType = QtJambi_LibraryUtilities.internal.getClass(value);
         			}else {
-        				Class<?> type2 = value.getClass();
+        				Class<?> type2 = QtJambi_LibraryUtilities.internal.getClass(value);
         				if(type2!=valueType) {
         					if(type2.isAssignableFrom(valueType)) {
         						valueType = type2;
@@ -1552,13 +2466,18 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
     @Override
     @QtUninvokable
 	public final Entry<Key, T> lowerEntry(Key key) {
-    	QAssociativeConstIterator<Key,T> iterator = lowerBound(key);
-    	if(!iterator.equals(constEnd()) && !iterator.equals(constBegin()) && Objects.equals(iterator.checkedKey(), key))
-    		iterator.decrement();
-    	if(iterator.equals(constEnd()))
-    		return null;
-    	else
-    		return new SimpleImmutableEntry<>(iterator.checkedKey(), iterator.checkedValue());
+    	QAssociativeConstIterator<Key,T> iterator = find(key);
+		if(iterator.isValid()) {
+			if(iterator.equals(constBegin()))
+				return null;
+	    	if(!iterator.equals(constEnd()))
+	    		iterator.decrement();
+		}else {
+			iterator = lowerBound(key);
+			if(!iterator.isValid())
+				return null;
+		}
+		return new AbstractMap.SimpleImmutableEntry<>(iterator.checkedKey(), iterator.checkedValue());
 	}
 
     /**
@@ -1569,12 +2488,18 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
 	@Override
     @QtUninvokable
 	public final Key lowerKey(Key key) {
-    	QAssociativeConstIterator<Key,T> iterator = lowerBound(key);
-    	if(!iterator.equals(constEnd()) && !iterator.equals(constBegin()) && Objects.equals(iterator.checkedKey(), key))
-    		iterator.decrement();
-    	if(iterator.equals(constEnd()))
-    		return null;
-    	else return iterator.checkedKey();
+    	QAssociativeConstIterator<Key,T> iterator = find(key);
+		if(iterator.isValid()) {
+			if(iterator.equals(constBegin()))
+				return null;
+	    	if(!iterator.equals(constEnd()))
+	    		iterator.decrement();
+		}else {
+			iterator = lowerBound(key);
+			if(!iterator.isValid())
+				return null;
+		}
+    	return iterator.checkedKey();
 	}
 
     /**
@@ -1586,11 +2511,12 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
 	@Override
     @QtUninvokable
 	public final Entry<Key, T> floorEntry(Key key) {
-    	QAssociativeConstIterator<Key,T> iterator = lowerBound(key);
-    	if(iterator.equals(constEnd()))
+		QAssociativeConstIterator<Key,T> iterator = lowerBound(key);
+    	if(!iterator.isValid())
     		return null;
-    	else
-    		return new SimpleImmutableEntry<>(iterator.checkedKey(), iterator.checkedValue());
+    	else {
+    		return new AbstractMap.SimpleImmutableEntry<>(iterator.checkedKey(), iterator.checkedValue());
+    	}
 	}
 
     /**
@@ -1601,10 +2527,7 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
 	@Override
     @QtUninvokable
 	public final Key floorKey(Key key) {
-    	QAssociativeConstIterator<Key,T> iterator = lowerBound(key);
-    	if(iterator.equals(constEnd()))
-    		return null;
-    	else return iterator.checkedKey();
+		return lowerBound(key).key().orElse(null);
 	}
 
     /**
@@ -1616,11 +2539,12 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
 	@Override
     @QtUninvokable
 	public final Entry<Key, T> ceilingEntry(Key key) {
-    	QAssociativeConstIterator<Key,T> iterator = lowerBound(key);
-    	if(iterator.equals(constEnd()))
+		QAssociativeConstIterator<Key, T> iterator = find(key);
+		if(!iterator.isValid())
+			iterator = upperBound(key);
+    	if(!iterator.isValid())
     		return null;
-    	else
-    		return new SimpleImmutableEntry<>(iterator.checkedKey(), iterator.checkedValue());
+		return new SimpleImmutableEntry<>(iterator.checkedKey(), iterator.checkedValue());
 	}
 
     /**
@@ -1631,10 +2555,10 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
 	@Override
     @QtUninvokable
 	public final Key ceilingKey(Key key) {
-    	QAssociativeConstIterator<Key,T> iterator = lowerBound(key);
-    	if(iterator.equals(constEnd()))
-    		return null;
-    	else return iterator.checkedKey();
+		QAssociativeConstIterator<Key, T> iterator = find(key);
+		if(!iterator.isValid())
+			iterator = upperBound(key);
+		return iterator.key().orElse(null);
 	}
 
     /**
@@ -1646,13 +2570,12 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
 	@Override
     @QtUninvokable
 	public final Entry<Key, T> higherEntry(Key key) {
-    	QAssociativeConstIterator<Key,T> iterator = lowerBound(key);
-    	if(!iterator.equals(constEnd()) && Objects.equals(iterator.checkedKey(), key))
-    		iterator.increment();
-    	if(iterator.equals(constEnd()))
+		QAssociativeConstIterator<Key,T> iterator = upperBound(key);
+    	if(!iterator.isValid())
     		return null;
-    	else
+    	else {
     		return new SimpleImmutableEntry<>(iterator.checkedKey(), iterator.checkedValue());
+    	}
 	}
 
     /**
@@ -1663,13 +2586,7 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
 	@Override
     @QtUninvokable
 	public final Key higherKey(Key key) {
-    	QAssociativeConstIterator<Key,T> iterator = lowerBound(key);
-    	if(!iterator.equals(constEnd()) && Objects.equals(iterator.checkedKey(), key))
-    		iterator.increment();
-    	if(iterator.equals(constEnd()))
-    		return null;
-    	else
-    		return iterator.checkedKey();
+		return upperBound(key).key().orElse(null);
 	}
 
     /**
@@ -1682,7 +2599,10 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
 	public final Entry<Key, T> firstEntry() {
 		if(isEmpty())
 			return null;
-		else return new SimpleImmutableEntry<>(constBegin().checkedKey(), constBegin().checkedValue());
+		else {
+			QAssociativeConstIterator<Key,T> iterator = constBegin();
+    		return new AbstractMap.SimpleImmutableEntry<>(iterator.checkedKey(), iterator.checkedValue());
+		}
 	}
 
     /**
@@ -1696,9 +2616,9 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
 		if(isEmpty())
 			return null;
 		else {
-			QAssociativeConstIterator<Key, T> end = constEnd();
-			end.decrement();
-			return new SimpleImmutableEntry<>(end.checkedKey(), end.checkedValue());
+			QAssociativeConstIterator<Key,T> iterator = constEnd();
+			iterator.decrement();
+    		return new AbstractMap.SimpleImmutableEntry<>(iterator.checkedKey(), iterator.checkedValue());
 		}
 	}
 
@@ -1740,7 +2660,7 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
     @QtUninvokable
 	public final NavigableMap<Key, T> descendingMap() {
 		Comparator<? super Key> comparator = this.comparator();
-		TreeMap<Key, T> descendingMap = new TreeMap<>((Key o1, Key o2)-> -1*comparator.compare(o1, o2));
+		TreeMap<Key, T> descendingMap = new TreeMap<>((Key o1, Key o2)-> comparator.compare(o2, o1));
 		descendingMap.putAll(this);
 		return descendingMap;
 	}
@@ -1766,37 +2686,22 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
     @QtUninvokable
 	public final NavigableSet<Key> descendingKeySet() {
 		Comparator<? super Key> comparator = this.comparator();
-		TreeSet<Key> set = new TreeSet<>((Key o1, Key o2)-> -1*comparator.compare(o1, o2));
+		TreeSet<Key> set = new TreeSet<>((Key o1, Key o2)-> comparator.compare(o2, o1));
 		set.addAll(this.keySet());
 		return set;
 	}
 
     /**
-     * Returns a view of the portion of this map whose keys range from
+     * Returns a copy of the portion of this map whose keys range from
      * {@code fromKey} to {@code toKey}.  If {@code fromKey} and
      * {@code toKey} are equal, the returned map is empty unless
-     * {@code fromInclusive} and {@code toInclusive} are both true.  The
-     * returned map is backed by this map, so changes in the returned map are
-     * reflected in this map, and vice-versa.  The returned map supports all
-     * optional map operations that this map supports.
-     * @see NavigableMap#subMap(Object, boolean, Object, boolean)
+     * {@code fromInclusive} and {@code toInclusive} are both true.
      */
-	@SuppressWarnings("unchecked")
 	@Override
     @QtUninvokable
-	public final NavigableMap<Key, T> subMap(Key fromKey, boolean fromInclusive, Key toKey, boolean toInclusive) {
-		NavigableMap<Key,T> map = this.clone();
-		try {
-			map.clear();
-		} catch (Throwable e) {
-		}
-		if(!map.isEmpty()) {
-			try {
-				map = this.getClass().getConstructor().newInstance();
-			} catch (Throwable e) {
-				map = new TreeMap<>(comparator());
-			}
-		}
+	public final QMap<Key, T> subMap(Key fromKey, boolean fromInclusive, Key toKey, boolean toInclusive) {
+		QMap<Key,T> map = this.clone();
+		map.clear();
 		QAssociativeConstIterator<Key,T> k2 = lowerBound(toKey);
 		if(!k2.equals(constEnd())) {
 			QAssociativeConstIterator<Key,T> k1 = lowerBound(fromKey);
@@ -1804,10 +2709,10 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
 				k1.increment();
 			}
 			for(; !k1.equals(k2); k1.increment()) {
-				map.put(k1.checkedKey(), k1.checkedValue());
+				map.insert(k1.checkedKey(), k1.checkedValue());
 			}
 			if(toInclusive) {
-				map.put(k2.checkedKey(), k2.checkedValue());
+				map.insert(k2.checkedKey(), k2.checkedValue());
 			}
 		}
 		return map;
@@ -1815,35 +2720,20 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
 
     /**
      * Returns a view of the portion of this map whose keys are less than (or
-     * equal to, if {@code inclusive} is true) {@code toKey}.  The returned
-     * map is backed by this map, so changes in the returned map are reflected
-     * in this map, and vice-versa.  The returned map supports all optional
-     * map operations that this map supports.
-     * @see NavigableMap#headMap(Object, boolean)
+     * equal to, if {@code inclusive} is true) {@code toKey}.
      */
-	@SuppressWarnings("unchecked")
 	@Override
     @QtUninvokable
-	public final NavigableMap<Key, T> headMap(Key toKey, boolean inclusive) {
+	public final QMap<Key, T> headMap(Key toKey, boolean inclusive) {
 		QAssociativeConstIterator<Key,T> k = lowerBound(toKey);
-		NavigableMap<Key,T> map = this.clone();
-		try {
-			map.clear();
-		} catch (Throwable e) {
-		}
-		if(!map.isEmpty()) {
-			try {
-				map = this.getClass().getConstructor().newInstance();
-			} catch (Throwable e) {
-				map = new TreeMap<>(comparator());
-			}
-		}
-		if(!k.equals(constEnd())) {
+		QMap<Key,T> map = this.clone();
+		map.clear();
+		if(k.isValid()) {
 			for(QAssociativeConstIterator<Key,T> iterator = constBegin(); !iterator.equals(k); iterator.increment()) {
-				map.put(iterator.checkedKey(), iterator.checkedValue());
+				map.insert(iterator.checkedKey(), iterator.checkedValue());
 			}
 			if(inclusive) {
-				map.put(k.checkedKey(), k.checkedValue());
+				map.insert(k.checkedKey(), k.checkedValue());
 			}
 		}
 		return map;
@@ -1851,37 +2741,73 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
 
     /**
      * Returns a view of the portion of this map whose keys are greater than (or
-     * equal to, if {@code inclusive} is true) {@code fromKey}.  The returned
-     * map is backed by this map, so changes in the returned map are reflected
-     * in this map, and vice-versa.
-     * @see NavigableMap#tailMap(Object, boolean)
+     * equal to, if {@code inclusive} is true) {@code fromKey}.
      */
-	@SuppressWarnings("unchecked")
 	@Override
     @QtUninvokable
-	public final NavigableMap<Key, T> tailMap(Key fromKey, boolean inclusive) {
+	public final QMap<Key, T> tailMap(Key fromKey, boolean inclusive) {
 		QAssociativeConstIterator<Key,T> k = lowerBound(fromKey);
 		QAssociativeConstIterator<Key,T> end = constEnd();
-		NavigableMap<Key,T> map = this.clone();
-		try {
-			map.clear();
-		} catch (Throwable e) {
-		}
-		if(!map.isEmpty()) {
-			try {
-				map = this.getClass().getConstructor().newInstance();
-			} catch (Throwable e) {
-				map = new TreeMap<>(comparator());
-			}
-		}
+		QMap<Key,T> map = this.clone();
+		map.clear();
 		if(!k.equals(end)) {
 			if(!inclusive) {
 				k.increment();
 			}
 			for(;!k.equals(end); k.increment()) {
-				map.put(k.checkedKey(), k.checkedValue());
+				map.insert(k.checkedKey(), k.checkedValue());
 			}
 		}
 		return map;
 	}
+	
+	/**
+     * <p>See <code>QMap::<wbr>operator=(QMap&lt;Key,T>)</code></p>
+     */
+    @QtUninvokable
+    public final void assign(@StrictNonNull QMap<Key,T> other) {
+		assign(QtJambi_LibraryUtilities.internal.nativeId(this), other, QtJambi_LibraryUtilities.internal.nativeId(other));
+    }
+    @QtUninvokable
+    private native void assign(long __this__nativeId, Object container, long other);
+	
+	/**
+     * <p>See <code>QMap::<wbr>swap(QMap&lt;Key,T>&amp;)</code></p>
+     */
+    @QtUninvokable
+    public final void swap(@StrictNonNull QMap<Key,T> other) {
+		swap(QtJambi_LibraryUtilities.internal.nativeId(this), other, QtJambi_LibraryUtilities.internal.nativeId(other));
+    }
+    @QtUninvokable
+    private native void swap(long __this__nativeId, Object container, long other);
+    
+    /**
+     * Returns true if both containers share the same data. 
+     */
+    @QtUninvokable
+    public final boolean isSharedWith(@StrictNonNull QMap<?,?> other) {
+		return isSharedWith(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(other));
+	}
+	@QtUninvokable
+    private native boolean isSharedWith(long __this__nativeId, long other);
+	
+	/**
+     * Returns true if container is not shared. 
+     */
+    @QtUninvokable
+    public final boolean isDetached() {
+		return isDetached(QtJambi_LibraryUtilities.internal.nativeId(this));
+	}
+	@QtUninvokable
+    private native boolean isDetached(long __this__nativeId);
+	
+	/**
+     * Detached the container if it is shared.
+     */
+    @QtUninvokable
+    public final void detach() {
+    	detach(QtJambi_LibraryUtilities.internal.nativeId(this));
+	}
+	@QtUninvokable
+    private native boolean detach(long __this__nativeId);
 }

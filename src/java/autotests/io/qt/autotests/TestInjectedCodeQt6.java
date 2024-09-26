@@ -31,13 +31,19 @@
 
 package io.qt.autotests;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
+import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 
+import org.junit.Assert;
 import org.junit.Test;
 
+import io.qt.autotests.generated.General;
 import io.qt.core.QLineF;
+import io.qt.core.QList;
 import io.qt.core.QPointF;
 
 public class TestInjectedCodeQt6 extends ApplicationInitializer {
@@ -101,6 +107,48 @@ public class TestInjectedCodeQt6 extends ApplicationInitializer {
 
         line2 = new QLineF(11, 0, 11, 20);
         assertEquals(QLineF.IntersectionType.NoIntersection, line1.intersects(line2, null));
+    }
+    
+    @Test
+    public void testQListBuffers() {
+    	io.qt.core.QList<Character> list = new io.qt.core.QList<>(char.class);
+    	list.fill('X', 8);
+    	assertArrayEquals(new Character[] {'X','X','X','X','X','X','X','X'}, list.toArray(new Character[list.size()]));
+    	assertEquals(8, list.size());
+    	CharBuffer rbuffer = QList.asCharBuffer(list);
+//    	try{
+//    		rbuffer.put('A');
+//    		Assert.fail("ReadOnlyBufferException expected to be thrown");
+//    	} catch (ReadOnlyBufferException e) {
+//		}
+    	assertEquals('X', rbuffer.get());
+    	CharBuffer wbuffer = General.internalAccess.mutableDataC(list);
+    	assertEquals(list.capacity(), wbuffer.capacity());
+    	wbuffer.put('A');
+    	assertArrayEquals(new Character[] {'A','X','X','X','X','X','X','X'}, list.toArray(new Character[list.size()]));
+    	// on most JRE versions wbuffer is operating on shared data of list.
+    	// thus, changing or deleting of list does not affect Buffer.
+    	Object att = null;
+    	try {
+			att = General.internalAccess.readField(wbuffer, General.internalAccess.getClass(wbuffer), "att", Object.class);
+		} catch (Throwable e1) {
+		}
+    	if(att instanceof QList) {
+    		Assert.assertTrue(list.isSharedWith((QList<?>)att));
+    		list.append('A');
+    		assertArrayEquals(new Character[] {'A','X','X','X','X','X','X','X','A'}, list.toArray(new Character[list.size()]));
+    		assertArrayEquals(new Character[] {'A','X','X','X','X','X','X','X'}, list.toArray(new Character[list.size()]));
+	    	list.dispose();
+			wbuffer.put('M');
+			assertArrayEquals(new Character[] {'A','M','X','X','X','X','X','X'}, list.toArray(new Character[list.size()]));
+    	}else{
+	    	list.dispose();
+	    	try {
+				wbuffer.put('M');
+				Assert.fail("BufferOverflowException expected to be thrown");
+			} catch (BufferOverflowException e) {
+			}
+    	}
     }
     
     public static void main(String args[]) {

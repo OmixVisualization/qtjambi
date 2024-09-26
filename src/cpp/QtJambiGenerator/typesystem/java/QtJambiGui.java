@@ -376,11 +376,11 @@ void __qt_create_new_QImage_7(void* __qtjambi_ptr, JNIEnv* env, jobject, jvalue*
     jint width = arguments[1].i;
     jint height = arguments[2].i;
     jobject format = arguments[3].l;
-    JByteArrayPointer* qt_data = new JByteArrayPointer(env, jbyteArray(data), false);
+    JConstByteArrayPointer* qt_data = new JConstByteArrayPointer(env, jbyteArray(data));
     if(__qtjambi_has_overrides)
-        new(__qtjambi_ptr) QImage_oshell(*qt_data, width, height, qtjambi_cast<QImage::Format>(env, format), [](void* ptr){ delete reinterpret_cast<JByteArrayPointer*>(ptr); }, qt_data);
+        new(__qtjambi_ptr) QImage_oshell(*qt_data, width, height, qtjambi_cast<QImage::Format>(env, format), [](void* ptr){ delete reinterpret_cast<JConstByteArrayPointer*>(ptr); }, qt_data);
     else
-        new(__qtjambi_ptr) QImage_shell(*qt_data, width, height, qtjambi_cast<QImage::Format>(env, format), [](void* ptr){ delete reinterpret_cast<JByteArrayPointer*>(ptr); }, qt_data);
+        new(__qtjambi_ptr) QImage_shell(*qt_data, width, height, qtjambi_cast<QImage::Format>(env, format), [](void* ptr){ delete reinterpret_cast<JConstByteArrayPointer*>(ptr); }, qt_data);
 
 }
 
@@ -499,11 +499,11 @@ class QPainter___ extends QPainter {
                         throw new QPaintingOutsidePaintEventException();
                     }
                 }else if(painters.size()==0){
-                    threadCheck((io.qt.core.QObject)device);
+                    QtUtilities.threadCheck((io.qt.core.QObject)device);
                     painters = java.util.Collections.singletonList(this);
                     __paintedDevices.put(device, painters);
                 }else{
-                    threadCheck((io.qt.core.QObject)device);
+                    QtUtilities.threadCheck((io.qt.core.QObject)device);
                     if(painters.size()==1){
                         painters = new java.util.LinkedList<>(painters);
                         __paintedDevices.put(device, painters);
@@ -511,15 +511,12 @@ class QPainter___ extends QPainter {
                     painters.add(this);
                 }
             }else {
-                threadCheck((io.qt.core.QObject)device);
+                QtUtilities.threadCheck((io.qt.core.QObject)device);
             }
         }else if(device==null){
             java.util.Objects.requireNonNull(device, "Argument 'QPaintDevice': null not expected.");
         }
     }
-    
-    @QtUninvokable
-    private static native void threadCheck(io.qt.core.QObject object);
     
     private static java.util.Map<QPaintDevice,java.util.List<QPainter>> __paintedDevices = new java.util.HashMap<>();
 }// class

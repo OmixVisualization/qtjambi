@@ -32,6 +32,10 @@ package io.qt.autotests;
 import static io.qt.qml.QtQml.qmlClearTypeRegistrations;
 import static io.qt.qml.QtQml.qmlRegisterType;
 
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 import org.junit.Assert;
@@ -78,7 +82,7 @@ public class TestQmlQt6 extends ApplicationInitializer{
 		QJSEngine engine = new QJSEngine();
 		QJSValue value = engine.toScriptValue(5.4);
 		Assert.assertTrue(value.isNumber());
-		Assert.assertEquals(0.000001, 5.4, value.toDouble());
+		Assert.assertEquals(0.000001, 5.4, value.toNumber());
 		value = engine.toScriptValue(QCoreApplication.instance());
 		Assert.assertTrue(value.isObject());
 		QObject result = engine.fromScriptValue(value, QObject.class);
@@ -245,30 +249,37 @@ public class TestQmlQt6 extends ApplicationInitializer{
 	
 	static class CustomValueType implements Cloneable
 	{
+		public static final List<WeakReference<CustomValueType>> instances = Collections.synchronizedList(new ArrayList<>());
+		
 		public CustomValueType(QJSValue arguments) {
+			instances.add(new WeakReference<>(this));
 			if(arguments.isArray()) {
 				int length = arguments.property("length").toInt();
 				if(length==3) {
 					i = arguments.property(0).toInt();
-					d = arguments.property(1).toDouble();
+					d = arguments.property(1).toNumber();
 					s = arguments.property(2).toString();
 				}
 			}else if(arguments.isObject()) {
 				i = arguments.property("i").toInt();
-				d = arguments.property("d").toDouble();
+				d = arguments.property("d").toNumber();
 				s = arguments.property("s").toString();
 			}
 		}
 		
-		public CustomValueType() {}
+		public CustomValueType() {
+			instances.add(new WeakReference<>(this));
+		}
 		
 		public CustomValueType(int i, double d, String s) {
+			instances.add(new WeakReference<>(this));
 			this.i = i;
 			this.d = d;
 			this.s = s;
 		}
 		
 		CustomValueType(CustomValueType other) {
+			instances.add(new WeakReference<>(this));
 			this.i = other.i;
 			this.d = other.d;
 			this.s = other.s;
@@ -356,12 +367,12 @@ public class TestQmlQt6 extends ApplicationInitializer{
 				int length = arguments.property("length").toInt();
 				if(length==3) {
 					i = arguments.property(0).toInt();
-					d = arguments.property(1).toDouble();
+					d = arguments.property(1).toNumber();
 					s = arguments.property(2).toString();
 				}
 			}else if(arguments.isObject()) {
 				i = arguments.property("i").toInt();
-				d = arguments.property("d").toDouble();
+				d = arguments.property("d").toNumber();
 				s = arguments.property("s").toString();
 			}
 		}
@@ -758,6 +769,8 @@ public class TestQmlQt6 extends ApplicationInitializer{
 		qmlClearTypeRegistrations();
 	    qmlRegisterType(ObjectType.class, "io.qt.test", 1, 0, "ObjectType");
 	    qmlRegisterType((Class)CustomValueType.class, "io.qt.test", 1, 0, "customValueType");
+	    CustomValueType.instances.clear();
+	    
 		QByteArray data = new QByteArray("import io.qt.test 1.0\n" + 
 				"import QtQuick 2.0\n" +
 				"Item{\n" + 
@@ -773,14 +786,61 @@ public class TestQmlQt6 extends ApplicationInitializer{
 		
 		QQmlComponent component = new QQmlComponent(engine);
 		component.setData(data, (QUrl)null);
+//		Assert.assertEquals(0, CustomValueType.instances.size());
 		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
 		Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
 		QObject root = component.create();
+//		Assert.assertEquals(4, CustomValueType.instances.size());
 		
-		CustomValueType someValueType = QVariant.convert(root.property("someValueType"), CustomValueType.class);
+		Object someValueTypeVar = root.property("someValueType");
+//		Assert.assertEquals(7, CustomValueType.instances.size());
+		CustomValueType someValueType = QVariant.convert(someValueTypeVar, CustomValueType.class);
 		Assert.assertEquals(8, someValueType.i);
 		Assert.assertEquals(2.1, someValueType.d, 0.0001);
 		Assert.assertEquals("TEST3", someValueType.s);
+		someValueType = null;
+		someValueTypeVar = null;
+		for(int i=0; i<10; ++i) {
+			engine.collectGarbage();
+			ApplicationInitializer.runGC();
+			Thread.yield();
+			QCoreApplication.processEvents();
+		}
+		int counter=1, alife = 0;
+		for(WeakReference<CustomValueType> weak : CustomValueType.instances) {
+			CustomValueType value = weak.get();
+			if(value!=null) {
+				System.out.println(counter+": "+value);
+				++alife;
+			}
+			++counter;
+		}
+		Assert.assertEquals(null, root.parent());
+		Assert.assertTrue(alife<=2);
+		engine.dispose();
+		Assert.assertEquals(null, component.engine());
+		Assert.assertFalse(component.isDisposed());
+		component.dispose();
+		Assert.assertEquals(null, root.parent());
+		Assert.assertFalse(root.isDisposed());
+		root.dispose();
+		
+		for(int i=0; i<10; ++i) {
+			ApplicationInitializer.runGC();
+			Thread.yield();
+			QCoreApplication.processEvents();
+		}
+		counter=1;
+		alife = 0;
+		for(WeakReference<CustomValueType> weak : CustomValueType.instances) {
+			CustomValueType value = weak.get();
+			if(value!=null) {
+				System.out.println(counter+": "+value);
+				++alife;
+			}
+			++counter;
+		}
+		Assert.assertEquals("number of CustomValueType alife after GC", 0, alife);
     }
 	
 	@SuppressWarnings("rawtypes")

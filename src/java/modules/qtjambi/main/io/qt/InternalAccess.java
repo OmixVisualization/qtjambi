@@ -90,7 +90,40 @@ public interface InternalAccess {
     
     long checkedNativeId(io.qt.QtObjectInterface object);
     
+    interface NativeIdInfo{
+    	long nativeId();
+    	boolean needsReferenceCounting();
+    }
+    
+    NativeIdInfo checkedNativeIdInfo(io.qt.QtObject object);
+    
+    NativeIdInfo checkedNativeIdInfo(io.qt.QtObjectInterface object);
+    
+    boolean needsReferenceCounting(io.qt.QtObject object);
+    
+    boolean needsReferenceCounting(io.qt.QtObjectInterface object);
+    
     java.nio.ByteBuffer mutableData(io.qt.core.QByteArray byteArray);
+    
+    java.nio.CharBuffer mutableData(io.qt.core.QString string);
+    
+    <C extends QtObject & Iterable<Character>> java.nio.CharBuffer mutableDataC(C list);
+    
+    <C extends QtObject & Iterable<Byte>> java.nio.ByteBuffer mutableDataB(C list);
+    
+    <C extends QtObject & Iterable<Short>> java.nio.ShortBuffer mutableDataS(C list);
+    
+    <C extends QtObject & Iterable<Integer>> java.nio.IntBuffer mutableDataI(C list);
+    
+    <C extends QtObject & Iterable<Long>> java.nio.LongBuffer mutableDataJ(C list);
+    
+    <C extends QtObject & Iterable<Float>> java.nio.FloatBuffer mutableDataF(C list);
+    
+    <C extends QtObject & Iterable<Double>> java.nio.DoubleBuffer mutableDataD(C list);
+    
+    void truncateBuffer(io.qt.QtObject owner, java.nio.Buffer buffer);
+    
+    void truncateBuffer(io.qt.QtObjectInterface owner, java.nio.Buffer buffer);
 
     void removeFromMapReferenceCount(io.qt.QtObjectInterface owner, Class<? extends io.qt.QtObjectInterface> declaringClass, String fieldName, boolean isStatic, Object value);
 

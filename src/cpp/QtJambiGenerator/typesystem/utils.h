@@ -122,7 +122,8 @@ namespace TS {
         CppOwnership,
         IgnoreOwnership,
         RegisterDependency,
-        Invalidate
+        Invalidate,
+        ForcedInvalidate
     };
 
     struct Include {

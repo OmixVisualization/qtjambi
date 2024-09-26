@@ -110,11 +110,11 @@ void FlagsAndEnumTest::setInts(std::initializer_list<int> iList){
     }
 }
 	
-const QList<Qt::WidgetAttribute>& FlagsAndEnumTest::getAttributes(){
+const QList<Qt::WidgetAttribute>& FlagsAndEnumTest::getAttributes() const{
 	return m_attributes;
 }
 
-const QList<int>& FlagsAndEnumTest::getInts(){
+const QList<int>& FlagsAndEnumTest::getInts() const{
     return m_ints;
 }
 
@@ -147,4 +147,108 @@ static const bool __init = []()->bool{
         qRegisterMetaType<HiddenObject::HiddenEnumClass>();
         return true;
     }();
+
+#if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
+
+#define SPAN_METHODS(Name, type, mutation)\
+void SpanTest::set##Name(QSpan<const type> span) {\
+    m_##Name = QList<type>(span.begin(), span.end());\
+}\
+\
+QSpan<const type> SpanTest::get##Name() const {\
+    return m_##Name;\
+}\
+\
+void SpanTest::setMutable##Name(QSpan<type> span) {\
+    m_##Name.clear();\
+    for(type& value : span){\
+        m_##Name << (mutation);\
+    }\
+}\
+\
+QSpan<type> SpanTest::getMutable##Name() {\
+    return m_##Name;\
+}
+
+SPAN_METHODS(ByteArrays, QByteArray, value+="!")
+SPAN_METHODS(Ints, int, ++value)
+SPAN_METHODS(Longs, qint64, ++value)
+SPAN_METHODS(Shorts, qint16, ++value)
+SPAN_METHODS(Bytes, char, ++value)
+SPAN_METHODS(Booleans, bool, value = !value)
+SPAN_METHODS(Floats, float, ++value)
+SPAN_METHODS(Doubles, double, ++value)
+SPAN_METHODS(Strings, QString, value+=u'!')
+SPAN_METHODS(Chars, QChar, value = QChar(value.unicode()+1))
+
+SpanTest::SpanTest(QObject *parent) : QObject(parent) {}
+
+int SpanTest::virtualMutableSpan(QSpan<int> mutableInts, int result){
+    for(int& value : mutableInts){
+        result += value++;
+    }
+    return result;
+}
+
+char SpanTest::callVirtualMutableSpan(QSpan<char> mutableInts, char init){
+    return virtualMutableSpan(mutableInts, init);
+}
+
+char SpanTest::virtualMutableSpan(QSpan<char> mutableInts, char result){
+    for(char& value : mutableInts){
+        result += value++;
+    }
+    return result;
+}
+
+int SpanTest::callVirtualMutableSpan(QSpan<int> mutableInts, int init){
+    return virtualMutableSpan(mutableInts, init);
+}
+
+qint64 SpanTest::virtualSpan(QSpan<const qint64> longs, qint64 result){
+    for(qint64 value : longs){
+        result += value;
+    }
+    return result;
+}
+
+qint64 SpanTest::callVirtualSpan(QSpan<const qint64> longs, qint64 result){
+    return virtualSpan(longs, result);
+}
+
+void SpanTest::virtualMutableSpan(QSpan<QString> mutableStrings){
+    for(QString& value : mutableStrings){
+        value += u'!';
+    }
+}
+
+void SpanTest::callVirtualMutableSpan(QSpan<QString> mutableStrings){
+    virtualMutableSpan(mutableStrings);
+}
+
+quint64 SpanTest::virtualSpan(QSpan<const QByteArray> byteArrays){
+    return byteArrays.size();
+}
+
+quint64 SpanTest::callVirtualSpan(QSpan<const QByteArray> byteArrays){
+    return virtualSpan(byteArrays);
+}
+
+QSpan<const qint64> SpanTest::virtualSpanReturning(){
+    return m_Longs;
+}
+
+QSpan<qint64> SpanTest::virtualMutableSpanReturning(){
+    return m_Longs;
+}
+
+QSpan<qint64> SpanTest::callVirtualMutableSpanReturning(){
+    return virtualMutableSpanReturning();
+}
+
+QSpan<const qint64> SpanTest::callVirtualSpanReturning(){
+    return virtualSpanReturning();
+}
+
+#endif
 

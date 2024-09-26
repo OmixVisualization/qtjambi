@@ -187,7 +187,7 @@ QtJambiObjectData* QtJambiObjectData::userData(const QObject* object, const std:
             memcpy(name, &p->extraData, sizeof(void*));
             name[sizeof(void*)] = '\0';
             const auto i = p->extraData->propertyNames.indexOf(name);
-            if(i>=0 && i<p->extraData->propertyValues.size()-1){
+            if(i>=0 && i<p->extraData->propertyValues.size()){
                 const QVariant& variant = p->extraData->propertyValues.at(i);
                 if(variant.metaType()==QMetaType::fromType<ObjectDataContainer>()){
                     if(const ObjectDataContainer* container = reinterpret_cast<const ObjectDataContainer*>(variant.data()))
@@ -203,7 +203,7 @@ void QtJambiObjectData::setUserData(QObject* object, const std::type_info& id, Q
 {
     using namespace QtJambiPrivate;
     QObjectPrivate* p = object ? QObjectPrivate::get(object) : nullptr;
-    if(p && (id!=typeid(ValueOwnerUserData) || !p->wasDeleted)){
+    if(p && (typeid_not_equals(id, typeid(ValueOwnerUserData)) || !p->wasDeleted)){
 #if QT_VERSION < QT_VERSION_CHECK(6, 2, 0)
         if (!p->extraData)
             p->extraData = new QObjectPrivate::ExtraData;

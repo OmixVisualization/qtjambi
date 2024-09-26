@@ -343,9 +343,9 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_toByteBuffer)
 	jobject buffer{nullptr};
     try{
         if(readOnly){
-            buffer = DataJBuffer(env, reinterpret_cast<const void*>(ptr), capacity).take();
+            buffer = LocalDataJBuffer(env, reinterpret_cast<const void*>(ptr), capacity).take();
         }else{
-            buffer = DataJBuffer(env, reinterpret_cast<void*>(ptr), capacity).take();
+            buffer = LocalDataJBuffer(env, reinterpret_cast<void*>(ptr), capacity).take();
         }
     }catch(const JavaException& exn){
         exn.raiseInJava(env);

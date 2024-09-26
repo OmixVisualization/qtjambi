@@ -42,22 +42,13 @@ QT_WARNING_DISABLE_DEPRECATED
 #ifndef QT_NO_DEBUG
 QT_WARNING_DISABLE_GCC("-Wstringop-overflow")
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
-namespace QHashPrivate {
-template <>
-constexpr inline bool HasQHashSingleArgOverload<QMap<QString,int>> = false;
-template <>
-constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QString>> = false;
-}
-#endif
-
 class UnknownKey{
 public:
     UnknownKey(int){
-        QTJAMBI_IN_CONSTRUCTOR_CALL("UnknownKey(int)", this)
+//        QTJAMBI_IN_CONSTRUCTOR_CALL("UnknownKey(int)", this)
     }
     void test(){
-        QTJAMBI_JAVA_METHOD_CALL("UnknownKey::test()")
+//        QTJAMBI_JAVA_METHOD_CALL("UnknownKey::test()")
     }
 };
 
@@ -766,9 +757,53 @@ void test(JNIEnv *env){
             results << (&qtjambi_cast<const QMultiHash<QString,int>&>(env, scope, o)==&container);
         }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
+        {
+            jintArray array{nullptr};
+            qtjambi_cast<QSpan<int>>(env, scope, array);
+
+            qtjambi_cast<QSpan<const int>>(env, scope, jobject{nullptr});
+            qtjambi_cast<QSpan<QStringView>>(env, scope, jobject{nullptr});
+            qtjambi_cast<QSpan<char>>(env, scope, jobject{nullptr});
+            qtjambi_cast<QSpan<const char>>(env, scope, jobject{nullptr});
+
+            QSpan<int> span;
+            qtjambi_cast<jintArray>(env, scope, span);
+        }
+        {
+            jintArray array{nullptr};
+            qtjambi_cast<QSpan<const int>>(env, scope, array);
+
+            QSpan<const int> span;
+            qtjambi_cast<jintArray>(env, span);
+        }
+        {
+            jintArray array{nullptr};
+            qtjambi_cast<QSpan<const int>>(env, scope, array);
+
+            QSpan<char> span;
+            qtjambi_cast<jobject>(env, span);
+        }
+#endif
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+        {
+            std::optional<int> opt1;
+            qtjambi_cast<jobject>(env, opt1);
+            std::optional<QString> opt2;
+            qtjambi_cast<jobject>(env, opt2);
+            std::optional<char> opt3;
+            qtjambi_cast<jobject>(env, opt3);
+            jobject o{nullptr};
+            qtjambi_cast<std::optional<int>>(env, o);
+            qtjambi_cast<std::optional<QString>>(env, o);
+            qtjambi_cast<std::optional<char>>(env, o);
+        }
+#endif
         {
             std::initializer_list<int> container{1,2,3,4,5,6,7,8,9};
             jobject o = qtjambi_cast<jobject>(env, scope, container);
+
+            qtjambi_cast<std::initializer_list<int>>(env, scope, jobject{nullptr});
 
             std::initializer_list<int> container2 = qtjambi_cast<std::initializer_list<int>>(env, scope, o);
             results << (QList<int>(container2)==QList<int>(container));
@@ -824,6 +859,131 @@ void test(JNIEnv *env){
         }
 
         if(QString("The following lines are for compilation only.").isEmpty()){
+            /*{
+                QList<const int>* container = nullptr;
+                jobject o = qtjambi_cast<jobject>(env, scope, *container);
+                qtjambi_cast<QList<const int>>(env, scope, o);
+            }*/
+            {
+                QList<int>* container = nullptr;
+                jobject o = qtjambi_cast<jobject>(env, scope, *container);
+                qtjambi_cast<QList<int>>(env, scope, o);
+            }
+            {
+                QList<QObject*>* container = nullptr;
+                jobject o = qtjambi_cast<jobject>(env, scope, *container);
+                qtjambi_cast<QList<QObject*>>(env, scope, o);
+            }
+            {
+                QList<QList<int>>* container = nullptr;
+                jobject o = qtjambi_cast<jobject>(env, scope, *container);
+                qtjambi_cast<QList<QList<int>>>(env, scope, o);
+            }
+            {
+                QList<QList<QObject*>>* container = nullptr;
+                jobject o = qtjambi_cast<jobject>(env, scope, *container);
+                qtjambi_cast<QList<QList<QObject*>>>(env, scope, o);
+            }
+            {
+                QMap<int, QRect>* container = nullptr;
+                jobject o = qtjambi_cast<jobject>(env, scope, *container);
+                qtjambi_cast<QMap<int, QRect>>(env, scope, o);
+            }
+            {
+                QMap<int, QObject*>* container = nullptr;
+                jobject o = qtjambi_cast<jobject>(env, scope, *container);
+                qtjambi_cast<QMap<int, QObject*>>(env, scope, o);
+            }
+            {
+                QMap<QObject*,int>* container = nullptr;
+                jobject o = qtjambi_cast<jobject>(env, scope, *container);
+                qtjambi_cast<QMap<QObject*,int>>(env, scope, o);
+            }
+            {
+                QMap<QObject*,QRunnable*>* container = nullptr;
+                jobject o = qtjambi_cast<jobject>(env, scope, *container);
+                qtjambi_cast<QMap<QObject*,QRunnable*>>(env, scope, o);
+            }
+            {
+                QMap<QObject*,QList<QRunnable*>>* container = nullptr;
+                jobject o = qtjambi_cast<jobject>(env, scope, *container);
+                qtjambi_cast<QMap<QObject*,QList<QRunnable*>>>(env, scope, o);
+            }
+            {
+                QMultiMap<int, QRect>* container = nullptr;
+                jobject o = qtjambi_cast<jobject>(env, scope, *container);
+                qtjambi_cast<QMultiMap<int, QRect>>(env, scope, o);
+            }
+            {
+                QMultiMap<int, QObject*>* container = nullptr;
+                jobject o = qtjambi_cast<jobject>(env, scope, *container);
+                qtjambi_cast<QMultiMap<int, QObject*>>(env, scope, o);
+            }
+            {
+                QMultiMap<QObject*,int>* container = nullptr;
+                jobject o = qtjambi_cast<jobject>(env, scope, *container);
+                qtjambi_cast<QMultiMap<QObject*,int>>(env, scope, o);
+            }
+            {
+                QMultiMap<QObject*,QRunnable*>* container = nullptr;
+                jobject o = qtjambi_cast<jobject>(env, scope, *container);
+                qtjambi_cast<QMultiMap<QObject*,QRunnable*>>(env, scope, o);
+            }
+            {
+                QMultiMap<QObject*,QList<QRunnable*>>* container = nullptr;
+                jobject o = qtjambi_cast<jobject>(env, scope, *container);
+                qtjambi_cast<QMultiMap<QObject*,QList<QRunnable*>>>(env, scope, o);
+            }
+            {
+                QHash<int, QRect>* container = nullptr;
+                jobject o = qtjambi_cast<jobject>(env, scope, *container);
+                qtjambi_cast<QHash<int, QRect>>(env, scope, o);
+            }
+            {
+                QHash<int, QObject*>* container = nullptr;
+                jobject o = qtjambi_cast<jobject>(env, scope, *container);
+                qtjambi_cast<QHash<int, QObject*>>(env, scope, o);
+            }
+            {
+                QHash<QObject*,int>* container = nullptr;
+                jobject o = qtjambi_cast<jobject>(env, scope, *container);
+                qtjambi_cast<QHash<QObject*,int>>(env, scope, o);
+            }
+            {
+                QHash<QObject*,QRunnable*>* container = nullptr;
+                jobject o = qtjambi_cast<jobject>(env, scope, *container);
+                qtjambi_cast<QHash<QObject*,QRunnable*>>(env, scope, o);
+            }
+            {
+                QHash<QObject*,QList<QRunnable*>>* container = nullptr;
+                jobject o = qtjambi_cast<jobject>(env, scope, *container);
+                qtjambi_cast<QHash<QObject*,QList<QRunnable*>>>(env, scope, o);
+            }
+            {
+                QMultiHash<int, QRect>* container = nullptr;
+                jobject o = qtjambi_cast<jobject>(env, scope, *container);
+                qtjambi_cast<QMultiHash<int, QRect>>(env, scope, o);
+            }
+            {
+                QMultiHash<int, QObject*>* container = nullptr;
+                jobject o = qtjambi_cast<jobject>(env, scope, *container);
+                qtjambi_cast<QMultiHash<int, QObject*>>(env, scope, o);
+            }
+            {
+                QMultiHash<QObject*,int>* container = nullptr;
+                jobject o = qtjambi_cast<jobject>(env, scope, *container);
+                qtjambi_cast<QMultiHash<QObject*,int>>(env, scope, o);
+            }
+            {
+                QMultiHash<QObject*,QRunnable*>* container = nullptr;
+                jobject o = qtjambi_cast<jobject>(env, scope, *container);
+                qtjambi_cast<QMultiHash<QObject*,QRunnable*>>(env, scope, o);
+            }
+            {
+                QMultiHash<QObject*,QList<QRunnable*>>* container = nullptr;
+                jobject o = qtjambi_cast<jobject>(env, scope, *container);
+                qtjambi_cast<QMultiHash<QObject*,QList<QRunnable*>>>(env, scope, o);
+            }
             /*
             {
                 QMap<UnknownKey, UnknownClass>* container = nullptr;

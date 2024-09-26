@@ -94,10 +94,12 @@ TypeSystem{
     LoadTypeSystem{name: "QtSensors";           generate: true; unless: "QTJAMBI_NO_SENSORS";          since: [5, 11]}
     LoadTypeSystem{name: "QtUiTools";           generate: true; unless: "QTJAMBI_NO_UITOOLS"}
     LoadTypeSystem{name: "QtDesigner";          generate: true; unless: "QTJAMBI_NO_DESIGNER"}
-    LoadTypeSystem{name: "ui4";                 generate: true; unless: "QTJAMBI_NO_DESIGNER"}
+    LoadTypeSystem{name: "ui4";                 generate: true; unless: "QTJAMBI_NO_UI4"}
     LoadTypeSystem{name: "QtActiveX";           generate: true; unless: "QTJAMBI_NO_ACTIVEX"}
-    LoadTypeSystem{name: "QtDataVisualization"; generate: true; unless: "QTJAMBI_NO_DATA_VISUALIZATION"}
-    LoadTypeSystem{name: "QtCharts";            generate: true; unless: "QTJAMBI_NO_CHARTS"}
+    LoadTypeSystem{name: "QtDataVisualization"; generate: true; unless: "QTJAMBI_NO_DATA_VISUALIZATION"; until: 6.5}
+    LoadTypeSystem{name: "QtCharts";            generate: true; unless: "QTJAMBI_NO_CHARTS"; until: 6.5}
+    LoadTypeSystem{name: "QtGraphs";            generate: true; unless: "QTJAMBI_NO_GRAPHS";           since: 6.6}
+    LoadTypeSystem{name: "QtGraphsWidgets";     generate: true; unless: "QTJAMBI_NO_GRAPHS_WIDGETS";   since: 6.8}
     LoadTypeSystem{name: "QtBodymovin";         generate: true; unless: "QTJAMBI_NO_LOTTIE"}
     LoadTypeSystem{name: "QtVirtualKeyboard";   generate: true; unless: "QTJAMBI_NO_VIRTUAL_KEYBOARD"}
     LoadTypeSystem{name: "QtQuick3D";           generate: true; unless: "QTJAMBI_NO_QUICK3D"}

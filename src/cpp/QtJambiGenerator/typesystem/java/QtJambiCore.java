@@ -12119,10 +12119,6 @@ class QCalendar___ extends QCalendar {
     private static native int unspecified();
 }// class
 
-class QSignalMapper___ extends QSignalMapper {
-        private java.util.HashMap<Object, Object> __rcObjectForObject;
-}// class
-
 class QAbstractFileEngine_MapExtensionReturn___ extends QAbstractFileEngine_MapExtensionReturn {
     
     private QNativePointer currentAddressNativePointer; // don't garbage collect while in use

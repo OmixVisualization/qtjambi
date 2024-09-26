@@ -44,7 +44,7 @@
 #include "qtjambilink_p.h"
 #include "qtjambi_cast.h"
 
-void shutdown(JNIEnv * env);
+void shutdown(JNIEnv * env, bool regular);
 
 extern "C" Q_DECL_EXPORT void JNICALL
 QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambi_1LibraryUtilities_shutdown)
@@ -52,15 +52,19 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambi_1LibraryUtilities_shutdown)
 {
     QTJAMBI_NATIVE_METHOD_CALL("QtJambi_LibraryUtilities::shutdown()")
     try{
+        bool regular = true;
         if(QThread* mainThread = QCoreApplicationPrivate::theMainThread.loadRelaxed()){
             QThread* currentThread = QThread::currentThread();
             if(mainThread==currentThread){
                 if(QCoreApplication::instance() && !Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.no-app-deletion"))){
                     delete QCoreApplication::instance();
                 }
+            }else{
+                if(mainThread->isRunning())
+                    regular = false;
             }
         }
-        shutdown(env);
+        shutdown(env, regular);
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
     }
@@ -113,7 +117,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_ReferenceUtility_needsReferenceCount
 {
     try{
         if (QSharedPointer<QtJambiLink> link = QtJambiLink::fromNativeId(objId)) {
-            return link->createdByJava() || link->ownership()==QtJambiLink::Ownership::Java;
+            return link->needsReferenceCounting() || link->ownership()==QtJambiLink::Ownership::Java;
         }
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
@@ -227,10 +231,10 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_uiThreadCheck)(JNIEnv *env, jclas
 }
 
 extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_threadCheck)(JNIEnv *env, jclass, QtJambiNativeID objectId)
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_threadCheck)(JNIEnv *env, jclass, jobject object)
 {
     try{
-        QtJambiAPI::checkThread(env, QtJambiAPI::objectFromNativeId<QObject>(objectId));
+        checkThreadOnQObject(env, object);
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
     }
@@ -364,4 +368,72 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_restoreUnixSignalHandlers)(JNIEnv
     Q_UNUSED(env)
 #endif
     return false;
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_setDanglingPointerCheckEnabled)(JNIEnv *env, jclass, jboolean enabled)
+{
+    try{
+        const char* property = "io.qt.enable-dangling-pointer-check";
+        Java::Runtime::System::setProperty(env, env->NewStringUTF(property), env->NewStringUTF(enabled ? "true" : "false"));
+        reinitializeResettableFlag(env, property);
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_setMethodLogsEnabled)(JNIEnv *env, jclass, jboolean enabled)
+{
+    try{
+        const char* property = "io.qt.enable-method-logs";
+        Java::Runtime::System::setProperty(env, env->NewStringUTF(property), env->NewStringUTF(enabled ? "true" : "false"));
+        reinitializeResettableFlag(env, property);
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_setEventLogsEnabled)(JNIEnv *env, jclass, jboolean enabled)
+{
+    try{
+        const char* property = "io.qt.enable-event-logs";
+        Java::Runtime::System::setProperty(env, env->NewStringUTF(property), env->NewStringUTF(enabled ? "true" : "false"));
+        reinitializeResettableFlag(env, property);
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_setThreadAffinityCheckEnabled)(JNIEnv *env, jclass, jboolean enabled)
+{
+    try{
+        const char* property = "io.qt.enable-thread-affinity-check";
+        Java::Runtime::System::setProperty(env, env->NewStringUTF(property), env->NewStringUTF(enabled ? "true" : "false"));
+        enableThreadAffinity(enabled);
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_setEventThreadAffinityCheckEnabled)(JNIEnv *env, jclass, jboolean enabled)
+{
+    try{
+        const char* property = "io.qt.enable-event-thread-affinity-check";
+        Java::Runtime::System::setProperty(env, env->NewStringUTF(property), env->NewStringUTF(enabled ? "true" : "false"));
+        if(enabled){
+            QInternal::unregisterCallback(QInternal::EventNotifyCallback, &simpleEventNotify);
+            QInternal::unregisterCallback(QInternal::EventNotifyCallback, &threadAffineEventNotify);
+            QInternal::registerCallback(QInternal::EventNotifyCallback, &threadAffineEventNotify);
+        }else{
+            QInternal::unregisterCallback(QInternal::EventNotifyCallback, &simpleEventNotify);
+            QInternal::unregisterCallback(QInternal::EventNotifyCallback, &threadAffineEventNotify);
+            QInternal::registerCallback(QInternal::EventNotifyCallback, &simpleEventNotify);
+        }
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
 }

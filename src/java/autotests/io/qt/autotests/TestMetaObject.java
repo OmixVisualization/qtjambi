@@ -418,7 +418,7 @@ public class TestMetaObject extends ApplicationInitializer {
     		QMetaObject.invokeMethod(model.layoutChanged, Qt.ConnectionType.DirectConnection);
     	});
     	thread.start();
-    	thread.join();
+    	thread.join(20000);
     	QCoreApplication.processEvents();
     	QCoreApplication.sendPostedEvents();
     }

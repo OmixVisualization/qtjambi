@@ -68,6 +68,8 @@ abstract class ThreadUtility {
         }
         return null;
 	}
+	
+	private static void empty(Thread t,Object o) {}
 
 	@NativeAccess
 	private static void setThreadInterruptible(QThread qthread, Thread thread, boolean set) {
@@ -91,7 +93,7 @@ abstract class ThreadUtility {
 					}
 				}
 				if(threadInterruptibleSetter==null) {
-					threadInterruptibleSetter = (t,v)->{};
+					threadInterruptibleSetter = ThreadUtility::empty;
 				}
 			}
 			setter = threadInterruptibleSetter;

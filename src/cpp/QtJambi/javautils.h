@@ -35,6 +35,7 @@
 namespace QtJambiPrivate{
 QTJAMBI_EXPORT void javaInstanceCheck(JNIEnv* env,jobject object, jclass class_ref, bool isMemberFunction, const char* name);
 QTJAMBI_EXPORT void javaExceptionCheck(JNIEnv* env);
+QTJAMBI_EXPORT void registerGlobalClassPointer(jclass& cls);
 }
 
 #define REPOSITORY_EXPORT QTJAMBI_STATIC_EXPORT
@@ -987,8 +988,6 @@ private: jfieldID __##field;\
         return jclass(env->NewLocalRef(_this.__##cls));\
     }
 
-#define POST_CLASS_REF_ACTION(class_ref)
-
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #define QRecursiveMutexLocker QMutexLocker
 #else
@@ -1003,7 +1002,7 @@ const type_name& type_name::__qt_get_this(JNIEnv *env){\
 type_name::type_name(JNIEnv *env) : class_ref(nullptr) { \
     this->class_ref = JavaAPI::resolveClass(env, #package"/"#type_name);\
     Q_ASSERT(this->class_ref);\
-    POST_CLASS_REF_ACTION(this->class_ref)\
+    QtJambiPrivate::registerGlobalClassPointer(this->class_ref);\
     content\
     Q_ASSERT(this->class_ref);\
 }\
@@ -1013,28 +1012,25 @@ jclass type_name::getClass(JNIEnv* env){\
 }\
 jboolean type_name::isInstanceOf(JNIEnv* env,jobject instance){\
     auto _this = __qt_get_this(env);\
-    Q_ASSERT(_this.class_ref);\
-    jboolean result = !env->IsSameObject(instance, nullptr) && env->IsInstanceOf(instance, _this.class_ref);\
+    jboolean result = _this.class_ref && !env->IsSameObject(instance, nullptr) && env->IsInstanceOf(instance, _this.class_ref);\
     QtJambiPrivate::javaExceptionCheck(env);\
     return result;\
 }\
 jboolean type_name::isAssignableFrom(JNIEnv* env,jclass otherClass){\
     auto _this = __qt_get_this(env);\
-    Q_ASSERT(_this.class_ref);\
-    jboolean result = env->IsAssignableFrom(otherClass, _this.class_ref);\
+    jboolean result = _this.class_ref && env->IsAssignableFrom(otherClass, _this.class_ref);\
     QtJambiPrivate::javaExceptionCheck(env);\
     return result;\
 }\
 jboolean type_name::isSameClass(JNIEnv* env,jclass otherClass){\
     auto _this = __qt_get_this(env);\
-    Q_ASSERT(_this.class_ref);\
-    jboolean result = env->IsSameObject(otherClass, _this.class_ref);\
+    jboolean result = _this.class_ref && env->IsSameObject(otherClass, _this.class_ref);\
     QtJambiPrivate::javaExceptionCheck(env);\
     return result;\
 }\
 jobjectArray type_name::newArray(JNIEnv* env,jsize size){\
     auto _this = __qt_get_this(env);\
-    Q_ASSERT(_this.class_ref);\
+    if(!_this.class_ref) return nullptr;\
     jobjectArray result = env->NewObjectArray(size, _this.class_ref, nullptr);\
     QtJambiPrivate::javaExceptionCheck(env);\
     return result;\

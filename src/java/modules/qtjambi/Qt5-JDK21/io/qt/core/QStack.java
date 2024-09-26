@@ -29,6 +29,7 @@
 ****************************************************************************/
 package io.qt.core;
 
+import java.nio.*;
 import java.util.*;
 import io.qt.*;
 
@@ -62,7 +63,7 @@ public class QStack<T> extends QVector<T> implements Queue<T>
      * <p>See <code><a href="https://doc.qt.io/qt/qstack.html">QStack::<wbr>QStack()</a></code></p>
      * @param elementType the type T
      */
-	public QStack(@StrictNonNull Class<T> elementType) {
+	public QStack(@Nullable Class<T> elementType) {
 		super(elementType);
 	}
 
@@ -74,6 +75,11 @@ public class QStack<T> extends QVector<T> implements Queue<T>
 	public QStack(@StrictNonNull Collection<T> other) {
 		super(other);
 	}
+	
+	@NativeAccess
+    private QStack(QMetaType elementMetaType, Collection<T> other) {
+        super(elementMetaType, other);
+    }
 	
     /**
      * Creating a container of type QVariant.
@@ -243,7 +249,7 @@ public class QStack<T> extends QVector<T> implements Queue<T>
      * @see Deque#descendingIterator()
      */
     @QtUninvokable
-	public java.util.Iterator<T> descendingIterator() {
+	public java.util.@NonNull Iterator<T> descendingIterator() {
 		return constEnd().toJavaDescendingIterator();
 	}
 
@@ -312,17 +318,270 @@ public class QStack<T> extends QVector<T> implements Queue<T>
      *
      */
     @SafeVarargs
-    public static <T> QStack<T> of(T element0, T...elements) {
+    public static <T> @NonNull QStack<T> of(T element0, T @StrictNonNull...elements) {
 		QMetaType metaType = QList.findElementMetaType(element0, elements);
-		if(metaType==null || metaType.id()==0)
+		@SuppressWarnings("unchecked")
+		T[] allElements = (T[])new Object[elements.length+1];
+		System.arraycopy(elements, 0, allElements, 1, elements.length);
+		allElements[0] = element0;
+		return ofTyped(metaType, allElements);
+	}
+    
+    /**
+     * Returns a QStack containing given elements.
+     *
+     * @param elements
+     * @return a {@code QStack} containing the specified element
+     */
+    public static @NonNull QStack<@QtPrimitiveType@NonNull Byte> ofByte(byte @StrictNonNull...elements) {
+		QStack<Byte> result = new QStack<>(byte.class);
+    	result.resize(elements.length);
+    	ByteBuffer data = QtJambi_LibraryUtilities.internal.mutableDataB(result);
+		data.put(elements, 0, elements.length);
+		QtJambi_LibraryUtilities.internal.truncateBuffer(result, data);
+		return result;
+	}
+    
+    /**
+     * Returns a QStack containing given elements.
+     *
+     * @param elements
+     * @return a {@code QStack} containing the specified element
+     */
+    public static @NonNull QStack<@QtPrimitiveType@NonNull Short> ofShort(short @StrictNonNull...elements) {
+		QStack<Short> result = new QStack<>(short.class);
+    	result.resize(elements.length);
+    	ShortBuffer data = QtJambi_LibraryUtilities.internal.mutableDataS(result);
+		data.put(elements, 0, elements.length);
+		QtJambi_LibraryUtilities.internal.truncateBuffer(result, data);
+		return result;
+	}
+    
+    /**
+     * Returns a QStack containing given elements.
+     *
+     * @param elements
+     * @return a {@code QStack} containing the specified element
+     */
+    public static @NonNull QStack<@QtPrimitiveType@NonNull Integer> ofInt(int @StrictNonNull...elements) {
+		QStack<Integer> result = new QStack<>(int.class);
+    	result.resize(elements.length);
+    	IntBuffer data = QtJambi_LibraryUtilities.internal.mutableDataI(result);
+		data.put(elements, 0, elements.length);
+		QtJambi_LibraryUtilities.internal.truncateBuffer(result, data);
+		return result;
+	}
+    
+    /**
+     * Returns a QStack containing given elements.
+     *
+     * @param elements
+     * @return a {@code QStack} containing the specified element
+     */
+    public static @NonNull QStack<@QtPrimitiveType@NonNull Long> ofLong(long @StrictNonNull...elements) {
+		QStack<Long> result = new QStack<>(long.class);
+    	result.resize(elements.length);
+    	LongBuffer data = QtJambi_LibraryUtilities.internal.mutableDataJ(result);
+		data.put(elements, 0, elements.length);
+		QtJambi_LibraryUtilities.internal.truncateBuffer(result, data);
+		return result;
+	}
+    
+    /**
+     * Returns a QStack containing given elements.
+     *
+     * @param elements
+     * @return a {@code QStack} containing the specified element
+     */
+    public static @NonNull QStack<@QtPrimitiveType@NonNull Character> ofChar(char @StrictNonNull...elements) {
+		QStack<Character> result = new QStack<>(char.class);
+    	result.resize(elements.length);
+    	CharBuffer data = QtJambi_LibraryUtilities.internal.mutableDataC(result);
+		data.put(elements, 0, elements.length);
+		QtJambi_LibraryUtilities.internal.truncateBuffer(result, data);
+		return result;
+	}
+    
+    /**
+     * Returns a QStack containing given elements.
+     *
+     * @param elements
+     * @return a {@code QStack} containing the specified element
+     */
+    public static @NonNull QStack<@QtPrimitiveType@NonNull Float> ofFloat(float @StrictNonNull...elements) {
+		QStack<Float> result = new QStack<>(float.class);
+    	result.resize(elements.length);
+    	FloatBuffer data = QtJambi_LibraryUtilities.internal.mutableDataF(result);
+		data.put(elements, 0, elements.length);
+		QtJambi_LibraryUtilities.internal.truncateBuffer(result, data);
+		return result;
+	}
+    
+    /**
+     * Returns a QStack containing given elements.
+     *
+     * @param elements
+     * @return a {@code QStack} containing the specified element
+     */
+    public static @NonNull QStack<@QtPrimitiveType@NonNull Double> ofDouble(double @StrictNonNull...elements) {
+		QStack<Double> result = new QStack<>(double.class);
+    	result.resize(elements.length);
+    	DoubleBuffer data = QtJambi_LibraryUtilities.internal.mutableDataD(result);
+		data.put(elements, 0, elements.length);
+		QtJambi_LibraryUtilities.internal.truncateBuffer(result, data);
+		return result;
+	}
+    
+    /**
+     * Returns a QStack containing given elements.
+     *
+     * @param elements
+     * @return a {@code QStack} containing the specified element
+     */
+    public static @NonNull QStack<@QtPrimitiveType@NonNull Boolean> ofBoolean(boolean @StrictNonNull...elements) {
+		QStack<Boolean> result = new QStack<>(boolean.class);
+    	result.reserve(elements.length);
+		for (boolean t : elements) {
+			result.append(t);
+		}
+		return result;
+	}
+    
+    /**
+     * Returns a QStack containing given elements.
+     *
+     * @param elements
+     * @return a {@code QStack} containing the specified element
+     */
+    public static @NonNull QStack<@QtPrimitiveType@NonNull Byte> ofBuffer(@StrictNonNull ByteBuffer elements) {
+		QStack<Byte> result = new QStack<>(byte.class);
+		result.resize(elements.remaining());
+		ByteBuffer data = QtJambi_LibraryUtilities.internal.mutableDataB(result);
+		data.put(elements);
+		QtJambi_LibraryUtilities.internal.truncateBuffer(result, data);
+		return result;
+	}
+    
+    /**
+     * Returns a QStack containing given elements.
+     *
+     * @param elements
+     * @return a {@code QStack} containing the specified element
+     */
+    public static @NonNull QStack<@QtPrimitiveType@NonNull Short> ofBuffer(@StrictNonNull ShortBuffer elements) {
+		QStack<Short> result = new QStack<>(short.class);
+		result.resize(elements.remaining());
+		ShortBuffer data = QtJambi_LibraryUtilities.internal.mutableDataS(result);
+		data.put(elements);
+		QtJambi_LibraryUtilities.internal.truncateBuffer(result, data);
+		return result;
+	}
+    
+    /**
+     * Returns a QStack containing given elements.
+     *
+     * @param elements
+     * @return a {@code QStack} containing the specified element
+     */
+    public static @NonNull QStack<@QtPrimitiveType@NonNull Integer> ofBuffer(@StrictNonNull IntBuffer elements) {
+		QStack<Integer> result = new QStack<>(int.class);
+		result.resize(elements.remaining());
+		IntBuffer data = QtJambi_LibraryUtilities.internal.mutableDataI(result);
+		data.put(elements);
+		QtJambi_LibraryUtilities.internal.truncateBuffer(result, data);
+		return result;
+	}
+    
+    /**
+     * Returns a QStack containing given elements.
+     *
+     * @param elements
+     * @return a {@code QStack} containing the specified element
+     */
+    public static @NonNull QStack<@QtPrimitiveType@NonNull Long> ofBuffer(@StrictNonNull LongBuffer elements) {
+		QStack<Long> result = new QStack<>(long.class);
+		result.resize(elements.remaining());
+		LongBuffer data = QtJambi_LibraryUtilities.internal.mutableDataJ(result);
+		data.put(elements);
+		QtJambi_LibraryUtilities.internal.truncateBuffer(result, data);
+		return result;
+	}
+    
+    /**
+     * Returns a QStack containing given elements.
+     *
+     * @param elements
+     * @return a {@code QStack} containing the specified element
+     */
+    public static @NonNull QStack<@QtPrimitiveType@NonNull Character> ofBuffer(@StrictNonNull CharBuffer elements) {
+		QStack<Character> result = new QStack<>(char.class);
+		result.resize(elements.remaining());
+		CharBuffer data = QtJambi_LibraryUtilities.internal.mutableDataC(result);
+		data.put(elements);
+		QtJambi_LibraryUtilities.internal.truncateBuffer(result, data);
+		return result;
+	}
+    
+    /**
+     * Returns a QStack containing given elements.
+     *
+     * @param elements
+     * @return a {@code QStack} containing the specified element
+     */
+    public static @NonNull QStack<@QtPrimitiveType@NonNull Float> ofBuffer(@StrictNonNull FloatBuffer elements) {
+		QStack<Float> result = new QStack<>(float.class);
+		result.resize(elements.remaining());
+		FloatBuffer data = QtJambi_LibraryUtilities.internal.mutableDataF(result);
+		data.put(elements);
+		QtJambi_LibraryUtilities.internal.truncateBuffer(result, data);
+		return result;
+	}
+    
+    /**
+     * Returns a QStack containing given elements.
+     *
+     * @param elements
+     * @return a {@code QStack} containing the specified element
+     */
+    public static @NonNull QStack<@QtPrimitiveType@NonNull Double> ofBuffer(@StrictNonNull DoubleBuffer elements) {
+		QStack<Double> result = new QStack<>(double.class);
+		result.resize(elements.remaining());
+		DoubleBuffer data = QtJambi_LibraryUtilities.internal.mutableDataD(result);
+		data.put(elements);
+		QtJambi_LibraryUtilities.internal.truncateBuffer(result, data);
+		return result;
+	}
+    
+    /**
+     * Returns a QStack containing given elements.
+     *
+     * @param <T> the {@code QStack}'s element type
+     * @param type the {@code QStack}'s element type
+     * @param elements all list elements to be added
+     * @return a {@code QStack} containing the specified element
+     *
+     */
+	@SafeVarargs
+    public static <T> @NonNull QStack<T> ofTyped(@Nullable Class<? super T> type, T @StrictNonNull...elements) {
+		QMetaType metaType = QList.findElementMetaType(type, elements);
+		return ofTyped(metaType, elements);
+	}
+    
+    /**
+     * Returns a QStack containing given elements.
+     *
+     * @param <T> the {@code QStack}'s element type
+     * @param metaType the {@code QStack}'s element type
+     * @param elements all list elements to be added
+     * @return a {@code QStack} containing the specified element
+     *
+     */
+	@SafeVarargs
+    public static <T> @NonNull QStack<T> ofTyped(@StrictNonNull QMetaType metaType, T @StrictNonNull...elements) {
+		if(metaType.id()==0)
 			throw new IllegalArgumentException("QMetaType::UnknownType cannot be type of QStack.");
 		if(metaType.id()==QMetaType.Type.Void.value())
 			throw new IllegalArgumentException("void cannot be type of QStack.");
-		QStack<T> result = new QStack<>(metaType);
-		result.add(element0);
-		for (T t : elements) {
-			result.add(t);
-		}
-		return result;
+		return new QStack<>(metaType, Arrays.asList(elements));
 	}
 }

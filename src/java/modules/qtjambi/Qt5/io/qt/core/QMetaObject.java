@@ -29,46 +29,17 @@
 ****************************************************************************/
 package io.qt.core;
 
-import static io.qt.core.QMetaMethod.fromReflectedMethod;
-import static io.qt.internal.MetaTypeUtility.internalNameOfArgumentType;
-import static io.qt.internal.MetaTypeUtility.internalTypeName;
-import static io.qt.internal.MetaTypeUtility.internalTypeNameOfClass;
+import static io.qt.core.QMetaMethod.*;
+import static io.qt.internal.MetaTypeUtility.*;
 
 import java.io.Serializable;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Parameter;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Proxy;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.lang.reflect.*;
+import java.util.*;
+import java.util.function.*;
+import java.util.logging.*;
 
-import io.qt.NonNull;
-import io.qt.Nullable;
-import io.qt.QFlags;
-import io.qt.QNoDefaultValueException;
-import io.qt.QNoSuchMethodException;
-import io.qt.QNoSuchSlotException;
-import io.qt.QUnsuccessfulInvocationException;
-import io.qt.QtAbstractEnumerator;
-import io.qt.QtEnumerator;
-import io.qt.QtGadget;
-import io.qt.QtObjectInterface;
-import io.qt.QtSignalEmitterInterface;
-import io.qt.QtThreadAffineInterface;
-import io.qt.QtUninvokable;
-import io.qt.StrictNonNull;
-import io.qt.internal.ClassAnalyzerUtility;
+import io.qt.*;
+import io.qt.internal.*;
 
 /**
  * <p>Java wrapper for Qt class <code><a href="https://doc.qt.io/qt/qmetaobject.html">QMetaObject</a></code></p>
@@ -455,6 +426,13 @@ public final class QMetaObject {
     private static native int propertyCount(long metaObjectPointer);
     
     @QtUninvokable
+    public final int propertyOffset(){
+        return propertyOffset(metaObjectPointer);
+    }
+    @QtUninvokable
+    private native int propertyOffset(long metaObjectPointer);
+    
+    @QtUninvokable
     public @NonNull QMetaProperty property(String name) {
         return property(this.metaObjectPointer, name);
     }
@@ -481,6 +459,13 @@ public final class QMetaObject {
     }
     @QtUninvokable
     private static native int enumeratorCount(long metaObjectPointer);
+    
+    @QtUninvokable
+    public final int enumeratorOffset(){
+        return enumeratorOffset(metaObjectPointer);
+    }
+    @QtUninvokable
+    private native int enumeratorOffset(long metaObjectPointer);
     
     @QtUninvokable
     public @NonNull QMetaEnum enumerator(String name) {
@@ -595,6 +580,13 @@ public final class QMetaObject {
     }
     @QtUninvokable
     private native int methodCount(long metaObjectPointer);
+	
+	@QtUninvokable
+    public final int methodOffset(){
+        return methodOffset(metaObjectPointer);
+    }
+    @QtUninvokable
+    private native int methodOffset(long metaObjectPointer);
     
     @QtUninvokable
     public @NonNull QMetaMethod constructor(Class<?>... parameterTypes) {
@@ -17135,6 +17127,7 @@ public final class QMetaObject {
                         }
                         Class<?> paramType = null;
                         Type genericParamType = null;
+                        AnnotatedElement annotatedParamType = null;
                         int arrayDimension = 0;
                         argumentTypes[i] = argumentTypes[i].replace(" ", "");
                         while(argumentTypes[i].endsWith("[]")) {
@@ -17203,6 +17196,9 @@ public final class QMetaObject {
 	                        				|| method[i].getParameterizedType().getTypeName().equals(argumentTypes[i])) {
 	                        			paramType = method[i].getType();
 	                        			genericParamType = method[i].getParameterizedType();
+										if(ClassAnalyzerUtility.useAnnotatedType) {
+	                        				annotatedParamType = method[i].getAnnotatedType();
+	                        			}
 	                        			break;
 	                        		}
 	                        	}
@@ -17220,6 +17216,9 @@ public final class QMetaObject {
 	                        				 || type.getSimpleName().equals(argumentTypes[i]))) {
 	                        			paramType = method[i].getType();
 	                        			genericParamType = method[i].getParameterizedType();
+										if(ClassAnalyzerUtility.useAnnotatedType) {
+	                        				annotatedParamType = method[i].getAnnotatedType();
+	                        			}
 	                        			break;
 	                        		}
                         		}
@@ -17235,7 +17234,7 @@ public final class QMetaObject {
                         String cpptype = 
                         		paramType==null
                         		? internalTypeName(argumentTypes[i], QMetaObject.class.getClassLoader())
-                        				: internalTypeNameOfClass(paramType, genericParamType==null ? paramType : genericParamType);
+                        				: internalTypeNameOfClass(paramType, genericParamType==null ? paramType : genericParamType, annotatedParamType);
                         if(cpptype.isEmpty())
                         	cpptype = argumentTypes[i];
                         name += cpptype;

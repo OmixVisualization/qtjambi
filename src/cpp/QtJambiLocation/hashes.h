@@ -175,13 +175,89 @@ inline hash_type qHash(const QPlaceSearchRequest &value, hash_type seed = 0)
     return seed;
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) && !defined(QTJAMBI_GENERATOR_RUNNING)
+namespace QtJambiLocationPrivate{
+hash_type variantHash(const QVariant& v, hash_type seed = 0);
+}
+#endif
+
 inline hash_type qHash(const QPlaceContent &value, hash_type seed = 0)
 {
     QtPrivate::QHashCombine hash;
     seed = hash(seed, value.type());
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     seed = hash(seed, value.user());
     seed = hash(seed, value.supplier());
     seed = hash(seed, value.attribution());
+#else
+    for(QPlaceContent::DataTag tag : value.dataTags()){
+        seed = hash(seed, tag);
+        QVariant variant = value.value(tag);
+        if(variant.isValid()){
+            switch(tag){
+            case QPlaceContent::ContentSupplier:
+                seed = hash(seed, variant.value<QPlaceSupplier>());
+                break;
+            case QPlaceContent::ContentUser:
+                seed = hash(seed, variant.value<QPlaceUser>());
+                break;
+            case QPlaceContent::ReviewTitle:
+            case QPlaceContent::ReviewText:
+            case QPlaceContent::ReviewLanguage:
+            case QPlaceContent::ReviewRating:
+            case QPlaceContent::ReviewId:
+            case QPlaceContent::EditorialLanguage:
+            case QPlaceContent::EditorialTitle:
+            case QPlaceContent::EditorialText:
+            case QPlaceContent::ImageId:
+            case QPlaceContent::ImageUrl:
+            case QPlaceContent::ImageMimeType:
+            case QPlaceContent::ContentAttribution:
+                seed = hash(seed, variant.value<QString>());
+                break;
+             break;
+            case QPlaceContent::ReviewDateTime:
+                seed = hash(seed, variant.value<QDateTime>());
+                break;
+            default:
+                if(variant.metaType()==QMetaType::fromType<QString>()){
+                    seed = hash(seed, variant.value<QString>());
+                } else if(variant.metaType()==QMetaType::fromType<char>()){
+                    seed = hash(seed, variant.value<char>());
+                } else if(variant.metaType()==QMetaType::fromType<uchar>()){
+                    seed = hash(seed, variant.value<uchar>());
+                } else if(variant.metaType()==QMetaType::fromType<signed char>()){
+                    seed = hash(seed, variant.value<signed char>());
+                } else if(variant.metaType()==QMetaType::fromType<qint16>()){
+                    seed = hash(seed, variant.value<qint16>());
+                } else if(variant.metaType()==QMetaType::fromType<quint16>()){
+                    seed = hash(seed, variant.value<quint16>());
+                } else if(variant.metaType()==QMetaType::fromType<qint32>()){
+                    seed = hash(seed, variant.value<qint32>());
+                } else if(variant.metaType()==QMetaType::fromType<quint32>()){
+                    seed = hash(seed, variant.value<quint32>());
+                } else if(variant.metaType()==QMetaType::fromType<float>()){
+                    seed = hash(seed, variant.value<float>());
+                } else if(variant.metaType()==QMetaType::fromType<double>()){
+                    seed = hash(seed, variant.value<double>());
+                } else if(variant.metaType()==QMetaType::fromType<QChar>()){
+                    seed = hash(seed, variant.value<QChar>());
+                } else if(variant.metaType()==QMetaType::fromType<QDateTime>()){
+                    seed = hash(seed, variant.value<QDateTime>());
+                } else if(variant.metaType()==QMetaType::fromType<QDate>()){
+                    seed = hash(seed, variant.value<QDate>());
+                } else if(variant.metaType()==QMetaType::fromType<QTime>()){
+                    seed = hash(seed, variant.value<QTime>());
+                } else if(variant.metaType()==QMetaType::fromType<QUrl>()){
+                    seed = hash(seed, variant.value<QUrl>());
+                }else{
+                    seed = QtJambiLocationPrivate::variantHash(variant, seed);
+                }
+                break;
+            }
+        }
+    }
+#endif
     return seed;
 }
 

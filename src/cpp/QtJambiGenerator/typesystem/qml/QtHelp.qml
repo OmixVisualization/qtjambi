@@ -92,6 +92,7 @@ TypeSystem{
 }`}
             Text{
                 since: 6
+                until: 6.7
                 content: String.raw`inline hash_type qHash(const QMultiMap<QString, QUrl> &value, hash_type seed = 0){
     QtPrivate::QHashCombineCommutative hash;
     seed = hash(seed, value.keys().size());
@@ -239,19 +240,6 @@ TypeSystem{
                 fileName: "hashes.h"
                 location: Include.Local
             }
-        }
-        InjectCode{
-            target: CodeClass.Native
-            position: Position.Beginning
-            Text{content: String.raw`
-namespace QHashPrivate {
-template <>
-constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QVersionNumber>> = false;
-template <>
-constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QString>> = false;
-}`
-            }
-            since: 6.8
         }
         since: [5, 13]
     }

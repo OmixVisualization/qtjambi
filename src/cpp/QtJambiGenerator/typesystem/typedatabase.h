@@ -69,6 +69,7 @@ public:
     IteratorTypeEntry *findIteratorType(const ComplexTypeEntry * container) const;
     SmartPointerTypeEntry *findPointerContainerType(const QString &name) const;
     InitializerListTypeEntry *findInitializerListType(const QString &name) const;
+    QSpanTypeEntry *findQSpanType(const QString &name) const;
 
     bool isPixmapType(const TypeEntry *e) const{
         return e==m_pixmapType || e==m_bitmapType;

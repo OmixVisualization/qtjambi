@@ -317,6 +317,14 @@ namespace Runtime{
                   QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(bitLength)
                   QTJAMBI_REPOSITORY_DECLARE_LONG_METHOD(longValue)
                   QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(toByteArray))
+
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(DirectByteBuffer,
+                QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(att)
+                inline static jfieldID att_field(JNIEnv* env){
+                    auto _this = __qt_get_this(env);
+                    return _this.__att;
+                }
+        )
 }
 }
 

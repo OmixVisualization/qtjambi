@@ -52,7 +52,6 @@ template<typename Cleanup>
 void reference_cleanup(jobject object){
     try{
         if(object && !QCoreApplication::closingDown()){
-            DEREF_JOBJECT;
             if(DefaultJniEnvironment env{0}){
                 jthrowable throwable = nullptr;
                 if(env->ExceptionCheck()){
@@ -151,7 +150,6 @@ public:
             (env->*JArray<JType>::ReleaseArrayElements)(array, m_array, 0);
             m_array = nullptr;
             m_length = 0;
-            DEREF_JOBJECT;
             jthrowable throwable = nullptr;
             if(env->ExceptionCheck()){
                 throwable = env->ExceptionOccurred();
@@ -291,7 +289,6 @@ JObjectWrapper::JObjectWrapper(jobject obj)
                 env->ExceptionClear();
             }
             if(!env->IsSameObject(obj, nullptr)){
-                REF_JOBJECT;
                 m_data = static_cast<JObjectWrapperData*>(new JObjectGlobalWrapperData(env, obj));
             }
         }
@@ -306,7 +303,6 @@ JObjectWrapper::JObjectWrapper(JNIEnv *env, jobject obj, bool globalRefs)
         env->ExceptionClear();
     }
     if(!env->IsSameObject(obj, nullptr)){
-        REF_JOBJECT;
         m_data = globalRefs ? static_cast<JObjectWrapperData*>(new JObjectGlobalWrapperData(env, obj)) : static_cast<JObjectWrapperData*>(new JObjectWeakWrapperData(env, obj));
     }
 }
@@ -319,7 +315,6 @@ JObjectWrapper::JObjectWrapper(JNIEnv *env, jobject obj, bool globalRefs, const 
         env->ExceptionClear();
     }
     if(!env->IsSameObject(obj, nullptr)){
-        REF_JOBJECT;
         if(globalRefs){
             if(typeid_equals(typeId, typeid(jint))){
                 m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalWrapperData<jint>(env, jintArray(obj)));
@@ -560,6 +555,10 @@ void* JObjectWrapper::array()
 
 void JObjectWrapper::commitArray(){
     m_data->commitArray();
+}
+
+void JObjectWrapper::swap(JObjectWrapper& other){
+    m_data.swap(other.m_data);
 }
 
 jsize JObjectWrapper::arrayLength() const {

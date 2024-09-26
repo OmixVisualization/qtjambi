@@ -38,13 +38,6 @@
 #include <QtJambi/qtjambi_cast.h>
 
 struct HttpServer : QAbstractHttpServer{
-    inline void afterRequestImpl(std::function<QHttpServerResponse(QHttpServerResponse &&response,
-                                                                           const QHttpServerRequest &request)> afterRequestHandler)
-    {
-        QHttpServerPrivate* d = reinterpret_cast<QHttpServerPrivate*>(QObjectPrivate::get(this));
-        d->afterRequestHandlers.push_back(std::move(afterRequestHandler));
-    }
-
 #if QT_VERSION < QT_VERSION_CHECK(6, 5, 0)
     inline void sendResponse(QHttpServerResponse &&response,
                                    const QHttpServerRequest &request,
@@ -62,7 +55,14 @@ struct HttpServer : QAbstractHttpServer{
     void superMissingHandler(const QHttpServerRequest& request0, QTcpSocket* socket1){
         missingHandler(request0, socket1);
     }
-#else
+#elif QT_VERSION < QT_VERSION_CHECK(6, 8, 0)
+    inline void afterRequestImpl(std::function<QHttpServerResponse(QHttpServerResponse &&response,
+                                                                   const QHttpServerRequest &request)> afterRequestHandler)
+    {
+        QHttpServerPrivate* d = reinterpret_cast<QHttpServerPrivate*>(QObjectPrivate::get(this));
+        d->afterRequestHandlers.push_back(std::move(afterRequestHandler));
+    }
+
     inline void sendResponse(QHttpServerResponse &&response,
                              const QHttpServerRequest &request,
                              QHttpServerResponder &&responder)
@@ -89,6 +89,13 @@ struct HttpServer : QAbstractHttpServer{
     }
     void superMissingHandler(const QHttpServerRequest& request0, QHttpServerResponder &&responder){
         missingHandler(request0, std::move(responder));
+    }
+#else
+    bool superhandleRequest(const QHttpServerRequest& request0, QHttpServerResponder &responder){
+        return handleRequest(request0, responder);
+    }
+    void superMissingHandler(const QHttpServerRequest& request0, QHttpServerResponder &responder){
+        missingHandler(request0, responder);
     }
 #endif
 };
@@ -120,6 +127,8 @@ struct HttpServerRouter{
     QScopedPointer<QHttpServerRouter> d_ptr;
 };
 
+#if QT_VERSION > QT_VERSION_CHECK(6, 8, 0)
+
 extern "C" Q_DECL_EXPORT bool JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_httpserver_QHttpServerRouter_addRuleImpl)
 (JNIEnv *__jni_env,
  jobject __this,
@@ -132,23 +141,13 @@ extern "C" Q_DECL_EXPORT bool JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_httpser
     QTJAMBI_TRY {
         QHttpServer *__qt_this = QtJambiAPI::objectFromNativeId<QHttpServer>(__this_nativeId);
         QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
-        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QHttpServer::handleRequest(const QHttpServerRequest &request, QHttpServerResponder &responder)", __qt_this)
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QHttpServer::addRuleImpl(std::unique_ptr<QHttpServerRouterRule>, std::initializer_list<QMetaType>)", __qt_this)
         QHttpServerRouterRule *rule = QtJambiAPI::objectFromNativeId<QHttpServerRouterRule>(__rule);
         QtJambiAPI::checkNullPointer(__jni_env, rule);
         QtJambiAPI::setCppOwnership(__jni_env, __rule);
         QList<QMetaType>* metaTypes = QtJambiAPI::objectFromNativeId<QList<QMetaType>>(__metaTypes);
         QtJambiAPI::checkNullPointer(__jni_env, metaTypes);
-#ifdef Q_CC_MSVC
-        result = reinterpret_cast<HttpServerRouter*>(__qt_this)->addRuleImpl(std::unique_ptr<QHttpServerRouterRule>(rule), std::initializer_list<QMetaType>(metaTypes->data(), metaTypes->data()+metaTypes->size()));
-#else
-        struct{
-            QMetaType* _M_array;
-            size_t _M_len;
-        } __initializer_tmp;
-        __initializer_tmp._M_array = metaTypes->data();
-        __initializer_tmp._M_len = size_t(metaTypes->size());
-        result = reinterpret_cast<HttpServerRouter*>(__qt_this)->addRuleImpl(std::unique_ptr<QHttpServerRouterRule>(rule), *reinterpret_cast<std::initializer_list<QMetaType>*>(&__initializer_tmp));
-#endif
+        result = reinterpret_cast<HttpServerRouter*>(__qt_this)->addRuleImpl(std::unique_ptr<QHttpServerRouterRule>(rule), QtJambiAPI::createIterable<std::initializer_list<QMetaType>>(metaTypes->data(), metaTypes->size()));
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -209,58 +208,6 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_httpser
 }
 #endif
 
-extern "C" Q_DECL_EXPORT bool JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_httpserver_QHttpServer_handleRequest)
-(JNIEnv *__jni_env,
- jobject __this,
- QtJambiNativeID __this_nativeId,
- QtJambiNativeID __request,
- QtJambiNativeID __argX)
-{
-    Q_UNUSED(__this)
-    bool result = false;
-    QTJAMBI_TRY {
-        QHttpServer *__qt_this = QtJambiAPI::objectFromNativeId<QHttpServer>(__this_nativeId);
-        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
-        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QHttpServer::handleRequest(const QHttpServerRequest& request0, QHttpServerResponder &responder)", __qt_this)
-        const QHttpServerRequest *request = QtJambiAPI::objectFromNativeId<QHttpServerRequest>(__request);
-        QtJambiAPI::checkNullPointer(__jni_env, request);
-#if QT_VERSION < QT_VERSION_CHECK(6, 5, 0)
-        QTcpSocket *argX = QtJambiAPI::objectFromNativeId<QTcpSocket>(__argX);
-#else
-        QHttpServerResponder& argX = QtJambiAPI::objectReferenceFromNativeId<QHttpServerResponder>(__jni_env, __argX);
-#endif
-        result = reinterpret_cast<HttpServer*>(__qt_this)->superhandleRequest(*request, argX);
-    }QTJAMBI_CATCH(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }QTJAMBI_TRY_END
-    return result;
-}
-
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_httpserver_QHttpServer_missingHandler)
-(JNIEnv *__jni_env,
- jobject __this,
- QtJambiNativeID __this_nativeId,
- QtJambiNativeID __request,
- QtJambiNativeID __argX)
-{
-    Q_UNUSED(__this)
-    QTJAMBI_TRY {
-        QHttpServer *__qt_this = QtJambiAPI::objectFromNativeId<QHttpServer>(__this_nativeId);
-        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
-        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QHttpServer::missingHandler(const QHttpServerRequest &request, QHttpServerResponder &&responder)", __qt_this)
-        const QHttpServerRequest *request = QtJambiAPI::objectFromNativeId<QHttpServerRequest>(__request);
-        QtJambiAPI::checkNullPointer(__jni_env, request);
-#if QT_VERSION < QT_VERSION_CHECK(6, 5, 0)
-        QTcpSocket *argX = QtJambiAPI::objectFromNativeId<QTcpSocket>(__argX);
-#else
-        QHttpServerResponder& argX = QtJambiAPI::objectReferenceFromNativeId<QHttpServerResponder>(__jni_env, __argX);
-#endif
-        reinterpret_cast<HttpServer*>(__qt_this)->superMissingHandler(*request, std::move(argX));
-    }QTJAMBI_CATCH(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }QTJAMBI_TRY_END
-}
-
 extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_httpserver_QHttpServer_afterRequest)
 (JNIEnv *__jni_env,
  jobject __this,
@@ -300,6 +247,66 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_httpser
                 return std::move(resp);
             });
         }
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+}
+#else
+
+#endif //QT_VERSION > QT_VERSION_CHECK(6, 8, 0)
+
+
+extern "C" Q_DECL_EXPORT bool JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_httpserver_QHttpServer_handleRequest)
+    (JNIEnv *__jni_env,
+     jobject __this,
+     QtJambiNativeID __this_nativeId,
+     QtJambiNativeID __request,
+     QtJambiNativeID __argX)
+{
+    Q_UNUSED(__this)
+    bool result = false;
+    QTJAMBI_TRY {
+        QHttpServer *__qt_this = QtJambiAPI::objectFromNativeId<QHttpServer>(__this_nativeId);
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QHttpServer::handleRequest(const QHttpServerRequest& request0, QHttpServerResponder &responder)", __qt_this)
+        const QHttpServerRequest *request = QtJambiAPI::objectFromNativeId<QHttpServerRequest>(__request);
+        QtJambiAPI::checkNullPointer(__jni_env, request);
+#if QT_VERSION < QT_VERSION_CHECK(6, 5, 0)
+        QTcpSocket *argX = QtJambiAPI::objectFromNativeId<QTcpSocket>(__argX);
+#else
+        QHttpServerResponder& argX = QtJambiAPI::objectReferenceFromNativeId<QHttpServerResponder>(__jni_env, __argX);
+#endif
+        result = reinterpret_cast<HttpServer*>(__qt_this)->superhandleRequest(*request, argX);
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+        return result;
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_httpserver_QHttpServer_missingHandler)
+    (JNIEnv *__jni_env,
+     jobject __this,
+     QtJambiNativeID __this_nativeId,
+     QtJambiNativeID __request,
+     QtJambiNativeID __argX)
+{
+    Q_UNUSED(__this)
+    QTJAMBI_TRY {
+        QHttpServer *__qt_this = QtJambiAPI::objectFromNativeId<QHttpServer>(__this_nativeId);
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QHttpServer::missingHandler(const QHttpServerRequest &request, QHttpServerResponder &&responder)", __qt_this)
+        const QHttpServerRequest *request = QtJambiAPI::objectFromNativeId<QHttpServerRequest>(__request);
+        QtJambiAPI::checkNullPointer(__jni_env, request);
+#if QT_VERSION < QT_VERSION_CHECK(6, 5, 0)
+        QTcpSocket *argX = QtJambiAPI::objectFromNativeId<QTcpSocket>(__argX);
+#else
+        QHttpServerResponder& argX = QtJambiAPI::objectReferenceFromNativeId<QHttpServerResponder>(__jni_env, __argX);
+#endif
+#if QT_VERSION < QT_VERSION_CHECK(6, 8, 0)
+        reinterpret_cast<HttpServer*>(__qt_this)->superMissingHandler(*request, std::move(argX));
+#else
+        reinterpret_cast<HttpServer*>(__qt_this)->superMissingHandler(*request, argX);
+#endif
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END

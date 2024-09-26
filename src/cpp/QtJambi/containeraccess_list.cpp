@@ -38,7 +38,16 @@
 #include "functionpointer.h"
 #include "registryapi.h"
 #include "registryutil_p.h"
+#include "qtjambilink_p.h"
+#include "java_p.h"
 #include "coreapi.h"
+
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+#define listSize() size()
+#else
+#define listSize() size
+#endif
+
 
 AutoListAccess::AutoListAccess(
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
@@ -50,9 +59,12 @@ AutoListAccess::AutoListAccess(
 #endif
         const QtJambiUtils::QHashFunction& hashFunction,
         const QtJambiUtils::InternalToExternalConverter& internalToExternalConverter,
-        const QtJambiUtils::ExternalToInternalConverter& externalToInternalConverter
+        const QtJambiUtils::ExternalToInternalConverter& externalToInternalConverter,
+        const QSharedPointer<AbstractContainerAccess>& elementNestedContainerAccess,
+        PtrOwnerFunction elementOwnerFunction,
+        AbstractContainerAccess::DataType elementDataType
         )
-    : AbstractListAccess(),
+    : AbstractListAccess(), AbstractNestedSequentialAccess(),
       m_elementMetaType(elementMetaType),
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
       m_isLargeOrStaticType(isStaticType || size_t(QMetaType::sizeOf(elementMetaType))>sizeof(void*)),
@@ -60,7 +72,10 @@ AutoListAccess::AutoListAccess(
       m_hashFunction(hashFunction),
       m_internalToExternalConverter(internalToExternalConverter),
       m_externalToInternalConverter(externalToInternalConverter),
-      m_offset(0)
+      m_elementNestedContainerAccess(elementNestedContainerAccess),
+      m_offset(0),
+      m_elementOwnerFunction(elementOwnerFunction),
+      m_elementDataType(elementDataType)
 {
     Q_ASSERT(m_elementMetaType.id()!=QMetaType::UnknownType
             && m_elementMetaType.id()!=QMetaType::Void);
@@ -76,7 +91,7 @@ AutoListAccess::AutoListAccess(
 }
 
 AutoListAccess::AutoListAccess(const AutoListAccess& other)
-  : AbstractListAccess(),
+  : AbstractListAccess(), AbstractNestedSequentialAccess(),
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     m_elementMetaType(other.m_elementMetaType.id()),
     m_isLargeOrStaticType(other.m_isLargeOrStaticType),
@@ -86,7 +101,10 @@ AutoListAccess::AutoListAccess(const AutoListAccess& other)
     m_hashFunction(other.m_hashFunction),
     m_internalToExternalConverter(other.m_internalToExternalConverter),
     m_externalToInternalConverter(other.m_externalToInternalConverter),
-    m_offset(other.m_offset)
+    m_elementNestedContainerAccess(other.m_elementNestedContainerAccess),
+    m_offset(other.m_offset),
+    m_elementOwnerFunction(other.m_elementOwnerFunction),
+    m_elementDataType(other.m_elementDataType)
 {
 }
 
@@ -94,65 +112,117 @@ void AutoListAccess::dispose(){
     delete this;
 }
 
-void AutoListAccess::analyzeElements(const void* container, ElementAnalyzer analyzer, void* data){
+std::unique_ptr<AbstractListAccess::ElementIterator> AutoListAccess::elementIterator(const void* container) {
+    class ElementIterator : public AbstractListAccess::ElementIterator{
+        AutoListAccess* access;
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    const QListData* p = reinterpret_cast<const QListData*>(container);
-    if(m_isLargeOrStaticType){
-        for(int i=0; i<p->size(); ++i){
-            Node* v = reinterpret_cast<Node*>(p->at(i));
-            if(!analyzer(v->v, data))
-                break;
-        }
-    }else{
-        for(int i=0; i<p->size(); ++i){
-            void** v = p->at(i);
-            if(!analyzer(v, data))
-                break;
-        }
-    }
+        void** current;
+        void** end;
 #else
-    const QArrayDataPointer<char>* p = reinterpret_cast<const QArrayDataPointer<char>*>(container);
-    for(qsizetype i = 0; i<p->size; ++i){
-        void* element = p->ptr + i * m_offset;
-        if(!analyzer(element, data))
-                break;
-    }
+        char* current;
+        char* end;
 #endif
+    public:
+        ElementIterator(AutoListAccess* _access, const QListData* p)
+            : AbstractListAccess::ElementIterator(),
+            access(_access),
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+            current(p->begin()),
+            end(p->end())
+#else
+            current(p->ptr),
+            end(p->ptr + p->listSize() * access->m_offset)
+#endif
+        {
+        }
+        bool hasNext() override{
+            return current!=end;
+        }
+        jobject next(JNIEnv * env) override{
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+            void* data = access->m_isLargeOrStaticType ? reinterpret_cast<Node*>(current)->v : current;
+            ++current;
+#else
+            void* data = current;
+            current += access->m_offset;
+#endif
+            jvalue _value;
+            _value.l = nullptr;
+            access->m_internalToExternalConverter(env, nullptr, data, _value, true);
+            return _value.l;
+        }
+        const void* next() override {
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+            void* data = access->m_isLargeOrStaticType ? reinterpret_cast<Node*>(current)->v : current;
+            ++current;
+#else
+            void* data = current;
+            current += access->m_offset;
+#endif
+            if(access->m_elementDataType & AbstractContainerAccess::PointersMask){
+                return *reinterpret_cast<void**>(data);
+            }else{
+                return data;
+            }
+        }
+    };
+    return std::unique_ptr<AbstractListAccess::ElementIterator>(new ElementIterator(this, reinterpret_cast<const QListData*>(container)));
 }
 
 AutoListAccess* AutoListAccess::clone(){
     return new AutoListAccess(*this);
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
+AutoSpanAccess* AutoListAccess::createSpanAccess(bool isConst){
+    return new AutoSpanAccess(
+            m_elementMetaType,
+            m_hashFunction,
+            m_internalToExternalConverter,
+            m_externalToInternalConverter,
+            m_elementNestedContainerAccess,
+            m_elementOwnerFunction,
+            m_elementDataType,
+            isConst
+        );
+}
+#endif //QT_VERSION >= QT_VERSION_CHECK(6,7,0)
+
 size_t AutoListAccess::sizeOf() {
     return sizeof(QList<char>);
 }
 
+void* AutoListAccess::constructContainer(JNIEnv*, void* result, const ConstContainerAndAccessInfo& container) {
+    return constructContainer(result, container.container);
+}
+
+void* AutoListAccess::constructContainer(void* result){
+    return new(result) QList<char>();
+}
+
 void* AutoListAccess::constructContainer(void* result, const void* container){
-    result = new(result) QList<char>();
-    if(container)
-        assign(result, container);
+    result = constructContainer(result);
+    assign(result, container);
     return result;
 }
 
 bool AutoListAccess::destructContainer(void* container) {
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     QListData* p = reinterpret_cast<QListData*>(container);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     if (!p->d->ref.deref())
         dealloc(p);
 #else
-    QArrayDataPointer<char>* p = reinterpret_cast<QArrayDataPointer<char>*>(container);
-    if (!p->size)
+    if (!p->listSize())
         return true;
     if(!p->deref()){
-        for(qsizetype i = 0; i<p->size; ++i){
+        for(qsizetype i = 0; i<p->listSize(); ++i){
             void* target = p->ptr + i * m_offset;
             m_elementMetaType.destruct(target);
         }
         QArrayData::deallocate(p->d, m_elementMetaType.sizeOf(), qMax<qsizetype>(m_elementMetaType.alignOf(), alignof(QArrayData)));
     }
     p->d = nullptr;
-    p->size = 0;
+    p->listSize() = 0;
     p->ptr = nullptr;
     reinterpret_cast<QList<char>*>(container)->~QList();
 #endif
@@ -161,171 +231,116 @@ bool AutoListAccess::destructContainer(void* container) {
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 
+void* AutoListAccess::constructContainer(JNIEnv*, void* result, const ContainerAndAccessInfo& container) {
+    return constructContainer(result, container.container);
+}
+
 void* AutoListAccess::constructContainer(void* result, void* container){
     return new(result) QList<char>(std::move(*reinterpret_cast<QList<char>*>(container)));
 }
 
 bool AutoListAccess::equals(const void* container1, const void* container2)
 {
-    const QtPrivate::QMetaTypeInterface *iface = m_elementMetaType.iface();
-    const QArrayDataPointer<char>* p1 = reinterpret_cast<const QArrayDataPointer<char>*>(container1);
-    const QArrayDataPointer<char>* p2 = reinterpret_cast<const QArrayDataPointer<char>*>(container2);
-    if(p1->size!=p2->size)
+    const QListData* p1 = reinterpret_cast<const QListData*>(container1);
+    const QListData* p2 = reinterpret_cast<const QListData*>(container2);
+    if(p1->listSize()!=p2->listSize())
         return false;
     if(p1->ptr==p2->ptr)
         return true;
-    for(qsizetype i = 0; i<p1->size; ++i){
+    for(qsizetype i = 0; i<p1->listSize(); ++i){
         void* element1 = p1->ptr + i * m_offset;
         void* element2 = p2->ptr + i * m_offset;
-        if(!iface->equals(iface, element1, element2))
+        if(!m_elementMetaType.equals(element1, element2))
             return false;
     }
     return true;
 }
 
-void AutoListAccess::debugStream(QDebug &s, const void *container)
+void AutoListAccess::debugStream(QDebug &dbg, const void *ptr)
 {
-    const QtPrivate::QMetaTypeInterface *iface = m_elementMetaType.iface();
-    const QArrayDataPointer<char>* p = reinterpret_cast<const QArrayDataPointer<char>*>(container);
-    s = s.nospace().noquote();
-    s << "QList(";
-    for(qsizetype i = 0; i<p->size; ++i){
-        const void* element = p->ptr + i * m_offset;
-        if(i>0)
-            s << ", ";
-        if(iface->debugStream)
-            iface->debugStream(iface, s, element);
-        else if(iface->flags & QMetaType::IsPointer){
-            if(iface->metaObjectFn && iface->metaObjectFn(iface))
-                s << iface->metaObjectFn(iface)->className() << "(";
-            else if(QLatin1String(iface->name).endsWith('*'))
-                s << QLatin1String(iface->name).chopped(1) << "(";
-            else
-                s << iface->name << "(";
-            s << "0x" << QString::number(*reinterpret_cast<const qint64*>(element), 16);
-            s << ")";
-        }else if(iface->flags & QMetaType::IsEnumeration){
-            s << iface->name << "(";
-            switch(iface->size){
-            case 1: s << *reinterpret_cast<const qint8*>(element); break;
-            case 2: s << *reinterpret_cast<const qint16*>(element); break;
-            case 4: s << *reinterpret_cast<const qint32*>(element); break;
-            case 8: s << *reinterpret_cast<const qint64*>(element); break;
-            default: break;
-            }
-            s << ")";
-        }else
-            s << QVariant(m_elementMetaType, element);
-    }
-    s << ")";
+    QtPrivate::printSequentialContainer(dbg, "QList", ConstContainer{ptr, this});
 }
 
-void AutoListAccess::dataStreamOut(QDataStream &s, const void *container)
+void AutoListAccess::dataStreamOut(QDataStream &s, const void *ptr)
 {
-    const QtPrivate::QMetaTypeInterface *iface = m_elementMetaType.iface();
-    const QArrayDataPointer<char>* p = reinterpret_cast<const QArrayDataPointer<char>*>(container);
-    s << quint32(p->size);
-    for(qsizetype i = 0; i<p->size; ++i){
-        const void* element = p->ptr + i * m_offset;
-        if(iface->dataStreamOut)
-            iface->dataStreamOut(iface, s, element);
-        else if(iface->flags & QMetaType::IsEnumeration){
-            switch(iface->size){
-            case 1: s << *reinterpret_cast<const qint8*>(element); break;
-            case 2: s << *reinterpret_cast<const qint16*>(element); break;
-            case 4: s << *reinterpret_cast<const qint32*>(element); break;
-            case 8: s << *reinterpret_cast<const qint64*>(element); break;
-            default: break;
-            }
-        }else
-            QVariant(m_elementMetaType, element).save(s);
-    }
+    QtPrivate::writeSequentialContainer(s, ConstContainer{ptr, this});
 }
 
-void AutoListAccess::dataStreamIn(QDataStream &s, void *container)
+void AutoListAccess::dataStreamIn(QDataStream &s, void *ptr)
 {
-    const QtPrivate::QMetaTypeInterface *iface = m_elementMetaType.iface();
-    QArrayDataPointer<char>* p = reinterpret_cast<QArrayDataPointer<char>*>(container);
-    quint32 size;
-    s >> size;
-
-    QArrayDataPointer<char> detached(allocate(size));
-    for(quint32 i = 0; i<size; ++i){
-        void* target = detached.ptr + i * m_offset;
-        if(iface->dataStreamIn){
-            if(iface->defaultCtr)
-                iface->defaultCtr(iface, target);
-            iface->dataStreamIn(iface, s, target);
-        }else if(iface->flags & QMetaType::IsEnumeration){
-            switch(iface->size){
-            case 1: s >> *reinterpret_cast<qint8*>(target); break;
-            case 2: s >> *reinterpret_cast<qint16*>(target); break;
-            case 4: s >> *reinterpret_cast<qint32*>(target); break;
-            case 8: s >> *reinterpret_cast<qint64*>(target); break;
-            default: break;
-            }
-        }else{
-            QVariant v(m_elementMetaType);
-            v.load(s);
-            m_elementMetaType.construct(target, v.data());
-        }
-        ++detached.size;
-    }
-    if (detached->ptr)
-        detached.setFlag(QArrayData::CapacityReserved);
-    swapAndDestroy(p, std::move(detached));
+    Container container(ptr, this);
+    QtPrivate::readArrayBasedContainer(s, container);
 }
+
+AutoListAccess::iterator AutoListAccess::begin(const void* container) {
+    const QListData* p = reinterpret_cast<const QListData*>(container);
+    return iterator(m_offset, p->ptr);
+}
+
+AutoListAccess::iterator AutoListAccess::end(const void* container) {
+    const QListData* p = reinterpret_cast<const QListData*>(container);
+    return iterator(m_offset, p->ptr + p->listSize() * m_offset);
+}
+
+AutoListAccess::iterator::iterator(size_t _offset, char* _ptr)
+    : offset(_offset), ptr(_ptr){
+}
+
+bool AutoListAccess::iterator::operator<(const iterator& right) const{
+    return right.ptr<ptr;
+}
+bool AutoListAccess::iterator::operator==(const iterator& right) const{
+    return right.ptr==ptr;
+}
+const char* AutoListAccess::iterator::operator->() const{
+    return ptr;
+}
+const char& AutoListAccess::iterator::operator*() const{
+    return *ptr;
+}
+const char* AutoListAccess::iterator::data() const{
+    return ptr;
+}
+char* AutoListAccess::iterator::operator->(){
+    return ptr;
+}
+char& AutoListAccess::iterator::operator*(){
+    return *ptr;
+}
+char* AutoListAccess::iterator::data(){
+    return ptr;
+}
+
+AutoListAccess::iterator& AutoListAccess::iterator::operator++(){
+    ptr += offset;
+    return *this;
+}
+
+AutoListAccess::iterator AutoListAccess::iterator::operator++(int){
+    iterator _this = *this;
+    ptr += offset;
+    return _this;
+}
+
+AutoListAccess::iterator& AutoListAccess::iterator::operator--(){
+    ptr -= offset;
+    return *this;
+}
+
+AutoListAccess::iterator AutoListAccess::iterator::operator--(int){
+    iterator _this = *this;
+    ptr -= offset;
+    return _this;
+}
+
 #endif
-
-void AutoListAccess::assign(void* container, const void* other)
-{
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    QListData* p = reinterpret_cast<QListData*>(container);
-    const QListData* p2 = reinterpret_cast<const QListData*>(other);
-    QListData tmp;
-    tmp.d = p->d;
-    p->d = p2->d;
-    p2->d->ref.ref();
-    if (!tmp.d->ref.deref())
-        dealloc(&tmp);
-#else
-    QArrayDataPointer<char>* p = reinterpret_cast<QArrayDataPointer<char>*>(container);
-    const QArrayDataPointer<char>* p2 = reinterpret_cast<const QArrayDataPointer<char>*>(other);
-    QArrayDataPointer<char> detached(allocate(p2->size));
-    for(qsizetype i = 0; i<p2->size; ++i){
-        const void* source = p2->ptr + i * m_offset;
-        void* target = detached.ptr + i * m_offset;
-        m_elementMetaType.construct(target, source);
-        ++detached.size;
-    }
-    if (detached->ptr)
-        detached.setFlag(QArrayData::CapacityReserved);
-    swapAndDestroy(p, std::move(detached));
-#endif
-}
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-typedef QMap<int, QSharedPointer<class AutoListAccess>> AccessHash;
-Q_GLOBAL_STATIC(AccessHash, gAccessHash)
-typedef QMap<int, QtMetaContainerPrivate::QMetaSequenceInterface> MetaSequenceHash;
-Q_GLOBAL_STATIC(MetaSequenceHash, gMetaSequenceHash)
-Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, gLock, (QReadWriteLock::Recursive))
-
-QReadWriteLock* _gLock(){
-    return gLock();
-}
-
-QMap<int, QtMetaContainerPrivate::QMetaSequenceInterface>& _gMetaSequenceHash(){
-    return *gMetaSequenceHash();
-}
+QReadWriteLock* containerAccessLock();
+QMap<int, QtMetaContainerPrivate::QMetaSequenceInterface>& metaSequenceHash();
 
 QSharedPointer<class AutoListAccess> getListAccess(const QtPrivate::QMetaTypeInterface *iface){
-    QSharedPointer<class AutoListAccess> access;
-    {
-        QReadLocker locker(gLock());
-        access = gAccessHash->value(iface->typeId.loadAcquire());
-    }
-    return access;
+    return findContainerAccess(iface->typeId.loadAcquire()).dynamicCast<AutoListAccess>();
 }
 void AutoListAccess::defaultCtr(const QtPrivate::QMetaTypeInterface *iface, void *ptr){
     if(QSharedPointer<class AutoListAccess> access = getListAccess(iface)){
@@ -371,16 +386,16 @@ void AutoListAccess::dataStreamInFn(const QtPrivate::QMetaTypeInterface *iface, 
 
 QtMetaContainerPrivate::QMetaSequenceInterface* AutoListAccess::createMetaSequenceInterface(int newMetaType){
     {
-        QReadLocker locker(gLock());
+        QReadLocker locker(containerAccessLock());
         Q_UNUSED(locker)
-        if(gMetaSequenceHash->contains(newMetaType))
-           return &(*gMetaSequenceHash)[newMetaType];
+        if(metaSequenceHash().contains(newMetaType))
+           return &metaSequenceHash()[newMetaType];
     }
     using namespace QtMetaContainerPrivate;
     QMetaSequenceInterface* metaSequenceInterface;
     {
-        QWriteLocker locker(gLock());
-        metaSequenceInterface = &(*gMetaSequenceHash)[newMetaType];
+        QWriteLocker locker(containerAccessLock());
+        metaSequenceInterface = &metaSequenceHash()[newMetaType];
     }
     QSharedPointer<class AutoListAccess> access = getListAccess(QMetaType(newMetaType).iface());
     metaSequenceInterface->valueMetaType = access->m_elementMetaType.iface();
@@ -390,8 +405,8 @@ QtMetaContainerPrivate::QMetaSequenceInterface* AutoListAccess::createMetaSequen
     metaSequenceInterface->sizeFn = [](const void *c) -> qsizetype {
         if(!c)
             return 0;
-        const QArrayDataPointer<char>* p = reinterpret_cast<const QArrayDataPointer<char>*>(c);
-        return p->size;
+        const QListData* p = reinterpret_cast<const QListData*>(c);
+        return p->listSize();
     };
 
     metaSequenceInterface->clearFn = qtjambi_function_pointer<16,void(void *)>([newMetaType](void *c) {
@@ -400,7 +415,7 @@ QtMetaContainerPrivate::QMetaSequenceInterface* AutoListAccess::createMetaSequen
                                         QSharedPointer<class AutoListAccess> access = getListAccess(QMetaType(newMetaType).iface());
                                         if(!access)
                                             return;
-                                        access->clear(nullptr, c);
+                                        access->clear(c);
                                     }, newMetaType);
     struct MetaIterator{
         MetaIterator(char* _iterator, const QSharedPointer<class AutoListAccess>& _access) : iterator(_iterator), access(_access) {}
@@ -414,7 +429,8 @@ QtMetaContainerPrivate::QMetaSequenceInterface* AutoListAccess::createMetaSequen
                         QSharedPointer<class AutoListAccess> access = getListAccess(QMetaType(newMetaType).iface());
                         if(!access)
                             return nullptr;
-                        const QArrayDataPointer<char>* ap = reinterpret_cast<const QArrayDataPointer<char>*>(c);
+                        QListData* ap = reinterpret_cast<QListData*>(c);
+                        access->detach(ap);
                         switch (p) {
                         case QMetaContainerInterface::Unspecified:
                             return new MetaIterator(nullptr, access);
@@ -422,10 +438,10 @@ QtMetaContainerPrivate::QMetaSequenceInterface* AutoListAccess::createMetaSequen
                             return new MetaIterator(ap->ptr, access);
                             break;
                         case QMetaContainerInterface::AtEnd:
-                            return new MetaIterator(reinterpret_cast<char*>(ap->ptr + ap->size * access->m_offset), access);
+                            return new MetaIterator(reinterpret_cast<char*>(ap->ptr + ap->listSize() * access->m_offset), access);
                             break;
                         }
-                        return nullptr;
+                        return new MetaIterator(nullptr, access);
                     }, newMetaType);
     metaSequenceInterface->destroyIteratorFn = [](const void *i) {
                     delete static_cast<const MetaIterator *>(i);
@@ -444,7 +460,28 @@ QtMetaContainerPrivate::QMetaSequenceInterface* AutoListAccess::createMetaSequen
                     return std::distance(static_cast<const MetaIterator*>(j)->iterator,
                                          static_cast<const MetaIterator*>(i)->iterator)/static_cast<const MetaIterator*>(j)->access->m_offset;
                 };
-    metaSequenceInterface->createConstIteratorFn = QMetaSequenceInterface::CreateConstIteratorFn(metaSequenceInterface->createIteratorFn);
+    metaSequenceInterface->createConstIteratorFn = qtjambi_function_pointer<16,void*(const void *,QMetaContainerInterface::Position)>(
+        [newMetaType](const void *c, QMetaContainerInterface::Position p) -> void* {
+            if(!c)
+                return nullptr;
+            QSharedPointer<class AutoListAccess> access = getListAccess(QMetaType(newMetaType).iface());
+            if(!access)
+                return nullptr;
+            const QListData* ap = reinterpret_cast<const QListData*>(c);
+            if(ap){
+                switch (p) {
+                case QMetaContainerInterface::Unspecified:
+                    return new MetaIterator(nullptr, access);
+                case QMetaContainerInterface::AtBegin:
+                    return new MetaIterator(ap->ptr, access);
+                    break;
+                case QMetaContainerInterface::AtEnd:
+                    return new MetaIterator(reinterpret_cast<char*>(ap->ptr + ap->listSize() * access->m_offset), access);
+                    break;
+                }
+            }
+            return new MetaIterator(nullptr, access);
+        }, newMetaType);
     metaSequenceInterface->destroyConstIteratorFn = metaSequenceInterface->destroyIteratorFn;
     metaSequenceInterface->compareConstIteratorFn = metaSequenceInterface->compareIteratorFn;
     metaSequenceInterface->copyConstIteratorFn = metaSequenceInterface->copyIteratorFn;
@@ -456,8 +493,8 @@ QtMetaContainerPrivate::QMetaSequenceInterface* AutoListAccess::createMetaSequen
         QSharedPointer<class AutoListAccess> access = getListAccess(QMetaType(newMetaType).iface());
         if(!access)
             return;
-        const QArrayDataPointer<char>* p = reinterpret_cast<const QArrayDataPointer<char>*>(container);
-        Q_ASSERT_X(index >= 0 && index < p->size, "QList<T>::at", "index out of range");
+        const QListData* p = reinterpret_cast<const QListData*>(container);
+        Q_ASSERT_X(index >= 0 && index < p->listSize(), "QList<T>::at", "index out of range");
         void* ptr = p->ptr+index*access->m_offset;
         access->m_elementMetaType.destruct(r);
         access->m_elementMetaType.construct(r, ptr);
@@ -468,11 +505,11 @@ QtMetaContainerPrivate::QMetaSequenceInterface* AutoListAccess::createMetaSequen
         QSharedPointer<class AutoListAccess> access = getListAccess(QMetaType(newMetaType).iface());
         if(!access)
             return;
-        QArrayDataPointer<char>* p = reinterpret_cast<QArrayDataPointer<char>*>(container);
-        if(index == p->size){
+        QListData* p = reinterpret_cast<QListData*>(container);
+        if(index == p->listSize()){
             access->emplace(p, index, e, 1);
         }else{
-            Q_ASSERT_X(index >= 0 && index < p->size, "QList<T>::replace", "index out of range");
+            Q_ASSERT_X(index >= 0 && index < p->listSize(), "QList<T>::replace", "index out of range");
             access->detach(p);
             void* target = p->ptr + index * access->m_offset;
             access->m_elementMetaType.destruct(target);
@@ -485,11 +522,11 @@ QtMetaContainerPrivate::QMetaSequenceInterface* AutoListAccess::createMetaSequen
         QSharedPointer<class AutoListAccess> access = getListAccess(QMetaType(newMetaType).iface());
         if(!access)
             return;
-        QArrayDataPointer<char>* p = reinterpret_cast<QArrayDataPointer<char>*>(container);
+        QListData* p = reinterpret_cast<QListData*>(container);
         if(position==QMetaSequenceInterface::AtBegin){
             access->emplace(p, 0, e, 1);
         }else{
-            access->emplace(p, p->size, e, 1);
+            access->emplace(p, p->listSize(), e, 1);
         }
     }, newMetaType);
     metaSequenceInterface->removeValueFn = qtjambi_function_pointer<16,void(void *, QMetaSequenceInterface::Position)>([newMetaType](void *container, QMetaSequenceInterface::Position position) {
@@ -498,11 +535,11 @@ QtMetaContainerPrivate::QMetaSequenceInterface* AutoListAccess::createMetaSequen
         QSharedPointer<class AutoListAccess> access = getListAccess(QMetaType(newMetaType).iface());
         if(!access)
             return;
-        QArrayDataPointer<char>* p = reinterpret_cast<QArrayDataPointer<char>*>(container);
+        QListData* p = reinterpret_cast<QListData*>(container);
         if(position==QMetaSequenceInterface::AtBegin){
-            access->remove(nullptr, container, 0, 1);
+            access->remove(container, 0, 1);
         }else{
-            access->remove(nullptr, container, p->size-1, 1);
+            access->remove(container, p->listSize()-1, 1);
         }
     }, newMetaType);
     metaSequenceInterface->valueAtIteratorFn = [](const void *i, void *r) {
@@ -537,6 +574,7 @@ int AutoListAccess::registerContainer(const QByteArray& typeName)
 #endif
         newMetaType = registerContainerMetaType(typeName,
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
                                        qtjambi_function_pointer<16,void(void*)>([access](void* ptr){
                                             access->destructContainer(ptr);
                                        }, qHash(typeName)),
@@ -547,6 +585,7 @@ int AutoListAccess::registerContainer(const QByteArray& typeName)
                                                 return new(result) QList<char>();
                                             }
                                        },
+#endif //QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
                                        uint(sizeOf()),
                                        uint(alignof(QList<char>)),
 #else
@@ -576,29 +615,29 @@ int AutoListAccess::registerContainer(const QByteArray& typeName)
                                                    | QMetaType::RelocatableType,
 #endif
                                        nullptr,
-                                       nullptr);
+                                       nullptr,
+                                       access);
         if(m_hashFunction){
             insertHashFunctionByMetaType(newMetaType,
                                             [access]
                                             (const void* ptr, hash_type seed)->hash_type{
                                                 if(ptr){
                                                     hash_type hashCode = seed;
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
                                                     const QListData* p = reinterpret_cast<const QListData*>(ptr);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
                                                     if(access->m_isLargeOrStaticType){
-                                                        for(int i=0; i<p->size(); ++i){
+                                                        for(int i=0; i<p->listSize(); ++i){
                                                             Node* v = reinterpret_cast<Node*>(p->at(i));
                                                             hashCode = hashCode ^ (access->m_hashFunction(v->v, 0) + 0x9e3779b9 + (hashCode << 6) + (hashCode >> 2));
                                                         }
                                                     }else{
-                                                        for(int i=0; i<p->size(); ++i){
+                                                        for(int i=0; i<p->listSize(); ++i){
                                                             void** v = p->at(i);
                                                             hashCode = hashCode ^ (access->m_hashFunction(v, 0) + 0x9e3779b9 + (hashCode << 6) + (hashCode >> 2));
                                                         }
                                                     }
 #else
-                                                    const QArrayDataPointer<char>* p = reinterpret_cast<const QArrayDataPointer<char>*>(ptr);
-                                                    for(size_t i=0; i<size_t(p->size); ++i){
+                                                    for(size_t i=0; i<size_t(p->listSize()); ++i){
                                                         const void* element = p->ptr + i * access->m_offset;
                                                         hashCode = hashCode ^ (access->m_hashFunction(element, 0) + 0x9e3779b9 + (hashCode << 6) + (hashCode >> 2));
                                                     }
@@ -639,7 +678,7 @@ int AutoListAccess::registerContainer(const QByteArray& typeName)
                       _iteratorCapabilities(0),
                       _size([](const void *p)->int{
                                 const QListData* d = reinterpret_cast<const QListData*>(p);
-                                return d->size();
+                                return d->listSize();
                             }),
                       _at(isLargeOrStaticType ? QtMetaTypePrivate::QSequentialIterableImpl::atFunc([](const void *p, int index)->const void *{
                                                     const QListData* d = reinterpret_cast<const QListData*>(p);
@@ -712,13 +751,13 @@ int AutoListAccess::registerContainer(const QByteArray& typeName)
                     const Comparator* c = static_cast<const Comparator*>(_c);
                     const QListData* p = reinterpret_cast<const QListData*>(a);
                     const QListData* p2 = reinterpret_cast<const QListData*>(b);
-                    if(p->size()<p2->size())
+                    if(p->listSize()<p2->listSize())
                         return false;
-                    if(p->size()>p2->size())
+                    if(p->listSize()>p2->listSize())
                         return true;
                     if(p->d==p2->d)
                         return false;
-                    for(int i = 0; i<p->size(); ++i){
+                    for(int i = 0; i<p->listSize(); ++i){
                         void* element1 = p->at(i);
                         void* element2 = p2->at(i);
                         if (c->m_isLargeOrStaticType) {
@@ -734,11 +773,11 @@ int AutoListAccess::registerContainer(const QByteArray& typeName)
                     const Comparator* c = static_cast<const Comparator*>(_c);
                     const QListData* p = reinterpret_cast<const QListData*>(a);
                     const QListData* p2 = reinterpret_cast<const QListData*>(b);
-                    if(p->size()!=p2->size())
+                    if(p->listSize()!=p2->listSize())
                         return false;
                     if(p->d==p2->d)
                         return true;
-                    for(int i = 0; i<p->size(); ++i){
+                    for(int i = 0; i<p->listSize(); ++i){
                         void* element1 = p->at(i);
                         void* element2 = p2->at(i);
                         if (c->m_isLargeOrStaticType) {
@@ -776,7 +815,7 @@ int AutoListAccess::registerContainer(const QByteArray& typeName)
                     const QListData* p = reinterpret_cast<const QListData*>(ptr);
                     d = d.nospace().noquote();
                     d << "(";
-                    for(int i=0; i<p->size(); ++i){
+                    for(int i=0; i<p->listSize(); ++i){
                         if(i>0)
                             d << ", ";
                         void* element = p->at(i);
@@ -809,8 +848,8 @@ int AutoListAccess::registerContainer(const QByteArray& typeName)
                                                    qtjambi_function_pointer<16,void(QDataStream &, const void *)>(
                                                                                    [_metaType_id](QDataStream &s, const void * ptr){
                                                                                         const QListData* p = reinterpret_cast<const QListData*>(ptr);
-                                                                                        s << quint32(p->size());
-                                                                                        for(int i=0; i<p->size(); ++i){
+                                                                                        s << quint32(p->listSize());
+                                                                                        for(int i=0; i<p->listSize(); ++i){
                                                                                             void* element = p->at(i);
                                                                                             element = reinterpret_cast<Node *>(element)->v;
                                                                                             QMetaType::save(s, _metaType_id, element);
@@ -821,8 +860,8 @@ int AutoListAccess::registerContainer(const QByteArray& typeName)
                                                                                        QListData* p = reinterpret_cast<QListData*>(ptr);
                                                                                        quint32 size = 0;
                                                                                        s >> size;
-                                                                                       access->clear(nullptr, ptr);
-                                                                                       access->reserve(nullptr, ptr, size);
+                                                                                       access->clear(nullptr, {nullptr, ptr});
+                                                                                       access->reserve(nullptr, {nullptr, ptr}, size);
                                                                                        for(quint32 i=0; i<size; ++i){
                                                                                            Node * element = reinterpret_cast<Node *>(p->append());
                                                                                            element->v = QMetaType::create(access->m_elementMetaType.id(), nullptr);
@@ -830,7 +869,7 @@ int AutoListAccess::registerContainer(const QByteArray& typeName)
                                                                                                // should clear and break
                                                                                            }
                                                                                        }
-                                                                                       p->size();
+                                                                                       p->listSize();
                                                                                    }, _metaType_id)
                                                    );
             }else{
@@ -838,8 +877,8 @@ int AutoListAccess::registerContainer(const QByteArray& typeName)
                                                    qtjambi_function_pointer<16,void(QDataStream &, const void *)>(
                                                                                    [_metaType_id](QDataStream &s, const void * ptr){
                                                                                         const QListData* p = reinterpret_cast<const QListData*>(ptr);
-                                                                                        s << quint32(p->size());
-                                                                                        for(int i=0; i<p->size(); ++i){
+                                                                                        s << quint32(p->listSize());
+                                                                                        for(int i=0; i<p->listSize(); ++i){
                                                                                             void* element = p->at(i);
                                                                                             QMetaType::save(s, _metaType_id, element);
                                                                                         }
@@ -849,8 +888,8 @@ int AutoListAccess::registerContainer(const QByteArray& typeName)
                                                                                        QListData* p = reinterpret_cast<QListData*>(ptr);
                                                                                        quint32 size = 0;
                                                                                        s >> size;
-                                                                                       access->clear(nullptr, ptr);
-                                                                                       access->reserve(nullptr, ptr, size);
+                                                                                       access->clear(nullptr, {nullptr, ptr});
+                                                                                       access->reserve(nullptr, {nullptr, ptr}, size);
                                                                                        for(quint32 i=0; i<size; ++i){
                                                                                             void* element = p->append();
                                                                                             QMetaType::construct(access->m_elementMetaType.id(), element, nullptr);
@@ -874,199 +913,313 @@ int AutoListAccess::registerContainer(const QByteArray& typeName)
                 return true;
             }, QMetaType(newMetaType), to);
         }
-        {
-            QWriteLocker locker(gLock());
-            gAccessHash->insert(newMetaType, access);
-        }
 #endif
+    }else{
+        registerContainerAccess(newMetaType, this);
     }
     return newMetaType;
+}
+
+void AutoListAccess::assign(JNIEnv *, const ContainerInfo& container, const ConstContainerAndAccessInfo& other){
+    assign(container.container, other.container);
+}
+
+void AutoListAccess::assign(void* container, const void* other)
+{
+    QListData* p = reinterpret_cast<QListData*>(container);
+    const QListData* p2 = reinterpret_cast<const QListData*>(other);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    QListData tmp;
+    tmp.d = p->d;
+    p->d = p2->d;
+    p2->d->ref.ref();
+    if (!tmp.d->ref.deref())
+        dealloc(&tmp);
+#else
+    QListData detached(allocate(p2->listSize()));
+    for(qsizetype i = 0; i<p2->listSize(); ++i){
+        const void* source = p2->ptr + i * m_offset;
+        void* target = detached.ptr + i * m_offset;
+        m_elementMetaType.construct(target, source);
+        ++detached.size;
+    }
+    if (detached->ptr)
+        detached.setFlag(QArrayData::CapacityReserved);
+    swapAndDestroy(p, std::move(detached));
+#endif
+}
+
+const QMetaType& AutoListAccess::elementMetaType() {return m_elementMetaType;}
+
+AbstractContainerAccess::DataType AutoListAccess::elementType() {return m_elementDataType;}
+
+bool AutoListAccess::isDetached(const void* container){
+    const QListData* p = reinterpret_cast<const QListData*>(container);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    return p && !p->d->ref.isShared();
+#else
+    return p && !p->isShared();
+#endif
+}
+
+AbstractContainerAccess* AutoListAccess::elementNestedContainerAccess() {
+    return m_elementNestedContainerAccess ? m_elementNestedContainerAccess->clone() : nullptr;
+}
+const QSharedPointer<AbstractContainerAccess>& AutoListAccess::sharedElementNestedContainerAccess(){
+    return m_elementNestedContainerAccess;
+}
+bool AutoListAccess::hasNestedContainerAccess(){
+    return !m_elementNestedContainerAccess.isNull();
+}
+bool AutoListAccess::hasNestedPointers(){
+    if(hasNestedContainerAccess()){
+        if(auto daccess = dynamic_cast<AbstractSequentialAccess*>(m_elementNestedContainerAccess.data())){
+            return (daccess->elementType() & PointersMask) || daccess->hasNestedPointers();
+        }else if(auto daccess = dynamic_cast<AbstractAssociativeAccess*>(m_elementNestedContainerAccess.data())){
+            return (daccess->keyType() & PointersMask) || daccess->hasKeyNestedPointers() || (daccess->valueType() & PointersMask) || daccess->hasValueNestedPointers();
+        }else if(auto daccess = dynamic_cast<AbstractPairAccess*>(m_elementNestedContainerAccess.data())){
+            return (daccess->firstType() & PointersMask) || daccess->hasFirstNestedPointers() || (daccess->secondType() & PointersMask) || daccess->hasSecondNestedPointers();
+        }
+    }
+    return false;
+}
+
+const QObject* AutoListAccess::getOwner(const void* container){
+    if(hasOwnerFunction() && size(container)>0){
+        auto iter = elementIterator(container);
+        if(m_elementOwnerFunction){
+            while(iter->hasNext()){
+                const void* current = iter->next();
+                if(const QObject* owner = m_elementOwnerFunction(current))
+                    return owner;
+            }
+        }else if(m_elementNestedContainerAccess){
+            while(iter->hasNext()){
+                const void* current = iter->next();
+                if(const QObject* owner = m_elementNestedContainerAccess->getOwner(current))
+                    return owner;
+            }
+        }
+    }
+    return nullptr;
+}
+
+bool AutoListAccess::hasOwnerFunction(){
+    if(m_elementOwnerFunction && !(elementType() & PointersMask))
+        return true;
+    if(!(elementType() & PointersMask) && m_elementNestedContainerAccess && m_elementNestedContainerAccess->hasOwnerFunction())
+        return true;
+    return false;
+}
+
+void AutoListAccess::detach(const ContainerInfo& container){
+    QListData* p = reinterpret_cast<QListData*>(container.container);
+    detach(p);
+}
+
+bool AutoListAccess::isSharedWith(const void* container, const void* container2){
+    const QListData* p = reinterpret_cast<const QListData*>(container);
+    const QListData* p2 = reinterpret_cast<const QListData*>(container2);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    return p->d == p2->d;
+#else
+    return p->isSharedWith(*p2);
+#endif
+}
+
+void AutoListAccess::swap(JNIEnv *, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
+    QListData& p = *reinterpret_cast<QListData*>(container.container);
+    QListData& p2 = *reinterpret_cast<QListData*>(container2.container);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    qSwap(p, p2);
+#else
+    p.swap(p2);
+#endif
 }
 
 jobject AutoListAccess::createIterator(JNIEnv * env, QtJambiNativeID ownerId, void* iteratorPtr)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     AbstractSequentialIteratorAccess* containerAccess = new AutoSequentialIteratorAccess(m_internalToExternalConverter,
-                                                 [](void*ptr){
+                                                 [](AutoSequentialIteratorAccess*,void*ptr){
                                                     void** cursor = *reinterpret_cast<void***>(ptr);
                                                     *reinterpret_cast<void***>(ptr) = cursor+1;
                                                  },
-                                                 [](void*ptr){
+                                                 [](AutoSequentialIteratorAccess*,void*ptr){
                                                     void** cursor = *reinterpret_cast<void***>(ptr);
                                                     *reinterpret_cast<void***>(ptr) = cursor-1;
                                                  },
                                                  m_isLargeOrStaticType
-                                                 ? std::function<const void*(const void*)>([](const void*ptr)->const void*{
-                                                      return (*reinterpret_cast<Node*const*>(ptr))->v;
-                                                   })
-                                                 : std::function<const void*(const void*)>([](const void*ptr)->const void*{
-                                                      return *reinterpret_cast<void**const*>(ptr);
+                                                    ? AutoSequentialIteratorAccess::ValueFn([](AutoSequentialIteratorAccess*,const void*ptr)->const void*{
+                                                        return (*reinterpret_cast<Node*const*>(ptr))->v;
+                                                    })
+                                                    : AutoSequentialIteratorAccess::ValueFn([](AutoSequentialIteratorAccess*,const void*ptr)->const void*{
+                                                        return *reinterpret_cast<void**const*>(ptr);
                                                     }),
-                                                 [](const void*ptr1,const void*ptr2)->bool{
+                                                 [](AutoSequentialIteratorAccess*,const void*ptr1,const void*ptr2)->bool{
                                                     return *reinterpret_cast<void**const*>(ptr1)<*reinterpret_cast<void**const*>(ptr2);
                                                  },
-                                                 [](const void*ptr1,const void*ptr2)->bool{
+                                                 [](AutoSequentialIteratorAccess*,const void*ptr1,const void*ptr2)->bool{
                                                     return *reinterpret_cast<void**const*>(ptr1)==*reinterpret_cast<void**const*>(ptr2);
                                                  },
                                                  m_externalToInternalConverter,
                                                  m_isLargeOrStaticType
-                                                 ? std::function<void*(void*)>([](void*ptr)->void*{
-                                                     return (*reinterpret_cast<Node**>(ptr))->v;
-                                                  })
-                                                 : std::function<void*(void*)>([](void*ptr)->void*{
-                                                     return *reinterpret_cast<void***>(ptr);
-                                                   })
+                                                    ? AutoSequentialIteratorAccess::SetValueFn([](AutoSequentialIteratorAccess*,void*ptr)->void*{
+                                                        return (*reinterpret_cast<Node**>(ptr))->v;
+                                                    })
+                                                    : AutoSequentialIteratorAccess::SetValueFn([](AutoSequentialIteratorAccess*,void*ptr)->void*{
+                                                        return *reinterpret_cast<void***>(ptr);
+                                                    }),
+                                                m_elementMetaType,
+                                                m_offset
                                             );
 #else
-    size_t offset = m_offset;
     AbstractSequentialIteratorAccess* containerAccess = new AutoSequentialIteratorAccess(m_internalToExternalConverter,
-                                                                 [offset](void*ptr){
-                                                                    char* cursor = *reinterpret_cast<char**>(ptr);
-                                                                    *reinterpret_cast<char**>(ptr) = cursor+offset;
-                                                                 },
-                                                                 [offset](void*ptr){
-                                                                    char* cursor = *reinterpret_cast<char**>(ptr);
-                                                                    *reinterpret_cast<char**>(ptr) = cursor-offset;
-                                                                 },
-                                                                 [](const void*ptr)->const void*{
-                                                                    return *reinterpret_cast<char*const*>(ptr);
-                                                                 },
-                                                                 [](const void*ptr1,const void*ptr2)->bool{
-                                                                    return *reinterpret_cast<char*const*>(ptr1)<*reinterpret_cast<char*const*>(ptr2);
-                                                                 },
-                                                                 [](const void*ptr1, const void*ptr2)->bool{
-                                                                    return *reinterpret_cast<char*const*>(ptr1)==*reinterpret_cast<char*const*>(ptr2);
-                                                                 },
-                                                                 m_externalToInternalConverter,
-                                                                 [](void*ptr)->void*{
-                                                                    return *reinterpret_cast<void**>(ptr);
-                                                                 }
-                                                                );
+            [](AutoSequentialIteratorAccess* containerAccess, void*ptr){
+                char* cursor = *reinterpret_cast<char**>(ptr);
+                *reinterpret_cast<char**>(ptr) = cursor+containerAccess->offset();
+            },
+            [](AutoSequentialIteratorAccess* containerAccess, void*ptr){
+                char* cursor = *reinterpret_cast<char**>(ptr);
+                *reinterpret_cast<char**>(ptr) = cursor-containerAccess->offset();
+            },
+            [](AutoSequentialIteratorAccess*,const void*ptr)->const void*{
+                return *reinterpret_cast<char*const*>(ptr);
+            },
+            [](AutoSequentialIteratorAccess*,const void*ptr1,const void*ptr2)->bool{
+                return *reinterpret_cast<char*const*>(ptr1)<*reinterpret_cast<char*const*>(ptr2);
+            },
+            [](AutoSequentialIteratorAccess*,const void*ptr1, const void*ptr2)->bool{
+                return *reinterpret_cast<char*const*>(ptr1)==*reinterpret_cast<char*const*>(ptr2);
+            },
+            m_externalToInternalConverter,
+            [](AutoSequentialIteratorAccess*,void*ptr)->void*{
+                return *reinterpret_cast<void**>(ptr);
+            },
+            m_elementMetaType,
+            m_offset
+        );
 #endif
     return QtJambiAPI::convertQSequentialIteratorToJavaObject(env, ownerId, iteratorPtr, [](void* ptr,bool){
-        delete reinterpret_cast<void**>(ptr);
-    }, containerAccess);
+            delete reinterpret_cast<void**>(ptr);
+        }, containerAccess);
 }
 
 jobject AutoListAccess::createConstIterator(JNIEnv * env, QtJambiNativeID ownerId, void* iteratorPtr)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     AutoSequentialConstIteratorAccess* containerAccess = new AutoSequentialConstIteratorAccess(m_internalToExternalConverter,
-                                                   [](void*ptr){
-                                                      void** cursor = *reinterpret_cast<void***>(ptr);
-                                                      *reinterpret_cast<void***>(ptr) = cursor+1;
-                                                   },
-                                                   [](void*ptr){
-                                                      void** cursor = *reinterpret_cast<void***>(ptr);
-                                                      *reinterpret_cast<void***>(ptr) = cursor-1;
-                                                   },
-                                                   m_isLargeOrStaticType
-                                                   ? std::function<const void*(const void*)>([](const void*ptr)->const void*{
-                                                        return (*reinterpret_cast<Node*const*>(ptr))->v;
-                                                     })
-                                                   : std::function<const void*(const void*)>([](const void*ptr)->const void*{
-                                                        return *reinterpret_cast<void**const*>(ptr);
-                                                      }),
-                                                   [](const void*ptr1,const void*ptr2)->bool{
-                                                      return *reinterpret_cast<void**const*>(ptr1)<*reinterpret_cast<void**const*>(ptr2);
-                                                   },
-                                                   [](const void*ptr1,const void*ptr2)->bool{
-                                                      return *reinterpret_cast<void**const*>(ptr1)==*reinterpret_cast<void**const*>(ptr2);
-                                                   }
-                                            );
+            [](AutoSequentialConstIteratorAccess*,void*ptr){
+                void** cursor = *reinterpret_cast<void***>(ptr);
+                *reinterpret_cast<void***>(ptr) = cursor+1;
+            },
+            [](AutoSequentialConstIteratorAccess*,void*ptr){
+                void** cursor = *reinterpret_cast<void***>(ptr);
+                *reinterpret_cast<void***>(ptr) = cursor-1;
+            },
+            m_isLargeOrStaticType
+                ? AutoSequentialConstIteratorAccess::ValueFn([](AutoSequentialConstIteratorAccess*,const void*ptr)->const void*{
+                      return (*reinterpret_cast<Node*const*>(ptr))->v;
+                  })
+                : AutoSequentialConstIteratorAccess::ValueFn([](AutoSequentialConstIteratorAccess*,const void*ptr)->const void*{
+                      return *reinterpret_cast<void**const*>(ptr);
+                  }),
+            [](AutoSequentialConstIteratorAccess*,const void*ptr1,const void*ptr2)->bool{
+                return *reinterpret_cast<void**const*>(ptr1)<*reinterpret_cast<void**const*>(ptr2);
+            },
+            [](AutoSequentialConstIteratorAccess*,const void*ptr1,const void*ptr2)->bool{
+                return *reinterpret_cast<void**const*>(ptr1)==*reinterpret_cast<void**const*>(ptr2);
+            },
+            m_elementMetaType,
+            m_offset
+        );
 #else
-    size_t offset = m_offset;
     AutoSequentialConstIteratorAccess* containerAccess = new AutoSequentialConstIteratorAccess(m_internalToExternalConverter,
-                                                 [offset](void*ptr){
-                                                    char* cursor = *reinterpret_cast<char**>(ptr);
-                                                    *reinterpret_cast<char**>(ptr) = cursor+offset;
-                                                 },
-                                                 [offset](void*ptr){
-                                                    char* cursor = *reinterpret_cast<char**>(ptr);
-                                                    *reinterpret_cast<char**>(ptr) = cursor-offset;
-                                                 },
-                                                 [](const void*ptr)->const void*{
-                                                    return *reinterpret_cast<char*const*>(ptr);
-                                                 },
-                                                 [](const void*ptr1, const void*ptr2)->bool{
-                                                    return *reinterpret_cast<char*const*>(ptr1)<*reinterpret_cast<char*const*>(ptr2);
-                                                 },
-                                                 [](const void*ptr1, const void*ptr2)->bool{
-                                                    return *reinterpret_cast<char*const*>(ptr1)==*reinterpret_cast<char*const*>(ptr2);
-                                                 }
-                                            );
+            [](AutoSequentialConstIteratorAccess* containerAccess, void*ptr){
+                char* cursor = *reinterpret_cast<char**>(ptr);
+                *reinterpret_cast<char**>(ptr) = cursor+containerAccess->offset();
+            },
+            [](AutoSequentialConstIteratorAccess* containerAccess, void*ptr){
+                char* cursor = *reinterpret_cast<char**>(ptr);
+                *reinterpret_cast<char**>(ptr) = cursor-containerAccess->offset();
+            },
+            [](AutoSequentialConstIteratorAccess*,const void*ptr)->const void*{
+                return *reinterpret_cast<char*const*>(ptr);
+            },
+            [](AutoSequentialConstIteratorAccess*,const void*ptr1, const void*ptr2)->bool{
+                return *reinterpret_cast<char*const*>(ptr1)<*reinterpret_cast<char*const*>(ptr2);
+            },
+            [](AutoSequentialConstIteratorAccess*,const void*ptr1, const void*ptr2)->bool{
+                return *reinterpret_cast<char*const*>(ptr1)==*reinterpret_cast<char*const*>(ptr2);
+            },
+            m_elementMetaType,
+            m_offset
+        );
 #endif
     return QtJambiAPI::convertQSequentialIteratorToJavaObject(env, ownerId, iteratorPtr, [](void* ptr,bool){
-        delete reinterpret_cast<void**>(ptr);
-    }, containerAccess);
+            delete reinterpret_cast<void**>(ptr);
+        }, containerAccess);
 }
 
-jobject AutoListAccess::end(JNIEnv * env, QtJambiNativeID ownerId, void* container)
+jobject AutoListAccess::end(JNIEnv * env, const ExtendedContainerInfo& container)
 {
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    QListData* p = reinterpret_cast<QListData*>(container);
+    QListData* p = reinterpret_cast<QListData*>(container.container);
     detach(p);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     void* iteratorPtr = new void*(p->end());
 #else
-    QArrayDataPointer<char>* p = reinterpret_cast<QArrayDataPointer<char>*>(container);
-    detach(p);
-    void* iteratorPtr = new void*(reinterpret_cast<char*>(p->ptr + p->size * m_offset));
+    void* iteratorPtr = new char*(reinterpret_cast<char*>(p->ptr + p->listSize() * m_offset));
 #endif
-    return createIterator(env, ownerId, iteratorPtr);
+    return createIterator(env, container.nativeId, iteratorPtr);
 }
 
-jobject AutoListAccess::begin(JNIEnv * env, QtJambiNativeID ownerId, void* container)
+jobject AutoListAccess::begin(JNIEnv * env, const ExtendedContainerInfo& container)
 {
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    QListData* p = reinterpret_cast<QListData*>(container);
+    QListData* p = reinterpret_cast<QListData*>(container.container);
     detach(p);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     void* iteratorPtr = new void*(p->begin());
 #else
-    QArrayDataPointer<char>* p = reinterpret_cast<QArrayDataPointer<char>*>(container);
-    detach(p);
-    void* iteratorPtr = new void*(p->ptr);
+    void* iteratorPtr = new char*(p->ptr);
 #endif
-    return createIterator(env, ownerId, iteratorPtr);
+    return createIterator(env, container.nativeId, iteratorPtr);
 }
 
-jobject AutoListAccess::constEnd(JNIEnv * env, QtJambiNativeID ownerId, const void* container)
+jobject AutoListAccess::constEnd(JNIEnv * env, const ConstExtendedContainerInfo& container)
 {
+    const QListData* p = reinterpret_cast<const QListData*>(container.container);
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    const QListData* p = reinterpret_cast<const QListData*>(container);
     void* iteratorPtr = new void*(p->end());
 #else
-    const QArrayDataPointer<char>* p = reinterpret_cast<const QArrayDataPointer<char>*>(container);
-    void* iteratorPtr = new void*(reinterpret_cast<char*>(p->ptr + p->size * m_offset));
+    void* iteratorPtr = new char*(reinterpret_cast<char*>(p->ptr + p->listSize() * m_offset));
 #endif
-    return createConstIterator(env, ownerId, iteratorPtr);
+    return createConstIterator(env, container.nativeId, iteratorPtr);
 }
 
-jobject AutoListAccess::constBegin(JNIEnv * env, QtJambiNativeID ownerId, const void* container)
+jobject AutoListAccess::constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container)
 {
+    const QListData* p = reinterpret_cast<const QListData*>(container.container);
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    const QListData* p = reinterpret_cast<const QListData*>(container);
     void* iteratorPtr = new void*(p->begin());
 #else
-    const QArrayDataPointer<char>* p = reinterpret_cast<const QArrayDataPointer<char>*>(container);
-    void* iteratorPtr = new void*(p->ptr);
+    void* iteratorPtr = new char*(p->ptr);
 #endif
-    return createConstIterator(env, ownerId, iteratorPtr);
+    return createConstIterator(env, container.nativeId, iteratorPtr);
 }
 
-void AutoListAccess::appendList(JNIEnv * env, void* container, jobject list)
+void AutoListAccess::appendList(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& containerInfo)
 {
-    void* ptr{nullptr};
-    if (ContainerAPI::getAsQList(env, list, elementMetaType(), ptr)) {
+    if (ContainerAPI::getAsQList(env, containerInfo.object, elementMetaType(), containerInfo.container, containerInfo.access)) {
+        QListData* p = reinterpret_cast<QListData*>(container.container);
+        QListData* p2 = reinterpret_cast<QListData*>(containerInfo.container);
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-        QListData* p = reinterpret_cast<QListData*>(container);
-        QListData* p2 = reinterpret_cast<QListData*>(ptr);
         if (!p2->isEmpty()) {
             if (p->d == &QListData::shared_null) {
                 p->d = p2->d;
                 p->d->ref.ref();
             } else {
                 Node *n = (p->d->ref.isShared())
-                          ? detach_helper_grow(p, INT_MAX, p2->size())
+                          ? detach_helper_grow(p, INT_MAX, p2->listSize())
                           : reinterpret_cast<Node *>(p->append(*p2));
                 QT_TRY {
                     node_copy(n, reinterpret_cast<Node *>(p->end()),
@@ -1079,19 +1232,17 @@ void AutoListAccess::appendList(JNIEnv * env, void* container, jobject list)
             }
         }
 #else
-        QArrayDataPointer<char>* p = reinterpret_cast<QArrayDataPointer<char>*>(container);
-        QArrayDataPointer<char>* p2 = reinterpret_cast<QArrayDataPointer<char>*>(ptr);
-        detachAndGrow(p, QArrayData::GrowsAtEnd, p2->size, nullptr, nullptr);
-        Q_ASSERT(freeSpaceAtEnd(p) >= p2->size);
-        void *where = createHole(p, QArrayData::GrowsAtEnd, p->size, p2->size-1);
-        for(size_t i=0; i<size_t(p2->size); ++i){
+        detachAndGrow(p, QArrayData::GrowsAtEnd, p2->listSize(), nullptr, nullptr);
+        Q_ASSERT(freeSpaceAtEnd(p) >= p2->listSize());
+        void *where = createHole(p, QArrayData::GrowsAtEnd, p->listSize(), p2->listSize()-1);
+        for(size_t i=0; i<size_t(p2->listSize()); ++i){
             m_elementMetaType.construct(reinterpret_cast<char*>(where) + i * m_offset, p2->ptr + i * m_offset);
         }
 #endif
     }else{
-        jobject iter = QtJambiAPI::iteratorOfJavaCollection(env, list);
-        jint idx = size(env, container);
-        reserve(env, container, idx + QtJambiAPI::sizeOfJavaCollection(env, list));
+        jobject iter = QtJambiAPI::iteratorOfJavaIterable(env, containerInfo.object);
+        jint idx = size(env, container.container);
+        reserve(env, container, idx + QtJambiAPI::sizeOfJavaCollection(env, containerInfo.object));
         while(QtJambiAPI::hasJavaIteratorNext(env, iter)){
             insert(env, container, idx++, 1, QtJambiAPI::nextOfJavaIterator(env, iter));
         }
@@ -1102,9 +1253,9 @@ jobject AutoListAccess::at(JNIEnv * env, const void* container, jint index)
 {
     jvalue _value;
     _value.l = nullptr;
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     const QListData* p = reinterpret_cast<const QListData*>(container);
-    Q_ASSERT_X(index >= 0 && index < p->size(), "QList<T>::at", "index out of range");
+    Q_ASSERT_X(index >= 0 && index < p->listSize(), "QList<T>::at", "index out of range");
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     void** v = p->at(index);
     if(m_isLargeOrStaticType){
         if(m_internalToExternalConverter(env, nullptr, reinterpret_cast<Node*>(v)->v, _value, true)){
@@ -1116,8 +1267,6 @@ jobject AutoListAccess::at(JNIEnv * env, const void* container, jint index)
         }
     }
 #else
-    const QArrayDataPointer<char>* p = reinterpret_cast<const QArrayDataPointer<char>*>(container);
-    Q_ASSERT_X(index >= 0 && index < p->size, "QList<T>::at", "index out of range");
     void* ptr = p->ptr+index*m_offset;
     if(m_internalToExternalConverter(env, nullptr, ptr, _value, true)){
         return _value.l;
@@ -1130,9 +1279,9 @@ jobject AutoListAccess::value(JNIEnv * env, const void* container, jint index)
 {
     jvalue _value;
     _value.l = nullptr;
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     const QListData* p = reinterpret_cast<const QListData*>(container);
-    if(index >= 0 && index < p->size()){
+    if(index >= 0 && index < p->listSize()){
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
         void** v = p->at(index);
         if(m_isLargeOrStaticType){
             if(m_internalToExternalConverter(env, nullptr, reinterpret_cast<Node*>(v)->v, _value, true)){
@@ -1144,8 +1293,6 @@ jobject AutoListAccess::value(JNIEnv * env, const void* container, jint index)
             }
         }
 #else
-    const QArrayDataPointer<char>* p = reinterpret_cast<const QArrayDataPointer<char>*>(container);
-    if(index >= 0 && index < p->size){
         void* ptr = p->ptr+index*m_offset;
         if(m_internalToExternalConverter(env, nullptr, ptr, _value, true)){
             return _value.l;
@@ -1165,9 +1312,9 @@ jobject AutoListAccess::value(JNIEnv * env, const void* container, jint index, j
 {
     jvalue _value;
     _value.l = nullptr;
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     const QListData* p = reinterpret_cast<const QListData*>(container);
-    if(index >= 0 && index < p->size()){
+    if(index >= 0 && index < p->listSize()){
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
         void** v = p->at(index);
         if(m_isLargeOrStaticType){
             if(m_internalToExternalConverter(env, nullptr, reinterpret_cast<Node*>(v)->v, _value, true)){
@@ -1179,8 +1326,6 @@ jobject AutoListAccess::value(JNIEnv * env, const void* container, jint index, j
             }
         }
 #else
-    const QArrayDataPointer<char>* p = reinterpret_cast<const QArrayDataPointer<char>*>(container);
-    if(index >= 0 && index < p->size){
         void* ptr = p->ptr+index*m_offset;
         if(m_internalToExternalConverter(env, nullptr, ptr, _value, true)){
             return _value.l;
@@ -1192,16 +1337,15 @@ jobject AutoListAccess::value(JNIEnv * env, const void* container, jint index, j
     return nullptr;
 }
 
-void AutoListAccess::swapItemsAt(JNIEnv *, void* container, jint i, jint j)
+void AutoListAccess::swapItemsAt(JNIEnv *, const ContainerInfo& container, jint i, jint j)
 {
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    QListData* p = reinterpret_cast<QListData*>(container);
-    Q_ASSERT_X(i >= 0 && i < p->size() && j >= 0 && j < p->size(),
-                "QList<T>::swap", "index out of range");
+    QListData* p = reinterpret_cast<QListData*>(container.container);
+    Q_ASSERT_X(i >= 0 && i < p->listSize() && j >= 0 && j < p->listSize(),
+               "QList<T>::swap", "index out of range");
     detach(p);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     qSwap(p->d->array[p->d->begin + i], p->d->array[p->d->begin + j]);
 #else
-    QArrayDataPointer<char>* p = reinterpret_cast<QArrayDataPointer<char>*>(container);
     void* element1 = p->ptr + i * m_offset;
     void* element2 = p->ptr + j * m_offset;
     if(m_elementMetaType.iface()->moveCtr){
@@ -1231,8 +1375,8 @@ jboolean AutoListAccess::startsWith(JNIEnv * env, const void* container, jobject
         jvalue _value;
         _value.l = value;
         if(m_externalToInternalConverter(env, &scope, _value, _qvaluePtr, jValueType::l)){
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
             const QListData* p = reinterpret_cast<const QListData*>(container);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
             void** v = p->at(0);
             if(m_isLargeOrStaticType){
                 return isEquals(m_elementMetaType, _qvaluePtr, reinterpret_cast<Node*>(v)->v);
@@ -1240,7 +1384,6 @@ jboolean AutoListAccess::startsWith(JNIEnv * env, const void* container, jobject
                 return isEquals(m_elementMetaType, _qvaluePtr, v);
             }
 #else
-            const QArrayDataPointer<char>* p = reinterpret_cast<const QArrayDataPointer<char>*>(container);
             return m_elementMetaType.equals(_qvaluePtr, p->ptr);
 #endif
         }
@@ -1248,21 +1391,22 @@ jboolean AutoListAccess::startsWith(JNIEnv * env, const void* container, jobject
     return false;
 }
 
-jint AutoListAccess::size(JNIEnv *, const void* container)
+qsizetype AutoListAccess::size(const void* container)
 {
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     const QListData* p = reinterpret_cast<const QListData*>(container);
-    return p->size();
-#else
-    const QArrayDataPointer<char>* p = reinterpret_cast<const QArrayDataPointer<char>*>(container);
-    return p->size;
-#endif
+    return p->listSize();
 }
 
-void AutoListAccess::reserve(JNIEnv *, void* container, jint asize)
+jint AutoListAccess::size(JNIEnv *, const void* container)
+{
+    const QListData* p = reinterpret_cast<const QListData*>(container);
+    return jint(p->listSize());
+}
+
+void AutoListAccess::reserve(JNIEnv *, const ContainerInfo& container, jint asize)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    QListData* p = reinterpret_cast<QListData*>(container);
+    QListData* p = reinterpret_cast<QListData*>(container.container);
     if (p->d->alloc < asize) {
         if (p->d->ref.isShared())
             detach_helper(p, asize);
@@ -1270,7 +1414,14 @@ void AutoListAccess::reserve(JNIEnv *, void* container, jint asize)
             p->realloc(asize);
     }
 #else
-    QArrayDataPointer<char>* p = reinterpret_cast<QArrayDataPointer<char>*>(container);
+    reserve(container.container, asize);
+#endif
+}
+
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+void AutoListAccess::reserve(void* container, qsizetype asize)
+{
+    QListData* p = reinterpret_cast<QListData*>(container);
     // capacity() == 0 for immutable data, so this will force a detaching below
     if (asize <= p->constAllocatedCapacity() - freeSpaceAtBegin(p)) {
         if (p->flags() & QArrayData::CapacityReserved)
@@ -1282,9 +1433,9 @@ void AutoListAccess::reserve(JNIEnv *, void* container, jint asize)
         }
     }
 
-    auto newSize = qMax(asize, p->size);
-    QArrayDataPointer<char> detached(allocate(newSize));
-    for(qsizetype i = 0; i<p->size; ++i){
+    auto newSize = qMax(asize, p->listSize());
+    QListData detached(allocate(newSize));
+    for(qsizetype i = 0; i<p->listSize(); ++i){
         void* source = p->ptr + i * m_offset;
         void* target = detached.ptr + i * m_offset;
         m_elementMetaType.construct(target, source);
@@ -1293,43 +1444,42 @@ void AutoListAccess::reserve(JNIEnv *, void* container, jint asize)
     if (detached->ptr)
         detached.setFlag(QArrayData::CapacityReserved);
     swapAndDestroy(p, std::move(detached));
-#endif
 }
+#endif
 
-
-void AutoListAccess::replace(JNIEnv * env, void* container, jint index, jobject value)
+void AutoListAccess::replace(JNIEnv * env, const ContainerInfo& container, jint index, jobject value)
 {
+    QListData* p = reinterpret_cast<QListData*>(container.container);
+    Q_ASSERT_X(index >= 0 && index < p->listSize(), "QList<T>::replace", "index out of range");
+    detach(p);
+    void* target;
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-        QListData* p = reinterpret_cast<QListData*>(container);
-        Q_ASSERT_X(index >= 0 && index < p->size(), "QList<T>::replace", "index out of range");
-        detach(p);
-        void* target;
-        if(m_isLargeOrStaticType){
-            target = reinterpret_cast<Node *>(p->at(index))->v;
-        }else{
-            target = p->at(index);
-        }
+    if(m_isLargeOrStaticType){
+        target = reinterpret_cast<Node *>(p->at(index))->v;
+    }else{
+        target = p->at(index);
+    }
 #else
-        QArrayDataPointer<char>* p = reinterpret_cast<QArrayDataPointer<char>*>(container);
-        Q_ASSERT_X(index >= 0 && index < p->size, "QList<T>::replace", "index out of range");
-        detach(p);
-        void* target = p->ptr + index * m_offset;
+    target = p->ptr + index * m_offset;
 #endif
-        jvalue _value;
-        _value.l = value;
-        //void *_qvaluePtr;
-        if(m_externalToInternalConverter(env, nullptr, _value, target, jValueType::l)){
-            //m_elementMetaType.destruct(target);
-            //m_elementMetaType.construct(target, _qvaluePtr);
-        }
+    jvalue _value;
+    _value.l = value;
+    //void *_qvaluePtr;
+    if(m_externalToInternalConverter(env, nullptr, _value, target, jValueType::l)){
+        //m_elementMetaType.destruct(target);
+        //m_elementMetaType.construct(target, _qvaluePtr);
+    }
 }
 
-void AutoListAccess::remove(JNIEnv *, void* container, jint index, jint n)
+void AutoListAccess::remove(JNIEnv *, const ContainerInfo& container, jint index, jint n){
+    remove(container.container, index, n);
+}
+void AutoListAccess::remove(void* container, jint index, jint n)
 {
+    QListData* p = reinterpret_cast<QListData*>(container);
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     Q_ASSERT(n==1);
-    QListData* p = reinterpret_cast<QListData*>(container);
-    if (index < 0 || index >= p->size()) {
+    if (index < 0 || index >= p->listSize()) {
         return;
     }
     detach(p);
@@ -1337,29 +1487,28 @@ void AutoListAccess::remove(JNIEnv *, void* container, jint index, jint n)
 #else
     if(n==0)
         return;
-    QArrayDataPointer<char>* p = reinterpret_cast<QArrayDataPointer<char>*>(container);
     detach(p);
-    qsizetype nmb = qMin<qsizetype>(n, p->size-index);
+    qsizetype nmb = qMin<qsizetype>(n, p->listSize()-index);
     for(qsizetype i = 0; i<nmb; ++i){
         m_elementMetaType.destruct(p->ptr + (index+i) * m_offset);
     }
-    if(index>p->size/2.){
+    if(index>p->listSize()/2.){
         if(auto moveCtr = m_elementMetaType.iface()->moveCtr){
-            for(qsizetype i = index; i<p->size; ++i){
+            for(qsizetype i = index; i<p->listSize(); ++i){
                 void* target = p->ptr + i * m_offset;
                 void* source = p->ptr + (i+nmb) * m_offset;
                 moveCtr(m_elementMetaType.iface(), target, source);
                 m_elementMetaType.destruct(source);
             }
         }else{
-            for(qsizetype i = index; i<p->size; ++i){
+            for(qsizetype i = index; i<p->listSize(); ++i){
                 void* target = p->ptr + i * m_offset;
                 void* source = p->ptr + (i+nmb) * m_offset;
                 m_elementMetaType.construct(target, source);
                 m_elementMetaType.destruct(source);
             }
         }
-    }else if(nmb!=p->size){
+    }else if(nmb!=p->listSize()){
         if(auto moveCtr = m_elementMetaType.iface()->moveCtr){
             for(qsizetype i = index; i>0; --i){
                 void* target = p->ptr + i * m_offset;
@@ -1377,11 +1526,11 @@ void AutoListAccess::remove(JNIEnv *, void* container, jint index, jint n)
         }
         p->ptr += nmb*m_offset;
     }
-    p->size -= nmb;
+    p->listSize() -= nmb;
 #endif
 }
 
-jint AutoListAccess::removeAll(JNIEnv * env, void* container, jobject value)
+jint AutoListAccess::removeAll(JNIEnv * env, const ContainerInfo& container, jobject value)
 {
     QtJambiScope scope;
     jint removedCount = 0;
@@ -1389,12 +1538,12 @@ jint AutoListAccess::removeAll(JNIEnv * env, void* container, jobject value)
     jvalue _value;
     _value.l = value;
     if(m_externalToInternalConverter(env, &scope, _value, _qvaluePtr, jValueType::l)){
+        const QListData* p = reinterpret_cast<const QListData*>(container.container);
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-        const QListData* p = reinterpret_cast<const QListData*>(container);
         int index;
         do{
             index = -1;
-            for(int i = 0; i<p->size(); ++i){
+            for(int i = 0; i<p->listSize(); ++i){
                 void* element;
                 if(m_isLargeOrStaticType){
                     element = reinterpret_cast<Node *>(p->at(i))->v;
@@ -1410,11 +1559,10 @@ jint AutoListAccess::removeAll(JNIEnv * env, void* container, jobject value)
             }
         }while(index>=0);
 #else
-        const QArrayDataPointer<char>* p = reinterpret_cast<const QArrayDataPointer<char>*>(container);
         qsizetype index;
         do{
             index = -1;
-            for(qsizetype i = 0; i<p->size; ++i){
+            for(qsizetype i = 0; i<p->listSize(); ++i){
                 void* element = p->ptr + i * m_offset;
                 if(m_elementMetaType.equals(_qvaluePtr, element)){
                     remove(env, container, i, 1);
@@ -1433,14 +1581,14 @@ jboolean AutoListAccess::equal(JNIEnv * env, const void* container, jobject othe
 {
     void* ptr{nullptr};
     if (ContainerAPI::getAsQList(env, other, elementMetaType(), ptr)) {
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
         const QListData* p = reinterpret_cast<const QListData*>(container);
         const QListData* p2 = reinterpret_cast<const QListData*>(ptr);
-        if(p->size()!=p2->size())
+        if(p->listSize()!=p2->listSize())
             return false;
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
         if(p->d==p2->d)
             return true;
-        for(int i = 0; i<p->size(); ++i){
+        for(int i = 0; i<p->listSize(); ++i){
             void* element1 = p->at(i);
             void* element2 = p2->at(i);
             if (m_isLargeOrStaticType) {
@@ -1452,13 +1600,9 @@ jboolean AutoListAccess::equal(JNIEnv * env, const void* container, jobject othe
         }
         return true;
 #else
-        const QArrayDataPointer<char>* p = reinterpret_cast<const QArrayDataPointer<char>*>(container);
-        const QArrayDataPointer<char>* p2 = reinterpret_cast<const QArrayDataPointer<char>*>(ptr);
-        if(p->size!=p2->size)
-            return false;
         if(p->ptr==p2->ptr)
             return true;
-        for(qsizetype i = 0; i<p->size; ++i){
+        for(qsizetype i = 0; i<p->listSize(); ++i){
             void* element1 = p->ptr + i * m_offset;
             void* element2 = p2->ptr + i * m_offset;
             if(!m_elementMetaType.equals(element1, element2))
@@ -1467,64 +1611,52 @@ jboolean AutoListAccess::equal(JNIEnv * env, const void* container, jobject othe
         return true;
 #endif
     }else{
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
         const QListData* p = reinterpret_cast<const QListData*>(container);
-        if(p->size()!=QtJambiAPI::sizeOfJavaCollection(env, other))
+        if(p->listSize()!=QtJambiAPI::sizeOfJavaCollection(env, other))
             return false;
-        jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, other);
+        jobject iterator = QtJambiAPI::iteratorOfJavaIterable(env, other);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
         int i = 0;
+#else
+        size_t i = 0;
+#endif
         QtJambiScope scope;
         jvalue _value;
-        void *_qvaluePtr;
+        void *_qvaluePtr = nullptr;
         while(QtJambiAPI::hasJavaIteratorNext(env, iterator)){
             _value.l = QtJambiAPI::nextOfJavaIterator(env, iterator);
             _qvaluePtr = nullptr;
             if(!m_externalToInternalConverter(env, &scope, _value, _qvaluePtr, jValueType::l))
                 return false;
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
             void* element = p->at(i++);
             if (m_isLargeOrStaticType) {
                 element = reinterpret_cast<Node *>(element)->v;
             }
             if(!isEquals(m_elementMetaType, element, _qvaluePtr))
                 return false;
-        }
-        return true;
 #else
-        const QArrayDataPointer<char>* p = reinterpret_cast<const QArrayDataPointer<char>*>(container);
-        if(p->size!=QtJambiAPI::sizeOfJavaCollection(env, other))
-            return false;
-        jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, other);
-        size_t i = 0;
-        while(QtJambiAPI::hasJavaIteratorNext(env, iterator)){
-            QtJambiScope scope;
-            jvalue _value;
-            _value.l = QtJambiAPI::nextOfJavaIterator(env, iterator);
-            void *_qvaluePtr = nullptr;
-            if(!m_externalToInternalConverter(env, &scope, _value, _qvaluePtr, jValueType::l))
-                return false;
             void* element = p->ptr + (i++) * m_offset;
             if(!m_elementMetaType.equals(element, _qvaluePtr))
                 return false;
+#endif
         }
         return true;
-#endif
     }
     return false;
 }
 
-void AutoListAccess::move(JNIEnv *, void* container, jint from, jint to)
+void AutoListAccess::move(JNIEnv *, const ContainerInfo& container, jint from, jint to)
 {
     if (from == to)
         return;
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    QListData* p = reinterpret_cast<QListData*>(container);
-    Q_ASSERT_X(from >= 0 && from < p->size() && to >= 0 && to < p->size(),
+    QListData* p = reinterpret_cast<QListData*>(container.container);
+    Q_ASSERT_X(from >= 0 && from < p->listSize() && to >= 0 && to < p->listSize(),
                "QList<T>::move", "index out of range");
     detach(p);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     p->move(from, to);
 #else
-    QArrayDataPointer<char>* p = reinterpret_cast<QArrayDataPointer<char>*>(container);
-    detach(p);
     void* tmp = m_elementMetaType.create(p->ptr + from * m_offset);
     for(jint i=from; i<to; ++i){
         m_elementMetaType.destruct(p->ptr + i * m_offset);
@@ -1536,24 +1668,38 @@ void AutoListAccess::move(JNIEnv *, void* container, jint from, jint to)
 #endif
 }
 
-jobject AutoListAccess::mid(JNIEnv * env, const void* container, jint _pos, jint _len)
+ContainerAndAccessInfo AutoListAccess::mid(JNIEnv * env, const ConstContainerAndAccessInfo& container, jint _pos, jint _len)
 {
+    ContainerAndAccessInfo result;
     using namespace QtPrivate;
+    const QListData* p = reinterpret_cast<const QListData*>(container.container);
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     int pos = _pos;
     int alength = _len;
-    const QListData* p = reinterpret_cast<const QListData*>(container);
-    switch (QContainerImplHelper::mid(p->size(), &pos, &alength)) {
+    switch (QContainerImplHelper::mid(p->listSize(), &pos, &alength)) {
     case QContainerImplHelper::Null:
-    case QContainerImplHelper::Empty:
-        return ContainerAccessAPI::objectFromQList(env, createContainer(), clone());
-    case QContainerImplHelper::Full:
-        return ContainerAccessAPI::objectFromQList(env, createContainer(container), this);
+    case QContainerImplHelper::Empty:{
+        result.access = container.access->clone();
+        result.container = result.access->createContainer();
+        result.object = ContainerAPI::objectFromQList(env, result.container, result.access);
+        return result;
+    }
+    case QContainerImplHelper::Full:{
+        result.access = container.access->clone();
+        result.container = result.access->createContainer();
+        result.object = ContainerAPI::objectFromQList(env, result.container, result.access);
+        result.access->assign(env, result, container);
+        return result;
+    }
     case QContainerImplHelper::Subset:
         break;
     }
-    if (alength <= 0)
-        return ContainerAccessAPI::objectFromQList(env, createContainer(), clone());
+    if (alength <= 0){
+        result.access = container.access->clone();
+        result.container = result.access->createContainer();
+        result.object = ContainerAPI::objectFromQList(env, result.container, result.access);
+        return result;
+    }
 
     QListData* cpy = new QListData();
     cpy->d = const_cast<QListData::Data *>(&QListData::shared_null);
@@ -1568,28 +1714,42 @@ jobject AutoListAccess::mid(JNIEnv * env, const void* container, jint _pos, jint
         cpy->d->end = 0;
         QT_RETHROW;
     }
-    return ContainerAccessAPI::objectFromQList(env, cpy, clone());
+    result.container = cpy;
+    result.access = container.access->clone();
+    result.object = ContainerAPI::objectFromQList(env, result.container, result.access);
+    return result;
 #else
-    const QArrayDataPointer<char>* p = reinterpret_cast<const QArrayDataPointer<char>*>(container);
     qsizetype pos = _pos;
     qsizetype len = _len;
-    switch (QContainerImplHelper::mid(p->size, &pos, &len)) {
+    switch (QContainerImplHelper::mid(p->listSize(), &pos, &len)) {
     case QContainerImplHelper::Null:
-    case QContainerImplHelper::Empty:
-        return ContainerAccessAPI::objectFromQList(env, createContainer(), clone());
-    case QContainerImplHelper::Full:
-        return ContainerAccessAPI::objectFromQList(env, createContainer(container), this);
+    case QContainerImplHelper::Empty:{
+        result.access = container.access->clone();
+        result.container = result.access->createContainer();
+        result.object = ContainerAPI::objectFromQList(env, result.container, result.access);
+        return result;
+    }
+    case QContainerImplHelper::Full:{
+        result.access = container.access->clone();
+        result.container = result.access->createContainer();
+        result.object = ContainerAPI::objectFromQList(env, result.container, result.access);
+        result.access->assign(env, result, container);
+        return result;
+    }
     case QContainerImplHelper::Subset:
         break;
     }
-    QArrayDataPointer<char>* newList = new QArrayDataPointer<char>(allocate(len));
+    QListData* newList = new QListData(allocate(len));
     for(qsizetype i = 0; i<len; ++i){
         void* source = p->ptr + (pos+i) * m_offset;
         void* target = newList->ptr + i * m_offset;
         m_elementMetaType.construct(target, source);
-        ++newList->size;
+        ++newList->listSize();
     }
-    return ContainerAccessAPI::objectFromQList(env, newList, clone());
+    result.container = newList;
+    result.access = container.access->clone();
+    result.object = ContainerAPI::objectFromQList(env, result.container, result.access);
+    return result;
 #endif
 }
 
@@ -1606,8 +1766,8 @@ jint AutoListAccess::lastIndexOf(JNIEnv * env, const void* container, jobject va
         jvalue _value;
         _value.l = value;
         if(m_externalToInternalConverter(env, &scope, _value, _qvaluePtr, jValueType::l)){
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
             const QListData* p = reinterpret_cast<const QListData*>(container);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
             for(int i = index; i>=0; --i){
                 void** v = p->at(i);
                 if(m_isLargeOrStaticType){
@@ -1619,8 +1779,7 @@ jint AutoListAccess::lastIndexOf(JNIEnv * env, const void* container, jobject va
                 }
             }
 #else
-            const QArrayDataPointer<char>* p = reinterpret_cast<const QArrayDataPointer<char>*>(container);
-            for(qsizetype i = qsizetype(index-1); i>=0; --i){
+            for(qsizetype i = qsizetype(index); i>=0; --i){
                 void* element = p->ptr + i * m_offset;
                 if(m_elementMetaType.equals(_qvaluePtr, element))
                     return i;
@@ -1631,15 +1790,18 @@ jint AutoListAccess::lastIndexOf(JNIEnv * env, const void* container, jobject va
     return -1;
 }
 
-void AutoListAccess::insert(JNIEnv * env, void* container, jint index, jint n, jobject value)
-{
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    Q_ASSERT(n==1);
+bool AutoListAccess::append(void* container, const void* value){
     QListData* p = reinterpret_cast<QListData*>(container);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    auto index = p->listSize();
     if (p->d->ref.isShared()) {
         Node *n = detach_helper_grow(p, index, 1);
         QT_TRY {
-            node_construct(n, env, value);
+            if (m_isLargeOrStaticType) {
+                n->v = m_elementMetaType.create(value);
+            }else{
+                m_elementMetaType.construct(n, value);
+            }
         } QT_CATCH(...) {
             p->remove(index);
             QT_RETHROW;
@@ -1648,14 +1810,14 @@ void AutoListAccess::insert(JNIEnv * env, void* container, jint index, jint n, j
         if (m_isLargeOrStaticType) {
             Node *n = reinterpret_cast<Node *>(p->insert(index));
             QT_TRY {
-                node_construct(n, env, value);
+                n->v = m_elementMetaType.create(value);
             } QT_CATCH(...) {
                 p->remove(index);
                 QT_RETHROW;
             }
         } else {
             Node *n, copy;
-            node_construct(&copy, env, value); // t might be a reference to an object in the array
+            m_elementMetaType.construct(&copy, value);
             QT_TRY {
                 n = reinterpret_cast<Node *>(p->insert(index));
             } QT_CATCH(...) {
@@ -1666,7 +1828,59 @@ void AutoListAccess::insert(JNIEnv * env, void* container, jint index, jint n, j
         }
     }
 #else
-    QArrayDataPointer<char>* p = reinterpret_cast<QArrayDataPointer<char>*>(container);
+    emplace(p, p->listSize(), value, 1);
+#endif
+    return true;
+}
+
+void AutoListAccess::insert(JNIEnv * env, const ContainerInfo& container, jint index, jint n, jobject value)
+{
+    QListData* p = reinterpret_cast<QListData*>(container.container);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    Q_ASSERT(n==1);
+    jvalue _value;
+    _value.l = value;
+    if (p->d->ref.isShared()) {
+        Node *n = detach_helper_grow(p, index, 1);
+        QT_TRY {
+            void* _qvaluePtr;
+            if (m_isLargeOrStaticType) {
+                n->v = m_elementMetaType.create();
+                _qvaluePtr = n->v;
+            }else{
+                _qvaluePtr = n;
+                m_elementMetaType.construct(_qvaluePtr);
+            }
+            m_externalToInternalConverter(env, nullptr, _value, _qvaluePtr, jValueType::l);
+        } QT_CATCH(...) {
+            p->remove(index);
+            QT_RETHROW;
+        }
+    } else {
+        if (m_isLargeOrStaticType) {
+            Node *n = reinterpret_cast<Node *>(p->insert(index));
+            QT_TRY {
+                n->v = m_elementMetaType.create();
+                m_externalToInternalConverter(env, nullptr, _value, n->v, jValueType::l);
+            } QT_CATCH(...) {
+                p->remove(index);
+                QT_RETHROW;
+            }
+        } else {
+            Node *n, copy;
+            m_elementMetaType.construct(&copy);
+            QT_TRY {
+                void* _qvaluePtr = &copy;
+                m_externalToInternalConverter(env, nullptr, _value, _qvaluePtr, jValueType::l);
+                n = reinterpret_cast<Node *>(p->insert(index));
+            } QT_CATCH(...) {
+                node_destruct(&copy);
+                QT_RETHROW;
+            }
+            *n = copy;
+        }
+    }
+#else
     emplace(p, env, index, value, n);
 #endif
 }
@@ -1682,8 +1896,8 @@ jint AutoListAccess::indexOf(JNIEnv * env, const void* container, jobject value,
         jvalue _value;
         _value.l = value;
         if(m_externalToInternalConverter(env, &scope, _value, _qvaluePtr, jValueType::l)){
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
             const QListData* p = reinterpret_cast<const QListData*>(container);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
             for(int i = index; i<sz; ++i){
                 void** v = p->at(i);
                 if(m_isLargeOrStaticType){
@@ -1695,7 +1909,6 @@ jint AutoListAccess::indexOf(JNIEnv * env, const void* container, jobject value,
                 }
             }
 #else
-            const QArrayDataPointer<char>* p = reinterpret_cast<const QArrayDataPointer<char>*>(container);
             for(qsizetype i = qsizetype(index); i<sz; ++i){
                 void* element = p->ptr + i * m_offset;
                 if(m_elementMetaType.equals(_qvaluePtr, element))
@@ -1716,8 +1929,8 @@ jboolean AutoListAccess::endsWith(JNIEnv * env, const void* container, jobject v
         jvalue _value;
         _value.l = value;
         if(m_externalToInternalConverter(env, &scope, _value, _qvaluePtr, jValueType::l)){
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
             const QListData* p = reinterpret_cast<const QListData*>(container);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
             void** v = p->at(sz-1);
             if(m_isLargeOrStaticType){
                 return isEquals(m_elementMetaType, _qvaluePtr, reinterpret_cast<Node*>(v)->v);
@@ -1725,7 +1938,6 @@ jboolean AutoListAccess::endsWith(JNIEnv * env, const void* container, jobject v
                 return isEquals(m_elementMetaType, _qvaluePtr, v);
             }
 #else
-            const QArrayDataPointer<char>* p = reinterpret_cast<const QArrayDataPointer<char>*>(container);
             void* element = p->ptr + (sz-1) * m_offset;
             return m_elementMetaType.equals(_qvaluePtr, element);
 #endif
@@ -1743,8 +1955,8 @@ jint AutoListAccess::count(JNIEnv * env, const void* container, jobject value)
     jvalue _value;
     _value.l = value;
     if(m_externalToInternalConverter(env, &scope, _value, _qvaluePtr, jValueType::l)){
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
         const QListData* p = reinterpret_cast<const QListData*>(container);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
         for(qsizetype i = 0; i<sz; ++i){
             void** v = p->at(i);
             if(m_isLargeOrStaticType){
@@ -1756,7 +1968,6 @@ jint AutoListAccess::count(JNIEnv * env, const void* container, jobject value)
             }
         }
 #else
-        const QArrayDataPointer<char>* p = reinterpret_cast<const QArrayDataPointer<char>*>(container);
         for(qsizetype i = 0; i<sz; ++i){
             void* element = p->ptr + i * m_offset;
             if(m_elementMetaType.equals(_qvaluePtr, element))
@@ -1775,8 +1986,8 @@ jboolean AutoListAccess::contains(JNIEnv * env, const void* container, jobject v
     jvalue _value;
     _value.l = value;
     if(m_externalToInternalConverter(env, &scope, _value, _qvaluePtr, jValueType::l)){
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
         const QListData* p = reinterpret_cast<const QListData*>(container);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
         for(qsizetype i = 0; i<sz; ++i){
             void** v = p->at(i);
             if(m_isLargeOrStaticType){
@@ -1788,7 +1999,6 @@ jboolean AutoListAccess::contains(JNIEnv * env, const void* container, jobject v
             }
         }
 #else
-        const QArrayDataPointer<char>* p = reinterpret_cast<const QArrayDataPointer<char>*>(container);
         for(qsizetype i = 0; i<sz; ++i){
             void* element = p->ptr + i * m_offset;
             if(m_elementMetaType.equals(_qvaluePtr, element))
@@ -1799,10 +2009,15 @@ jboolean AutoListAccess::contains(JNIEnv * env, const void* container, jobject v
     return false;
 }
 
-void AutoListAccess::clear(JNIEnv *, void* container)
+void AutoListAccess::clear(JNIEnv *, const ContainerInfo& container)
 {
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    clear(container.container);
+}
+
+void AutoListAccess::clear(void* container)
+{
     QListData* p = reinterpret_cast<QListData*>(container);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     QListData::Data* tmp;
     tmp = p->d;
     p->d = const_cast<QListData::Data *>(&QListData::shared_null);
@@ -1811,13 +2026,12 @@ void AutoListAccess::clear(JNIEnv *, void* container)
         dealloc(&x);
     }
 #else
-    QArrayDataPointer<char>* p = reinterpret_cast<QArrayDataPointer<char>*>(container);
-    if (!p->size)
+    if (!p->listSize())
         return;
     if (p->needsDetach()) {
         // must allocate memory
-        QArrayDataPointer<char> detached(allocate(p->allocatedCapacity()));
-        for(qsizetype i = 0; i<p->size; ++i){
+        QListData detached(allocate(p->allocatedCapacity()));
+        for(qsizetype i = 0; i<p->listSize(); ++i){
             void* source = p->ptr + i * m_offset;
             void* target = detached.ptr + i * m_offset;
             m_elementMetaType.construct(target, source);
@@ -1825,11 +2039,11 @@ void AutoListAccess::clear(JNIEnv *, void* container)
         }
         swapAndDestroy(p, std::move(detached));
     } else {
-        for(qsizetype i = 0; i<p->size; ++i){
+        for(qsizetype i = 0; i<p->listSize(); ++i){
             void* target = p->ptr + i * m_offset;
             m_elementMetaType.destruct(target);
         }
-        p->size = 0;
+        p->listSize() = 0;
         p->d = nullptr;
         p->ptr = nullptr;
     }
@@ -1837,7 +2051,7 @@ void AutoListAccess::clear(JNIEnv *, void* container)
 }
 
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-void AutoListAccess::emplace(QArrayDataPointer<char>* p, JNIEnv * env, jint index, jobject value, jint n)
+void AutoListAccess::emplace(QListData* p, JNIEnv * env, jint index, jobject value, jint n)
 {
     if(n<=0)
         return;
@@ -1845,12 +2059,12 @@ void AutoListAccess::emplace(QArrayDataPointer<char>* p, JNIEnv * env, jint inde
     _value.l = value;
     bool detach = p->needsDetach();
     if (!detach) {
-        if(index == p->size && freeSpaceAtEnd(p)>=n){
+        if(index == p->listSize() && freeSpaceAtEnd(p)>=n){
             for(jint i=0; i<n; ++i){
-                void* _qvaluePtr = p->ptr+p->size*m_offset;
+                void* _qvaluePtr = p->ptr+p->listSize()*m_offset;
                 m_elementMetaType.construct(_qvaluePtr);
                 m_externalToInternalConverter(env, nullptr, _value, _qvaluePtr, jValueType::l);
-                ++p->size;
+                ++p->listSize();
             }
             return;
         }
@@ -1860,12 +2074,12 @@ void AutoListAccess::emplace(QArrayDataPointer<char>* p, JNIEnv * env, jint inde
                 void* _qvaluePtr = p->ptr+i*m_offset;
                 m_elementMetaType.construct(_qvaluePtr);
                 m_externalToInternalConverter(env, nullptr, _value, _qvaluePtr, jValueType::l);
-                ++p->size;
+                ++p->listSize();
             }
             return;
         }
     }
-    const bool growsAtBegin = p->size != 0 && index == 0;
+    const bool growsAtBegin = p->listSize() != 0 && index == 0;
     QArrayData::GrowthPosition pos = growsAtBegin ? QArrayData::GrowsAtBeginning : QArrayData::GrowsAtEnd;
     detachAndGrow(p, pos, n, nullptr, nullptr);
     void *where = createHole(p, pos, index, n);
@@ -1876,17 +2090,17 @@ void AutoListAccess::emplace(QArrayDataPointer<char>* p, JNIEnv * env, jint inde
     }
 }
 
-void AutoListAccess::emplace(QArrayDataPointer<char>* p, qsizetype index, const void* value, qsizetype n)
+void AutoListAccess::emplace(QListData* p, qsizetype index, const void* value, qsizetype n)
 {
     if(n<=0)
         return;
     bool detach = p->needsDetach();
     if (!detach) {
-        if(index == p->size && freeSpaceAtEnd(p)>=n){
+        if(index == p->listSize() && freeSpaceAtEnd(p)>=n){
             for(qsizetype i=0; i<n; ++i){
-                void* _qvaluePtr = p->ptr+p->size*m_offset;
+                void* _qvaluePtr = p->ptr+p->listSize()*m_offset;
                 m_elementMetaType.construct(_qvaluePtr, value);
-                ++p->size;
+                ++p->listSize();
             }
             return;
         }
@@ -1895,12 +2109,12 @@ void AutoListAccess::emplace(QArrayDataPointer<char>* p, qsizetype index, const 
             for(qsizetype i=0; i<n; ++i){
                 void* _qvaluePtr = p->ptr+i*m_offset;
                 m_elementMetaType.construct(_qvaluePtr, value);
-                ++p->size;
+                ++p->listSize();
             }
             return;
         }
     }
-    const bool growsAtBegin = p->size != 0 && index == 0;
+    const bool growsAtBegin = p->listSize() != 0 && index == 0;
     QArrayData::GrowthPosition pos = growsAtBegin ? QArrayData::GrowsAtBeginning : QArrayData::GrowsAtEnd;
     detachAndGrow(p, pos, n, nullptr, nullptr);
     void *where = createHole(p, pos, index, n);
@@ -1910,7 +2124,11 @@ void AutoListAccess::emplace(QArrayDataPointer<char>* p, qsizetype index, const 
     }
 }
 
-void AutoListAccess::swapAndDestroy(QArrayDataPointer<char>* p, QArrayDataPointer<char>&& detached){
+std::pair<const QtPrivate::QMetaTypeInterface *,const QtPrivate::QMetaTypeInterface *> AutoListAccess::metaTypes(){
+    return {m_elementMetaType.iface(), nullptr};
+}
+
+void AutoListAccess::swapAndDestroy(QListData* p, QListData&& detached){
     p->swap(detached);
     if(!detached.deref()){
         for(qsizetype i = 0; i<detached.size; ++i){
@@ -1924,21 +2142,21 @@ void AutoListAccess::swapAndDestroy(QArrayDataPointer<char>* p, QArrayDataPointe
     detached.ptr = nullptr;
 }
 
-qsizetype AutoListAccess::freeSpaceAtBegin(const QArrayDataPointer<char>* p){
+qsizetype AutoListAccess::freeSpaceAtBegin(const QListData* p){
     if (p->d == nullptr)
         return 0;
     qsizetype result = p->ptr - QTypedArrayData<char>::dataStart(p->d, qMax(size_t(m_elementMetaType.alignOf()), alignof(QArrayData)));
     return result / m_offset;
 }
 
-qsizetype AutoListAccess::freeSpaceAtEnd(const QArrayDataPointer<char>* p){
+qsizetype AutoListAccess::freeSpaceAtEnd(const QListData* p){
     if (p->d == nullptr)
         return 0;
-    return p->d->constAllocatedCapacity() - freeSpaceAtBegin(p) - p->size;
+    return p->d->constAllocatedCapacity() - freeSpaceAtBegin(p) - p->listSize();
 }
 
-void AutoListAccess::detachAndGrow(QArrayDataPointer<char>* p, QArrayData::GrowthPosition where, qsizetype n, const void **,
-                   QArrayDataPointer<char> *old)
+void AutoListAccess::detachAndGrow(QListData* p, QArrayData::GrowthPosition where, qsizetype n, const void **,
+                   QListData *old)
 {
     if (!p->needsDetach()) {
         if (!n || (where == QArrayData::GrowsAtBeginning && freeSpaceAtBegin(p) >= n)
@@ -1949,7 +2167,7 @@ void AutoListAccess::detachAndGrow(QArrayDataPointer<char>* p, QArrayData::Growt
     reallocateAndGrow(p, where, n, old);
 }
 
-void AutoListAccess::reallocateAndGrow(QArrayDataPointer<char>* p, QArrayData::GrowthPosition where, qsizetype n, QArrayDataPointer<char> *old)
+void AutoListAccess::reallocateAndGrow(QListData* p, QArrayData::GrowthPosition where, qsizetype n, QListData *old)
 {
     if(m_elementMetaType.flags() & QMetaType::RelocatableType && size_t(m_elementMetaType.alignOf()) <= alignof(std::max_align_t)) {
         if (where == QArrayData::GrowsAtEnd && !old && !p->needsDetach() && n > 0) {
@@ -1958,7 +2176,7 @@ void AutoListAccess::reallocateAndGrow(QArrayDataPointer<char>* p, QArrayData::G
         }
     }
 
-    QArrayDataPointer<char> dp(allocateGrow(*p, n, where));
+    QListData dp(allocateGrow(*p, n, where));
     if (n > 0)
         Q_CHECK_PTR(dp.data());
     if (where == QArrayData::GrowsAtBeginning) {
@@ -1966,8 +2184,8 @@ void AutoListAccess::reallocateAndGrow(QArrayDataPointer<char>* p, QArrayData::G
     } else {
         Q_ASSERT(freeSpaceAtEnd(&dp) >= n);
     }
-    if (p->size) {
-        size_t toCopy = p->size;
+    if (p->listSize()) {
+        size_t toCopy = p->listSize();
         if (n < 0)
             toCopy += n;
         char* ptr = reinterpret_cast<char*>(dp->ptr);
@@ -2013,7 +2231,7 @@ void AutoListAccess::reallocateAndGrow(QArrayDataPointer<char>* p, QArrayData::G
     dp.ptr = nullptr;
 }
 
-QArrayDataPointer<char> AutoListAccess::allocateGrow(const QArrayDataPointer<char> &from, qsizetype n, QArrayData::GrowthPosition position)
+auto AutoListAccess::allocateGrow(const QListData &from, qsizetype n, QArrayData::GrowthPosition position) -> QListData
 {
     // calculate new capacity. We keep the free capacity at the side that does not have to grow
     // to avoid quadratic behavior with mixed append/prepend cases
@@ -2064,7 +2282,7 @@ QArrayDataPointer<char> AutoListAccess::allocateGrow(const QArrayDataPointer<cha
 #endif
     const bool valid = header != nullptr && dataPtr != nullptr;
     if (!valid)
-        return QArrayDataPointer<char>(reinterpret_cast<QTypedArrayData<char>*>(header), reinterpret_cast<char*>(dataPtr));
+        return QListData(reinterpret_cast<QTypedArrayData<char>*>(header), reinterpret_cast<char*>(dataPtr));
 
     // Idea: * when growing backwards, adjust pointer to prepare free space at the beginning
     //       * when growing forward, adjust by the previous data pointer offset
@@ -2074,10 +2292,10 @@ QArrayDataPointer<char> AutoListAccess::allocateGrow(const QArrayDataPointer<cha
                      : freeSpaceAtBegin(&from)) * m_offset;
     dataPtr = cdataPtr;
     header->flags = from.flags();
-    return QArrayDataPointer<char>(reinterpret_cast<QTypedArrayData<char>*>(header), reinterpret_cast<char*>(dataPtr));
+    return QListData(reinterpret_cast<QTypedArrayData<char>*>(header), reinterpret_cast<char*>(dataPtr));
 }
 
-void AutoListAccess::reallocate(QArrayDataPointer<char>* p, qsizetype capacity, QArrayData::AllocationOption option){
+void AutoListAccess::reallocate(QListData* p, qsizetype capacity, QArrayData::AllocationOption option){
     QPair<QArrayData *, void *> pair =
         QArrayData::reallocateUnaligned(p->d, p->ptr, m_elementMetaType.sizeOf(), capacity, option);
     Q_CHECK_PTR(pair.second);
@@ -2086,30 +2304,30 @@ void AutoListAccess::reallocate(QArrayDataPointer<char>* p, qsizetype capacity, 
     p->ptr = reinterpret_cast<char*>(pair.second);
 }
 
-void AutoListAccess::detach(QArrayDataPointer<char>* p, QArrayDataPointer<char> *old)
+void AutoListAccess::detach(QListData* p, QListData *old)
 {
     if(p->needsDetach())
         reallocateAndGrow(p, QArrayData::GrowsAtEnd, 0, old);
 }
 
-void *AutoListAccess::createHole(QArrayDataPointer<char> *p, QArrayData::GrowthPosition pos, qsizetype where, qsizetype n){
+void *AutoListAccess::createHole(QListData *p, QArrayData::GrowthPosition pos, qsizetype where, qsizetype n){
     Q_ASSERT((pos == QArrayData::GrowsAtBeginning && n <= freeSpaceAtBegin(p)) ||
              (pos == QArrayData::GrowsAtEnd && n <= freeSpaceAtEnd(p)));
 
     char *insertionPoint = reinterpret_cast<char*>(p->ptr) + where * m_offset;
     if (pos == QArrayData::GrowsAtEnd) {
-        if (where < p->size)
-            ::memmove(static_cast<void *>(insertionPoint + n * m_elementMetaType.sizeOf()), static_cast<void *>(insertionPoint), (p->size - where) * m_elementMetaType.sizeOf());
+        if (where < p->listSize())
+            ::memmove(static_cast<void *>(insertionPoint + n * m_elementMetaType.sizeOf()), static_cast<void *>(insertionPoint), (p->listSize() - where) * m_elementMetaType.sizeOf());
     } else {
         Q_ASSERT(where == 0);
         p->ptr = reinterpret_cast<char*>(p->ptr) - n * m_offset;
         insertionPoint -= n * m_offset;
     }
-    p->size += n;
+    p->listSize() += n;
     return insertionPoint;
 }
 
-QArrayDataPointer<char> AutoListAccess::allocate(qsizetype capacity, QArrayData::AllocationOption option){
+auto AutoListAccess::allocate(qsizetype capacity, QArrayData::AllocationOption option) -> QListData {
     QArrayData *header;
     void *dataPtr = QArrayData::allocate(&header, m_elementMetaType.sizeOf(),
                                          qMax<size_t>(m_elementMetaType.alignOf(), alignof(QArrayData)),
@@ -2147,26 +2365,26 @@ QArrayDataPointer<char> AutoListAccess::allocate(qsizetype capacity, QArrayData:
         break;
     }
 #endif
-    return QArrayDataPointer<char>(reinterpret_cast<QTypedArrayData<char>*>(header), reinterpret_cast<char*>(dataPtr));
+    return QListData(reinterpret_cast<QTypedArrayData<char>*>(header), reinterpret_cast<char*>(dataPtr));
 }
 
 jint AutoListAccess::capacity(JNIEnv *, const void* container)
 {
-    const QArrayDataPointer<char>* p = reinterpret_cast<const QArrayDataPointer<char>*>(container);
+    const QListData* p = reinterpret_cast<const QListData*>(container);
     return qsizetype(p->constAllocatedCapacity());
 }
 
-void AutoListAccess::fill(JNIEnv * env, void* container, jobject value, jint newSize)
+void AutoListAccess::fill(JNIEnv * env, const ContainerInfo& container, jobject value, jint newSize)
 {
-    QArrayDataPointer<char>* p = reinterpret_cast<QArrayDataPointer<char>*>(container);
+    QListData* p = reinterpret_cast<QListData*>(container.container);
     if (newSize == -1)
-        newSize = p->size;
+        newSize = p->listSize();
     jvalue _value;
     _value.l = value;
     if (p->needsDetach() || newSize > p->constAllocatedCapacity()) {
         // must allocate memory
         qsizetype sz = p->detachCapacity(newSize);
-        QArrayDataPointer<char> detached(allocate(sz));
+        QListData detached(allocate(sz));
         for(qsizetype i = 0; i<sz; ++i){
             void* target = detached.ptr + i * m_offset;
             m_elementMetaType.construct(target);
@@ -2175,7 +2393,7 @@ void AutoListAccess::fill(JNIEnv * env, void* container, jobject value, jint new
         }
         swapAndDestroy(p, std::move(detached));
     } else {
-        for(qsizetype i = 0; i<p->size; ++i){
+        for(qsizetype i = 0; i<p->listSize(); ++i){
             void* target = p->ptr + i * m_offset;
             m_elementMetaType.destruct(target);
         }
@@ -2184,49 +2402,49 @@ void AutoListAccess::fill(JNIEnv * env, void* container, jobject value, jint new
             m_elementMetaType.construct(target);
             m_externalToInternalConverter(env, nullptr, _value, target, jValueType::l);
         }
-        p->size = newSize;
+        p->listSize() = newSize;
     }
 }
 
-void AutoListAccess::resize(JNIEnv * env, void* container, jint newSize)
+void AutoListAccess::resize(JNIEnv * env, const ContainerInfo& container, jint newSize)
 {
-    QArrayDataPointer<char>* p = reinterpret_cast<QArrayDataPointer<char>*>(container);
-    if (p->needsDetach() || newSize > capacity(env, container) - freeSpaceAtBegin(p)) {
-        detachAndGrow(p, QArrayData::GrowsAtEnd, newSize - p->size, nullptr, nullptr);
-        if (newSize > p->size){
+    QListData* p = reinterpret_cast<QListData*>(container.container);
+    if (p->needsDetach() || newSize > capacity(env, container.container) - freeSpaceAtBegin(p)) {
+        detachAndGrow(p, QArrayData::GrowsAtEnd, newSize - p->listSize(), nullptr, nullptr);
+        if (newSize > p->listSize()){
             for(size_t i=0; i<size_t(newSize); ++i){
                 void* source = p->ptr+i*m_offset;
                 m_elementMetaType.construct(source);
             }
-            p->size = newSize;
+            p->listSize() = newSize;
         }
-    } else if (newSize < p->size) {
-        for(size_t i=p->size; i>=size_t(newSize); --i){
+    } else if (newSize < p->listSize()) {
+        for(size_t i=p->listSize(); i>=size_t(newSize); --i){
             void* source = p->ptr+(i-1)*m_offset;
             m_elementMetaType.destruct(source);
         }
-        p->size = newSize;
+        p->listSize() = newSize;
     }
 }
 
-void AutoListAccess::squeeze(JNIEnv *env, void* container)
+void AutoListAccess::squeeze(JNIEnv *env, const ContainerInfo& container)
 {
-    QArrayDataPointer<char>* p = reinterpret_cast<QArrayDataPointer<char>*>(container);
+    QListData* p = reinterpret_cast<QListData*>(container.container);
     if (!p->isMutable())
         return;
-    if (p->needsDetach() || p->size < capacity(env, container)) {
+    if (p->needsDetach() || p->listSize() < capacity(env, container.container)) {
         // must allocate memory
-        QArrayDataPointer<char> detached(allocate(p->size));
-        if (p->size) {
+        QListData detached(allocate(p->listSize()));
+        if (p->listSize()) {
             if (p->needsDetach() || !m_elementMetaType.iface()->moveCtr){
-                for(qsizetype i = 0; i<p->size; ++i){
+                for(qsizetype i = 0; i<p->listSize(); ++i){
                     void* source = p->ptr + i * m_offset;
                     void* target = detached.ptr + i * m_offset;
                     m_elementMetaType.construct(target, source);
                     ++detached.size;
                 }
             }else{
-                for(qsizetype i = 0; i<p->size; ++i){
+                for(qsizetype i = 0; i<p->listSize(); ++i){
                     void* source = p->ptr + i * m_offset;
                     void* target = detached.ptr + i * m_offset;
                     m_elementMetaType.iface()->moveCtr(m_elementMetaType.iface(), target, source);
@@ -2272,12 +2490,12 @@ void AutoListAccess::detach_helper(QListData* p, int alloc)
 
 void AutoListAccess::dealloc(QListData* p){
     if(m_isLargeOrStaticType){
-        for(int i=0; i<p->size(); ++i){
+        for(int i=0; i<p->listSize(); ++i){
             Node* v = reinterpret_cast<Node*>(p->at(i));
             m_elementMetaType.destruct(v->v);
         }
     }else{
-        for(int i=0; i<p->size(); ++i){
+        for(int i=0; i<p->listSize(); ++i){
             void** v = p->at(i);
             m_elementMetaType.destruct(v);
         }
@@ -2330,20 +2548,6 @@ void AutoListAccess::node_destruct(Node *from, Node *to){
         while (from != to) --to, m_elementMetaType.destruct(to);
 }
 
-void AutoListAccess::node_construct(Node *n, JNIEnv * env, jobject value){
-    jvalue _value;
-    _value.l = value;
-    void* _qvaluePtr;
-    if (m_isLargeOrStaticType) {
-        n->v = m_elementMetaType.create();
-        _qvaluePtr = n->v;
-    }else{
-        _qvaluePtr = n;
-        m_elementMetaType.construct(_qvaluePtr);
-    }
-    m_externalToInternalConverter(env, nullptr, _value, _qvaluePtr, jValueType::l);
-}
-
 AutoListAccess::Node* AutoListAccess::detach_helper_grow(QListData* p, int i, int c)
 {
     Node *n = reinterpret_cast<Node *>(p->begin());
@@ -2374,5 +2578,270 @@ AutoListAccess::Node* AutoListAccess::detach_helper_grow(QListData* p, int i, in
     return reinterpret_cast<Node *>(p->begin() + i);
 }
 
+#endif
+
+PointerRCAutoListAccess::PointerRCAutoListAccess(PointerRCAutoListAccess& other)
+    : AutoListAccess(other), ReferenceCountingSetContainer() {}
+
+PointerRCAutoListAccess* PointerRCAutoListAccess::clone(){
+    return new PointerRCAutoListAccess(*this);
+}
+
+#if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
+AutoSpanAccess* PointerRCAutoListAccess::createSpanAccess(bool isConst){
+    if(isConst){
+        return new AutoSpanAccess(
+            m_elementMetaType,
+            m_hashFunction,
+            m_internalToExternalConverter,
+            m_externalToInternalConverter,
+            m_elementNestedContainerAccess,
+            m_elementOwnerFunction,
+            m_elementDataType,
+            true
+            );
+    }else{
+        return new PointerRCAutoSpanAccess(
+                m_elementMetaType,
+                m_hashFunction,
+                m_internalToExternalConverter,
+                m_externalToInternalConverter,
+                m_elementNestedContainerAccess,
+                m_elementOwnerFunction,
+                m_elementDataType
+            );
+    }
+}
+#endif //QT_VERSION >= QT_VERSION_CHECK(6,7,0)
+
+void PointerRCAutoListAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
+    JniLocalFrame frame(env, 200);
+    jobject set = Java::Runtime::ArrayList::newInstance(env);
+    auto iterator = elementIterator(container.container);
+    while(iterator->hasNext()){
+        const void* content = iterator->next();
+        jobject obj{nullptr};
+        switch(elementType()){
+        case PointerToQObject:
+            if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForQObject(reinterpret_cast<const QObject*>(content))){
+                obj = link->getJavaObjectLocalRef(env);
+            }
+            break;
+        case FunctionPointer:
+            if(const std::type_info* typeId = getTypeByMetaType(elementMetaType())){
+                if(FunctionalResolver resolver = registeredFunctionalResolver(*typeId)){
+                    bool success = false;
+                    obj = resolver(env, content, &success);
+                    break;
+                }
+            }
+            Q_FALLTHROUGH();
+        case Pointer:
+            for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(content)){
+                obj = link->getJavaObjectLocalRef(env);
+                break;
+            }
+            break;
+        default:
+            break;
+        }
+        if(obj)
+            Java::Runtime::Collection::add(env, set, obj);
+    }
+    clearRC(env, container.object);
+    addAllRC(env, container.object, set);
+}
+
+void PointerRCAutoListAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
+    AutoListAccess::swap(env, container, container2);
+    if(PointerRCAutoListAccess* access = dynamic_cast<PointerRCAutoListAccess*>(container2.access)){
+        if(access!=this)
+            swapRC(env, container, container2);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void PointerRCAutoListAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
+    AutoListAccess::assign(env, container, container2);
+    if(PointerRCAutoListAccess* access = dynamic_cast<PointerRCAutoListAccess*>(container2.access)){
+        if(access!=this)
+            assignRC(env, container.object, container2.object);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void PointerRCAutoListAccess::appendList(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& containerInfo) {
+    AutoListAccess::appendList(env, container, containerInfo);
+    addAllRC(env, container.object, findContainer(env, containerInfo.object));
+}
+
+void PointerRCAutoListAccess::replace(JNIEnv * env, const ContainerInfo& container, jint index, jobject value) {
+    jobject oldValue = AutoListAccess::at(env, container.container, index);
+    AutoListAccess::replace(env, container, index, value);
+    if(oldValue && !AutoListAccess::contains(env, container.container, oldValue))
+        removeRC(env, container.object, oldValue);
+    if(value)
+        addRC(env, container.object, value);
+}
+
+jint PointerRCAutoListAccess::removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) {
+    jint result = AutoListAccess::removeAll(env, container, value);
+    removeRC(env, container.object, value, result);
+    return result;
+}
+
+void PointerRCAutoListAccess::insert(JNIEnv * env, const ContainerInfo& container, jint index, jint n, jobject value) {
+    AutoListAccess::insert(env, container, index, n, value);
+    if(value)
+        addRC(env, container.object, value);
+}
+
+void PointerRCAutoListAccess::clear(JNIEnv * env, const ContainerInfo& container) {
+    AutoListAccess::clear(env, container);
+    clearRC(env, container.object);
+}
+
+void PointerRCAutoListAccess::remove(JNIEnv * env, const ContainerInfo& container, jint index, jint n) {
+    if(n==1){
+        jobject oldValue = AutoListAccess::at(env, container.container, index);
+        AutoListAccess::remove(env, container, index, n);
+        removeRC(env, container.object, oldValue);
+    }else{
+        jint size = AutoListAccess::size(env, container.container);
+        jobject removedValues = Java::Runtime::ArrayList::newInstance(env);
+        for(jint i = index; i<=index+n && i<size; ++i){
+            Java::Runtime::Collection::add(env, removedValues, AutoListAccess::at(env, container.container, i));
+        }
+        AutoListAccess::remove(env, container, index, n);
+        jobject iter = Java::Runtime::Collection::iterator(env, removedValues);
+        while(Java::Runtime::Iterator::hasNext(env, iter)){
+            jobject value = Java::Runtime::Iterator::next(env, iter);
+            removeRC(env, container.object, value);
+        }
+    }
+}
+
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+void PointerRCAutoListAccess::fill(JNIEnv * env, const ContainerInfo& container, jobject value, jint size){
+    jint oldSize = AutoListAccess::size(env, container.container);
+    AutoListAccess::fill(env, container, value, size);
+    for(;oldSize<size;++oldSize){
+        addRC(env, container.object, value);
+    }
+}
+#endif
+
+NestedPointersRCAutoListAccess::NestedPointersRCAutoListAccess(NestedPointersRCAutoListAccess& other)
+    : AutoListAccess(other), ReferenceCountingSetContainer() {}
+
+NestedPointersRCAutoListAccess* NestedPointersRCAutoListAccess::clone(){
+    return new NestedPointersRCAutoListAccess(*this);
+}
+
+#if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
+AutoSpanAccess* NestedPointersRCAutoListAccess::createSpanAccess(bool isConst){
+    if(isConst){
+        return new AutoSpanAccess(
+            m_elementMetaType,
+            m_hashFunction,
+            m_internalToExternalConverter,
+            m_externalToInternalConverter,
+            m_elementNestedContainerAccess,
+            m_elementOwnerFunction,
+            m_elementDataType,
+            true
+            );
+    }else{
+        return new NestedPointersRCAutoSpanAccess(
+            m_elementMetaType,
+            m_hashFunction,
+            m_internalToExternalConverter,
+            m_externalToInternalConverter,
+            m_elementNestedContainerAccess,
+            m_elementOwnerFunction,
+            m_elementDataType
+            );
+    }
+}
+#endif //QT_VERSION >= QT_VERSION_CHECK(6,7,0)
+
+
+void NestedPointersRCAutoListAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
+    AutoListAccess::swap(env, container, container2);
+    if(NestedPointersRCAutoListAccess* access = dynamic_cast<NestedPointersRCAutoListAccess*>(container2.access)){
+        if(access!=this)
+            swapRC(env, container, container2);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void NestedPointersRCAutoListAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
+    AutoListAccess::assign(env, container, container2);
+    updateRC(env, container);
+}
+
+void NestedPointersRCAutoListAccess::appendList(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& containerInfo) {
+    AutoListAccess::appendList(env, container, containerInfo);
+    updateRC(env, container);
+}
+
+void NestedPointersRCAutoListAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
+    if(size(env, container.container)==0){
+        clearRC(env, container.object);
+    }else{
+        JniLocalFrame frame(env, 200);
+        jobject set = Java::Runtime::HashSet::newInstance(env);
+        auto access = elementNestedContainerAccess();
+        auto iterator = elementIterator(container.container);
+        while(iterator->hasNext()){
+            unfoldAndAddContainer(env, set, iterator->next(), elementType(), elementMetaType(), access);
+        }
+        if(access)
+            access->dispose();
+        addAllRC(env, container.object, set);
+    }
+}
+
+void NestedPointersRCAutoListAccess::replace(JNIEnv * env, const ContainerInfo& container, jint index, jobject value) {
+    AutoListAccess::replace(env, container, index, value);
+    updateRC(env, container);
+}
+
+jint NestedPointersRCAutoListAccess::removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) {
+    jint result = AutoListAccess::removeAll(env, container, value);
+    if(result>0){
+        updateRC(env, container);
+    }
+    return result;
+}
+
+ContainerAndAccessInfo NestedPointersRCAutoListAccess::mid(JNIEnv * env, const ConstContainerAndAccessInfo& container, jint index1, jint index2) {
+    ContainerAndAccessInfo result = AutoListAccess::mid(env, container, index1, index2);
+    return result;
+}
+
+void NestedPointersRCAutoListAccess::insert(JNIEnv * env, const ContainerInfo& container, jint index, jint n, jobject value) {
+    AutoListAccess::insert(env, container, index, n, value);
+    addNestedValueRC(env, container.object, elementType(), hasNestedPointers(), value);
+}
+
+void NestedPointersRCAutoListAccess::clear(JNIEnv * env, const ContainerInfo& container) {
+    AutoListAccess::clear(env, container);
+    clearRC(env, container.object);
+}
+
+void NestedPointersRCAutoListAccess::remove(JNIEnv * env, const ContainerInfo& container, jint index, jint n) {
+    AutoListAccess::remove(env, container, index, n);
+    updateRC(env, container);
+}
+
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+void NestedPointersRCAutoListAccess::fill(JNIEnv * env, const ContainerInfo& container, jobject value, jint size){
+    AutoListAccess::fill(env, container, value, size);
+    addNestedValueRC(env, container.object, elementType(), hasNestedPointers(), value);
+}
 #endif
 

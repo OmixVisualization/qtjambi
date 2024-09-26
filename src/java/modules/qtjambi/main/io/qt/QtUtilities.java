@@ -425,11 +425,7 @@ public final class QtUtilities {
      * Checks if the current thread is the given object's thread and throws QThreadAffinityException otherwise.
      * @throws QThreadAffinityException
      */
-    public static void threadCheck(io.qt.core.@Nullable QObject object) throws QThreadAffinityException{
-    	threadCheck(QtJambi_LibraryUtilities.internal.checkedNativeId(object));
-    }
-    
-    private static native void threadCheck(long objectId) throws QThreadAffinityException;
+    public static native void threadCheck(io.qt.core.@Nullable QObject object) throws QThreadAffinityException;
     
     /**
      * Reduces the number of native-to-java conversions by pre-filtering the events according to the given event types.
@@ -443,4 +439,41 @@ public final class QtUtilities {
     }
     
     private static native io.qt.core.@NonNull QObject asSelectiveEventFilter(long objectId, io.qt.core.QEvent.@NonNull Type eventType, io.qt.core.QEvent.@NonNull Type @NonNull... eventTypes);
+    
+    /**
+     * Enables or disables the dangling pointer checks at runtime.
+     * <p><b>CAUTION:</b> This function is experimental and may have unexpected behavior.</p>
+     * @param enabled
+     */
+    public static native void setDanglingPointerCheckEnabled(boolean enabled);
+    
+    /**
+     * <p>Enables or disables the thread affinity checks at runtime.</p>
+     * <p>This function is not thread-safe, i.e. calling this method parallel to usage of Qtjambi's API in other threads may lead to crash.</p>
+     * <p><b>CAUTION:</b> This function is experimental and may have unexpected behavior.</p>
+     * @param enabled
+     */
+    public static native void setThreadAffinityCheckEnabled(boolean enabled);
+    
+    /**
+     * <p>Enables or disables the thread affinity checks on events at runtime.</p>
+     * <p>This function is not thread-safe, i.e. calling this method parallel to running event loops in other threads may lead to crash.</p>
+     * <p><b>CAUTION:</b> This function is experimental and may have unexpected behavior.</p>
+     * @param enabled
+     */
+    public static native void setEventThreadAffinityCheckEnabled(boolean enabled);
+
+    /**
+     * Enables or disables method logs at runtime.
+     * <p><b>CAUTION:</b> This function is experimental and may have unexpected behavior.</p>
+     * @param enabled
+     */
+    public static native void setMethodLogsEnabled(boolean enabled);
+    
+    /**
+     * Enables or disables event logs checks at runtime.
+     * <p><b>CAUTION:</b> This function is experimental and may have unexpected behavior.</p>
+     * @param enabled
+     */
+    public static native void setEventLogsEnabled(boolean enabled);
 }

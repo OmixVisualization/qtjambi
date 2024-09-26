@@ -2700,7 +2700,8 @@ try{
                 target: CodeClass.Java
                 position: Position.End
                 Text{content: "// setModel() creates a new selection model for the object\n"+
-                              "QtJambi_LibraryUtilities.internal.setReferenceCount(this, io.qt.widgets.QAbstractItemView.class, \"__rcItemSelectionModel\", false, false, null);"}
+                              "io.qt.core.QItemSelectionModel selectionModel = selectionModel();\n"+
+                              "QtJambi_LibraryUtilities.internal.setReferenceCount(this, io.qt.widgets.QAbstractItemView.class, \"__rcItemSelectionModel\", false, false, QtJambi_LibraryUtilities.internal.needsReferenceCounting(selectionModel) ? selectionModel : null);"}
             }
         }
         ModifyFunction{
@@ -5598,7 +5599,6 @@ try{
                 }
                 ReferenceCount{
                     variableName: "__rcLayoutedObjects"
-                    condition: "%1.parent()==null"
                     action: ReferenceCount.Add
                 }
             }
@@ -5719,7 +5719,6 @@ try{
                 }
                 ReferenceCount{
                     variableName: "__rcLayoutedObjects"
-                    condition: "%1.parent()==null"
                     action: ReferenceCount.Add
                 }
             }
@@ -5921,7 +5920,6 @@ try{
                 ReferenceCount{
                     variableName: "__rcLayoutedObjects"
                     declareVariable: "QLayout"
-                    condition: "%1.parent()==null"
                     action: ReferenceCount.Add
                 }
             }
@@ -5937,7 +5935,6 @@ try{
                 ReferenceCount{
                     variableName: "__rcLayoutedObjects"
                     declareVariable: "QLayout"
-                    condition: "%2.parent()==null"
                     action: ReferenceCount.Add
                 }
             }
@@ -6142,7 +6139,6 @@ try{
                 ReferenceCount{
                     variableName: "__rcLayoutedObjects"
                     declareVariable: "QLayout"
-                    condition: "%1.parent()==null"
                     action: ReferenceCount.Add
                 }
             }
@@ -6170,7 +6166,6 @@ try{
                 ReferenceCount{
                     variableName: "__rcLayoutedObjects"
                     declareVariable: "QLayout"
-                    condition: "%2.parent()==null"
                     action: ReferenceCount.Add
                 }
             }
@@ -6264,7 +6259,6 @@ try{
                 ReferenceCount{
                     variableName: "__rcLayoutedObjects"
                     declareVariable: "QLayout"
-                    condition: "%1.parent()==null"
                     action: ReferenceCount.Add
                 }
             }
@@ -6287,7 +6281,6 @@ try{
                 ReferenceCount{
                     variableName: "__rcLayoutedObjects"
                     declareVariable: "QLayout"
-                    condition: "%1.parent()==null"
                     action: ReferenceCount.Add
                 }
             }
@@ -6313,7 +6306,6 @@ try{
                 ReferenceCount{
                     variableName: "__rcLayoutedObjects"
                     declareVariable: "QLayout"
-                    condition: "%1.parent()==null"
                     action: ReferenceCount.Add
                 }
             }
@@ -6662,7 +6654,6 @@ try{
                 ReferenceCount{
                     variableName: "__rcLayoutedObjects"
                     declareVariable: "QLayout"
-                    condition: "%1.parent()==null"
                     action: ReferenceCount.Add
                 }
             }
@@ -6674,7 +6665,6 @@ try{
                 ReferenceCount{
                     variableName: "__rcLayoutedObjects"
                     declareVariable: "QLayout"
-                    condition: "%2.parent()==null"
                     action: ReferenceCount.Add
                 }
             }
@@ -6744,7 +6734,6 @@ try{
                 ReferenceCount{
                     variableName: "__rcLayoutedObjects"
                     declareVariable: "QLayout"
-                    condition: "%1.parent()==null"
                     action: ReferenceCount.Add
                 }
             }
@@ -6776,7 +6765,6 @@ try{
                 ReferenceCount{
                     variableName: "__rcLayoutedObjects"
                     declareVariable: "QLayout"
-                    condition: "%1.parent()==null"
                     action: ReferenceCount.Add
                 }
             }
@@ -6840,7 +6828,6 @@ try{
                 ReferenceCount{
                     variableName: "__rcLayoutedObjects"
                     declareVariable: "QLayout"
-                    condition: "%arg.parent()==null"
                     action: ReferenceCount.Add
                 }
             }
@@ -6887,7 +6874,6 @@ try{
                 ReferenceCount{
                     variableName: "__rcLayoutedObjects"
                     declareVariable: "QLayout"
-                    condition: "%arg.parent()==null"
                     action: ReferenceCount.Add
                 }
             }
@@ -6927,7 +6913,6 @@ try{
                 ReferenceCount{
                     variableName: "__rcLayoutedObjects"
                     declareVariable: "QLayout"
-                    condition: "%arg.parent()==null"
                     action: ReferenceCount.Add
                 }
             }
@@ -6939,7 +6924,6 @@ try{
                 ReferenceCount{
                     variableName: "__rcLayoutedObjects"
                     declareVariable: "QLayout"
-                    condition: "%arg.parent()==null"
                     action: ReferenceCount.Add
                 }
             }
@@ -6964,7 +6948,6 @@ try{
                 ReferenceCount{
                     variableName: "__rcLayoutedObjects"
                     declareVariable: "QLayout"
-                    condition: "%arg.parent()==null"
                     action: ReferenceCount.Add
                 }
             }
@@ -7002,7 +6985,6 @@ try{
                 ReferenceCount{
                     variableName: "__rcLayoutedObjects"
                     declareVariable: "QLayout"
-                    condition: "%arg.parent()==null"
                     action: ReferenceCount.Add
                 }
             }
@@ -7064,7 +7046,6 @@ try{
                 ReferenceCount{
                     variableName: "__rcLayoutedObjects"
                     declareVariable: "QLayout"
-                    condition: "%arg.parent()==null"
                     action: ReferenceCount.Add
                 }
             }
@@ -7976,8 +7957,7 @@ try{
                 index: 1
                 threadAffinity: true
                 ReferenceCount{
-                    variableName: "__rcFocusItem"
-                    action: ReferenceCount.Set
+                    action: ReferenceCount.Ignore
                 }
             }
         }
@@ -8044,17 +8024,6 @@ try{
                 index: 1
                 invalidateAfterUse: true
             }
-        }
-        InjectCode{
-            target: CodeClass.Native
-            position: Position.Beginning
-            Text{content: String.raw`
-namespace QHashPrivate {
-template <>
-constexpr inline bool HasQHashSingleArgOverload<QMap<QDate,QTextCharFormat>> = false;
-}`
-            }
-            since: 6.8
         }
     }
     
@@ -9131,10 +9100,28 @@ constexpr inline bool HasQHashSingleArgOverload<QMap<QDate,QTextCharFormat>> = f
         ModifyFunction{
             signature: "setTabOrder(QWidget *, QWidget *)"
             threadAffinity: Affinity.UI
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    action: ReferenceCount.Ignore
+                }
+            }
+            ModifyArgument{
+                index: 2
+                ReferenceCount{
+                    action: ReferenceCount.Ignore
+                }
+            }
         }
         ModifyFunction{
-            signature: "setFocusProxy(QWidget *)"
+            signature: "setFocusProxy(QWidget*)"
             threadAffinity: Affinity.UI
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    action: ReferenceCount.Ignore
+                }
+            }
         }
         ModifyFunction{
             signature: "setContextMenuPolicy(Qt::ContextMenuPolicy)"
@@ -9285,13 +9272,14 @@ constexpr inline bool HasQHashSingleArgOverload<QMap<QDate,QTextCharFormat>> = f
             threadAffinity: Affinity.UI
         }
         ModifyFunction{
-            signature: "setStyle(QStyle *)"
+            signature: "setStyle(QStyle*)"
             threadAffinity: Affinity.UI
             ModifyArgument{
                 index: 1
                 threadAffinity: true
                 ReferenceCount{
-                    action: ReferenceCount.Ignore
+                    variableName: "__rcStyle"
+                    action: ReferenceCount.Set
                 }
             }
         }
@@ -9944,17 +9932,6 @@ constexpr inline bool HasQHashSingleArgOverload<QMap<QDate,QTextCharFormat>> = f
             }
         }
         ModifyFunction{
-            signature: "setFocusProxy(QWidget*)"
-            threadAffinity: Affinity.UI
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcFocusProxy"
-                    action: ReferenceCount.Set
-                }
-            }
-        }
-        ModifyFunction{
             signature: "setScreen(QScreen*)"
             threadAffinity: Affinity.UI
             ModifyArgument{
@@ -9994,33 +9971,6 @@ constexpr inline bool HasQHashSingleArgOverload<QMap<QDate,QTextCharFormat>> = f
             threadAffinity: Affinity.UI
             ModifyArgument{
                 index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setStyle(QStyle*)"
-            threadAffinity: Affinity.UI
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcStyle"
-                    action: ReferenceCount.Set
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setTabOrder(QWidget*,QWidget*)"
-            threadAffinity: Affinity.UI
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-            ModifyArgument{
-                index: 2
                 ReferenceCount{
                     action: ReferenceCount.Ignore
                 }
@@ -12044,8 +11994,13 @@ constexpr inline bool HasQHashSingleArgOverload<QMap<QDate,QTextCharFormat>> = f
             InjectCode{
                 target: CodeClass.Java
                 position: Position.End
-                Text{content: "if(lineEdit()!=null)\n" +
-                              "    QtJambi_LibraryUtilities.internal.setReferenceCount(lineEdit(), QLineEdit.class, \"__rcCompleter\", false, false, c);"}
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "QLineEdit lineEdit = lineEdit();\n" +
+                              "if(lineEdit!=null)\n" +
+                              "    QtJambi_LibraryUtilities.internal.setReferenceCount(lineEdit, QLineEdit.class, \"__rcCompleter\", false, false, QtJambi_LibraryUtilities.internal.needsReferenceCounting(%1) ? %1 : null);"}
             }
         }
         ModifyFunction{
@@ -12054,10 +12009,18 @@ constexpr inline bool HasQHashSingleArgOverload<QMap<QDate,QTextCharFormat>> = f
             ModifyArgument{
                 index: 1
                 threadAffinity: true
-                ReferenceCount{
-                    variableName: "__rcValidator"
-                    action: ReferenceCount.Set
+                ReferenceCount{action: ReferenceCount.Ignore}
+            }
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.End
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
                 }
+                Text{content: "QLineEdit lineEdit = lineEdit();\n" +
+                              "if(lineEdit!=null)\n" +
+                              "    QtJambi_LibraryUtilities.internal.setReferenceCount(lineEdit, QLineEdit.class, \"__rcValidator\", false, false, QtJambi_LibraryUtilities.internal.needsReferenceCounting(%1) ? %1 : null);"}
             }
         }
         ModifyFunction{
@@ -13366,6 +13329,20 @@ constexpr inline bool HasQHashSingleArgOverload<QMap<QDate,QTextCharFormat>> = f
         ModifyFunction{
             signature: "setTabOrder(QGraphicsWidget *, QGraphicsWidget *)"
             threadAffinity: true
+            ModifyArgument{
+                index: 1
+                threadAffinity: true
+                ReferenceCount{
+                    action: ReferenceCount.Ignore
+                }
+            }
+            ModifyArgument{
+                index: 2
+                threadAffinity: true
+                ReferenceCount{
+                    action: ReferenceCount.Ignore
+                }
+            }
         }
         ModifyFunction{
             signature: "grabShortcut(QKeySequence, Qt::ShortcutContext)"
@@ -13386,17 +13363,6 @@ constexpr inline bool HasQHashSingleArgOverload<QMap<QDate,QTextCharFormat>> = f
         ModifyFunction{
             signature: "setFocusPolicy(Qt::FocusPolicy)"
             threadAffinity: true
-        }
-        ModifyFunction{
-            signature: "setStyle(QStyle*)"
-            threadAffinity: true
-            ModifyArgument{
-                index: 1
-                threadAffinity: true
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
         }
         ModifyFunction{
             signature: "setMinimumSize(QSizeF)"
@@ -13737,24 +13703,6 @@ constexpr inline bool HasQHashSingleArgOverload<QMap<QDate,QTextCharFormat>> = f
             }
         }
         ModifyFunction{
-            signature: "setTabOrder(QGraphicsWidget*,QGraphicsWidget*)"
-            threadAffinity: true
-            ModifyArgument{
-                index: 1
-                threadAffinity: true
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-            ModifyArgument{
-                index: 2
-                threadAffinity: true
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-        }
-        ModifyFunction{
             signature: "setLayout(QGraphicsLayout*)"
             threadAffinity: true
             ModifyArgument{
@@ -13923,18 +13871,6 @@ constexpr inline bool HasQHashSingleArgOverload<QMap<QDate,QTextCharFormat>> = f
                 name: ":/io/qtjambi/generator/typesystem/QtJambiWidgets.java"
                 quoteAfterLine: "class QGraphicsWidget___"
                 quoteBeforeLine: "}// class"
-            }
-        }
-        ModifyFunction{
-            signature: "setLayout(QGraphicsLayout*)"
-            threadAffinity: true
-            ModifyArgument{
-                index: 1
-                threadAffinity: true
-                DefineOwnership{
-                    codeClass: CodeClass.Java
-                    ownership: Ownership.Cpp
-                }
             }
         }
         ModifyFunction{

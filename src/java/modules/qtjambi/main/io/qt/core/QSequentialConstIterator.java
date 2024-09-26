@@ -30,7 +30,6 @@
 package io.qt.core;
 
 import java.util.Iterator;
-import java.util.Objects;
 
 import io.qt.NativeAccess;
 import io.qt.QtObject;
@@ -57,20 +56,20 @@ public class QSequentialConstIterator<T> extends AbstractIterator<T> implements 
     }
     
 	@NativeAccess
-    QSequentialConstIterator(QtObject owner) { 
-    	super(owner);
+	QSequentialConstIterator(QPrivateConstructor c, QtObject owner) { 
+    	super(c, owner);
 	}
-
+	
     /**
      * {@inheritDoc}
      */
 	@Override
     @QtUninvokable
     public boolean equals(Object other) {
-        if (other instanceof QSequentialConstIterator) {
-        	return super.equals(other);
-        }
-        return isValid() && Objects.equals(other, _value());
+		if (other instanceof QSequentialConstIterator) {
+			return super.equals(other);
+		}
+    	return false;
     }
 
     /**

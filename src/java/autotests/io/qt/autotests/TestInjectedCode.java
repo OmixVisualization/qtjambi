@@ -36,6 +36,7 @@ import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.ReadOnlyBufferException;
 import java.util.Iterator;
 
@@ -1764,16 +1765,74 @@ public class TestInjectedCode extends ApplicationInitializer {
 		}
     	assertEquals((byte)'X', rbuffer.get());
     	ByteBuffer wbuffer = General.internalAccess.mutableData(bv);
-//    	assertEquals(bv.size(), buffer.limit());
     	assertEquals(bv.capacity(), wbuffer.capacity());
     	wbuffer.put((byte)'A');
     	assertEquals("AXXXXXXX", bv.toString());
-    	bv.dispose();
+    	// on most JRE versions wbuffer is operating on shared data of bv.
+    	// thus, changing or deleting of bv does not affect ByteBuffer.
+    	Object att = null;
     	try {
-			wbuffer.put((byte)'M');
-			Assert.fail("BufferOverflowException expected to be thrown");
-		} catch (BufferOverflowException e) {
+			att = General.internalAccess.readField(wbuffer, General.internalAccess.getClass(wbuffer), "att", Object.class);
+		} catch (Throwable e1) {
 		}
+    	if(att instanceof QByteArray) {
+    		Assert.assertTrue(bv.isSharedWith((QByteArray)att));
+    		bv.append((byte)'A');
+    		assertEquals("AXXXXXXXA", bv.toString());
+    		assertEquals("AXXXXXXX", att.toString());
+	    	bv.dispose();
+			wbuffer.put((byte)'M');
+    		assertEquals("AMXXXXXX", att.toString());
+    	}else{
+	    	bv.dispose();
+	    	try {
+				wbuffer.put((byte)'M');
+				Assert.fail("BufferOverflowException expected to be thrown");
+			} catch (BufferOverflowException e) {
+			}
+    	}
+    }
+    
+    @Test
+    public void testQStringBuffers() {
+    	io.qt.core.QString strg = new io.qt.core.QString();
+    	strg.fill('X', 8);
+    	assertEquals("XXXXXXXX", strg.toString());
+    	assertEquals(8, strg.size());
+    	CharBuffer rbuffer = strg.data();
+    	try{
+    		rbuffer.put('A');
+    		Assert.fail("ReadOnlyBufferException expected to be thrown");
+    	} catch (ReadOnlyBufferException e) {
+		}
+    	assertEquals('X', rbuffer.get());
+    	CharBuffer wbuffer = General.internalAccess.mutableData(strg);
+    	assertEquals(strg.capacity(), wbuffer.capacity());
+    	wbuffer.put('A');
+    	assertEquals("AXXXXXXX", strg.toString());
+    	// on most JRE versions wbuffer is operating on shared data of strg.
+    	// thus, changing or deleting of strg does not affect Buffer.
+    	Object att = null;
+    	try {
+			att = General.internalAccess.readField(wbuffer, General.internalAccess.getClass(wbuffer), "att", Object.class);
+		} catch (Throwable e1) {
+		}
+    	if(att instanceof QString) {
+    		Assert.assertTrue(strg.isSharedWith((QString)att));
+    		strg.append('A');
+    		assertEquals("AXXXXXXXA", strg.toString());
+    		assertEquals("AXXXXXXX", att.toString());
+	    	strg.dispose();
+			wbuffer.put('M');
+    		assertEquals("AMXXXXXX", att.toString());
+    	}else{
+	    	strg.dispose();
+	    	try {
+				wbuffer.put('M');
+				Assert.fail("BufferOverflowException expected to be thrown");
+			} catch (BufferOverflowException e) {
+			}
+    	}
     }
 
     @Test

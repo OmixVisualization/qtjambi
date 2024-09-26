@@ -301,8 +301,10 @@ void clearSuperTypesAtShutdown(JNIEnv *env){
 
 SuperTypeInfos SuperTypeInfos::fromClass(JNIEnv *env, jclass clazz)
 {
-    if(clazz){
-        jint hashCode = Java::Runtime::Object::hashCode(env,clazz);
+    if(clazz && !Java::Runtime::Class::isPrimitive(env, clazz)){
+        //QString classNameStrg = qtjambi_cast<QString>(env, Java::Runtime::Class::getName(env, clazz));
+        //key = qHash(qPrintable(classNameStrg));
+        jint hashCode = Java::Runtime::Object::hashCode(env, Java::Runtime::Class::getName(env, clazz));
         {
             QReadLocker locker(gSuperTypeInfosLock());
             Q_UNUSED(locker)

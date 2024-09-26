@@ -206,9 +206,9 @@ typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,
 #define DEPRECATED_HEADER_QtDesigner_customwidget_h
 #include <QtUiPlugin/QtUiPlugin>
 #include <QtDesigner/QtDesigner>
+#endif
 #ifndef QTJAMBI_NO_UI4
 #include <QtDesigner/private/ui4_p.h>
-#endif
 #endif
 
 #ifndef QTJAMBI_NO_QML
@@ -286,13 +286,23 @@ typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,
 #include <QtJambiQuick3D/hashes.h>
 #endif
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 6, 0)
 #ifndef QTJAMBI_NO_DATA_VISUALIZATION
 #include <QtDataVisualization/QtDataVisualization>
 #include <QtJambiDataVisualization/hashes.h>
 #endif
-
 #ifndef QTJAMBI_NO_CHARTS
 #include <QtCharts/QtCharts>
+#endif
+#else
+#ifndef QTJAMBI_NO_GRAPHS
+#include <QtGraphs/QtGraphs>
+#include <QtJambiGraphs/hashes.h>
+#endif
+
+#ifndef QTJAMBI_NO_GRAPHS_WIDGETS
+#include <QtGraphsWidgets/QtGraphsWidgets>
+#endif
 #endif
 
 #ifndef QTJAMBI_NO_LOTTIE
@@ -573,7 +583,7 @@ typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,
 #include <QtSpatialAudio/QtSpatialAudio>
 #endif
 
-#ifndef QTJAMBI_NO_INSIDETRACKER
+#ifndef QTJAMBI_NO_INSIGHTETRACKER
 #include <QtInsightTracker/QtInsightTracker>
 #endif
 

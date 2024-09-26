@@ -641,6 +641,56 @@ public class TestContainers extends ApplicationInitializer {
     }
     
     @Test
+    public void test_create_QList_QPair() {
+    	QMetaType pairType = QMetaType.fromType(QPair.class, QMetaType.fromType(int.class), QMetaType.fromType(int.class));
+    	QList<QPair<Integer,Integer>> pointList = new QList<>(pairType);
+    	pointList.reserve(20);
+    	pointList.append(new QPair<>(1,2));
+    	pointList.append(new QPair<>(3,4));
+    	pointList.append(Arrays.asList(new QPair<>(5,6)));
+    	pointList.prepend(new QPair<>(0,0));
+    	assertEquals(new QPair<>(5,6), pointList.at(3));
+    	assertTrue(pointList.contains(new QPair<>(3,4)));
+    	assertEquals(4, pointList.size());
+    	pointList.append(new QPair<>(1,2));
+    	assertEquals(2, pointList.count(new QPair<>(1,2)));
+    	assertEquals(1, pointList.indexOf(new QPair<>(1,2)));
+    	assertEquals(4, pointList.lastIndexOf(new QPair<>(1,2)));
+    	assertTrue(pointList.endsWith(new QPair<>(1,2)));
+    	assertFalse(pointList.startsWith(new QPair<>(1,2)));
+    	pointList.swapItemsAt(0, 1);
+    	assertTrue(pointList.startsWith(new QPair<>(1,2)));
+    	assertFalse(pointList.equals(new QList<>(pairType)));
+    	assertEquals(new QPair<>(100,200), pointList.value(100, new QPair<>(100,200)));
+    	pointList.removeAt(1);
+    	assertEquals(new QPair<>(5,6), pointList.takeAt(2));
+    	pointList.append(new QPair<>(3,4));
+    	assertFalse(pointList.removeOne(new QPair<>(5,6)));
+    	assertEquals(2, pointList.removeAll(new QPair<>(3,4)));
+    	pointList.replace(0, new QPair<>(10,20));
+    	assertEquals(1, pointList.count(new QPair<>(1,2)));
+    	assertEquals(1, pointList.count(new QPair<>(10,20)));
+    	pointList.prepend(new QPair<>(0,0));
+    	pointList.move(0, 2);
+    	assertTrue(pointList.endsWith(new QPair<>(0,0)));
+    	pointList.insert(1, new QPair<>(30,30));
+    	QList<QPair<Integer,Integer>> midList = pointList.mid(1);
+    	assertEquals(3, midList.size());
+    	assertTrue(midList.startsWith(new QPair<>(30,30)));
+    	int counter = 0;
+    	for(@SuppressWarnings("unused") QPair<Integer,Integer> p : midList) {
+    		++counter;
+    	}
+    	assertEquals(3, counter);
+    	midList.clear();
+    	assertEquals(0, midList.size());
+    	pointList = new QList<>(pairType);
+    	pointList.add(0, new QPair<>(5,6));
+    	assertEquals(new QPair<>(5,6), pointList.at(0));
+    	assertEquals(1, pointList.size());
+    }
+    
+    @Test
     public void test_create_QStack_QPoint() {
     	QStack<QPoint> pointList = new QStack<>(QPoint.class);
     	pointList.reserve(20);
@@ -1151,6 +1201,14 @@ public class TestContainers extends ApplicationInitializer {
 		}
 		container.append("ABC");
     }
+    
+    @Test
+    public void testVariantListOverwrite() {
+		ContainerTest.toQVariantList(new ArrayList<>());
+		QMetaType easingFunction = QMetaType.fromType(QEasingCurve.EasingFunction.class);
+		QMetaType listType = QMetaType.fromType(QList.class, easingFunction);
+		Assert.assertFalse("QVariantList".equals(""+listType.name()));
+	}
     
     public static void main(String args[]) {
         org.junit.runner.JUnitCore.main(TestContainers.class.getName());

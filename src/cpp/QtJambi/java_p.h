@@ -109,6 +109,19 @@ namespace Java{
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QGenericArgument,
                                          QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(value)
                                          QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(metaType))
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(AbstractSpan,
+                                         QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(commit))
+#if QT_VERSION > QT_VERSION_CHECK(6,7,0)
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QConstSpan,
+                                         QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                                         QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR2()
+                                         )
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QSpan,
+                                         QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                                         QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR2()
+                                         )
+#endif
+
 
         QTJAMBI_REPOSITORY_DECLARE_EMPTY_CLASS(QByteArray)
 
@@ -118,6 +131,9 @@ namespace Java{
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QtMessageHandler,
                                          QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(accept))
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QLogging,
+                                         QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(acceptInstalled)
+                                         QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(shutdown))
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QMetaEnum, QTJAMBI_REPOSITORY_DECLARE_STATIC_CLASS_METHOD(flagsType))
 
@@ -168,6 +184,9 @@ namespace Java{
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QVariant$Null,
                                          QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(metaTypeID)
                                          )
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(AbstractContainer,
+                                         QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(__rcContainer)
+                                         )
     }
 
     namespace QtGui{
@@ -180,6 +199,7 @@ namespace Java{
         namespace Internal{
             QTJAMBI_REPOSITORY_DECLARE_CLASS(ByteBuffer,
                                             QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(order)
+                                            QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(allocate)
                                             QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(allocateDirect))
             QTJAMBI_REPOSITORY_DECLARE_CLASS(Buffer,
                                             QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(capacity)
@@ -359,12 +379,10 @@ namespace Java{
                                      QTJAMBI_REPOSITORY_DECLARE_STATIC_BOOLEAN_METHOD(deleteAssociation)
                                      QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(deleteAssociationByHashCode)
                                      QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(findAssociation)
-                                     QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(findInterfaceLink)
                                      QTJAMBI_REPOSITORY_DECLARE_STATIC_LONG_METHOD(nativeId)
                                      QTJAMBI_REPOSITORY_DECLARE_STATIC_LONG_METHOD(nativeIdInterface)
                                  )
-        QTJAMBI_REPOSITORY_DECLARE_CLASS(NativeUtility$Object,
-                                         QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(nativeLink))
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(NativeUtility$Object,)
         QTJAMBI_REPOSITORY_DECLARE_CLASS(MetaTypeUtility,
                                      QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(debugObject)
                                      QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(writeSerializableJavaObject)
@@ -428,7 +446,6 @@ namespace Java{
         QTJAMBI_REPOSITORY_DECLARE_CLASS(EnumUtility,
             QTJAMBI_REPOSITORY_DECLARE_STATIC_CLASS_METHOD(getEnumForQFlags)
         )
-
         QTJAMBI_REPOSITORY_DECLARE_CLASS(ReferenceUtility$RCList,
                       QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
 
@@ -437,6 +454,9 @@ namespace Java{
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(ReferenceUtility$RCMap,
                       QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
+
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(ReferenceUtility$RCMultiMap,
+                                         QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(SignalUtility$AbstractSignal,
                       QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(initializeSignal))
@@ -579,11 +599,6 @@ namespace Java{
                       QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(invalidate)
                       QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(isReadOnly)
                       QTJAMBI_REPOSITORY_DECLARE_LONG_METHOD(pointer))
-
-        QTJAMBI_REPOSITORY_DECLARE_CLASS(NativeUtility$NativeLink,
-                      QTJAMBI_REPOSITORY_DECLARE_LONG_FIELD(native__id)
-                      QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(detach)
-                      QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(reset))
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QtGadget,
                       QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(staticMetaObject)

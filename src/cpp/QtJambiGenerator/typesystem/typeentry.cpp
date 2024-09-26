@@ -52,7 +52,8 @@ FunctionalTypeEntry::FunctionalTypeEntry(const QString &nspace, const QString &n
         m_pp_condition(),
         m_using(),
         m_normalizedSignature(),
-        m_generic_class(false)
+        m_generic_class(false),
+        m_isFunctionPointer(false)
 {
     m_qualifier = nspace;
     m_java_name = name;

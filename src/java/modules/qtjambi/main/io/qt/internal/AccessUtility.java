@@ -35,6 +35,13 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.DoubleBuffer;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
+import java.nio.LongBuffer;
+import java.nio.ShortBuffer;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -171,7 +178,7 @@ class AccessUtility implements io.qt.InternalAccess{
 	public boolean isJavaOwnership(QtObject object) {
 		return NativeUtility.isJavaOwnership(object);
 	}
-
+	
 	@Override
 	public boolean isJavaOwnership(QtObjectInterface object) {
 		return NativeUtility.isJavaOwnership(object);
@@ -217,9 +224,63 @@ class AccessUtility implements io.qt.InternalAccess{
 		return NativeUtility.checkedNativeId(object);
 	}
 	
+	static class NativeIdInfo implements InternalAccess.NativeIdInfo{
+		NativeIdInfo(long nativeId, boolean needsReferenceCounting) {
+			this.nativeId = nativeId;
+			this.needsReferenceCounting = needsReferenceCounting;
+		}
+    	final long nativeId;
+    	final boolean needsReferenceCounting;
+		@Override
+		public long nativeId() {
+			return nativeId;
+		}
+		@Override
+		public boolean needsReferenceCounting() {
+			return needsReferenceCounting;
+		}
+    }
+	
+	@Override
+	public boolean needsReferenceCounting(io.qt.QtObject object) {
+		return ReferenceUtility.needsReferenceCounting(NativeUtility.checkedNativeId(object));
+	}
+    
+	@Override
+	public boolean needsReferenceCounting(io.qt.QtObjectInterface object) {
+		return ReferenceUtility.needsReferenceCounting(NativeUtility.checkedNativeId(object));
+	}
+	
+	@Override
+	public InternalAccess.NativeIdInfo checkedNativeIdInfo(QtObject object) {
+		long nativeId = NativeUtility.checkedNativeId(object);
+		return new NativeIdInfo(nativeId, ReferenceUtility.needsReferenceCounting(nativeId));
+	}
+	
+	@Override
+	public InternalAccess.NativeIdInfo checkedNativeIdInfo(QtObjectInterface object) {
+		long nativeId = NativeUtility.checkedNativeId(object);
+		return new NativeIdInfo(nativeId, ReferenceUtility.needsReferenceCounting(nativeId));
+	}
+	
+	@Override
+	public void truncateBuffer(io.qt.QtObject owner, java.nio.Buffer buffer){
+		NativeUtility.truncateBuffer(owner, buffer);
+	}
+	
+	@Override
+	public void truncateBuffer(io.qt.QtObjectInterface owner, java.nio.Buffer buffer){
+		NativeUtility.truncateBuffer(owner, buffer);
+	}
+	
 	@Override
 	public java.nio.ByteBuffer mutableData(io.qt.core.QByteArray byteArray){
 		return NativeUtility.mutableData(byteArray);
+	}
+	
+	@Override
+	public java.nio.CharBuffer mutableData(io.qt.core.QString string){
+		return NativeUtility.mutableData(string);
 	}
 
 	@Override
@@ -493,5 +554,40 @@ class AccessUtility implements io.qt.InternalAccess{
 	@Override
 	public void writeField(Object owner, Class<?> declaringClass, String fieldName, Object newValue) {
 		ReflectionUtility.writeField(owner, declaringClass, fieldName, newValue);
+	}
+
+	@Override
+	public <C extends QtObject & Iterable<Character>> CharBuffer mutableDataC(C list) {
+		return NativeUtility.mutableDataC(list);
+	}
+
+	@Override
+	public <C extends QtObject & Iterable<Byte>> ByteBuffer mutableDataB(C list) {
+		return NativeUtility.mutableDataB(list);
+	}
+
+	@Override
+	public <C extends QtObject & Iterable<Short>> ShortBuffer mutableDataS(C list) {
+		return NativeUtility.mutableDataS(list);
+	}
+
+	@Override
+	public <C extends QtObject & Iterable<Integer>> IntBuffer mutableDataI(C list) {
+		return NativeUtility.mutableDataI(list);
+	}
+
+	@Override
+	public <C extends QtObject & Iterable<Long>> LongBuffer mutableDataJ(C list) {
+		return NativeUtility.mutableDataJ(list);
+	}
+
+	@Override
+	public <C extends QtObject & Iterable<Float>> FloatBuffer mutableDataF(C list) {
+		return NativeUtility.mutableDataF(list);
+	}
+
+	@Override
+	public <C extends QtObject & Iterable<Double>> DoubleBuffer mutableDataD(C list) {
+		return NativeUtility.mutableDataD(list);
 	}
 }

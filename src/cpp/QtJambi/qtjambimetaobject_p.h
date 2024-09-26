@@ -126,11 +126,8 @@ public:
     jfieldID getQPropertyField(int index) const;
     void registerQPropertyField(int index, jfieldID field);
 #endif
-    jobject signalTypes(int index) const;
     bool hasSignals() const;
     const QSharedPointer<const QtJambiMetaObject>& thisPointer() const;
-    static jweak javaInstance(const QtJambiMetaObject* metaObject);
-    static void setJavaInstance(const QtJambiMetaObject* metaObject, jweak weak);
     static jclass javaClass(JNIEnv * env, const QMetaObject* metaObject, bool exactOrNull = false);
     static bool isInstance(const QMetaObject* metaObject);
     static const QtJambiMetaObject* cast(const QMetaObject* metaObject);

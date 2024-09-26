@@ -67,13 +67,6 @@ QT_WARNING_DISABLE_DEPRECATED
 
 #include "qtjambi_cast.h"
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
-namespace QHashPrivate {
-template <>
-constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QPair<size_t,size_t>>> = false;
-}
-#endif
-
 extern "C" Q_DECL_EXPORT jobject JNICALL
 QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_DeployerUtility_getRegisteredTypeSizesAndAlignments__)
 (JNIEnv *env, jclass)

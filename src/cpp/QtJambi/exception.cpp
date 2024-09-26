@@ -919,18 +919,21 @@ void tryCatch(TypedTrial&& fct, TypedCatcher&& handler){
 
 void QtJambiPrivate::raiseJavaException(JNIEnv* env, jthrowable newInstance)
 {
-    throw JavaException(env, newInstance);
+    if(newInstance)
+        throw JavaException(env, newInstance);
 }
 
 #ifdef QTJAMBI_STACKTRACE
 void QtJambiPrivate::raiseJavaException(JNIEnv* env, jthrowable newInstance, const char *methodName, const char *fileName, int lineNumber)
 {
-    jstring jmethodName = methodName ? env->NewStringUTF(methodName) : nullptr;
-    jstring jfileName = fileName ? env->NewStringUTF(fileName) : nullptr;
-    try{
-        Java::QtJambi::ExceptionUtility::extendStackTrace(env, newInstance, jmethodName, jfileName, lineNumber);
-    }catch(const JavaException& exn){ exn.report(env); }
-    throw JavaException(env, newInstance);
+    if(newInstance){
+        jstring jmethodName = methodName ? env->NewStringUTF(methodName) : nullptr;
+        jstring jfileName = fileName ? env->NewStringUTF(fileName) : nullptr;
+        try{
+            Java::QtJambi::ExceptionUtility::extendStackTrace(env, newInstance, jmethodName, jfileName, lineNumber);
+        }catch(const JavaException& exn){ exn.report(env); }
+        throw JavaException(env, newInstance);
+    }
 }
 #endif
 
@@ -946,7 +949,7 @@ void QtJambiPrivate::javaInstanceCheck(JNIEnv* env, jobject object, jclass class
         else
             JavaException::raiseNullPointerException(env, QLatin1String("Cannot access member field %1.%2 on null.").arg(QtJambiAPI::getClassName(env, class_ref), name) QTJAMBI_STACKTRACEINFO );
     }
-    if(!env->IsInstanceOf(object, class_ref)){
+    if(class_ref && !env->IsInstanceOf(object, class_ref)){
         if(isMemberFunction)
             JavaException::raiseIllegalArgumentException(env, QLatin1String("Cannot invoke member function %1.%2(...) on object of type %3.").arg(QtJambiAPI::getClassName(env, class_ref), name, QtJambiAPI::getObjectClassName(env, object)) QTJAMBI_STACKTRACEINFO );
         else

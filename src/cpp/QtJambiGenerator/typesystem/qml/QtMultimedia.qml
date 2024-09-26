@@ -203,30 +203,6 @@ TypeSystem{
         EnumType{
             name: "Rotation"
         }
-        EnumType{
-            name: "MapMode"
-            since: 6.8
-        }
-        ModifyFunction{
-            signature: "operator & (QtVideo::MapMode, QtVideo::MapMode)"
-            remove: RemoveFlag.All
-            since: 6.8
-        }
-        ModifyFunction{
-            signature: "operator | (QtVideo::MapMode, QtVideo::MapMode)"
-            remove: RemoveFlag.All
-            since: 6.8
-        }
-        ModifyFunction{
-            signature: "operator &= (QtVideo::MapMode&, QtVideo::MapMode)"
-            remove: RemoveFlag.All
-            since: 6.8
-        }
-        ModifyFunction{
-            signature: "operator |= (QtVideo::MapMode&, QtVideo::MapMode)"
-            remove: RemoveFlag.All
-            since: 6.8
-        }
         since: 6.7
     }
     
@@ -490,7 +466,7 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jobject buffer = DataJBuffer(%env, %in, %2).take();\n"+
+                    Text{content: "jobject buffer = LocalDataJBuffer(%env, %in, %2).take();\n"+
                                   "QtJambiAPI::registerDependency(%env, buffer, __this_nativeId);\n"+
                                   "jobject %out = Java::QtMultimedia::QAbstractVideoBuffer$MapResult::newInstance(%env, buffer, jint(%3), false);"}
                 }
@@ -570,7 +546,7 @@ if(%in>0){
         %in = 4;
     %out = Java::QtMultimedia::QAbstractVideoBuffer$MapResult::newArray(%env, jsize(%in));
     for(int i=0; i<%in; ++i){
-        jobject buffer = DataJBuffer(%env, __qt_%4[i], %2).take();
+        jobject buffer = LocalDataJBuffer(%env, __qt_%4[i], %2).take();
         jobject element = Java::QtMultimedia::QAbstractVideoBuffer$MapResult::newInstance(%env, buffer, jint(__qt_%3[i]), false);
         %env->SetObjectArrayElement(%out, jsize(i), element);
         JavaException::check(%env QTJAMBI_STACKTRACEINFO );
@@ -653,7 +629,7 @@ if(%in>0){
         %in = 4;
     %out = Java::QtMultimedia::QAbstractVideoBuffer$MapResult::newArray(%env, jsize(%in));
     for(int i=0; i<%in; ++i){
-        jobject buffer = DataJBuffer(%env, __qt_%4[i], %2).take();
+        jobject buffer = LocalDataJBuffer(%env, __qt_%4[i], %2).take();
         jobject element = Java::QtMultimedia::QAbstractVideoBuffer$MapResult::newInstance(%env, buffer, jint(__qt_%3[i]), false);
         %env->SetObjectArrayElement(%out, jsize(i), element);
         JavaException::check(%env QTJAMBI_STACKTRACEINFO );
@@ -1001,7 +977,7 @@ if(%in){
                 index: 1
                 ReferenceCount{
                     variableName: "__rcSource"
-                    condition: "__qt_return_value"
+                    condition: "%return"
                     action: ReferenceCount.Set
                 }
             }
@@ -1012,7 +988,7 @@ if(%in){
                 index: 1
                 ReferenceCount{
                     variableName: "__rcSource"
-                    condition: "__qt_return_value"
+                    condition: "%return"
                     action: ReferenceCount.Set
                 }
             }
@@ -2153,7 +2129,7 @@ if(%in){
                 index: 1
                 ReferenceCount{
                     variableName: "__rcSource"
-                    condition: "__qt_return_value"
+                    condition: "%return"
                     action: ReferenceCount.Set
                 }
             }
@@ -2164,7 +2140,7 @@ if(%in){
                 index: 1
                 ReferenceCount{
                     variableName: "__rcSource"
-                    condition: "__qt_return_value"
+                    condition: "%return"
                     action: ReferenceCount.Set
                 }
             }
@@ -2777,6 +2753,7 @@ if(%in){
         EnumType{
             name: "Key"
         }
+        Rejection{functionName: "asKeyValueRange"}
         since: [6, 2]
     }
     
@@ -2849,10 +2826,6 @@ if(%in){
     }
     SuppressedWarning{
         text: "WARNING(MetaJavaBuilder) :: private virtual function '*' in 'QWaveDecoder'"
-        since: [6, 2]
-    }
-    SuppressedWarning{
-        text: "WARNING(MetaJavaBuilder) :: Class 'QMediaMetaData' has equals operators but no qHash() function. Hashcode of objects will consistently be 0."
         since: [6, 2]
     }
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QCamera::platformCamera', unmatched return type 'QPlatformCamera*'"}

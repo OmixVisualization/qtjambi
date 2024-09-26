@@ -89,7 +89,7 @@ public class TestContainerAccessQt6 extends ApplicationInitializer {
     	Assert.assertEquals(QMultiHash.of((short)1, 1.1, (short)2, 2.2, (short)3, 3.3), changedContainer);
     	QPair<Object,Object> result = ContainerTest.associativeFindAndReplace(container, (short)2, 22.2);
     	Assert.assertEquals(Double.valueOf(2.2), result.second);
-//    	Assert.assertEquals(QMultiHash.of((short)1, 1.1, (short)2, 22.2, (short)3, 3.3, (short)1, 4.4), result.first);
+    	Assert.assertEquals(QMultiHash.of((short)1, 1.1, (short)2, 22.2, (short)3, 3.3, (short)1, 4.4), result.first);
     	changedContainer = (QMultiHash<Short,Double>)ContainerTest.associativeInsertKey(container, (short)1);
     	Assert.assertEquals(QMultiHash.of((short)1, 1.1, (short)2, 2.2, (short)3, 3.3, (short)1, 4.4), changedContainer);
     	changedContainer = (QMultiHash<Short,Double>)ContainerTest.associativeInsertKey(container, (short)128);

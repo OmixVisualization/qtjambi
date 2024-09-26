@@ -78,7 +78,7 @@ template<class T>
 QFutureInterface_shell<T>::QFutureInterface_shell(QFutureInterfaceBase::State initialState0)
     : QFutureInterface<T>(initialState0)
 {
-    QTJAMBI_JAVA_METHOD_CALL("QFutureInterface_shell::QFutureInterface_shell(QFutureInterfaceBase::State initialState0)", QFutureInterface_shell::__shell())
+    QTJAMBI_IN_CONSTRUCTOR_CALL("QFutureInterface_shell::QFutureInterface_shell(QFutureInterfaceBase::State initialState0)", this)
     QFutureInterface_shell::__shell()->constructed(typeid(QFutureInterface<T>));
 }
 
@@ -86,7 +86,7 @@ template<class T>
 QFutureInterface_shell<T>::QFutureInterface_shell(const QFutureInterface<T>& other0)
     : QFutureInterface<T>(other0)
 {
-    QTJAMBI_JAVA_METHOD_CALL("QFutureInterface_shell::QFutureInterface_shell(const QFutureInterface<QVariant>& other0)", QFutureInterface_shell::__shell())
+    QTJAMBI_IN_CONSTRUCTOR_CALL("QFutureInterface_shell::QFutureInterface_shell(const QFutureInterface<QVariant>& other0)", this)
     QFutureInterface_shell::__shell()->constructed(typeid(QFutureInterface<T>));
 }
 
@@ -94,7 +94,7 @@ QFutureInterface_shell<T>::QFutureInterface_shell(const QFutureInterface<T>& oth
 template<class T>
 QFutureInterface_shell<T>::~QFutureInterface_shell()
 {
-    QTJAMBI_JAVA_METHOD_CALL("QFutureInterface_shell::~QFutureInterface_shell()", QFutureInterface_shell::__shell())
+    QTJAMBI_IN_DESTRUCTOR_CALL("QFutureInterface_shell::~QFutureInterface_shell()", this)
     QFutureInterface_shell::__shell()->destructed(typeid(QFutureInterface<T>));
 }
 
@@ -547,14 +547,14 @@ QtJambiShell* QFutureWatcher_shell::__shell() const { return *reinterpret_cast<Q
 QFutureWatcher_shell::QFutureWatcher_shell(QObject* parent)
     : QFutureWatcher<QVariant>(parent), m_isVoid(false)
 {
-    QTJAMBI_JAVA_METHOD_CALL("QFutureWatcher_shell::QFutureWatcher_shell(QFutureInterfaceBase::State initialState0)", QFutureWatcher_shell::__shell())
+    QTJAMBI_IN_CONSTRUCTOR_CALL("QFutureWatcher_shell::QFutureWatcher_shell(QFutureInterfaceBase::State initialState0)", this)
     QFutureWatcher_shell::__shell()->constructed(typeid(QFutureWatcher<QVariant>));
 }
 
 // emitting (writeShellDestructor)
 QFutureWatcher_shell::~QFutureWatcher_shell()
 {
-    QTJAMBI_JAVA_METHOD_CALL("QFutureWatcher_shell::~QFutureWatcher_shell()", QFutureWatcher_shell::__shell())
+    QTJAMBI_IN_DESTRUCTOR_CALL("QFutureWatcher_shell::~QFutureWatcher_shell()", this)
     QFutureWatcher_shell::__shell()->destructed(typeid(QFutureWatcher<QVariant>));
 }
 

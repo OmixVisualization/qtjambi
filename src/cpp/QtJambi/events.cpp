@@ -40,11 +40,11 @@
 #include "utils_p.h"
 
 #ifdef QTJAMBI_NO_METHOD_TRACE
-#define QTJAMBI_DEBUG_METHOD_PRINT_SUPPL(...)
+#define QTJAMBI_DEBUG_EVENT_PRINT(...)
 #define QTJAMBI_DEBUG_METHOD_PRINT_PLAIN(...)
 #else
-#define QTJAMBI_DEBUG_METHOD_PRINT_SUPPL(suppl)\
-DebugAPI::MethodPrintFromSupplier __debug_method_print(DebugAPI::MethodPrint::Internal, __FILE__, __LINE__, __FUNCTION__, suppl);
+#define QTJAMBI_DEBUG_EVENT_PRINT(receiver, event)\
+DebugAPI::EventPrint __debug_method_print(__FILE__, __LINE__, __FUNCTION__, receiver, event);
 #define QTJAMBI_DEBUG_METHOD_PRINT_PLAIN(msg)\
 DebugAPI::MethodPrint __debug_method_print(DebugAPI::MethodPrint::Internal, msg, __FILE__, __LINE__, __FUNCTION__);
 #endif
@@ -55,6 +55,8 @@ struct UIInitialCheck{
     typedef void (*ConstructorCheck)(JNIEnv *, const std::type_info&);
     typedef void (*UseCheck)(JNIEnv *, const std::type_info&);
     typedef void (*ArgumentCheck)(JNIEnv *, const char*, const std::type_info&);
+    typedef void (*JObjectThreadCheck)(JNIEnv *, jobject);
+    typedef void (*OwnerThreadCheck)(JNIEnv *, PtrOwnerFunction, const void *, jclass);
     typedef void (*QObjectThreadCheck)(JNIEnv *, const QObject*);
     typedef void (*QObjectArgumentThreadCheck)(JNIEnv *, const char*, const QObject*);
     typedef void (*ValueArgumentThreadCheck)(JNIEnv *, const char*, const std::type_info&, const QObject*);
@@ -73,6 +75,8 @@ struct UIInitialCheck{
     static PtrOwnerFunction getPixmapOwner;
     static GuiAPI::ThreadedPixmapsChecker threadedPixmapsChecker;
     static QObjectThreadCheck objectThreadCheck;
+    static JObjectThreadCheck jobjectThreadCheck;
+    static OwnerThreadCheck ownerThreadCheck;
     static QObjectArgumentThreadCheck objectArgumentThreadCheck;
     static ValueArgumentThreadCheck valueArgumentThreadCheck;
     static UIArgumentThreadCheck uiArgumentThreadCheck;
@@ -80,14 +84,17 @@ struct UIInitialCheck{
     static QObjectThreadCheck objectConstructorThreadCheck;
     static ValueThreadCheck valueConstructorThreadCheck;
     static GeneralThreadCheck generalConstructorThreadCheck;
+    static GeneralThreadCheck generalThreadCheck;
     static EventNotify eventNotify;
 
+    static void trivial(JNIEnv *, PtrOwnerFunction, const void *, jclass);
     static void trivial(JNIEnv *, const std::type_info&);
     static void trivial(JNIEnv *, const std::type_info&, const QObject*);
     static void trivial(JNIEnv *, const char*, const std::type_info&);
     static void trivial(JNIEnv *, const char*, const std::type_info&, const void*);
     static void trivial(JNIEnv *, const std::type_info&, const void*);
     static void trivial(JNIEnv *, const QObject*);
+    static void trivial(JNIEnv *, jobject);
     static void trivial(JNIEnv *, const char*, const QObject*);
     static void trivial(JNIEnv *env, const char*, const std::type_info&, const QObject*);
     static bool trivial(QObject *, QEvent *, bool*);
@@ -111,6 +118,8 @@ struct UIInitialCheck{
     static void enabledPixmapArgumentThreadCheck(JNIEnv *, const char*, const std::type_info&);
     static const QObject* initialGetPixmapOwner(const void * ptr);
     static void enabledQObjectThreadCheck(JNIEnv *env, const QObject* object);
+    static void enabledQObjectThreadCheck(JNIEnv *env, PtrOwnerFunction owner_function, const void *qt_object, jclass cls);
+    static void enabledQObjectThreadCheck(JNIEnv *env, jobject object);
     static void enabledQObjectConstructorThreadCheck(JNIEnv *env, const QObject*);
     static void enabledValueConstructorThreadCheck(JNIEnv *env, const std::type_info&, const QObject*);
     static void enabledGeneralConstructorThreadCheck(JNIEnv *env, const std::type_info&, const void*);
@@ -130,6 +139,8 @@ UIInitialCheck::UseCheck UIInitialCheck::pixmapUseCheck = &UIInitialCheck::trivi
 UIInitialCheck::UseCheck UIInitialCheck::uiThreadCheck = &UIInitialCheck::trivial;
 UIInitialCheck::ArgumentCheck UIInitialCheck::pixmapArgumentThreadCheck = &UIInitialCheck::trivial;
 UIInitialCheck::QObjectThreadCheck UIInitialCheck::objectThreadCheck = &UIInitialCheck::trivial;
+UIInitialCheck::JObjectThreadCheck UIInitialCheck::jobjectThreadCheck = &UIInitialCheck::trivial;
+UIInitialCheck::OwnerThreadCheck UIInitialCheck::ownerThreadCheck = &UIInitialCheck::trivial;
 UIInitialCheck::QObjectArgumentThreadCheck UIInitialCheck::objectArgumentThreadCheck = &UIInitialCheck::trivial;
 UIInitialCheck::ValueArgumentThreadCheck UIInitialCheck::valueArgumentThreadCheck = &UIInitialCheck::trivial;
 UIInitialCheck::UIArgumentThreadCheck UIInitialCheck::uiArgumentThreadCheck = &UIInitialCheck::trivial;
@@ -137,6 +148,7 @@ UIInitialCheck::GeneralArgumentThreadCheck UIInitialCheck::generalArgumentThread
 UIInitialCheck::QObjectThreadCheck UIInitialCheck::objectConstructorThreadCheck = &UIInitialCheck::trivial;
 UIInitialCheck::ValueThreadCheck UIInitialCheck::valueConstructorThreadCheck = &UIInitialCheck::trivial;
 UIInitialCheck::GeneralThreadCheck UIInitialCheck::generalConstructorThreadCheck = &UIInitialCheck::trivial;
+UIInitialCheck::GeneralThreadCheck UIInitialCheck::generalThreadCheck = &UIInitialCheck::trivial;
 
 PtrOwnerFunction UIInitialCheck::getPixmapOwner = &UIInitialCheck::initialGetPixmapOwner;
 GuiAPI::ThreadedPixmapsChecker UIInitialCheck::threadedPixmapsChecker = nullptr;
@@ -146,12 +158,14 @@ void GuiAPI::installThreadedPixmapsChecker(ThreadedPixmapsChecker threadedPixmap
     UIInitialCheck::threadedPixmapsChecker = threadedPixmapsChecker;
 }
 
+void UIInitialCheck::trivial(JNIEnv *, PtrOwnerFunction, const void *, jclass){}
 void UIInitialCheck::trivial(JNIEnv *, const std::type_info&){}
 void UIInitialCheck::trivial(JNIEnv *, const std::type_info&, const QObject*){}
 void UIInitialCheck::trivial(JNIEnv *, const char*, const std::type_info&){}
 void UIInitialCheck::trivial(JNIEnv *, const std::type_info&, const void *){}
 void UIInitialCheck::trivial(JNIEnv *, const QObject*){}
 const QObject* UIInitialCheck::trivial(const void *){return nullptr;}
+void UIInitialCheck::trivial(JNIEnv *, jobject){}
 void UIInitialCheck::trivial(JNIEnv *, const char*, const QObject*){}
 void UIInitialCheck::trivial(JNIEnv *, const char*, const std::type_info&, const QObject*){}
 void UIInitialCheck::trivial(JNIEnv *, const char*, const std::type_info&, const void*){}
@@ -188,10 +202,6 @@ public:
 };
 
 bool UIInitialCheck::enabledEventNotify(QObject *receiver, QEvent *event, bool* result){
-    QTJAMBI_DEBUG_METHOD_PRINT_SUPPL([=](){
-        const std::type_info* ti = &typeid(*receiver);
-        return QString::asprintf("UIInitialCheck::enabledEventNotify(QObject *, QEvent *, bool*) with event=%d, receiver=%p (%s)", event->type(), receiver, ti ? ti->name() : "<unknown type>").toUtf8();
-    });
     QObjectPrivate *d = QObjectPrivate::get(receiver);
     QThreadData *threadData = d->threadData;
     ScopedScopeLevelCounter scopeLevelCounter(threadData);
@@ -388,6 +398,29 @@ void UIInitialCheck::enabledQObjectThreadCheck(JNIEnv *env, const QObject* objec
     }
 }
 
+void UIInitialCheck::enabledQObjectThreadCheck(JNIEnv *env, jobject object){
+    enabledQObjectThreadCheck(env, QtJambiAPI::convertJavaObjectToQObject(env, object));
+}
+
+void UIInitialCheck::enabledQObjectThreadCheck(JNIEnv *env, PtrOwnerFunction owner_function, const void *qt_object, jclass cls){
+    if(owner_function){
+        if(const QObject* object = owner_function(qt_object)){
+            QThread* objectThread = object->thread();
+            QThread* currentThread = QThread::currentThread();
+            if (objectThread && objectThread != currentThread) {
+                if(QThread* this_thread = qobject_cast<QThread*>(const_cast<QObject*>(object))){
+                    objectThread = this_thread;
+                    if(objectThread == currentThread)
+                        return;
+                }
+                JavaException::raiseQThreadAffinityException(env, QStringLiteral("QObject used from outside its own thread when creating %1").arg(QtJambiAPI::getClassName(env, cls).replace('/', '.').replace('/', '$')) QTJAMBI_STACKTRACEINFO ,
+                                                             QtJambiAPI::convertQObjectToJavaObject(env, object),
+                                                             objectThread, currentThread);
+            }
+        }
+    }
+}
+
 void UIInitialCheck::enabledUIThreadCheck(JNIEnv *env, const std::type_info& typeId){
     QThread* objectThread = QCoreApplicationPrivate::theMainThread.loadRelaxed();
     QThread* currentThread = QThread::currentThread();
@@ -498,8 +531,28 @@ void UIInitialCheck::enabledGeneralConstructorThreadCheck(JNIEnv *env, const std
     }
 }
 
+void UIInitialCheck::enabledGeneralThreadCheck(JNIEnv *env, const std::type_info& pointerType, const void* qt_object){
+    if(qt_object){
+        if(PtrOwnerFunction ownerFunction = registeredOwnerFunction(pointerType)){
+            enabledQObjectThreadCheck(env, ownerFunction(qt_object));
+        }
+    }
+}
+
+void checkThreadOnQObject(JNIEnv *env, PtrOwnerFunction owner_function, const void *qt_object, jclass cls){
+    UIInitialCheck::ownerThreadCheck(env, owner_function, qt_object, cls);
+}
+
+void checkThreadOnQObject(JNIEnv *env, jobject object){
+    UIInitialCheck::jobjectThreadCheck(env, object);
+}
+
 void QtJambiAPI::checkThread(JNIEnv *env, const QObject* object){
     UIInitialCheck::objectThreadCheck(env, object);
+}
+
+void QtJambiAPI::checkThread(JNIEnv *env, const std::type_info& argumentType, const void* object){
+    UIInitialCheck::generalThreadCheck(env, argumentType, object);
 }
 
 void QtJambiAPI::checkThreadQPixmap(JNIEnv *env, const std::type_info& typeId){
@@ -611,6 +664,8 @@ void enableThreadAffinity(bool enabled){
         UIInitialCheck::uiThreadCheck = &UIInitialCheck::enabledUIThreadCheck;
         UIInitialCheck::pixmapArgumentThreadCheck = &UIInitialCheck::initialPixmapArgumentCheck;
         UIInitialCheck::objectThreadCheck = &UIInitialCheck::enabledQObjectThreadCheck;
+        UIInitialCheck::jobjectThreadCheck = &UIInitialCheck::enabledQObjectThreadCheck;
+        UIInitialCheck::ownerThreadCheck = &UIInitialCheck::enabledQObjectThreadCheck;
         UIInitialCheck::objectArgumentThreadCheck = &UIInitialCheck::enabledQObjectArgumentThreadCheck;
         UIInitialCheck::valueArgumentThreadCheck = &UIInitialCheck::enabledValueArgumentThreadCheck;
         UIInitialCheck::uiArgumentThreadCheck = &UIInitialCheck::enabledUIArgumentThreadCheck;
@@ -618,12 +673,15 @@ void enableThreadAffinity(bool enabled){
         UIInitialCheck::objectConstructorThreadCheck = &UIInitialCheck::enabledQObjectConstructorThreadCheck;
         UIInitialCheck::valueConstructorThreadCheck = &UIInitialCheck::enabledValueConstructorThreadCheck;
         UIInitialCheck::generalConstructorThreadCheck = &UIInitialCheck::enabledGeneralConstructorThreadCheck;
+        UIInitialCheck::generalThreadCheck = &UIInitialCheck::enabledGeneralThreadCheck;
     }else{
         UIInitialCheck::windowConstructorCheck = &UIInitialCheck::initialWindowConstructorCheck<&UIInitialCheck::trivial>;
         UIInitialCheck::widgetConstructorCheck = &UIInitialCheck::initialWidgetConstructorCheck<&UIInitialCheck::trivial>;
         UIInitialCheck::pixmapConstructorCheck = &UIInitialCheck::initialPixmapConstructorCheck<&UIInitialCheck::trivial>;
         UIInitialCheck::uiConstructorCheck = &UIInitialCheck::initialUIConstructorCheck<&UIInitialCheck::trivial>;
         UIInitialCheck::objectThreadCheck = &UIInitialCheck::trivial;
+        UIInitialCheck::jobjectThreadCheck = &UIInitialCheck::trivial;
+        UIInitialCheck::ownerThreadCheck = &UIInitialCheck::trivial;
         UIInitialCheck::pixmapUseCheck = &UIInitialCheck::trivial;
         UIInitialCheck::uiThreadCheck = &UIInitialCheck::trivial;
         UIInitialCheck::pixmapArgumentThreadCheck = &UIInitialCheck::trivial;
@@ -634,6 +692,7 @@ void enableThreadAffinity(bool enabled){
         UIInitialCheck::objectConstructorThreadCheck = &UIInitialCheck::trivial;
         UIInitialCheck::valueConstructorThreadCheck = &UIInitialCheck::trivial;
         UIInitialCheck::generalConstructorThreadCheck = &UIInitialCheck::trivial;
+        UIInitialCheck::generalThreadCheck = &UIInitialCheck::trivial;
     }
 }
 
@@ -643,10 +702,7 @@ void onDynamicPropertyChange(QObject *receiver, QDynamicPropertyChangeEvent* eve
 
 bool eventNotifier(QObject *receiver, QEvent *event, bool* result)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT_SUPPL([=](){
-        const std::type_info* ti = &typeid(*receiver);
-        return QString::asprintf("eventNotifier(QObject *, QEvent *, bool*) with event=%d, receiver=%p (%s)", event->type(), receiver, ti ? ti->name() : "<unknown type>").toUtf8();
-    });
+    QTJAMBI_DEBUG_EVENT_PRINT(receiver, event);
     switch (event->type()) {
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     case QEvent::DynamicPropertyChange:
@@ -705,18 +761,12 @@ bool eventNotifier(QObject *receiver, QEvent *event, bool* result)
         __qt_exceptionHandler.release(nullptr);
         return true;
     }else{
-        bool b = UIInitialCheck::eventNotify(receiver, event, result);
-        if(b)
-            QTJAMBI_DEBUG_PRINT("UIInitialCheck::eventNotify returned true")
-        else
-            QTJAMBI_DEBUG_PRINT("UIInitialCheck::eventNotify returned false")
-        return b;
+        return UIInitialCheck::eventNotify(receiver, event, result);
     }
 }
 
 bool simpleEventNotify(void **data)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT_PLAIN("simpleEventNotify(void **)")
     if(QObject *receiver = reinterpret_cast<QObject *>(data[0])){
         QEvent *event = reinterpret_cast<QEvent *>(data[1]);
         bool* result = reinterpret_cast<bool*>(data[2]);
@@ -727,7 +777,6 @@ bool simpleEventNotify(void **data)
 
 bool threadAffineEventNotify(void **data)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT_PLAIN("threadAffineEventNotify(void **)")
     if(QObject *receiver = reinterpret_cast<QObject *>(data[0])){
         QEvent *event = reinterpret_cast<QEvent *>(data[1]);
         {

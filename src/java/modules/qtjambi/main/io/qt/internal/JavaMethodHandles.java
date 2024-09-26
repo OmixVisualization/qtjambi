@@ -632,7 +632,8 @@ final class JavaMethodHandles implements ReflectionUtility.MethodInvocationHandl
 				}
 			} catch (IllegalAccessException e) {
 			} catch (Throwable e) {
-				e.printStackTrace();
+				if(Boolean.getBoolean("io.qt.internal.enable-lambda-factory-log"))
+					java.util.logging.Logger.getLogger("io.qt.internal").log(java.util.logging.Level.SEVERE, "", e);
 			}
 			while(false);
 		}

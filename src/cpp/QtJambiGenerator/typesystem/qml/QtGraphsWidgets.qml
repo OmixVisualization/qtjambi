@@ -34,17 +34,9 @@ TypeSystem{
     defaultSuperClass: "QtObject"
     qtLibrary: "QtGraphsWidgets"
     module: "qtjambi.graphswidgets"
-    description: ""
-    LoadTypeSystem{name: "QtCore";              unless: "QTJAMBI_NO_CORE"}
-    LoadTypeSystem{name: "QtOpenGL";            unless: "QTJAMBI_NO_OPENGL"}
-    LoadTypeSystem{name: "QtWidgets";           unless: "QTJAMBI_NO_WIDGETS"}
-    LoadTypeSystem{name: "QtQml";               unless: "QTJAMBI_NO_QML"}
-    LoadTypeSystem{name: "QtQuick";             unless: "QTJAMBI_NO_QUICK"}
-    LoadTypeSystem{name: "QtQuickWidgets";      unless: "QTJAMBI_NO_QUICKWIDGETS"}
-    LoadTypeSystem{name: "QtNetwork";           unless: "QTJAMBI_NO_NETWORK"}
-    
+    description: ""    
     ObjectType{
-        name: "Q3DBarsWidget"
+        name: "Q3DBarsWidgetItem"
         ModifyFunction{
             signature: "setColumnAxis(QCategory3DAxis *)"
             threadAffinity: true
@@ -147,7 +139,7 @@ TypeSystem{
     }
     
     ObjectType{
-        name: "Q3DScatterWidget"
+        name: "Q3DScatterWidgetItem"
         ModifyFunction{
             signature: "setAxisX(QValue3DAxis *)"
             threadAffinity: true
@@ -228,7 +220,7 @@ TypeSystem{
     }
     
     ObjectType{
-        name: "Q3DSurfaceWidget"
+        name: "Q3DSurfaceWidgetItem"
         ModifyFunction{
             signature: "addAxis(QValue3DAxis *)"
             threadAffinity: true
@@ -296,21 +288,9 @@ TypeSystem{
             }
         }
     }
-    
+
     ObjectType{
-        name: "QAbstract3DGraphWidget"
-        ModifyFunction{
-            signature: "locale() const"
-            rename: "itemLocale"
-        }
-        ModifyFunction{
-            signature: "setLocale(const QLocale &)"
-            rename: "setItemLocale"
-        }
-        ModifyFunction{
-            signature: "localeChanged(const QLocale &)"
-            rename: "itemLocaleChanged"
-        }
+        name: "Q3DGraphsWidgetItem"
         ModifyFunction{
             signature: "addCustomItem(QCustom3DItem *)"
             threadAffinity: true
@@ -366,5 +346,18 @@ TypeSystem{
                 }
             }
         }
+        ModifyFunction{
+            signature: "setWidget(QQuickWidget*)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                threadAffinity: true
+                ReferenceCount{
+                    variableName: "__rcWidget"
+                    action: ReferenceCount.Set
+                }
+            }
+        }
     }
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Final class 'Q3DGraphsWidgetItem' set to non-final, as it is extended by other classes"}
 }

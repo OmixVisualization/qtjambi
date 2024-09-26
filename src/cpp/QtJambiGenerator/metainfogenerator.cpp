@@ -48,6 +48,8 @@
 #define qAsConst std::as_const
 #endif
 
+#define SKIP_MAP_ACCESS
+
 MetaInfoGenerator::MetaInfoGenerator(PriGenerator *pri):
         AbstractGenerator(),
         priGenerator(pri), m_database(pri->database())
@@ -273,9 +275,11 @@ void MetaInfoGenerator::writeCppFile() {
             stream << Qt::endl;
             if(typeSystemEntry)
                 generateInitializer(stream, typeSystemEntry, {}, TS::MetaInfo, CodeSnip::Position1, INDENT);
+#ifndef SKIP_MAP_ACCESS
             if(cls->targetTypeSystem()=="io.qt.core" && m_qtVersionMajor>5){
                 stream << INDENT << "void register_containeraccess_core();" << Qt::endl;
             }
+#endif
 
             QString pro_file_name = priGenerator->subDirectoryForClass(cls, PriGenerator::CppDirectory) + "/generated.pri";
             priGenerator->addSource(pro_file_name, cppFilename());
@@ -375,10 +379,12 @@ void MetaInfoGenerator::writeCppFile() {
                     generateInitializer(stream, typeSystemEntry, {}, TS::MetaInfo, CodeSnip::Position4, INDENT);
                     generateInitializer(stream, typeSystemEntry, {}, TS::MetaInfo, CodeSnip::End, INDENT);
                 }
+#ifndef SKIP_MAP_ACCESS
                 if(package=="io.qt.core" && m_qtVersionMajor>5){
                     stream << INDENT << "register_containeraccess_core();" << Qt::endl;
                     writeContainerAccess();
                 }
+#endif
                 stream << INDENT << "return QTJAMBI_ONLOAD_RETURN;" << Qt::endl;
             }
             stream << "}" << Qt::endl << Qt::endl;

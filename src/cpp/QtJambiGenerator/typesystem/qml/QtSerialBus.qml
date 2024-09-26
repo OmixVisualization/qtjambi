@@ -772,6 +772,17 @@ TypeSystem{
             signature: "QModbusRequest<Args...>(QModbusPdu::FunctionCode,Args)"
             remove: RemoveFlag.All
         }
+        ModifyFunction{
+            signature: "registerDataSizeCalculator(QModbusPdu::FunctionCode,QModbusRequest::CalcFuncPtr)"
+            ModifyArgument{
+                index: 2
+                ReferenceCount{
+                    variableName: "__rcDataSizeCalculators"
+                    keyArgument: 1
+                    action: ReferenceCount.Put
+                }
+            }
+        }
     }
     
     ValueType{
@@ -790,6 +801,17 @@ TypeSystem{
         ModifyFunction{
             signature: "QModbusResponse<Args...>(QModbusPdu::FunctionCode,Args)"
             remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "registerDataSizeCalculator(QModbusPdu::FunctionCode,QModbusResponse::CalcFuncPtr)"
+            ModifyArgument{
+                index: 2
+                ReferenceCount{
+                    variableName: "__rcDataSizeCalculators"
+                    keyArgument: 1
+                    action: ReferenceCount.Put
+                }
+            }
         }
     }
     

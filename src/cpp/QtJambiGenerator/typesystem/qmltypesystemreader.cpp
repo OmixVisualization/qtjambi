@@ -607,7 +607,12 @@ void QmlTypeSystemReaderPrivate::parseInjectCode(InjectCode* element,const QHash
             }else if(ImportFile* childElement = qobject_cast<ImportFile*>(item)){
                 parseImportFile(childElement, [&snip](const QString& code){snip.addCode(code);});
             }else if(Text* childElement = qobject_cast<Text*>(item)){
-                snip.addCode(childElement->getContent());
+                if (checkQtVersion(childElement)){
+                    for(AbstractObject* item2 : childElement->childrenList()){
+                        TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2").arg(item2->metaObject()->className(), childElement->metaObject()->className()));
+                    }
+                    snip.addCode(childElement->getContent());
+                }
             }else{
                 TypesystemException::raise(QStringLiteral(u"Unexpected tag %2").arg(item->metaObject()->className()));
             }
@@ -1533,6 +1538,7 @@ void QmlTypeSystemReaderPrivate::parseModifyArgument(ModifyArgument* element, Ab
             argumentModification.reset_after_use = element->getInvalidateAfterUse();
             argumentModification.value_as_pointer = element->getValueAsPointer();
             argumentModification.no_implicit_calls = element->getNoImplicitCalls();
+            argumentModification.comment = element->getComment();
 
             const QList<AbstractObject*>& childrenList = element->childrenList();
             for(int i=0; i<childrenList.size(); ++i){
@@ -1930,6 +1936,7 @@ TemplateInstantiation QmlTypeSystemReaderPrivate::parseInstantiation(Instantiati
                 argumentModification.modified_type = childElement->getType();
                 argumentModification.modified_jni_type = childElement->getJniType();
                 argumentModification.reset_after_use = childElement->getInvalidateAfterUse();
+                argumentModification.comment = childElement->getComment();
                 mod.argument_mods.append(argumentModification);
                 for(AbstractObject* item2 : item->childrenList()){
                     TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2").arg(item2->metaObject()->className(), item->metaObject()->className()));
@@ -2196,6 +2203,7 @@ void QmlTypeSystemReaderPrivate::parseModifyFunction(ModifyFunction* element, Ty
                         argumentModification.modified_type = childElement->getType();
                         argumentModification.modified_jni_type = childElement->getJniType();
                         argumentModification.reset_after_use = childElement->getInvalidateAfterUse();
+                        argumentModification.comment = childElement->getComment();
                         mod.argument_mods.append(argumentModification);
                         for(AbstractObject* item2 : item->childrenList()){
                             TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2").arg(item2->metaObject()->className(), item->metaObject()->className()));

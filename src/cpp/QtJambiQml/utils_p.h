@@ -123,6 +123,8 @@ int qtjambi_qmlRegisterUncreatableType(JNIEnv *env, jclass type, int metaObjectR
 
 void qtjambi_qmlRegisterTypesAndRevisions(JNIEnv *env, jobjectArray types, const char* uri, int versionMajor, QList<int>* qmlTypeIds = nullptr);
 
+QObject* getPointerOwner(const QJSValue* jsValue);
+
 jobject qtjambi_fromScriptValue(JNIEnv *__jni_env, QJSEngine *__qt_this, jobject type, const QJSValue& __qt_value0);
 
 QJSValue qtjambi_toScriptValue(JNIEnv *__jni_env, QJSEngine *__qt_this, const QVariant& value);

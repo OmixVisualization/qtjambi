@@ -131,7 +131,7 @@ public class TestPaintOnWidget extends ApplicationInitializer{
     				}
     	    	});
     	    	t.start();
-    	    	t.join();
+    	    	t.join(2000);
     	    	loop.quit();
     	    	t.dispose();
     		}
@@ -163,7 +163,7 @@ public class TestPaintOnWidget extends ApplicationInitializer{
 	    				}
 	    	    	});
 	    	    	t.start();
-	    	    	t.join();
+	    	    	t.join(2000);
 	    	    	loop.quit();
 	    	    	t.dispose();
 	    		}

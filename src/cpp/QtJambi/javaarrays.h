@@ -31,11 +31,15 @@
 #define QTJAMBI_JAVAARRAYS_H
 
 #include "jnienvironment.h"
+#include "javaapi.h"
+#include "typetests.h"
 
 namespace QtJambiAPI{
 
 QTJAMBI_EXPORT jobjectArray createObjectArray(JNIEnv *env, const char* componentClass, jsize size);
 QTJAMBI_EXPORT jobjectArray createObjectArray(JNIEnv *env, const std::type_info& componentType, jsize size);
+template<class Container>
+Container createIterable(typename Container::const_iterator begin, typename Container::size_type size);
 
 template<typename T, typename E>
 inline jobjectArray toJObjectArray(JNIEnv *__jni_env, const char *className, const T& iterable, std::function<jobject(JNIEnv *,const E&)> convertFunction) {
@@ -184,6 +188,41 @@ public:
     ~Int64PointerArray() override;
 };
 
+class QTJAMBI_EXPORT UCharPointerArray : public PointerArray<jbyteArray,uchar>
+{
+public:
+    UCharPointerArray(JNIEnv *env, uchar* pointer, jsize size);
+    ~UCharPointerArray() override;
+};
+
+class QTJAMBI_EXPORT UInt8PointerArray : public PointerArray<jbyteArray,quint8>
+{
+public:
+    UInt8PointerArray(JNIEnv *env, quint8* pointer, jsize size);
+    ~UInt8PointerArray() override;
+};
+
+class QTJAMBI_EXPORT UInt16PointerArray : public PointerArray<jshortArray,quint16>
+{
+public:
+    UInt16PointerArray(JNIEnv *env, quint16* pointer, jsize size);
+    ~UInt16PointerArray() override;
+};
+
+class QTJAMBI_EXPORT UInt32PointerArray : public PointerArray<jintArray,quint32>
+{
+public:
+    UInt32PointerArray(JNIEnv *env, quint32* pointer, jsize size);
+    ~UInt32PointerArray() override;
+};
+
+class QTJAMBI_EXPORT UInt64PointerArray : public PointerArray<jlongArray,quint64>
+{
+public:
+    UInt64PointerArray(JNIEnv *env, quint64* pointer, jsize size);
+    ~UInt64PointerArray() override;
+};
+
 class QTJAMBI_EXPORT BoolPointerArray : public PointerArray<jbooleanArray,bool>
 {
 public:
@@ -288,6 +327,7 @@ class QTJAMBI_EXPORT ConstCharPointerArray : public PointerArray<jbyteArray,cons
 {
 public:
     ConstCharPointerArray(JNIEnv *env, const char* pointer, jsize size);
+    ConstCharPointerArray(JNIEnv *env, const uchar* pointer, jsize size);
 };
 
 class QTJAMBI_EXPORT ConstInt8PointerArray : public PointerArray<jbyteArray,const qint8>
@@ -312,6 +352,30 @@ class QTJAMBI_EXPORT ConstInt64PointerArray : public PointerArray<jlongArray,con
 {
 public:
     ConstInt64PointerArray(JNIEnv *env, const qint64* pointer, jsize size);
+};
+
+class QTJAMBI_EXPORT ConstUInt8PointerArray : public PointerArray<jbyteArray,const quint8>
+{
+public:
+    ConstUInt8PointerArray(JNIEnv *env, const quint8* pointer, jsize size);
+};
+
+class QTJAMBI_EXPORT ConstUInt16PointerArray : public PointerArray<jshortArray,const quint16>
+{
+public:
+    ConstUInt16PointerArray(JNIEnv *env, const quint16* pointer, jsize size);
+};
+
+class QTJAMBI_EXPORT ConstUInt32PointerArray : public PointerArray<jintArray,const quint32>
+{
+public:
+    ConstUInt32PointerArray(JNIEnv *env, const quint32* pointer, jsize size);
+};
+
+class QTJAMBI_EXPORT ConstUInt64PointerArray : public PointerArray<jlongArray,const quint64>
+{
+public:
+    ConstUInt64PointerArray(JNIEnv *env, const quint64* pointer, jsize size);
 };
 
 class QTJAMBI_EXPORT ConstBoolPointerArray : public PointerArray<jbooleanArray,const bool>
@@ -418,15 +482,76 @@ inline ConstObjectPointerArray<T>::ConstObjectPointerArray(JNIEnv *env, const T*
     }
 }
 
-template<typename JArray, typename JType>
-class QTJAMBI_EXPORT JArrayPointer{
+namespace QtJambiPrivate {
+
+template<typename JArray>
+struct ElementForArray{
+
+};
+
+template<>
+struct ElementForArray<jbyteArray>{
+    typedef jbyte type;
+    typedef Java::Runtime::Byte RuntimeType;
+};
+
+template<>
+struct ElementForArray<jshortArray>{
+    typedef jshort type;
+    typedef Java::Runtime::Short RuntimeType;
+};
+
+template<>
+struct ElementForArray<jintArray>{
+    typedef jint type;
+    typedef Java::Runtime::Integer RuntimeType;
+};
+
+template<>
+struct ElementForArray<jlongArray>{
+    typedef jlong type;
+    typedef Java::Runtime::Long RuntimeType;
+};
+
+template<>
+struct ElementForArray<jfloatArray>{
+    typedef jfloat type;
+    typedef Java::Runtime::Float RuntimeType;
+};
+
+template<>
+struct ElementForArray<jdoubleArray>{
+    typedef jdouble type;
+    typedef Java::Runtime::Double RuntimeType;
+};
+
+template<>
+struct ElementForArray<jcharArray>{
+    typedef jchar type;
+    typedef Java::Runtime::Character RuntimeType;
+};
+
+template<>
+struct ElementForArray<jbooleanArray>{
+    typedef bool type;
+    typedef Java::Runtime::Boolean RuntimeType;
+};
+
+template<>
+struct ElementForArray<jobjectArray>{
+    typedef jobject type;
+};
+
+}
+
+template<typename JArray, typename JType = typename QtJambiPrivate::ElementForArray<JArray>::type>
+class JArrayPointer{
 public:
-    inline JArrayPointer(JNIEnv *env, JArray array, bool writable)
+    inline JArrayPointer(JNIEnv *env, JArray array)
         : m_array(array ? JArray(env->NewGlobalRef(array)) : nullptr),
           m_size(array ? env->GetArrayLength(m_array) : 0),
           m_is_copy(false),
-          m_array_elements(nullptr),
-          m_writable(writable) {
+          m_array_elements(nullptr) {
         JavaException::check(env QTJAMBI_STACKTRACEINFO );
     }
 
@@ -456,170 +581,261 @@ public:
     }
 
     inline jsize size() const { return m_size; }
+    inline bool isBuffering() const { return m_is_copy; }
+    virtual void commit(JNIEnv *){}
 protected:
+    typedef JArray JArrayType;
+    typedef typename QtJambiPrivate::ElementForArray<JArrayType>::type ElementType;
     inline JArray array() const { return m_array; }
     JArray m_array;
     jsize m_size;
     jboolean m_is_copy;
     JType* m_array_elements;
-    bool m_writable;
     Q_DISABLE_COPY(JArrayPointer)
 };
 
-class QTJAMBI_EXPORT JByteArrayPointer : public JArrayPointer<jbyteArray, jbyte>
-{
-public:
-    JByteArrayPointer(JNIEnv *env, jbyteArray array, bool writable = true);
-    ~JByteArrayPointer() override;
-    operator char* () { return reinterpret_cast<char*>(m_array_elements); }
-    operator const char* () const { return reinterpret_cast<const char*>(m_array_elements); }
-    operator qint8* () { return reinterpret_cast<qint8*>(m_array_elements); }
-    operator const qint8* () const { return reinterpret_cast<const qint8*>(m_array_elements); }
-    operator quint8* () { return reinterpret_cast<quint8*>(m_array_elements); }
-    operator const quint8* () const { return reinterpret_cast<const quint8*>(m_array_elements); }
+#if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
+#define QTJAMBI_POINTER_ARRAY_CONST_OPERATOR(type)\
+operator QSpan<const type> () const;\
+operator const type* () const;\
+operator std::initializer_list<type> () const;\
+operator std::initializer_list<const type> () const;
+#define QTJAMBI_POINTER_ARRAY_OPERATOR(type)\
+operator QSpan<type> ();\
+operator type* ();
+#else
+#define QTJAMBI_POINTER_ARRAY_CONST_OPERATOR(type)\
+operator const type* () const;\
+operator std::initializer_list<type> () const;\
+operator std::initializer_list<const type> () const;
+#define QTJAMBI_POINTER_ARRAY_OPERATOR(type)\
+operator type* ();
+#endif
+
+#define QTJAMBI_TYPED_ARRAY_POINTER(Type,jArray,const_operators,operators)\
+class QTJAMBI_EXPORT JConst##Type##ArrayPointer : public JArrayPointer<jArray>\
+{\
+public:\
+    JConst##Type##ArrayPointer(JNIEnv *env, jArray array);\
+    ~JConst##Type##ArrayPointer() override;\
+    ElementType operator[](int index) const;\
+    const_operators\
+    static bool isValidArray(JNIEnv *env, jobject object);\
+private:\
+    using JArrayPointer<jArray>::JArrayType;\
+    using JArrayPointer<jArray>::ElementType;\
+};\
+\
+class QTJAMBI_EXPORT J##Type##ArrayPointer : public JArrayPointer<jArray>\
+{\
+public:\
+    J##Type##ArrayPointer(JNIEnv *env, jArray array);\
+    ~J##Type##ArrayPointer() override;\
+    void commit(JNIEnv *env) override;\
+    ElementType operator[](int index) const;\
+    ElementType& operator[](int index);\
+    const_operators\
+    operators\
+    static bool isValidArray(JNIEnv *env, jobject object);\
+private:\
+    using JArrayPointer<jArray>::JArrayType;\
+    using JArrayPointer<jArray>::ElementType;\
+}
+
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-    operator QByteArrayView() const { return QByteArrayView(reinterpret_cast<const char*>(m_array_elements), size()); }
+#define QTJAMBI_BYTEARRAY_OPERATOR() \
+    operator QByteArrayView() const;\
+    operator QByteArray() const;
+#define QTJAMBI_STRING_OPERATOR() \
+operator QStringView() const;\
+operator QString() const;
+#else
+#define QTJAMBI_BYTEARRAY_OPERATOR() \
+    operator QByteArray() const;
+#define QTJAMBI_STRING_OPERATOR() \
+    operator QString() const;
 #endif
-    operator QByteArray() const { return QByteArray(reinterpret_cast<const char*>(m_array_elements), size()); }
-    static bool isValidArray(JNIEnv *env, jobject object);
-private:
-};
 
-class QTJAMBI_EXPORT JIntArrayPointer : public JArrayPointer<jintArray, jint>
-{
-public:
-    JIntArrayPointer(JNIEnv *env, jintArray array, bool writable = true);
-    ~JIntArrayPointer() override;
-    operator int* () { return reinterpret_cast<int*>(m_array_elements); }
-    operator const int* () const { return reinterpret_cast<int*>(m_array_elements); }
-    operator uint* () { return reinterpret_cast<uint*>(m_array_elements); }
-    operator const uint* () const { return reinterpret_cast<uint*>(m_array_elements); }
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-    operator char32_t* () { return reinterpret_cast<char32_t*>(m_array_elements); }
-    operator const char32_t* () const { return reinterpret_cast<char32_t*>(m_array_elements); }
-#endif
-    static bool isValidArray(JNIEnv *env, jobject object);
-};
+QTJAMBI_TYPED_ARRAY_POINTER(Byte,
+                            jbyteArray,
+                            QTJAMBI_POINTER_ARRAY_CONST_OPERATOR(char)
+                            QTJAMBI_POINTER_ARRAY_CONST_OPERATOR(qint8)
+                            QTJAMBI_POINTER_ARRAY_CONST_OPERATOR(quint8)
+                            MIN_QT6(QTJAMBI_POINTER_ARRAY_CONST_OPERATOR,std::byte)
+                            QTJAMBI_BYTEARRAY_OPERATOR(),
+                            QTJAMBI_POINTER_ARRAY_OPERATOR(char)
+                            QTJAMBI_POINTER_ARRAY_OPERATOR(qint8)
+                            QTJAMBI_POINTER_ARRAY_OPERATOR(quint8)
+                            MIN_QT6(QTJAMBI_POINTER_ARRAY_OPERATOR,std::byte)
+                            );
 
-class QTJAMBI_EXPORT JLongArrayPointer : public JArrayPointer<jlongArray, jlong>
-{
-public:
-    JLongArrayPointer(JNIEnv *env, jlongArray array, bool writable = true);
-    ~JLongArrayPointer() override;
-    operator qint64* () { return reinterpret_cast<qint64*>(m_array_elements); }
-    operator const qint64* () const { return reinterpret_cast<qint64*>(m_array_elements); }
-    operator quint64* () { return reinterpret_cast<quint64*>(m_array_elements); }
-    operator const quint64* () const { return reinterpret_cast<quint64*>(m_array_elements); }
-    static bool isValidArray(JNIEnv *env, jobject object);
-};
+QTJAMBI_TYPED_ARRAY_POINTER(Int,
+                            jintArray,
+                            QTJAMBI_POINTER_ARRAY_CONST_OPERATOR(int)
+                            QTJAMBI_POINTER_ARRAY_CONST_OPERATOR(uint)
+                            MIN_QT6(QTJAMBI_POINTER_ARRAY_CONST_OPERATOR,char32_t),
+                            QTJAMBI_POINTER_ARRAY_OPERATOR(int)
+                            QTJAMBI_POINTER_ARRAY_OPERATOR(uint)
+                            MIN_QT6(QTJAMBI_POINTER_ARRAY_OPERATOR,char32_t)
+                            );
 
-class QTJAMBI_EXPORT JFloatArrayPointer : public JArrayPointer<jfloatArray, jfloat>
-{
-public:
-    JFloatArrayPointer(JNIEnv *env, jfloatArray array, bool writable = true);
-    ~JFloatArrayPointer() override;
-    operator float* () { return reinterpret_cast<float*>(m_array_elements); }
-    operator const float* () const { return reinterpret_cast<float*>(m_array_elements); }
-    static bool isValidArray(JNIEnv *env, jobject object);
-};
+QTJAMBI_TYPED_ARRAY_POINTER(Long,
+                            jlongArray,
+                            QTJAMBI_POINTER_ARRAY_CONST_OPERATOR(qint64)
+                            QTJAMBI_POINTER_ARRAY_CONST_OPERATOR(quint64),
+                            QTJAMBI_POINTER_ARRAY_OPERATOR(qint64)
+                            QTJAMBI_POINTER_ARRAY_OPERATOR(quint64)
+                            );
 
-class QTJAMBI_EXPORT JDoubleArrayPointer : public JArrayPointer<jdoubleArray, jdouble>
-{
-public:
-    JDoubleArrayPointer(JNIEnv *env, jdoubleArray array, bool writable = true);
-    ~JDoubleArrayPointer() override;
-    operator double* () { return reinterpret_cast<double*>(m_array_elements); }
-    operator const double* () const { return reinterpret_cast<double*>(m_array_elements); }
-    static bool isValidArray(JNIEnv *env, jobject object);
-};
+QTJAMBI_TYPED_ARRAY_POINTER(Float,
+                            jfloatArray,
+                            QTJAMBI_POINTER_ARRAY_CONST_OPERATOR(float),
+                            QTJAMBI_POINTER_ARRAY_OPERATOR(float)
+                            );
 
-class QTJAMBI_EXPORT JShortArrayPointer : public JArrayPointer<jshortArray, jshort>
-{
-public:
-    JShortArrayPointer(JNIEnv *env, jshortArray array, bool writable = true);
-    ~JShortArrayPointer() override;
-    operator qint16* () { return reinterpret_cast<qint16*>(m_array_elements); }
-    operator const qint16* () const { return reinterpret_cast<qint16*>(m_array_elements); }
-    operator quint16* () { return reinterpret_cast<quint16*>(m_array_elements); }
-    operator const quint16* () const { return reinterpret_cast<quint16*>(m_array_elements); }
-    static bool isValidArray(JNIEnv *env, jobject object);
-};
+QTJAMBI_TYPED_ARRAY_POINTER(Double,
+                            jdoubleArray,
+                            QTJAMBI_POINTER_ARRAY_CONST_OPERATOR(double),
+                            QTJAMBI_POINTER_ARRAY_OPERATOR(double)
+                            );
 
-class QTJAMBI_EXPORT JCharArrayPointer : public JArrayPointer<jcharArray, jchar>
-{
-public:
-    JCharArrayPointer(JNIEnv *env, jcharArray array, bool writable = true);
-    ~JCharArrayPointer() override;
-    operator qint16* () { return reinterpret_cast<qint16*>(m_array_elements); }
-    operator const qint16* () const { return reinterpret_cast<qint16*>(m_array_elements); }
-    operator quint16* () { return reinterpret_cast<quint16*>(m_array_elements); }
-    operator const quint16* () const { return reinterpret_cast<quint16*>(m_array_elements); }
-    operator wchar_t* () { return reinterpret_cast<wchar_t*>(m_array_elements); }
-    operator const wchar_t* () const { return reinterpret_cast<wchar_t*>(m_array_elements); }
-    operator QChar* () { return reinterpret_cast<QChar*>(m_array_elements); }
-    operator const QChar* () const { return reinterpret_cast<QChar*>(m_array_elements); }
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-    operator QStringView() const { return QStringView(reinterpret_cast<const QChar*>(m_array_elements), size()); }
-    operator char16_t*() const { return reinterpret_cast<char16_t*>(m_array_elements); }
-    operator const char16_t*() const { return reinterpret_cast<const char16_t*>(m_array_elements); }
-#endif
-    operator QString() const { return QString(reinterpret_cast<const QChar*>(m_array_elements), size()); }
-    static bool isValidArray(JNIEnv *env, jobject object);
-};
+QTJAMBI_TYPED_ARRAY_POINTER(Short,
+                            jshortArray,
+                            QTJAMBI_POINTER_ARRAY_CONST_OPERATOR(qint16)
+                            QTJAMBI_POINTER_ARRAY_CONST_OPERATOR(quint16),
+                            QTJAMBI_POINTER_ARRAY_OPERATOR(qint16)
+                            QTJAMBI_POINTER_ARRAY_OPERATOR(quint16)
+                            );
 
-class QTJAMBI_EXPORT JBooleanArrayPointer : public JArrayPointer<jbooleanArray, bool>
-{
-public:
-    JBooleanArrayPointer(JNIEnv *env, jbooleanArray array, bool writable = true);
-    ~JBooleanArrayPointer() override;
-    static bool isValidArray(JNIEnv *env, jobject object);
+QTJAMBI_TYPED_ARRAY_POINTER(Char,
+                            jcharArray,
+                            QTJAMBI_POINTER_ARRAY_CONST_OPERATOR(qint16)
+                            QTJAMBI_POINTER_ARRAY_CONST_OPERATOR(quint16)
+                            QTJAMBI_POINTER_ARRAY_CONST_OPERATOR(wchar_t)
+                            QTJAMBI_POINTER_ARRAY_CONST_OPERATOR(QChar)
+                            MIN_QT6(QTJAMBI_POINTER_ARRAY_CONST_OPERATOR,char16_t)
+                            QTJAMBI_STRING_OPERATOR(),
+                            QTJAMBI_POINTER_ARRAY_OPERATOR(qint16)
+                            QTJAMBI_POINTER_ARRAY_OPERATOR(quint16)
+                            QTJAMBI_POINTER_ARRAY_OPERATOR(wchar_t)
+                            QTJAMBI_POINTER_ARRAY_OPERATOR(QChar)
+                            MIN_QT6(QTJAMBI_POINTER_ARRAY_OPERATOR,char16_t)
+                            );
+
+#define QTJAMBI_BOOLEAN_ARRAY() \
     jboolean* booleanArray();
+#define QTJAMBI_CONST_BOOLEAN_ARRAY() \
     const jboolean* booleanArray() const;
-private:
-    jboolean* m_boolean_array;
-};
+
+QTJAMBI_TYPED_ARRAY_POINTER(Boolean,
+                            jbooleanArray,
+                            QTJAMBI_POINTER_ARRAY_CONST_OPERATOR(bool)
+                            QTJAMBI_CONST_BOOLEAN_ARRAY()
+                            private: jboolean* m_boolean_array;
+                            public:
+                            ,
+                            QTJAMBI_POINTER_ARRAY_OPERATOR(bool)
+                            QTJAMBI_BOOLEAN_ARRAY()
+                            );
+
+#undef QTJAMBI_BOOLEAN_ARRAY
+#undef QTJAMBI_CONST_BOOLEAN_ARRAY
+#undef QTJAMBI_TYPED_ARRAY_POINTER
+#undef QTJAMBI_STRING_OPERATOR
+#undef QTJAMBI_BYTEARRAY_OPERATOR
+#undef QTJAMBI_POINTER_ARRAY_OPERATOR
+#undef QTJAMBI_POINTER_ARRAY_OPERATOR_QT6
 
 template<class Type>
-class QTJAMBI_EXPORT JObjectArrayPointer : public JArrayPointer<jobjectArray, Type>
+class JConstObjectArrayPointer : public JArrayPointer<jobjectArray, Type>
 {
 public:
-    JObjectArrayPointer(JNIEnv *env, jobjectArray array, std::function<void(Type&,JNIEnv *,jobject)> setter, std::function<jobject(JNIEnv *,const Type&)> getter)
-        : JArrayPointer<jobjectArray, Type>(env, array, true), m_getter(getter)
+    using JArrayPointer<jobjectArray, Type>::pointer;
+    using JArrayPointer<jobjectArray, Type>::size;
+    using JArrayPointer<jobjectArray, Type>::array;
+    using JArrayPointer<jobjectArray, Type>::m_size;
+    using JArrayPointer<jobjectArray, Type>::m_array;
+    using JArrayPointer<jobjectArray, Type>::m_array_elements;
+    using JArrayPointer<jobjectArray, Type>::m_is_copy;
+
+    JConstObjectArrayPointer(JNIEnv *env, jobjectArray array, std::function<void(Type&,JNIEnv *,jobject)> setter)
+        : JArrayPointer<jobjectArray, Type>(env, array)
     {
-        if(JArrayPointer<jobjectArray, Type>::m_array && JArrayPointer<jobjectArray, Type>::size()>0){
-            JArrayPointer<jobjectArray, Type>::m_array_elements = new Type[JArrayPointer<jobjectArray, Type>::size()];
-            for(int i=0; i<JArrayPointer<jobjectArray, Type>::size(); i++){
-                setter(JArrayPointer<jobjectArray, Type>::m_array_elements[i], env, env->GetObjectArrayElement(JArrayPointer<jobjectArray, Type>::array(), i));
+        if(m_array && m_size>0){
+            m_is_copy = true;
+            m_array_elements = new Type[m_size];
+            for(int i=0; i<m_size; i++){
+                setter(m_array_elements[i], env, env->GetObjectArrayElement(m_array, i));
             }
         }
     }
 
-    JObjectArrayPointer(JNIEnv *env, jobjectArray array, std::function<void(Type&,JNIEnv *,jobject)> setter)
-        : JArrayPointer<jobjectArray, Type>(env, array, false), m_getter()
+    ~JConstObjectArrayPointer() override {
+        if(m_array){
+            delete[] m_array_elements;
+        }
+    }
+
+    operator const Type*() const {return m_array_elements;}
+#if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
+    QSpan<const Type> span() const { return m_array_elements ? QSpan<const Type>(m_array_elements, m_array_elements+m_size) : QSpan<const Type>(); }
+    operator QSpan<const Type> () const { return span(); }
+#endif
+    operator std::initializer_list<Type> () const {
+        return QtJambiAPI::createIterable<std::initializer_list<Type>>(m_array_elements, m_size);
+    }
+    operator std::initializer_list<const Type> () const {
+        return QtJambiAPI::createIterable<std::initializer_list<const Type>>(m_array_elements, m_size);
+    }
+};
+
+template<class Type>
+class JObjectArrayPointer : public JArrayPointer<jobjectArray, Type>
+{
+public:
+    using JArrayPointer<jobjectArray, Type>::pointer;
+    using JArrayPointer<jobjectArray, Type>::size;
+    using JArrayPointer<jobjectArray, Type>::array;
+    using JArrayPointer<jobjectArray, Type>::m_size;
+    using JArrayPointer<jobjectArray, Type>::m_array;
+    using JArrayPointer<jobjectArray, Type>::m_array_elements;
+    using JArrayPointer<jobjectArray, Type>::m_is_copy;
+
+    JObjectArrayPointer(JNIEnv *env, jobjectArray array, std::function<void(Type&,JNIEnv *,jobject)> setter, std::function<jobject(JNIEnv *,const Type&)> getter)
+        : JArrayPointer<jobjectArray, Type>(env, array), m_getter(getter)
     {
-        if(JArrayPointer<jobjectArray, Type>::m_array && JArrayPointer<jobjectArray, Type>::m_size>0){
-            JArrayPointer<jobjectArray, Type>::m_array_elements = new Type[JArrayPointer<jobjectArray, Type>::m_size];
-            for(int i=0; i<JArrayPointer<jobjectArray, Type>::m_size; i++){
-                setter(JArrayPointer<jobjectArray, Type>::m_array_elements[i], env, env->GetObjectArrayElement(JArrayPointer<jobjectArray, Type>::m_array, i));
+        if(m_array && m_size>0){
+            m_is_copy = true;
+            m_array_elements = new Type[m_size];
+            for(int i=0; i<m_size; i++){
+                setter(m_array_elements[i], env, env->GetObjectArrayElement(m_array, i));
             }
         }
     }
 
     ~JObjectArrayPointer() override {
-        if(JArrayPointer<jobjectArray, Type>::m_array){
-            if(JArrayPointer<jobjectArray, Type>::m_writable){
-                if(JniEnvironment env{300}){
-                    for(int i=0; i<JArrayPointer<jobjectArray, Type>::m_size; i++){
-                        env->SetObjectArrayElement(JArrayPointer<jobjectArray, Type>::m_array, i, m_getter(env, JArrayPointer<jobjectArray, Type>::m_array_elements[i]));
-                    }
+        if(m_array){
+            if(JniEnvironment env{300}){
+                for(int i=0; i<m_size; i++){
+                    env->SetObjectArrayElement(m_array, i, m_getter(env, m_array_elements[i]));
                 }
             }
-            delete[] JArrayPointer<jobjectArray, Type>::m_array_elements;
+            delete[] m_array_elements;
         }
     }
 
-    operator Type*(){return reinterpret_cast<Type*>(JArrayPointer<jobjectArray, Type>::pointer());}
-    operator const Type*() const {return reinterpret_cast<const Type*>(JArrayPointer<jobjectArray, Type>::pointer());}
+    operator Type*() {return m_array_elements;}
+    operator const Type*() const {return m_array_elements;}
+#if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
+    operator QSpan<Type> () { return m_array_elements ? QSpan<Type>(m_array_elements, m_array_elements+m_size) : QSpan<Type>(); }
+    operator QSpan<const Type> () const { return m_array_elements ? QSpan<const Type>(m_array_elements, m_array_elements+m_size) : QSpan<const Type>(); }
+#endif
+    operator std::initializer_list<Type> () const {
+        return QtJambiAPI::createIterable<std::initializer_list<Type>>(m_array_elements, m_size);
+    }
+    operator std::initializer_list<const Type> () const {
+        return QtJambiAPI::createIterable<std::initializer_list<const Type>>(m_array_elements, m_size);
+    }
 private:
     std::function<jobject(JNIEnv *,const Type&)> m_getter;
 };

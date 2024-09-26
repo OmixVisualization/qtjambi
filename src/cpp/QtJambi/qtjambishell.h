@@ -39,6 +39,7 @@
 
 class AbstractContainerAccess;
 class QtJambiShellImpl;
+enum class QtJambiNativeID : jlong;
 
 class QTJAMBI_EXPORT QtJambiShell{
 public:
@@ -89,17 +90,17 @@ public:
     static void initialize(JNIEnv *env, jclass callingClass, jobject object, ConstructorFunction constructorFunction,
                            size_t size, const std::type_info& typeId, uint returnScopeRequired, bool isShell,
                            AbstractContainerAccess* containerAccess,
-                           jvalue* arguments);
+                           jvalue* arguments, QtJambiNativeID owner = QtJambiNativeID(0));
 
     static void initialize(JNIEnv *env, jclass callingClass, jobject object, ConstructorFunction constructorFunction,
                            size_t size, const std::type_info& typeId, uint returnScopeRequired, bool isShell,
                            AbstractContainerAccess* containerAccess,
-                           PtrDeleterFunction delete_function, jvalue* arguments);
+                           PtrDeleterFunction delete_function, jvalue* arguments, QtJambiNativeID owner = QtJambiNativeID(0));
 
     static void initialize(JNIEnv *env, jclass callingClass, jobject object, ConstructorFunction constructorFunction,
                            size_t size, const std::type_info& typeId, uint returnScopeRequired, bool isShell,
                            AbstractContainerAccess* containerAccess,
-                           PtrDeleterFunction delete_function, PtrOwnerFunction ownerFunction, jvalue* arguments);
+                           PtrDeleterFunction delete_function, PtrOwnerFunction ownerFunction, jvalue* arguments, QtJambiNativeID owner = QtJambiNativeID(0));
 private:
     QtJambiShell();
     virtual ~QtJambiShell();

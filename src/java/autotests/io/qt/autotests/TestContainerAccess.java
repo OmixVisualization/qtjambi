@@ -182,7 +182,8 @@ public class TestContainerAccess extends ApplicationInitializer {
     @Test
     public void testQMultiHashShortDouble() {
     	QMultiHash<Short,Double> container = QMultiHash.of((short)1, 1.1, (short)2, 2.2, (short)3, 3.3, (short)1, 4.4);
-    	Map<Short,Double> javaContainer = new TreeMap<>((s1,s2)->s1<=s2?-1:1);
+    	Assert.assertEquals(container.size(), 4);
+    	Map<Short,Double> javaContainer = new TreeMap<>((s1,s2)->s1<s2?-1:1);
     	ContainerTest.copyQMultiHashShortDoubleToJavaList(container, javaContainer);
     	Assert.assertEquals(container, javaContainer);
     	Object hash = ContainerTest.getQMultiHashShortDoubleHash(container);
@@ -212,7 +213,7 @@ public class TestContainerAccess extends ApplicationInitializer {
     	Assert.assertEquals(list2, javaContainer);
     	QHash<String,Object> variantContainer = ContainerTest.toQVariantHash(list2);
     	if(QtUtilities.qtjambiVersion().majorVersion()>5) {
-    		Map<String,Object> javaStringContainer = new TreeMap<>((s1, s2)->s1.compareTo(s2)<=0?-1:1);
+    		Map<String,Object> javaStringContainer = new TreeMap<>((s1, s2)->s1.compareTo(s2)<0?-1:1);
         	for(Map.Entry<Short,Double> entry : javaContainer.entrySet()) {
         		javaStringContainer.put(""+entry.getKey(), entry.getValue());
         	}
@@ -234,7 +235,7 @@ public class TestContainerAccess extends ApplicationInitializer {
     @Test
     public void testQMultiMapShortDouble() {
     	QMultiMap<Short,Double> container = QMultiMap.of((short)1, 1.1, (short)2, 2.2, (short)3, 3.3, (short)1, 4.4);
-    	Map<Short,Double> javaContainer = new TreeMap<>((s1,s2)->s1<=s2?-1:1);
+    	Map<Short,Double> javaContainer = new TreeMap<>((s1,s2)->s1<s2?-1:1);
     	ContainerTest.copyQMultiMapShortDoubleToJavaList(container, javaContainer);
     	if(QtUtilities.qtjambiVersion().majorVersion()>5) {
     		Assert.assertEquals(container, javaContainer);
@@ -285,7 +286,7 @@ public class TestContainerAccess extends ApplicationInitializer {
     	}
     	QMap<String,Object> variantContainer = ContainerTest.toQVariantMap(list2);
     	if(QtUtilities.qtjambiVersion().majorVersion()>5) {
-        	Map<String,Object> javaStringContainer = new TreeMap<>((s1, s2)->s1.compareTo(s2)<=0?-1:1);
+        	Map<String,Object> javaStringContainer = new TreeMap<>((s1, s2)->s1.compareTo(s2)<0?-1:1);
         	for(Map.Entry<Short,Double> entry : javaContainer.entrySet()) {
         		javaStringContainer.put(""+entry.getKey(), entry.getValue());
         	}
@@ -301,5 +302,26 @@ public class TestContainerAccess extends ApplicationInitializer {
 			}
 		}
     	Assert.assertEquals(container.size(), ContainerTest.containerSize(container));
+    }
+    
+    @Test
+    public void testEmptyQSetToVariantListNotCrashing() {
+		ContainerTest.toQVariantList(new QSet<>(String.class));
+    }
+    @Test
+    public void testEmptyQListToVariantListNotCrashing() {
+		ContainerTest.toQVariantList(new QList<>(String.class));
+    }
+
+    @Test
+    public void testEmptyQHashToVariantContainerNotCrashing() {
+		ContainerTest.toQVariantHash(new QHash<>(String.class,String.class));
+		ContainerTest.toQVariantMap(new QHash<>(String.class,String.class));
+    }
+    
+    @Test
+    public void testEmptyQMapToVariantContainerNotCrashing() {
+		ContainerTest.toQVariantHash(new QMap<>(String.class,String.class));
+		ContainerTest.toQVariantMap(new QMap<>(String.class,String.class));
     }
 }
