@@ -185,7 +185,7 @@ if(%in){
         Text{content: String.raw
 `@Override
 @QtUninvokable
-public final java.util.Iterator<%ELEMENT_TYPE> iterator() {
+public final java.util.@NonNull Iterator<%ELEMENT_TYPE> iterator() {
     return this;
 }`
         }
@@ -4227,26 +4227,103 @@ public final %ITERATOR_TYPE iterator() {
 
     ObjectType{
         name: "QDirListing"
+        implementing: "Iterable<io.qt.core.QDirListing.@NonNull DirEntry>"
+        InjectCode{
+            Text{content: String.raw`
+@Override
+@QtUninvokable
+public final java.util.@NonNull Iterator<io.qt.core.QDirListing.@NonNull DirEntry> iterator() {
+    return new java.util.Iterator<DirEntry>(){
+            final QSequentialConstIterator<DirEntry> current = constBegin();
+            private DirEntry next;
+
+            @Override
+            public boolean hasNext() {
+                if(!isEnd(QtJambi_LibraryUtilities.internal.nativeId(current))) {
+                    if(next!=null) {
+                        current.increment();
+                        if(!isEnd(QtJambi_LibraryUtilities.internal.nativeId(current)))
+                            next = current._value();
+                        else
+                            next = null;
+                    }else {
+                        next = current._value();
+                    }
+                }else{
+                    next = null;
+                }
+                return next!=null;
+            }
+
+            @Override
+            public DirEntry next() {
+                return next;
+            }
+        };
+}
+@QtUninvokable
+private static native boolean isEnd(long __iter);
+`}
+        }
         Rejection{functionName: "cbegin"}
         Rejection{functionName: "cend"}
         Rejection{functionName: "begin"}
         Rejection{functionName: "end"}
+        Rejection{functionName: "constEnd"}
+        Rejection{className: "sentinel"}
         EnumType{
             name: "IteratorFlag"
         }
         ObjectType{
             name: "DirEntry"
         }
-        Rejection{functionName: "constBegin"}
-        Rejection{functionName: "constEnd"}
-        /*IteratorType{
+        IteratorType{
             name: "const_iterator"
             isConst: true
         }
-        IteratorType{
-            name: "sentinel"
-            isConst: true
-        }*/
+        ModifyFunction{
+            signature: "constBegin()const"
+            ModifyArgument{
+                index: 0
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: String.raw`
+%out = QtJambiAPI::convertQSequentialIteratorToJavaObject(%env, __this_nativeId,
+            new QDirListing::const_iterator(std::move(%in)),
+            [](void* ptr,bool) {
+                QDirListing::const_iterator* iterator = static_cast<QDirListing::const_iterator*>(ptr);
+                delete iterator;
+            },
+            QtJambiPrivate::QSequentialConstIteratorAccess<QDirListing::const_iterator>::newInstance()
+        );
+`}
+                }
+            }
+        }
+        InjectCode{
+            target: CodeClass.Native
+            Text{content: String.raw`
+bool operator==(const QDirListing::const_iterator &lhs, const QDirListing::const_iterator &rhs) noexcept {
+    return lhs==QDirListing::sentinel{} && rhs==QDirListing::sentinel{};
+}
+
+extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QDirListing_isEnd)
+    (JNIEnv *__jni_env,
+     jclass,
+     QtJambiNativeID __this_nativeId)
+{
+    jboolean result = false;
+    QTJAMBI_TRY {
+        QDirListing::const_iterator *__qt_this = QtJambiAPI::objectFromNativeId<QDirListing::const_iterator>(__this_nativeId);
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
+        result = (*__qt_this)==QDirListing::sentinel{};
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+    return result;
+}
+`}
+        }
         since: 6.8
     }
 
@@ -7421,7 +7498,7 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
         Rejection{
             functionName: "end"
         }
-        implementing: "Iterable<QRegularExpressionMatch>, java.util.Iterator<QRegularExpressionMatch>"
+        implementing: "Iterable<@NonNull QRegularExpressionMatch>, java.util.Iterator<@NonNull QRegularExpressionMatch>"
         ModifyFunction{
             signature: "QRegularExpressionMatchIterator(QRegularExpressionMatchIterator)"
             remove: RemoveFlag.All
@@ -7431,7 +7508,7 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
                 name: "core.self_iterator"
                 Replace{
                     from: "%ELEMENT_TYPE"
-                    to: "QRegularExpressionMatch"
+                    to: "@NonNull QRegularExpressionMatch"
                 }
             }
         }
@@ -7536,13 +7613,13 @@ public static final int MaxUtcOffsetSecs = +14 * 3600;`}
                 noImplicitCalls: true
             }
         }
-        implementing: "Iterable<String>, java.util.Iterator<String>"
+        implementing: "Iterable<@NonNull String>, java.util.Iterator<@NonNull String>"
         InjectCode{
             InsertTemplate{
                 name: "core.self_iterator"
                 Replace{
                     from: "%ELEMENT_TYPE"
-                    to: "String"
+                    to: "@NonNull String"
                 }
             }
         }
@@ -13109,6 +13186,10 @@ if(destinationChildV<0)
                 fileName: "QtJambi/JavaAPI"
                 location: Include.Global
             }
+            Include{
+                fileName: "QtJambi/JObjectWrapper"
+                location: Include.Global
+            }
         }
         EnumType{
             name: "Priority"
@@ -13218,10 +13299,14 @@ if(destinationChildV<0)
             InjectCode{
                 target: CodeClass.Native
                 position: Position.Beginning
-                Text{content: "if(!__qt_this->parent() && !__qt_this->isRunning()){\n"+
-                              "    if(!Java::QtCore::QThread::javaThread(%env, __this))\n"+
-                              "        QtJambiAPI::setCppOwnership(%env, __this);\n"+
-                              "}"}
+                Text{content: String.raw`
+if(!Java::QtCore::QThread::javaThread(%env, __this) && !__qt_this->isRunning() && !__qt_this->isFinished())
+    QObject::connect(__qt_this, &QThread::started,
+                     __qt_this, [thisWrapper = JObjectWrapper(%env, __this)]() mutable {
+                                    if(JniEnvironment env{0})
+                                        thisWrapper.clear(env);
+                                }, Qt::DirectConnection);
+                    `}
             }
         }
         ModifyFunction{
@@ -13231,7 +13316,7 @@ if(destinationChildV<0)
                 target: CodeClass.Java
                 position: Position.End
                 Text{content: "Thread t = javaThread();\n"+
-                              "if(t!=null)\n"+
+                              "if(t!=null && !t.isInterrupted())\n"+
                               "    t.interrupt();"}
             }
         }
@@ -16732,7 +16817,7 @@ if(%1!=null){
         }
         packageName: "io.qt.core.internal"
         Implements{
-            interfaces: "Iterable<String>, java.util.Iterator<String>"
+            interfaces: "Iterable<@NonNull String>, java.util.Iterator<@NonNull String>"
             until: 6.7
         }
         InjectCode{
@@ -16740,7 +16825,7 @@ if(%1!=null){
                 name: "core.self_iterator"
                 Replace{
                     from: "%ELEMENT_TYPE"
-                    to: "String"
+                    to: "@NonNull String"
                 }
             }
             until: 6.7
@@ -16770,6 +16855,14 @@ if(%1!=null){
                 }
             }
             until: 6.7 // unique_ptr as of 6.8
+        }
+        InjectCode{
+            target: CodeClass.Java
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class QAbstractFileEngineHandler___"
+                quoteBeforeLine: "}// class"
+            }
         }
     }
 
@@ -20418,25 +20511,17 @@ if(%1!=null){
                 index: 1
                 name: "clazz"
                 type: "java.lang.@Nullable Class<?>"
-                comment: ""
+                comment: " Java class of the meta type"
             }
             AddArgument{
                 index: 2
                 name: "instantiations"
                 type: "io.qt.core.@NonNull QMetaType @NonNull..."
-                comment: ""
+                comment: "only required for generic container types"
             }
             ModifyArgument{
                 index: 0
                 comment: "found meta type id"
-            }
-            InjectCode{
-                target: CodeClass.Java
-                position: Position.Comment
-                Text{content: "@param clazz Java class of the meta type\n" +
-                              "@param instantiations only required for generic container types\n" +
-                              "@return found meta type id"
-                }
             }
         }
     }

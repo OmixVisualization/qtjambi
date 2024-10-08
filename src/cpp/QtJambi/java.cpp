@@ -83,6 +83,10 @@ namespace Internal{
         QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QCoreApplication,
                                  QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(execPreRoutines,()V)
                                  QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(execPostRoutines,()V))
+        QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QThread,
+                                        QTJAMBI_REPOSITORY_DEFINE_METHOD(setJavaThreadReference,(Ljava/lang/Thread;)V)
+                                        QTJAMBI_REPOSITORY_DEFINE_METHOD(getJavaThreadReference,()Ljava/lang/Thread;)
+                                        )
 }
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QPluginLoader,
@@ -95,7 +99,7 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QUnhandledException,
                                  QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/lang/String;))
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QThread,
-    QTJAMBI_REPOSITORY_DEFINE_FIELD(javaThread,Ljava/lang/Thread;)
+    QTJAMBI_REPOSITORY_DEFINE_FIELD(javaThread,Ljava/lang/ref/WeakReference;)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QMetaMethod,
@@ -1156,6 +1160,7 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(java/lang,Thread,
     QTJAMBI_REPOSITORY_DEFINE_METHOD(getUncaughtExceptionHandler,()Ljava/lang/Thread$UncaughtExceptionHandler;)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(getContextClassLoader,()Ljava/lang/ClassLoader;)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(setUncaughtExceptionHandler,(Ljava/lang/Thread$UncaughtExceptionHandler;)V)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(setName,(Ljava/lang/String;)V)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(setContextClassLoader,(Ljava/lang/ClassLoader;)V)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(getThreadGroup,()Ljava/lang/ThreadGroup;)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(getStackTrace,()[Ljava/lang/StackTraceElement;)

@@ -47,13 +47,13 @@ public final class QPropertyChangeHandler extends QPropertyObserver {
 	public QPropertyChangeHandler(@StrictNonNull Runnable functor) {
 		super((QPrivateConstructor)null);
 		initialize(this);
-		this.functor = Objects.requireNonNull(functor);
+		this.functor = Objects.requireNonNull(functor, "Argument 'functor': null not expected.");
 	}
 	
 	QPropertyChangeHandler(QPropertyBindingData bindingData, Runnable functor) {
 		super((QPrivateConstructor)null);
 		initialize(this);
-		this.functor = Objects.requireNonNull(functor);
+		this.functor = Objects.requireNonNull(functor, "Argument 'functor': null not expected.");
 		setSource(bindingData);
 	}
 	

@@ -37,7 +37,7 @@ public final class QFutureSynchronizer<T>
      */
     @io.qt.QtUninvokable
     public final void addFuture(@NonNull QFuture<T> future){
-        m_futures.add(Objects.requireNonNull(future));
+        m_futures.add(Objects.requireNonNull(future, "Argument 'future': null not expected."));
     }
     
     /**

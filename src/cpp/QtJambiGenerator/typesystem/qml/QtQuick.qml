@@ -3508,7 +3508,7 @@ if(%1.count()<=0)
                 }
             }
         }
-        ModifyFunction{
+        /*ModifyFunction{
             signature: "fromNative(objc_object *, QQuickWindow *, QSize, QQuickWindow::CreateTextureOptions)"
             proxyCall: "qtjambi_QSGMetalTexture_fromNative"
             ModifyArgument{
@@ -3526,7 +3526,7 @@ if(%1.count()<=0)
                     Text{content: "void* %out = QtJambiAPI::convertQNativePointerToNative(%env, %in);"}
                 }
             }
-        }
+        }*/
         ModifyFunction{
             signature: "fromNative(id<MTLTexture>, QQuickWindow *, QSize, QQuickWindow::CreateTextureOptions)"
             proxyCall: "qtjambi_QSGMetalTexture_fromNative"

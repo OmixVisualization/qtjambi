@@ -562,9 +562,13 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_connectNative)
         QMetaMethod qt_signalMethod = reinterpret_cast<const QMetaObject*>(senderMetaObjectId)->method(signal);
         QObject* deletable = nullptr;
         QObject* context = QtJambiAPI::objectFromNativeId<QObject>(contextNativeId);
-        connectionType = connectionType & ~Qt::UniqueConnection;
+        int reducedConnectionType = (connectionType & ~Qt::UniqueConnection)
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+                                    & ~Qt::SingleShotConnection
+#endif
+            ;
         QThread* senderAsThread = dynamic_cast<QThread*>(sender);
-        if(connectionType==Qt::AutoConnection || connectionType==Qt::DirectConnection){
+        if(reducedConnectionType==Qt::AutoConnection || reducedConnectionType==Qt::DirectConnection){
             if(senderAsThread && !context){
                 connectionType = Qt::DirectConnection;
                 deletable = new QObject();
@@ -573,7 +577,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_connectNative)
             }
         }else if(senderAsThread && QThreadData::get2(senderAsThread)->isAdopted){
             QString _connectionType;
-            if(connectionType==Qt::BlockingQueuedConnection){
+            if(reducedConnectionType==Qt::BlockingQueuedConnection){
                 _connectionType = "BlockingQueuedConnection";
             }else{
                 _connectionType = "QueuedConnection";

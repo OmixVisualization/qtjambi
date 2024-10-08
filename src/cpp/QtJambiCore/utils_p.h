@@ -265,6 +265,13 @@ namespace QtCore
                                      QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(test))
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QByteArray$Predicate,
                                      QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(test))
+namespace Internal
+{
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QAbstractFileEngineHandler,
+                                     QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(registerFactory)
+                                     QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(unregisterFactory)
+                                     QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(createByFactory))
+}
 }
 
 #if QT_VERSION >= QT_VERSION_CHECK(6,2,0)

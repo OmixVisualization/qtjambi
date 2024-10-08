@@ -855,9 +855,6 @@
 						<condition property="Dqtjambi.log-level" value="-Dqtjambi.log-level=${qtjambi.log-level}" else="-Dx">
 							<isset property="qtjambi.log-level"/>
 						</condition>
-						<condition property="Dio.qt.verbose-loading" value="-Dio.qt.verbose-loading=${io.qt.verbose-loading}" else="-Dx">
-							<isset property="io.qt.verbose-loading"/>
-						</condition>
 						<condition property="Dio.qt.enable-dangling-pointer-check" value="-Dio.qt.enable-dangling-pointer-check=${io.qt.enable-dangling-pointer-check}" else="-Dx">
 							<isset property="io.qt.enable-dangling-pointer-check"/>
 						</condition>
@@ -895,7 +892,6 @@
 										<pathelement path="${outputDir}/${qtjambi.osname}/tests/qtjambi-autotests-${qtjambi.jar.version}.jar" />
 									</classpath>
 									<jvmarg value="-Dio.qt.library-path-override=${qtPath}${psep}${qtJambiPath}${psep}${testLibPath}"/>
-									<jvmarg value="${Dio.qt.verbose-loading}"/>
 									<jvmarg value="-Dio.qt.debug=${kind}"/><!-- This should not be needed now, it loads default from MANIFEST.MF -->
 									<jvmarg value="-Dio.qt.log-messages=ALL"/>
 									<jvmarg value="${Dqtjambi.log-level}"/>

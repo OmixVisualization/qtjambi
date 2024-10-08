@@ -246,14 +246,15 @@ void unregister_file_by_function(QFunctionPointer fn){
 
 void clearFunctionPointersAtShutdown(){
     Libraries libraries;
+    QHash<void*,void(*)(void*)> functionPointerCleanups;
     if(!gLibraries.isDestroyed()){
         QMutexLocker locker(gMutex());
         gLibraries->swap(libraries);
-        QHash<void*,void(*)(void*)> functionPointerCleanups;
         gFunctionPointerCleanups->swap(functionPointerCleanups);
-        for(auto iter = functionPointerCleanups.constKeyValueBegin(); iter!=functionPointerCleanups.constKeyValueEnd(); ++iter){
+    }
+    for(auto iter = functionPointerCleanups.constKeyValueBegin(); iter!=functionPointerCleanups.constKeyValueEnd(); ++iter){
+        if(iter->second && iter->first)
             iter->second(iter->first);
-        }
     }
 }
 

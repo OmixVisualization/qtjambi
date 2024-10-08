@@ -454,7 +454,7 @@ public final class QFuture<T>
      */
     @io.qt.QtUninvokable
     public <R> @NonNull QFuture<R> then(QObject context, java.util.function.Function<QFuture<T>, R> function){
-        return thenPool(QtJambi_LibraryUtilities.internal.nativeId(d), QtJambi_LibraryUtilities.internal.checkedNativeId(java.util.Objects.requireNonNull(context)), function);
+        return thenPool(QtJambi_LibraryUtilities.internal.nativeId(d), QtJambi_LibraryUtilities.internal.checkedNativeId(java.util.Objects.requireNonNull(context, "Argument 'context': null not expected.")), function);
     }
     @io.qt.QtUninvokable
     private native static <T,R> QFuture<R> thenContext(long __this_nativeId, long contextId, java.util.function.Function<QFuture<T>, R> function);
@@ -464,7 +464,7 @@ public final class QFuture<T>
      */
     @io.qt.QtUninvokable
     public @NonNull QFuture<Void> then(QObject context, java.util.function.Consumer<QFuture<T>> function){
-        return thenPoolVoid(QtJambi_LibraryUtilities.internal.nativeId(d), QtJambi_LibraryUtilities.internal.checkedNativeId(java.util.Objects.requireNonNull(context)), function);
+        return thenPoolVoid(QtJambi_LibraryUtilities.internal.nativeId(d), QtJambi_LibraryUtilities.internal.checkedNativeId(java.util.Objects.requireNonNull(context, "Argument 'context': null not expected.")), function);
     }
     @io.qt.QtUninvokable
     private native static <T,R> QFuture<Void> thenContextVoid(long __this_nativeId, long contextId, java.util.function.Consumer<QFuture<T>> function);
@@ -474,7 +474,7 @@ public final class QFuture<T>
      */
     @io.qt.QtUninvokable
     public @NonNull QFuture<T> onFailed(QObject context, java.util.function.Function<Throwable, T> function){
-        return onFailedContext(QtJambi_LibraryUtilities.internal.nativeId(d), QtJambi_LibraryUtilities.internal.checkedNativeId(java.util.Objects.requireNonNull(context)), function);
+        return onFailedContext(QtJambi_LibraryUtilities.internal.nativeId(d), QtJambi_LibraryUtilities.internal.checkedNativeId(java.util.Objects.requireNonNull(context, "Argument 'context': null not expected.")), function);
     }
     @io.qt.QtUninvokable
     private native static <T> QFuture<T> onFailedContext(long __this_nativeId, long contextId, Object function);
@@ -484,7 +484,7 @@ public final class QFuture<T>
      */
     @io.qt.QtUninvokable
     public @NonNull QFuture<T> onCanceled(QObject context, java.util.function.Supplier<T> function){
-        return onCanceledContext(QtJambi_LibraryUtilities.internal.nativeId(d), QtJambi_LibraryUtilities.internal.checkedNativeId(java.util.Objects.requireNonNull(context)), function);
+        return onCanceledContext(QtJambi_LibraryUtilities.internal.nativeId(d), QtJambi_LibraryUtilities.internal.checkedNativeId(java.util.Objects.requireNonNull(context, "Argument 'context': null not expected.")), function);
     }
     
     /**
@@ -492,7 +492,7 @@ public final class QFuture<T>
      */
     @io.qt.QtUninvokable
     public @NonNull QFuture<Void> onFailed(QObject context, java.util.function.Consumer<Throwable> function){
-        return onFailedContext(QtJambi_LibraryUtilities.internal.nativeId(d), QtJambi_LibraryUtilities.internal.checkedNativeId(java.util.Objects.requireNonNull(context)), function);
+        return onFailedContext(QtJambi_LibraryUtilities.internal.nativeId(d), QtJambi_LibraryUtilities.internal.checkedNativeId(java.util.Objects.requireNonNull(context, "Argument 'context': null not expected.")), function);
     }
     
     /**
@@ -500,7 +500,7 @@ public final class QFuture<T>
      */
     @io.qt.QtUninvokable
     public @NonNull QFuture<Void> onCanceled(QObject context, java.lang.Runnable function){
-        return onCanceledContext(QtJambi_LibraryUtilities.internal.nativeId(d), QtJambi_LibraryUtilities.internal.checkedNativeId(java.util.Objects.requireNonNull(context)), function);
+        return onCanceledContext(QtJambi_LibraryUtilities.internal.nativeId(d), QtJambi_LibraryUtilities.internal.checkedNativeId(java.util.Objects.requireNonNull(context, "Argument 'context': null not expected.")), function);
     }
     @io.qt.QtUninvokable
     private native static <T> QFuture<T> onCanceledContext(long __this_nativeId, long contextId, java.lang.Object function);

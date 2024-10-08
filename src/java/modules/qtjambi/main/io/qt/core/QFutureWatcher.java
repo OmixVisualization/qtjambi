@@ -76,7 +76,7 @@ public final class QFutureWatcher<T> extends io.qt.core.QFutureWatcherBase
      */
     @io.qt.QtUninvokable
     public final void setFuture(io.qt.core.@NonNull QFuture<T> future){
-		setFuture(QtJambi_LibraryUtilities.internal.nativeId(this), futureSetter, Objects.requireNonNull(future));
+		setFuture(QtJambi_LibraryUtilities.internal.nativeId(this), futureSetter, Objects.requireNonNull(future, "Argument 'future': null not expected."));
     }
     
     @io.qt.QtUninvokable

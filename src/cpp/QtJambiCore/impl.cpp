@@ -53,6 +53,7 @@ QT_WARNING_DISABLE_DEPRECATED
 #include "hashes.h"
 #include <QtCore/private/qcoreapplication_p.h>
 #include <QtCore/private/qobject_p.h>
+#include <QtCore/private/qabstractfileengine_p.h>
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
 #include <QtCore/qcoreapplication_platform.h>
@@ -1596,8 +1597,124 @@ QList<QObject*> qtjambi_findChildren(JNIEnv *env, const QObject *__qt_this, jcla
 }
 #endif
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+    typedef std::unique_ptr<QAbstractFileEngine> QAbstractFileEnginePointer;
+#else
+    typedef QAbstractFileEngine* QAbstractFileEnginePointer;
+#endif
+
+struct DefaultJniEnvironment : JniEnvironment{
+    DefaultJniEnvironment(int capacity = 0) : JniEnvironment(false, capacity){}
+};
+
+class FileEngineHandler : public QAbstractFileEngineHandler{
+    bool(&predicate)(const void*,const QString &);
+    void(&deleter)(void*);
+    void* data;
+    FileEngineHandler(JNIEnv *env, jobject _factory, bool(&_predicate)(const void*,const QString &), void(&_deleter)(void*), void* _data)
+        : predicate(_predicate),
+          deleter(_deleter),
+          data(_data)
+    {
+        Java::QtCore::Internal::QAbstractFileEngineHandler::registerFactory(env, jlong(this), _factory);
+    }
+    template<typename Predicate>
+    static bool test(const void* data,const QString & fileName){
+        return (*reinterpret_cast<const Predicate*>(data))(fileName);
+    }
+    template<typename Predicate>
+    static void destroy(void* data){
+        delete reinterpret_cast<Predicate*>(data);
+    }
+public:
+    template<typename Predicate>
+    FileEngineHandler(JNIEnv *env, jobject _factory, Predicate&& predicate)
+        : FileEngineHandler(env, _factory,
+                            FileEngineHandler::test<Predicate>,
+                            FileEngineHandler::destroy<Predicate>,
+                            new Predicate(std::move(predicate))
+    )
+    {
+    }
+    ~FileEngineHandler(){
+        if(DefaultJniEnvironment env{100}){
+            Java::QtCore::Internal::QAbstractFileEngineHandler::unregisterFactory(env, jlong(this));
+        }
+        deleter(data);
+    }
+    QAbstractFileEnginePointer create(const QString &fileName) const{
+        if(predicate(data, fileName)){
+            if(JniEnvironment env{100}){
+                if(jobject engine = Java::QtCore::Internal::QAbstractFileEngineHandler::createByFactory(env, jlong(this), qtjambi_cast<jstring>(env, fileName))){
+                    QtJambiAPI::setCppOwnership(env, engine);
+                    return QAbstractFileEnginePointer(qtjambi_cast<QAbstractFileEngine*>(env, engine));
+                }
+            }
+            return QAbstractFileEnginePointer(nullptr);
+        }
+        return QAbstractFileEnginePointer(nullptr);
+    }
+};
+
 extern "C" Q_DECL_EXPORT jobject JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QThread__1_1qt_1javaThread)
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_internal_QAbstractFileEngineHandler_fromStartsWith)
+(JNIEnv *env, jclass, jstring _strg, jobject _factory)
+{
+    jobject result{nullptr};
+    QTJAMBI_TRY{
+        QAbstractFileEngineHandler* handler = new FileEngineHandler(env, _factory,
+                                                                    [strg = qtjambi_cast<QString>(env, _strg)](const QString &fileName) -> bool {
+                                                                        return fileName.startsWith(strg);
+                                                                    });
+        result = qtjambi_cast<jobject>(env, handler);
+        QtJambiAPI::setCppOwnership(env, result);
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(env);
+    }QTJAMBI_TRY_END
+    return result;
+}
+
+extern "C" Q_DECL_EXPORT jobject JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_internal_QAbstractFileEngineHandler_fromEndsWith)
+(JNIEnv *env, jclass, jstring _strg, jobject _factory)
+{
+    jobject result{nullptr};
+    QTJAMBI_TRY{
+        QAbstractFileEngineHandler* handler = new FileEngineHandler(env, _factory,
+                                                                    [strg = qtjambi_cast<QString>(env, _strg)](const QString &fileName) -> bool {
+                                                                        return fileName.endsWith(strg);
+                                                                    });
+        result = qtjambi_cast<jobject>(env, handler);
+        QtJambiAPI::setCppOwnership(env, result);
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(env);
+    }QTJAMBI_TRY_END
+    return result;
+}
+
+extern "C" Q_DECL_EXPORT jobject JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_internal_QAbstractFileEngineHandler_fromMatch)
+(JNIEnv *env, jclass, jobject _factory, QtJambiNativeID _regexp, jlong _offset, jint _matchType, jint _matchOptions)
+{
+    jobject result{nullptr};
+    QTJAMBI_TRY{
+        QAbstractFileEngineHandler* handler = new FileEngineHandler(env, _factory,
+                                                                    [regexp = QtJambiAPI::valueFromNativeId<QRegularExpression>(_regexp),
+                                                                     offset = qsizetype(_offset),
+                                                                     matchType = QRegularExpression::MatchType(_matchType),
+                                                                     matchOptions = QRegularExpression::MatchOptions(_matchOptions)](const QString &fileName) -> bool {
+                                                                        return regexp.match(fileName, offset, matchType, matchOptions).hasMatch();
+                                                                    });
+        result = qtjambi_cast<jobject>(env, handler);
+        QtJambiAPI::setCppOwnership(env, result);
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(env);
+    }QTJAMBI_TRY_END
+    return result;
+}
+
+extern "C" Q_DECL_EXPORT jobject JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QThread_findJavaThread)
 (JNIEnv *__jni_env, jobject _this)
 {
     jobject _result{nullptr};

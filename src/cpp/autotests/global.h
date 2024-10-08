@@ -85,6 +85,7 @@
 #include "multisignaltest.h"
 #include "exceptiontest.h"
 #include "performancetests.h"
+#include "threadfactory.h"
 
 #ifndef QTJAMBI_GENERATOR_RUNNING
 #include <QtJambi/QtJambiAPI>

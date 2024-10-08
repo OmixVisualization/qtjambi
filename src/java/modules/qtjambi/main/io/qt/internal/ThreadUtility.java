@@ -55,15 +55,18 @@ abstract class ThreadUtility {
 		if(args.length==1 && args[0] instanceof Thread) {
             Thread _thread = (Thread)args[0];
             if(_thread.isAlive()) {
-                QThread _qthread = QThread.thread(_thread);
-                if(_qthread!=null && !_qthread.isDisposed() && !_qthread.isInterruptionRequested()){
-                	Object monitor = NativeUtility.findInterfaceLink(_qthread, true);
-                	if(monitor!=null) {
-	                	synchronized(monitor){
-	                        _qthread.requestInterruption();
-	                    }
-                	}
-                }
+            	try {
+	                QThread _qthread = QThread.thread(_thread);
+	                if(_qthread!=null && !_qthread.isDisposed()){
+	                	Object monitor = NativeUtility.findInterfaceLink(_qthread, true);
+	                	if(monitor!=null) {
+		                	synchronized(monitor){
+		                		if(!_qthread.isInterruptionRequested())
+		                			_qthread.requestInterruption();
+		                    }
+	                	}
+	                }
+                } catch (Throwable e) {}
             }
         }
         return null;

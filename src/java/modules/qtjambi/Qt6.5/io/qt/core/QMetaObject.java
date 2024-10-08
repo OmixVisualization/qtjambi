@@ -11322,7 +11322,6 @@ public final class QMetaObject {
     /**
      * <p>Reads the value of the property in the object's thread.</p>
      * 
-     * @param <A> The type of the property.
      * @param property property to be read
      * @return value
      */

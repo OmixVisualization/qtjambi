@@ -551,6 +551,7 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                   << INDENT << "final static int qtMinorVersion = " << m_qtVersionMinor << ";" << Qt::endl << Qt::endl
                   << INDENT << "final static int qtJambiPatch = " << m_qtjambiVersionPatch << ";" << Qt::endl;
                 if(typeSystemEntry){
+                    generateInitializer(s, typeSystemEntry, {}, TS::PackageInitializer, CodeSnip::Beginning, INDENT);
                     s << Qt::endl << INDENT << "final static InternalAccess internal;" << Qt::endl
                       << Qt::endl << INDENT << "static{" << Qt::endl;
                     {
@@ -849,6 +850,7 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                         generateInitializer(s, typeSystemEntry, {}, TS::TargetLangCode, CodeSnip::End, INDENT);
                     }
                     s << INDENT << "}" << Qt::endl;
+                    generateInitializer(s, typeSystemEntry, {}, TS::PackageInitializer, CodeSnip::End, INDENT);
                 }else{
                     if((typeSystemEntry = static_cast<TypeSystemTypeEntry *>(m_database->findType(typeSystemByPackage)))){
                         QString typeSystemID = typeSystemEntry->module();
@@ -868,6 +870,7 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                             s << INDENT << "final static InternalAccess internal;" << Qt::endl << Qt::endl;
                         }
 
+                        generateInitializer(s, typeSystemEntry, {}, TS::PackageInitializer, CodeSnip::Beginning, INDENT);
                         generateInitializer(s, typeSystemEntry, package, TS::TargetLangCode, CodeSnip::Beginning, INDENT);
                         s << Qt::endl << INDENT << "static{" << Qt::endl;
                         {
@@ -955,6 +958,7 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                         generateInitializer(s, typeSystemEntry, package, TS::TargetLangCode, CodeSnip::Position5, INDENT);
                         s << INDENT << "}" << Qt::endl;
                         generateInitializer(s, typeSystemEntry, package, TS::TargetLangCode, CodeSnip::End, INDENT);
+                        generateInitializer(s, typeSystemEntry, {}, TS::PackageInitializer, CodeSnip::End, INDENT);
                     }else if(package!="io.qt.internal"){
                         s << INDENT << "static final InternalAccess internal;" << Qt::endl << Qt::endl
                           << INDENT << "static{" << Qt::endl

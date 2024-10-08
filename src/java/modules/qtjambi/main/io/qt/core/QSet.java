@@ -92,7 +92,7 @@ public class QSet<T> extends AbstractSequentialContainer<T> implements Set<T>, C
      */
     public QSet(@StrictNonNull Collection<T> other) {
         super(null);
-		QMetaType metaType = QList.findElementMetaType(Objects.requireNonNull(other));
+		QMetaType metaType = QList.findElementMetaType(Objects.requireNonNull(other, "Argument 'other': null not expected."));
 		initialize(metaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaType), other);
     }
     
@@ -255,7 +255,7 @@ public class QSet<T> extends AbstractSequentialContainer<T> implements Set<T>, C
 	 */
     @QtUninvokable
     public final boolean removeIf(@StrictNonNull Predicate<? super T> predicate)    {
-        Objects.requireNonNull(predicate);
+        Objects.requireNonNull(predicate, "Argument 'predicate': null not expected.");
         boolean removed = false;
         QSet<T> clone = clone();
         final Iterator<T> each = clone.iterator();

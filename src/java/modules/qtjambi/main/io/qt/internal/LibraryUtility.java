@@ -2709,7 +2709,7 @@ final class LibraryUtility {
         }
 
         if (shouldUnpack.booleanValue()) {
-        	Logger.getLogger("io.qt.internal").log(Level.FINEST, " - prepare library extraction...");
+        	Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->String.format(" - prepare library extraction for %1$s...", (jarName==null ? deploymentSpec : new File(jarName).getName())));
             
             LibVersion specVersion;
             try {
@@ -2746,6 +2746,7 @@ final class LibraryUtility {
                 		outFile = new File(tmpDir, pair.first.replace('/', File.separatorChar));
                 	}
 	                if(!outFile.exists()) {
+	                	Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->String.format(" - adding extractor for %1$s", pair.first));
 	                	Library.ExtractionFunction extractor = getLibraryExtractor(urlBase, pair.first, outFile, Boolean.TRUE.equals(pair.second), isDebug, false, specVersion.qtMajorVersion, specVersion.qtMinorVersion, specVersion.qtJambiPatch);
 	                	if(pair.first.startsWith("qml/")) {
 	                		qmlExtractionFunctions.add(extractor);
@@ -2862,6 +2863,31 @@ final class LibraryUtility {
             			libraries = new ArrayList<>(libraries);
             			library = libraries.remove(0);
             			entries.put(library.getName(), library);
+            			if(operatingSystem==OperatingSystem.MacOS) {
+            				if(library.getName().contains(".framework/") && !library.getName().endsWith(".framework/")) {
+            					String path = library.getName();
+            					int idx = path.lastIndexOf(File.separatorChar);
+            					while(idx>0) {
+            						path = path.substring(0, idx);
+            						if(path.endsWith(".framework")) {
+            							entries.put(path, library);
+            							break;
+            						}
+            						idx = path.lastIndexOf(File.separatorChar);
+            					}
+            				}else if(library.getName().contains(".framework.dSYM/") && !library.getName().endsWith(".framework.dSYM/")) {
+            					String path = library.getName();
+            					int idx = path.lastIndexOf(File.separatorChar);
+            					while(idx>0) {
+            						path = path.substring(0, idx);
+            						if(path.endsWith(".framework.dSYM")) {
+            							entries.put(path, library);
+            							break;
+            						}
+            						idx = path.lastIndexOf(File.separatorChar);
+            					}
+            				}
+            			}
 	            		String libName = library.getName();
 	            		String urlBase = library.source().toString();
 	                    int idx = urlBase.indexOf("!/");
@@ -2923,6 +2949,31 @@ final class LibraryUtility {
             	}
 	            for (Library e : libraries) {
 	            	entries.put(e.getName(), e);
+	            	if(operatingSystem==OperatingSystem.MacOS) {
+        				if(e.getName().contains(".framework/") && !e.getName().endsWith(".framework/")) {
+        					String path = e.getName();
+        					int idx = path.lastIndexOf(File.separatorChar);
+        					while(idx>0) {
+        						path = path.substring(0, idx);
+        						if(path.endsWith(".framework")) {
+        							entries.put(path, e);
+        							break;
+        						}
+        						idx = path.lastIndexOf(File.separatorChar);
+        					}
+        				}else if(e.getName().contains(".framework.dSYM/") && !e.getName().endsWith(".framework.dSYM/")) {
+        					String path = e.getName();
+        					int idx = path.lastIndexOf(File.separatorChar);
+        					while(idx>0) {
+        						path = path.substring(0, idx);
+        						if(path.endsWith(".framework.dSYM")) {
+        							entries.put(path, e);
+        							break;
+        						}
+        						idx = path.lastIndexOf(File.separatorChar);
+        					}
+        				}
+        			}
 	            	if(!(e instanceof Symlink)) {
 	            		String libName = e.getName();
 	            		final File outFile;
@@ -2959,12 +3010,14 @@ final class LibraryUtility {
 	                				|| libName.startsWith("bin/Qt"+QtJambi_LibraryUtilities.qtMajorVersion), 
 	                				specVersion.qtMajorVersion, specVersion.qtMinorVersion, specVersion.qtJambiPatch);
 	                		if(library!=null) {
+	                			Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->String.format(" - adding extractor for %1$s", e.getName()));
 	                			if(libName.startsWith("qml/")) {
 	                				library.addQmlExtractionFunction(extractLibrary);
 	                			}else {
 	                				library.addExtractionFunction(extractLibrary);
 	                			}
 	                			e.addExtractionFunction(extractLibrary);
+                    			e.addExtractionFunctions(utilExtractionFunctions);
 	                		}else if(executor!=null
 	                    			&& ((!libName.contains("QtJambiGui")
 	                            			&& !libName.contains("QtJambiWidgets")
@@ -3032,7 +3085,7 @@ final class LibraryUtility {
 			                    	Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->String.format(" - creating directory: %1$s", outFileDir.getAbsolutePath()));
 			                        outFileDir.mkdirs();
 			                    }
-			                    Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->String.format(" - creating symbolic link %1$s", outFile.getAbsolutePath()));
+			                    Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->String.format(" - creating symbolic link %1$s pointing to %2$s", outFile.getAbsolutePath(), target.getAbsolutePath()));
 		                    	Files.createSymbolicLink(outFile.toPath(), outFile.getParentFile().toPath().relativize(target.toPath()));
 		                    }else {
 		                    	Library.ExtractionFunction linker = ()->{
@@ -3041,33 +3094,61 @@ final class LibraryUtility {
 		    		                    	Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->String.format(" - creating directory: %1$s", outFileDir.getAbsolutePath()));
 		    		                        outFileDir.mkdirs();
 		    		                    }
-		    		                    Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->String.format(" - creating symbolic link %1$s", outFile.getAbsolutePath()));
+		    		                    Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->String.format(" - creating symbolic link %1$s pointing to %2$s", outFile.getAbsolutePath(), target.getAbsolutePath()));
 				                    	Files.createSymbolicLink(outFile.toPath(), outFile.getParentFile().toPath().relativize(target.toPath()));
 	                    			}
 			                    	s.extractQml();
 		                    	};
-	                    		if(e.getName().startsWith("qml/")) {
-			                    	if(library!=null) {
-		                				library.addQmlExtractionFunction(linker);
+		                    	Library linkedEntry = entries.get(s.getTarget());
+		                    	if(linkedEntry!=null) {
+		                    		if(e.getName().startsWith("qml/")) {
+                						linkedEntry.addQmlExtractionFunction(linker);
+                						if(library!=null)
+                							library.addQmlExtractionFunction(linker);
+    	                			}else {
+    	                				linkedEntry.addExtractionFunction(linker);
+    	                				if(library!=null)
+    	                					library.addExtractionFunction(linker);
+    	                			}
+		                    	}else if(operatingSystem==OperatingSystem.MacOS) {
+	                				if(s.getTarget().contains(".framework/") && !s.getTarget().endsWith(".framework/")) {
+	                					String path = s.getTarget();
+	                					int idx = path.lastIndexOf(File.separatorChar);
+	                					while(idx>0) {
+	                						path = path.substring(0, idx);
+	                						if(path.endsWith(".framework")) {
+	                							linkedEntry = entries.get(path);
+	                							break;
+	                						}
+	                						idx = path.lastIndexOf(File.separatorChar);
+	                					}
+	                				}else if(s.getTarget().contains(".framework.dSYM/") && !s.getTarget().endsWith(".framework.dSYM/")) {
+	                					String path = s.getTarget();
+	                					int idx = path.lastIndexOf(File.separatorChar);
+	                					while(idx>0) {
+	                						path = path.substring(0, idx);
+	                						if(path.endsWith(".framework.dSYM")) {
+	                							linkedEntry = entries.get(path);
+	                							break;
+	                						}
+	                						idx = path.lastIndexOf(File.separatorChar);
+	                					}
+	                				}
+	                				if(linkedEntry!=null) {
+	                					if(e.getName().startsWith("qml/")) {
+	                						linkedEntry.addQmlExtractionFunction(linker);
+	                						if(library!=null)
+	                							library.addQmlExtractionFunction(linker);
+	    	                			}else {
+	    	                				linkedEntry.addExtractionFunction(linker);
+	    	                				if(library!=null)
+	    	                					library.addExtractionFunction(linker);
+	    	                			}
 			                    	}else {
-				                    	Library linkedEntry = entries.get(s.getTarget());
-				                    	if(linkedEntry!=null) {
-			                    			linkedEntry.addQmlExtractionFunction(linker);
-				                    	}else {
-				                    		shiftedLinks.add(s);
-				                    	}
+			                    		shiftedLinks.add(s);
 			                    	}
 	                			}else {
-			                    	if(library!=null) {
-		                				library.addExtractionFunction(linker);
-			                    	}else {
-				                    	Library linkedEntry = entries.get(s.getTarget());
-				                    	if(linkedEntry!=null) {
-			                				linkedEntry.addExtractionFunction(linker);
-				                    	}else {
-				                    		shiftedLinks.add(s);
-				                    	}
-			                    	}
+	                				shiftedLinks.add(s);
 	                			}
 		                    }
 	            		}
@@ -3103,10 +3184,35 @@ final class LibraryUtility {
 			                        	Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->String.format(" - creating directory: %1$s", outFileDir.getAbsolutePath()));
 			                            outFileDir.mkdirs();
 			                        }
-			                        Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->String.format(" - creating symbolic link %1$s", outFile.getAbsolutePath()));
+			                        Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->String.format(" - creating symbolic link %1$s pointing to %2$s", outFile.getAbsolutePath(), target.getAbsolutePath()));
 		                        	Files.createSymbolicLink(outFile.toPath(), outFile.getParentFile().toPath().relativize(target.toPath()));
 		                        }else {
 		                        	Library linkedEntry = entries.get(s.getTarget());
+		                        	if(linkedEntry==null && operatingSystem==OperatingSystem.MacOS) {
+		                				if(s.getTarget().contains(".framework/") && !s.getTarget().endsWith(".framework/")) {
+		                					String path = s.getTarget();
+		                					int idx = path.lastIndexOf(File.separatorChar);
+		                					while(idx>0) {
+		                						path = path.substring(0, idx);
+		                						if(path.endsWith(".framework")) {
+		                							linkedEntry = entries.get(path);
+		                							break;
+		                						}
+		                						idx = path.lastIndexOf(File.separatorChar);
+		                					}
+		                				}else if(s.getTarget().contains(".framework.dSYM/") && !s.getTarget().endsWith(".framework.dSYM/")) {
+		                					String path = s.getTarget();
+		                					int idx = path.lastIndexOf(File.separatorChar);
+		                					while(idx>0) {
+		                						path = path.substring(0, idx);
+		                						if(path.endsWith(".framework.dSYM")) {
+		                							linkedEntry = entries.get(path);
+		                							break;
+		                						}
+		                						idx = path.lastIndexOf(File.separatorChar);
+		                					}
+		                				}
+		                			}
 			                    	if(linkedEntry!=null) {
 			                    		Library.ExtractionFunction linker = ()->{
 			                    			if(!outFile.exists()) {
@@ -3114,18 +3220,41 @@ final class LibraryUtility {
 						                        	Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->String.format(" - creating directory: %1$s", outFileDir.getAbsolutePath()));
 						                            outFileDir.mkdirs();
 						                        }
-						                        Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->String.format(" - creating symbolic link %1$s", outFile.getAbsolutePath()));
+						                        Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->String.format(" - creating symbolic link %1$s pointing to %2$s", outFile.getAbsolutePath(), target.getAbsolutePath()));
 						                    	Files.createSymbolicLink(outFile.toPath(), outFile.getParentFile().toPath().relativize(target.toPath()));
 			                    			}
 					                    	s.extractQml();
 				                    	};
 			                    		if(s.getName().startsWith("qml/")) {
 			                				linkedEntry.addQmlExtractionFunction(linker);
+			                				if(library!=null)
+			                					library.addQmlExtractionFunction(linker);
 			                			}else {
 			                				linkedEntry.addExtractionFunction(linker);
+			                				if(library!=null)
+			                					library.addExtractionFunction(linker);
 			                			}
 			                    	}else {
-			                    		_shiftedLinks.add(s);
+			                    		if(library!=null) {
+			                    			Library.ExtractionFunction linker = ()->{
+				                    			if(!outFile.exists()) {
+							                        if (!outFileDir.exists()) {
+							                        	Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->String.format(" - creating directory: %1$s", outFileDir.getAbsolutePath()));
+							                            outFileDir.mkdirs();
+							                        }
+							                        Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->String.format(" - creating symbolic link %1$s pointing to %2$s", outFile.getAbsolutePath(), target.getAbsolutePath()));
+							                    	Files.createSymbolicLink(outFile.toPath(), outFile.getParentFile().toPath().relativize(target.toPath()));
+				                    			}
+						                    	s.extractQml();
+					                    	};
+				                    		if(s.getName().startsWith("qml/")) {
+				                    			library.addQmlExtractionFunction(linker);
+		    	                			}else {
+		    	                				library.addExtractionFunction(linker);
+		    	                			}
+				                    	}else {
+				                    		_shiftedLinks.add(s);
+				                    	}
 			                    	}
 		                        }
 	                		}

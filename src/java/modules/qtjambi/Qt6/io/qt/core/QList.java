@@ -163,7 +163,7 @@ public class QList<T> extends AbstractList<T> implements Cloneable
      */
     public QList(@StrictNonNull Collection<T> other) {
 		super(null);
-		QMetaType metaType = findElementMetaType(Objects.requireNonNull(other));
+		QMetaType metaType = findElementMetaType(Objects.requireNonNull(other, "Argument 'other': null not expected."));
 		initialize(metaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaType), other);
     }
     
@@ -563,7 +563,7 @@ public class QList<T> extends AbstractList<T> implements Cloneable
 	 */
     @QtUninvokable
     public final boolean removeIf(@StrictNonNull Predicate<? super T> predicate)    {
-        Objects.requireNonNull(predicate);
+        Objects.requireNonNull(predicate, "Argument 'predicate': null not expected.");
         boolean removed = false;
         for(T value : clone()) {
             if (predicate.test(value)) {

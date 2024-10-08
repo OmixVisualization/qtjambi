@@ -32,6 +32,7 @@ HEADERS += \
     signalsandslots.h \
     smartpointertest.h \
     testdialog.h \
+    threadfactory.h \
     tulip.h \
     variants.h \
     general.h \
@@ -58,6 +59,7 @@ SOURCES += \
     propertyandmethodcalltest.cpp \
     settingstest.cpp \
     multisignaltest.cpp \
+    threadfactory.cpp \
     tulip.cpp \
     variants.cpp \
     debugtools.cpp

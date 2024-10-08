@@ -99,7 +99,7 @@ void clearTypeManagerAtShutdown();
 #if defined(QTJAMBI_GENERIC_ACCESS)
 void registerPointerContainerAccess();
 #endif //defined(QTJAMBI_GENERIC_ACCESS)
-JNIEnv *currentJNIEnvironment(bool initializeJavaThread = true);
+JNIEnv *currentJNIEnvironment(bool& requiresDetach, bool initializeJavaThread = true);
 QObject* connectionSender(const QMetaObject::Connection* connection);
 void registerPluginImporter();
 void clearResettableFlags();
@@ -268,9 +268,10 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(JNI_OnLoad)(JavaVM
     }else{
         return JNI_VERSION_1_8;
     }
-    ::atexit([]{shutdown(nullptr, true);});
+    //::atexit([]{shutdown(nullptr, true);});
 
-    JNIEnv * env = currentJNIEnvironment(vm);
+    bool requiresDetach = false;
+    JNIEnv * env = currentJNIEnvironment(requiresDetach, vm);
 #if defined(Q_OS_ANDROID) && !defined(QT_NO_DEBUG)
     if(env){
         JniLocalFrame __jniLocalFrame(env, 16);

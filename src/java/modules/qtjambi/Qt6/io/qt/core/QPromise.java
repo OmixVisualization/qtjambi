@@ -95,7 +95,7 @@ public final class QPromise<T>
     
     @NativeAccess
     private QPromise(io.qt.core.QFutureInterfaceBase other, boolean internal){
-    	d = Objects.requireNonNull(other);
+    	d = Objects.requireNonNull(other, "Argument 'other': null not expected.");
     }
     
     /**

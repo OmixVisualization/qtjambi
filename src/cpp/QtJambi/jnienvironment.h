@@ -63,9 +63,9 @@ protected:
     JniEnvironment(bool,int capacity);
 private:
     JniEnvironment(bool);
-    void initialize(JNIEnv *env, int capacity);
-    JNIEnv *m_env;
-    bool m_hasLocalFrames;
+    void initialize(JNIEnv *env, bool requiresDetach, int capacity);
+    JNIEnv *m_env = nullptr;
+    quint8 m_flags = 0;
     friend class JniEnvironmentExceptionHandler;
     friend class JniEnvironmentExceptionInhibitor;
 };

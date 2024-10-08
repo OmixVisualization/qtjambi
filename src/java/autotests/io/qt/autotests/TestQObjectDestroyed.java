@@ -39,6 +39,7 @@ import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import io.qt.QNoNativeResourcesException;
 import io.qt.QtUtilities;
 import io.qt.autotests.generated.General;
 import io.qt.autotests.generated.UnMoccedObject;
@@ -203,6 +204,14 @@ public class TestQObjectDestroyed extends ApplicationInitializer {
         QCoreApplication.processEvents();
         // nothing should happen
 	}
+    
+    @Test(expected=QNoNativeResourcesException.class)
+    public void run_no_native() throws Exception
+    {
+    	QObject object = new QObject();
+    	object.dispose();
+    	object.setObjectName("test");
+    }
 
     public static void main(String args[]) {
         org.junit.runner.JUnitCore.main(TestQObjectDestroyed.class.getName());

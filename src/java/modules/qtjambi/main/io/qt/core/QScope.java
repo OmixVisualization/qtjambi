@@ -120,7 +120,7 @@ public final class QScope implements AutoCloseable {
 	static class CleanupEntry<O> extends AbstractEntry<O>{
 		CleanupEntry(O data, Consumer<O> cleanup) {
 			super(data);
-			this.cleanup = Objects.requireNonNull(cleanup);
+			this.cleanup = Objects.requireNonNull(cleanup, "Argument 'cleanup': null not expected.");
 		}
 		private Consumer<O> cleanup;
 		void cleanup(){

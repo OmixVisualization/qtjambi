@@ -37,7 +37,7 @@ class QGeoServiceProviderFactory___ {
         
         public Result(@StrictNonNull T engine) {
             super();
-            this.engine = java.util.Objects.requireNonNull(engine);
+            this.engine = java.util.Objects.requireNonNull(engine, "Argument 'engine': null not expected.");
             this.error = QGeoServiceProvider.Error.NoError;
             this.errorString = null;
         }
@@ -45,8 +45,8 @@ class QGeoServiceProviderFactory___ {
         public Result(QGeoServiceProvider.@StrictNonNull Error error, @NonNull String errorString) {
             super();
             this.engine = null;
-            this.error = java.util.Objects.requireNonNull(error);
-            this.errorString = java.util.Objects.requireNonNull(errorString);
+            this.error = java.util.Objects.requireNonNull(error, "Argument 'error': null not expected.");
+            this.errorString = java.util.Objects.requireNonNull(errorString, "Argument 'errorString': null not expected.");
         }
 
         @NativeAccess

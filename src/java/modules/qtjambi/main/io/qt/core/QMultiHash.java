@@ -136,7 +136,7 @@ public class QMultiHash<Key,T> extends AbstractMultiAssociativeContainer<Key,T> 
      */
     public QMultiHash(Map<Key,List<T>> other) {
 		super(null);
-		QPair<QMetaType, QMetaType> metaTypes = findMapMetaType(Objects.requireNonNull(other));
+		QPair<QMetaType, QMetaType> metaTypes = findMapMetaType(Objects.requireNonNull(other, "Argument 'other': null not expected."));
 		initialize(metaTypes.first.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaTypes.first), metaTypes.second.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaTypes.second), other);
 	}
     

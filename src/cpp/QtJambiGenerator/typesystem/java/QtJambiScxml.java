@@ -118,7 +118,7 @@ class QScxmlStateMachine___ {
         if(signal.containingObject() instanceof io.qt.core.QObject){
             object = (io.qt.core.QObject)signal.containingObject();
         }
-        io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromSignal(java.util.Objects.requireNonNull(signal));
+        io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromSignal(java.util.Objects.requireNonNull(signal, "Argument 'signal': null not expected."));
         if(metaMethod!=null && metaMethod.isValid() && metaMethod.parameterCount()==0) {
             if(object!=null) {
                 switch(metaMethod.methodType()) {
@@ -147,7 +147,7 @@ class QScxmlStateMachine___ {
         if(signal.containingObject() instanceof io.qt.core.QObject){
             object = (io.qt.core.QObject)signal.containingObject();
         }
-        io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromSignal(java.util.Objects.requireNonNull(signal));
+        io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromSignal(java.util.Objects.requireNonNull(signal, "Argument 'signal': null not expected."));
         if(metaMethod!=null && metaMethod.isValid()) {
             if(metaMethod.parameterCount()!=1 || metaMethod.parameterType(0)!=io.qt.core.QMetaType.Type.Bool.value()) {
                 throw new IllegalArgumentException("Method does not take a single boolean argument: "+metaMethod.cppMethodSignature());
@@ -178,7 +178,7 @@ class QScxmlStateMachine___ {
         if(signal.containingObject() instanceof io.qt.core.QObject){
             object = (io.qt.core.QObject)signal.containingObject();
         }
-        io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromSignal(java.util.Objects.requireNonNull(signal));
+        io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromSignal(java.util.Objects.requireNonNull(signal, "Argument 'signal': null not expected."));
         if(metaMethod!=null && metaMethod.isValid() && metaMethod.parameterCount()==0) {
             if(object!=null) {
                 switch(metaMethod.methodType()) {
@@ -208,7 +208,7 @@ class QScxmlStateMachine___ {
         if(signal.containingObject() instanceof io.qt.core.QObject){
             object = (io.qt.core.QObject)signal.containingObject();
         }
-        io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromSignal(java.util.Objects.requireNonNull(signal));
+        io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromSignal(java.util.Objects.requireNonNull(signal, "Argument 'signal': null not expected."));
         if(metaMethod!=null && metaMethod.isValid()) {
             if(metaMethod.parameterCount()!=1 || metaMethod.parameterType(0)!=io.qt.core.QMetaType.fromType(QScxmlEvent.class).id()) {
                 throw new IllegalArgumentException("Method does not take a single QScxmlEvent argument: "+metaMethod.cppMethodSignature());

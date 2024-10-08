@@ -34,26 +34,19 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import io.qt.QNoNativeResourcesException;
-import io.qt.QtUtilities;
-import io.qt.autotests.generated.General;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QEvent;
 import io.qt.core.QEventLoop;
 import io.qt.core.QObject;
-import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QThread;
-import io.qt.core.Qt;
 import io.qt.internal.TestUtility;
 
-public class TestThreads extends ApplicationInitializer{
+public class TestQThreadSignalHandling extends ApplicationInitializer{
 	
 	static {
 		System.setProperty("io.qt.enable-thread-affinity-check", "true");
@@ -76,194 +69,6 @@ public class TestThreads extends ApplicationInitializer{
     public static void testDispose() throws Exception {
         PingPong.ID_PING = null;   // clean up static reference to QObject
         ApplicationInitializer.testDispose();
-    }
-
-    @Test
-    public void run_affinity_JavaThread() throws InterruptedException {
-        boolean[] ok = {false};
-        Thread thread = new Thread(()->{
-            QObject object = new QObject();
-            ok[0] = object.thread() == QThread.currentThread();
-//            object.dispose();
-        });
-        thread.start();
-        thread.join(2500);
-        assertFalse("thread.isAlive()", thread.isAlive());
-        assertTrue("tester.ok", ok[0]);
-    }
-    
-    @Test
-    public void run_affinity_QThread() throws InterruptedException {
-        boolean[] ok = {false};
-        QThread thread = QThread.create(()->{
-            QObject object = new QObject();
-            ok[0] = object.thread() == QThread.currentThread();
-//            object.dispose();
-        });
-        thread.start();
-        thread.join(2500);
-        assertFalse("thread.isAlive()", thread.isAlive());
-        assertTrue("tester.ok", ok[0]);
-    }
-    
-    @Test
-    public void testJavaThreadDeletion() throws InterruptedException {
-    	AtomicBoolean qthreadDisposed = new AtomicBoolean();
-		AtomicBoolean qobjectDisposed = new AtomicBoolean();
-		AtomicBoolean qthreadCleaned = new AtomicBoolean();
-		AtomicBoolean qthreadFinished = new AtomicBoolean();
-		AtomicBoolean qthreadDestroyed = new AtomicBoolean();
-		AtomicBoolean qobjectDestroyed = new AtomicBoolean();
-		AtomicBoolean threadCleaned = new AtomicBoolean();
-    	{
-    		class MyThread extends Thread{
-				public MyThread(Runnable target, String name) {
-					super(target, name);
-				}
-    		}
-	    	Thread thread = new MyThread(()->{
-	    		try {
-	    			QThread qthread = QThread.currentThread();
-	    			qthread.finished.connect(()->{
-	    				qthreadFinished.set(true);
-    				});
-	    			QtUtilities.getSignalOnDispose(qthread).connect(()->qthreadDisposed.set(true), Qt.ConnectionType.DirectConnection);
-					qthread.destroyed.connect(()->qthreadDestroyed.set(true), Qt.ConnectionType.DirectConnection);
-	    			General.internalAccess.registerCleaner(qthread, ()->qthreadCleaned.set(true));
-					QObject object = new QObject();
-					QtUtilities.getSignalOnDispose(object).connect(()->qobjectDisposed.set(true), Qt.ConnectionType.DirectConnection);
-					object.destroyed.connect(()->qobjectDestroyed.set(true), Qt.ConnectionType.DirectConnection);
-					qthread = null;
-				} catch (Throwable e) {
-					e.printStackTrace();
-				}
-	    	}, "\0\0");
-	    	General.internalAccess.registerCleaner(thread, ()->threadCleaned.set(true));
-	    	thread.setDaemon(true);
-	    	thread.start();
-	    	thread = null;
-    	}
-		Thread.yield();
-		ApplicationInitializer.runGC();
-		Thread.sleep(100);
-		for (int i = 0; i < 500; i++) {
-			if(qthreadFinished.get())
-    			break;
-    		Thread.yield();
-    		Thread.sleep(100);
-		}
-    	for (int i = 0; i < 50; i++) {
-    		if(qthreadDestroyed.get()) {
-        		Thread.yield();
-        		Thread.sleep(100);
-    			break;
-    		}
-    		ApplicationInitializer.runGC();
-			QCoreApplication.processEvents();
-    		Thread.yield();
-    		Thread.sleep(100);
-		}
-		Thread.yield();
-		ApplicationInitializer.runGC();
-		Thread.yield();
-		Thread.sleep(100);
-		ApplicationInitializer.runGC();
-		Thread.yield();
-    	assertTrue("qobjectDisposed", qobjectDisposed.get());
-    	assertTrue("qobjectDestroyed", qobjectDestroyed.get());
-    	assertTrue("qthreadDisposed", qthreadDisposed.get());
-    	assertTrue("qthreadDestroyed", qthreadDestroyed.get());
-    	assertTrue("qthreadFinished", qthreadFinished.get());
-    	if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows)
-    			|| (!System.getProperty("java.version", "").startsWith("1.8") 
-    					&& !System.getProperty("java.version", "").startsWith("8"))) {
-	    	assertTrue("threadCleaned", threadCleaned.get());
-	    	assertTrue("qthreadCleaned", qthreadCleaned.get());
-    	}else {
-    		System.out.println("threadCleaned="+threadCleaned.get()+" as expected on Java8");
-    		System.out.println("qthreadCleaned="+qthreadCleaned.get()+" as expected on Java8");
-    	}
-    }
-    
-    @Test
-    public void testQThreadDeletion() throws InterruptedException {
-		AtomicBoolean threadDisposed = new AtomicBoolean();
-		AtomicBoolean qobjectDisposed = new AtomicBoolean();
-		AtomicBoolean threadDestroyed = new AtomicBoolean();
-		AtomicBoolean qobjectDestroyed = new AtomicBoolean();
-    	{
-	    	QThread thread = QThread.create(()->{
-	    		QObject object = new QObject();
-	    		QtUtilities.getSignalOnDispose(object).connect(()->qobjectDisposed.set(true), Qt.ConnectionType.DirectConnection);
-	    		object.destroyed.connect(()->qobjectDestroyed.set(true), Qt.ConnectionType.DirectConnection);
-	    	});
-	    	QtUtilities.getSignalOnDispose(thread).connect(()->threadDisposed.set(true), Qt.ConnectionType.DirectConnection);
-    		thread.destroyed.connect(()->threadDestroyed.set(true), Qt.ConnectionType.DirectConnection);
-	    	thread.setDaemon(true);
-	    	thread.start();
-    	}
-		Thread.yield();
-		ApplicationInitializer.runGC();
-		Thread.sleep(100);
-    	for (int i = 0; i < 200; i++) {
-    		if(threadDestroyed.get() || threadDisposed.get())
-    			i = 200;
-    		Thread.yield();
-    		ApplicationInitializer.runGC();
-    		Thread.sleep(10);
-        	QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
-		}
-    	Thread.sleep(100);
-		ApplicationInitializer.runGC();
-		Thread.yield();
-    	QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
-    	assertTrue("qobjectDisposed", qobjectDisposed.get());
-    	assertTrue("qobjectDestroyed", qobjectDestroyed.get());
-    	assertTrue("threadDisposed", threadDisposed.get());
-    	assertTrue("threadDestroyed", threadDestroyed.get());
-    }
-    
-    @Test
-    public void testEventThreadDeletion() throws InterruptedException {
-    	AtomicBoolean threadFinished = new AtomicBoolean();
-		AtomicBoolean threadDisposed = new AtomicBoolean();
-		AtomicBoolean qobjectDisposed = new AtomicBoolean();
-		AtomicBoolean threadDestroyed = new AtomicBoolean();
-		AtomicBoolean qobjectDestroyed = new AtomicBoolean();
-    	{
-	    	QThread thread = new QThread() {};
-    		QObject object = new QObject();
-    		QtUtilities.getSignalOnDispose(object).connect(()->qobjectDisposed.set(true), Qt.ConnectionType.DirectConnection);
-    		object.destroyed.connect(()->qobjectDestroyed.set(true), Qt.ConnectionType.DirectConnection);
-    		object.destroyed.connect(thread::quit, Qt.ConnectionType.DirectConnection);
-    		object.moveToThread(thread);
-    		object.disposeLater();
-    		
-    		QtUtilities.getSignalOnDispose(thread).connect(()->threadDisposed.set(true), Qt.ConnectionType.DirectConnection);
-    		thread.destroyed.connect(()->threadDestroyed.set(true), Qt.ConnectionType.DirectConnection);
-	    	thread.setDaemon(true);
-	    	thread.finished.connect(()->threadFinished.set(true), Qt.ConnectionType.DirectConnection);
-	    	thread.start();
-    	}
-		Thread.yield();
-		Thread.sleep(100);
-		ApplicationInitializer.runGC();
-    	for (int i = 0; i < 200; i++) {
-    		if(threadFinished.get())
-    			i = 200;
-    		Thread.yield();
-    		ApplicationInitializer.runGC();
-    		Thread.sleep(10);
-        	QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
-		}
-		Thread.yield();
-    	Thread.sleep(100);
-		ApplicationInitializer.runGC();
-    	QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
-    	assertTrue("qobjectDestroyed", qobjectDestroyed.get());
-    	assertTrue("qobjectDisposed", qobjectDisposed.get());
-    	assertTrue("threadDestroyed", threadDestroyed.get());
-    	assertTrue("threadDisposed", threadDisposed.get());
     }
 
     /*************************************************************************/
@@ -544,79 +349,7 @@ public class TestThreads extends ApplicationInitializer{
         assertTrue("ping.object.affinityOk", ping.object.affinityOk);
     }
 
-    @Test
-    public void run_moveToThread() throws Exception
-    {
-    	QThread currentThread = QThread.currentThread();
-
-        {
-            QObject object = new QObject();
-            QObject child = new QObject(object);
-            assertEquals(object.thread(), currentThread);
-            assertEquals(child.thread(), currentThread);
-            object.moveToThread(null);
-            assertEquals(object.thread(), null);
-            assertEquals(child.thread(), null);
-            object.moveToThread(currentThread);
-            assertEquals(object.thread(), currentThread);
-            assertEquals(child.thread(), currentThread);
-            object.moveToThread(null);
-            assertEquals(object.thread(), null);
-            assertEquals(child.thread(), null);
-            // can delete an object with no thread anywhere
-            object.dispose();
-        }
-    }
-    
-    @Test
-    public void run_adoptedThread() throws Exception
-    {
-    	QObject movedObject = new QObject();
-    	movedObject.destroyed.connect(()->{
-    		java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "dispose movedObject");
-    	});
-    	QObject _movedObject = movedObject;
-    	QThread thread = QThread.create(()->{
-    		QObject threadInObject = new QObject(_movedObject);
-    		threadInObject.destroyed.connect(()->{
-    			java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "dispose threadInObject");
-    		});
-    	});
-    	movedObject.moveToThread(thread);
-    	thread.destroyed.connect(()->java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "dispose thread"));
-    	thread.start();
-    	thread = null;
-    	movedObject = null;
-    	ApplicationInitializer.runGC();
-    	QCoreApplication.processEvents();
-    }
-    
-    @Test(expected=QNoNativeResourcesException.class)
-    public void run_no_native() throws Exception
-    {
-    	QObject object = new QObject();
-    	object.dispose();
-    	object.setObjectName("test");
-    }
-    
-    @Test
-    public void run_qthread_terminated() throws Exception
-    {
-    	Thread[] jthread = {null, null};
-    	QThread thread = QThread.create(()->{
-    		jthread[0] = QThread.currentThread().javaThread();
-    		jthread[1] = Thread.currentThread();
-    		new Thread(()->{}).start();
-    	});
-    	thread.start();
-    	thread.join(2000);
-    	assertEquals(jthread[0], jthread[1]);
-    	assertFalse(thread.isRunning());
-    	if(!QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android))
-    		assertEquals(Thread.State.TERMINATED, jthread[1].getState());
-    }
-
     public static void main(String args[]) {
-        org.junit.runner.JUnitCore.main(TestThreads.class.getName());
+        org.junit.runner.JUnitCore.main(TestQThreadSignalHandling.class.getName());
     }
 }

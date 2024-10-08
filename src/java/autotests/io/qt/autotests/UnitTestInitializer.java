@@ -17,9 +17,6 @@ public abstract class UnitTestInitializer {
 	
 	static {
 		try {
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			Properties properties = new Properties();
-			properties.load(UnitTestInitializer.class.getResourceAsStream("debuglogging.properties"));
 			String logLevel = System.getProperty("qtjambi.log-level", "");
 			switch(logLevel) {
 			case "ALL":
@@ -28,14 +25,19 @@ public abstract class UnitTestInitializer {
 			case "SEVERE":
 			case "INFO":
 			case "WARNING":
+				ByteArrayOutputStream out = new ByteArrayOutputStream();
+				Properties properties = new Properties();
+				properties.load(UnitTestInitializer.class.getResourceAsStream("debuglogging.properties"));
 				properties.setProperty(".level", logLevel);
+				properties.setProperty("io.qt.internal.level", logLevel);
+				properties.setProperty("io.qt.autotests.level", logLevel);
+				properties.store(out, null);
+				LogManager.getLogManager().readConfiguration(new ByteArrayInputStream(out.toByteArray()));
 				break;
-				default:
-					properties.setProperty(".level", "WARNING");
-					break;
+			default:
+				LogManager.getLogManager().readConfiguration(UnitTestInitializer.class.getResourceAsStream("debuglogging.properties"));
+				break;
 			}
-			properties.store(out, null);
-			LogManager.getLogManager().readConfiguration(new ByteArrayInputStream(out.toByteArray()));
 		} catch (SecurityException | IOException e1) {
 			e1.printStackTrace();
 		}

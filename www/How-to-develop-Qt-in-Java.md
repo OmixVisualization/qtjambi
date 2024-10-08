@@ -138,7 +138,6 @@ You can specify Java system properties as start argument `-Dproperty=value` or i
 
 * `io.qt.library-path-override` - Use this property if you want to force Java to load Qt and QtJambi libraries from other paths than given by `java.library.path`.
 * `io.qt.debug` - Specify `debug` to force Java using debug libraries of Qt and QtJambi.
-* `io.qt.verbose-loading` - Specify `true` to cause QtJambi to print out library loading steps.
 * `io.qt.pluginpath` - Specify list of paths added as plugin search path.
 
 If you don't specify QtJambi's native location in library path QtJambi will extract libraries from native bundles to temporary directory each time at program startup.

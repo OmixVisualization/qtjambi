@@ -45,10 +45,12 @@ import org.junit.BeforeClass;
 import io.qt.autotests.generated.General;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QEvent;
+import io.qt.core.QEventLoop;
 import io.qt.core.QObject;
 import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QThread;
 import io.qt.core.QTimeLine;
+import io.qt.core.QTimer;
 
 public class TestQThread extends ApplicationInitializer{
 	
@@ -388,6 +390,7 @@ public class TestQThread extends ApplicationInitializer{
 	
 	@org.junit.Test
 	public void testThreadJavaInterrupt() throws InterruptedException, ClassNotFoundException{
+		Assume.assumeFalse("Cannot install interruptor on Android.", QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android));
 		AtomicBoolean continued = new AtomicBoolean();
 		AtomicBoolean interrupted = new AtomicBoolean();
 		AtomicBoolean interruptionRequested = new AtomicBoolean();
@@ -419,7 +422,7 @@ public class TestQThread extends ApplicationInitializer{
 			thread.join(2000);
 			assertTrue(interrupted.get());
 			assertFalse(continued.get());
-			assertFalse("is interruptionRequested", interruptionRequested.get());
+			assertTrue("is interruptionRequested", interruptionRequested.get());
 		}finally {
 			synchronized(TestQThread.class) {
 				TestQThread.class.notifyAll();
@@ -517,16 +520,24 @@ public class TestQThread extends ApplicationInitializer{
 			qtarray[0] = null;
 			thread = null;
 		}
-		for (int i = 0; i < 120; i++) {
-			ApplicationInitializer.runGC();
-			QCoreApplication.processEvents();
-			QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
-			QCoreApplication.processEvents();
-			ApplicationInitializer.runGC();
-			Thread.yield();
-			Thread.sleep(50);
-			if(reference.get()==null)
-				break;
+		QEventLoop loop = new QEventLoop();
+		{
+			QTimer timer = new QTimer();
+			long t1 = System.currentTimeMillis();
+			timer.timeout.connect(()->{
+				Thread.yield();
+				Thread.sleep(250);
+				runGC();
+				QCoreApplication.processEvents();
+				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+				if(reference.get()==null || System.currentTimeMillis()-t1>20000) {
+					loop.quit();
+				}
+			});
+			timer.setInterval(300);
+			timer.start();
+			loop.exec();
+			timer.dispose();
 		}
 		QThread remaining = reference.get();
 		if(remaining!=null && !remaining.isDisposed()) {
@@ -585,16 +596,24 @@ public class TestQThread extends ApplicationInitializer{
 		Assert.assertTrue(reference.get()!=null);
 		Assert.assertEquals(parent, reference.get().parent());
 		parent = null;
-		for (int i = 0; i < 120; i++) {
-			ApplicationInitializer.runGC();
-			QCoreApplication.processEvents();
-			QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
-			QCoreApplication.processEvents();
-			ApplicationInitializer.runGC();
-			Thread.yield();
-			Thread.sleep(50);
-			if(reference.get()==null)
-				break;
+		QEventLoop loop = new QEventLoop();
+		{
+			QTimer timer = new QTimer();
+			long t1 = System.currentTimeMillis();
+			timer.timeout.connect(()->{
+				Thread.yield();
+				Thread.sleep(250);
+				runGC();
+				QCoreApplication.processEvents();
+				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+				if(reference.get()==null || System.currentTimeMillis()-t1>20000) {
+					loop.quit();
+				}
+			});
+			timer.setInterval(300);
+			timer.start();
+			loop.exec();
+			timer.dispose();
 		}
 		QThread remaining = reference.get();
 		Assert.assertTrue("QThread reference is not null and existing", remaining==null || remaining.isDisposed());
@@ -759,7 +778,7 @@ public class TestQThread extends ApplicationInitializer{
 		AtomicBoolean threadCleaned = new AtomicBoolean();
 		AtomicBoolean qthreadCleaned = new AtomicBoolean();
 		{
-			boolean[] cppOwnership = {false};
+			boolean[] splitOwnership = {false};
 			Thread[] javaThreads = {null,null};
 			QThread[] qtarray = {null};
 			Throwable[] exception = {null};
@@ -768,7 +787,7 @@ public class TestQThread extends ApplicationInitializer{
 				currentThread.finished.connect(()->finished.set(true));
 				try {
 					qtarray[0] = currentThread;
-					cppOwnership[0] = General.internalAccess.isCppOwnership(currentThread);
+					splitOwnership[0] = General.internalAccess.isSplitOwnership(currentThread);
 					javaThreads[0] = Thread.currentThread();
 					javaThreads[1] = currentThread.javaThread();
 					General.internalAccess.registerCleaner(currentThread, ()->qthreadCleaned.set(true));
@@ -786,7 +805,7 @@ public class TestQThread extends ApplicationInitializer{
 				throw exception[0];
 			Assert.assertEquals(thread, javaThreads[0]);
 			Assert.assertEquals(javaThreads[0], javaThreads[1]);
-			Assert.assertTrue(cppOwnership[0]);
+			Assert.assertTrue(splitOwnership[0]);
 			Assert.assertFalse("QThread is null", qtarray[0]==null);
 			for (int i = 0; i < 120 && !finished.get(); i++) {
 				Thread.yield();
@@ -799,14 +818,24 @@ public class TestQThread extends ApplicationInitializer{
 			qtarray[0] = null;
 			thread = null;
 		}
-		for (int i = 0; i < 120; i++) {
-			if(qthreadCleaned.get())
-				break;
-			ApplicationInitializer.runGC();
-			QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
-			QCoreApplication.processEvents();
-			Thread.yield();
-			Thread.sleep(100);
+		QEventLoop loop = new QEventLoop();
+		{
+			QTimer timer = new QTimer();
+			long t1 = System.currentTimeMillis();
+			timer.timeout.connect(()->{
+				Thread.yield();
+				Thread.sleep(250);
+				runGC();
+				QCoreApplication.processEvents();
+				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+				if(qthreadCleaned.get() || System.currentTimeMillis()-t1>20000) {
+					loop.quit();
+				}
+			});
+			timer.setInterval(300);
+			timer.start();
+			loop.exec();
+			timer.dispose();
 		}
 		Assert.assertTrue("Thread has not been deleted", threadCleaned.get());
 		Assert.assertTrue("QThread has not been deleted", qthreadCleaned.get());

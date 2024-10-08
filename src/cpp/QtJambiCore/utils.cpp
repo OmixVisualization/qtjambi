@@ -214,6 +214,14 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QDebug,
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QRunnable,)
+
+namespace Internal
+{
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core/internal,QAbstractFileEngineHandler,
+                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(registerFactory,(JLio/qt/core/internal/QAbstractFileEngineHandler$FileEngineFactory;)V)
+                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(unregisterFactory,(J)V)
+                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(createByFactory,(JLjava/lang/String;)Lio/qt/core/internal/QAbstractFileEngine;))
+}
 }
 
 namespace QtWidgets

@@ -91,12 +91,12 @@ class QQmlProperty__{
     
     @QtUninvokable
     public final boolean connectNotifySignal(io.qt.core.QMetaObject.@StrictNonNull Slot0 slot){
-        return connectNotifySignal(slot, io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot)));
+        return connectNotifySignal(slot, io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, "Argument 'slot': null not expected.")));
     }
     
     @QtUninvokable
     public final boolean connectNotifySignal(io.qt.core.QMetaObject.@StrictNonNull Slot1<?> slot){
-        return connectNotifySignal(slot, io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot)));
+        return connectNotifySignal(slot, io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, "Argument 'slot': null not expected.")));
     }
     
     @QtUninvokable

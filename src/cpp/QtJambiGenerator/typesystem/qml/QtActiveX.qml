@@ -52,6 +52,29 @@ TypeSystem{
             location: Include.Global
         }
     }
+
+    InjectCode{
+        target: CodeClass.PackageInitializer
+        position: Position.End
+        Text{content: "private static native int qtCompileVersion();"}
+    }
+
+    InjectCode{
+        target: CodeClass.Java
+        position: Position.End
+        Text{content: String.raw`
+            int version = qtCompileVersion();
+            int majorVersion = (version >> 16) & 0xff;
+            int minorVersion = (version >> 8) & 0xff;
+            int patchVersion = version & 0xff;
+            io.qt.core.QVersionNumber runtimeVersion = io.qt.core.QLibraryInfo.version();
+            if(runtimeVersion.majorVersion()!=majorVersion || runtimeVersion.minorVersion()!=minorVersion || runtimeVersion.microVersion()!=patchVersion)
+                throw new Error(String.format("Cannot mix incompatible Qt library. This library has been built with Qt %1$s.%2$s.%3$s and cannot run with Qt %4$s.%5$s.%6$s",
+                                                majorVersion, minorVersion, patchVersion,
+                                                runtimeVersion.majorVersion(), runtimeVersion.minorVersion(), runtimeVersion.microVersion()
+                                            ));
+            `}
+    }
     
     InjectCode{
         target: CodeClass.MetaInfo

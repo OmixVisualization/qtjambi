@@ -1615,6 +1615,57 @@ if(java.util.logging.Logger.getLogger("io.qt.autotests").isLoggable(java.util.lo
 			name: "TestFunction2"
 		}
     }
+
+    ObjectType{
+        name: "ThreadFactory"
+        ModifyFunction{
+            signature: "createQLoopThread()"
+            ModifyArgument{
+                index: "return"
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "createQWorkerThread(QRunnable*)"
+            ModifyArgument{
+                index: "return"
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+            ModifyArgument{
+                index: 1
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Cpp
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "startQWorkerThread(QRunnable*)"
+            ModifyArgument{
+                index: 1
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Cpp
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "startNativeWorkerThread(QRunnable*)"
+            ModifyArgument{
+                index: 1
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Cpp
+                }
+            }
+        }
+    }
     
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: private virtual function 'abstractFunction(const QString*)' in 'AnotherNonAbstractSubclass'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: enum 'Variants::UnknownEnum' does not have a type entry or is not an enum"}

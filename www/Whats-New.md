@@ -8,6 +8,7 @@ Solved issue:
 * [Issue 208](../../../issues/208): nothing happened after click executable exe when I follow the guide in How-to-deploy-QtJambi-applications - improved documentation
 * Fixed: Deadlock in QML engine when using qml-registered type
 * Fixed: Crash during JVM shutdown on macOS
+* Fixed: Java-adopted Thread object for native QThread remaining alife after thread end
 
 ## New Feature
 
@@ -18,14 +19,13 @@ Solved issue:
 * Number of JNI global references per object has been reduced
 * Java representatives of Qt containers (`QList`, `QMap`, `QHash`, `QSet`) have been improved
 * `QSpan` now available as Java type
-
-## Further Changes
+* Signals now able to treat single shot connections
 
 QtJambi 6.7.3 is not binary compatible to Qt 6.7.0. Please use Qt 6.7.1 or higher.
 
 # History
 
-## What's new in QtJambi 6.7.3
+## What's new in QtJambi 6.7.2
 
 #### Bugfixes
 

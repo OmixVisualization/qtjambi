@@ -50,7 +50,7 @@ public class QSqlDriverCreator<T extends QSqlDriver> extends QSqlDriverCreatorBa
 	 * @param constructor
 	 */
 	public QSqlDriverCreator(@StrictNonNull Supplier<@NonNull T> constructor) {
-		constructorHandle = Objects.requireNonNull(constructor);
+		constructorHandle = Objects.requireNonNull(constructor, "Argument 'constructor': null not expected.");
 	}
 	
 	/**

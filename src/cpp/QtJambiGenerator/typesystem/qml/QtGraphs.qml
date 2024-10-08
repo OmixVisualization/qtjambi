@@ -1564,9 +1564,14 @@ TypeSystem{
                 threadAffinity: true
             }
         }
-        ModifyFunction{
-            signature: "swap(QGraphsLine &)"
-            remove: RemoveFlag.All
+        InjectCode{
+            target: CodeClass.Native
+            position: Position.Beginning
+            Text{content: String.raw`
+template<> QExplicitlySharedDataPointer<QGraphsLinePrivate>::~QExplicitlySharedDataPointer() {
+    Q_ASSERT(!d);
+}
+`}
         }
         since: 6.8
     }

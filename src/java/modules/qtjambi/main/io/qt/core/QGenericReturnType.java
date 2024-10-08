@@ -103,9 +103,10 @@ public final class QGenericReturnType<T> extends QGenericArgumentType<T>{
 	 * @return new instance
 	 */
 	public static <T> QGenericReturnType<T> of(QMetaType metaType){
+		Objects.requireNonNull(metaType, "Argument 'metaType': null not expected.");
 		if(!metaType.isValid())
 			throw new IllegalArgumentException("Invalid meta type: "+metaType.name());
-		return new QGenericReturnType<T>(null, Objects.requireNonNull(metaType), 0);
+		return new QGenericReturnType<T>(null, metaType, 0);
 	}
 	
 	/**

@@ -357,15 +357,16 @@ JObjectWrapper::JObjectWrapper(JNIEnv *env, jobject obj, bool globalRefs, const 
 
 void JObjectWrapper::assign(JNIEnv* env, const JObjectWrapper& wrapper, const std::type_info& typeId)
 {
-    if(JObjectWrapperData* wrappersData = wrapper.m_data.data()){
-        const std::type_info& dataTypeId = typeid(*wrappersData);
+    if(QExplicitlySharedDataPointer<JObjectWrapperData> wrappersData = QExplicitlySharedDataPointer<JObjectWrapperData>(wrapper.m_data)){
+        JObjectWrapperData* wd = wrappersData.data();
+        const std::type_info& dataTypeId = typeid(*wd);
         if(typeid_equals(typeId, typeid(jint))){
             if(typeid_equals(dataTypeId, typeid(JObjectGlobalWrapperData))){
                 m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalWrapperData<jint>(env, jintArray(wrapper.object())));
             }else if(typeid_equals(dataTypeId, typeid(JObjectWeakWrapperData))){
                 m_data = static_cast<JObjectWrapperData*>(new JArrayWeakWrapperData<jint>(env, jintArray(wrapper.object())));
             }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalWrapperData<jint>)) || typeid_equals(dataTypeId, typeid(JArrayWeakWrapperData<jint>))){
-                m_data = wrapper.m_data;
+                m_data = wrappersData;
             }else{
                 m_data.reset();
             }
@@ -375,7 +376,7 @@ void JObjectWrapper::assign(JNIEnv* env, const JObjectWrapper& wrapper, const st
             }else if(typeid_equals(dataTypeId, typeid(JObjectWeakWrapperData))){
                 m_data = static_cast<JObjectWrapperData*>(new JArrayWeakWrapperData<jbyte>(env, jbyteArray(wrapper.object())));
             }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalWrapperData<jbyte>)) || typeid_equals(dataTypeId, typeid(JArrayWeakWrapperData<jbyte>))){
-                m_data = wrapper.m_data;
+                m_data = wrappersData;
             }else{
                 m_data.reset();
             }
@@ -385,7 +386,7 @@ void JObjectWrapper::assign(JNIEnv* env, const JObjectWrapper& wrapper, const st
             }else if(typeid_equals(dataTypeId, typeid(JObjectWeakWrapperData))){
                 m_data = static_cast<JObjectWrapperData*>(new JArrayWeakWrapperData<jshort>(env, jshortArray(wrapper.object())));
             }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalWrapperData<jshort>)) || typeid_equals(dataTypeId, typeid(JArrayWeakWrapperData<jshort>))){
-                m_data = wrapper.m_data;
+                m_data = wrappersData;
             }else{
                 m_data.reset();
             }
@@ -395,7 +396,7 @@ void JObjectWrapper::assign(JNIEnv* env, const JObjectWrapper& wrapper, const st
             }else if(typeid_equals(dataTypeId, typeid(JObjectWeakWrapperData))){
                 m_data = static_cast<JObjectWrapperData*>(new JArrayWeakWrapperData<jlong>(env, jlongArray(wrapper.object())));
             }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalWrapperData<jlong>)) || typeid_equals(dataTypeId, typeid(JArrayWeakWrapperData<jlong>))){
-                m_data = wrapper.m_data;
+                m_data = wrappersData;
             }else{
                 m_data.reset();
             }
@@ -405,7 +406,7 @@ void JObjectWrapper::assign(JNIEnv* env, const JObjectWrapper& wrapper, const st
             }else if(typeid_equals(dataTypeId, typeid(JObjectWeakWrapperData))){
                 m_data = static_cast<JObjectWrapperData*>(new JArrayWeakWrapperData<jchar>(env, jcharArray(wrapper.object())));
             }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalWrapperData<jchar>)) || typeid_equals(dataTypeId, typeid(JArrayWeakWrapperData<jchar>))){
-                m_data = wrapper.m_data;
+                m_data = wrappersData;
             }else{
                 m_data.reset();
             }
@@ -415,7 +416,7 @@ void JObjectWrapper::assign(JNIEnv* env, const JObjectWrapper& wrapper, const st
             }else if(typeid_equals(dataTypeId, typeid(JObjectWeakWrapperData))){
                 m_data = static_cast<JObjectWrapperData*>(new JArrayWeakWrapperData<jboolean>(env, jbooleanArray(wrapper.object())));
             }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalWrapperData<jboolean>)) || typeid_equals(dataTypeId, typeid(JArrayWeakWrapperData<jboolean>))){
-                m_data = wrapper.m_data;
+                m_data = wrappersData;
             }else{
                 m_data.reset();
             }
@@ -425,7 +426,7 @@ void JObjectWrapper::assign(JNIEnv* env, const JObjectWrapper& wrapper, const st
             }else if(typeid_equals(dataTypeId, typeid(JObjectWeakWrapperData))){
                 m_data = static_cast<JObjectWrapperData*>(new JArrayWeakWrapperData<jfloat>(env, jfloatArray(wrapper.object())));
             }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalWrapperData<jfloat>)) || typeid_equals(dataTypeId, typeid(JArrayWeakWrapperData<jfloat>))){
-                m_data = wrapper.m_data;
+                m_data = wrappersData;
             }else{
                 m_data.reset();
             }
@@ -435,7 +436,7 @@ void JObjectWrapper::assign(JNIEnv* env, const JObjectWrapper& wrapper, const st
             }else if(typeid_equals(dataTypeId, typeid(JObjectWeakWrapperData))){
                 m_data = static_cast<JObjectWrapperData*>(new JArrayWeakWrapperData<jdouble>(env, jdoubleArray(wrapper.object())));
             }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalWrapperData<jdouble>)) || typeid_equals(dataTypeId, typeid(JArrayWeakWrapperData<jdouble>))){
-                m_data = wrapper.m_data;
+                m_data = wrappersData;
             }else{
                 m_data.reset();
             }
@@ -449,15 +450,16 @@ void JObjectWrapper::assign(JNIEnv* env, const JObjectWrapper& wrapper, const st
 
 void JObjectWrapper::assign(JNIEnv* env, JObjectWrapper&& wrapper, const std::type_info& typeId)
 {
-    if(JObjectWrapperData* wrappersData = wrapper.m_data.data()){
-        const std::type_info& dataTypeId = typeid(*wrappersData);
+    if(QExplicitlySharedDataPointer<JObjectWrapperData> wrappersData = QExplicitlySharedDataPointer<JObjectWrapperData>(std::move(wrapper.m_data))){
+        JObjectWrapperData* wd = wrappersData.data();
+        const std::type_info& dataTypeId = typeid(*wd);
         if(typeid_equals(typeId, typeid(jint))){
             if(typeid_equals(dataTypeId, typeid(JObjectGlobalWrapperData))){
                 m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalWrapperData<jint>(env, jintArray(wrapper.object())));
             }else if(typeid_equals(dataTypeId, typeid(JObjectWeakWrapperData))){
                 m_data = static_cast<JObjectWrapperData*>(new JArrayWeakWrapperData<jint>(env, jintArray(wrapper.object())));
             }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalWrapperData<jint>)) || typeid_equals(dataTypeId, typeid(JArrayWeakWrapperData<jint>))){
-                m_data = std::move(wrapper.m_data);
+                m_data = std::move(wrappersData);
             }else{
                 m_data.reset();
             }
@@ -467,7 +469,7 @@ void JObjectWrapper::assign(JNIEnv* env, JObjectWrapper&& wrapper, const std::ty
             }else if(typeid_equals(dataTypeId, typeid(JObjectWeakWrapperData))){
                 m_data = static_cast<JObjectWrapperData*>(new JArrayWeakWrapperData<jbyte>(env, jbyteArray(wrapper.object())));
             }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalWrapperData<jbyte>)) || typeid_equals(dataTypeId, typeid(JArrayWeakWrapperData<jbyte>))){
-                m_data = std::move(wrapper.m_data);
+                m_data = std::move(wrappersData);
             }else{
                 m_data.reset();
             }
@@ -477,7 +479,7 @@ void JObjectWrapper::assign(JNIEnv* env, JObjectWrapper&& wrapper, const std::ty
             }else if(typeid_equals(dataTypeId, typeid(JObjectWeakWrapperData))){
                 m_data = static_cast<JObjectWrapperData*>(new JArrayWeakWrapperData<jshort>(env, jshortArray(wrapper.object())));
             }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalWrapperData<jshort>)) || typeid_equals(dataTypeId, typeid(JArrayWeakWrapperData<jshort>))){
-                m_data = std::move(wrapper.m_data);
+                m_data = std::move(wrappersData);
             }else{
                 m_data.reset();
             }
@@ -487,7 +489,7 @@ void JObjectWrapper::assign(JNIEnv* env, JObjectWrapper&& wrapper, const std::ty
             }else if(typeid_equals(dataTypeId, typeid(JObjectWeakWrapperData))){
                 m_data = static_cast<JObjectWrapperData*>(new JArrayWeakWrapperData<jlong>(env, jlongArray(wrapper.object())));
             }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalWrapperData<jlong>)) || typeid_equals(dataTypeId, typeid(JArrayWeakWrapperData<jlong>))){
-                m_data = std::move(wrapper.m_data);
+                m_data = std::move(wrappersData);
             }else{
                 m_data.reset();
             }
@@ -497,7 +499,7 @@ void JObjectWrapper::assign(JNIEnv* env, JObjectWrapper&& wrapper, const std::ty
             }else if(typeid_equals(dataTypeId, typeid(JObjectWeakWrapperData))){
                 m_data = static_cast<JObjectWrapperData*>(new JArrayWeakWrapperData<jchar>(env, jcharArray(wrapper.object())));
             }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalWrapperData<jchar>)) || typeid_equals(dataTypeId, typeid(JArrayWeakWrapperData<jchar>))){
-                m_data = std::move(wrapper.m_data);
+                m_data = std::move(wrappersData);
             }else{
                 m_data.reset();
             }
@@ -507,7 +509,7 @@ void JObjectWrapper::assign(JNIEnv* env, JObjectWrapper&& wrapper, const std::ty
             }else if(typeid_equals(dataTypeId, typeid(JObjectWeakWrapperData))){
                 m_data = static_cast<JObjectWrapperData*>(new JArrayWeakWrapperData<jboolean>(env, jbooleanArray(wrapper.object())));
             }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalWrapperData<jboolean>)) || typeid_equals(dataTypeId, typeid(JArrayWeakWrapperData<jboolean>))){
-                m_data = std::move(wrapper.m_data);
+                m_data = std::move(wrappersData);
             }else{
                 m_data.reset();
             }
@@ -517,7 +519,7 @@ void JObjectWrapper::assign(JNIEnv* env, JObjectWrapper&& wrapper, const std::ty
             }else if(typeid_equals(dataTypeId, typeid(JObjectWeakWrapperData))){
                 m_data = static_cast<JObjectWrapperData*>(new JArrayWeakWrapperData<jfloat>(env, jfloatArray(wrapper.object())));
             }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalWrapperData<jfloat>)) || typeid_equals(dataTypeId, typeid(JArrayWeakWrapperData<jfloat>))){
-                m_data = std::move(wrapper.m_data);
+                m_data = std::move(wrappersData);
             }else{
                 m_data.reset();
             }
@@ -527,7 +529,7 @@ void JObjectWrapper::assign(JNIEnv* env, JObjectWrapper&& wrapper, const std::ty
             }else if(typeid_equals(dataTypeId, typeid(JObjectWeakWrapperData))){
                 m_data = static_cast<JObjectWrapperData*>(new JArrayWeakWrapperData<jdouble>(env, jdoubleArray(wrapper.object())));
             }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalWrapperData<jdouble>)) || typeid_equals(dataTypeId, typeid(JArrayWeakWrapperData<jdouble>))){
-                m_data = std::move(wrapper.m_data);
+                m_data = std::move(wrappersData);
             }else{
                 m_data.reset();
             }
@@ -541,20 +543,21 @@ void JObjectWrapper::assign(JNIEnv* env, JObjectWrapper&& wrapper, const std::ty
 
 const void* JObjectWrapper::array() const
 {
-    if(m_data)
-        return m_data->array();
+    if(QExplicitlySharedDataPointer<JObjectWrapperData> data{m_data})
+        return data->array();
     return nullptr;
 }
 
 void* JObjectWrapper::array()
 {
-    if(m_data)
-        return m_data->array();
+    if(QExplicitlySharedDataPointer<JObjectWrapperData> data{m_data})
+        return data->array();
     return nullptr;
 }
 
 void JObjectWrapper::commitArray(){
-    m_data->commitArray();
+    if(QExplicitlySharedDataPointer<JObjectWrapperData> data{m_data})
+        data->commitArray();
 }
 
 void JObjectWrapper::swap(JObjectWrapper& other){
@@ -562,7 +565,9 @@ void JObjectWrapper::swap(JObjectWrapper& other){
 }
 
 jsize JObjectWrapper::arrayLength() const {
-    return m_data->arrayLength();
+    if(QExplicitlySharedDataPointer<JObjectWrapperData> data{m_data})
+        return data->arrayLength();
+    return 0;
 }
 
 JObjectWrapper& JObjectWrapper::operator=(jobject object) {
@@ -629,16 +634,15 @@ JObjectWrapper& JObjectWrapper::operator=(JObjectWrapper &&wrapper) {
 }
 
 jobject JObjectWrapper::object() const{
-    return m_data ? m_data->data() : nullptr;
+    if(QExplicitlySharedDataPointer<JObjectWrapperData> data{m_data})
+        return data->data();
+    return nullptr;
 }
 
 void JObjectWrapper::clear(JNIEnv *env){
-    if(m_data){
-        if(m_data->ref.loadRelaxed()==1){
-            m_data->clear(env);
-        }
-        m_data.reset();
-    }
+    QExplicitlySharedDataPointer<JObjectWrapperData> data(std::move(m_data));
+    if(data && data->ref.loadRelaxed()==1)
+        data->clear(env);
 }
 
 JObjectWrapper::~JObjectWrapper(){

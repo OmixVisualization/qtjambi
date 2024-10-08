@@ -72,6 +72,9 @@ namespace Java{
                                             QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(execPreRoutines)
                                             QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(execPostRoutines)
                                          )
+            QTJAMBI_REPOSITORY_DECLARE_CLASS(QThread,
+                                         QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(setJavaThreadReference)
+                                         QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getJavaThreadReference))
         }
 #if defined(QTJAMBI_LIGHTWEIGHT_MODELINDEX)
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QModelIndex,
@@ -318,6 +321,7 @@ namespace Java{
             QTJAMBI_REPOSITORY_DECLARE_OBJECTARRAY_METHOD(getStackTrace)
             QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(setContextClassLoader)
             QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(setUncaughtExceptionHandler)
+            QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(setName)
             QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getThreadGroup)
             QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(interrupt)
             QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(isAlive)

@@ -46,7 +46,7 @@ import io.qt.core.QVersionNumber;
 */
 public final class QtUtilities {
 	
-	private static final Map<String, Boolean> initializedPackages = new HashMap<>(Collections.singletonMap("io.qt.internal", Boolean.TRUE));
+	private static final Map<String, Object> initializedPackages = new HashMap<>(Collections.singletonMap("io.qt.internal", Boolean.TRUE));
 	static {
 		initializePackage("io.qt.internal");
 	}
@@ -178,61 +178,72 @@ public final class QtUtilities {
 	
 	private static boolean initializePackage(@Nullable ClassLoader classLoader, @NonNull String packagePath) {
 		synchronized (initializedPackages) {
-			Boolean b = initializedPackages.get(packagePath);
-			if (b != null) {
-				return b;
+			Object obj = initializedPackages.get(packagePath);
+			if (obj instanceof Boolean) {
+				return (Boolean)obj;
+			}else if (obj instanceof Error) {
+				throw (Error)obj;
+			}else if (obj instanceof RuntimeException) {
+				throw (RuntimeException)obj;
 			}
 		}
 		Class<?> cls;
 		try {
 			try {
-				cls = Class.forName(packagePath + ".QtJambi_LibraryUtilities");
-			} catch (ClassNotFoundException e) {
-				if(classLoader!=null && classLoader!=QtUtilities.class.getClassLoader()) {
-					cls = Class.forName(packagePath + ".QtJambi_LibraryUtilities", true, classLoader);
-				}else {
-					throw e;
+				try {
+					cls = Class.forName(packagePath + ".QtJambi_LibraryUtilities");
+				} catch (ClassNotFoundException e) {
+					if(classLoader!=null && classLoader!=QtUtilities.class.getClassLoader()) {
+						cls = Class.forName(packagePath + ".QtJambi_LibraryUtilities", true, classLoader);
+					}else {
+						throw e;
+					}
 				}
+			} catch (NoClassDefFoundError t) {
+				if (t.getCause() instanceof Error && t.getCause() != t)
+					throw (Error) t.getCause();
+				else if (t.getCause() instanceof RuntimeException)
+					throw (RuntimeException) t.getCause();
+				throw t;
+			} catch (ExceptionInInitializerError t) {
+				if (t.getCause() instanceof Error && t.getCause() != t)
+					throw (Error) t.getCause();
+				else if (t.getCause() instanceof RuntimeException)
+					throw (RuntimeException) t.getCause();
+				throw t;
+			} catch (ClassNotFoundException e1) {
+				synchronized (initializedPackages) {
+					initializedPackages.put(packagePath, Boolean.FALSE);
+				}
+				return false;
 			}
-		} catch (NoClassDefFoundError t) {
-			if (t.getCause() instanceof Error && t.getCause() != t)
-				throw (Error) t.getCause();
-			else if (t.getCause() instanceof RuntimeException)
-				throw (RuntimeException) t.getCause();
-			throw t;
-		} catch (ExceptionInInitializerError t) {
-			if (t.getCause() instanceof Error && t.getCause() != t)
-				throw (Error) t.getCause();
-			else if (t.getCause() instanceof RuntimeException)
-				throw (RuntimeException) t.getCause();
-			throw t;
-		} catch (ClassNotFoundException e1) {
-			synchronized (initializedPackages) {
-				initializedPackages.put(packagePath, Boolean.FALSE);
+			try {
+				Method initialize = cls.getDeclaredMethod("initialize");
+				QtJambi_LibraryUtilities.internal.invokeMethod(initialize, null);
+				synchronized (initializedPackages) {
+					initializedPackages.put(packagePath, Boolean.TRUE);
+				}
+				return true;
+			} catch (NoSuchMethodException | NoSuchMethodError t) {
+				return true;
+			} catch (NoClassDefFoundError t) {
+				if (t.getCause() instanceof Error && t.getCause() != t)
+					throw (Error) t.getCause();
+				else if (t.getCause() instanceof RuntimeException)
+					throw (RuntimeException) t.getCause();
+				throw t;
+			} catch (RuntimeException | Error t) {
+				throw t;
+			} catch (Throwable t) {
+				java.util.logging.Logger.getLogger("io.qt.internal").log(java.util.logging.Level.WARNING,
+						"initializePackage", t);
+				throw new RuntimeException(t);
 			}
-			return false;
-		}
-		try {
-			Method initialize = cls.getDeclaredMethod("initialize");
-			QtJambi_LibraryUtilities.internal.invokeMethod(initialize, null);
-			synchronized (initializedPackages) {
-				initializedPackages.put(packagePath, Boolean.TRUE);
-			}
-			return true;
-		} catch (NoSuchMethodException | NoSuchMethodError t) {
-			return true;
-		} catch (NoClassDefFoundError t) {
-			if (t.getCause() instanceof Error && t.getCause() != t)
-				throw (Error) t.getCause();
-			else if (t.getCause() instanceof RuntimeException)
-				throw (RuntimeException) t.getCause();
-			throw t;
 		} catch (RuntimeException | Error t) {
+			synchronized (initializedPackages) {
+				initializedPackages.put(packagePath, t);
+			}
 			throw t;
-		} catch (Throwable t) {
-			java.util.logging.Logger.getLogger("io.qt.internal").log(java.util.logging.Level.WARNING,
-					"initializePackage", t);
-			throw new RuntimeException(t);
 		}
 	}
 	
@@ -435,7 +446,7 @@ public final class QtUtilities {
      * @return selective event filter
      */
     public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter, io.qt.core.QEvent.@NonNull Type eventType, io.qt.core.QEvent.@NonNull Type @NonNull... eventTypes) {
-    	return asSelectiveEventFilter(QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(eventFilter)), eventType, eventTypes);
+    	return asSelectiveEventFilter(QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(eventFilter, "Argument 'eventFilter': null not expected.")), eventType, eventTypes);
     }
     
     private static native io.qt.core.@NonNull QObject asSelectiveEventFilter(long objectId, io.qt.core.QEvent.@NonNull Type eventType, io.qt.core.QEvent.@NonNull Type @NonNull... eventTypes);

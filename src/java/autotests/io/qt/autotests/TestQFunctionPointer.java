@@ -61,7 +61,6 @@ import io.qt.core.QRect;
 import io.qt.core.QRectF;
 import io.qt.core.QStringList;
 import io.qt.core.QSysInfo;
-import io.qt.core.QVersionNumber;
 import io.qt.core.Qt;
 import io.qt.gui.QColor;
 import io.qt.gui.QFont;

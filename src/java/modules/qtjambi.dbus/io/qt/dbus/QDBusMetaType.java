@@ -68,10 +68,10 @@ public final class QDBusMetaType {
 	}
 	
 	public static <T> @NonNull QMetaType registerDBusMetaType(@StrictNonNull MarshallFunction<T> marshallFunction, @StrictNonNull DemarshallFunction<T> demarshallFunction) {
-		int[] marshallFunctionTypes = QtJambi_LibraryUtilities.internal.lambdaMetaTypes(MarshallFunction.class, Objects.requireNonNull(marshallFunction));
-		int[] demarshallFunctionTypes = QtJambi_LibraryUtilities.internal.lambdaMetaTypes(DemarshallFunction.class, Objects.requireNonNull(demarshallFunction));
-		Class<?>[] marshallFunctionClassTypes = QtJambi_LibraryUtilities.internal.lambdaClassTypes(MarshallFunction.class, Objects.requireNonNull(marshallFunction));
-		Class<?>[] demarshallFunctionClassTypes = QtJambi_LibraryUtilities.internal.lambdaClassTypes(DemarshallFunction.class, Objects.requireNonNull(demarshallFunction));
+		int[] marshallFunctionTypes = QtJambi_LibraryUtilities.internal.lambdaMetaTypes(MarshallFunction.class, Objects.requireNonNull(marshallFunction, "Argument 'marshallFunction': null not expected."));
+		int[] demarshallFunctionTypes = QtJambi_LibraryUtilities.internal.lambdaMetaTypes(DemarshallFunction.class, Objects.requireNonNull(demarshallFunction, "Argument 'demarshallFunction': null not expected."));
+		Class<?>[] marshallFunctionClassTypes = QtJambi_LibraryUtilities.internal.lambdaClassTypes(MarshallFunction.class, Objects.requireNonNull(marshallFunction, "Argument 'marshallFunction': null not expected."));
+		Class<?>[] demarshallFunctionClassTypes = QtJambi_LibraryUtilities.internal.lambdaClassTypes(DemarshallFunction.class, Objects.requireNonNull(demarshallFunction, "Argument 'demarshallFunction': null not expected."));
 		if(marshallFunctionTypes==null || demarshallFunctionTypes==null 
 				|| marshallFunctionTypes.length!=3 || demarshallFunctionTypes.length!=2)
 			throw new IllegalArgumentException("Marshall and/or demarshall function not a lambda expression.");

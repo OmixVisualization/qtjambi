@@ -64,7 +64,7 @@ public final class QDBusReply<T> extends io.qt.QtObject implements java.lang.Clo
     
     public QDBusReply(io.qt.dbus.@NonNull QDBusMessage reply, @Nullable Class<T> valueType, io.qt.core.@NonNull QMetaType @NonNull... instantiation){
         super((QPrivateConstructor)null);
-        Objects.requireNonNull(valueType);
+        Objects.requireNonNull(valueType, "Argument 'valueType': null not expected.");
         initialize_native(this, reply, io.qt.core.QMetaType.fromType(valueType, instantiation));
     }
     
@@ -72,7 +72,7 @@ public final class QDBusReply<T> extends io.qt.QtObject implements java.lang.Clo
 
     public QDBusReply(io.qt.dbus.@NonNull QDBusPendingCall pcall, @Nullable Class<T> valueType, io.qt.core.@NonNull QMetaType @NonNull... instantiation){
         super((QPrivateConstructor)null);
-        Objects.requireNonNull(valueType);
+        Objects.requireNonNull(valueType, "Argument 'valueType': null not expected.");
         initialize_native(this, pcall, io.qt.core.QMetaType.fromType(valueType, instantiation));
     }
     

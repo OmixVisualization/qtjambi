@@ -793,30 +793,27 @@ public abstract class NativeUtility {
 			return association;
 		}
 		
-		static AssociativeReference find(java.lang.Object reference) {
-			AssociativeReference result = null;
+		static List<AssociativeReference> findAll(java.lang.Object reference) {
+			List<AssociativeReference> result = new ArrayList<>();
 			synchronized(associativeReferences) {
 				for (AssociativeReference ref : associativeReferences) {
 					if(ref.get() == reference) {
-						result = ref;
-						break;
+						result.add(ref);
 					}
 				}
 			}
 			return result;
 		}
 		
-		static AssociativeReference findByHashCode(int hashCode) {
-			AssociativeReference result = null;
+		static AssociativeReference findAllByHashCode(int hashCode) {
 			synchronized(associativeReferences) {
 				for (AssociativeReference ref : associativeReferences) {
 					if(System.identityHashCode(ref) == hashCode) {
-						result = ref;
-						break;
+						return ref;
 					}
 				}
 			}
-			return result;
+			return null;
 		}
 	}
 
@@ -827,28 +824,31 @@ public abstract class NativeUtility {
 
 	@NativeAccess
 	private static boolean deleteAssociation(java.lang.Object o1) {
-		AssociativeReference matchingReference = AssociativeReference.find(o1);
-		if (matchingReference != null) {
-			matchingReference.enqueue();
-			return true;
-		} else
-			return false;
+		boolean result = false;
+		for(AssociativeReference matchingReference : AssociativeReference.findAll(o1)) {
+			if (matchingReference != null) {
+				matchingReference.enqueue();
+				result = true;
+			}
+		}
+		return result;
 	}
 	
 	@NativeAccess
 	private static java.lang.Object deleteAssociationByHashCode(int hashCode) {
-		AssociativeReference matchingReference = AssociativeReference.findByHashCode(hashCode);
+		java.lang.Object result = null;
+		AssociativeReference matchingReference = AssociativeReference.findAllByHashCode(hashCode);
 		if (matchingReference != null) {
+			result = matchingReference.association;
 			matchingReference.enqueue();
-			return matchingReference.get();
-		} else
-			return null;
+		}
+		return result;
 	}
 	
 	@NativeAccess
 	private static java.lang.Object findAssociation(java.lang.Object o1) {
-		AssociativeReference matchingReference = AssociativeReference.find(o1);
-		return matchingReference == null ? null : matchingReference.association();
+		List<AssociativeReference> matchingReferences = AssociativeReference.findAll(o1);
+		return matchingReferences.isEmpty() ? null : matchingReferences.get(0).association();
 	}
 
 	static class FinalizerReference<Ref> extends QueuedCleaner<Ref> {

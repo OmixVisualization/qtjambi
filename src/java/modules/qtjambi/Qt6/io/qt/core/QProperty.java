@@ -165,7 +165,7 @@ public final class QProperty<T> extends QPropertyData<T> {
      */
 	public QProperty(@StrictNonNull T initialValue) {
 		super(null);
-		QMetaType metaType = valueMetaType(Objects.requireNonNull(initialValue));
+		QMetaType metaType = valueMetaType(Objects.requireNonNull(initialValue, "Argument 'initialValue': null not expected."));
 		if(metaType.flags().testFlag(QMetaType.TypeFlag.IsPointer) || metaType.name().contains("*")) {
 			d = new RCTypedPropertyBindingData(metaType, initialValue);
 		}else {

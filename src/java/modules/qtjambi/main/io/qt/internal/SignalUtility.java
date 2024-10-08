@@ -350,7 +350,7 @@ abstract class SignalUtility {
 	private static class AnalyzingCheckingSignalCore extends AnalyzingSignalCore{
 		private final Consumer<Object[]> argumentTest;
 		private AnalyzingCheckingSignalCore(Consumer<Object[]> argumentTest) {
-			this.argumentTest = Objects.requireNonNull(argumentTest);
+			this.argumentTest = Objects.requireNonNull(argumentTest, "Argument 'argumentTest': null not expected.");
 		}
 		
 		final static Function<Consumer<Object[]>,AnalyzingSignalCore> FACTORY;
@@ -1159,7 +1159,7 @@ abstract class SignalUtility {
 		public LeightweightSignalCore(Class<?> declaringClass, String name, List<SignalParameterType> signalParameterTypes) {
 			super(signalParameterTypes);
 			this.name = name;
-			this.declaringClass = Objects.requireNonNull(declaringClass);
+			this.declaringClass = Objects.requireNonNull(declaringClass, "Argument 'declaringClass': null not expected.");
 		}
 		
 		LeightweightSignalCore(String name, List<SignalParameterType> signalParameterTypes) {
@@ -1467,7 +1467,10 @@ abstract class SignalUtility {
 						continue;
 					}
                 }
-				currentConnection = next(currentConnection);
+                if(currentConnection.isSingleShotConnection())
+                	currentConnection = eraseAndNext(currentConnection);
+                else
+                	currentConnection = next(currentConnection);
             }
 		}
 		
@@ -2334,7 +2337,7 @@ abstract class SignalUtility {
 		 * @see QDeclarableSignals
 		 */
         protected AbstractSignal(String name, Class<?>[] types) {
-        	name = Objects.requireNonNull(name);
+        	name = Objects.requireNonNull(name, "Argument 'name': null not expected.");
         	switch(types.length){
         	case 0:
         		this.core = new DeclarativeSignalCore(name, Collections.emptyList());
@@ -5227,14 +5230,15 @@ abstract class SignalUtility {
 	
     private static abstract class AbstractConnection{
     	private final static int Disconnected = 0x08;
-        private byte flags;
+    	private final static int SingleShotConnection = 0x100;
+        private int flags;
         
         AbstractConnection previous;
         AbstractConnection next;
         int id = 0;
         
         AbstractConnection(Qt.ConnectionType[] connectionType) {
-            byte flags = 0;
+        	int flags = 0;
             if(connectionType!=null && connectionType.length>0) {
         		for (Qt.ConnectionType c : connectionType) {
         			flags |= c.value();
@@ -5260,6 +5264,9 @@ abstract class SignalUtility {
         }
         public final boolean isAutoConnection() {
             return (flags & (Qt.ConnectionType.QueuedConnection.value() | Qt.ConnectionType.DirectConnection.value())) == 0;
+        }
+        public final boolean isSingleShotConnection() {
+            return (flags & SingleShotConnection) == SingleShotConnection;
         }
         public abstract Object resolveReceiver();
         public boolean receiverAvailable() {

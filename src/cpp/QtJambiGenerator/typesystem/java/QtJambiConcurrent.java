@@ -127,7 +127,7 @@ class QtConcurrent___ extends QtConcurrent {
      */
     @QtUninvokable
     public static <T> @NonNull QFuture<@QtPrimitiveType Void> map(@StrictNonNull Collection<T> sequence, MapFunctor<T> functor){
-        return startMap(0, Objects.requireNonNull(sequence), Objects.requireNonNull(functor)).startAsynchronously();
+        return startMap(0, Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(functor, "Argument 'functor': null not expected.")).startAsynchronously();
     }
     
     /**
@@ -144,7 +144,7 @@ class QtConcurrent___ extends QtConcurrent {
      */
     @QtUninvokable
     public static <U, T> @NonNull QFuture<U> mapped(@StrictNonNull Collection<T> sequence, @StrictNonNull MappedFunctor<U, T> functor){
-        return startMapped(0, Objects.requireNonNull(sequence), Objects.requireNonNull(functor)).startAsynchronously();
+        return startMapped(0, Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(functor, "Argument 'functor': null not expected.")).startAsynchronously();
     }
     
     /**
@@ -177,7 +177,7 @@ class QtConcurrent___ extends QtConcurrent {
      */
     @QtUninvokable
     public static <U, V, T> @NonNull QFuture<U> mappedReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, @NonNull ReduceOptions options) {
-           return startMappedReduced(0, Objects.requireNonNull(sequence), Objects.requireNonNull(functor), Objects.requireNonNull(reduceFunctor), computeDefaultResult(reduceFunctor), options.value()).startAsynchronously();
+           return startMappedReduced(0, Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(functor, "Argument 'functor': null not expected."), Objects.requireNonNull(reduceFunctor, "Argument 'reduceFunctor': null not expected."), computeDefaultResult(reduceFunctor), options.value()).startAsynchronously();
      }
     
     /**
@@ -212,7 +212,7 @@ class QtConcurrent___ extends QtConcurrent {
      */
     @QtUninvokable
     public static <T> @NonNull QFuture<@QtPrimitiveType Void> filter(@StrictNonNull Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor){
-        return filter(0, Objects.requireNonNull(sequence), Objects.requireNonNull(filteredFunctor));
+        return filter(0, Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(filteredFunctor, "Argument 'filteredFunctor': null not expected."));
     }
 
     /**
@@ -229,7 +229,7 @@ class QtConcurrent___ extends QtConcurrent {
      */
     @QtUninvokable
     public static <T> @NonNull QFuture<T> filtered(@StrictNonNull Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor){
-        return startFiltered(0, Objects.requireNonNull(sequence), Objects.requireNonNull(filteredFunctor)).startAsynchronously();
+        return startFiltered(0, Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(filteredFunctor, "Argument 'filteredFunctor': null not expected.")).startAsynchronously();
     }
     
     /**
@@ -262,7 +262,7 @@ class QtConcurrent___ extends QtConcurrent {
      */
     @QtUninvokable
     public static <U, T> @NonNull QFuture<U> filteredReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, @NonNull ReduceOptions options) {
-        return startFilteredReduced(0, Objects.requireNonNull(sequence), Objects.requireNonNull(filteredFunctor), Objects.requireNonNull(reduceFunctor), computeDefaultResult(reduceFunctor), options.value()).startAsynchronously();
+        return startFilteredReduced(0, Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(filteredFunctor, "Argument 'filteredFunctor': null not expected."), Objects.requireNonNull(reduceFunctor, "Argument 'reduceFunctor': null not expected."), computeDefaultResult(reduceFunctor), options.value()).startAsynchronously();
     }
     
     /**
@@ -315,7 +315,7 @@ class QtConcurrent___ extends QtConcurrent {
      */
     @QtUninvokable
     public static <T> @NonNull QFuture<T> run(@StrictNonNull Callable<T> callable){
-        return run0(null, Objects.requireNonNull(callable));
+        return run0(null, Objects.requireNonNull(callable, "Argument 'callable': null not expected."));
     }
     
     /**
@@ -323,7 +323,7 @@ class QtConcurrent___ extends QtConcurrent {
      */
     @QtUninvokable
     public static <T> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, @StrictNonNull Callable<T> callable){
-        return run0(threadPool, Objects.requireNonNull(callable));
+        return run0(threadPool, Objects.requireNonNull(callable, "Argument 'callable': null not expected."));
     }
     @QtUninvokable
     private native static <T> @NonNull QFuture<T> run0(@Nullable QThreadPool threadPool, @StrictNonNull Callable<T> callable);
@@ -333,7 +333,7 @@ class QtConcurrent___ extends QtConcurrent {
      */
     @QtUninvokable
     public static @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull Runnable runnable) {
-        return runVoid0(null, Objects.requireNonNull(runnable));
+        return runVoid0(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."));
     }
     
     /**
@@ -341,7 +341,7 @@ class QtConcurrent___ extends QtConcurrent {
      */
     @QtUninvokable
     public static @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull Runnable runnable) {
-        return runVoid0(threadPool, Objects.requireNonNull(runnable));
+        return runVoid0(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."));
     }
     @QtUninvokable
     private native static @NonNull QFuture<@QtPrimitiveType Void> runVoid0(@Nullable QThreadPool threadPool, @StrictNonNull Runnable runnable);
@@ -449,7 +449,7 @@ class QtConcurrent___ extends QtConcurrent {
      */
     @QtUninvokable
     public static <A> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull Runnable1<A> runnable, A a) {
-        return runVoid1(threadPool, Objects.requireNonNull(runnable), a);
+        return runVoid1(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a);
     }
     private native static <A> @NonNull QFuture<@QtPrimitiveType Void> runVoid1(@Nullable QThreadPool threadPool, @StrictNonNull Runnable1<A> runnable, A a);
     
@@ -458,7 +458,7 @@ class QtConcurrent___ extends QtConcurrent {
      */
     @QtUninvokable
     public static <A,B> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull Runnable2<A,B> runnable, A a, B b) {
-        return runVoid2(null, Objects.requireNonNull(runnable), a, b);
+        return runVoid2(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b);
     }
     
     /**
@@ -466,7 +466,7 @@ class QtConcurrent___ extends QtConcurrent {
      */
     @QtUninvokable
     public static <A,B> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull Runnable2<A,B> runnable, A a, B b) {
-        return runVoid2(threadPool, Objects.requireNonNull(runnable), a, b);
+        return runVoid2(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b);
     }
     private native static <A,B> @NonNull QFuture<@QtPrimitiveType Void> runVoid2(@Nullable QThreadPool threadPool, @StrictNonNull Runnable2<A,B> runnable, A a, B b);
     
@@ -475,7 +475,7 @@ class QtConcurrent___ extends QtConcurrent {
      */
     @QtUninvokable
     public static <A,B,C> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull Runnable3<A,B,C> runnable, A a, B b, C c) {
-        return runVoid3(null, Objects.requireNonNull(runnable), a, b, c);
+        return runVoid3(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c);
     }
     
     /**
@@ -483,7 +483,7 @@ class QtConcurrent___ extends QtConcurrent {
      */
     @QtUninvokable
     public static <A,B,C> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull Runnable3<A,B,C> runnable, A a, B b, C c) {
-        return runVoid3(threadPool, Objects.requireNonNull(runnable), a, b, c);
+        return runVoid3(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c);
     }
     private native static <A,B,C> @NonNull QFuture<@QtPrimitiveType Void> runVoid3(@Nullable QThreadPool threadPool, @StrictNonNull Runnable3<A,B,C> runnable, A a, B b, C c);
     
@@ -492,7 +492,7 @@ class QtConcurrent___ extends QtConcurrent {
      */
     @QtUninvokable
     public static <A,B,C,D> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull Runnable4<A,B,C,D> runnable, A a, B b, C c, D d) {
-        return runVoid4(null, Objects.requireNonNull(runnable), a, b, c, d);
+        return runVoid4(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d);
     }
     
     /**
@@ -500,7 +500,7 @@ class QtConcurrent___ extends QtConcurrent {
      */
     @QtUninvokable
     public static <A,B,C,D> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull Runnable4<A,B,C,D> runnable, A a, B b, C c, D d) {
-        return runVoid4(threadPool, Objects.requireNonNull(runnable), a, b, c, d);
+        return runVoid4(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d);
     }
     private native static <A,B,C,D> @NonNull QFuture<@QtPrimitiveType Void> runVoid4(@Nullable QThreadPool threadPool, @StrictNonNull Runnable4<A,B,C,D> runnable, A a, B b, C c, D d);
     
@@ -509,7 +509,7 @@ class QtConcurrent___ extends QtConcurrent {
      */
     @QtUninvokable
     public static <A,B,C,D,E> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull Runnable5<A,B,C,D,E> runnable, A a, B b, C c, D d, E e) {
-        return runVoid5(null, Objects.requireNonNull(runnable), a, b, c, d, e);
+        return runVoid5(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e);
     }
     
     /**
@@ -517,7 +517,7 @@ class QtConcurrent___ extends QtConcurrent {
      */
     @QtUninvokable
     public static <A,B,C,D,E> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull Runnable5<A,B,C,D,E> runnable, A a, B b, C c, D d, E e) {
-        return runVoid5(threadPool, Objects.requireNonNull(runnable), a, b, c, d, e);
+        return runVoid5(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e);
     }
     private native static <A,B,C,D,E> @NonNull QFuture<@QtPrimitiveType Void> runVoid5(@Nullable QThreadPool threadPool, @StrictNonNull Runnable5<A,B,C,D,E> runnable, A a, B b, C c, D d, E e);
     
@@ -628,7 +628,7 @@ class QtConcurrent___ extends QtConcurrent {
      */
     @QtUninvokable
     public static <T,A> @NonNull QFuture<T> run(@StrictNonNull Callable1<T,A> runnable, A a) {
-        return run1(null, Objects.requireNonNull(runnable), a);
+        return run1(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a);
     }
     
     /**
@@ -636,7 +636,7 @@ class QtConcurrent___ extends QtConcurrent {
      */
     @QtUninvokable
     public static <T,A> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, @StrictNonNull Callable1<T,A> runnable, A a) {
-        return run1(threadPool, Objects.requireNonNull(runnable), a);
+        return run1(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a);
     }
     private native static <T,A> @NonNull QFuture<T> run1(@Nullable QThreadPool threadPool, Callable1<T,A> runnable, A a);
     
@@ -645,7 +645,7 @@ class QtConcurrent___ extends QtConcurrent {
      */
     @QtUninvokable
     public static <T,A,B> @NonNull QFuture<T> run(@StrictNonNull Callable2<T,A,B> runnable, A a, B b) {
-        return run2(null, Objects.requireNonNull(runnable), a, b);
+        return run2(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b);
     }
     
     /**
@@ -653,7 +653,7 @@ class QtConcurrent___ extends QtConcurrent {
      */
     @QtUninvokable
     public static <T,A,B> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, @StrictNonNull Callable2<T,A,B> runnable, A a, B b) {
-        return run2(threadPool, Objects.requireNonNull(runnable), a, b);
+        return run2(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b);
     }
     private native static <T,A,B> @NonNull QFuture<T> run2(@Nullable QThreadPool threadPool, Callable2<T,A,B> runnable, A a, B b);
     
@@ -662,7 +662,7 @@ class QtConcurrent___ extends QtConcurrent {
      */
     @QtUninvokable
     public static <T,A,B,C> @NonNull QFuture<T> run(@StrictNonNull Callable3<T,A,B,C> runnable, A a, B b, C c) {
-        return run3(null, Objects.requireNonNull(runnable), a, b, c);
+        return run3(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c);
     }
     
     /**
@@ -670,7 +670,7 @@ class QtConcurrent___ extends QtConcurrent {
      */
     @QtUninvokable
     public static <T,A,B,C> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, @StrictNonNull Callable3<T,A,B,C> runnable, A a, B b, C c) {
-        return run3(threadPool, Objects.requireNonNull(runnable), a, b, c);
+        return run3(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c);
     }
     private native static <T,A,B,C> @NonNull QFuture<T> run3(@Nullable QThreadPool threadPool, Callable3<T,A,B,C> runnable, A a, B b, C c);
     
@@ -679,7 +679,7 @@ class QtConcurrent___ extends QtConcurrent {
      */
     @QtUninvokable
     public static <T,A,B,C,D> @NonNull QFuture<T> run(@StrictNonNull Callable4<T,A,B,C,D> runnable, A a, B b, C c, D d) {
-        return run4(null, Objects.requireNonNull(runnable), a, b, c, d);
+        return run4(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d);
     }
     
     /**
@@ -687,7 +687,7 @@ class QtConcurrent___ extends QtConcurrent {
      */
     @QtUninvokable
     public static <T,A,B,C,D> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, @StrictNonNull Callable4<T,A,B,C,D> runnable, A a, B b, C c, D d) {
-        return run4(threadPool, Objects.requireNonNull(runnable), a, b, c, d);
+        return run4(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d);
     }
     private native static <T,A,B,C,D> @NonNull QFuture<T> run4(@Nullable QThreadPool threadPool, Callable4<T,A,B,C,D> runnable, A a, B b, C c, D d);
     
@@ -696,7 +696,7 @@ class QtConcurrent___ extends QtConcurrent {
      */
     @QtUninvokable
     public static <T,A,B,C,D,E> @NonNull QFuture<T> run(@StrictNonNull Callable5<T,A,B,C,D,E> runnable, A a, B b, C c, D d, E e) {
-        return run5(null, Objects.requireNonNull(runnable), a, b, c, d, e);
+        return run5(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e);
     }
     
     /**
@@ -704,7 +704,7 @@ class QtConcurrent___ extends QtConcurrent {
      */
      @QtUninvokable
     public static <T,A,B,C,D,E> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, @StrictNonNull Callable5<T,A,B,C,D,E> runnable, A a, B b, C c, D d, E e) {
-        return run5(threadPool, Objects.requireNonNull(runnable), a, b, c, d, e);
+        return run5(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e);
     }
     private native static <T,A,B,C,D,E> @NonNull QFuture<T> run5(@Nullable QThreadPool threadPool, Callable5<T,A,B,C,D,E> runnable, A a, B b, C c, D d, E e);
     
@@ -714,17 +714,17 @@ class QtConcurrent_5__ extends QtConcurrent {
     
     @QtUninvokable
     public static <T> @NonNull ThreadEngineStarter<@QtPrimitiveType Void> startMap(@StrictNonNull Collection<T> sequence, MapFunctor<T> functor) {
-        return startMap(0, Objects.requireNonNull(sequence), Objects.requireNonNull(functor));
+        return startMap(0, Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(functor, "Argument 'functor': null not expected."));
     }
     
     @QtUninvokable
     public static <U, T> @NonNull ThreadEngineStarter<U> startMapped(@StrictNonNull Collection<T> sequence, @StrictNonNull MappedFunctor<U, T> functor){
-        return startMapped(0, Objects.requireNonNull(sequence), Objects.requireNonNull(functor));
+        return startMapped(0, Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(functor, "Argument 'functor': null not expected."));
     }
     
     @QtUninvokable
     public static <U, V, T> @NonNull ThreadEngineStarter<U> startMappedReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, @NonNull ReduceOptions options) {
-        return startMappedReduced(0, Objects.requireNonNull(sequence), Objects.requireNonNull(functor), Objects.requireNonNull(reduceFunctor), computeDefaultResult(reduceFunctor), options.value());
+        return startMappedReduced(0, Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(functor, "Argument 'functor': null not expected."), Objects.requireNonNull(reduceFunctor, "Argument 'reduceFunctor': null not expected."), computeDefaultResult(reduceFunctor), options.value());
     }
     
     @QtUninvokable
@@ -739,12 +739,12 @@ class QtConcurrent_5__ extends QtConcurrent {
     
     @QtUninvokable
     public static <U, T> @NonNull ThreadEngineStarter<U> startFilteredReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, @NonNull ReduceOptions options) {
-        return startFilteredReduced(0, Objects.requireNonNull(sequence), Objects.requireNonNull(filteredFunctor), Objects.requireNonNull(reduceFunctor), computeDefaultResult(reduceFunctor), options.value());
+        return startFilteredReduced(0, Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(filteredFunctor, "Argument 'filteredFunctor': null not expected."), Objects.requireNonNull(reduceFunctor, "Argument 'reduceFunctor': null not expected."), computeDefaultResult(reduceFunctor), options.value());
     }
     
     @QtUninvokable
     public static <T> @NonNull ThreadEngineStarter<T> startFiltered(@StrictNonNull Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor){
-        return startFiltered(0, Objects.requireNonNull(sequence), Objects.requireNonNull(filteredFunctor));
+        return startFiltered(0, Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(filteredFunctor, "Argument 'filteredFunctor': null not expected."));
     }
     
 }// class
@@ -980,7 +980,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull Runnable6<A,B,C,D,E,F> runnable, A a, B b, C c, D d, E e, F f) {
-        return runVoid6(null, Objects.requireNonNull(runnable), a, b, c, d, e, f);
+        return runVoid6(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f);
     }
 
     /**
@@ -988,7 +988,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull Runnable6<A,B,C,D,E,F> runnable, A a, B b, C c, D d, E e, F f) {
-        return runVoid6(threadPool, Objects.requireNonNull(runnable), a, b, c, d, e, f);
+        return runVoid6(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f);
     }
     private native static <A,B,C,D,E,F> @NonNull QFuture<@QtPrimitiveType Void> runVoid6(@Nullable QThreadPool threadPool, @StrictNonNull Runnable6<A,B,C,D,E,F> runnable, A a, B b, C c, D d, E e, F f);
     
@@ -997,7 +997,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull Runnable7<A,B,C,D,E,F,G> runnable, A a, B b, C c, D d, E e, F f, G g) {
-        return runVoid7(null, Objects.requireNonNull(runnable), a, b, c, d, e, f, g);
+        return runVoid7(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g);
     }
 
     /**
@@ -1005,7 +1005,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull Runnable7<A,B,C,D,E,F,G> runnable, A a, B b, C c, D d, E e, F f, G g) {
-        return runVoid7(threadPool, Objects.requireNonNull(runnable), a, b, c, d, e, f, g);
+        return runVoid7(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g);
     }
     private native static <A,B,C,D,E,F,G> @NonNull QFuture<@QtPrimitiveType Void> runVoid7(@Nullable QThreadPool threadPool, @StrictNonNull Runnable7<A,B,C,D,E,F,G> runnable, A a, B b, C c, D d, E e, F f, G g);
     
@@ -1014,7 +1014,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G,H> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull Runnable8<A,B,C,D,E,F,G,H> runnable, A a, B b, C c, D d, E e, F f, G g, H h) {
-        return runVoid8(null, Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h);
+        return runVoid8(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g, h);
     }
 
     /**
@@ -1022,7 +1022,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G,H> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull Runnable8<A,B,C,D,E,F,G,H> runnable, A a, B b, C c, D d, E e, F f, G g, H h) {
-        return runVoid8(threadPool, Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h);
+        return runVoid8(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g, h);
     }
     private native static <A,B,C,D,E,F,G,H> @NonNull QFuture<@QtPrimitiveType Void> runVoid8(@Nullable QThreadPool threadPool, @StrictNonNull Runnable8<A,B,C,D,E,F,G,H> runnable, A a, B b, C c, D d, E e, F f, G g, H h);
     
@@ -1031,7 +1031,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G,H,I> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull Runnable9<A,B,C,D,E,F,G,H,I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i) {
-        return runVoid9(null, Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h, i);
+        return runVoid9(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g, h, i);
     }
 
     /**
@@ -1039,7 +1039,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G,H,I> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull Runnable9<A,B,C,D,E,F,G,H,I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i) {
-        return runVoid9(threadPool, Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h, i);
+        return runVoid9(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g, h, i);
     }
     private native static <A,B,C,D,E,F,G,H,I> @NonNull QFuture<@QtPrimitiveType Void> runVoid9(@Nullable QThreadPool threadPool, @StrictNonNull Runnable9<A,B,C,D,E,F,G,H,I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i);
     
@@ -1048,7 +1048,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     @QtUninvokable
     public static <T,A,B,C,D,E,F> @NonNull QFuture<T> run(Callable6<T,A,B,C,D,E,F> runnable, A a, B b, C c, D d, E e, F f) {
-        return run6(null, Objects.requireNonNull(runnable), a, b, c, d, e, f);
+        return run6(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f);
     }
 
     /**
@@ -1056,7 +1056,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     @QtUninvokable
     public static <T,A,B,C,D,E,F> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, Callable6<T,A,B,C,D,E,F> runnable, A a, B b, C c, D d, E e, F f) {
-        return run6(threadPool, Objects.requireNonNull(runnable), a, b, c, d, e, f);
+        return run6(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f);
     }
     private native static <T,A,B,C,D,E,F> @NonNull QFuture<T> run6(@Nullable QThreadPool threadPool, Callable6<T,A,B,C,D,E,F> runnable, A a, B b, C c, D d, E e, F f);
     
@@ -1065,7 +1065,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     @QtUninvokable
     public static <T,A,B,C,D,E,F,G> @NonNull QFuture<T> run(Callable7<T,A,B,C,D,E,F,G> runnable, A a, B b, C c, D d, E e, F f, G g) {
-        return run7(null, Objects.requireNonNull(runnable), a, b, c, d, e, f, g);
+        return run7(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g);
     }
 
     /**
@@ -1073,7 +1073,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     @QtUninvokable
     public static <T,A,B,C,D,E,F,G> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, Callable7<T,A,B,C,D,E,F,G> runnable, A a, B b, C c, D d, E e, F f, G g) {
-        return run7(threadPool, Objects.requireNonNull(runnable), a, b, c, d, e, f, g);
+        return run7(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g);
     }
     private native static <T,A,B,C,D,E,F,G> @NonNull QFuture<T> run7(@Nullable QThreadPool threadPool, Callable7<T,A,B,C,D,E,F,G> runnable, A a, B b, C c, D d, E e, F f, G g);
     
@@ -1082,7 +1082,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     @QtUninvokable
     public static <T,A,B,C,D,E,F,G,H> @NonNull QFuture<T> run(Callable8<T,A,B,C,D,E,F,G,H> runnable, A a, B b, C c, D d, E e, F f, G g, H h) {
-        return run8(null, Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h);
+        return run8(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g, h);
     }
 
     /**
@@ -1090,7 +1090,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     @QtUninvokable
     public static <T,A,B,C,D,E,F,G,H> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, Callable8<T,A,B,C,D,E,F,G,H> runnable, A a, B b, C c, D d, E e, F f, G g, H h) {
-        return run8(threadPool, Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h);
+        return run8(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g, h);
     }
     private native static <T,A,B,C,D,E,F,G,H> @NonNull QFuture<T> run8(@Nullable QThreadPool threadPool, Callable8<T,A,B,C,D,E,F,G,H> runnable, A a, B b, C c, D d, E e, F f, G g, H h);
     
@@ -1099,7 +1099,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     @QtUninvokable
     public static <T,A,B,C,D,E,F,G,H,I> @NonNull QFuture<T> run(Callable9<T,A,B,C,D,E,F,G,H,I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i) {
-        return run9(null, Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h, i);
+        return run9(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g, h, i);
     }
 
     /**
@@ -1107,7 +1107,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     @QtUninvokable
     public static <T,A,B,C,D,E,F,G,H,I> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, Callable9<T,A,B,C,D,E,F,G,H,I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i) {
-        return run9(threadPool, Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h, i);
+        return run9(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g, h, i);
     }
     private native static <T,A,B,C,D,E,F,G,H,I> @NonNull QFuture<T> run9(@Nullable QThreadPool threadPool, Callable9<T,A,B,C,D,E,F,G,H,I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i);
 
@@ -1216,7 +1216,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     @QtUninvokable
     public static <U, V, T> @NonNull QFuture<U> mappedReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, U initialValue, @NonNull ReduceOptions options) {
-        return startMappedReduced(0, Objects.requireNonNull(sequence), Objects.requireNonNull(functor), Objects.requireNonNull(reduceFunctor), computeDefaultResult(reduceFunctor), options.value()).startAsynchronously();
+        return startMappedReduced(0, Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(functor, "Argument 'functor': null not expected."), Objects.requireNonNull(reduceFunctor, "Argument 'reduceFunctor': null not expected."), computeDefaultResult(reduceFunctor), options.value()).startAsynchronously();
     }
 
     /**
@@ -1305,7 +1305,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     @QtUninvokable
     public static <T> @NonNull QFuture<@QtPrimitiveType Void> filter(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor){
-        return filter(QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(threadPool)), Objects.requireNonNull(sequence), filteredFunctor);
+        return filter(QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(threadPool, "Argument 'threadPool': null not expected.")), Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), filteredFunctor);
     }
     
     /**
@@ -1403,7 +1403,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     @QtUninvokable
     public static <U, T> @NonNull QFuture<U> filteredReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, U initialValue, @NonNull ReduceOptions options) {
-        return startFilteredReduced(0, Objects.requireNonNull(sequence), Objects.requireNonNull(filteredFunctor), Objects.requireNonNull(reduceFunctor), initialValue, options.value()).startAsynchronously();
+        return startFilteredReduced(0, Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(filteredFunctor, "Argument 'filteredFunctor': null not expected."), Objects.requireNonNull(reduceFunctor, "Argument 'reduceFunctor': null not expected."), initialValue, options.value()).startAsynchronously();
     }
 
     /**
@@ -1480,12 +1480,12 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     @QtUninvokable
     public static <T> @NonNull ThreadEngineStarter<@QtPrimitiveType Void> startMap(@Nullable QThreadPool threadPool, Collection<T> sequence, MapFunctor<T> functor) {
-        return startMap(QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(threadPool)), Objects.requireNonNull(sequence), Objects.requireNonNull(functor));
+        return startMap(QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(threadPool, "Argument 'threadPool': null not expected.")), Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(functor, "Argument 'functor': null not expected."));
     }
     
     @QtUninvokable
     public static <U, T> @NonNull ThreadEngineStarter<U> startMapped(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull MappedFunctor<U, T> functor){
-        return startMapped(QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(threadPool)), Objects.requireNonNull(sequence), Objects.requireNonNull(functor));
+        return startMapped(QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(threadPool, "Argument 'threadPool': null not expected.")), Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(functor, "Argument 'functor': null not expected."));
     }
     
     @QtUninvokable
@@ -1495,7 +1495,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     @QtUninvokable
     public static <U, V, T> @NonNull ThreadEngineStarter<U> startMappedReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, @NonNull ReduceOptions options) {
-        return startMappedReduced(QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(threadPool)), Objects.requireNonNull(sequence), Objects.requireNonNull(functor), Objects.requireNonNull(reduceFunctor), computeDefaultResult(reduceFunctor), options.value());
+        return startMappedReduced(QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(threadPool, "Argument 'threadPool': null not expected.")), Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(functor, "Argument 'functor': null not expected."), Objects.requireNonNull(reduceFunctor, "Argument 'reduceFunctor': null not expected."), computeDefaultResult(reduceFunctor), options.value());
     }
     
     @QtUninvokable
@@ -1510,7 +1510,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     @QtUninvokable
     public static <U, V, T> @NonNull ThreadEngineStarter<U> startMappedReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, U initialValue, @NonNull ReduceOptions options) {
-        return startMappedReduced(QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(threadPool)), Objects.requireNonNull(sequence), Objects.requireNonNull(functor), Objects.requireNonNull(reduceFunctor), initialValue, options.value());
+        return startMappedReduced(QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(threadPool, "Argument 'threadPool': null not expected.")), Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(functor, "Argument 'functor': null not expected."), Objects.requireNonNull(reduceFunctor, "Argument 'reduceFunctor': null not expected."), initialValue, options.value());
     }
     
     @QtUninvokable
@@ -1530,7 +1530,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     @QtUninvokable
     public static <U, T> @NonNull ThreadEngineStarter<U> startFilteredReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, @NonNull ReduceOptions options) {
-        return startFilteredReduced(QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(threadPool)), Objects.requireNonNull(sequence), Objects.requireNonNull(filteredFunctor), Objects.requireNonNull(reduceFunctor), computeDefaultResult(reduceFunctor), options.value());
+        return startFilteredReduced(QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(threadPool, "Argument 'threadPool': null not expected.")), Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(filteredFunctor, "Argument 'filteredFunctor': null not expected."), Objects.requireNonNull(reduceFunctor, "Argument 'reduceFunctor': null not expected."), computeDefaultResult(reduceFunctor), options.value());
     }
     
     @QtUninvokable
@@ -1545,12 +1545,12 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     @QtUninvokable
     public static <U, T> @NonNull ThreadEngineStarter<U> startFilteredReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, U initialValue, @NonNull ReduceOptions options) {
-        return startFilteredReduced(QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(threadPool)), Objects.requireNonNull(sequence), Objects.requireNonNull(filteredFunctor), Objects.requireNonNull(reduceFunctor), initialValue, options.value());
+        return startFilteredReduced(QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(threadPool, "Argument 'threadPool': null not expected.")), Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(filteredFunctor, "Argument 'filteredFunctor': null not expected."), Objects.requireNonNull(reduceFunctor, "Argument 'reduceFunctor': null not expected."), initialValue, options.value());
     }
     
     @QtUninvokable
     public static <T> @NonNull ThreadEngineStarter<T> startFiltered(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor){
-        return startFiltered(QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(threadPool)), Objects.requireNonNull(sequence), Objects.requireNonNull(filteredFunctor));
+        return startFiltered(QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(threadPool, "Argument 'threadPool': null not expected.")), Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(filteredFunctor, "Argument 'filteredFunctor': null not expected."));
     }
     
     /**
@@ -2016,7 +2016,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     @QtUninvokable
     public static <T, A> @NonNull QFuture<T> run(@StrictNonNull RunnableWithPromise1<T, A> runnable, A a) {
-        return runWithPromise1(null, Objects.requireNonNull(runnable), a);
+        return runWithPromise1(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a);
     }
 
     /**
@@ -2024,7 +2024,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     @QtUninvokable
     public static <T, A> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithPromise1<T, A> runnable, A a) {
-        return runWithPromise1(threadPool, Objects.requireNonNull(runnable), a);
+        return runWithPromise1(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a);
     }
 
     private native static <T, A> @NonNull QFuture<T> runWithPromise1(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithPromise1<T, A> runnable, A a);
@@ -2034,7 +2034,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     @QtUninvokable
     public static <T, A, B> @NonNull QFuture<T> run(@StrictNonNull RunnableWithPromise2<T, A, B> runnable, A a, B b) {
-        return runWithPromise2(null, Objects.requireNonNull(runnable), a, b);
+        return runWithPromise2(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b);
     }
 
     /**
@@ -2042,7 +2042,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     @QtUninvokable
     public static <T, A, B> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithPromise2<T, A, B> runnable, A a, B b) {
-        return runWithPromise2(threadPool, Objects.requireNonNull(runnable), a, b);
+        return runWithPromise2(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b);
     }
 
     private native static <T, A, B> @NonNull QFuture<T> runWithPromise2(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithPromise2<T, A, B> runnable, A a, B b);
@@ -2052,7 +2052,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     @QtUninvokable
     public static <T, A, B, C> @NonNull QFuture<T> run(@StrictNonNull RunnableWithPromise3<T, A, B, C> runnable, A a, B b, C c) {
-        return runWithPromise3(null, Objects.requireNonNull(runnable), a, b, c);
+        return runWithPromise3(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c);
     }
 
     /**
@@ -2060,7 +2060,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     @QtUninvokable
     public static <T, A, B, C> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithPromise3<T, A, B, C> runnable, A a, B b, C c) {
-        return runWithPromise3(threadPool, Objects.requireNonNull(runnable), a, b, c);
+        return runWithPromise3(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c);
     }
 
     private native static <T, A, B, C> @NonNull QFuture<T> runWithPromise3(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithPromise3<T, A, B, C> runnable, A a, B b,
@@ -2071,7 +2071,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     @QtUninvokable
     public static <T, A, B, C, D> @NonNull QFuture<T> run(@StrictNonNull RunnableWithPromise4<T, A, B, C, D> runnable, A a, B b, C c, D d) {
-        return runWithPromise4(null, Objects.requireNonNull(runnable), a, b, c, d);
+        return runWithPromise4(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d);
     }
 
     /**
@@ -2080,7 +2080,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     @QtUninvokable
     public static <T, A, B, C, D> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithPromise4<T, A, B, C, D> runnable, A a, B b,
             C c, D d) {
-        return runWithPromise4(threadPool, Objects.requireNonNull(runnable), a, b, c, d);
+        return runWithPromise4(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d);
     }
 
     private native static <T, A, B, C, D> @NonNull QFuture<T> runWithPromise4(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithPromise4<T, A, B, C, D> runnable,
@@ -2091,7 +2091,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     @QtUninvokable
     public static <T, A, B, C, D, E> @NonNull QFuture<T> run(@StrictNonNull RunnableWithPromise5<T, A, B, C, D, E> runnable, A a, B b, C c, D d, E e) {
-        return runWithPromise5(null, Objects.requireNonNull(runnable), a, b, c, d, e);
+        return runWithPromise5(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e);
     }
 
     /**
@@ -2100,7 +2100,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     @QtUninvokable
     public static <T, A, B, C, D, E> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithPromise5<T, A, B, C, D, E> runnable, A a,
             B b, C c, D d, E e) {
-        return runWithPromise5(threadPool, Objects.requireNonNull(runnable), a, b, c, d, e);
+        return runWithPromise5(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e);
     }
 
     private native static <T, A, B, C, D, E> @NonNull QFuture<T> runWithPromise5(@Nullable QThreadPool threadPool,
@@ -2112,7 +2112,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     @QtUninvokable
     public static <T, A, B, C, D, E, F> @NonNull QFuture<T> run(@StrictNonNull RunnableWithPromise6<T, A, B, C, D, E, F> runnable, A a, B b, C c, D d, E e,
             F f) {
-        return runWithPromise6(null, Objects.requireNonNull(runnable), a, b, c, d, e, f);
+        return runWithPromise6(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f);
     }
 
     /**
@@ -2121,7 +2121,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     @QtUninvokable
     public static <T, A, B, C, D, E, F> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithPromise6<T, A, B, C, D, E, F> runnable,
             A a, B b, C c, D d, E e, F f) {
-        return runWithPromise6(threadPool, Objects.requireNonNull(runnable), a, b, c, d, e, f);
+        return runWithPromise6(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f);
     }
 
     private native static <T, A, B, C, D, E, F> @NonNull QFuture<T> runWithPromise6(@Nullable QThreadPool threadPool,
@@ -2133,7 +2133,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     @QtUninvokable
     public static <T, A, B, C, D, E, F, G> @NonNull QFuture<T> run(@StrictNonNull RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable, A a, B b, C c,
             D d, E e, F f, G g) {
-        return runWithPromise7(null, Objects.requireNonNull(runnable), a, b, c, d, e, f, g);
+        return runWithPromise7(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g);
     }
 
     /**
@@ -2142,7 +2142,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     @QtUninvokable
     public static <T, A, B, C, D, E, F, G> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool,
             RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable, A a, B b, C c, D d, E e, F f, G g) {
-        return runWithPromise7(threadPool, Objects.requireNonNull(runnable), a, b, c, d, e, f, g);
+        return runWithPromise7(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g);
     }
 
     private native static <T, A, B, C, D, E, F, G> @NonNull QFuture<T> runWithPromise7(@Nullable QThreadPool threadPool,
@@ -2154,7 +2154,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     @QtUninvokable
     public static <T, A, B, C, D, E, F, G, H> @NonNull QFuture<T> run(@StrictNonNull RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable, A a, B b,
             C c, D d, E e, F f, G g, H h) {
-        return runWithPromise8(null, Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h);
+        return runWithPromise8(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g, h);
     }
 
     /**
@@ -2163,7 +2163,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     @QtUninvokable
     public static <T, A, B, C, D, E, F, G, H> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool,
             RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f, G g, H h) {
-        return runWithPromise8(threadPool, Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h);
+        return runWithPromise8(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g, h);
     }
 
     private native static <T, A, B, C, D, E, F, G, H> @NonNull QFuture<T> runWithPromise8(@Nullable QThreadPool threadPool,
@@ -2175,7 +2175,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     @QtUninvokable
     public static <T, A, B, C, D, E, F, G, H, I> @NonNull QFuture<T> run(@StrictNonNull RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable, A a,
             B b, C c, D d, E e, F f, G g, H h, I i) {
-        return runWithPromise9(null, Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h, i);
+        return runWithPromise9(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g, h, i);
     }
 
     /**
@@ -2184,7 +2184,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     @QtUninvokable
     public static <T, A, B, C, D, E, F, G, H, I> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool,
             RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i) {
-        return runWithPromise9(threadPool, Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h, i);
+        return runWithPromise9(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g, h, i);
     }
 
     private native static <T, A, B, C, D, E, F, G, H, I> @NonNull QFuture<T> runWithPromise9(@Nullable QThreadPool threadPool,
@@ -2214,7 +2214,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     @QtUninvokable
     public static <A> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull RunnableWithVoidPromise1<A> runnable, A a) {
-        return runWithPromiseVoid1(null, Objects.requireNonNull(runnable), a);
+        return runWithPromiseVoid1(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a);
     }
 
     /**
@@ -2222,7 +2222,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     @QtUninvokable
     public static <A> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise1<A> runnable, A a) {
-        return runWithPromiseVoid1(threadPool, Objects.requireNonNull(runnable), a);
+        return runWithPromiseVoid1(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a);
     }
 
     private native static <A> @NonNull QFuture<@QtPrimitiveType Void> runWithPromiseVoid1(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise1<A> runnable, A a);
@@ -2232,7 +2232,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     @QtUninvokable
     public static <A, B> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull RunnableWithVoidPromise2<A, B> runnable, A a, B b) {
-        return runWithPromiseVoid2(null, Objects.requireNonNull(runnable), a, b);
+        return runWithPromiseVoid2(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b);
     }
 
     /**
@@ -2240,7 +2240,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     @QtUninvokable
     public static <A, B> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise2<A, B> runnable, A a, B b) {
-        return runWithPromiseVoid2(threadPool, Objects.requireNonNull(runnable), a, b);
+        return runWithPromiseVoid2(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b);
     }
 
     private native static <A, B> @NonNull QFuture<@QtPrimitiveType Void> runWithPromiseVoid2(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise2<A, B> runnable, A a, B b);
@@ -2250,7 +2250,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     @QtUninvokable
     public static <A, B, C> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull RunnableWithVoidPromise3<A, B, C> runnable, A a, B b, C c) {
-        return runWithPromiseVoid3(null, Objects.requireNonNull(runnable), a, b, c);
+        return runWithPromiseVoid3(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c);
     }
 
     /**
@@ -2258,7 +2258,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     @QtUninvokable
     public static <A, B, C> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise3<A, B, C> runnable, A a, B b, C c) {
-        return runWithPromiseVoid3(threadPool, Objects.requireNonNull(runnable), a, b, c);
+        return runWithPromiseVoid3(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c);
     }
 
     private native static <A, B, C> @NonNull QFuture<@QtPrimitiveType Void> runWithPromiseVoid3(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise3<A, B, C> runnable, A a, B b,
@@ -2269,7 +2269,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     @QtUninvokable
     public static <A, B, C, D> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull RunnableWithVoidPromise4<A, B, C, D> runnable, A a, B b, C c, D d) {
-        return runWithPromiseVoid4(null, Objects.requireNonNull(runnable), a, b, c, d);
+        return runWithPromiseVoid4(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d);
     }
 
     /**
@@ -2278,7 +2278,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     @QtUninvokable
     public static <A, B, C, D> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise4<A, B, C, D> runnable, A a, B b, C c,
             D d) {
-        return runWithPromiseVoid4(threadPool, Objects.requireNonNull(runnable), a, b, c, d);
+        return runWithPromiseVoid4(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d);
     }
 
     private native static <A, B, C, D> @NonNull QFuture<@QtPrimitiveType Void> runWithPromiseVoid4(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise4<A, B, C, D> runnable, A a,
@@ -2289,7 +2289,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     @QtUninvokable
     public static <A, B, C, D, E> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull RunnableWithVoidPromise5<A, B, C, D, E> runnable, A a, B b, C c, D d, E e) {
-        return runWithPromiseVoid5(null, Objects.requireNonNull(runnable), a, b, c, d, e);
+        return runWithPromiseVoid5(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e);
     }
 
     /**
@@ -2298,7 +2298,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     @QtUninvokable
     public static <A, B, C, D, E> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise5<A, B, C, D, E> runnable, A a, B b,
             C c, D d, E e) {
-        return runWithPromiseVoid5(threadPool, Objects.requireNonNull(runnable), a, b, c, d, e);
+        return runWithPromiseVoid5(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e);
     }
 
     private native static <A, B, C, D, E> @NonNull QFuture<@QtPrimitiveType Void> runWithPromiseVoid5(@Nullable QThreadPool threadPool,
@@ -2310,7 +2310,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     @QtUninvokable
     public static <A, B, C, D, E, F> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull RunnableWithVoidPromise6<A, B, C, D, E, F> runnable, A a, B b, C c, D d, E e,
             F f) {
-        return runWithPromiseVoid6(null, Objects.requireNonNull(runnable), a, b, c, d, e, f);
+        return runWithPromiseVoid6(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f);
     }
 
     /**
@@ -2319,7 +2319,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     @QtUninvokable
     public static <A, B, C, D, E, F> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise6<A, B, C, D, E, F> runnable, A a,
             B b, C c, D d, E e, F f) {
-        return runWithPromiseVoid6(threadPool, Objects.requireNonNull(runnable), a, b, c, d, e, f);
+        return runWithPromiseVoid6(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f);
     }
 
     private native static <A, B, C, D, E, F> @NonNull QFuture<@QtPrimitiveType Void> runWithPromiseVoid6(@Nullable QThreadPool threadPool,
@@ -2331,7 +2331,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     @QtUninvokable
     public static <A, B, C, D, E, F, G> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable, A a, B b, C c, D d,
             E e, F f, G g) {
-        return runWithPromiseVoid7(null, Objects.requireNonNull(runnable), a, b, c, d, e, f, g);
+        return runWithPromiseVoid7(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g);
     }
 
     /**
@@ -2340,7 +2340,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     @QtUninvokable
     public static <A, B, C, D, E, F, G> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable,
             A a, B b, C c, D d, E e, F f, G g) {
-        return runWithPromiseVoid7(threadPool, Objects.requireNonNull(runnable), a, b, c, d, e, f, g);
+        return runWithPromiseVoid7(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g);
     }
 
     private native static <A, B, C, D, E, F, G> @NonNull QFuture<@QtPrimitiveType Void> runWithPromiseVoid7(@Nullable QThreadPool threadPool,
@@ -2352,7 +2352,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     @QtUninvokable
     public static <A, B, C, D, E, F, G, H> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c,
             D d, E e, F f, G g, H h) {
-        return runWithPromiseVoid8(null, Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h);
+        return runWithPromiseVoid8(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g, h);
     }
 
     /**
@@ -2361,7 +2361,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     @QtUninvokable
     public static <A, B, C, D, E, F, G, H> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool,
             RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f, G g, H h) {
-        return runWithPromiseVoid8(threadPool, Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h);
+        return runWithPromiseVoid8(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g, h);
     }
 
     private native static <A, B, C, D, E, F, G, H> @NonNull QFuture<@QtPrimitiveType Void> runWithPromiseVoid8(@Nullable QThreadPool threadPool,
@@ -2373,7 +2373,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     @QtUninvokable
     public static <A, B, C, D, E, F, G, H, I> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable, A a, B b,
             C c, D d, E e, F f, G g, H h, I i) {
-        return runWithPromiseVoid9(null, Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h, i);
+        return runWithPromiseVoid9(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g, h, i);
     }
     
     /**
@@ -2382,7 +2382,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     @QtUninvokable
     public static <A, B, C, D, E, F, G, H, I> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool,
             RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i) {
-        return runWithPromiseVoid9(threadPool, Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h, i);
+        return runWithPromiseVoid9(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g, h, i);
     }
 
     private native static <A, B, C, D, E, F, G, H, I> @NonNull QFuture<@QtPrimitiveType Void> runWithPromiseVoid9(@Nullable QThreadPool threadPool,
@@ -2437,7 +2437,7 @@ class QtConcurrent_6__ extends QtConcurrent {
          */
         @QtUninvokable
         public @NonNull QTaskBuilder<T> onThreadPool(@StrictNonNull QThreadPool newThreadPool) {
-            this.threadPool = Objects.requireNonNull(newThreadPool);
+            this.threadPool = Objects.requireNonNull(newThreadPool, "Argument 'newThreadPool': null not expected.");
             return this;
         }
     }
@@ -16007,7 +16007,7 @@ class QtConcurrent_DISMISS__ extends QtConcurrent {
     {
         ThreadEngine(@Nullable QThreadPool pool) {
             super(pool);
-            Objects.requireNonNull(pool);
+            Objects.requireNonNull(pool, "Argument 'pool': null not expected.");
         }
 
         @QtUninvokable
@@ -16097,7 +16097,7 @@ class QtConcurrent_DISMISS__ extends QtConcurrent {
      */
     public static final class ThreadEngineStarter<T> {
         ThreadEngineStarter(ThreadEngine<T> _threadEngine){
-            threadEngine = Objects.requireNonNull(_threadEngine);
+            threadEngine = Objects.requireNonNull(_threadEngine, "Argument 'threadEngine': null not expected.");
         }
 
         public final QFuture<T> startAsynchronously(){
@@ -16710,7 +16710,7 @@ class QtConcurrent_DISMISS__ extends QtConcurrent {
      *  Calls function once for each item in sequence. The function is passed a reference to the item, so that any modifications done to the item will appear in sequence.
      */
     public static <T> @NonNull ThreadEngineStarter<@QtPrimitiveType Void> startMap(@Nullable QThreadPool threadPool, Collection<T> sequence, MapFunctor<T> functor) {
-        return new ThreadEngineStarter<>(new MapKernel<>(Objects.requireNonNull(threadPool), Objects.requireNonNull(sequence), Objects.requireNonNull(functor)));
+        return new ThreadEngineStarter<>(new MapKernel<>(Objects.requireNonNull(threadPool, "Argument 'threadPool': null not expected."), Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(functor, "Argument 'functor': null not expected.")));
     }
     
     /**
@@ -16719,7 +16719,7 @@ class QtConcurrent_DISMISS__ extends QtConcurrent {
      */
     @QtUninvokable
     public static <U, T> @NonNull ThreadEngineStarter<U> startMapped(@Nullable QThreadPool threadPool, Collection<T> sequence, MappedFunctor<U, T> functor){
-        return new ThreadEngineStarter<>(new MapEachKernel<>(Objects.requireNonNull(threadPool), Objects.requireNonNull(sequence), Objects.requireNonNull(functor)));
+        return new ThreadEngineStarter<>(new MapEachKernel<>(Objects.requireNonNull(threadPool, "Argument 'threadPool': null not expected."), Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(functor, "Argument 'functor': null not expected.")));
     }
     
     /**
@@ -16730,7 +16730,7 @@ class QtConcurrent_DISMISS__ extends QtConcurrent {
      */
     @QtUninvokable
     public static <U, V, T> @NonNull ThreadEngineStarter<U> startMappedReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, @NonNull ReduceOptions options) {
-        return new ThreadEngineStarter<>(new MappedReducedKernel<>(Objects.requireNonNull(threadPool), Objects.requireNonNull(sequence), Objects.requireNonNull(functor), Objects.requireNonNull(reduceFunctor), options));
+        return new ThreadEngineStarter<>(new MappedReducedKernel<>(Objects.requireNonNull(threadPool, "Argument 'threadPool': null not expected."), Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(functor, "Argument 'functor': null not expected."), Objects.requireNonNull(reduceFunctor, "Argument 'reduceFunctor': null not expected."), options));
     }
     
     /**
@@ -16761,7 +16761,7 @@ class QtConcurrent_DISMISS__ extends QtConcurrent {
      */
     @QtUninvokable
     public static <U, T> @NonNull ThreadEngineStarter<U> startFilteredReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, @NonNull ReduceOptions options) {
-        return new ThreadEngineStarter<>(new FilteredReducedKernel<>(Objects.requireNonNull(threadPool), Objects.requireNonNull(sequence), Objects.requireNonNull(filteredFunctor), Objects.requireNonNull(reduceFunctor), options));
+        return new ThreadEngineStarter<>(new FilteredReducedKernel<>(Objects.requireNonNull(threadPool, "Argument 'threadPool': null not expected."), Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(filteredFunctor, "Argument 'filteredFunctor': null not expected."), Objects.requireNonNull(reduceFunctor, "Argument 'reduceFunctor': null not expected."), options));
     }
     
     /**
@@ -16769,7 +16769,7 @@ class QtConcurrent_DISMISS__ extends QtConcurrent {
      */
     @QtUninvokable
     public static <T> @NonNull ThreadEngineStarter<T> startFiltered(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor){
-        return new ThreadEngineStarter<>(new FilteredEachKernel<>(Objects.requireNonNull(threadPool), Objects.requireNonNull(sequence), Objects.requireNonNull(filteredFunctor)));
+        return new ThreadEngineStarter<>(new FilteredEachKernel<>(Objects.requireNonNull(threadPool, "Argument 'threadPool': null not expected."), Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(filteredFunctor, "Argument 'filteredFunctor': null not expected.")));
     }
     
     /**
@@ -16777,7 +16777,7 @@ class QtConcurrent_DISMISS__ extends QtConcurrent {
      */
     @QtUninvokable
     static <T> @NonNull ThreadEngineStarter<@QtPrimitiveType Void> filterInternal(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<Collection<T>, T> reduceFunctor){
-        return new ThreadEngineStarter<>(new FilterKernel<>(Objects.requireNonNull(threadPool), Objects.requireNonNull(sequence), Objects.requireNonNull(filteredFunctor), Objects.requireNonNull(reduceFunctor), new ReduceOptions()));
+        return new ThreadEngineStarter<>(new FilterKernel<>(Objects.requireNonNull(threadPool, "Argument 'threadPool': null not expected."), Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(filteredFunctor, "Argument 'filteredFunctor': null not expected."), Objects.requireNonNull(reduceFunctor, "Argument 'reduceFunctor': null not expected."), new ReduceOptions()));
     }
     
     private static class PushBackWrapper<T> implements ReduceFunctor<Collection<T>, T>{

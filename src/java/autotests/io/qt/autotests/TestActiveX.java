@@ -49,6 +49,7 @@ public class TestActiveX extends ApplicationInitializer {
 	@BeforeClass
     public static void testInitialize() throws Exception {
     	ApplicationInitializer.testInitializeWithWidgets();
+    	QAxWidget.staticMetaObject.hashCode();
     }
 	
 	private static class AxWidgetSubclass1 extends QAxWidget{

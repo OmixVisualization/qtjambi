@@ -53,8 +53,11 @@ import io.qt.core.QFileInfo;
 import io.qt.core.QIODevice;
 import io.qt.core.QLocale;
 import io.qt.core.QOperatingSystemVersion;
+import io.qt.core.QRegularExpression;
 import io.qt.core.QResource;
 import io.qt.core.QStringList;
+import io.qt.core.internal.QAbstractFileEngineHandler;
+import io.qt.core.internal.QFSFileEngine;
 import io.qt.gui.QGuiApplication;
 import io.qt.gui.QPixmap;
 import io.qt.widgets.QLabel;
@@ -516,6 +519,73 @@ public class TestFileEngine extends ApplicationInitializer {
 		QDir dir = new QDir(":/");
 		for (String file : dir.entryList()) {
 			System.out.println(file);
+		}
+	}
+	
+	@Test
+    public void testStartsWithFileEngine() {
+		String currentPath = QDir.current().absolutePath();
+		QFileInfo fileInfo = new QFileInfo("FileEngineTest:"+currentPath);
+		assertFalse(fileInfo.exists());
+		assertFalse(fileInfo.isDir());
+		boolean[] used = {false};
+		QAbstractFileEngineHandler handler = QAbstractFileEngineHandler.fromStartsWith(file->{
+				used[0] = true;
+				return new QFSFileEngine(file.substring(15));
+			}, "FileEngineTest:");
+		assertTrue("handler is null", handler!=null);
+		try {
+			fileInfo = new QFileInfo("FileEngineTest:"+currentPath);
+			assertTrue(used[0]);
+			assertTrue(fileInfo.exists());
+			assertTrue(fileInfo.isDir());
+		}finally {
+			handler.dispose();
+		}
+	}
+	
+	@Test
+    public void testEndsWithFileEngine() {
+		String currentPath = QDir.current().absolutePath();
+		QFileInfo fileInfo = new QFileInfo(currentPath+"::FileEngineTest");
+		assertFalse(fileInfo.exists());
+		assertFalse(fileInfo.isDir());
+		boolean[] used = {false};
+		QAbstractFileEngineHandler handler = QAbstractFileEngineHandler.fromEndsWith(file->{
+				used[0] = true;
+				return new QFSFileEngine(file.substring(0, file.length() - 16));
+			}, "::FileEngineTest");
+		assertTrue("handler is null", handler!=null);
+		try {
+			fileInfo = new QFileInfo(currentPath+"::FileEngineTest");
+			assertTrue(used[0]);
+			assertTrue(fileInfo.exists());
+			assertTrue(fileInfo.isDir());
+		}finally {
+			handler.dispose();
+		}
+	}
+	
+	@Test
+    public void testMatchFileEngine() {
+		String currentPath = "FileEngineTest:"+QDir.current().absolutePath();
+		QRegularExpression expr = new QRegularExpression("^FileEngineTest\\:.*$");
+		QFileInfo fileInfo = new QFileInfo(currentPath);
+		assertFalse(fileInfo.exists());
+		assertFalse(fileInfo.isDir());
+		boolean[] used = {false};
+		QAbstractFileEngineHandler handler = QAbstractFileEngineHandler.fromMatch(file->{
+				used[0] = true;
+				return new QFSFileEngine(file.substring(15));
+			}, expr);
+		assertTrue("handler is null", handler!=null);
+		try {
+			fileInfo = new QFileInfo(currentPath);
+			assertTrue(used[0]);
+			assertTrue(fileInfo.exists());
+			assertTrue(fileInfo.isDir());
+		}finally {
+			handler.dispose();
 		}
 	}
 	

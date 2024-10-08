@@ -49,17 +49,17 @@ public class QItemEditorCreator<T extends QWidget> implements QItemEditorCreator
 	private final QByteArray valuePropertyName;
 	
 	public QItemEditorCreator(@StrictNonNull String valuePropertyName, @StrictNonNull Function<QWidget, T> constructorHandle) {
-        this(new QByteArray(Objects.requireNonNull(valuePropertyName)), constructorHandle);
+        this(new QByteArray(Objects.requireNonNull(valuePropertyName, "Argument 'valuePropertyName': null not expected.")), constructorHandle);
     }
 	
     public QItemEditorCreator(@StrictNonNull QByteArray valuePropertyName, @StrictNonNull Function<QWidget, T> constructorHandle) {
         super();
-        this.constructorHandle = Objects.requireNonNull(constructorHandle);
+        this.constructorHandle = Objects.requireNonNull(constructorHandle, "Argument 'constructorHandle': null not expected.");
         this.valuePropertyName = valuePropertyName.clone();
     }
     
     public QItemEditorCreator(@StrictNonNull String valuePropertyName, @StrictNonNull Class<T> widgetType) {
-        this(new QByteArray(Objects.requireNonNull(valuePropertyName)), widgetType);
+        this(new QByteArray(Objects.requireNonNull(valuePropertyName, "Argument 'valuePropertyName': null not expected.")), widgetType);
     }
 	
     public QItemEditorCreator(@StrictNonNull QByteArray valuePropertyName, @StrictNonNull Class<T> widgetType) {

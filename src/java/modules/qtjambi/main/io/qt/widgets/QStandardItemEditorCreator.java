@@ -63,7 +63,7 @@ public class QStandardItemEditorCreator<T extends QWidget> implements QItemEdito
 	
     public QStandardItemEditorCreator(@StrictNonNull Factory<@Nullable T> constructor) {
         super();
-        SerializedLambda serializedLambda = ClassAnalyzerUtility.serializeLambdaExpression(Objects.requireNonNull(constructor));
+        SerializedLambda serializedLambda = ClassAnalyzerUtility.serializeLambdaExpression(Objects.requireNonNull(constructor, "Argument 'constructor': null not expected."));
         QMetaObject metaObject = null;
         if(serializedLambda==null) {
             Class<?> implClass = null;
@@ -117,7 +117,7 @@ public class QStandardItemEditorCreator<T extends QWidget> implements QItemEdito
     
     private QStandardItemEditorCreator(Class<T> widgetType, Function<QWidget, T> constructorHandle) {
     	super();
-        this.constructorHandle = Objects.requireNonNull(constructorHandle);
+        this.constructorHandle = Objects.requireNonNull(constructorHandle, "Argument 'constructorHandle': null not expected.");
         this.valuePropertyName = new QByteArray(QMetaObject.forType(widgetType).userProperty().name());
     }
 

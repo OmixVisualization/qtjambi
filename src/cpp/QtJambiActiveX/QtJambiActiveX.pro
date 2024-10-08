@@ -36,3 +36,6 @@ win32*: {
     QT += axcontainer
     CONFIG  += dll
 }
+
+SOURCES += \
+    impl.cpp

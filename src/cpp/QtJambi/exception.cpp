@@ -38,6 +38,7 @@
 #include "jobjectwrapper.h"
 #include "exception.h"
 #include "java_p.h"
+#include "threadutils_p.h"
 #include "utils_p.h"
 #include "qtjambi_cast.h"
 
@@ -462,7 +463,7 @@ void JavaException::raiseQThreadAffinityException(JNIEnv* env, QAnyStringView me
 }
 #endif
 
-JNIEnv *currentJNIEnvironment(bool initializeJavaThread = true);
+JNIEnv *currentJNIEnvironment(bool& requiresDetach, bool initializeJavaThread = true);
 
 struct ExceptionContainer{
     std::thread::id thread_id;
@@ -471,7 +472,8 @@ struct ExceptionContainer{
     ExceptionContainer() : thread_id(std::this_thread::get_id()), exn(), methodName(nullptr) {}
     ~ExceptionContainer(){
         if(exn){
-            if(JNIEnv *env = currentJNIEnvironment(false)){
+            bool requiresDetach = false;
+            if(JNIEnv *env = currentJNIEnvironment(requiresDetach, false)){
                 JniLocalFrame frame(env, 200);
                 try{
                     jstring msg = methodName ? env->NewStringUTF(methodName) : nullptr;
@@ -496,6 +498,8 @@ struct ExceptionContainer{
                 std::string thread_id_str = oss.str();
                 qCWarning(DebugAPI::internalCategory, "An exception occured in thread %s: %s", thread_id_str.c_str(), exn.what());
             }
+            if(requiresDetach)
+                EventDispatcherCheck::detach();
         }
     }
     // QThreadStorage is needed because thread_local is deleted after JNI's thread detach and thus cannot treat java exceptions
@@ -544,12 +548,13 @@ QtJambiExceptionHandler::~QtJambiExceptionHandler(){
 
 void QtJambiExceptionHandler::handle(JNIEnv *env, const JavaException& exn, const char* methodName){
     if(data){
+        bool requiresDetach = false;
         ExceptionHandler& exceptionHandler = ExceptionHandler::instance;
         exceptionHandler.hasException = true;
         ExceptionContainer& exceptionContainer = ExceptionContainer::exception.localData();
         if(exceptionContainer.exn){
             if(!env){
-                env = currentJNIEnvironment();
+                env = currentJNIEnvironment(requiresDetach);
                 if(!env){
                     if(methodName){
                         qCWarning(DebugAPI::internalCategory, "An exception occured in %s: %s", methodName, exn.what());
@@ -568,6 +573,8 @@ void QtJambiExceptionHandler::handle(JNIEnv *env, const JavaException& exn, cons
             exceptionContainer.exn = exn;
             exceptionContainer.methodName = methodName;
         }
+        if(requiresDetach)
+            EventDispatcherCheck::detach();
     }else if(exn){
         throw JavaException(exn);//JavaException(env, exn.object());
     }
@@ -594,13 +601,14 @@ QtJambiExceptionInhibitor::~QtJambiExceptionInhibitor(){
 }
 
 void QtJambiExceptionInhibitor::handle(JNIEnv *env, const JavaException& exn, const char* methodName){
+    bool requiresDetach = false;
     if(!(data & ExceptionHandler::Blocking) || (data & ExceptionHandler::Reraise)){
         ExceptionHandler& exceptionHandler = ExceptionHandler::instance;
         exceptionHandler.hasException = true;
         ExceptionContainer& exceptionContainer = ExceptionContainer::exception.localData();
         if(exceptionContainer.exn){
             if(!env){
-                env = currentJNIEnvironment();
+                env = currentJNIEnvironment(requiresDetach);
                 if(!env){
                     if(methodName){
                         qCWarning(DebugAPI::internalCategory, "An exception occured in %s: %s", methodName, exn.what());
@@ -621,7 +629,7 @@ void QtJambiExceptionInhibitor::handle(JNIEnv *env, const JavaException& exn, co
         }
     }else{
         if(!env){
-            env = currentJNIEnvironment();
+            env = currentJNIEnvironment(requiresDetach);
             if(!env){
                 if(methodName){
                     qCWarning(DebugAPI::internalCategory, "An exception occured in %s: %s", methodName, exn.what());
@@ -644,6 +652,8 @@ void QtJambiExceptionInhibitor::handle(JNIEnv *env, const JavaException& exn, co
             printf("An exception occured in ExceptionUtility.reportException(...): %s\n", _exn.what());
         }
     }
+    if(requiresDetach)
+        EventDispatcherCheck::detach();
 }
 
 QtJambiExceptionBlocker::QtJambiExceptionBlocker()
@@ -667,6 +677,7 @@ QtJambiExceptionBlocker::~QtJambiExceptionBlocker(){
 }
 
 void QtJambiExceptionBlocker::release(JNIEnv *env){
+    bool requiresDetach = false;
     ExceptionHandler& exceptionHandler = ExceptionHandler::instance;
     if(exceptionHandler.hasException && !exceptionHandler.keep){
         ExceptionContainer& exceptionContainer = ExceptionContainer::exception.localData();
@@ -681,7 +692,7 @@ void QtJambiExceptionBlocker::release(JNIEnv *env){
             const char* methodName = exceptionContainer.methodName;
             exceptionContainer.methodName = nullptr;
             if(!env){
-                env = currentJNIEnvironment();
+                env = currentJNIEnvironment(requiresDetach);
                 if(!env){
                     if(methodName){
                         qCWarning(DebugAPI::internalCategory, "An exception occured in %s: %s", methodName, exn.what());
@@ -705,6 +716,8 @@ void QtJambiExceptionBlocker::release(JNIEnv *env){
             }
         }
     }
+    if(requiresDetach)
+        EventDispatcherCheck::detach();
 }
 
 QtJambiExceptionRaiser::QtJambiExceptionRaiser()
@@ -744,14 +757,14 @@ QtJambiExceptionUnraiser::~QtJambiExceptionUnraiser(){
     exceptionHandler.keep = false;
 }
 
-JNIEnv* threadLocalEnvironment(ExceptionHandler& exceptionHandler){
+JNIEnv* threadLocalEnvironment(bool& requiresDetach, ExceptionHandler& exceptionHandler){
     static ResettableBoolFlag useFastEnv("io.qt.experimental.fast-jni-for-overrides");
     if(useFastEnv){
         if(!exceptionHandler.env)
-            exceptionHandler.env = currentJNIEnvironment();
+            exceptionHandler.env = currentJNIEnvironment(requiresDetach);
         return exceptionHandler.env;
     }else{
-        return currentJNIEnvironment();
+        return currentJNIEnvironment(requiresDetach);
     }
 }
 
@@ -770,7 +783,9 @@ JniEnvironmentExceptionHandler::JniEnvironmentExceptionHandler(int capacity)
         data |= ExceptionHandler::Keep;
     }
     exceptionHandler.blocking = false;
-    initialize(threadLocalEnvironment(exceptionHandler), capacity);
+    bool requiresDetach = false;
+    JNIEnv* env = threadLocalEnvironment(requiresDetach, exceptionHandler);
+    initialize(env, requiresDetach, capacity);
 }
 
 JniEnvironmentExceptionHandler::~JniEnvironmentExceptionHandler(){
@@ -808,7 +823,9 @@ JniEnvironmentExceptionInhibitor::JniEnvironmentExceptionInhibitor(int capacity)
         data |= ExceptionHandler::Keep;
     }
     exceptionHandler.blocking = false;
-    initialize(threadLocalEnvironment(exceptionHandler), capacity);
+    bool requiresDetach = false;
+    JNIEnv* env = threadLocalEnvironment(requiresDetach, exceptionHandler);
+    initialize(env, requiresDetach, capacity);
 }
 
 JniEnvironmentExceptionInhibitor::~JniEnvironmentExceptionInhibitor(){

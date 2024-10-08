@@ -313,6 +313,18 @@ QThreadUserData* QThreadUserData::ensureThreadUserData(QThread* thread){
 
 QTJAMBI_OBJECTUSERDATA_ID_IMPL(,QThreadUserData::)
 
+QThreadAdoptionUserData::QThreadAdoptionUserData(JNIEnv * env, jobject java_qthread) : QtJambiObjectData(), m_java_object(env, java_qthread){}
+void QThreadAdoptionUserData::clear(JNIEnv* env){
+    m_java_object.clear(env);
+}
+jobject QThreadAdoptionUserData::getLocalRef(JNIEnv* env){
+    return env->NewLocalRef(m_java_object.object());
+}
+
+QThreadAdoptionUserData::~QThreadAdoptionUserData(){}
+
+QTJAMBI_OBJECTUSERDATA_ID_IMPL(,QThreadAdoptionUserData::)
+
 namespace ThreadPrivate{
 void purgeThread(JNIEnv* env, EventDispatcherCheck::Data* threadData){
     QSharedPointer<QtJambiLink> link;
@@ -333,7 +345,12 @@ void purgeThread(JNIEnv* env, EventDispatcherCheck::Data* threadData){
     threadData->m_jthreadObject = nullptr;
     if(jthreadObject){
         try{
-            Java::QtJambi::NativeUtility::deleteAssociation(env, jthreadObject);
+            Java::QtJambi::ThreadUtility::setThreadInterruptible(env, nullptr, jthreadObject, false);
+        } catch (const JavaException& exn) {
+            exn.report(env);
+        }
+        try{
+            Java::QtJambi::NativeUtility::deleteAssociationByHashCode(env, threadData->m_associationHashcode);
         }catch(const JavaException& exn){
             exn.report(env);
         }
@@ -510,19 +527,12 @@ void adoptThread(JNIEnv *env, jobject java_thread, jobject java_qthread, QThread
             threadData->initialize(qt_thread, true);
         jobject jthread = Java::QtCore::QThread::javaThread(env, javaQThread);
         if(!jthread){
-            Java::QtCore::QThread::set_javaThread(env, javaQThread, java_thread);
+            Java::QtCore::Internal::QThread::setJavaThreadReference(env, javaQThread, java_thread);
             if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForQObject(qt_thread)){
                 link->setNoThreadInitializationOnPurge(true);
-                Java::QtJambi::NativeUtility::createAssociation(env, java_thread, javaQThread);
-                if(!qt_thread->parent()){
-                    if(QThreadData::get2(qt_thread)->isAdopted || link->qobject()==QCoreApplicationPrivate::mainThread()){
-                        link->setCppOwnership(env);
-                    }else{
-                        link->setJavaOwnership(env);
-                    }
-                }
-                EventDispatcherCheck::CleanupFunction cleaner = &thread_cleaner;
-                new EventDispatcherCheck(env, java_thread, qt_thread, link, cleaner);
+                jint associationHashcode = Java::QtJambi::NativeUtility::createAssociation(env, java_thread, javaQThread);
+                Java::QtJambi::ThreadUtility::setThreadInterruptible(env, javaQThread, java_thread, true);
+                EventDispatcherCheck::adoptThread(env, java_thread, qt_thread, false, associationHashcode, link, &thread_cleaner);
             }
         }else{
             env->DeleteLocalRef(jthread);
@@ -542,16 +552,29 @@ jobject fromQThread(JNIEnv * env, jobject java_qthread, QThread *thread)
         adoptThread(env, currentThread, java_qthread, thread);
         return currentThread;
     }else{
-        if(thread->eventDispatcher()){
-            QThreadUserData* qthreadData = QThreadUserData::ensureThreadUserData(thread);
-            JObjectWrapper _java_qthread(env, java_qthread);
-            auto fun = [_java_qthread](){
-                if(JniEnvironment env{500}){
-                    jobject currentThread = Java::Runtime::Thread::currentThread(env);
-                    adoptThread(env, currentThread, _java_qthread.object(), QThread::currentThread());
-                }
-            };
-            QCoreApplication::postEvent(qthreadData->threadDeleter(), new FunctorEvent<decltype(fun)>(std::move(fun)), INT_MAX);
+        if(thread->isRunning()){
+            if(!QThreadData::get2(thread)->isAdopted || thread->eventDispatcher()){
+                QObject* initializer = new QObject();
+                QObject::connect(initializer, &QObject::destroyed, initializer, [wrapper = JObjectWrapper(env, java_qthread)]() mutable {
+                    if(JniEnvironment env{16})
+                        wrapper.clear(env);
+                }, Qt::DirectConnection);
+                initializer->moveToThread(thread);
+                initializer->deleteLater();
+            }else if(QtJambiAPI::isJavaOwnership(env, java_qthread)){
+                QWriteLocker locker(QtJambiLinkUserData::lock());
+                QTJAMBI_SET_OBJECTUSERDATA(QThreadAdoptionUserData, thread, new QThreadAdoptionUserData(env, java_qthread));
+            }
+        }else if(!thread->isFinished()){
+            if(!QThreadData::get2(thread)->isAdopted){
+                QObject::connect(thread, &QThread::started, thread, [wrapper = JObjectWrapper(env, java_qthread)]() mutable {
+                    if(JniEnvironment env{16})
+                        wrapper.clear(env);
+                }, Qt::DirectConnection);
+            }else if(QtJambiAPI::isJavaOwnership(env, java_qthread)){
+                QWriteLocker locker(QtJambiLinkUserData::lock());
+                QTJAMBI_SET_OBJECTUSERDATA(QThreadAdoptionUserData, thread, new QThreadAdoptionUserData(env, java_qthread));
+            }
         }
     }
     return nullptr;
@@ -568,25 +591,35 @@ jobject ThreadAPI::findJThreadForQThread(JNIEnv * env, jobject qt_thread)
 
 QThreadStorage<EventDispatcherCheckPointer> EventDispatcherCheck::Instance;
 
-EventDispatcherCheck::EventDispatcherCheck(JNIEnv *env, jobject jthreadObject, QThread* thread, QWeakPointer<QtJambiLink>&& wlink, CleanupFunction _cleaner)
-    : QSharedData(),
-      m_data(new Data{env->NewWeakGlobalRef(jthreadObject),
-                      Java::Runtime::System::identityHashCode(env, jthreadObject),
-                      thread,
-                      std::move(wlink), {}}),
-      cleaner(_cleaner) {
+void EventDispatcherCheck::adoptThread(JNIEnv *env, jobject jthreadObject, QThread* thread, bool detach, jint associationHashcode, QWeakPointer<QtJambiLink>&& wlink, CleanupFunction _cleaner){
+    EventDispatcherCheck* instance = new EventDispatcherCheck(*new Data{env->NewWeakGlobalRef(jthreadObject),
+                                                                        thread, detach, associationHashcode,
+                                                                        std::move(wlink), {}}, _cleaner);
     QTJAMBI_INTERNAL_METHOD_CALL("EventDispatcherCheck::EventDispatcherCheck()")
-    QThreadUserData* data;
+    QThreadUserData* tdata;
     {
         QReadLocker locker(QtJambiLinkUserData::lock());
-        data = QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, thread);
+        tdata = QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, thread);
     }
-    if(data){
-        data->m_finalActions = &m_data->m_finalActions;
-        data->m_mutex = &m_mutex;
+    if(tdata){
+        tdata->m_finalActions = &instance->m_data->m_finalActions;
+        tdata->m_mutex = &instance->m_mutex;
     }
-    EventDispatcherCheck::Instance.localData() = this;
+    EventDispatcherCheck::Instance.localData() = instance;
 }
+
+void EventDispatcherCheck::detach(){
+    EventDispatcherCheck::Instance.localData() = nullptr;
+}
+
+bool EventDispatcherCheck::isAlive(){
+    return EventDispatcherCheck::Instance.localData();
+}
+
+EventDispatcherCheck::EventDispatcherCheck(Data& data, CleanupFunction _cleaner)
+    : QSharedData(),
+    m_data(&data),
+    cleaner(_cleaner) {}
 
 EventDispatcherCheck::Data::~Data(){
 }

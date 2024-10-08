@@ -84,7 +84,7 @@ public class QHash<Key,T> extends AbstractAssociativeContainer<Key,T> implements
      */
     public QHash(@StrictNonNull Map<Key,T> other) {
 		super(null);
-		QPair<QMetaType, QMetaType> metaTypes = QMap.findMapMetaType(Objects.requireNonNull(other));
+		QPair<QMetaType, QMetaType> metaTypes = QMap.findMapMetaType(Objects.requireNonNull(other, "Argument 'other': null not expected."));
 		if(metaTypes.first==null || metaTypes.first.id()==0)
 			throw new IllegalArgumentException("QMetaType::UnknownType cannot be key type of QMap.");
 		if(metaTypes.first.id()==QMetaType.Type.Void.value())

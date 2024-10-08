@@ -90,7 +90,7 @@ public final class QScopedArrayPointer<O> implements AutoCloseable {
 	
 	private QScopedArrayPointer(O[] data, Consumer<O> cleanup) {
 		this.data.data = data;
-		this.data.cleanup = Objects.requireNonNull(cleanup);
+		this.data.cleanup = Objects.requireNonNull(cleanup, "Argument 'cleanup': null not expected.");
 		this.data.cleanable = QtJambi_LibraryUtilities.internal.registerCleaner(this, this.data::close);
 	}
 

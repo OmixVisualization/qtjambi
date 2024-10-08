@@ -47,13 +47,13 @@ public final class QPropertyNotifier extends QPropertyObserver {
 	public QPropertyNotifier(@StrictNonNull Runnable functor) {
 		super((QPrivateConstructor)null);
 		initialize(this);
-		this.functor = Objects.requireNonNull(functor);
+		this.functor = Objects.requireNonNull(functor, "Argument 'functor': null not expected.");
 	}
 	
 	QPropertyNotifier(QPropertyBindingData bindingData, Runnable functor) {
 		super((QPrivateConstructor)null);
 		initialize(this);
-		this.functor = Objects.requireNonNull(functor);
+		this.functor = Objects.requireNonNull(functor, "Argument 'functor': null not expected.");
 		setSource(bindingData);
 	}
 	

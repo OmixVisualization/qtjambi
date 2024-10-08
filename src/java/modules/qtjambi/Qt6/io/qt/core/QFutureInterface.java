@@ -86,12 +86,12 @@ public final class QFutureInterface<T> extends io.qt.core.QFutureInterfaceBase
     
     public QFutureInterface(io.qt.core.@StrictNonNull QFutureInterface<T> other){
         super((QPrivateConstructor)null);
-        initialize_native(this, java.util.Objects.requireNonNull(other));
+        initialize_native(this, java.util.Objects.requireNonNull(other, "Argument 'other': null not expected."));
     }
     
     private QFutureInterface(io.qt.core.QFutureInterfaceBase other){
         super((QPrivateConstructor)null);
-        initialize_native(this, java.util.Objects.requireNonNull(other));
+        initialize_native(this, java.util.Objects.requireNonNull(other, "Argument 'other': null not expected."));
     }
     
     private native static <T> void initialize_native(QFutureInterface<T> instance, io.qt.core.QFutureInterfaceBase other);

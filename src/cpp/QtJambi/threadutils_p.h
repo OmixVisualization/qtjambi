@@ -49,18 +49,22 @@ class EventDispatcherCheck : public QSharedData {
 public:
     struct Data{
         jweak m_jthreadObject;
-        jint m_hash;
         QPointer<QThread> m_thread;
+        bool m_detach;
+        int m_associationHashcode;
         QWeakPointer<QtJambiLink> m_wlink;
         QList<QtJambiUtils::Runnable> m_finalActions;
         ~Data();
     };
 
     typedef void (*CleanupFunction)(Data*);
-    EventDispatcherCheck(JNIEnv *env, jobject jthreadObject, QThread* thread, QWeakPointer<QtJambiLink>&& wlink, CleanupFunction _cleaner = nullptr);
+    static void adoptThread(JNIEnv *env, jobject jthreadObject, QThread* thread, bool detach, jint associationHashcode, QWeakPointer<QtJambiLink>&& wlink, CleanupFunction _cleaner = nullptr);
+    static void detach();
+    static bool isAlive();
     ~EventDispatcherCheck();
-    static QThreadStorage<EventDispatcherCheckPointer> Instance;
 private:
+    static QThreadStorage<EventDispatcherCheckPointer> Instance;
+    EventDispatcherCheck(Data& data, CleanupFunction _cleaner);
     Data* m_data;
     QMutex m_mutex;
     CleanupFunction cleaner;
@@ -69,6 +73,12 @@ private:
 class QThreadUserData : public QtJambiObjectData
 {
 public:
+    enum ThreadType{
+        DefaultThread,
+        ProcessMainThread,
+        VirtualMainThread,
+        AdoptedThread
+    };
     QThreadUserData();
     QThreadUserData(JNIEnv *env, jobject threadGroup);
     ~QThreadUserData() override;
@@ -90,6 +100,7 @@ public:
     inline void clearUncaughtExceptionHandler(JNIEnv *env){ m_uncaughtExceptionHandler.clear(env); }
     inline bool purgeOnExit() const {return m_threadType!=ProcessMainThread;}
     inline QObject* threadDeleter() const {return m_threadDeleter.get();}
+    inline ThreadType threadType() const { return m_threadType; }
     static QThreadUserData* ensureThreadUserData(QThread* thread);
     struct Result{
         QThreadUserData* threadUserData;
@@ -109,16 +120,20 @@ private:
     JObjectWrapper m_contextClassLoader;
     QMetaObject::Connection m_finishedConnection;
 
-    enum ThreadType{
-        DefaultThread,
-        ProcessMainThread,
-        VirtualMainThread,
-        AdoptedThread
-    };
-
     ThreadType m_threadType;
 
     friend EventDispatcherCheck;
+};
+
+struct QThreadAdoptionUserData : public QtJambiObjectData{
+    JObjectWrapper m_java_object;
+    QThreadAdoptionUserData(JNIEnv * env, jobject java_qthread);
+    void clear(JNIEnv* env);
+    jobject getLocalRef(JNIEnv* env);
+    ~QThreadAdoptionUserData() override;
+    QTJAMBI_OBJECTUSERDATA_ID_DECL
+private:
+    Q_DISABLE_COPY_MOVE(QThreadAdoptionUserData)
 };
 
 class AbstractThreadEvent : public QEvent

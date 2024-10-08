@@ -17078,6 +17078,7 @@ class QThread___{
      * @see Thread#getThreadGroup()
      */
     public final @Nullable ThreadGroup getThreadGroup() {
+        Thread javaThread = getJavaThreadReference();
         if(javaThread!=null) {
             return javaThread.getThreadGroup();
         }
@@ -17090,6 +17091,7 @@ class QThread___{
      * @see Thread#setName(String)
      */
     public void setName(@Nullable String name) {
+        Thread javaThread = getJavaThreadReference();
         if(!isRunning() && javaThread==null)
             __qt_setName(name);
     }
@@ -17100,6 +17102,7 @@ class QThread___{
      * @see Thread#getName()
      */
     public final @Nullable String getName() {
+        Thread javaThread = getJavaThreadReference();
         if(javaThread!=null) {
             return javaThread.getName();
         }
@@ -17112,6 +17115,7 @@ class QThread___{
      * @see Thread#setDaemon(boolean)
      */
     public void setDaemon(boolean daemon) {
+        Thread javaThread = getJavaThreadReference();
         if(!isRunning() && javaThread==null)
             __qt_setDaemon(daemon);
     }
@@ -17122,6 +17126,7 @@ class QThread___{
      * @see Thread#isDaemon()
      */
     public final boolean isDaemon() {
+        Thread javaThread = getJavaThreadReference();
         if(javaThread!=null) {
             return javaThread.isDaemon();
         }
@@ -17134,6 +17139,7 @@ class QThread___{
      * @see Thread#setUncaughtExceptionHandler(java.lang.Thread.UncaughtExceptionHandler)
      */
     public void setUncaughtExceptionHandler(Thread.@Nullable UncaughtExceptionHandler handler) {
+        Thread javaThread = getJavaThreadReference();
         if(javaThread!=null) {
             javaThread.setUncaughtExceptionHandler(handler);
         }else {
@@ -17147,6 +17153,7 @@ class QThread___{
      * @see Thread#getUncaughtExceptionHandler()
      */
     public final Thread.@Nullable UncaughtExceptionHandler getUncaughtExceptionHandler() {
+        Thread javaThread = getJavaThreadReference();
         if(javaThread!=null) {
             return javaThread.getUncaughtExceptionHandler();
         }
@@ -17160,6 +17167,7 @@ class QThread___{
      * @see Thread#setContextClassLoader(ClassLoader)
      */
     public void setContextClassLoader(@Nullable ClassLoader cl) {
+        Thread javaThread = getJavaThreadReference();
         if(javaThread!=null) {
             javaThread.setContextClassLoader(cl);
         }else {
@@ -17174,6 +17182,7 @@ class QThread___{
      * @see Thread#getContextClassLoader()
      */
     public final @Nullable ClassLoader getContextClassLoader() {
+        Thread javaThread = getJavaThreadReference();
         if(javaThread!=null) {
             return javaThread.getContextClassLoader();
         }
@@ -17183,14 +17192,31 @@ class QThread___{
     private native ClassLoader __qt_getContextClassLoader();
     
     private native void __qt_initialize(ThreadGroup group);
-    private final Thread javaThread = null;
+    @NativeAccess
+    private java.lang.ref.WeakReference<Thread> javaThread = null;
+    @NativeAccess
+    private void setJavaThreadReference(Thread javaThread){
+        if(javaThread!=null && this.javaThread==null)
+            this.javaThread = new java.lang.ref.WeakReference<>(javaThread);
+    }
+    @NativeAccess
+    private Thread getJavaThreadReference(){
+        return javaThread==null ? null : javaThread.get();
+    }
     
     /**
      * Returns the {@link Thread} instance representing this {@link QThread}.
      */
-    public final @Nullable Thread javaThread() { return javaThread==null ? __qt_javaThread() : javaThread; }
+    public final @Nullable Thread javaThread() {
+        Thread javaThread = getJavaThreadReference();
+        if(javaThread==null){
+            javaThread = findJavaThread();
+            setJavaThreadReference(javaThread);
+        }
+        return javaThread;
+    }
     
-    private native Thread __qt_javaThread();
+    private native Thread findJavaThread();
     public static native @Nullable QThread thread(@NonNull Thread thread);
     
     /**
@@ -17206,6 +17232,7 @@ class QThread___{
      * @see Thread#isInterrupted()
      */
     public final boolean isInterrupted() {
+        Thread javaThread = getJavaThreadReference();
         if(javaThread!=null && javaThread.isInterrupted())
             return true;
         return isInterruptionRequested();
@@ -18140,4 +18167,246 @@ class QCborArray___{
         }
         initialize_native(this, vargs);
     }
+}// class
+
+class QAbstractFileEngineHandler___{
+    /**
+     * Factory interface for file engine creation
+     */
+    @FunctionalInterface
+    public interface FileEngineFactory extends java.util.function.Function<@NonNull String, @Nullable QAbstractFileEngine>{
+    }
+
+    private static final java.util.Map<Long,FileEngineFactory> factories = java.util.Collections.synchronizedMap(new java.util.TreeMap<>(Long::compareTo));
+
+    @QtUninvokable
+    private static void registerFactory(long id, FileEngineFactory factory){
+        factories.put(id, factory);
+    }
+
+    @QtUninvokable
+    private static void unregisterFactory(long id){
+        factories.remove(id);
+    }
+
+    @QtUninvokable
+    private static QAbstractFileEngine createByFactory(long id, java.lang.@NonNull String fileName){
+        FileEngineFactory factory = factories.get(id);
+        if(factory!=null)
+            return factory.apply(fileName);
+        else
+            return null;
+    }
+
+    /**
+     * Creates a file engine handler for file names starting with {@code prefix}
+     * @param factory the file engine factory
+     * @param prefix file name prefix
+     * @return a new installed file engine handler
+     * @see String#startsWith(String)
+     */
+    @QtUninvokable
+    public static QAbstractFileEngineHandler fromStartsWith(@StrictNonNull FileEngineFactory factory, @NonNull String prefix) {
+        java.util.Objects.requireNonNull(prefix, "Argument 'prefix': null not expected.");
+        java.util.Objects.requireNonNull(factory, "Argument 'factory': null not expected.");
+        if(prefix.isEmpty())
+                throw new IllegalArgumentException("Argument 'prefix': empty String not expected.");
+        return fromStartsWith(prefix, factory);
+    }
+    @QtUninvokable
+    private static native QAbstractFileEngineHandler fromStartsWith(String prefix, FileEngineFactory factory);
+
+    /**
+     * Creates a file engine handler for file names ending with {@code suffix}
+     * @param factory the file engine factory
+     * @param suffix file name suffix
+     * @return a new installed file engine handler
+     * @see String#endsWith(String)
+     */
+    @QtUninvokable
+    public static QAbstractFileEngineHandler fromEndsWith(@StrictNonNull FileEngineFactory factory, @NonNull String suffix) {
+        java.util.Objects.requireNonNull(suffix, "Argument 'suffix': null not expected.");
+        java.util.Objects.requireNonNull(factory, "Argument 'factory': null not expected.");
+        if(suffix.isEmpty())
+                throw new IllegalArgumentException("Argument 'suffix': empty String not expected.");
+        return fromEndsWith(suffix, factory);
+    }
+    @QtUninvokable
+    private static native QAbstractFileEngineHandler fromEndsWith(String suffix, FileEngineFactory factory);
+
+    /**
+     * Creates a file engine handler for file names having match with {@code regexp}
+     * @param factory the file engine factory
+     * @param regexp file name regexp
+     * @param matchType the match type
+     * @param matchOptions options for the match
+     * @return a new installed file engine handler
+     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    @QtUninvokable
+    public static QAbstractFileEngineHandler fromMatch(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchType matchType, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
+        return fromMatch(factory, regexp, 0, matchType, matchOptions);
+    }
+    /**
+     * Creates a file engine handler for file names having match with {@code regexp}
+     * @param factory the file engine factory
+     * @param regexp file name regexp
+     * @param matchOptions options for the match
+     * @return a new installed file engine handler
+     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    @QtUninvokable
+    public static QAbstractFileEngineHandler fromMatch(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
+        return fromMatch(factory, regexp, 0, io.qt.core.QRegularExpression.MatchType.NormalMatch, matchOptions);
+    }
+    /**
+     * Creates a file engine handler for file names having match with {@code regexp}
+     * @param factory the file engine factory
+     * @param regexp file name regexp
+     * @param matchType the match type
+     * @return a new installed file engine handler
+     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    @QtUninvokable
+    public static QAbstractFileEngineHandler fromMatch(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchType matchType) {
+        return fromMatch(factory, regexp, 0, matchType, io.qt.core.QRegularExpression.MatchOption.NoMatchOption.asFlags());
+    }
+    /**
+     * Creates a file engine handler for file names having match with {@code regexp}
+     * @param factory the file engine factory
+     * @param regexp file name regexp
+     * @param matchType the match type
+     * @param matchOptions options for the match
+     * @return a new installed file engine handler
+     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    @QtUninvokable
+    public static QAbstractFileEngineHandler fromMatch(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchType matchType, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
+        return fromMatch(factory, regexp, 0, matchType, new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
+    }
+    /**
+     * Creates a file engine handler for file names having match with {@code regexp}
+     * @param factory the file engine factory
+     * @param regexp file name regexp
+     * @param matchOptions options for the match
+     * @return a new installed file engine handler
+     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    @QtUninvokable
+    public static QAbstractFileEngineHandler fromMatch(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
+        return fromMatch(factory, regexp, 0, io.qt.core.QRegularExpression.MatchType.NormalMatch, new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
+    }
+    /**
+     * Creates a file engine handler for file names having match with {@code regexp}
+     * @param factory the file engine factory
+     * @param regexp file name regexp
+     * @return a new installed file engine handler
+     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    @QtUninvokable
+    public static QAbstractFileEngineHandler fromMatch(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp) {
+        return fromMatch(factory, regexp, 0, io.qt.core.QRegularExpression.MatchType.NormalMatch, io.qt.core.QRegularExpression.MatchOption.NoMatchOption.asFlags());
+    }
+    /**
+     * Creates a file engine handler for file names having match with {@code regexp}
+     * @param factory the file engine factory
+     * @param regexp file name regexp
+     * @param offset the offset of the match
+     * @return a new installed file engine handler
+     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    @QtUninvokable
+    public static QAbstractFileEngineHandler fromMatch(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, long offset) {
+        return fromMatch(factory, regexp, offset, io.qt.core.QRegularExpression.MatchType.NormalMatch, io.qt.core.QRegularExpression.MatchOption.NoMatchOption.asFlags());
+    }
+    /**
+     * Creates a file engine handler for file names having match with {@code regexp}
+     * @param factory the file engine factory
+     * @param regexp file name regexp
+     * @param offset the offset of the match
+     * @param matchType the match type
+     * @param matchOptions options for the match
+     * @return a new installed file engine handler
+     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    @QtUninvokable
+    public static QAbstractFileEngineHandler fromMatch(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, long offset, io.qt.core.QRegularExpression.@NonNull MatchType matchType, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
+        return fromMatch(factory, regexp, offset, matchType, new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
+    }
+    /**
+     * Creates a file engine handler for file names having match with {@code regexp}
+     * @param factory the file engine factory
+     * @param regexp file name regexp
+     * @param offset the offset of the match
+     * @param matchType the match type
+     * @param matchOptions options for the match
+     * @return a new installed file engine handler
+     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    @QtUninvokable
+    public static QAbstractFileEngineHandler fromMatch(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, long offset, io.qt.core.QRegularExpression.@NonNull MatchType matchType) {
+        return fromMatch(factory, regexp, offset, matchType, io.qt.core.QRegularExpression.MatchOption.NoMatchOption.asFlags());
+    }
+    /**
+     * Creates a file engine handler for file names having match with {@code regexp}
+     * @param factory the file engine factory
+     * @param regexp file name regexp
+     * @param offset the offset of the match
+     * @param matchType the match type
+     * @param matchOptions options for the match
+     * @return a new installed file engine handler
+     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    @QtUninvokable
+    public static QAbstractFileEngineHandler fromMatch(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, long offset, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
+        return fromMatch(factory, regexp, offset, io.qt.core.QRegularExpression.MatchType.NormalMatch, new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
+    }
+    /**
+     * Creates a file engine handler for file names having match with {@code regexp}
+     * @param factory the file engine factory
+     * @param regexp file name regexp
+     * @param offset the offset of the match
+     * @param matchType the match type
+     * @param matchOptions options for the match
+     * @return a new installed file engine handler
+     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    @QtUninvokable
+    public static QAbstractFileEngineHandler fromMatch(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, long offset, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
+        return fromMatch(factory, regexp, offset, io.qt.core.QRegularExpression.MatchType.NormalMatch, matchOptions);
+    }
+    /**
+     * Creates a file engine handler for file names having match with {@code regexp}
+     * @param factory the file engine factory
+     * @param regexp file name regexp
+     * @param offset the offset of the match
+     * @param matchType the match type
+     * @param matchOptions options for the match
+     * @return a new installed file engine handler
+     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    @QtUninvokable
+    public static QAbstractFileEngineHandler fromMatch(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, long offset, io.qt.core.QRegularExpression.@NonNull MatchType matchType, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
+        java.util.Objects.requireNonNull(regexp, "Argument 'regexp': null not expected.");
+        java.util.Objects.requireNonNull(factory, "Argument 'factory': null not expected.");
+        if(!regexp.isValid())
+                throw new IllegalArgumentException("Argument 'regexp' invalid");
+        if(offset<0)
+                throw new IllegalArgumentException("Argument 'offset' < 0");
+        return fromMatch(factory, QtJambi_LibraryUtilities.internal.checkedNativeId(regexp), offset, matchType==null ? 0 : matchType.value(), matchOptions==null ? 0 : matchOptions.value());
+    }
+    @QtUninvokable
+    private static native QAbstractFileEngineHandler fromMatch(FileEngineFactory factory, long regexp, long offset, int matchType, int matchOptions);
 }// class
