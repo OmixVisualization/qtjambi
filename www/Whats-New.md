@@ -1,3 +1,7 @@
+# What's new in QtJambi 6.8.0
+
+QtJambi 6.8.0 is equivalent to QtJambi 6.7.3.
+
 # What's new in QtJambi 6.7.3
 
 ## Bugfixes
@@ -55,7 +59,7 @@ Solved issue:
 
 * QPropertyAlias is deprecated
 
-QtJambi 6.7.3 is not binary compatible to Qt 6.7.0. Please use Qt 6.7.1 or higher.
+QtJambi 6.7.2 is not binary compatible to Qt 6.7.0. Please use Qt 6.7.1 or higher.
 
 ## What's new in QtJambi 6.7.1
 
