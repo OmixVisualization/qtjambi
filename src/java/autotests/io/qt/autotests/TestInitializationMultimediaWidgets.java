@@ -32,6 +32,9 @@ package io.qt.autotests;
 import org.junit.Assert;
 import org.junit.Test;
 
+import io.qt.core.QTimer;
+import io.qt.gui.QGuiApplication;
+import io.qt.gui.QIcon;
 import io.qt.multimedia.widgets.QVideoWidget;
 import io.qt.widgets.QApplication;
 
@@ -40,12 +43,13 @@ public class TestInitializationMultimediaWidgets extends UnitTestInitializer {
     public void initialize() {
     	Assert.assertTrue(io.qt.QtUtilities.initializePackage("io.qt.multimedia.widgets"));
     	QApplication.initialize(new String[0]);
-    	QVideoWidget window = new QVideoWidget();
-    	window.show();
-    	QApplication.processEvents();
-    	window.hide();
-    	QApplication.processEvents();
-    	window.dispose();
+    	QGuiApplication.setWindowIcon(new QIcon(":io/qt/autotests/icon.png"));
+    	{
+	    	QVideoWidget window = new QVideoWidget();
+	    	window.show();
+	    	QTimer.singleShot(500, QApplication.instance(), QApplication::quit);
+	    	QApplication.exec();
+	    }
     	QApplication.shutdown();
     }
 }

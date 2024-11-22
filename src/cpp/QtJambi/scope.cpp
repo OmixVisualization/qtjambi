@@ -184,7 +184,7 @@ void QtJambiScope::addObjectInvalidation(JNIEnv *env, jobject object, bool persi
             if(JniEnvironment env{200}){
                 QtJambiExceptionInhibitor __exnHandler;
                 try{
-                    InvalidateAfterUse::invalidate(env, obj.object());
+                    InvalidateAfterUse::invalidate(env, obj.object(env));
                     obj.clear(env);
                 }catch(const JavaException& exn){
                     __exnHandler.handle(env, exn, nullptr);
@@ -246,7 +246,7 @@ void QtJambiScope::addForcedObjectInvalidation(JNIEnv *env, jobject object, bool
             if(JniEnvironment env{200}){
                 QtJambiExceptionInhibitor __exnHandler;
                 try{
-                    InvalidateAfterUse::forcedInvalidate(env, obj.object());
+                    InvalidateAfterUse::forcedInvalidate(env, obj.object(env));
                     obj.clear(env);
                 }catch(const JavaException& exn){
                     __exnHandler.handle(env, exn, nullptr);

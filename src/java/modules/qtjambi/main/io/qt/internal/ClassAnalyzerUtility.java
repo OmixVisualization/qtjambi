@@ -63,10 +63,14 @@ import io.qt.QMissingVirtualOverridingException;
 import io.qt.QNonVirtualOverridingException;
 import io.qt.QtDeclaredFinal;
 import io.qt.QtFinalOverride;
+import io.qt.QtInvokable;
 import io.qt.QtObject;
 import io.qt.QtObjectInterface;
 import io.qt.QtSignalEmitterInterface;
+import io.qt.QtUninvokable;
 import io.qt.QtUtilities;
+import io.qt.StrictNonNull;
+import io.qt.core.QMetaMethod;
 import io.qt.core.QMetaObject;
 import io.qt.core.QMetaType;
 import io.qt.core.QObject;
@@ -665,33 +669,61 @@ public abstract class ClassAnalyzerUtility {
 	/**
 	 * @hidden
 	 */
-	public static final class LambdaInfo {
-		public LambdaInfo(Class<?> ownerClass, Object owner, QObject qobject, boolean isStatic,
-				MethodHandle methodHandle, Method reflectiveMethod, Constructor<?> reflectiveConstructor, List<Object> lambdaArgs) {
-			super();
-			this.ownerClass = ownerClass;
-			this.owner = owner;
-			this.qobject = qobject;
-			this.isStatic = isStatic;
+	public static final class MethodInfo{
+		MethodInfo(Class<?> implClass, int ownerIndex, int qobjectIndex, MethodHandle methodHandle, Method reflectiveMethod, boolean isStaticMethod, Constructor<?> reflectiveConstructor, QMetaMethod metaMethod) {
+			this.implClass = implClass;
 			this.methodHandle = methodHandle;
 			this.reflectiveMethod = reflectiveMethod;
+			this.isStaticMethod = isStaticMethod;
 			this.reflectiveConstructor = reflectiveConstructor;
+			this.ownerIndex = ownerIndex;
+			this.qobjectIndex = qobjectIndex;
+			if(metaMethod!=null && metaMethod.isValid()) {
+				metaObject = metaMethod.enclosingMetaObject();
+				methodIndex = metaMethod.methodIndex();
+				expectedParameterTypes = metaMethod.parameterCount();
+			}else {
+				metaObject = null;
+				methodIndex = -1;
+				expectedParameterTypes = -1;
+			}
+		}
+		public final Class<?> implClass;
+		public final MethodHandle methodHandle;
+		public final Method reflectiveMethod;
+		public final boolean isStaticMethod;
+		public final Constructor<?> reflectiveConstructor;
+		public final QMetaObject metaObject;
+		public final int methodIndex;
+		public final int expectedParameterTypes;
+		final int ownerIndex;
+		final int qobjectIndex;
+		public QMetaMethod metaMethod() {
+			return metaObject==null ? new QMetaMethod() : metaObject.method(methodIndex);
+		}
+	}
+	
+	/**
+	 * @hidden
+	 */
+	public static final class LambdaInfo {
+		public LambdaInfo(MethodInfo methodInfo, Object owner, QObject qobject, List<Object> lambdaArgs) {
+			super();
+			this.methodInfo = methodInfo;
+			this.owner = owner;
+			this.qobject = qobject;
 			this.lambdaArgs = lambdaArgs;
 		}
 
-		public final Class<?> ownerClass;
+		public final MethodInfo methodInfo;
 		public final Object owner;
 		public final QObject qobject;
-		public final boolean isStatic;
-		public final MethodHandle methodHandle;
-		public final Method reflectiveMethod;
-		public final Constructor<?> reflectiveConstructor;
 		public final List<Object> lambdaArgs;
 	}
 	
-	static class LambdaTools{
+	static final class LambdaTools{
 		
-		private static final Map<Class<?>, MethodHandle> lambdaSlotHandles;
+		private static final Map<Class<?>, MethodInfo> lambdaSlotHandles;
 		
 		static {
 			QtJambi_LibraryUtilities.initialize();
@@ -763,42 +795,99 @@ public abstract class ClassAnalyzerUtility {
 			return result;
 		}
 
-		static MethodHandle lambdaSlotHandles(Class<?> slotClass, SerializedLambda serializedLambda) {
+		static MethodInfo lambdaSlotHandles(Class<?> slotClass, SerializedLambda serializedLambda) {
 			return lambdaSlotHandles.computeIfAbsent(slotClass, cls -> {
+				Class<?> implClass = null;
+				MethodHandle methodHandle = null;
+				Method reflectiveMethod = null;
+				boolean isStaticMethod = false;
+				Constructor<?> reflectiveConstructor = null;	
 				try {
-					Class<?> implClass = slotClass.getClassLoader()
+					implClass = slotClass.getClassLoader()
 							.loadClass(serializedLambda.getImplClass().replace('/', '.'));
 					Lookup lookup = ReflectionUtility.privateLookup(implClass);
 					if (serializedLambda.getImplMethodKind() == MethodHandleInfo.REF_invokeVirtual
 							|| serializedLambda.getImplMethodKind() == MethodHandleInfo.REF_invokeInterface) {
-						return lookup.findVirtual(implClass, serializedLambda.getImplMethodName(),
+						methodHandle = lookup.findVirtual(implClass, serializedLambda.getImplMethodName(),
 								MethodType.fromMethodDescriptorString(serializedLambda.getImplMethodSignature(),
 										implClass.getClassLoader()));
+						if(methodHandle!=null)
+							reflectiveMethod = MethodHandles.reflectAs(Method.class, methodHandle);
 					} else if (serializedLambda.getImplMethodKind() == MethodHandleInfo.REF_invokeSpecial) {
-						return lookup.findSpecial(implClass, serializedLambda.getImplMethodName(),
+						methodHandle = lookup.findSpecial(implClass, serializedLambda.getImplMethodName(),
 								MethodType.fromMethodDescriptorString(serializedLambda.getImplMethodSignature(),
 										implClass.getClassLoader()),
 								implClass);
+						if(methodHandle!=null)
+							reflectiveMethod = MethodHandles.reflectAs(Method.class, methodHandle);
 					} else if (serializedLambda.getImplMethodKind() == MethodHandleInfo.REF_invokeStatic) {
-						return lookup.findStatic(implClass, serializedLambda.getImplMethodName(),
+						methodHandle = lookup.findStatic(implClass, serializedLambda.getImplMethodName(),
 								MethodType.fromMethodDescriptorString(serializedLambda.getImplMethodSignature(),
 										implClass.getClassLoader()));
+						isStaticMethod = true;
+						if(methodHandle!=null)
+							reflectiveMethod = MethodHandles.reflectAs(Method.class, methodHandle);
 					} else if (serializedLambda.getImplMethodKind() == MethodHandleInfo.REF_newInvokeSpecial) {
-						return lookup.findConstructor(implClass,
+						methodHandle = lookup.findConstructor(implClass,
 								MethodType.fromMethodDescriptorString(serializedLambda.getImplMethodSignature(),
 										implClass.getClassLoader()));
+						if(methodHandle!=null)
+							reflectiveConstructor = MethodHandles.reflectAs(Constructor.class, methodHandle);
 					}
 				} catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | IllegalArgumentException
 						| TypeNotPresentException e) {
 					java.util.logging.Logger.getLogger("io.qt.internal").log(java.util.logging.Level.WARNING,
 							"Exception caught while analyzing slot", e);
 				}
-				return null;
+				QMetaMethod metaMethod = null;
+				int ownerIndex = -1;
+				int qobjectIndex = -1;
+				if(reflectiveMethod != null) {
+					if(isStaticMethod) {
+						for (int i = 0; i < serializedLambda.getCapturedArgCount(); i++) {
+							if (serializedLambda.getCapturedArg(i) instanceof QObject) {
+								qobjectIndex = i;
+								break;
+							}
+						}
+						if(reflectiveMethod.isAnnotationPresent(QtInvokable.class))
+							metaMethod = QMetaMethod.fromReflectedMethod(reflectiveMethod);
+					}else {
+						if(serializedLambda.getCapturedArgCount()>0){
+							Object capturedArg0 = serializedLambda.getCapturedArg(0);
+							if(implClass.isInstance(capturedArg0)) {
+								ownerIndex = 0;
+								if (QObject.class.isAssignableFrom(implClass) && capturedArg0 instanceof QObject) {
+									qobjectIndex = 0;
+								}else if(capturedArg0 instanceof QMetaObject.Signal
+						                && reflectiveMethod.getName().equals("emit")){
+									metaMethod = QMetaMethod.fromSignal((QMetaObject.Signal)capturedArg0);
+								}
+							}
+						}
+						if(metaMethod==null) {
+							metaMethod = QMetaMethod.fromReflectedMethod(reflectiveMethod);
+							if(metaMethod.isValid() && reflectiveMethod.isAnnotationPresent(QtUninvokable.class))
+								reflectiveMethod = metaMethod.toReflectedMethod();
+						}
+					}
+				}else if(reflectiveConstructor!=null && reflectiveConstructor.isAnnotationPresent(QtInvokable.class)) {
+					metaMethod = QMetaMethod.fromReflectedConstructor(reflectiveConstructor);
+				}
+				if (methodHandle!=null && methodHandle.isVarargsCollector())
+					methodHandle = methodHandle.asFixedArity();
+				return new MethodInfo(implClass, ownerIndex, qobjectIndex, methodHandle, reflectiveMethod, isStaticMethod, reflectiveConstructor, metaMethod);
 			});
 		}
 	}
-
+	
 	public static LambdaInfo lambdaInfo(Serializable slotObject) {
+		return lambdaInfo(slotObject, (Object)null);
+	}
+
+	public static LambdaInfo lambdaInfo(Serializable slotObject, Object owner) {
+		if(owner instanceof QObject)
+			return lambdaInfo(slotObject, (QObject)owner);
 		//String className = slotObject.getClass().getName();
 		Class<?> slotClass = AccessUtility.instance.getClass(slotObject);
 		if (slotClass.isSynthetic()
@@ -807,70 +896,128 @@ public abstract class ClassAnalyzerUtility {
 			SerializedLambda serializedLambda = serializeLambdaExpression(slotObject);
 			if(serializedLambda == null)
 				return null;
-			MethodHandle methodHandle = LambdaTools.lambdaSlotHandles(slotClass, serializedLambda);
-			Method reflectiveMethod = null;
-			Constructor<?> reflectiveConstructor = null;
-			Class<?> ownerClass = null;
-			Object owner = null;
+			MethodInfo methodInfo = LambdaTools.lambdaSlotHandles(slotClass, serializedLambda);
 			QObject qobject = null;
 			List<Object> lambdaArgsList = Collections.emptyList();
-			if (methodHandle != null) {
-				if(serializedLambda.getImplMethodKind()==MethodHandleInfo.REF_newInvokeSpecial)
-					reflectiveConstructor = MethodHandles.reflectAs(Constructor.class, methodHandle);
-				else
-					reflectiveMethod = MethodHandles.reflectAs(Method.class, methodHandle);
-				if (methodHandle.isVarargsCollector()) {
-					methodHandle = methodHandle.asFixedArity();
-				}
-				if (reflectiveConstructor != null || reflectiveMethod != null) {
-					ownerClass = reflectiveMethod==null ? reflectiveConstructor.getDeclaringClass() : reflectiveMethod.getDeclaringClass();
-					if (Modifier.isStatic(reflectiveMethod==null ? reflectiveConstructor.getModifiers() : reflectiveMethod.getModifiers())) {
-						if (LambdaTools.getCapturedArgCount(serializedLambda) > 0) {
-							if (LambdaTools.getCapturedArgCount(serializedLambda) > 0)
+			if (methodInfo.methodHandle != null) {
+				int lambdaArgCount = LambdaTools.getCapturedArgCount(serializedLambda);
+				Object capturedArg0 = lambdaArgCount > 0 ? LambdaTools.getCapturedArg(serializedLambda, 0) : null;
+				if(methodInfo.reflectiveConstructor!=null) {
+					if(lambdaArgCount == 0
+							|| (
+									lambdaArgCount > 0
+									&& (
+											(methodInfo.implClass.getEnclosingClass()!=null && methodInfo.implClass.getEnclosingClass().isInstance(capturedArg0))
+										 || (methodInfo.implClass.getDeclaringClass()!=null && methodInfo.implClass.getDeclaringClass().isInstance(capturedArg0))
+									)
+							)) {
+						for (int i = 0; i < lambdaArgCount; i++) {
+							if(lambdaArgsList.isEmpty())
 								lambdaArgsList = new ArrayList<>();
-							for (int i = 0; i < LambdaTools.getCapturedArgCount(serializedLambda); i++) {
-								if (qobject == null && LambdaTools.getCapturedArg(serializedLambda, i) instanceof QObject) {
-									qobject = (QObject) LambdaTools.getCapturedArg(serializedLambda, i);
-								} else {
-									lambdaArgsList.add(LambdaTools.getCapturedArg(serializedLambda, i));
-								}
+							lambdaArgsList.add(LambdaTools.getCapturedArg(serializedLambda, i));
+						}
+						return new LambdaInfo(methodInfo, owner, qobject, 
+								lambdaArgsList.isEmpty() 
+								? Collections.emptyList()
+								: Collections.unmodifiableList(lambdaArgsList));
+					}
+				} else if (methodInfo.reflectiveMethod != null) {
+					if(owner!=null) {
+						for (int i = 0; i < lambdaArgCount; i++) {
+							if(lambdaArgsList.isEmpty())
+								lambdaArgsList = new ArrayList<>();
+							lambdaArgsList.add(LambdaTools.getCapturedArg(serializedLambda, i));
+						}
+						return new LambdaInfo(methodInfo, owner, qobject, 
+														lambdaArgsList.isEmpty() 
+														? Collections.emptyList()
+														: Collections.unmodifiableList(lambdaArgsList));
+					}else if (methodInfo.isStaticMethod) {
+						for (int i = 0; i < lambdaArgCount; i++) {
+							if (i==methodInfo.qobjectIndex) {
+								qobject = (QObject) LambdaTools.getCapturedArg(serializedLambda, i);
+							} else {
+								if(lambdaArgsList.isEmpty())
+									lambdaArgsList = new ArrayList<>();
+								lambdaArgsList.add(LambdaTools.getCapturedArg(serializedLambda, i));
 							}
 						}
-						return new LambdaInfo(ownerClass, owner, qobject, true, methodHandle, reflectiveMethod,
-								reflectiveConstructor, lambdaArgsList == Collections.emptyList() ? lambdaArgsList
-										: Collections.unmodifiableList(lambdaArgsList));
-					} else if (LambdaTools.getCapturedArgCount(serializedLambda) > 0
-							&& ownerClass.isInstance(LambdaTools.getCapturedArg(serializedLambda, 0))) {
-						if (LambdaTools.getCapturedArg(serializedLambda, 0) instanceof QObject)
-							qobject = (QObject) LambdaTools.getCapturedArg(serializedLambda, 0);
-						owner = LambdaTools.getCapturedArg(serializedLambda, 0);
-						if (LambdaTools.getCapturedArgCount(serializedLambda) > 1)
-							lambdaArgsList = new ArrayList<>();
-						for (int i = 1; i < LambdaTools.getCapturedArgCount(serializedLambda); i++) {
-							lambdaArgsList.add(LambdaTools.getCapturedArg(serializedLambda, i));
+						return new LambdaInfo(methodInfo, owner, qobject, 
+														lambdaArgsList.isEmpty() 
+														? Collections.emptyList()
+														: Collections.unmodifiableList(lambdaArgsList));
+					} else {
+						if (methodInfo.qobjectIndex>=0 && methodInfo.qobjectIndex<lambdaArgCount)
+							qobject = (QObject) LambdaTools.getCapturedArg(serializedLambda, methodInfo.qobjectIndex);
+						if (methodInfo.ownerIndex>=0 && methodInfo.ownerIndex<lambdaArgCount)
+							owner = LambdaTools.getCapturedArg(serializedLambda, methodInfo.ownerIndex);
+						for (int i = 0; i < lambdaArgCount; i++) {
+							if(i==methodInfo.ownerIndex) {
+								owner = LambdaTools.getCapturedArg(serializedLambda, i);
+								if(i==methodInfo.qobjectIndex)
+									qobject = (QObject)owner;
+							}else if(i==methodInfo.qobjectIndex) {
+								qobject = (QObject)LambdaTools.getCapturedArg(serializedLambda, i);
+							}else {
+								if(lambdaArgsList.isEmpty())
+									lambdaArgsList = new ArrayList<>();
+								lambdaArgsList.add(LambdaTools.getCapturedArg(serializedLambda, i));
+							}
 						}
-						return new LambdaInfo(ownerClass, owner, qobject, false, methodHandle, reflectiveMethod,
-								reflectiveConstructor, lambdaArgsList == Collections.emptyList() ? lambdaArgsList
-										: Collections.unmodifiableList(lambdaArgsList));
-					} else if (LambdaTools.getCapturedArgCount(serializedLambda) == 0) {
-						return new LambdaInfo(ownerClass, owner, qobject, false, methodHandle, reflectiveMethod,
-								reflectiveConstructor, lambdaArgsList == Collections.emptyList() ? lambdaArgsList
-										: Collections.unmodifiableList(lambdaArgsList));
-					} else if(reflectiveConstructor!=null 
-							&& LambdaTools.getCapturedArgCount(serializedLambda) > 0
-							&& (
-								(ownerClass.getEnclosingClass()!=null && ownerClass.getEnclosingClass().isInstance(LambdaTools.getCapturedArg(serializedLambda, 0)))
-							 || (ownerClass.getDeclaringClass()!=null && ownerClass.getDeclaringClass().isInstance(LambdaTools.getCapturedArg(serializedLambda, 0)))
-								)
-							) {
-						lambdaArgsList = new ArrayList<>();
-						for (int i = 0; i < LambdaTools.getCapturedArgCount(serializedLambda); i++) {
-							lambdaArgsList.add(LambdaTools.getCapturedArg(serializedLambda, i));
-						}
-						return new LambdaInfo(ownerClass, owner, qobject, false, methodHandle, reflectiveMethod,
-								reflectiveConstructor, lambdaArgsList == Collections.emptyList() ? lambdaArgsList
-										: Collections.unmodifiableList(lambdaArgsList));
+						return new LambdaInfo(methodInfo, owner, qobject, 
+								lambdaArgsList.isEmpty() 
+								? Collections.emptyList()
+								: Collections.unmodifiableList(lambdaArgsList));
 					}
+				}
+			}
+		}
+		return null;
+	}
+	
+	public static LambdaInfo lambdaInfo(Serializable slotObject, @StrictNonNull QObject qobject) {
+		//String className = slotObject.getClass().getName();
+		Class<?> slotClass = AccessUtility.instance.getClass(slotObject);
+		if (slotClass.isSynthetic()
+				//&& className.contains("Lambda$") && className.contains("/")
+				) {
+			SerializedLambda serializedLambda = serializeLambdaExpression(slotObject);
+			if(serializedLambda == null)
+				return null;
+			MethodInfo methodInfo = LambdaTools.lambdaSlotHandles(slotClass, serializedLambda);
+			List<Object> lambdaArgsList = Collections.emptyList();
+			if (methodInfo.methodHandle != null) {
+				int lambdaArgCount = LambdaTools.getCapturedArgCount(serializedLambda);
+				Object capturedArg0 = lambdaArgCount > 0 ? LambdaTools.getCapturedArg(serializedLambda, 0) : null;
+				if(methodInfo.reflectiveConstructor!=null) {
+					if(lambdaArgCount == 0
+							|| (
+									lambdaArgCount > 0
+									&& (
+											(methodInfo.implClass.getEnclosingClass()!=null && methodInfo.implClass.getEnclosingClass().isInstance(capturedArg0))
+										 || (methodInfo.implClass.getDeclaringClass()!=null && methodInfo.implClass.getDeclaringClass().isInstance(capturedArg0))
+									)
+							)) {
+						for (int i = 0; i < lambdaArgCount; i++) {
+							if(lambdaArgsList.isEmpty())
+								lambdaArgsList = new ArrayList<>();
+							lambdaArgsList.add(LambdaTools.getCapturedArg(serializedLambda, i));
+						}
+						return new LambdaInfo(methodInfo, null, null, 
+								lambdaArgsList.isEmpty() 
+								? Collections.emptyList()
+								: Collections.unmodifiableList(lambdaArgsList));
+					}
+				} else if (methodInfo.reflectiveMethod != null) {
+					for (int i = 0; i < lambdaArgCount; i++) {
+						if(lambdaArgsList.isEmpty())
+							lambdaArgsList = new ArrayList<>();
+						lambdaArgsList.add(LambdaTools.getCapturedArg(serializedLambda, i));
+					}
+					return new LambdaInfo(methodInfo, qobject, qobject, 
+													lambdaArgsList.isEmpty() 
+													? Collections.emptyList()
+													: Collections.unmodifiableList(lambdaArgsList));
 				}
 			}
 		}
@@ -953,14 +1100,14 @@ public abstract class ClassAnalyzerUtility {
 	private static Class<?> getFactoryClass(Serializable method) {
 		LambdaInfo lamdaInfo = lambdaInfo(method);
 		if(lamdaInfo!=null) {
-			if (lamdaInfo.reflectiveMethod != null && (lamdaInfo.lambdaArgs == null || lamdaInfo.lambdaArgs.isEmpty())
-					&& !lamdaInfo.reflectiveMethod.isSynthetic() && !lamdaInfo.reflectiveMethod.isBridge()
-					&& !Modifier.isStatic(lamdaInfo.reflectiveMethod.getModifiers())) {
-				return lamdaInfo.reflectiveMethod.getDeclaringClass();
-			}else if (lamdaInfo.reflectiveConstructor != null && (lamdaInfo.lambdaArgs == null || lamdaInfo.lambdaArgs.isEmpty())
-					&& !lamdaInfo.reflectiveConstructor.isSynthetic()
-					&& !Modifier.isStatic(lamdaInfo.reflectiveConstructor.getModifiers())) {
-				return lamdaInfo.reflectiveConstructor.getDeclaringClass();
+			if (lamdaInfo.methodInfo.reflectiveMethod != null && (lamdaInfo.lambdaArgs == null || lamdaInfo.lambdaArgs.isEmpty())
+					&& !lamdaInfo.methodInfo.reflectiveMethod.isSynthetic() && !lamdaInfo.methodInfo.reflectiveMethod.isBridge()
+					&& !Modifier.isStatic(lamdaInfo.methodInfo.reflectiveMethod.getModifiers())) {
+				return lamdaInfo.methodInfo.reflectiveMethod.getDeclaringClass();
+			}else if (lamdaInfo.methodInfo.reflectiveConstructor != null && (lamdaInfo.lambdaArgs == null || lamdaInfo.lambdaArgs.isEmpty())
+					&& !lamdaInfo.methodInfo.reflectiveConstructor.isSynthetic()
+					&& !Modifier.isStatic(lamdaInfo.methodInfo.reflectiveConstructor.getModifiers())) {
+				return lamdaInfo.methodInfo.reflectiveConstructor.getDeclaringClass();
 			}
 		}
 		return null;
@@ -969,8 +1116,8 @@ public abstract class ClassAnalyzerUtility {
 	@SuppressWarnings("unchecked")
 	public static <R> Class<R> getReturnType(QMetaObject.Method1<?, R> method) {
 		LambdaInfo lamdaInfo = lambdaInfo(method);
-		if (lamdaInfo!=null && lamdaInfo.methodHandle != null) {
-			return (Class<R>) lamdaInfo.methodHandle.type().returnType();
+		if (lamdaInfo!=null && lamdaInfo.methodInfo.methodHandle != null) {
+			return (Class<R>) lamdaInfo.methodInfo.methodHandle.type().returnType();
 		} else {
 			return null;
 		}
@@ -997,8 +1144,8 @@ public abstract class ClassAnalyzerUtility {
 	
 	static <S extends java.io.Serializable> Class<?> lambdaReturnType(Class<S> type, S lambdaExpression){
 		LambdaInfo lamdaInfo = lambdaInfo(lambdaExpression);
-		if (lamdaInfo!=null && lamdaInfo.methodHandle != null) {
-			return lamdaInfo.methodHandle.type().returnType();
+		if (lamdaInfo!=null && lamdaInfo.methodInfo.methodHandle != null) {
+			return lamdaInfo.methodInfo.methodHandle.type().returnType();
 		} else {
 			Class<?> objectType = AccessUtility.instance.getClass(lambdaExpression);
 			if(type.isInterface() && !objectType.isSynthetic()) {
@@ -1035,25 +1182,25 @@ public abstract class ClassAnalyzerUtility {
 	
 	static <S extends java.io.Serializable> int[] lambdaMetaTypes(Class<S> type, S lambdaExpression) {
 		LambdaInfo lamdaInfo = lambdaInfo(lambdaExpression);
-		if (lamdaInfo!=null && lamdaInfo.reflectiveMethod != null) {
-			int[] metaTypes = new int[1+lamdaInfo.reflectiveMethod.getParameterCount()];
+		if (lamdaInfo!=null && lamdaInfo.methodInfo.reflectiveMethod != null) {
+			int[] metaTypes = new int[1+lamdaInfo.methodInfo.reflectiveMethod.getParameterCount()];
 			AnnotatedElement rt = null;
 			if(useAnnotatedType)
-				rt = lamdaInfo.reflectiveMethod.getAnnotatedReturnType();
-			Class<?> returnType = lamdaInfo.reflectiveMethod.getReturnType();
-			Type genericReturnType = lamdaInfo.reflectiveMethod.getGenericReturnType();
+				rt = lamdaInfo.methodInfo.reflectiveMethod.getAnnotatedReturnType();
+			Class<?> returnType = lamdaInfo.methodInfo.reflectiveMethod.getReturnType();
+			Type genericReturnType = lamdaInfo.methodInfo.reflectiveMethod.getGenericReturnType();
 			metaTypes[0] = MetaTypeUtility.registerMetaType(returnType, genericReturnType, rt, false, false);
 			try {
-				Parameter[] parameters = lamdaInfo.reflectiveMethod.getParameters();
+				Parameter[] parameters = lamdaInfo.methodInfo.reflectiveMethod.getParameters();
 				for (int i = 0; i < parameters.length; i++) {
 					metaTypes[i+1] = MetaTypeUtility.registerMetaType(parameters[i]);
 				}
 			}catch(java.lang.reflect.MalformedParametersException e) {
-				for (int i = 0; i < lamdaInfo.reflectiveMethod.getParameterCount(); i++) {
+				for (int i = 0; i < lamdaInfo.methodInfo.reflectiveMethod.getParameterCount(); i++) {
 					AnnotatedElement annotatedParameterType = null;
 			    	if(useAnnotatedType)
-			    		annotatedParameterType = lamdaInfo.reflectiveMethod.getAnnotatedParameterTypes()[i];
-					metaTypes[i+1] = MetaTypeUtility.registerMetaType(lamdaInfo.reflectiveMethod.getParameterTypes()[i], lamdaInfo.reflectiveMethod.getGenericParameterTypes()[i], annotatedParameterType, false, false);
+			    		annotatedParameterType = lamdaInfo.methodInfo.reflectiveMethod.getAnnotatedParameterTypes()[i];
+					metaTypes[i+1] = MetaTypeUtility.registerMetaType(lamdaInfo.methodInfo.reflectiveMethod.getParameterTypes()[i], lamdaInfo.methodInfo.reflectiveMethod.getGenericParameterTypes()[i], annotatedParameterType, false, false);
 				}
 			}
 			return metaTypes;
@@ -1119,11 +1266,11 @@ public abstract class ClassAnalyzerUtility {
 	
 	static <S extends java.io.Serializable> Class<?>[] lambdaClassTypes(Class<S> type, S lambdaExpression) {
 		LambdaInfo lamdaInfo = lambdaInfo(lambdaExpression);
-		if (lamdaInfo!=null && lamdaInfo.reflectiveMethod != null) {
-			Class<?>[] classTypes = new Class[1+lamdaInfo.reflectiveMethod.getParameterCount()];
-			classTypes[0] = lamdaInfo.reflectiveMethod.getReturnType();
+		if (lamdaInfo!=null && lamdaInfo.methodInfo.reflectiveMethod != null) {
+			Class<?>[] classTypes = new Class[1+lamdaInfo.methodInfo.reflectiveMethod.getParameterCount()];
+			classTypes[0] = lamdaInfo.methodInfo.reflectiveMethod.getReturnType();
 			try {
-				Class<?>[] parameters = lamdaInfo.reflectiveMethod.getParameterTypes();
+				Class<?>[] parameters = lamdaInfo.methodInfo.reflectiveMethod.getParameterTypes();
 				for (int i = 0; i < parameters.length; i++) {
 					classTypes[i+1] = parameters[i];
 				}
@@ -1177,10 +1324,10 @@ public abstract class ClassAnalyzerUtility {
 	static <S extends java.io.Serializable> java.lang.reflect.Executable lambdaExecutable(S lambdaExpression){
 		LambdaInfo lamdaInfo = lambdaInfo(lambdaExpression);
 		if (lamdaInfo!=null) {
-			if(lamdaInfo.reflectiveMethod != null)
-				return lamdaInfo.reflectiveMethod;
+			if(lamdaInfo.methodInfo.reflectiveMethod != null)
+				return lamdaInfo.methodInfo.reflectiveMethod;
 			else
-				return lamdaInfo.reflectiveConstructor;
+				return lamdaInfo.methodInfo.reflectiveConstructor;
 		}else 
 			return null;
 	}

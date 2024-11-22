@@ -586,6 +586,8 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                                             analyzeRequiredQtLibraries(typeDatabase, alreadyInitializedPackages, expandedQtLibraries, requiredQtLibraries, entry, mode, platforms);
                                         }
                                         for(const Dependency& dep : ts->requiredQtLibraries()){
+                                            if(dep.mode==Dependency::Supressed)
+                                                continue;
                                             if(!platforms.isEmpty() && !dep.platforms.isEmpty()){
                                                 if(!QSet<QString>(platforms.begin(), platforms.end()).intersects(QSet<QString>(dep.platforms.begin(), dep.platforms.end()))){
                                                     continue;
@@ -618,11 +620,6 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                                                         _platforms << platforms;
                                                         _platforms.removeDuplicates();
                                                     }
-                                                }else{
-                                                    if(platforms.isEmpty())
-                                                        _platforms.clear();
-                                                    else
-                                                        _platforms << platforms;
                                                 }
                                             }
                                         }else{
@@ -661,6 +658,8 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                                                 analyzeRequiredQtLibraries(typeDatabase, alreadyInitializedPackages, expandedQtLibraries, requiredQtLibraries, entry, mode, platforms);
                                             }
                                             for(const Dependency& dep : ts->requiredQtLibraries()){
+                                                if(dep.mode==Dependency::Supressed)
+                                                    continue;
                                                 if(!platforms.isEmpty() && !dep.platforms.isEmpty()){
                                                     if(!QSet<QString>(platforms.begin(), platforms.end()).intersects(QSet<QString>(dep.platforms.begin(), dep.platforms.end()))){
                                                         continue;
@@ -693,21 +692,27 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                                                             _platforms << platforms;
                                                             _platforms.removeDuplicates();
                                                         }
-                                                    }else{
-                                                        if(platforms.isEmpty())
-                                                            _platforms.clear();
-                                                        else
-                                                            _platforms << platforms;
                                                     }
                                                 }
                                             }else{
                                                 bool found = false;
                                                 for(Dependency& dep : requiredQtLibraries){
-                                                    if(dep.entry==ts->qtLibrary() && dep.platforms==platforms){
-                                                        found = true;
+                                                    if(dep.entry==ts->qtLibrary()){
                                                         if(mode==Dependency::Mandatory){
                                                             dep.mode = Dependency::Mandatory;
                                                         }
+                                                        if(!dep.platforms.isEmpty()){
+                                                            if(platforms.isEmpty())
+                                                                dep.platforms.clear();
+                                                            else{
+                                                                QStringList _platforms;
+                                                                _platforms << platforms << dep.platforms;
+                                                                if(!_platforms.isEmpty())
+                                                                    _platforms.removeDuplicates();
+                                                                dep.platforms = _platforms;
+                                                            }
+                                                        }
+                                                        found = true;
                                                         break;
                                                     }
                                                 }
@@ -727,21 +732,27 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                                                     _platforms << platforms;
                                                     _platforms.removeDuplicates();
                                                 }
-                                            }else{
-                                                if(platforms.isEmpty())
-                                                    _platforms.clear();
-                                                else
-                                                    _platforms << platforms;
                                             }
                                         }
                                     }else{
                                         bool found = false;
                                         for(Dependency& dep : requiredQtLibraries){
-                                            if(dep.entry==lib && dep.platforms==platforms){
-                                                found = true;
+                                            if(dep.entry==lib){
                                                 if(mode==Dependency::Mandatory){
                                                     dep.mode = Dependency::Mandatory;
                                                 }
+                                                if(!dep.platforms.isEmpty()){
+                                                    if(platforms.isEmpty())
+                                                        dep.platforms.clear();
+                                                    else{
+                                                        QStringList _platforms;
+                                                        _platforms << platforms << dep.platforms;
+                                                        if(!_platforms.isEmpty())
+                                                            _platforms.removeDuplicates();
+                                                        dep.platforms = _platforms;
+                                                    }
+                                                }
+                                                found = true;
                                                 break;
                                             }
                                         }
@@ -790,6 +801,8 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                                     continue;
                                 QString append;
                                 switch(dep.mode){
+                                case Dependency::Supressed:
+                                    continue;
                                 case Dependency::Mandatory:
                                     if(dep.entry.startsWith("Qt")){
                                         append = ", LibraryRequirementMode.Mandatory";
@@ -900,7 +913,7 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                                                 s << "new Dependency(\"" << entry->qtLibrary() << "\")";
                                             }
                                             for(const Dependency& dep : ts->requiredQtLibraries()){
-                                                if(dep.entry.isEmpty() || deps.contains(dep.entry))
+                                                if(dep.mode==Dependency::Supressed || dep.entry.isEmpty() || deps.contains(dep.entry))
                                                     continue;
                                                 deps.insert(dep.entry);
                                                 s << Qt::endl << INDENT << "                                  ";
@@ -915,6 +928,7 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                                                 case Dependency::Mandatory: append = ", LibraryRequirementMode.Mandatory"; break;
                                                 case Dependency::Optional: append = ", LibraryRequirementMode.Optional"; break;
                                                 case Dependency::ProvideOnly: append = ", LibraryRequirementMode.ProvideOnly"; break;
+                                                default: break;
                                                 }
                                                 for(const QString& pl : dep.platforms){
                                                     if(!pl.isEmpty())

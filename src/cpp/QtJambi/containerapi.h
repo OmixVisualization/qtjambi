@@ -36,7 +36,7 @@
 
 #include "global.h"
 #include "registryapi.h"
-#include "utils.h"
+#include "typeutils.h"
 #include "typetests.h"
 
 enum class QtJambiNativeID : jlong;
@@ -102,9 +102,6 @@ int registerMetaType(){
 #define QTJAMBI_METATYPE_FROM_TYPE(T) QtJambiPrivate::registerMetaType<T>()
 #define QTJAMBI_METATYPE_FROM_TYPE2(T) QMetaType(QTJAMBI_METATYPE_FROM_TYPE(T))
 #endif
-
-typedef void(* SmartPointerDeleter)(void *, bool);
-typedef void*(*SmartPointerGetter)(const void *);
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
 class AbstractSpanAccess;

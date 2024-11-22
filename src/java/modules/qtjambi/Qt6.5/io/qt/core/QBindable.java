@@ -396,8 +396,8 @@ public final class QBindable<T> extends QUntypedBindable {
 	
 	public static <T> @NonNull QBindable<T> fromProperty(QtUtilities.Supplier<T> propertyGetter){
 		io.qt.internal.ClassAnalyzerUtility.LambdaInfo info = io.qt.internal.ClassAnalyzerUtility.lambdaInfo(propertyGetter);
-		if(info!=null && info.qobject!=null && info.reflectiveMethod!=null && !info.reflectiveMethod.isSynthetic()) {
-			QtPropertyReader pr = info.reflectiveMethod.getAnnotation(QtPropertyReader.class);
+		if(info!=null && info.qobject!=null && info.methodInfo.reflectiveMethod!=null && !info.methodInfo.reflectiveMethod.isSynthetic()) {
+			QtPropertyReader pr = info.methodInfo.reflectiveMethod.getAnnotation(QtPropertyReader.class);
 			if(pr!=null) {
 				if(pr.enabled() && !pr.name().isEmpty()) {
 					QMetaProperty prp = info.qobject.metaObject().property(pr.name());
@@ -408,13 +408,13 @@ public final class QBindable<T> extends QUntypedBindable {
 			}else{
 				int[] lambdaMetaTypes = QtJambi_LibraryUtilities.internal.lambdaMetaTypes(QtUtilities.Supplier.class, propertyGetter);
 				if(lambdaMetaTypes!=null && lambdaMetaTypes.length==1) {
-					QMetaProperty prp = info.qobject.metaObject().property(info.reflectiveMethod.getName());
+					QMetaProperty prp = info.qobject.metaObject().property(info.methodInfo.reflectiveMethod.getName());
 					if(prp!=null && prp.isValid() && lambdaMetaTypes[0]==prp.typeId()) {
 						return new QBindable<>(info.qobject, prp);
 					}
 					boolean isIs = false;
-					if(info.reflectiveMethod.getName().startsWith("get") || info.reflectiveMethod.getName().startsWith("has") || (isIs = info.reflectiveMethod.getName().startsWith("is"))) {
-						String name = info.reflectiveMethod.getName().substring(isIs ? 2 : 3);
+					if(info.methodInfo.reflectiveMethod.getName().startsWith("get") || info.methodInfo.reflectiveMethod.getName().startsWith("has") || (isIs = info.methodInfo.reflectiveMethod.getName().startsWith("is"))) {
+						String name = info.methodInfo.reflectiveMethod.getName().substring(isIs ? 2 : 3);
 						if(name.length()>1) {
 							name = Character.toLowerCase(name.charAt(0)) + name.substring(1);
 							prp = info.qobject.metaObject().property(name);
@@ -425,7 +425,7 @@ public final class QBindable<T> extends QUntypedBindable {
 					}
 				}
 			}
-			throw new IllegalArgumentException(String.format("Unable to determine property from method %1$s.", info.reflectiveMethod.toGenericString()));
+			throw new IllegalArgumentException(String.format("Unable to determine property from method %1$s.", info.methodInfo.reflectiveMethod.toGenericString()));
 		}else {
 			throw new IllegalArgumentException("Unable to determine property from given method.");
 		}

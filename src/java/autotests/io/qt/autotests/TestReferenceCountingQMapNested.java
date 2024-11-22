@@ -36,7 +36,7 @@ public class TestReferenceCountingQMapNested extends ApplicationInitializer {
 					return 0;
 	    		};
 	    		container.put(""+i, QList.of(object));
-	    		General.internalAccess.setJavaOwnership(object);
+//	    		General.internalAccess.setJavaOwnership(object);
 	    		General.internalAccess.registerCleaner(object, counter::incrementAndGet);
 	    		object = null;
 	    	}

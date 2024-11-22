@@ -36,12 +36,12 @@ import io.qt.core.QMetaObject;
 import io.qt.core.QThread;
 import io.qt.autotests.generated.PerformanceTests;
 
-public class TestJDKVirtualThreads extends ApplicationInitializer {
+public class TestJDK19VirtualThreads extends ApplicationInitializer {
 	
 	@BeforeClass
 	public static void testInitialize() throws Exception {
 		ApplicationInitializer.testInitializeWithWidgets();
-		QMetaObject.forType(TestJDKVirtualThreads.class);
+		QMetaObject.forType(TestJDK19VirtualThreads.class);
     }
     
 	@Test
@@ -75,6 +75,6 @@ public class TestJDKVirtualThreads extends ApplicationInitializer {
 	}
 	
     public static void main(String args[]) {
-        org.junit.runner.JUnitCore.main(TestJDKVirtualThreads.class.getName());
+        org.junit.runner.JUnitCore.main(TestJDK19VirtualThreads.class.getName());
     }
 }

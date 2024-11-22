@@ -69,6 +69,7 @@ import io.qt.core.QThread;
 import io.qt.core.QVersionNumber;
 import io.qt.core.Qt;
 import io.qt.gui.QGuiApplication;
+import io.qt.gui.QIcon;
 import io.qt.gui.QShowEvent;
 import io.qt.internal.TestUtility;
 import io.qt.widgets.QApplication;
@@ -113,41 +114,13 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
 					break;
 				case 1:
 					QGuiApplication.initialize(new String[0]);
+					QGuiApplication.setWindowIcon(new QIcon(":io/qt/autotests/icon.png"));
 					break;
 					default:
 					QApplication.initialize(new String[0]);
+					QGuiApplication.setWindowIcon(new QIcon(":io/qt/autotests/icon.png"));
 					break;
 				}
-				/*
-				Thread mainThread = Thread.currentThread();
-				Runtime.getRuntime().addShutdownHook(new Thread(()->{
-					Thread timeoutThread = new Thread(()->{
-						try {
-							synchronized(ApplicationInitializer.class) {
-								ApplicationInitializer.class.wait(15000);
-							}
-							System.err.println("Test process does not terminate. "+mainThread.getState());
-							Runtime.getRuntime().halt(-1);
-						} catch (InterruptedException e) {
-						}
-					});
-					timeoutThread.setDaemon(true);
-					timeoutThread.start();
-				}));
-				QCoreApplication.addPostRoutine(()->{
-					Thread timeoutThread = new Thread(()->{
-						try {
-							synchronized(ApplicationInitializer.class) {
-								ApplicationInitializer.class.wait(15000);
-							}
-							System.err.println("Test process does not terminate. "+mainThread.getState());
-							Runtime.getRuntime().halt(-1);
-						} catch (InterruptedException e) {
-						}
-					});
-					timeoutThread.setDaemon(true);
-					timeoutThread.start();
-				});*/
 		        QThread.currentThread().setObjectName("main");
 			    java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.INFO, "testInitialize({0}): DONE", testClassName);
 			    if(mode>=2 
@@ -204,6 +177,7 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
 	        System.out.flush();
 	
 	        if(app != null) {
+	        	QCoreApplication.quit();
 	            try {
 	        		java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose({0}): processEvents() 1 PRE", testClassName);
 	                QCoreApplication.processEvents();	// NPE

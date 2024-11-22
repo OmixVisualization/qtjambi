@@ -103,6 +103,7 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QThread,
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QMetaMethod,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(toSignal,(Lio/qt/core/QObject;)Lio/qt/core/QMetaObject$AbstractSignal;)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QObject$QDeclarativeConstructor,
@@ -857,6 +858,10 @@ QTJAMBI_REPOSITORY_DEFINE_EMPTY_CLASS(io/qt/core,QObject)
     QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,AbstractContainer,
                                     QTJAMBI_REPOSITORY_DEFINE_FIELD(__rcContainer,Ljava/lang/Object;)
                                     )
+
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,SmartPointer,
+                                    QTJAMBI_REPOSITORY_DEFINE_METHOD(get,()Ljava/lang/Object;)
+                                    )
 }
 
 namespace Runtime {
@@ -918,6 +923,10 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(java/util,Map$Entry,
     QTJAMBI_REPOSITORY_DEFINE_METHOD(getKey,()Ljava/lang/Object;)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(getValue,()Ljava/lang/Object;)
 )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(java/lang/ref,Reference,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(get,()Ljava/lang/Object;)
+                                )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/lang,Comparable,
     QTJAMBI_REPOSITORY_DEFINE_METHOD(compareTo,(Ljava/lang/Object;)I)
@@ -1228,7 +1237,43 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,MetaTypeUtility,
                                     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(analyzeExpectedTemplateName,(Ljava/lang/Class;[Lio/qt/core/QMetaType;)Ljava/lang/Object;)
                                 )
 
-QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,NativeUtility$Object,)
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,NativeUtility,
+                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(terminateCleanupThread,()V)
+                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(createAssociation,(Ljava/lang/Object;Ljava/lang/Object;)I)
+                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(deleteAssociation,(Ljava/lang/Object;)Z)
+                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(deleteAssociationByHashCode,(I)Ljava/lang/Object;)
+                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(findAssociation,(Ljava/lang/Object;)Ljava/lang/Object;)
+                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(nativeId,(Lio/qt/internal/NativeUtility$Object;)J)
+                                QTJAMBI_REPOSITORY_DEFINE_RENAMED_STATIC_METHOD(nativeIdInterface,nativeId,(Lio/qt/QtObjectInterface;)J)
+                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(findInterfaceLink,(Lio/qt/QtObjectInterface;ZZ)Lio/qt/internal/NativeUtility$NativeLink;)
+                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(findAndAssignInterfaceLink,(Lio/qt/QtObjectInterface;ZZJ)V)
+                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(pushGlobalReference,(JLjava/lang/Object;)V)
+                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(getGlobalReference,(J)Ljava/lang/Object;)
+                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(releaseGlobalReference,(J)V)
+                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(pushWeakGlobalReference,(JLjava/lang/Object;)V)
+                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(getWeakGlobalReference,(J)Ljava/lang/Object;)
+                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(releaseWeakGlobalReference,(J)V)
+)
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,NativeUtility$Object,
+        QTJAMBI_REPOSITORY_DEFINE_FIELD(nativeLink,Lio/qt/internal/NativeUtility$NativeLink;)
+        QTJAMBI_REPOSITORY_DEFINE_METHOD(assignNativeLink,(J)V))
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,NativeUtility$NativeLink,
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(initialize,(J)V)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(detach,(JZ)V)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(reset,(JZ)V)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(assignNativeId,(J)V)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(nativeId,()J)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(get,()Lio/qt/QtObjectInterface;)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(takeOwnership,()V)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(releaseOwnership,()V)
+    QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(getForID,(J)Lio/qt/QtObjectInterface;)
+    QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(resetForID,(JZ)V)
+    QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(detachForID,(JZ)V)
+    QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(takeOwnershipForID,(J)Z)
+    QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(releaseOwnershipForID,(J)Z)
+)
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,ClassAnalyzerUtility,
                                 QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(getImplementedInterfaceInfo,(Ljava/lang/Class;)Ljava/util/Map;)
@@ -1254,16 +1299,6 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,ExceptionUtility,
 )
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,AccessUtility,
                                 QTJAMBI_REPOSITORY_DEFINE_STATIC_FIELD(instance,Lio/qt/internal/AccessUtility;)
-)
-
-QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,NativeUtility,
-                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(terminateCleanupThread,()V)
-                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(createAssociation,(Ljava/lang/Object;Ljava/lang/Object;)I)
-                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(deleteAssociation,(Ljava/lang/Object;)Z)
-                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(deleteAssociationByHashCode,(I)Ljava/lang/Object;)
-                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(findAssociation,(Ljava/lang/Object;)Ljava/lang/Object;)
-                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(nativeId,(Lio/qt/internal/NativeUtility$Object;)J)
-                                QTJAMBI_REPOSITORY_DEFINE_RENAMED_STATIC_METHOD(nativeIdInterface,nativeId,(Lio/qt/QtObjectInterface;)J)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,ResourceUtility,

@@ -40,12 +40,12 @@ import org.junit.Test;
 import io.qt.core.QEvent;
 import io.qt.core.QMetaObject;
 
-public class TestJDKFeatureSwitch extends ApplicationInitializer {
+public class TestJDK19FeatureSwitch extends ApplicationInitializer {
 	
 	@BeforeClass
 	public static void testInitialize() throws Exception {
 		ApplicationInitializer.testInitializeWithWidgets();
-		QMetaObject.forType(TestJDKFeatureSwitch.class);
+		QMetaObject.forType(TestJDK19FeatureSwitch.class);
     }
     
 	@Test
@@ -65,7 +65,7 @@ public class TestJDKFeatureSwitch extends ApplicationInitializer {
 	
 	private void checkSwitches() {
 		try {
-			for(Field field : TestJDKFeatureSwitch.class.getDeclaredFields()) {
+			for(Field field : TestJDK19FeatureSwitch.class.getDeclaredFields()) {
 				if(field.isSynthetic()) {
 					System.out.println(field + " = " + Arrays.toString((int[])field.get(null)));
 				}
@@ -74,7 +74,7 @@ public class TestJDKFeatureSwitch extends ApplicationInitializer {
 		}
 		for(int i=1;;++i) {
     		try {
-				Class<?> syntheticClass = Class.forName(TestJDKFeatureSwitch.class.getName()+"$"+i, false, TestJDKFeatureSwitch.class.getClassLoader());
+				Class<?> syntheticClass = Class.forName(TestJDK19FeatureSwitch.class.getName()+"$"+i, false, TestJDK19FeatureSwitch.class.getClassLoader());
 				if(syntheticClass.isSynthetic()) {
 					for(Field declaredField : syntheticClass.getDeclaredFields()) {
 						if(Modifier.isStatic(declaredField.getModifiers()) 
@@ -129,6 +129,6 @@ public class TestJDKFeatureSwitch extends ApplicationInitializer {
     }
     
     public static void main(String args[]) {
-        org.junit.runner.JUnitCore.main(TestJDKFeatureSwitch.class.getName());
+        org.junit.runner.JUnitCore.main(TestJDK19FeatureSwitch.class.getName());
     }
 }

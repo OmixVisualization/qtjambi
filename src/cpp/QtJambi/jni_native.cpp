@@ -131,13 +131,14 @@ JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_NativeUtility_00024NativeLin
     (JNIEnv *env, jclass, QtJambiNativeID native_id)
 {
     try{
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
         if (QSharedPointer<QtJambiLink> link = QtJambiLink::fromNativeId(native_id)) {
+#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
             return env->NewStringUTF(link->qtTypeName());
-        }
 #else
-        Q_UNUSED(native_id)
+            if(link->metaType())
+                return env->NewStringUTF(link->metaType()->name());
 #endif
+        }
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
     }
@@ -241,13 +242,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_NativeUtility_hasOwnerFunction)
     try{
         if (QSharedPointer<QtJambiLink> link = QtJambiLink::fromNativeId(native_id)) {
             if(!link->isQObject()){
-                PtrOwnerFunction ownerFunction;
-                if(link->isSmartPointer()){
-                    ownerFunction = reinterpret_cast<SmartPointerToObjectLink*>(link.data())->ownerFunction();
-                }else{
-                    ownerFunction = reinterpret_cast<PointerToObjectLink*>(link.data())->ownerFunction();
-                }
-                return ownerFunction!=nullptr;
+                return link->ownerFunction()!=nullptr;
             }
         }
     }catch(const JavaException& exn){
@@ -263,12 +258,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_NativeUtility_owner)
     try{
         if (QSharedPointer<QtJambiLink> link = QtJambiLink::fromNativeId(native_id)) {
             if(!link->isQObject()){
-                PtrOwnerFunction ownerFunction;
-                if(link->isSmartPointer()){
-                    ownerFunction = reinterpret_cast<SmartPointerToObjectLink*>(link.data())->ownerFunction();
-                }else{
-                    ownerFunction = reinterpret_cast<PointerToObjectLink*>(link.data())->ownerFunction();
-                }
+                PtrOwnerFunction ownerFunction = link->ownerFunction();
                 if(ownerFunction){
                     const QObject* owner = ownerFunction(link->pointer());
                     return qtjambi_cast<jobject>(env, owner);
@@ -282,6 +272,28 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_NativeUtility_owner)
         exn.raiseInJava(env);
     }
     return nullptr;
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_NativeUtility_unregisterConDestroyedObject)
+    (JNIEnv *env, jclass, QtJambiNativeID dependentObject, QtJambiNativeID owner)
+{
+    QSharedPointer<QtJambiLink> _dependentLink = QtJambiLink::fromNativeId(dependentObject);
+    QSharedPointer<QtJambiLink> _ownerLink = QtJambiLink::fromNativeId(owner);
+    if(_dependentLink && _ownerLink){
+        _ownerLink->unregisterConDestroyedObject(env, _dependentLink);
+    }
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_NativeUtility_registerConDestroyedObject)
+    (JNIEnv *env, jclass, QtJambiNativeID dependentObject, QtJambiNativeID owner)
+{
+    QSharedPointer<QtJambiLink> _dependentLink = QtJambiLink::fromNativeId(dependentObject);
+    QSharedPointer<QtJambiLink> _ownerLink = QtJambiLink::fromNativeId(owner);
+    if(_dependentLink && _ownerLink){
+        _ownerLink->registerConDestroyedObject(env, _dependentLink);
+    }
 }
 
 extern "C" Q_DECL_EXPORT void JNICALL

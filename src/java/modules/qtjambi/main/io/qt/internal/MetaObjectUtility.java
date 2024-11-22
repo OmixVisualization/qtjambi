@@ -30,11 +30,9 @@
 
 package io.qt.internal;
 
-import static io.qt.internal.EnumUtility.getEnumForQFlags;
-import static io.qt.internal.MetaTypeUtility.findMetaType;
-import static io.qt.internal.MetaTypeUtility.internalTypeNameOfClass;
-import static io.qt.internal.MetaTypeUtility.registerMetaType;
-import static io.qt.internal.MetaTypeUtility.registerRefMetaType;
+import static io.qt.internal.EnumUtility.*;
+import static io.qt.internal.MetaTypeUtility.*;
+import static io.qt.internal.PropertyUtility.*;
 
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.AnnotatedElement;
@@ -102,7 +100,9 @@ import io.qt.internal.SignalUtility.SignalParameterType;
  * Methods to help construct the fake meta object.
  * @hidden
  */
-final class MetaObjectUtility extends AbstractMetaObjectUtility{
+final class MetaObjectUtility{
+	
+	private final static Logger logger = Logger.getLogger("io.qt.internal");
     
     private MetaObjectUtility() { throw new RuntimeException();}
     
@@ -246,277 +246,281 @@ signalLoop:	    for (Field declaredField : declaredFields) {
 							&& declaredField.getName().startsWith("$SWITCH_TABLE$")) {
 						metaObjectData.switchTableFields.add(declaredField);
 					}
-	            	if(isQObjectSignalType(fieldType) && !declaredField.isAnnotationPresent(QtUninvokable.class)) {
-	            		if (!Modifier.isStatic(declaredField.getModifiers())) {
-	            			if(!isQObject && fieldType.getEnclosingClass() == QObject.class)
-	            				throw new QSignalDeclarationException(String.format("Declaration error at signal %1$s.%2$s: do not use QObject signals within non-QObjects.", clazz.getSimpleName(), declaredField.getName()));
-		                    // If we can't convert all the types we don't list the signal
-	            			List<Class<?>> emitParameterTypes = new ArrayList<>();
-	            			List<SignalParameterType> signalTypes = new ArrayList<>(SignalUtility.resolveSignal(declaredField));
-	                    	List<String> cppTypes = new ArrayList<>();
-	                        List<ParameterInfo> signalParameterInfos = new ArrayList<>();
-	                        for (int j = 0; j < signalTypes.size(); j++) {
-	                        	emitParameterTypes.add(Object.class);
-	                            SignalUtility.SignalParameterType signalType = signalTypes.get(j);
-	                            QtMetaType metaTypeDecl = signalType.annotatedType!=null ? signalType.annotatedType.getAnnotation(QtMetaType.class) : null;
-	                            int metaTypeId = 0;
-	                            String typeName;
-	                            if(metaTypeDecl!=null) {
-	                				if(metaTypeDecl.id()!=0) {
-	                					metaTypeId = metaTypeDecl.id();
-                						metaTypeId = registerRefMetaType(metaTypeId, signalType.isPointer, signalType.isReference);
-	                					typeName = new QMetaType(metaTypeId).name().toString();
-	                				}else if(metaTypeDecl.type()!=QMetaType.Type.UnknownType){
-	                					metaTypeId = metaTypeDecl.type().value();
-                						metaTypeId = registerRefMetaType(metaTypeId, signalType.isPointer, signalType.isReference);
-	                					typeName = new QMetaType(metaTypeId).name().toString();
-	                				}else {
-	            						if(metaTypeDecl.name().isEmpty())
-	            							throw new IllegalArgumentException("Incomplete @QtMetaType declaration. Either use type, id or name to specify meta type.");
-	                					typeName = metaTypeDecl.name();
-	                					if(signalType.isPointer && !typeName.endsWith("*")) {
-	                                        typeName += "*";
-	                                    }
-	                                    if(signalType.isReference) {
-	                                    	if(typeName.endsWith("*")) {
-	                                            typeName = typeName.substring(0, typeName.length()-2);
-	                                        }
-	                                        if(!typeName.endsWith("&")) {
-	                                            typeName += "&";
-	                                        }
-	                                    }
-	                				}
-	                			}else{
-	                				typeName = internalTypeNameOfClass(signalType.type, signalType.genericType, signalType.annotatedType);
-	                				if(signalType.isPointer) {
-	                                    if(!typeName.isEmpty() && !typeName.endsWith("*")) {
-	                                        typeName += "*";
-	                                    }
-	                                }
-	                                if(signalType.isReference) {
-	                                    if(typeName.endsWith("*")) {
-	                                        typeName = typeName.substring(0, typeName.length()-2);
-	                                    }
-	                                    if(!typeName.isEmpty() && !typeName.endsWith("&")) {
-	                                        typeName += "&";
-	                                    }
-	                                }
-	                			}
-	                            QMetaType.Type type = metaType(typeName);
-	                            if(type==QMetaType.Type.UnknownType || type==QMetaType.Type.User){
-	                                if(metaTypeId==QMetaType.Type.UnknownType.value()) {
-	                                	metaTypeId = findMetaType(typeName);
-	                                	QMetaType metaType = new QMetaType(metaTypeId);
-	    	                            if(metaTypeId==QMetaType.Type.UnknownType.value() 
-	    	                            		|| !(signalType.genericType instanceof Class 
-	    	                            				|| metaType.name().toString().equals(typeName))
-	    	                            		|| metaType.javaType()!=signalType.type) {
-	    	                                metaTypeId = registerMetaType(signalType.type, signalType.genericType, signalType.annotatedType, signalType.isPointer, signalType.isReference);
-	    	                                metaType = new QMetaType(metaTypeId);
-	    	                            }
-	    	                            if(metaTypeId!=QMetaType.Type.UnknownType.value())
-	    	                                typeName = metaType.name().toString();
-	    	                            else
-	    	                            	continue signalLoop;
-	                                }
-	                                cppTypes.add(typeName);
-	                                signalParameterInfos.add(new ParameterInfo(metaTypeId, typeName));
-	                            }else{
-	                                cppTypes.add(new QMetaType(type).name().toString());
-	                                signalParameterInfos.add(new ParameterInfo(type));
-	                            }
-	                        }
-	                        SignalUtility.EmitMethodInfo emitMethodInfo = findEmitMethodInfo(fieldType, emitParameterTypes);
-	                        String methodSignature = String.format("%1$s(%2$s)", declaredField.getName(), String.join(", ", cppTypes));
-	                        if(!addedMethodSignatures.contains(methodSignature) && emitMethodInfo!=null && emitMethodInfo.methodId!=0) {
-	                        	if (!Modifier.isFinal(declaredField.getModifiers())) {
-		                    		if(!Boolean.getBoolean("qtjambi.allow-nonfinal-signals") && !Boolean.getBoolean("io.qt.allow-nonfinal-signals")) {
-		                    			java.util.logging.Logger.getLogger("io.qt.internal").severe(String.format("Missing modifier 'final' at signal %1$s.%2$s. Specify JVM argument -Dqtjambi.allow-nonfinal-signals=true to disable this error.", clazz.getSimpleName(), declaredField.getName()));
-		                    			throw new QSignalDeclarationException(String.format("Missing modifier 'final' at signal %1$s.%2$s.", clazz.getSimpleName(), declaredField.getName()));
-		                    		}
-		                    	}
-			                    // Rules for resetters:
-			                    // 1. Zero or one argument
-			                    if(signalTypes.size() <= 1){
-			                        PropertyAnnotation notify = PropertyAnnotation.notifyAnnotation(declaredField);
-			
-			                        if (notify != null) {
-			                        	for(String name : notify.name().split(",")) {
-			                        		name = name.trim();
-			                        		if(!name.isEmpty())
-			                        			propertyNotifies.put(name, declaredField);
-			                        	}
-			                        }
-			                    }
-	                        	addedMethodSignatures.add(methodSignature);
-	                        	signalIsClone.add(Boolean.FALSE);
-	                        	allSignalParameterInfos.add(new ArrayList<>(signalParameterInfos));
-                        		metaObjectData.signalInfos.add(new MetaObjectData.SignalInfo(declaredField, new ArrayList<>(signalTypes), fieldType, new int[signalTypes.size()], emitMethodInfo.methodId));
-                        		signals.put(declaredField.getName(), declaredField);
-		                        Runnable addDefaultSignal = ()->{
-		                        	signalTypes.remove(signalTypes.size()-1);
-	                        		signalParameterInfos.remove(signalParameterInfos.size()-1);
-	                        		cppTypes.remove(cppTypes.size()-1);
-	                        		emitParameterTypes.remove(emitParameterTypes.size()-1);
-	                        		SignalUtility.EmitMethodInfo _emitMethodInfo = findEmitMethodInfo(fieldType, emitParameterTypes);
-	                        		String _methodSignature = String.format("%1$s(%2$s)", declaredField.getName(), String.join(", ", cppTypes));
-	                        		if(!addedMethodSignatures.contains(_methodSignature) && _emitMethodInfo!=null && _emitMethodInfo.methodId!=0) {
-	                        			addedMethodSignatures.add(_methodSignature);
-	                        			signalIsClone.add(Boolean.TRUE);
-	    	                        	allSignalParameterInfos.add(new ArrayList<>(signalParameterInfos));
-	    	                        	metaObjectData.signalInfos.add(new MetaObjectData.SignalInfo(declaredField, new ArrayList<>(signalTypes), fieldType, new int[signalTypes.size()], _emitMethodInfo.methodId));
-	                        		}
-		                        };
-		                        switch(signalTypes.size()) {
-		                        case 9:
-		                        	if(QMetaObject.Emitable8.class.isAssignableFrom(fieldType)) {
-		                        		addDefaultSignal.run();
-		                        	}else break;
-		                        case 8:
-		                        	if(QMetaObject.Emitable7.class.isAssignableFrom(fieldType)) {
-		                        		addDefaultSignal.run();
-		                        	}else break;
-		                        case 7:
-		                        	if(QMetaObject.Emitable6.class.isAssignableFrom(fieldType)) {
-		                        		addDefaultSignal.run();
-		                        	}else break;
-		                        case 6:
-		                        	if(QMetaObject.Emitable5.class.isAssignableFrom(fieldType)) {
-		                        		addDefaultSignal.run();
-		                        	}else break;
-		                        case 5:
-		                        	if(QMetaObject.Emitable4.class.isAssignableFrom(fieldType)) {
-		                        		addDefaultSignal.run();
-		                        	}else break;
-	                        	case 4:
-		                        	if(QMetaObject.Emitable3.class.isAssignableFrom(fieldType)) {
-		                        		addDefaultSignal.run();
-		                        	}else break;
-	                        	case 3:
-		                        	if(QMetaObject.Emitable2.class.isAssignableFrom(fieldType)) {
-		                        		addDefaultSignal.run();
-		                        	}else break;
-	                        	case 2:
-		                        	if(QMetaObject.Emitable1.class.isAssignableFrom(fieldType)) {
-		                        		addDefaultSignal.run();
-		                        	}else break;
-	                        	case 1:
-		                        	if(QMetaObject.Emitable0.class.isAssignableFrom(fieldType)) {
-		                        		addDefaultSignal.run();
-		                        	}else break;
+	            	if(isQObjectSignalType(fieldType)) {
+	            		if(!declaredField.isAnnotationPresent(QtUninvokable.class)) {
+		            		if (!Modifier.isStatic(declaredField.getModifiers())) {
+		            			if(!isQObject && fieldType.getEnclosingClass() == QObject.class)
+		            				throw new QSignalDeclarationException(String.format("Declaration error at signal %1$s.%2$s: do not use QObject signals within non-QObjects.", clazz.getSimpleName(), declaredField.getName()));
+			                    // If we can't convert all the types we don't list the signal
+		            			List<Class<?>> emitParameterTypes = new ArrayList<>();
+		            			List<SignalParameterType> signalTypes = new ArrayList<>(SignalUtility.resolveSignal(declaredField));
+		                    	List<String> cppTypes = new ArrayList<>();
+		                        List<ParameterInfo> signalParameterInfos = new ArrayList<>();
+		                        for (int j = 0; j < signalTypes.size(); j++) {
+		                        	emitParameterTypes.add(Object.class);
+		                            SignalUtility.SignalParameterType signalType = signalTypes.get(j);
+		                            QtMetaType metaTypeDecl = signalType.annotatedType!=null ? signalType.annotatedType.getAnnotation(QtMetaType.class) : null;
+		                            int metaTypeId = 0;
+		                            String typeName;
+		                            if(metaTypeDecl!=null) {
+		                				if(metaTypeDecl.id()!=0) {
+		                					metaTypeId = metaTypeDecl.id();
+	                						metaTypeId = registerRefMetaType(metaTypeId, signalType.isPointer, signalType.isReference);
+		                					typeName = new QMetaType(metaTypeId).name().toString();
+		                				}else if(metaTypeDecl.type()!=QMetaType.Type.UnknownType){
+		                					metaTypeId = metaTypeDecl.type().value();
+	                						metaTypeId = registerRefMetaType(metaTypeId, signalType.isPointer, signalType.isReference);
+		                					typeName = new QMetaType(metaTypeId).name().toString();
+		                				}else {
+		            						if(metaTypeDecl.name().isEmpty())
+		            							throw new IllegalArgumentException("Incomplete @QtMetaType declaration. Either use type, id or name to specify meta type.");
+		                					typeName = metaTypeDecl.name();
+		                					if(signalType.isPointer && !typeName.endsWith("*")) {
+		                                        typeName += "*";
+		                                    }
+		                                    if(signalType.isReference) {
+		                                    	if(typeName.endsWith("*")) {
+		                                            typeName = typeName.substring(0, typeName.length()-2);
+		                                        }
+		                                        if(!typeName.endsWith("&")) {
+		                                            typeName += "&";
+		                                        }
+		                                    }
+		                				}
+		                			}else{
+		                				typeName = internalTypeNameOfClass(signalType.type, signalType.genericType, signalType.annotatedType);
+		                				if(signalType.isPointer) {
+		                                    if(!typeName.isEmpty() && !typeName.endsWith("*")) {
+		                                        typeName += "*";
+		                                    }
+		                                }
+		                                if(signalType.isReference) {
+		                                    if(typeName.endsWith("*")) {
+		                                        typeName = typeName.substring(0, typeName.length()-2);
+		                                    }
+		                                    if(!typeName.isEmpty() && !typeName.endsWith("&")) {
+		                                        typeName += "&";
+		                                    }
+		                                }
+		                			}
+		                            QMetaType.Type type = metaType(typeName);
+		                            if(type==QMetaType.Type.UnknownType || type==QMetaType.Type.User){
+		                                if(metaTypeId==QMetaType.Type.UnknownType.value()) {
+		                                	metaTypeId = findMetaType(typeName);
+		                                	QMetaType metaType = new QMetaType(metaTypeId);
+		    	                            if(metaTypeId==QMetaType.Type.UnknownType.value() 
+		    	                            		|| !(signalType.genericType instanceof Class 
+		    	                            				|| metaType.name().toString().equals(typeName))
+		    	                            		|| metaType.javaType()!=signalType.type) {
+		    	                                metaTypeId = registerMetaType(signalType.type, signalType.genericType, signalType.annotatedType, signalType.isPointer, signalType.isReference);
+		    	                                metaType = new QMetaType(metaTypeId);
+		    	                            }
+		    	                            if(metaTypeId!=QMetaType.Type.UnknownType.value())
+		    	                                typeName = metaType.name().toString();
+		    	                            else
+		    	                            	continue signalLoop;
+		                                }
+		                                cppTypes.add(typeName);
+		                                signalParameterInfos.add(new ParameterInfo(metaTypeId, typeName));
+		                            }else{
+		                                cppTypes.add(new QMetaType(type).name().toString());
+		                                signalParameterInfos.add(new ParameterInfo(type));
+		                            }
 		                        }
-	                        }
-	                	}else {
-	                		throw new QSignalDeclarationException(String.format("Modifier 'static' not allowed for signal %1$s.%2$s. Use QStaticMemberSignals instead to declare a static signal.", clazz.getSimpleName(), declaredField.getName()));
-	                	}
+		                        SignalUtility.EmitMethodInfo emitMethodInfo = findEmitMethodInfo(fieldType, emitParameterTypes);
+		                        String methodSignature = String.format("%1$s(%2$s)", declaredField.getName(), String.join(", ", cppTypes));
+		                        if(!addedMethodSignatures.contains(methodSignature) && emitMethodInfo!=null && emitMethodInfo.methodId!=0) {
+		                        	if (!Modifier.isFinal(declaredField.getModifiers())) {
+			                    		if(!Boolean.getBoolean("qtjambi.allow-nonfinal-signals") && !Boolean.getBoolean("io.qt.allow-nonfinal-signals")) {
+			                    			logger.severe(String.format("Missing modifier 'final' at signal %1$s.%2$s. Specify JVM argument -Dqtjambi.allow-nonfinal-signals=true to disable this error.", clazz.getSimpleName(), declaredField.getName()));
+			                    			throw new QSignalDeclarationException(String.format("Missing modifier 'final' at signal %1$s.%2$s.", clazz.getSimpleName(), declaredField.getName()));
+			                    		}
+			                    	}
+				                    // Rules for resetters:
+				                    // 1. Zero or one argument
+				                    if(signalTypes.size() <= 1){
+				                        PropertyAnnotation notify = PropertyAnnotation.notifyAnnotation(declaredField);
+				
+				                        if (notify != null) {
+				                        	for(String name : notify.name().split(",")) {
+				                        		name = name.trim();
+				                        		if(!name.isEmpty())
+				                        			propertyNotifies.put(name, declaredField);
+				                        	}
+				                        }
+				                    }
+		                        	addedMethodSignatures.add(methodSignature);
+		                        	signalIsClone.add(Boolean.FALSE);
+		                        	allSignalParameterInfos.add(new ArrayList<>(signalParameterInfos));
+	                        		metaObjectData.signalInfos.add(new MetaObjectData.SignalInfo(declaredField, new ArrayList<>(signalTypes), fieldType, new int[signalTypes.size()], emitMethodInfo.methodId));
+	                        		signals.put(declaredField.getName(), declaredField);
+			                        Runnable addDefaultSignal = ()->{
+			                        	signalTypes.remove(signalTypes.size()-1);
+		                        		signalParameterInfos.remove(signalParameterInfos.size()-1);
+		                        		cppTypes.remove(cppTypes.size()-1);
+		                        		emitParameterTypes.remove(emitParameterTypes.size()-1);
+		                        		SignalUtility.EmitMethodInfo _emitMethodInfo = findEmitMethodInfo(fieldType, emitParameterTypes);
+		                        		String _methodSignature = String.format("%1$s(%2$s)", declaredField.getName(), String.join(", ", cppTypes));
+		                        		if(!addedMethodSignatures.contains(_methodSignature) && _emitMethodInfo!=null && _emitMethodInfo.methodId!=0) {
+		                        			addedMethodSignatures.add(_methodSignature);
+		                        			signalIsClone.add(Boolean.TRUE);
+		    	                        	allSignalParameterInfos.add(new ArrayList<>(signalParameterInfos));
+		    	                        	metaObjectData.signalInfos.add(new MetaObjectData.SignalInfo(declaredField, new ArrayList<>(signalTypes), fieldType, new int[signalTypes.size()], _emitMethodInfo.methodId));
+		                        		}
+			                        };
+			                        switch(signalTypes.size()) {
+			                        case 9:
+			                        	if(QMetaObject.Emitable8.class.isAssignableFrom(fieldType)) {
+			                        		addDefaultSignal.run();
+			                        	}else break;
+			                        case 8:
+			                        	if(QMetaObject.Emitable7.class.isAssignableFrom(fieldType)) {
+			                        		addDefaultSignal.run();
+			                        	}else break;
+			                        case 7:
+			                        	if(QMetaObject.Emitable6.class.isAssignableFrom(fieldType)) {
+			                        		addDefaultSignal.run();
+			                        	}else break;
+			                        case 6:
+			                        	if(QMetaObject.Emitable5.class.isAssignableFrom(fieldType)) {
+			                        		addDefaultSignal.run();
+			                        	}else break;
+			                        case 5:
+			                        	if(QMetaObject.Emitable4.class.isAssignableFrom(fieldType)) {
+			                        		addDefaultSignal.run();
+			                        	}else break;
+		                        	case 4:
+			                        	if(QMetaObject.Emitable3.class.isAssignableFrom(fieldType)) {
+			                        		addDefaultSignal.run();
+			                        	}else break;
+		                        	case 3:
+			                        	if(QMetaObject.Emitable2.class.isAssignableFrom(fieldType)) {
+			                        		addDefaultSignal.run();
+			                        	}else break;
+		                        	case 2:
+			                        	if(QMetaObject.Emitable1.class.isAssignableFrom(fieldType)) {
+			                        		addDefaultSignal.run();
+			                        	}else break;
+		                        	case 1:
+			                        	if(QMetaObject.Emitable0.class.isAssignableFrom(fieldType)) {
+			                        		addDefaultSignal.run();
+			                        	}else break;
+			                        }
+		                        }
+		                	}else {
+		                		throw new QSignalDeclarationException(String.format("Modifier 'static' not allowed for signal %1$s.%2$s. Use QStaticMemberSignals instead to declare a static signal.", clazz.getSimpleName(), declaredField.getName()));
+		                	}
+		            	}
 	            	}else if(isQObject && SignalUtility.AbstractMultiSignal.class.isAssignableFrom(fieldType) && QObject.class!=fieldType.getEnclosingClass()) {
-	            		if(Modifier.isStatic(declaredField.getModifiers()))
-	                		throw new QSignalDeclarationException(String.format("Modifier 'static' not allowed for signal %1$s.%2$s. Use QStaticMemberSignals instead to declare a static signal.", clazz.getSimpleName(), declaredField.getName()));
-            			if(declaredField.getDeclaringClass()!=fieldType.getEnclosingClass())
-            				throw new QSignalDeclarationException(String.format("Declaration error at signal %1$s.%2$s: Multi signal class has to be declared in the class using it.", clazz.getSimpleName(), declaredField.getName()));
-            			if(!Modifier.isFinal(fieldType.getModifiers()))
-            				throw new QSignalDeclarationException(String.format("Missing modifier 'final' at signal class %1$s.", fieldType.getTypeName()));
-                    	if (!Modifier.isFinal(declaredField.getModifiers()))
-                			throw new QSignalDeclarationException(String.format("Missing modifier 'final' at signal %1$s.%2$s.", clazz.getSimpleName(), declaredField.getName()));
-                    	Map<List<Class<?>>,SignalUtility.EmitMethodInfo> emitMethods = SignalUtility.findEmitMethods(fieldType);
-        				if(emitMethods.keySet().isEmpty())
-        					throw new QSignalDeclarationException(String.format("Missing modifier emit methods at signal class %1$s.", fieldType.getTypeName()));
-                        for (SignalUtility.EmitMethodInfo emitMethodInfo : emitMethods.values()) {
-                        	if(emitMethodInfo.methodId==0)
-                        		continue;
-                        	List<SignalParameterType> signalTypes = emitMethodInfo.parameterTypes;
-	                    	List<String> cppTypes = new ArrayList<>();
-	                        List<ParameterInfo> signalParameterInfos = new ArrayList<>();
-	                        List<Class<?>> signalClassTypes = new ArrayList<>();
-	                        for (int j = 0; j < signalTypes.size(); j++) {
-	                            SignalUtility.SignalParameterType signalType = signalTypes.get(j);
-	                            signalClassTypes.add(signalType.type);
-	                            QtMetaType metaTypeDecl = signalType.annotatedType==null ? null : signalType.annotatedType.getAnnotation(QtMetaType.class);
-	                            int metaTypeId = 0;
-	                            String typeName;
-	                            if(metaTypeDecl!=null) {
-	                				if(metaTypeDecl.id()!=0) {
-	                					metaTypeId = metaTypeDecl.id();
-                						metaTypeId = registerRefMetaType(metaTypeId, signalType.isPointer, signalType.isReference);
-	                					typeName = new QMetaType(metaTypeId).name().toString();
-	                				}else if(metaTypeDecl.type()!=QMetaType.Type.UnknownType){
-	                					metaTypeId = metaTypeDecl.type().value();
-                						metaTypeId = registerRefMetaType(metaTypeId, signalType.isPointer, signalType.isReference);
-	                					typeName = new QMetaType(metaTypeId).name().toString();
-	                				}else {
-	            						if(metaTypeDecl.name().isEmpty())
-	            							throw new IllegalArgumentException("Incomplete @QtMetaType declaration. Either use type, id or name to specify meta type.");
-	                					typeName = metaTypeDecl.name();
-	                					if(signalType.isPointer && !typeName.endsWith("*")) {
-	                                        typeName += "*";
-	                                    }
-	                                    if(signalType.isReference) {
-	                                    	if(typeName.endsWith("*")) {
-	                                            typeName = typeName.substring(0, typeName.length()-2);
-	                                        }
-	                                        if(!typeName.endsWith("&")) {
-	                                            typeName += "&";
-	                                        }
-	                                    }
-	                				}
-	                			}else{
-	                				typeName = internalTypeNameOfClass(signalType.type, signalType.genericType, signalType.annotatedType);
-	                				if(signalType.isPointer) {
-	                                    if(!typeName.isEmpty() && !typeName.endsWith("*")) {
-	                                        typeName += "*";
-	                                    }
-	                                }
-	                                if(signalType.isReference) {
-	                                    if(typeName.endsWith("*")) {
-	                                        typeName = typeName.substring(0, typeName.length()-2);
-	                                    }
-	                                    if(!typeName.isEmpty() && !typeName.endsWith("&")) {
-	                                        typeName += "&";
-	                                    }
-	                                }
-	                			}
-	                            QMetaType.Type type = metaType(typeName);
-	                            if(type==QMetaType.Type.UnknownType || type==QMetaType.Type.User){
-	                                if(metaTypeId==QMetaType.Type.UnknownType.value()) {
-	                                	metaTypeId = findMetaType(typeName);
-	                                	QMetaType metaType = new QMetaType(metaTypeId);
-	    	                            if(metaTypeId==QMetaType.Type.UnknownType.value() 
-	    	                            		|| !(signalType.genericType instanceof Class 
-	    	                            				|| metaType.name().toString().equals(typeName))
-	    	                            		|| metaType.javaType()!=signalType.type) {
-	    	                                metaTypeId = registerMetaType(signalType.type, signalType.genericType, null, signalType.isPointer, signalType.isReference);
-	    	                                metaType = new QMetaType(metaTypeId);
-	    	                            }
-	    	                            if(metaTypeId!=QMetaType.Type.UnknownType.value())
-	    	                                typeName = metaType.name().toString();
-	    	                            else
-	    	                            	continue signalLoop;
-	                                }
-	                                cppTypes.add(typeName);
-	                                signalParameterInfos.add(new ParameterInfo(metaTypeId, typeName));
-	                            }else{
-	                                cppTypes.add(new QMetaType(type).name().toString());
-	                                signalParameterInfos.add(new ParameterInfo(type));
-	                            }
-	                        }
-	                        String methodSignature = String.format("%1$s(%2$s)", declaredField.getName(), String.join(", ", cppTypes));
-	                        if(!addedMethodSignatures.contains(methodSignature)) {
-	                        	addedMethodSignatures.add(methodSignature);
-	                        	signalIsClone.add(Boolean.FALSE);
-	                        	allSignalParameterInfos.add(new ArrayList<>(signalParameterInfos));
-	                        	Class<?> _signalClass;
-	                        	SignalUtility.SignalClasses signalClasses = SignalUtility.signalClasses(QObject.class);
-                        		if(signalClasses==null)
-                        			throw new QSignalInitializationException("Unable to resolve multi signal.");
-	                        	if(Modifier.isPublic(emitMethodInfo.method.getModifiers())) {
-            						_signalClass = signalClasses.getPublicSignal(emitMethodInfo.parameterTypes.size());
-            					}else {
-            						_signalClass = signalClasses.getPrivateSignal(emitMethodInfo.parameterTypes.size());
-            					}
-	                        	metaObjectData.signalInfos.add(new MetaObjectData.SignalInfo(declaredField, new ArrayList<>(signalTypes), _signalClass, new int[signalTypes.size()], emitMethodInfo.methodId));
-	                        	signals.put(declaredField.getName(), declaredField);
-	                        }
-            			}
+	            		if(!declaredField.isAnnotationPresent(QtUninvokable.class)) {
+		            		if(Modifier.isStatic(declaredField.getModifiers()))
+		                		throw new QSignalDeclarationException(String.format("Modifier 'static' not allowed for signal %1$s.%2$s. Use QStaticMemberSignals instead to declare a static signal.", clazz.getSimpleName(), declaredField.getName()));
+	            			if(declaredField.getDeclaringClass()!=fieldType.getEnclosingClass())
+	            				throw new QSignalDeclarationException(String.format("Declaration error at signal %1$s.%2$s: Multi signal class has to be declared in the class using it.", clazz.getSimpleName(), declaredField.getName()));
+	            			if(!Modifier.isFinal(fieldType.getModifiers()))
+	            				throw new QSignalDeclarationException(String.format("Missing modifier 'final' at signal class %1$s.", fieldType.getTypeName()));
+	                    	if (!Modifier.isFinal(declaredField.getModifiers()))
+	                			throw new QSignalDeclarationException(String.format("Missing modifier 'final' at signal %1$s.%2$s.", clazz.getSimpleName(), declaredField.getName()));
+	                    	Map<List<Class<?>>,SignalUtility.EmitMethodInfo> emitMethods = SignalUtility.findEmitMethods(fieldType);
+	        				if(emitMethods.keySet().isEmpty())
+	        					throw new QSignalDeclarationException(String.format("Missing modifier emit methods at signal class %1$s.", fieldType.getTypeName()));
+	                        for (SignalUtility.EmitMethodInfo emitMethodInfo : emitMethods.values()) {
+	                        	if(emitMethodInfo.methodId==0)
+	                        		continue;
+	                        	List<SignalParameterType> signalTypes = emitMethodInfo.parameterTypes;
+		                    	List<String> cppTypes = new ArrayList<>();
+		                        List<ParameterInfo> signalParameterInfos = new ArrayList<>();
+		                        List<Class<?>> signalClassTypes = new ArrayList<>();
+		                        for (int j = 0; j < signalTypes.size(); j++) {
+		                            SignalUtility.SignalParameterType signalType = signalTypes.get(j);
+		                            signalClassTypes.add(signalType.type);
+		                            QtMetaType metaTypeDecl = signalType.annotatedType==null ? null : signalType.annotatedType.getAnnotation(QtMetaType.class);
+		                            int metaTypeId = 0;
+		                            String typeName;
+		                            if(metaTypeDecl!=null) {
+		                				if(metaTypeDecl.id()!=0) {
+		                					metaTypeId = metaTypeDecl.id();
+	                						metaTypeId = registerRefMetaType(metaTypeId, signalType.isPointer, signalType.isReference);
+		                					typeName = new QMetaType(metaTypeId).name().toString();
+		                				}else if(metaTypeDecl.type()!=QMetaType.Type.UnknownType){
+		                					metaTypeId = metaTypeDecl.type().value();
+	                						metaTypeId = registerRefMetaType(metaTypeId, signalType.isPointer, signalType.isReference);
+		                					typeName = new QMetaType(metaTypeId).name().toString();
+		                				}else {
+		            						if(metaTypeDecl.name().isEmpty())
+		            							throw new IllegalArgumentException("Incomplete @QtMetaType declaration. Either use type, id or name to specify meta type.");
+		                					typeName = metaTypeDecl.name();
+		                					if(signalType.isPointer && !typeName.endsWith("*")) {
+		                                        typeName += "*";
+		                                    }
+		                                    if(signalType.isReference) {
+		                                    	if(typeName.endsWith("*")) {
+		                                            typeName = typeName.substring(0, typeName.length()-2);
+		                                        }
+		                                        if(!typeName.endsWith("&")) {
+		                                            typeName += "&";
+		                                        }
+		                                    }
+		                				}
+		                			}else{
+		                				typeName = internalTypeNameOfClass(signalType.type, signalType.genericType, signalType.annotatedType);
+		                				if(signalType.isPointer) {
+		                                    if(!typeName.isEmpty() && !typeName.endsWith("*")) {
+		                                        typeName += "*";
+		                                    }
+		                                }
+		                                if(signalType.isReference) {
+		                                    if(typeName.endsWith("*")) {
+		                                        typeName = typeName.substring(0, typeName.length()-2);
+		                                    }
+		                                    if(!typeName.isEmpty() && !typeName.endsWith("&")) {
+		                                        typeName += "&";
+		                                    }
+		                                }
+		                			}
+		                            QMetaType.Type type = metaType(typeName);
+		                            if(type==QMetaType.Type.UnknownType || type==QMetaType.Type.User){
+		                                if(metaTypeId==QMetaType.Type.UnknownType.value()) {
+		                                	metaTypeId = findMetaType(typeName);
+		                                	QMetaType metaType = new QMetaType(metaTypeId);
+		    	                            if(metaTypeId==QMetaType.Type.UnknownType.value() 
+		    	                            		|| !(signalType.genericType instanceof Class 
+		    	                            				|| metaType.name().toString().equals(typeName))
+		    	                            		|| metaType.javaType()!=signalType.type) {
+		    	                                metaTypeId = registerMetaType(signalType.type, signalType.genericType, null, signalType.isPointer, signalType.isReference);
+		    	                                metaType = new QMetaType(metaTypeId);
+		    	                            }
+		    	                            if(metaTypeId!=QMetaType.Type.UnknownType.value())
+		    	                                typeName = metaType.name().toString();
+		    	                            else
+		    	                            	continue signalLoop;
+		                                }
+		                                cppTypes.add(typeName);
+		                                signalParameterInfos.add(new ParameterInfo(metaTypeId, typeName));
+		                            }else{
+		                                cppTypes.add(new QMetaType(type).name().toString());
+		                                signalParameterInfos.add(new ParameterInfo(type));
+		                            }
+		                        }
+		                        String methodSignature = String.format("%1$s(%2$s)", declaredField.getName(), String.join(", ", cppTypes));
+		                        if(!addedMethodSignatures.contains(methodSignature)) {
+		                        	addedMethodSignatures.add(methodSignature);
+		                        	signalIsClone.add(Boolean.FALSE);
+		                        	allSignalParameterInfos.add(new ArrayList<>(signalParameterInfos));
+		                        	Class<?> _signalClass;
+		                        	SignalUtility.SignalClasses signalClasses = SignalUtility.signalClasses(QObject.class);
+	                        		if(signalClasses==null)
+	                        			throw new QSignalInitializationException("Unable to resolve multi signal.");
+		                        	if(Modifier.isPublic(emitMethodInfo.method.getModifiers())) {
+	            						_signalClass = signalClasses.getPublicSignal(emitMethodInfo.parameterTypes.size());
+	            					}else {
+	            						_signalClass = signalClasses.getPrivateSignal(emitMethodInfo.parameterTypes.size());
+	            					}
+		                        	metaObjectData.signalInfos.add(new MetaObjectData.SignalInfo(declaredField, new ArrayList<>(signalTypes), _signalClass, new int[signalTypes.size()], emitMethodInfo.methodId));
+		                        	signals.put(declaredField.getName(), declaredField);
+		                        }
+	            			}
+	            		}
 	            	}else{
 	            		PropertyAnnotation member = PropertyAnnotation.memberAnnotation(declaredField);
 	            		if(member!=null) {
@@ -525,7 +529,7 @@ signalLoop:	    for (Field declaredField : declaredFields) {
 	            				if(isQObject && isValidQProperty(declaredField)) {
 	            					if (!Modifier.isFinal(declaredField.getModifiers())) {
 	            						if(!Boolean.getBoolean("qtjambi.allow-nonfinal-qproperties") && !Boolean.getBoolean("io.qt.allow-nonfinal-qproperties")) {
-	                            			java.util.logging.Logger.getLogger("io.qt.internal").severe(String.format("Missing modifier 'final' at property field %1$s.%2$s. Specify JVM argument -Dqtjambi.allow-nonfinal-qproperties=true to disable this error.", declaredField.getDeclaringClass().getSimpleName(), declaredField.getName()));
+	                            			logger.severe(String.format("Missing modifier 'final' at property field %1$s.%2$s. Specify JVM argument -Dqtjambi.allow-nonfinal-qproperties=true to disable this error.", declaredField.getDeclaringClass().getSimpleName(), declaredField.getName()));
 	                            			throw new QPropertyDeclarationException(String.format("Missing modifier 'final' at property field %1$s.%2$s.", clazz.getSimpleName(), declaredField.getName()));
 	                            		}
 	            					}
@@ -544,7 +548,7 @@ signalLoop:	    for (Field declaredField : declaredFields) {
 	            		}else if(isQObject && isValidQProperty(declaredField)) {
         					if (!Modifier.isFinal(declaredField.getModifiers())) {
         						if(!Boolean.getBoolean("qtjambi.allow-nonfinal-qproperties") && !Boolean.getBoolean("io.qt.allow-nonfinal-qproperties")) {
-                        			java.util.logging.Logger.getLogger("io.qt.internal").severe(String.format("Missing modifier 'final' at property field %1$s.%2$s. Specify JVM argument -Dqtjambi.allow-nonfinal-qproperties=true to disable this error.", declaredField.getDeclaringClass().getSimpleName(), declaredField.getName()));
+                        			logger.severe(String.format("Missing modifier 'final' at property field %1$s.%2$s. Specify JVM argument -Dqtjambi.allow-nonfinal-qproperties=true to disable this error.", declaredField.getDeclaringClass().getSimpleName(), declaredField.getName()));
                         			throw new QPropertyDeclarationException(String.format("Missing modifier 'final' at property field %1$s.%2$s.", clazz.getSimpleName(), declaredField.getName()));
                         		}
         					}
@@ -1687,7 +1691,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
 	                        		writer = writers.get(0);
 	                        	}
 	                            if (writer != null && !propertyType.isAssignableFrom(writer.getParameterTypes()[0])) {
-	                                Logger.getLogger("io.qt.internal").warning("Writer for property '"
+	                                logger.warning("Writer for property '"
 	                                        + clazz.getName() + "::" + propertyName + "' takes a type (" + writer.getParameterTypes()[0].getName() + ") which is incompatible with reader's return type (" + propertyType.getName() + ").");
 	                                writer = null;
 	                            }
@@ -2380,7 +2384,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
 	                else
 	                    throw new RuntimeException("Wrong return type of designable method '" + m.getName() + "'");
 	            } catch (Throwable t) {
-	                java.util.logging.Logger.getLogger("io.qt.internal").log(java.util.logging.Level.SEVERE, "", t);
+	                logger.log(java.util.logging.Level.SEVERE, "", t);
 	            }
             }
         }
@@ -2406,7 +2410,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
 	                else
 	                    throw new RuntimeException("Wrong return type of scriptable method '" + m.getName() + "'");
 	            } catch (Throwable t) {
-	                java.util.logging.Logger.getLogger("io.qt.internal").log(java.util.logging.Level.SEVERE, "", t);
+	                logger.log(java.util.logging.Level.SEVERE, "", t);
 	            }
             }
         }
@@ -2431,7 +2435,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
 	                else
 	                    throw new RuntimeException("Wrong return type of scriptable method '" + m.getName() + "'");
 	            } catch (Throwable t) {
-	                java.util.logging.Logger.getLogger("io.qt.internal").log(java.util.logging.Level.SEVERE, "", t);
+	                logger.log(java.util.logging.Level.SEVERE, "", t);
 	            }
             }
         }
@@ -2480,7 +2484,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                 else
                     throw new RuntimeException("Wrong return type of scriptable method '" + m.getName() + "'");
             } catch (Throwable t) {
-                java.util.logging.Logger.getLogger("io.qt.internal").log(java.util.logging.Level.SEVERE, "", t);
+                logger.log(java.util.logging.Level.SEVERE, "", t);
             }
         }
 

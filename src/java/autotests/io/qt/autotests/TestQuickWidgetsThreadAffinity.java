@@ -30,10 +30,12 @@ package io.qt.autotests;
 
 import static org.junit.Assert.fail;
 
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.QThreadAffinityException;
+import io.qt.QtUtilities;
 import io.qt.core.QEventLoop;
 import io.qt.core.QThread;
 import io.qt.core.QUrl;
@@ -41,14 +43,18 @@ import io.qt.quick.widgets.QQuickWidget;
 
 public class TestQuickWidgetsThreadAffinity extends ApplicationInitializer{
 	
-	static {
-		System.setProperty("io.qt.enable-thread-affinity-check", "true");
-		System.setProperty("io.qt.enable-event-thread-affinity-check", "true");
-	}
-	
 	@BeforeClass
     public static void testInitialize() throws Exception {
     	ApplicationInitializer.testInitializeWithWidgets();
+    	QtUtilities.setThreadAffinityCheckEnabled(true);
+    	QtUtilities.setEventThreadAffinityCheckEnabled(true);
+	}
+	
+	@AfterClass
+    public static void testDispose() throws Exception {
+    	QtUtilities.setThreadAffinityCheckEnabled(false);
+    	QtUtilities.setEventThreadAffinityCheckEnabled(false);
+    	ApplicationInitializer.testDispose();
     }
 	
 	private Throwable throwable;

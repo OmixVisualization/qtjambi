@@ -28,25 +28,47 @@
 ****************************************************************************/
 package io.qt.autotests;
 
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.QThreadAffinityException;
+import io.qt.QtUtilities;
+import io.qt.core.QTimer;
+import io.qt.core.QLibraryInfo;
+import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QThread;
+import io.qt.gui.QGuiApplication;
+import io.qt.gui.QWindow;
 import io.qt.qml.QQmlEngine;
 import io.qt.qml.QtQml;
 
 public class TestQmlThreadAffinityQt65 extends ApplicationInitializer{
 	
-	static {
-		System.setProperty("io.qt.enable-thread-affinity-check", "true");
-		System.setProperty("io.qt.enable-event-thread-affinity-check", "true");
-	}
-	
 	@BeforeClass
     public static void testInitialize() throws Exception {
     	ApplicationInitializer.testInitializeWithGui();
+    	QtUtilities.setThreadAffinityCheckEnabled(true);
+    	QtUtilities.setEventThreadAffinityCheckEnabled(true);
+	}
+	
+	@AfterClass
+    public static void testDispose() throws Exception {
+    	QtUtilities.setThreadAffinityCheckEnabled(false);
+    	QtUtilities.setEventThreadAffinityCheckEnabled(false);
+		if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.MacOS) 
+    			&& QLibraryInfo.version().majorVersion()==6 
+    			&& QLibraryInfo.version().minorVersion()==5) {
+	    	QWindow window = new QWindow();
+	    	window.show();
+	    	QTimer.singleShot(200, QGuiApplication.instance(), QGuiApplication::quit);
+	    	QGuiApplication.exec();
+	    	window.close();
+	    	window.disposeLater();
+	    	window = null;
+    	}
+    	ApplicationInitializer.testDispose();
     }
 	
 	@Test

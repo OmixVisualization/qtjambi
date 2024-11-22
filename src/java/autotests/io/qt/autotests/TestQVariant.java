@@ -34,6 +34,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -2071,5 +2072,39 @@ public class TestQVariant extends ApplicationInitializer {
     
     public static void main(String args[]) {
         org.junit.runner.JUnitCore.main(TestQVariant.class.getName());
+    }
+    
+    interface VariantConstructor{
+    	QVariant create(io.qt.core.QMetaType.Type type);
+    	QVariant create(io.qt.core.QMetaType.Type type, java.lang.Object copy);
+    	QVariant create(io.qt.core.QMetaType type);
+    	QVariant create(io.qt.core.QMetaType type, java.lang.Object copy);
+    }
+    
+    private static VariantConstructor variantConstructor;
+    private static VariantConstructor variantConstructor() {
+    	if(variantConstructor==null) {
+    		try {
+				variantConstructor = (VariantConstructor)Class.forName(TestQVariant.class.getName()+"Qt"+QLibraryInfo.version().majorVersion()+"$VariantConstructor").getConstructor().newInstance();
+			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+					| InvocationTargetException | NoSuchMethodException | SecurityException
+					| ClassNotFoundException e) {
+				e.printStackTrace();
+			}
+    	}
+    	return variantConstructor;
+    }
+    
+    public static QVariant createVariant(io.qt.core.QMetaType.Type type){
+    	return variantConstructor().create(type);
+    }
+    public static QVariant createVariant(io.qt.core.QMetaType.Type type, java.lang.Object copy){
+    	return variantConstructor().create(type, copy);
+    }
+    public static QVariant createVariant(io.qt.core.QMetaType type){
+    	return variantConstructor().create(type);
+    }
+    public static QVariant createVariant(io.qt.core.QMetaType type, java.lang.Object copy){
+    	return variantConstructor().create(type, copy);
     }
 }

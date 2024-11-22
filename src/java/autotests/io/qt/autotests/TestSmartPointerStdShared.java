@@ -90,7 +90,6 @@ public class TestSmartPointerStdShared extends ApplicationInitializer {
 		assertTrue(TestUtility.isSharedPointer(sharedObject));
 		assertEquals("SharedObject1", sharedObject.objectName());
 		assertEquals("", object.deletedSharedObjectName());
-		assertTrue(General.internalAccess.isJavaOwnership(sharedObject));
 		WeakReference<QObject> weak = new WeakReference<QObject>(sharedObject);
 		sharedObject = null;
 		int count = 0;

@@ -34,6 +34,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.*;
 
 import io.qt.QThreadAffinityException;
+import io.qt.QtUtilities;
 import io.qt.core.QEventLoop;
 import io.qt.core.QThread;
 import io.qt.core.QTimer;
@@ -46,15 +47,19 @@ import io.qt.widgets.QWidget;
 
 public class TestPaintOnWidget extends ApplicationInitializer{
 	
-	static {
-		System.setProperty("io.qt.enable-thread-affinity-check", "true");
-		System.setProperty("io.qt.enable-event-thread-affinity-check", "true");
-	}
-	
     @BeforeClass
     public static void testInitialize() throws Exception {
         ApplicationInitializer.testInitializeWithWidgets();
 		Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
+    	QtUtilities.setThreadAffinityCheckEnabled(true);
+    	QtUtilities.setEventThreadAffinityCheckEnabled(true);
+	}
+    
+    @AfterClass
+    public static void testDispose() throws Exception {
+    	QtUtilities.setThreadAffinityCheckEnabled(false);
+    	QtUtilities.setEventThreadAffinityCheckEnabled(false);
+    	ApplicationInitializer.testDispose();
 	}
 	
 	@Test

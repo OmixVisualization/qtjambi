@@ -37,7 +37,10 @@ import org.junit.Test;
 
 import io.qt.core.QCoreApplication;
 import io.qt.core.QLibraryInfo;
+import io.qt.core.QTimer;
 import io.qt.core.Qt;
+import io.qt.gui.QGuiApplication;
+import io.qt.gui.QIcon;
 import io.qt.quick.QQuickWindow;
 import io.qt.quick.QSGRendererInterface;
 import io.qt.quick.widgets.QQuickWidget;
@@ -51,12 +54,13 @@ public class TestInitializationQuickWidgets extends UnitTestInitializer {
 		Method mtd = QQuickWindow.class.getMethod(QLibraryInfo.version().majorVersion()>5 ? "setGraphicsApi" : "setSceneGraphBackend", QSGRendererInterface.GraphicsApi.class);
 		mtd.invoke(null, QSGRendererInterface.GraphicsApi.OpenGL);
     	QApplication.initialize(new String[0]);
-    	QQuickWidget window = new QQuickWidget();
-    	window.show();
-    	QApplication.processEvents();
-    	window.hide();
-    	QApplication.processEvents();
-    	window.dispose();
+    	QGuiApplication.setWindowIcon(new QIcon(":io/qt/autotests/icon.png"));
+    	{
+	    	QQuickWidget window = new QQuickWidget();
+	    	window.show();
+	    	QTimer.singleShot(500, QApplication.instance(), QApplication::quit);
+	    	QApplication.exec();
+    	}
     	QApplication.shutdown();
     }
 }

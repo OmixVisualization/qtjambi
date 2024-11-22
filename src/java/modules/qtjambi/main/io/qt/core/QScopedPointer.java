@@ -59,7 +59,7 @@ import io.qt.StrictNonNull;
  * </code>
  * 
  */
-public final class QScopedPointer<O> implements AutoCloseable {
+public final class QScopedPointer<O> implements AutoCloseable, SmartPointer<O> {
 	
 	static final Logger logger = Logger.getLogger("io.qt.core");
 	

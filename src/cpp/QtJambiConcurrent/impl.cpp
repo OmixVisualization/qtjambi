@@ -323,11 +323,6 @@ namespace Runtime{
 
 #ifndef QT_NO_CONCURRENT
 
-jobject toLocalRef(JNIEnv *env, const JObjectWrapper &wrapper)
-{
-    return env->NewLocalRef(wrapper.object());
-}
-
 class Functor {
 public:
     Functor(JNIEnv *env, jobject functor) : m_functor(env, functor)
@@ -364,7 +359,7 @@ public:
     void operator ()(const QVariant &wrapper)
     {
         if(JniEnvironment env{200}){
-            if(jobject functor = toLocalRef(env, m_functor)){
+            if(jobject functor = m_functor.object(env)){
                 if (jobject javaObject = qtjambi_cast<jobject>(env, wrapper)){
                     try {
                         Java::QtConcurrent::QtConcurrent$MapFunctor::map(env, functor, javaObject);
@@ -373,7 +368,7 @@ public:
                     }
                 }
             } else {
-                qCWarning(CATEGORY) << "Map functor called with invalid data. JNI Environment == " << env.environment() << ", java functor object == " << m_functor.object();
+                qCWarning(CATEGORY) << "Map functor called with invalid data. JNI Environment == " << env.environment() << ", java functor object == null";
             }
         }
     }
@@ -390,7 +385,7 @@ public:
     QVariant operator ()(const QVariant &wrapper)
     {
         if(JniEnvironment env{200}){
-            if(jobject functor = toLocalRef(env, m_functor)){
+            if(jobject functor = m_functor.object(env)){
                 jobject javaObject = qtjambi_cast<jobject>(env, wrapper);
                 jobject javaResult = nullptr;
                 try {
@@ -400,7 +395,7 @@ public:
                 }
                 return QVariant::fromValue(JObjectWrapper(env, javaResult));
             } else {
-                qCWarning(CATEGORY) << "Mapped functor called with invalid data. JNI Environment == " << env.environment() << ", java functor object == " << m_functor.object();
+                qCWarning(CATEGORY) << "Mapped functor called with invalid data. JNI Environment == " << env.environment() << ", java functor object == null";
             }
         }
         return QVariant();
@@ -421,13 +416,13 @@ public:
     void operator()(QVariant &result, const QVariant &wrapper)
     {
         if(JniEnvironment env{200}){
-            if(jobject functor = toLocalRef(env, m_functor)){
+            if(jobject functor = m_functor.object(env)){
                 // reduce() is synchronous, so while this data is static in terms
                 // of the map/reduce operation, it does not need to be protected
                 jobject javaResult = nullptr;
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
                 if (m_initialValue) {
-                    javaResult = env->NewLocalRef(m_initialValue->object());
+                    javaResult = env->NewLocalRef(m_initialValue->object(env));
                     m_initialValue.reset();
                 }else
 #endif
@@ -442,7 +437,7 @@ public:
                 }
                 result = QVariant::fromValue(JObjectWrapper(env, javaResult));
             } else {
-                qCWarning(CATEGORY) << "Reduce functor called with invalid data. JNI Environment == " << env.environment() << ", java functor object == " << m_functor.object();
+                qCWarning(CATEGORY) << "Reduce functor called with invalid data. JNI Environment == " << env.environment() << ", java functor object == null";
             }
         }
     }
@@ -460,7 +455,7 @@ public:
 
     bool operator()(const QVariant &wrapper) {
         if(JniEnvironment env{200}){
-            if(jobject functor = toLocalRef(env, m_functor)){
+            if(jobject functor = m_functor.object(env)){
                 bool result = false;
                 try {
                     result = Java::QtConcurrent::QtConcurrent$FilteredFunctor::filter(env, functor, qtjambi_cast<jobject>(env, wrapper));
@@ -469,7 +464,7 @@ public:
                 }
                 return result;
             } else {
-                qCWarning(CATEGORY) << "Filtered functor called with invalid data. JNI Environment == " << env.environment() << ", java functor object == " << m_functor.object();
+                qCWarning(CATEGORY) << "Filtered functor called with invalid data. JNI Environment == " << env.environment() << ", java functor object == null";
             }
         }
         return false;
@@ -662,7 +657,7 @@ public:
     void operator ()(Args... args)
     {
         if(JniEnvironment env{200}){
-            if(jobject functor = toLocalRef(env, m_functor)){
+            if(jobject functor = m_functor.object(env)){
                 QtJambiScope scope;
 #if defined(HANDLE_EXCEPTION)
                 try {
@@ -676,7 +671,7 @@ public:
                 }
 #endif
             } else {
-                qCWarning(CATEGORY) << "Run functor called with invalid data. JNI Environment == " << env.environment() << ", java functor object == " << m_functor.object();
+                qCWarning(CATEGORY) << "Run functor called with invalid data. JNI Environment == " << env.environment() << ", java functor object == null";
             }
         }
     }
@@ -747,7 +742,7 @@ public:
     QVariant operator ()(Args... args)
     {
         if(JniEnvironment env{200}){
-            if(jobject functor = toLocalRef(env, m_functor)){
+            if(jobject functor = m_functor.object(env)){
                 jobject javaResult = nullptr;
                 QtJambiScope scope;
 #if defined(HANDLE_EXCEPTION)
@@ -763,7 +758,7 @@ public:
 #endif
                 return javaResult ? QVariant::fromValue(JObjectWrapper(env, javaResult)) : QVariant();
             } else {
-                qCWarning(CATEGORY) << "Run functor called with invalid data. JNI Environment == " << env.environment() << ", java functor object == " << m_functor.object();
+                qCWarning(CATEGORY) << "Run functor called with invalid data. JNI Environment == " << env.environment() << ", java functor object == null";
             }
         }
         return QVariant();
@@ -831,7 +826,7 @@ struct JavaSequence{
 
     void push_back(const QVariant& value);
 
-    jobject object() const;
+    jobject object(JNIEnv* env) const;
 private:
     bool m_canOverwrite;
     mutable JCollectionWrapper m_collection;
@@ -845,24 +840,22 @@ JavaSequence::JavaSequence(JavaSequence&& other) : m_canOverwrite(other.m_canOve
 
 JavaSequence::JavaSequence(JNIEnv* env, jobject collection, bool canOverwrite) : m_canOverwrite(canOverwrite), m_collection(env, collection) {}
 
-jobject JavaSequence::object() const{
-    jobject object = m_collection.object();
+jobject JavaSequence::object(JNIEnv* env) const{
+    jobject object = m_collection.object(env);
     if(!object){
-        if(JniEnvironment env{200}){
-            m_collection = JCollectionWrapper(env, QtJambiAPI::newJavaArrayList(env, 0));
-            object = m_collection.object();
-        }
+        m_collection = JCollectionWrapper(env, QtJambiAPI::newJavaArrayList(env, 0));
+        object = m_collection.object(env);
     }
     return object;
 }
 
 JavaSequence& JavaSequence::operator=(const JavaSequence& other){
     if(m_canOverwrite){
-        jobject _object = object();
         if(JniEnvironment env{200}){
+            jobject _object = object(env);
             QtJambiAPI::clearJavaCollection(env, _object);
-            if(other.m_collection.object()){
-                jobject iterator = QtJambiAPI::iteratorOfJavaIterable(env, other.m_collection.object());
+            if(other.m_collection.object(env)){
+                jobject iterator = QtJambiAPI::iteratorOfJavaIterable(env, other.m_collection.object(env));
                 while(QtJambiAPI::hasJavaIteratorNext(env, iterator)){
                     QtJambiAPI::addToJavaCollection(env, _object, QtJambiAPI::nextOfJavaIterator(env, iterator));
                 }
@@ -875,8 +868,8 @@ JavaSequence& JavaSequence::operator=(const JavaSequence& other){
 }
 
 JavaSequence& JavaSequence::operator=(std::initializer_list<QVariant> args){
-    jobject _object = object();
     if(JniEnvironment env{200}){
+        jobject _object = object(env);
         QtJambiAPI::clearJavaCollection(env, _object);
         for(const QVariant& arg : args){
             QtJambiAPI::addToJavaCollection(env, _object, qtjambi_cast<jobject>(env, arg));
@@ -887,18 +880,18 @@ JavaSequence& JavaSequence::operator=(std::initializer_list<QVariant> args){
 
 void JavaSequence::push_back(const QVariant& value){
     if(JniEnvironment env{200}){
-        jobject _object = object();
+        jobject _object = object(env);
         QtJambiAPI::addToJavaCollection(env, _object, qtjambi_cast<jobject>(env, value));
     }
 }
 
 JavaSequence::const_iterator JavaSequence::begin() const {
-    (void)object();
+    (void)object(JniEnvironment());
     return JavaSequence::const_iterator(m_collection, 0);
 }
 
 JavaSequence::const_iterator JavaSequence::end() const {
-    (void)object();
+    (void)object(JniEnvironment());
     return JavaSequence::const_iterator(m_collection, -1);
 }
 
@@ -942,9 +935,9 @@ JavaSequence::const_iterator& JavaSequence::const_iterator::operator --(){
 
 const QVariant &JavaSequence::const_iterator::operator*() const{
     if(m_cursor>=0 && m_cursor<m_collection.size()){
-        jobject _object = m_collection.object();
-        if(_object){
-            if(JniEnvironment env{200}){
+        if(JniEnvironment env{200}){
+            jobject _object = m_collection.object(env);
+            if(_object){
                 jobject result = nullptr;
                 QTJAMBI_TRY{
                     result = Java::Runtime::List::get(env, _object, m_cursor);
@@ -978,7 +971,7 @@ bool JavaSequence::const_iterator::operator==(const JavaSequence::const_iterator
             env->ExceptionDescribe();
             env->ExceptionClear();
         }
-        return env->IsSameObject(m_collection.object(), o.m_collection.object()) && m_cursor==o.m_cursor;
+        return env->IsSameObject(m_collection.object(env), o.m_collection.object(env)) && m_cursor==o.m_cursor;
     }else return false;
 }
 
@@ -988,7 +981,7 @@ bool JavaSequence::const_iterator::operator<(const JavaSequence::const_iterator&
             env->ExceptionDescribe();
             env->ExceptionClear();
         }
-        return env->IsSameObject(m_collection.object(), o.m_collection.object()) && m_cursor<o.m_cursor;
+        return env->IsSameObject(m_collection.object(env), o.m_collection.object(env)) && m_cursor<o.m_cursor;
     }else return false;
 }
 
@@ -998,7 +991,7 @@ bool JavaSequence::const_iterator::operator>(const JavaSequence::const_iterator&
             env->ExceptionDescribe();
             env->ExceptionClear();
         }
-        return env->IsSameObject(m_collection.object(), o.m_collection.object()) && m_cursor>o.m_cursor;
+        return env->IsSameObject(m_collection.object(env), o.m_collection.object(env)) && m_cursor>o.m_cursor;
     }else return false;
 }
 
@@ -1008,7 +1001,7 @@ bool JavaSequence::const_iterator::operator<=(const JavaSequence::const_iterator
             env->ExceptionDescribe();
             env->ExceptionClear();
         }
-        return env->IsSameObject(m_collection.object(), o.m_collection.object()) && m_cursor<=o.m_cursor;
+        return env->IsSameObject(m_collection.object(env), o.m_collection.object(env)) && m_cursor<=o.m_cursor;
     }else return false;
 }
 
@@ -1018,7 +1011,7 @@ bool JavaSequence::const_iterator::operator>=(const JavaSequence::const_iterator
             env->ExceptionDescribe();
             env->ExceptionClear();
         }
-        return env->IsSameObject(m_collection.object(), o.m_collection.object()) && m_cursor>=o.m_cursor;
+        return env->IsSameObject(m_collection.object(env), o.m_collection.object(env)) && m_cursor>=o.m_cursor;
     }else return false;
 }
 

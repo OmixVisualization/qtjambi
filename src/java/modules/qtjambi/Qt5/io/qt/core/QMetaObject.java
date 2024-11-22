@@ -29,7 +29,6 @@
 ****************************************************************************/
 package io.qt.core;
 
-import static io.qt.core.QMetaMethod.*;
 import static io.qt.internal.MetaTypeUtility.*;
 
 import java.io.Serializable;
@@ -319,13 +318,13 @@ public final class QMetaObject {
          * Provides the sender of the connected signal.
          * @return sender
          */
-        public QtSignalEmitterInterface sender();
+        public @Nullable QtSignalEmitterInterface sender();
         
         /**
          * Provides the receiver of the signal-slot connection.
          * @return receiver
          */
-        public Object receiver();
+        public @Nullable Object receiver();
         
         /**
          * Create a copy of the connection.
@@ -510,7 +509,7 @@ public final class QMetaObject {
         return methodByIndex(metaObjectPointer, methodIndex);
     }
     @QtUninvokable
-    private native QMetaMethod methodByIndex(long metaObjectPointer, int index);
+    private native static QMetaMethod methodByIndex(long metaObjectPointer, int index);
     
     @QtUninvokable
     public final @NonNull QMetaMethod method(@Nullable String name, @NonNull Class<?> @NonNull... parameterTypes) {
@@ -580,8 +579,8 @@ public final class QMetaObject {
     }
     @QtUninvokable
     private native int methodCount(long metaObjectPointer);
-	
-	@QtUninvokable
+    
+    @QtUninvokable
     public final int methodOffset(){
         return methodOffset(metaObjectPointer);
     }
@@ -865,6 +864,8 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static Object invokeMethod(@StrictNonNull QObject obj, @StrictNonNull String member, Qt.@NonNull ConnectionType type, Object... args) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
         Class<?>[] parameterTypes;
         if(member.contains("(")) {
             parameterTypes = new Class<?>[0];
@@ -890,7 +891,13 @@ public final class QMetaObject {
         if(method==null || !method.isValid()) {
             throw new QNoSuchMethodException(member);
         }
-        return method.invoke(obj, type, args);
+        Object result;
+        try {
+        	result = method.invoke(obj, type, args);
+        }finally {
+        	method.dispose();
+        }
+        return result;
     }
     
     /**
@@ -924,25 +931,34 @@ public final class QMetaObject {
      * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
-    @SuppressWarnings("unchecked")
     @QtUninvokable
     public static <R> R invokeMethod(@StrictNonNull Method0<R> method, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         QObject context;
         QThread thread = null;
-        if(info!=null && info.qobject!=null && !info.qobject.isDisposed()) {
-        	context = info.qobject;
-        	if(info.reflectiveMethod!=null) {
-	            QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
-	            if(qmethod!=null && qmethod.isValid() && qmethod.parameterTypes().size()==info.lambdaArgs.size()) {
-	                if(info.lambdaArgs.isEmpty()) {
-	                    return (R)qmethod.invoke(info.qobject, type);
-	                }else {
-	                    Object[] args = info.lambdaArgs.toArray();
-	                    return (R)qmethod.invoke(info.qobject, type, args);
-	                }
-	            }
+        if(info!=null && info.qobject!=null) {
+        	if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()) {
+        		switch(type) {
+                case AutoConnection:
+                case DirectConnection:
+                	if(info.qobject.isObjectsThread())
+	                    try {
+	                        return method.invoke();
+	                    } catch (Throwable e) {
+	                        throw new QUnsuccessfulInvocationException(e);
+	                    }
+                default:
+            	}
+                if(info.lambdaArgs.isEmpty()) {
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type);
+                }else {
+                    Object[] args = info.lambdaArgs.toArray();
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                }
         	}
+        	context = info.qobject;
         	thread = context.thread();
         }else {
             if(method instanceof QtObjectInterface) {
@@ -1006,27 +1022,36 @@ public final class QMetaObject {
      * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
-    @SuppressWarnings("unchecked")
     @QtUninvokable
     public static <A,R> R invokeMethod(@StrictNonNull Method1<A,R> method, Qt.@NonNull ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         QObject context;
         QThread thread = null;
-        if(info!=null && info.qobject!=null && !info.qobject.isDisposed()) {
-        	context = info.qobject;
-        	if(info.reflectiveMethod!=null) {
-	            QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
-	            if(qmethod!=null && qmethod.isValid() && qmethod.parameterTypes().size()==info.lambdaArgs.size()+1) {
-	                if(info.lambdaArgs.isEmpty()) {
-	                    return (R)qmethod.invoke(info.qobject, type, arg1);
-	                }else {
-	                    Object[] args = new Object[qmethod.parameterTypes().size()];
-	                    args[0] = arg1;
-	                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 1, info.lambdaArgs.size());
-	                    return (R)qmethod.invoke(info.qobject, type, args);
-	                }
+        if(info!=null && info.qobject!=null) {
+        	if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+1) {
+        		switch(type) {
+                case AutoConnection:
+                case DirectConnection:
+                	if(info.qobject.isObjectsThread())
+	                    try {
+	                        return method.invoke(arg1);
+	                    } catch (Throwable e) {
+	                        throw new QUnsuccessfulInvocationException(e);
+	                    }
+                default:
+            	}
+                if(info.lambdaArgs.isEmpty()) {
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 1, info.lambdaArgs.size());
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
 	            }
         	}
+        	context = info.qobject;
         	thread = context.thread();
         }else {
             if(method instanceof QtObjectInterface) {
@@ -1094,28 +1119,37 @@ public final class QMetaObject {
      * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
-    @SuppressWarnings("unchecked")
     @QtUninvokable
     public static <A,B,R> R invokeMethod(@StrictNonNull Method2<A,B,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         QObject context;
         QThread thread = null;
-        if(info!=null && info.qobject!=null && !info.qobject.isDisposed()) {
-        	context = info.qobject;
-        	if(info.reflectiveMethod!=null) {
-	            QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
-	            if(qmethod!=null && qmethod.isValid() && qmethod.parameterTypes().size()==info.lambdaArgs.size()+2) {
-	                if(info.lambdaArgs.isEmpty()) {
-	                    return (R)qmethod.invoke(info.qobject, type, arg1, arg2);
-	                }else {
-	                    Object[] args = new Object[qmethod.parameterTypes().size()];
-	                    args[0] = arg1;
-	                    args[1] = arg2;
-	                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 2, info.lambdaArgs.size());
-	                    return (R)qmethod.invoke(info.qobject, type, args);
-	                }
-	            }
+        if(info!=null && info.qobject!=null) {
+        	if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+2) {
+        		switch(type) {
+                case AutoConnection:
+                case DirectConnection:
+                	if(info.qobject.isObjectsThread())
+	                    try {
+	                        return method.invoke(arg1, arg2);
+	                    } catch (Throwable e) {
+	                        throw new QUnsuccessfulInvocationException(e);
+	                    }
+                default:
+            	}
+                if(info.lambdaArgs.isEmpty()) {
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 2, info.lambdaArgs.size());
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                }
         	}
+        	context = info.qobject;
         	thread = context.thread();
         }else {
         	if(method instanceof QtObjectInterface) {
@@ -1182,29 +1216,38 @@ public final class QMetaObject {
      * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
-    @SuppressWarnings("unchecked")
     @QtUninvokable
     public static <A,B,C,R> R invokeMethod(@StrictNonNull Method3<A,B,C,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         QObject context;
         QThread thread = null;
-        if(info!=null && info.qobject!=null && !info.qobject.isDisposed()) {
-        	context = info.qobject;
-        	if(info.reflectiveMethod!=null) {
-	            QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
-	            if(qmethod!=null && qmethod.isValid() && qmethod.parameterTypes().size()==info.lambdaArgs.size()+3) {
-	                if(info.lambdaArgs.isEmpty()) {
-	                    return (R)qmethod.invoke(info.qobject, type, arg1, arg2, arg3);
-	                }else {
-	                    Object[] args = new Object[qmethod.parameterTypes().size()];
-	                    args[0] = arg1;
-	                    args[1] = arg2;
-	                    args[2] = arg3;
-	                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 3, info.lambdaArgs.size());
-	                    return (R)qmethod.invoke(info.qobject, type, args);
-	                }
-	            }
+        if(info!=null && info.qobject!=null) {
+        	if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+3) {
+        		switch(type) {
+                case AutoConnection:
+                case DirectConnection:
+                	if(info.qobject.isObjectsThread())
+	                    try {
+	                        return method.invoke(arg1, arg2, arg3);
+	                    } catch (Throwable e) {
+	                        throw new QUnsuccessfulInvocationException(e);
+	                    }
+                default:
+            	}
+                if(info.lambdaArgs.isEmpty()) {
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    args[2] = arg3;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 3, info.lambdaArgs.size());
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                }
         	}
+        	context = info.qobject;
         	thread = context.thread();
         }else {
             if(method instanceof QtObjectInterface) {
@@ -1275,30 +1318,39 @@ public final class QMetaObject {
      * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
-    @SuppressWarnings("unchecked")
     @QtUninvokable
     public static <A,B,C,D,R> R invokeMethod(@StrictNonNull Method4<A,B,C,D,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         QObject context;
         QThread thread = null;
-        if(info!=null && info.qobject!=null && !info.qobject.isDisposed()) {
-        	context = info.qobject;
-        	if(info.reflectiveMethod!=null) {
-	            QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
-	            if(qmethod!=null && qmethod.isValid() && qmethod.parameterTypes().size()==info.lambdaArgs.size()+4) {
-	                if(info.lambdaArgs.isEmpty()) {
-	                    return (R)qmethod.invoke(info.qobject, type, arg1, arg2, arg3, arg4);
-	                }else {
-	                    Object[] args = new Object[qmethod.parameterTypes().size()];
-	                    args[0] = arg1;
-	                    args[1] = arg2;
-	                    args[2] = arg3;
-	                    args[3] = arg4;
-	                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 4, info.lambdaArgs.size());
-	                    return (R)qmethod.invoke(info.qobject, type, args);
-	                }
+        if(info!=null && info.qobject!=null) {
+        	if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+4) {
+        		switch(type) {
+                case AutoConnection:
+                case DirectConnection:
+                	if(info.qobject.isObjectsThread())
+	                    try {
+	                        return method.invoke(arg1, arg2, arg3, arg4);
+	                    } catch (Throwable e) {
+	                        throw new QUnsuccessfulInvocationException(e);
+	                    }
+                default:
+            	}
+                if(info.lambdaArgs.isEmpty()) {
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    args[2] = arg3;
+                    args[3] = arg4;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 4, info.lambdaArgs.size());
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
 	            }
         	}
+        	context = info.qobject;
         	thread = context.thread();
         }else {
             if(method instanceof QtObjectInterface) {
@@ -1373,34 +1425,40 @@ public final class QMetaObject {
      * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
-    @SuppressWarnings("unchecked")
     @QtUninvokable
     public static <A,B,C,D,E,R> R invokeMethod(@StrictNonNull Method5<A,B,C,D,E,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         QObject context;
         QThread thread = null;
-        if(info!=null && info.qobject!=null && !info.qobject.isDisposed()) {
-        	context = info.qobject;
-        	if(info.reflectiveMethod!=null) {
-	            QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
-	            if(qmethod!=null && qmethod.isValid() && qmethod.parameterTypes().size()==info.lambdaArgs.size()+5) {
-	                if(info.lambdaArgs.isEmpty()) {
-	                    return (R)qmethod.invoke(info.qobject, type, arg1, arg2, arg3, arg4, arg5);
-	                }else {
-	                    Object[] args = new Object[qmethod.parameterTypes().size()];
-	                    args[0] = arg1;
-	                    args[1] = arg2;
-	                    args[2] = arg3;
-	                    args[3] = arg4;
-	                    args[4] = arg5;
-	                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 5, info.lambdaArgs.size());
-	                    return (R)qmethod.invoke(info.qobject, type, args);
-	                }
-	            }
-	            if(qmethod!=null) {
-	                return (R)qmethod.invoke(info.qobject, type, arg1, arg2, arg3, arg4, arg5);
+        if(info!=null && info.qobject!=null) {
+        	if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+5) {
+        		switch(type) {
+                case AutoConnection:
+                case DirectConnection:
+                	if(info.qobject.isObjectsThread())
+	                    try {
+	                        return method.invoke(arg1, arg2, arg3, arg4, arg5);
+	                    } catch (Throwable e) {
+	                        throw new QUnsuccessfulInvocationException(e);
+	                    }
+                default:
+            	}
+                if(info.lambdaArgs.isEmpty()) {
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    args[2] = arg3;
+                    args[3] = arg4;
+                    args[4] = arg5;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 5, info.lambdaArgs.size());
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
 	            }
         	}
+        	context = info.qobject;
         	thread = context.thread();
         }else {
             if(method instanceof QtObjectInterface) {
@@ -1479,32 +1537,41 @@ public final class QMetaObject {
      * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
-    @SuppressWarnings("unchecked")
     @QtUninvokable
     public static <A,B,C,D,E,F,R> R invokeMethod(@StrictNonNull Method6<A,B,C,D,E,F,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         QObject context;
         QThread thread = null;
-        if(info!=null && info.qobject!=null && !info.qobject.isDisposed()) {
-        	context = info.qobject;
-        	if(info.reflectiveMethod!=null) {
-	            QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
-	            if(qmethod!=null && qmethod.isValid() && qmethod.parameterTypes().size()==info.lambdaArgs.size()+6) {
-	                if(info.lambdaArgs.isEmpty()) {
-	                    return (R)qmethod.invoke(info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6);
-	                }else {
-	                    Object[] args = new Object[qmethod.parameterTypes().size()];
-	                    args[0] = arg1;
-	                    args[1] = arg2;
-	                    args[2] = arg3;
-	                    args[3] = arg4;
-	                    args[4] = arg5;
-	                    args[5] = arg6;
-	                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 6, info.lambdaArgs.size());
-	                    return (R)qmethod.invoke(info.qobject, type, args);
-	                }
-	            }
+        if(info!=null && info.qobject!=null) {
+        	if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+6) {
+        		switch(type) {
+                case AutoConnection:
+                case DirectConnection:
+                	if(info.qobject.isObjectsThread())
+	                    try {
+	                        return method.invoke(arg1, arg2, arg3, arg4, arg5, arg6);
+	                    } catch (Throwable e) {
+	                        throw new QUnsuccessfulInvocationException(e);
+	                    }
+                default:
+            	}
+                if(info.lambdaArgs.isEmpty()) {
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    args[2] = arg3;
+                    args[3] = arg4;
+                    args[4] = arg5;
+                    args[5] = arg6;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 6, info.lambdaArgs.size());
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                }
         	}
+        	context = info.qobject;
         	thread = context.thread();
         }else {
             if(method instanceof QtObjectInterface) {
@@ -1587,33 +1654,42 @@ public final class QMetaObject {
      * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
-    @SuppressWarnings("unchecked")
     @QtUninvokable
     public static <A,B,C,D,E,F,G,R> R invokeMethod(@StrictNonNull Method7<A,B,C,D,E,F,G,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         QObject context;
         QThread thread = null;
-        if(info!=null && info.qobject!=null && !info.qobject.isDisposed()) {
-        	context = info.qobject;
-        	if(info.reflectiveMethod!=null) {
-	            QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
-	            if(qmethod!=null && qmethod.isValid() && qmethod.parameterTypes().size()==info.lambdaArgs.size()+7) {
-	                if(info.lambdaArgs.isEmpty()) {
-	                    return (R)qmethod.invoke(info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
-	                }else {
-	                    Object[] args = new Object[qmethod.parameterTypes().size()];
-	                    args[0] = arg1;
-	                    args[1] = arg2;
-	                    args[2] = arg3;
-	                    args[3] = arg4;
-	                    args[4] = arg5;
-	                    args[5] = arg6;
-	                    args[6] = arg7;
-	                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 7, info.lambdaArgs.size());
-	                    return (R)qmethod.invoke(info.qobject, type, args);
-	                }
+        if(info!=null && info.qobject!=null) {
+        	if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+7) {
+        		switch(type) {
+                case AutoConnection:
+                case DirectConnection:
+                	if(info.qobject.isObjectsThread())
+	                    try {
+	                        return method.invoke(arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+	                    } catch (Throwable e) {
+	                        throw new QUnsuccessfulInvocationException(e);
+	                    }
+                default:
+            	}
+                if(info.lambdaArgs.isEmpty()) {
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    args[2] = arg3;
+                    args[3] = arg4;
+                    args[4] = arg5;
+                    args[5] = arg6;
+                    args[6] = arg7;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 7, info.lambdaArgs.size());
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
 	            }
         	}
+        	context = info.qobject;
         	thread = context.thread();
         }else {
             if(method instanceof QtObjectInterface) {
@@ -1700,34 +1776,43 @@ public final class QMetaObject {
      * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
-    @SuppressWarnings("unchecked")
     @QtUninvokable
     public static <A,B,C,D,E,F,G,H,R> R invokeMethod(@StrictNonNull Method8<A,B,C,D,E,F,G,H,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         QObject context;
         QThread thread = null;
-        if(info!=null && info.qobject!=null && !info.qobject.isDisposed()) {
-        	context = info.qobject;
-        	if(info.reflectiveMethod!=null) {
-	            QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
-	            if(qmethod!=null && qmethod.isValid() && qmethod.parameterTypes().size()==info.lambdaArgs.size()+8) {
-	                if(info.lambdaArgs.isEmpty()) {
-	                    return (R)qmethod.invoke(info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
-	                }else {
-	                    Object[] args = new Object[qmethod.parameterTypes().size()];
-	                    args[0] = arg1;
-	                    args[1] = arg2;
-	                    args[2] = arg3;
-	                    args[3] = arg4;
-	                    args[4] = arg5;
-	                    args[5] = arg6;
-	                    args[6] = arg7;
-	                    args[7] = arg8;
-	                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 8, info.lambdaArgs.size());
-	                    return (R)qmethod.invoke(info.qobject, type, args);
-	                }
+        if(info!=null && info.qobject!=null) {
+        	if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+8) {
+        		switch(type) {
+                case AutoConnection:
+                case DirectConnection:
+                	if(info.qobject.isObjectsThread())
+	                    try {
+	                        return method.invoke(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+	                    } catch (Throwable e) {
+	                        throw new QUnsuccessfulInvocationException(e);
+	                    }
+                default:
+            	}
+                if(info.lambdaArgs.isEmpty()) {
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    args[2] = arg3;
+                    args[3] = arg4;
+                    args[4] = arg5;
+                    args[5] = arg6;
+                    args[6] = arg7;
+                    args[7] = arg8;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 8, info.lambdaArgs.size());
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
 	            }
         	}
+        	context = info.qobject;
         	thread = context.thread();
         }else {
             if(method instanceof QtObjectInterface) {
@@ -1818,35 +1903,44 @@ public final class QMetaObject {
      * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
-    @SuppressWarnings("unchecked")
     @QtUninvokable
     public static <A,B,C,D,E,F,G,H,I,R> R invokeMethod(@StrictNonNull Method9<A,B,C,D,E,F,G,H,I,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         QObject context;
         QThread thread = null;
-        if(info!=null && info.qobject!=null && !info.qobject.isDisposed()) {
-        	context = info.qobject;
-        	if(info.reflectiveMethod!=null) {
-	            QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
-	            if(qmethod!=null && qmethod.isValid() && qmethod.parameterTypes().size()==info.lambdaArgs.size()+9) {
-	                if(info.lambdaArgs.isEmpty()) {
-	                    return (R)qmethod.invoke(info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
-	                }else {
-	                    Object[] args = new Object[qmethod.parameterTypes().size()];
-	                    args[0] = arg1;
-	                    args[1] = arg2;
-	                    args[2] = arg3;
-	                    args[3] = arg4;
-	                    args[4] = arg5;
-	                    args[5] = arg6;
-	                    args[6] = arg7;
-	                    args[7] = arg8;
-	                    args[8] = arg9;
-	                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 9, info.lambdaArgs.size());
-	                    return (R)qmethod.invoke(info.qobject, type, args);
-	                }
+        if(info!=null && info.qobject!=null) {
+        	if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+9) {
+        		switch(type) {
+                case AutoConnection:
+                case DirectConnection:
+                	if(info.qobject.isObjectsThread())
+	                    try {
+	                        return method.invoke(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+	                    } catch (Throwable e) {
+	                        throw new QUnsuccessfulInvocationException(e);
+	                    }
+                default:
+            	}
+                if(info.lambdaArgs.isEmpty()) {
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    args[2] = arg3;
+                    args[3] = arg4;
+                    args[4] = arg5;
+                    args[5] = arg6;
+                    args[6] = arg7;
+                    args[7] = arg8;
+                    args[8] = arg9;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 9, info.lambdaArgs.size());
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
 	            }
         	}
+        	context = info.qobject;
         	thread = context.thread();
         }else {
             if(method instanceof QtObjectInterface) {
@@ -1897,18 +1991,29 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static void invokeMethod(@StrictNonNull Slot0 method, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         QThread thread = null;
         QObject context;
-        if(info!=null && info.qobject!=null && !info.qobject.isDisposed()) {
-        	context = info.qobject;
-            if(info.reflectiveMethod!=null) {
-                QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
-                if(qmethod!=null && qmethod.isValid() && qmethod.parameterTypes().size()==info.lambdaArgs.size()) {
-                    qmethod.invoke(info.qobject, type, info.lambdaArgs.toArray());
-                    return;
-                }
+        if(info!=null && info.qobject!=null) {
+            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()) {
+        		switch(type) {
+                case AutoConnection:
+                case DirectConnection:
+                	if(info.qobject.isObjectsThread())
+	                    try {
+	                        method.invoke();
+	                        return;
+	                    } catch (Throwable e) {
+	                        throw new QUnsuccessfulInvocationException(e);
+	                    }
+                default:
+            	}
+                invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, info.lambdaArgs.toArray());
+                return;
             }
+        	context = info.qobject;
             thread = context.thread();
         }else {
             if(method instanceof QtObjectInterface) {
@@ -1968,25 +2073,36 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A> void invokeMethod(@StrictNonNull Slot1<A> method, Qt.@NonNull ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         QThread thread = null;
         QObject context;
-        if(info!=null && info.qobject!=null && !info.qobject.isDisposed()) {
-        	context = info.qobject;
-            if(info.reflectiveMethod!=null) {
-                QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
-                if(qmethod!=null && qmethod.isValid() && qmethod.parameterTypes().size()==info.lambdaArgs.size()+1) {
-                    if(info.lambdaArgs.isEmpty()) {
-                        qmethod.invoke(info.qobject, type, arg1);
-                    }else {
-                        Object[] args = new Object[qmethod.parameterTypes().size()];
-                        args[0] = arg1;
-                        System.arraycopy(info.lambdaArgs.toArray(), 0, args, 1, info.lambdaArgs.size());
-                        qmethod.invoke(info.qobject, type, args);
-                    }
-                    return;
+        if(info!=null && info.qobject!=null) {
+            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+1) {
+        		switch(type) {
+                case AutoConnection:
+                case DirectConnection:
+                	if(info.qobject.isObjectsThread())
+	                    try {
+	                        method.invoke(arg1);
+	                        return;
+	                    } catch (Throwable e) {
+	                        throw new QUnsuccessfulInvocationException(e);
+	                    }
+                default:
+            	}
+                if(info.lambdaArgs.isEmpty()) {
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 1, info.lambdaArgs.size());
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
                 }
+                return;
             }
+        	context = info.qobject;
             thread = context.thread();
         }else {
             if(method instanceof QtObjectInterface) {
@@ -2050,30 +2166,37 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B> void invokeMethod(@StrictNonNull Slot2<A,B> method, Qt.@NonNull ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         QThread thread = null;
         QObject context;
-        if(info!=null && info.qobject!=null && !info.qobject.isDisposed()) {
-        	context = info.qobject;
-            if(info.reflectiveMethod!=null) {
-                QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
-                if(qmethod!=null && qmethod.isValid() && qmethod.parameterTypes().size()==info.lambdaArgs.size()+2) {
-                    if(info.lambdaArgs.isEmpty()) {
-                        qmethod.invoke(info.qobject, type, arg1, arg2);
-                    }else {
-                        Object[] args = new Object[qmethod.parameterTypes().size()];
-                        args[0] = arg1;
-                        args[1] = arg2;
-                        System.arraycopy(info.lambdaArgs.toArray(), 0, args, 2, info.lambdaArgs.size());
-                        qmethod.invoke(info.qobject, type, args);
-                    }
-                    return;
+        if(info!=null && info.qobject!=null) {
+            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+2) {
+        		switch(type) {
+                case AutoConnection:
+                case DirectConnection:
+                	if(info.qobject.isObjectsThread())
+	                    try {
+	                        method.invoke(arg1, arg2);
+	                        return;
+	                    } catch (Throwable e) {
+	                        throw new QUnsuccessfulInvocationException(e);
+	                    }
+                default:
+            	}
+                if(info.lambdaArgs.isEmpty()) {
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 2, info.lambdaArgs.size());
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
                 }
-                if(qmethod!=null) {
-                    qmethod.invoke(info.qobject, type, arg1, arg2);
-                    return;
-                }
+                return;
             }
+        	context = info.qobject;
             thread = context.thread();
         }else {
             if(method instanceof QtObjectInterface) {
@@ -2141,27 +2264,38 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C> void invokeMethod(@StrictNonNull Slot3<A,B,C> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         QThread thread = null;
         QObject context;
-        if(info!=null && info.qobject!=null && !info.qobject.isDisposed()) {
-        	context = info.qobject;
-            if(info.reflectiveMethod!=null) {
-                QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
-                if(qmethod!=null && qmethod.isValid() && qmethod.parameterTypes().size()==info.lambdaArgs.size()+3) {
-                    if(info.lambdaArgs.isEmpty()) {
-                        qmethod.invoke(info.qobject, type, arg1, arg2, arg3);
-                    }else {
-                        Object[] args = new Object[qmethod.parameterTypes().size()];
-                        args[0] = arg1;
-                        args[1] = arg2;
-                        args[2] = arg3;
-                        System.arraycopy(info.lambdaArgs.toArray(), 0, args, 3, info.lambdaArgs.size());
-                        qmethod.invoke(info.qobject, type, args);
-                    }
-                    return;
+        if(info!=null && info.qobject!=null) {
+            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+3) {
+        		switch(type) {
+                case AutoConnection:
+                case DirectConnection:
+                	if(info.qobject.isObjectsThread())
+	                    try {
+	                        method.invoke(arg1, arg2, arg3);
+	                        return;
+	                    } catch (Throwable e) {
+	                        throw new QUnsuccessfulInvocationException(e);
+	                    }
+                default:
+            	}
+                if(info.lambdaArgs.isEmpty()) {
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    args[2] = arg3;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 3, info.lambdaArgs.size());
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
                 }
+                return;
             }
+        	context = info.qobject;
             thread = context.thread();
         }else {
             if(method instanceof QtObjectInterface) {
@@ -2228,28 +2362,39 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D> void invokeMethod(@StrictNonNull Slot4<A,B,C,D> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         QThread thread = null;
         QObject context;
-        if(info!=null && info.qobject!=null && !info.qobject.isDisposed()) {
-        	context = info.qobject;
-            if(info.reflectiveMethod!=null) {
-                QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
-                if(qmethod!=null && qmethod.isValid() && qmethod.parameterTypes().size()==info.lambdaArgs.size()+4) {
-                    if(info.lambdaArgs.isEmpty()) {
-                        qmethod.invoke(info.qobject, type, arg1, arg2, arg3, arg4);
-                    }else {
-                        Object[] args = new Object[qmethod.parameterTypes().size()];
-                        args[0] = arg1;
-                        args[1] = arg2;
-                        args[2] = arg3;
-                        args[3] = arg4;
-                        System.arraycopy(info.lambdaArgs.toArray(), 0, args, 4, info.lambdaArgs.size());
-                        qmethod.invoke(info.qobject, type, args);
-                    }
-                    return;
+        if(info!=null && info.qobject!=null) {
+            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+4) {
+        		switch(type) {
+                case AutoConnection:
+                case DirectConnection:
+                	if(info.qobject.isObjectsThread())
+	                    try {
+	                        method.invoke(arg1, arg2, arg3, arg4);
+	                        return;
+	                    } catch (Throwable e) {
+	                        throw new QUnsuccessfulInvocationException(e);
+	                    }
+                default:
+            	}
+                if(info.lambdaArgs.isEmpty()) {
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    args[2] = arg3;
+                    args[3] = arg4;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 4, info.lambdaArgs.size());
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
                 }
+                return;
             }
+        	context = info.qobject;
             thread = context.thread();
         }else {
             if(method instanceof QtObjectInterface) {
@@ -2320,29 +2465,40 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E> void invokeMethod(@StrictNonNull Slot5<A,B,C,D,E> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         QThread thread = null;
         QObject context;
-        if(info!=null && info.qobject!=null && !info.qobject.isDisposed()) {
-        	context = info.qobject;
-            if(info.reflectiveMethod!=null) {
-                QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
-                if(qmethod!=null && qmethod.isValid() && qmethod.parameterTypes().size()==info.lambdaArgs.size()+5) {
-                    if(info.lambdaArgs.isEmpty()) {
-                        qmethod.invoke(info.qobject, type, arg1, arg2, arg3, arg4, arg5);
-                    }else {
-                        Object[] args = new Object[qmethod.parameterTypes().size()];
-                        args[0] = arg1;
-                        args[1] = arg2;
-                        args[2] = arg3;
-                        args[3] = arg4;
-                        args[4] = arg5;
-                        System.arraycopy(info.lambdaArgs.toArray(), 0, args, 5, info.lambdaArgs.size());
-                        qmethod.invoke(info.qobject, type, args);
-                    }
-                    return;
+        if(info!=null && info.qobject!=null) {
+            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+5) {
+        		switch(type) {
+                case AutoConnection:
+                case DirectConnection:
+                	if(info.qobject.isObjectsThread())
+	                    try {
+	                        method.invoke(arg1, arg2, arg3, arg4, arg5);
+	                        return;
+	                    } catch (Throwable e) {
+	                        throw new QUnsuccessfulInvocationException(e);
+	                    }
+                default:
+            	}
+                if(info.lambdaArgs.isEmpty()) {
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    args[2] = arg3;
+                    args[3] = arg4;
+                    args[4] = arg5;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 5, info.lambdaArgs.size());
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
                 }
+                return;
             }
+        	context = info.qobject;
             thread = context.thread();
         }else {
             if(method instanceof QtObjectInterface) {
@@ -2416,30 +2572,41 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F> void invokeMethod(@StrictNonNull Slot6<A,B,C,D,E,F> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         QThread thread = null;
         QObject context;
-        if(info!=null && info.qobject!=null && !info.qobject.isDisposed()) {
-        	context = info.qobject;
-            if(info.reflectiveMethod!=null) {
-                QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
-                if(qmethod!=null && qmethod.isValid() && qmethod.parameterTypes().size()==info.lambdaArgs.size()+6) {
-                    if(info.lambdaArgs.isEmpty()) {
-                        qmethod.invoke(info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6);
-                    }else {
-                        Object[] args = new Object[qmethod.parameterTypes().size()];
-                        args[0] = arg1;
-                        args[1] = arg2;
-                        args[2] = arg3;
-                        args[3] = arg4;
-                        args[4] = arg5;
-                        args[5] = arg6;
-                        System.arraycopy(info.lambdaArgs.toArray(), 0, args, 6, info.lambdaArgs.size());
-                        qmethod.invoke(info.qobject, type, args);
-                    }
-                    return;
+        if(info!=null && info.qobject!=null) {
+            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+6) {
+        		switch(type) {
+                case AutoConnection:
+                case DirectConnection:
+                	if(info.qobject.isObjectsThread())
+	                    try {
+	                        method.invoke(arg1, arg2, arg3, arg4, arg5, arg6);
+	                        return;
+	                    } catch (Throwable e) {
+	                        throw new QUnsuccessfulInvocationException(e);
+	                    }
+                default:
+            	}
+                if(info.lambdaArgs.isEmpty()) {
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    args[2] = arg3;
+                    args[3] = arg4;
+                    args[4] = arg5;
+                    args[5] = arg6;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 6, info.lambdaArgs.size());
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
                 }
+                return;
             }
+        	context = info.qobject;
             thread = context.thread();
         }else {
             if(method instanceof QtObjectInterface) {
@@ -2518,31 +2685,42 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G> void invokeMethod(@StrictNonNull Slot7<A,B,C,D,E,F,G> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         QThread thread = null;
         QObject context;
-        if(info!=null && info.qobject!=null && !info.qobject.isDisposed()) {
-        	context = info.qobject;
-            if(info.reflectiveMethod!=null) {
-                QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
-                if(qmethod!=null && qmethod.isValid() && qmethod.parameterTypes().size()==info.lambdaArgs.size()+7) {
-                    if(info.lambdaArgs.isEmpty()) {
-                        qmethod.invoke(info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
-                    }else {
-                        Object[] args = new Object[qmethod.parameterTypes().size()];
-                        args[0] = arg1;
-                        args[1] = arg2;
-                        args[2] = arg3;
-                        args[3] = arg4;
-                        args[4] = arg5;
-                        args[5] = arg6;
-                        args[6] = arg7;
-                        System.arraycopy(info.lambdaArgs.toArray(), 0, args, 7, info.lambdaArgs.size());
-                        qmethod.invoke(info.qobject, type, args);
-                    }
-                    return;
+        if(info!=null && info.qobject!=null) {
+            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+7) {
+        		switch(type) {
+                case AutoConnection:
+                case DirectConnection:
+                	if(info.qobject.isObjectsThread())
+	                    try {
+	                        method.invoke(arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+	                        return;
+	                    } catch (Throwable e) {
+	                        throw new QUnsuccessfulInvocationException(e);
+	                    }
+                default:
+            	}
+                if(info.lambdaArgs.isEmpty()) {
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    args[2] = arg3;
+                    args[3] = arg4;
+                    args[4] = arg5;
+                    args[5] = arg6;
+                    args[6] = arg7;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 7, info.lambdaArgs.size());
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
                 }
+                return;
             }
+        	context = info.qobject;
             thread = context.thread();
         }else {
             if(method instanceof QtObjectInterface) {
@@ -2625,32 +2803,43 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull Slot8<A,B,C,D,E,F,G,H> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         QThread thread = null;
         QObject context;
-        if(info!=null && info.qobject!=null && !info.qobject.isDisposed()) {
-        	context = info.qobject;
-            if(info.reflectiveMethod!=null) {
-                QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
-                if(qmethod!=null && qmethod.isValid() && qmethod.parameterTypes().size()==info.lambdaArgs.size()+8) {
-                    if(info.lambdaArgs.isEmpty()) {
-                        qmethod.invoke(info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
-                    }else {
-                        Object[] args = new Object[qmethod.parameterTypes().size()];
-                        args[0] = arg1;
-                        args[1] = arg2;
-                        args[2] = arg3;
-                        args[3] = arg4;
-                        args[4] = arg5;
-                        args[5] = arg6;
-                        args[6] = arg7;
-                        args[7] = arg8;
-                        System.arraycopy(info.lambdaArgs.toArray(), 0, args, 8, info.lambdaArgs.size());
-                        qmethod.invoke(info.qobject, type, args);
-                    }
-                    return;
+        if(info!=null && info.qobject!=null) {
+            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+8) {
+        		switch(type) {
+                case AutoConnection:
+                case DirectConnection:
+                	if(info.qobject.isObjectsThread())
+	                    try {
+	                        method.invoke(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+	                        return;
+	                    } catch (Throwable e) {
+	                        throw new QUnsuccessfulInvocationException(e);
+	                    }
+                default:
+            	}
+                if(info.lambdaArgs.isEmpty()) {
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    args[2] = arg3;
+                    args[3] = arg4;
+                    args[4] = arg5;
+                    args[5] = arg6;
+                    args[6] = arg7;
+                    args[7] = arg8;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 8, info.lambdaArgs.size());
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
                 }
+                return;
             }
+        	context = info.qobject;
             thread = context.thread();
         }else {
             if(method instanceof QtObjectInterface) {
@@ -2737,33 +2926,44 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull Slot9<A,B,C,D,E,F,G,H,I> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         QThread thread = null;
         QObject context;
-        if(info!=null && info.qobject!=null && !info.qobject.isDisposed()) {
-        	context = info.qobject;
-            if(info.reflectiveMethod!=null) {
-                QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
-                if(qmethod!=null && qmethod.isValid() && qmethod.parameterTypes().size()==info.lambdaArgs.size()+9) {
-                    if(info.lambdaArgs.isEmpty()) {
-                        qmethod.invoke(info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
-                    }else {
-                        Object[] args = new Object[qmethod.parameterTypes().size()];
-                        args[0] = arg1;
-                        args[1] = arg2;
-                        args[2] = arg3;
-                        args[3] = arg4;
-                        args[4] = arg5;
-                        args[5] = arg6;
-                        args[6] = arg7;
-                        args[7] = arg8;
-                        args[8] = arg9;
-                        System.arraycopy(info.lambdaArgs.toArray(), 0, args, 9, info.lambdaArgs.size());
-                        qmethod.invoke(info.qobject, type, args);
-                    }
-                    return;
+        if(info!=null && info.qobject!=null) {
+            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+9) {
+        		switch(type) {
+                case AutoConnection:
+                case DirectConnection:
+                	if(info.qobject.isObjectsThread())
+	                    try {
+	                        method.invoke(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+	                        return;
+	                    } catch (Throwable e) {
+	                        throw new QUnsuccessfulInvocationException(e);
+	                    }
+                default:
+            	}
+                if(info.lambdaArgs.isEmpty()) {
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    args[2] = arg3;
+                    args[3] = arg4;
+                    args[4] = arg5;
+                    args[5] = arg6;
+                    args[6] = arg7;
+                    args[7] = arg8;
+                    args[8] = arg9;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 9, info.lambdaArgs.size());
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
                 }
+                return;
             }
+        	context = info.qobject;
             thread = context.thread();
         }else {
             if(method instanceof QtObjectInterface) {
@@ -2798,7 +2998,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <R> R invokeMethod(@Nullable QObject context, @StrictNonNull Method0<R> method) throws QUnsuccessfulInvocationException {
-        return invokeMethod(context!=null ? context.thread() : null, context, method, Qt.ConnectionType.AutoConnection);
+        return invokeMethod(context, method, Qt.ConnectionType.AutoConnection);
     }
     
     /**
@@ -2822,7 +3022,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <R> R invokeMethod(@Nullable QObject context, @StrictNonNull Method0<R> method, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
-    	return invokeMethod(context!=null ? context.thread() : null, context, method, type);
+    	return invokeMethod(context!=null ? context.thread() : null, context, method, type==null ? Qt.ConnectionType.AutoConnection : type);
     }
     
     /**
@@ -2838,7 +3038,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,R> R invokeMethod(@Nullable QObject context, @StrictNonNull Method1<A,R> method, A arg1) throws QUnsuccessfulInvocationException {
-        return invokeMethod(context!=null ? context.thread() : null, context, method, Qt.ConnectionType.AutoConnection, arg1);
+        return invokeMethod(context, method, Qt.ConnectionType.AutoConnection, arg1);
     }
     
     /**
@@ -2863,7 +3063,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,R> R invokeMethod(@Nullable QObject context, @StrictNonNull Method1<A,R> method, Qt.@NonNull ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
-    	return invokeMethod(context!=null ? context.thread() : null, context, method, type, arg1);
+    	return invokeMethod(context!=null ? context.thread() : null, context, method, type==null ? Qt.ConnectionType.AutoConnection : type, arg1);
     }
     
     /**
@@ -2881,7 +3081,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,R> R invokeMethod(@Nullable QObject context, @StrictNonNull Method2<A,B,R> method, A arg1, B arg2) throws QUnsuccessfulInvocationException {
-        return invokeMethod(context!=null ? context.thread() : null, context, method, Qt.ConnectionType.AutoConnection, arg1, arg2);
+        return invokeMethod(context, method, Qt.ConnectionType.AutoConnection, arg1, arg2);
     }
     
     /**
@@ -2909,7 +3109,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,R> R invokeMethod(@Nullable QObject context, @StrictNonNull Method2<A,B,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
-    	return invokeMethod(context!=null ? context.thread() : null, context, method, type, arg1, arg2);
+    	return invokeMethod(context!=null ? context.thread() : null, context, method, type==null ? Qt.ConnectionType.AutoConnection : type, arg1, arg2);
     }
     
     /**
@@ -2929,7 +3129,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,R> R invokeMethod(@Nullable QObject context, @StrictNonNull Method3<A,B,C,R> method, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
-        return invokeMethod(context!=null ? context.thread() : null, context, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3);
+        return invokeMethod(context, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3);
     }
     
     /**
@@ -2959,7 +3159,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,R> R invokeMethod(@Nullable QObject context, @StrictNonNull Method3<A,B,C,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
-    	return invokeMethod(context!=null ? context.thread() : null, context, method, type, arg1, arg2, arg3);
+    	return invokeMethod(context!=null ? context.thread() : null, context, method, type==null ? Qt.ConnectionType.AutoConnection : type, arg1, arg2, arg3);
     }
     
     /**
@@ -2981,7 +3181,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,R> R invokeMethod(@Nullable QObject context, @StrictNonNull Method4<A,B,C,D,R> method, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
-        return invokeMethod(context!=null ? context.thread() : null, context, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4);
+        return invokeMethod(context, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4);
     }
     
     /**
@@ -3013,7 +3213,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,R> R invokeMethod(@Nullable QObject context, @StrictNonNull Method4<A,B,C,D,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
-    	return invokeMethod(context!=null ? context.thread() : null, context, method, type, arg1, arg2, arg3, arg4);
+    	return invokeMethod(context!=null ? context.thread() : null, context, method, type==null ? Qt.ConnectionType.AutoConnection : type, arg1, arg2, arg3, arg4);
     }
     
     /**
@@ -3037,7 +3237,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,R> R invokeMethod(@Nullable QObject context, @StrictNonNull Method5<A,B,C,D,E,R> method, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
-        return invokeMethod(context!=null ? context.thread() : null, context, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5);
+        return invokeMethod(context, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5);
     }
     
     /**
@@ -3071,7 +3271,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,R> R invokeMethod(@Nullable QObject context, @StrictNonNull Method5<A,B,C,D,E,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
-    	return invokeMethod(context!=null ? context.thread() : null, context, method, type, arg1, arg2, arg3, arg4, arg5);
+    	return invokeMethod(context!=null ? context.thread() : null, context, method, type==null ? Qt.ConnectionType.AutoConnection : type, arg1, arg2, arg3, arg4, arg5);
     }
     
     /**
@@ -3097,7 +3297,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,R> R invokeMethod(@Nullable QObject context, @StrictNonNull Method6<A,B,C,D,E,F,R> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
-        return invokeMethod(context!=null ? context.thread() : null, context, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6);
+        return invokeMethod(context, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6);
     }
     
     /**
@@ -3133,7 +3333,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,R> R invokeMethod(@Nullable QObject context, @StrictNonNull Method6<A,B,C,D,E,F,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
-    	return invokeMethod(context!=null ? context.thread() : null, context, method, type, arg1, arg2, arg3, arg4, arg5, arg6);
+    	return invokeMethod(context!=null ? context.thread() : null, context, method, type==null ? Qt.ConnectionType.AutoConnection : type, arg1, arg2, arg3, arg4, arg5, arg6);
     }
     
     /**
@@ -3161,7 +3361,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G,R> R invokeMethod(@Nullable QObject context, @StrictNonNull Method7<A,B,C,D,E,F,G,R> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
-        return invokeMethod(context!=null ? context.thread() : null, context, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+        return invokeMethod(context, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
     }
     
     /**
@@ -3199,7 +3399,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G,R> R invokeMethod(@Nullable QObject context, @StrictNonNull Method7<A,B,C,D,E,F,G,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
-    	return invokeMethod(context!=null ? context.thread() : null, context, method, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+    	return invokeMethod(context!=null ? context.thread() : null, context, method, type==null ? Qt.ConnectionType.AutoConnection : type, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
     }
     
     /**
@@ -3229,7 +3429,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G,H,R> R invokeMethod(@Nullable QObject context, @StrictNonNull Method8<A,B,C,D,E,F,G,H,R> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
-        return invokeMethod(context!=null ? context.thread() : null, context, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+        return invokeMethod(context, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
     }
     
     /**
@@ -3269,7 +3469,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G,H,R> R invokeMethod(@Nullable QObject context, @StrictNonNull Method8<A,B,C,D,E,F,G,H,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
-    	return invokeMethod(context!=null ? context.thread() : null, context, method, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+    	return invokeMethod(context!=null ? context.thread() : null, context, method, type==null ? Qt.ConnectionType.AutoConnection : type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
     }
     
     /**
@@ -3301,7 +3501,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G,H,I,R> R invokeMethod(@Nullable QObject context, @StrictNonNull Method9<A,B,C,D,E,F,G,H,I,R> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException {
-        return invokeMethod(context!=null ? context.thread() : null, context, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+        return invokeMethod(context, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
     }
     
     /**
@@ -3343,7 +3543,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G,H,I,R> R invokeMethod(@Nullable QObject context, @StrictNonNull Method9<A,B,C,D,E,F,G,H,I,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException {
-    	return invokeMethod(context!=null ? context.thread() : null, context, method, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+    	return invokeMethod(context!=null ? context.thread() : null, context, method, type==null ? Qt.ConnectionType.AutoConnection : type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
     }
     
     /**
@@ -3354,7 +3554,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static void invokeMethod(@Nullable QObject context, @StrictNonNull Slot0 method) throws QUnsuccessfulInvocationException {
-        invokeMethod(context!=null ? context.thread() : null, context, method, Qt.ConnectionType.AutoConnection);
+        invokeMethod(context, method, Qt.ConnectionType.AutoConnection);
     }
     
     /**
@@ -3375,7 +3575,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static void invokeMethod(@Nullable QObject context, @StrictNonNull Slot0 method, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
-    	invokeMethod(context!=null ? context.thread() : null, context, method, type);
+    	invokeMethod(context!=null ? context.thread() : null, context, method, type==null ? Qt.ConnectionType.AutoConnection : type);
     }
     
     /**
@@ -3388,7 +3588,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A> void invokeMethod(@Nullable QObject context, @StrictNonNull Slot1<A> method, A arg1) throws QUnsuccessfulInvocationException {
-        invokeMethod(context!=null ? context.thread() : null, context, method, Qt.ConnectionType.AutoConnection, arg1);
+        invokeMethod(context, method, Qt.ConnectionType.AutoConnection, arg1);
     }
     
     /**
@@ -3411,7 +3611,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A> void invokeMethod(@Nullable QObject context, @StrictNonNull Slot1<A> method, Qt.@NonNull ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
-    	invokeMethod(context!=null ? context.thread() : null, context, method, type, arg1);
+    	invokeMethod(context!=null ? context.thread() : null, context, method, type==null ? Qt.ConnectionType.AutoConnection : type, arg1);
     }
     
     /**
@@ -3426,7 +3626,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B> void invokeMethod(@Nullable QObject context, @StrictNonNull Slot2<A,B> method, A arg1, B arg2) throws QUnsuccessfulInvocationException {
-        invokeMethod(context!=null ? context.thread() : null, context, method, Qt.ConnectionType.AutoConnection, arg1, arg2);
+        invokeMethod(context, method, Qt.ConnectionType.AutoConnection, arg1, arg2);
     }
     
     /**
@@ -3451,7 +3651,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B> void invokeMethod(@Nullable QObject context, @StrictNonNull Slot2<A,B> method, Qt.@NonNull ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
-    	invokeMethod(context!=null ? context.thread() : null, context, method, type, arg1, arg2);
+    	invokeMethod(context!=null ? context.thread() : null, context, method, type==null ? Qt.ConnectionType.AutoConnection : type, arg1, arg2);
     }
     
     /**
@@ -3468,7 +3668,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C> void invokeMethod(@Nullable QObject context, @StrictNonNull Slot3<A,B,C> method, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
-        invokeMethod(context!=null ? context.thread() : null, context, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3);
+        invokeMethod(context, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3);
     }
     
     /**
@@ -3495,7 +3695,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C> void invokeMethod(@Nullable QObject context, @StrictNonNull Slot3<A,B,C> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
-    	invokeMethod(context!=null ? context.thread() : null, context, method, type, arg1, arg2, arg3);
+    	invokeMethod(context!=null ? context.thread() : null, context, method, type==null ? Qt.ConnectionType.AutoConnection : type, arg1, arg2, arg3);
     }
     
     /**
@@ -3514,7 +3714,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D> void invokeMethod(@Nullable QObject context, @StrictNonNull Slot4<A,B,C,D> method, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
-        invokeMethod(context!=null ? context.thread() : null, context, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4);
+        invokeMethod(context, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4);
     }
     
     /**
@@ -3543,7 +3743,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D> void invokeMethod(@Nullable QObject context, @StrictNonNull Slot4<A,B,C,D> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
-    	invokeMethod(context!=null ? context.thread() : null, context, method, type, arg1, arg2, arg3, arg4);
+    	invokeMethod(context!=null ? context.thread() : null, context, method, type==null ? Qt.ConnectionType.AutoConnection : type, arg1, arg2, arg3, arg4);
     }
     
     /**
@@ -3564,7 +3764,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E> void invokeMethod(@Nullable QObject context, @StrictNonNull Slot5<A,B,C,D,E> method, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
-        invokeMethod(context!=null ? context.thread() : null, context, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5);
+        invokeMethod(context, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5);
     }
     
     /**
@@ -3595,7 +3795,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E> void invokeMethod(@Nullable QObject context, @StrictNonNull Slot5<A,B,C,D,E> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
-    	invokeMethod(context!=null ? context.thread() : null, context, method, type, arg1, arg2, arg3, arg4, arg5);
+    	invokeMethod(context!=null ? context.thread() : null, context, method, type==null ? Qt.ConnectionType.AutoConnection : type, arg1, arg2, arg3, arg4, arg5);
     }
     
     /**
@@ -3617,7 +3817,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     public static <A,B,C,D,E,F> void invokeMethod(@Nullable QObject context, @StrictNonNull Slot6<A,B,C,D,E,F> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
-        invokeMethod(context!=null ? context.thread() : null, context, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6);
+        invokeMethod(context, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6);
     }
     
     /**
@@ -3650,7 +3850,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F> void invokeMethod(@Nullable QObject context, @StrictNonNull Slot6<A,B,C,D,E,F> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
-    	invokeMethod(context!=null ? context.thread() : null, context, method, type, arg1, arg2, arg3, arg4, arg5, arg6);
+    	invokeMethod(context!=null ? context.thread() : null, context, method, type==null ? Qt.ConnectionType.AutoConnection : type, arg1, arg2, arg3, arg4, arg5, arg6);
     }
     
     /**
@@ -3675,7 +3875,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G> void invokeMethod(@Nullable QObject context, @StrictNonNull Slot7<A,B,C,D,E,F,G> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
-        invokeMethod(context!=null ? context.thread() : null, context, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+        invokeMethod(context, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
     }
     
     /**
@@ -3710,7 +3910,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G> void invokeMethod(@Nullable QObject context, @StrictNonNull Slot7<A,B,C,D,E,F,G> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
-    	invokeMethod(context!=null ? context.thread() : null, context, method, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+    	invokeMethod(context!=null ? context.thread() : null, context, method, type==null ? Qt.ConnectionType.AutoConnection : type, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
     }
     
     /**
@@ -3737,7 +3937,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G,H> void invokeMethod(@Nullable QObject context, @StrictNonNull Slot8<A,B,C,D,E,F,G,H> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
-        invokeMethod(context!=null ? context.thread() : null, context, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+        invokeMethod(context, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
     }
     
     /**
@@ -3774,7 +3974,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G,H> void invokeMethod(@Nullable QObject context, @StrictNonNull Slot8<A,B,C,D,E,F,G,H> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
-    	invokeMethod(context!=null ? context.thread() : null, context, method, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+    	invokeMethod(context!=null ? context.thread() : null, context, method, type==null ? Qt.ConnectionType.AutoConnection : type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
     }
     
     /**
@@ -3803,7 +4003,7 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@Nullable QObject context, @StrictNonNull Slot9<A,B,C,D,E,F,G,H,I> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException {
-        invokeMethod(context!=null ? context.thread() : null, context, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+        invokeMethod(context, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
     }
     
     /**
@@ -3842,15 +4042,3882 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@Nullable QObject context, @StrictNonNull Slot9<A,B,C,D,E,F,G,H,I> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException {
-        invokeMethod(context!=null ? context.thread() : null, context, method, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+        invokeMethod(context!=null ? context.thread() : null, context, method, type==null ? Qt.ConnectionType.AutoConnection : type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+    }
+    
+	/**
+     * Calling <code>invokeMethod(method, AutoConnection)</code>.
+     * @param <Target> The target type.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot1<Target> method) throws QUnsuccessfulInvocationException {
+        invokeMethod(target, method, Qt.ConnectionType.AutoConnection);
+    }
+    
+    /**
+     * <p>Invokes the slot.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <Target> The target type.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param type synchronous or asynchronous invocation
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot1<Target> method, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
+    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+        QThread thread = null;
+        QObject context;
+        if(info!=null && info.qobject!=null && info.methodInfo.metaObject!=null) {
+    		switch(type) {
+            case AutoConnection:
+            case DirectConnection:
+            	if(info.qobject.isObjectsThread())
+                    try {
+                        method.invoke(target);
+                        return;
+                    } catch (Throwable e) {
+                        throw new QUnsuccessfulInvocationException(e);
+                    }
+            default:
+        	}
+            if(info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()) {
+                invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, info.lambdaArgs.toArray());
+                return;
+            }
+        	context = info.qobject;
+            thread = context.thread();
+        }else {
+            if(method instanceof QtObjectInterface) {
+                if( ((QtObjectInterface)method).isDisposed() )
+                    return;
+            }
+        	if(method instanceof QtThreadAffineInterface) {
+        		thread = ((QtThreadAffineInterface) method).thread();
+                if(thread!=null) {
+                	if(thread.thread()==thread) {
+                		context = thread;
+                	}else if(QCoreApplication.instance()!=null && thread==QCoreApplication.instance().thread()){
+                		context = QCoreApplication.instance();
+                	}else {
+                		context = null;
+                	}
+                }else {
+                	context = null;
+                }
+        	}else {
+        		context = QObject.getQPropertyOwner(info);
+        		if(context!=null)
+        			thread = context.thread();
+        	}
+        }
+        invokeMethod(thread, context, method, type, target);
+    }
+    
+    /**
+     * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+     * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the slot.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target,A> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot2<Target,A> method, A arg1) throws QUnsuccessfulInvocationException {
+        invokeMethod(target, method, Qt.ConnectionType.AutoConnection, arg1);
+    }
+    
+    /**
+     * <p>Invokes the slot.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the slot.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target,A> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot2<Target,A> method, Qt.@NonNull ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
+    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+        QThread thread = null;
+        QObject context;
+        if(info!=null && info.qobject!=null) {
+            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+1) {
+        		switch(type) {
+                case AutoConnection:
+                case DirectConnection:
+                	if(info.qobject.isObjectsThread())
+	                    try {
+	                        method.invoke(target, arg1);
+	                        return;
+	                    } catch (Throwable e) {
+	                        throw new QUnsuccessfulInvocationException(e);
+	                    }
+                default:
+            	}
+                if(info.lambdaArgs.isEmpty()) {
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 1, info.lambdaArgs.size());
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                }
+                return;
+            }
+        	context = info.qobject;
+            thread = context.thread();
+        }else {
+            if(method instanceof QtObjectInterface) {
+                if( ((QtObjectInterface)method).isDisposed() )
+                    return;
+            }
+        	if(method instanceof QtThreadAffineInterface) {
+        		thread = ((QtThreadAffineInterface) method).thread();
+                if(thread!=null) {
+                	if(thread.thread()==thread) {
+                		context = thread;
+                	}else if(QCoreApplication.instance()!=null && thread==QCoreApplication.instance().thread()){
+                		context = QCoreApplication.instance();
+                	}else {
+                		context = null;
+                	}
+                }else {
+                	context = null;
+                }
+        	}else {
+        		context = QObject.getQPropertyOwner(info);
+        		if(context!=null)
+        			thread = context.thread();
+        	}
+        }
+        invokeMethod(thread, context, method, type, target, arg1);
+    }
+	
+	/**
+     * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+     * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target,A,B> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot3<Target,A,B> method, A arg1, B arg2) throws QUnsuccessfulInvocationException {
+        invokeMethod(target, method, Qt.ConnectionType.AutoConnection, arg1, arg2);
+    }
+    
+    /**
+     * <p>Invokes the slot.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target,A,B> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot3<Target,A,B> method, Qt.@NonNull ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
+    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+        QThread thread = null;
+        QObject context;
+        if(info!=null && info.qobject!=null) {
+            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+2) {
+        		switch(type) {
+                case AutoConnection:
+                case DirectConnection:
+                	if(info.qobject.isObjectsThread())
+	                    try {
+	                        method.invoke(target, arg1, arg2);
+	                        return;
+	                    } catch (Throwable e) {
+	                        throw new QUnsuccessfulInvocationException(e);
+	                    }
+                default:
+            	}
+                if(info.lambdaArgs.isEmpty()) {
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 2, info.lambdaArgs.size());
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                }
+                return;
+            }
+        	context = info.qobject;
+            thread = context.thread();
+        }else {
+            if(method instanceof QtObjectInterface) {
+                if( ((QtObjectInterface)method).isDisposed() )
+                    return;
+            }
+        	if(method instanceof QtThreadAffineInterface) {
+        		thread = ((QtThreadAffineInterface) method).thread();
+                if(thread!=null) {
+                	if(thread.thread()==thread) {
+                		context = thread;
+                	}else if(QCoreApplication.instance()!=null && thread==QCoreApplication.instance().thread()){
+                		context = QCoreApplication.instance();
+                	}else {
+                		context = null;
+                	}
+                }else {
+                	context = null;
+                }
+        	}else {
+        		context = QObject.getQPropertyOwner(info);
+        		if(context!=null)
+        			thread = context.thread();
+        	}
+        }
+        invokeMethod(thread, context, method, type, target, arg1, arg2);
+    }
+    
+    /**
+     * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+     * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target,A,B,C> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot4<Target,A,B,C> method, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
+        invokeMethod(target, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3);
+    }
+    
+    /**
+     * <p>Invokes the slot.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target,A,B,C> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot4<Target,A,B,C> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
+    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+        QThread thread = null;
+        QObject context;
+        if(info!=null && info.qobject!=null) {
+            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+3) {
+        		switch(type) {
+                case AutoConnection:
+                case DirectConnection:
+                	if(info.qobject.isObjectsThread())
+	                    try {
+	                        method.invoke(target, arg1, arg2, arg3);
+	                        return;
+	                    } catch (Throwable e) {
+	                        throw new QUnsuccessfulInvocationException(e);
+	                    }
+                default:
+            	}
+                if(info.lambdaArgs.isEmpty()) {
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    args[2] = arg3;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 3, info.lambdaArgs.size());
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                }
+                return;
+            }
+        	context = info.qobject;
+            thread = context.thread();
+        }else {
+            if(method instanceof QtObjectInterface) {
+                if( ((QtObjectInterface)method).isDisposed() )
+                    return;
+            }
+            if(method instanceof QtThreadAffineInterface)
+                thread = ((QtThreadAffineInterface) method).thread();
+            if(thread!=null) {
+            	if(thread.thread()==thread) {
+            		context = thread;
+            	}else if(QCoreApplication.instance()!=null && thread==QCoreApplication.instance().thread()){
+            		context = QCoreApplication.instance();
+            	}else {
+            		context = null;
+            	}
+            }else {
+            	context = null;
+            }
+        }
+        invokeMethod(thread, context, method, type, target, arg1, arg2, arg3);
+    }
+    
+    /**
+     * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+     * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+     * @param <D> The type of the fourth parameter of the slot.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target,A,B,C,D> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot5<Target,A,B,C,D> method, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
+        invokeMethod(target, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4);
+    }
+    
+    /**
+     * <p>Invokes the slot.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+     * @param <D> The type of the fourth parameter of the slot.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target,A,B,C,D> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot5<Target,A,B,C,D> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
+    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+        QThread thread = null;
+        QObject context;
+        if(info!=null && info.qobject!=null) {
+            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+4) {
+        		switch(type) {
+                case AutoConnection:
+                case DirectConnection:
+                	if(info.qobject.isObjectsThread())
+	                    try {
+	                        method.invoke(target, arg1, arg2, arg3, arg4);
+	                        return;
+	                    } catch (Throwable e) {
+	                        throw new QUnsuccessfulInvocationException(e);
+	                    }
+                default:
+            	}
+                if(info.lambdaArgs.isEmpty()) {
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    args[2] = arg3;
+                    args[3] = arg4;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 4, info.lambdaArgs.size());
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                }
+                return;
+            }
+        	context = info.qobject;
+            thread = context.thread();
+        }else {
+            if(method instanceof QtObjectInterface) {
+                if( ((QtObjectInterface)method).isDisposed() )
+                    return;
+            }
+            if(method instanceof QtThreadAffineInterface)
+                thread = ((QtThreadAffineInterface) method).thread();
+            if(thread!=null) {
+            	if(thread.thread()==thread) {
+            		context = thread;
+            	}else if(QCoreApplication.instance()!=null && thread==QCoreApplication.instance().thread()){
+            		context = QCoreApplication.instance();
+            	}else {
+            		context = null;
+            	}
+            }else {
+            	context = null;
+            }
+        }
+        invokeMethod(thread, context, method, type, target, arg1, arg2, arg3, arg4);
+    }
+    
+    /**
+     * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+     * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+     * @param <D> The type of the fourth parameter of the slot.
+     * @param <E> The type of the fifth parameter of the slot.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target,A,B,C,D,E> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot6<Target,A,B,C,D,E> method, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
+        invokeMethod(target, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5);
+    }
+    
+    /**
+     * <p>Invokes the slot.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+     * @param <D> The type of the fourth parameter of the slot.
+     * @param <E> The type of the fifth parameter of the slot.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target,A,B,C,D,E> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot6<Target,A,B,C,D,E> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
+    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+        QThread thread = null;
+        QObject context;
+        if(info!=null && info.qobject!=null) {
+            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+5) {
+        		switch(type) {
+                case AutoConnection:
+                case DirectConnection:
+                	if(info.qobject.isObjectsThread())
+	                    try {
+	                        method.invoke(target, arg1, arg2, arg3, arg4, arg5);
+	                        return;
+	                    } catch (Throwable e) {
+	                        throw new QUnsuccessfulInvocationException(e);
+	                    }
+                default:
+            	}
+                if(info.lambdaArgs.isEmpty()) {
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    args[2] = arg3;
+                    args[3] = arg4;
+                    args[4] = arg5;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 5, info.lambdaArgs.size());
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                }
+                return;
+            }
+        	context = info.qobject;
+            thread = context.thread();
+        }else {
+            if(method instanceof QtObjectInterface) {
+                if( ((QtObjectInterface)method).isDisposed() )
+                    return;
+            }
+            if(method instanceof QtThreadAffineInterface)
+                thread = ((QtThreadAffineInterface) method).thread();
+            if(thread!=null) {
+            	if(thread.thread()==thread) {
+            		context = thread;
+            	}else if(QCoreApplication.instance()!=null && thread==QCoreApplication.instance().thread()){
+            		context = QCoreApplication.instance();
+            	}else {
+            		context = null;
+            	}
+            }else {
+            	context = null;
+            }
+        }
+        invokeMethod(thread, context, method, type, target, arg1, arg2, arg3, arg4, arg5);
+    }
+    
+    /**
+     * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+     * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+     * @param <D> The type of the fourth parameter of the slot.
+     * @param <E> The type of the fifth parameter of the slot.
+     * @param <F> The type of the sixth parameter of the slot.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    public static <Target,A,B,C,D,E,F> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot7<Target,A,B,C,D,E,F> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
+        invokeMethod(target, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6);
+    }
+    
+    /**
+     * <p>Invokes the slot.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+     * @param <D> The type of the fourth parameter of the slot.
+     * @param <E> The type of the fifth parameter of the slot.
+     * @param <F> The type of the sixth parameter of the slot.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target,A,B,C,D,E,F> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot7<Target,A,B,C,D,E,F> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
+    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+        QThread thread = null;
+        QObject context;
+        if(info!=null && info.qobject!=null) {
+            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+6) {
+        		switch(type) {
+                case AutoConnection:
+                case DirectConnection:
+                	if(info.qobject.isObjectsThread())
+	                    try {
+	                        method.invoke(target, arg1, arg2, arg3, arg4, arg5, arg6);
+	                        return;
+	                    } catch (Throwable e) {
+	                        throw new QUnsuccessfulInvocationException(e);
+	                    }
+                default:
+            	}
+                if(info.lambdaArgs.isEmpty()) {
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    args[2] = arg3;
+                    args[3] = arg4;
+                    args[4] = arg5;
+                    args[5] = arg6;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 6, info.lambdaArgs.size());
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                }
+                return;
+            }
+        	context = info.qobject;
+            thread = context.thread();
+        }else {
+            if(method instanceof QtObjectInterface) {
+                if( ((QtObjectInterface)method).isDisposed() )
+                    return;
+            }
+            if(method instanceof QtThreadAffineInterface)
+                thread = ((QtThreadAffineInterface) method).thread();
+            if(thread!=null) {
+            	if(thread.thread()==thread) {
+            		context = thread;
+            	}else if(QCoreApplication.instance()!=null && thread==QCoreApplication.instance().thread()){
+            		context = QCoreApplication.instance();
+            	}else {
+            		context = null;
+            	}
+            }else {
+            	context = null;
+            }
+        }
+        invokeMethod(thread, context, method, type, target, arg1, arg2, arg3, arg4, arg5, arg6);
+    }
+    
+    /**
+     * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+     * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+     * @param <D> The type of the fourth parameter of the slot.
+     * @param <E> The type of the fifth parameter of the slot.
+     * @param <F> The type of the sixth parameter of the slot.
+     * @param <G> The type of the seventh parameter of the slot.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target,A,B,C,D,E,F,G> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot8<Target,A,B,C,D,E,F,G> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
+        invokeMethod(target, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+    }
+    
+    /**
+     * <p>Invokes the slot.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+     * @param <D> The type of the fourth parameter of the slot.
+     * @param <E> The type of the fifth parameter of the slot.
+     * @param <F> The type of the sixth parameter of the slot.
+     * @param <G> The type of the seventh parameter of the slot.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target,A,B,C,D,E,F,G> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot8<Target,A,B,C,D,E,F,G> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
+    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+        QThread thread = null;
+        QObject context;
+        if(info!=null && info.qobject!=null) {
+            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+7) {
+        		switch(type) {
+                case AutoConnection:
+                case DirectConnection:
+                	if(info.qobject.isObjectsThread())
+	                    try {
+	                        method.invoke(target, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+	                        return;
+	                    } catch (Throwable e) {
+	                        throw new QUnsuccessfulInvocationException(e);
+	                    }
+                default:
+            	}
+                if(info.lambdaArgs.isEmpty()) {
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    args[2] = arg3;
+                    args[3] = arg4;
+                    args[4] = arg5;
+                    args[5] = arg6;
+                    args[6] = arg7;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 7, info.lambdaArgs.size());
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                }
+                return;
+            }
+        	context = info.qobject;
+            thread = context.thread();
+        }else {
+            if(method instanceof QtObjectInterface) {
+                if( ((QtObjectInterface)method).isDisposed() )
+                    return;
+            }
+            if(method instanceof QtThreadAffineInterface)
+                thread = ((QtThreadAffineInterface) method).thread();
+            if(thread!=null) {
+            	if(thread.thread()==thread) {
+            		context = thread;
+            	}else if(QCoreApplication.instance()!=null && thread==QCoreApplication.instance().thread()){
+            		context = QCoreApplication.instance();
+            	}else {
+            		context = null;
+            	}
+            }else {
+            	context = null;
+            }
+        }
+        invokeMethod(thread, context, method, type, target, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+    }
+    
+    /**
+     * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+     * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+     * @param <D> The type of the fourth parameter of the slot.
+     * @param <E> The type of the fifth parameter of the slot.
+     * @param <F> The type of the sixth parameter of the slot.
+     * @param <G> The type of the seventh parameter of the slot.
+     * @param <H> The type of the eighth parameter of the slot.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     * @param arg8 Argument for the eighth parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target,A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot9<Target,A,B,C,D,E,F,G,H> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
+        invokeMethod(target, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+    }
+    
+    /**
+     * <p>Invokes the slot.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+     * @param <D> The type of the fourth parameter of the slot.
+     * @param <E> The type of the fifth parameter of the slot.
+     * @param <F> The type of the sixth parameter of the slot.
+     * @param <G> The type of the seventh parameter of the slot.
+     * @param <H> The type of the eighth parameter of the slot.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     * @param arg8 Argument for the eighth parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target,A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot9<Target,A,B,C,D,E,F,G,H> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
+    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+        QThread thread = null;
+        QObject context;
+        if(info!=null && info.qobject!=null) {
+            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+8) {
+        		switch(type) {
+                case AutoConnection:
+                case DirectConnection:
+                	if(info.qobject.isObjectsThread())
+	                    try {
+	                        method.invoke(target, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+	                        return;
+	                    } catch (Throwable e) {
+	                        throw new QUnsuccessfulInvocationException(e);
+	                    }
+                default:
+            	}
+                if(info.lambdaArgs.isEmpty()) {
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    args[2] = arg3;
+                    args[3] = arg4;
+                    args[4] = arg5;
+                    args[5] = arg6;
+                    args[6] = arg7;
+                    args[7] = arg8;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 8, info.lambdaArgs.size());
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                }
+                return;
+            }
+        	context = info.qobject;
+            thread = context.thread();
+        }else {
+            if(method instanceof QtObjectInterface) {
+                if( ((QtObjectInterface)method).isDisposed() )
+                    return;
+            }
+            if(method instanceof QtThreadAffineInterface)
+                thread = ((QtThreadAffineInterface) method).thread();
+            if(thread!=null) {
+            	if(thread.thread()==thread) {
+            		context = thread;
+            	}else if(QCoreApplication.instance()!=null && thread==QCoreApplication.instance().thread()){
+            		context = QCoreApplication.instance();
+            	}else {
+            		context = null;
+            	}
+            }else {
+            	context = null;
+            }
+        }
+        invokeMethod(thread, context, method, type, target, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+    }
+    
+    /**
+     * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+     * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+     * @param <D> The type of the fourth parameter of the slot.
+     * @param <E> The type of the fifth parameter of the slot.
+     * @param <F> The type of the sixth parameter of the slot.
+     * @param <G> The type of the seventh parameter of the slot.
+     * @param <H> The type of the eighth parameter of the slot.
+     * @param <I> The type of the ninth parameter of the slot.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     * @param arg8 Argument for the eighth parameter.
+     * @param arg9 Argument for the ninth parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target,A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot10<Target,A,B,C,D,E,F,G,H,I> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException {
+        invokeMethod(target, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+    }
+    
+    /**
+     * <p>Invokes the slot.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+     * @param <D> The type of the fourth parameter of the slot.
+     * @param <E> The type of the fifth parameter of the slot.
+     * @param <F> The type of the sixth parameter of the slot.
+     * @param <G> The type of the seventh parameter of the slot.
+     * @param <H> The type of the eighth parameter of the slot.
+     * @param <I> The type of the ninth parameter of the slot.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     * @param arg8 Argument for the eighth parameter.
+     * @param arg9 Argument for the ninth parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target,A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot10<Target,A,B,C,D,E,F,G,H,I> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
+        ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+        QThread thread = null;
+        QObject context;
+        if(info!=null && info.qobject!=null) {
+            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+9) {
+        		switch(type) {
+                case AutoConnection:
+                case DirectConnection:
+                	if(info.qobject.isObjectsThread())
+	                    try {
+	                        method.invoke(target, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+	                        return;
+	                    } catch (Throwable e) {
+	                        throw new QUnsuccessfulInvocationException(e);
+	                    }
+                default:
+            	}
+                if(info.lambdaArgs.isEmpty()) {
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    args[2] = arg3;
+                    args[3] = arg4;
+                    args[4] = arg5;
+                    args[5] = arg6;
+                    args[6] = arg7;
+                    args[7] = arg8;
+                    args[8] = arg9;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 9, info.lambdaArgs.size());
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                }
+                return;
+            }
+        	context = info.qobject;
+            thread = context.thread();
+        }else {
+            if(method instanceof QtObjectInterface) {
+                if( ((QtObjectInterface)method).isDisposed() )
+                    return;
+            }
+            if(method instanceof QtThreadAffineInterface)
+                thread = ((QtThreadAffineInterface) method).thread();
+            if(thread!=null) {
+            	if(thread.thread()==thread) {
+            		context = thread;
+            	}else if(QCoreApplication.instance()!=null && thread==QCoreApplication.instance().thread()){
+            		context = QCoreApplication.instance();
+            	}else {
+            		context = null;
+            	}
+            }else {
+            	context = null;
+            }
+        }
+        invokeMethod(thread, context, method, type, target, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+    }
+    
+    /**
+     * Calling <code>invokeMethod(method, AutoConnection)</code>.
+     * 
+	 * @param <Target> The target type.
+     * @param <R> The return type of the method.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method1<Target,R> method) throws QUnsuccessfulInvocationException {
+        return invokeMethod(target, method, Qt.ConnectionType.AutoConnection);
+    }
+    
+    /**
+     * <p>Invokes the method and returns it's result value.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * <p>If the invocation is asynchronous, the return value cannot be evaluated.</p>
+     * 
+	 * @param <Target> The target type.
+     * @param <R> The return type of the method.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param type synchronous or asynchronous invocation
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method1<Target,R> method, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
+    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+        QObject context;
+        QThread thread = null;
+        if(info!=null && info.qobject!=null) {
+        	if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()) {
+        		switch(type) {
+                case AutoConnection:
+                case DirectConnection:
+                	if(info.qobject.isObjectsThread())
+	                    try {
+	                        return method.invoke(target);
+	                    } catch (Throwable e) {
+	                        throw new QUnsuccessfulInvocationException(e);
+	                    }
+                default:
+            	}
+                if(info.lambdaArgs.isEmpty()) {
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type);
+                }else {
+                    Object[] args = info.lambdaArgs.toArray();
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+	            }
+        	}
+        	context = info.qobject;
+        	thread = context.thread();
+        }else {
+            if(method instanceof QtObjectInterface) {
+                if( ((QtObjectInterface)method).isDisposed() )
+                    return null;
+            }
+        	if(method instanceof QtThreadAffineInterface) {
+        		thread = ((QtThreadAffineInterface) method).thread();
+                if(thread!=null) {
+                	if(thread.thread()==thread) {
+                		context = thread;
+                	}else if(QCoreApplication.instance()!=null && thread==QCoreApplication.instance().thread()){
+                		context = QCoreApplication.instance();
+                	}else {
+                		context = null;
+                	}
+                }else {
+                	context = null;
+                }
+        	}else {
+        		context = QObject.getQPropertyOwner(info);
+        		if(context!=null)
+        			thread = context.thread();
+        	}
+        }
+        return invokeMethod(thread, context, method, type, target);
+    }
+    
+    /**
+     * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+     * 
+	 * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the method.
+     * @param <R> The return type of the method.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target,A,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method2<Target,A,R> method, A arg1) throws QUnsuccessfulInvocationException {
+        return invokeMethod(target, method, Qt.ConnectionType.AutoConnection, arg1);
+    }
+    
+    /**
+     * <p>Invokes the method and returns it's result value.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * <p>If the invocation is asynchronous, the return value cannot be evaluated.</p>
+     * 
+	 * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the method.
+     * @param <R> The return type of the method.
+     * @param method invoked method
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target,A,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method2<Target,A,R> method, Qt.@NonNull ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
+    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+        QObject context;
+        QThread thread = null;
+        if(info!=null && info.qobject!=null) {
+        	if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+1) {
+        		switch(type) {
+                case AutoConnection:
+                case DirectConnection:
+                	if(info.qobject.isObjectsThread())
+	                    try {
+	                        return method.invoke(target, arg1);
+	                    } catch (Throwable e) {
+	                        throw new QUnsuccessfulInvocationException(e);
+	                    }
+                default:
+            	}
+                if(info.lambdaArgs.isEmpty()) {
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 1, info.lambdaArgs.size());
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+	            }
+        	}
+        	context = info.qobject;
+        	thread = context.thread();
+        }else {
+            if(method instanceof QtObjectInterface) {
+                if( ((QtObjectInterface)method).isDisposed() )
+                    return null;
+            }
+        	if(method instanceof QtThreadAffineInterface) {
+        		thread = ((QtThreadAffineInterface) method).thread();
+                if(thread!=null) {
+                	if(thread.thread()==thread) {
+                		context = thread;
+                	}else if(QCoreApplication.instance()!=null && thread==QCoreApplication.instance().thread()){
+                		context = QCoreApplication.instance();
+                	}else {
+                		context = null;
+                	}
+                }else {
+                	context = null;
+                }
+        	}else {
+        		context = QObject.getQPropertyOwner(info);
+        		if(context!=null)
+        			thread = context.thread();
+        	}
+        }
+        return invokeMethod(thread, context, method, type, target, arg1);
+    }
+    
+    /**
+     * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+     * 
+	 * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <R> The return type of the method.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target,A,B,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method3<Target,A,B,R> method, A arg1, B arg2) throws QUnsuccessfulInvocationException {
+        return invokeMethod(target, method, Qt.ConnectionType.AutoConnection, arg1, arg2);
+    }
+    
+    /**
+     * <p>Invokes the method and returns it's result value.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * <p>If the invocation is asynchronous, the return value cannot be evaluated.</p>
+     * 
+	 * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <R> The return type of the method.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target,A,B,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method3<Target,A,B,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
+    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+        QObject context;
+        QThread thread = null;
+        if(info!=null && info.qobject!=null) {
+        	if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+2) {
+        		switch(type) {
+                case AutoConnection:
+                case DirectConnection:
+                	if(info.qobject.isObjectsThread())
+	                    try {
+	                        return method.invoke(target, arg1, arg2);
+	                    } catch (Throwable e) {
+	                        throw new QUnsuccessfulInvocationException(e);
+	                    }
+                default:
+            	}
+                if(info.lambdaArgs.isEmpty()) {
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 2, info.lambdaArgs.size());
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                }
+        	}
+        	context = info.qobject;
+        	thread = context.thread();
+        }else {
+        	if(method instanceof QtObjectInterface) {
+                if( ((QtObjectInterface)method).isDisposed() )
+                    return null;
+            }
+        	if(method instanceof QtThreadAffineInterface)
+        		thread = ((QtThreadAffineInterface) method).thread();
+            if(thread!=null) {
+            	if(thread.thread()==thread) {
+            		context = thread;
+            	}else if(QCoreApplication.instance()!=null && thread==QCoreApplication.instance().thread()){
+            		context = QCoreApplication.instance();
+            	}else {
+            		context = null;
+            	}
+            }else {
+            	context = null;
+            }
+        }
+        return invokeMethod(thread, context, method, type, target, arg1, arg2);
+    }
+    
+    /**
+     * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+     * 
+	 * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <R> The return type of the method.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target,A,B,C,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method4<Target,A,B,C,R> method, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
+        return invokeMethod(target, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3);
+    }
+    
+    /**
+     * <p>Invokes the method and returns it's result value.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * <p>If the invocation is asynchronous, the return value cannot be evaluated.</p>
+     * 
+	 * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <R> The return type of the method.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target,A,B,C,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method4<Target,A,B,C,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
+    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+        QObject context;
+        QThread thread = null;
+        if(info!=null && info.qobject!=null) {
+        	if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+3) {
+        		switch(type) {
+                case AutoConnection:
+                case DirectConnection:
+                	if(info.qobject.isObjectsThread())
+	                    try {
+	                        return method.invoke(target, arg1, arg2, arg3);
+	                    } catch (Throwable e) {
+	                        throw new QUnsuccessfulInvocationException(e);
+	                    }
+                default:
+            	}
+                if(info.lambdaArgs.isEmpty()) {
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    args[2] = arg3;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 3, info.lambdaArgs.size());
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+	            }
+        	}
+        	context = info.qobject;
+        	thread = context.thread();
+        }else {
+            if(method instanceof QtObjectInterface) {
+                if( ((QtObjectInterface)method).isDisposed() )
+                    return null;
+            }
+        	if(method instanceof QtThreadAffineInterface)
+        		thread = ((QtThreadAffineInterface) method).thread();
+            if(thread!=null) {
+            	if(thread.thread()==thread) {
+            		context = thread;
+            	}else if(QCoreApplication.instance()!=null && thread==QCoreApplication.instance().thread()){
+            		context = QCoreApplication.instance();
+            	}else {
+            		context = null;
+            	}
+            }else {
+            	context = null;
+            }
+        }
+        return invokeMethod(thread, context, method, type, target, arg1, arg2, arg3);
+    }
+    
+    /**
+     * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+     * 
+	 * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <D> The type of the fourth parameter of the method.
+     * @param <R> The return type of the method.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target,A,B,C,D,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method5<Target,A,B,C,D,R> method, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
+        return invokeMethod(target, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4);
+    }
+    
+    /**
+     * <p>Invokes the method and returns it's result value.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * <p>If the invocation is asynchronous, the return value cannot be evaluated.</p>
+     * 
+	 * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <D> The type of the fourth parameter of the method.
+     * @param <R> The return type of the method.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target,A,B,C,D,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method5<Target,A,B,C,D,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
+    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+        QObject context;
+        QThread thread = null;
+        if(info!=null && info.qobject!=null) {
+        	if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+4) {
+        		switch(type) {
+                case AutoConnection:
+                case DirectConnection:
+                	if(info.qobject.isObjectsThread())
+	                    try {
+	                        return method.invoke(target, arg1, arg2, arg3, arg4);
+	                    } catch (Throwable e) {
+	                        throw new QUnsuccessfulInvocationException(e);
+	                    }
+                default:
+            	}
+                if(info.lambdaArgs.isEmpty()) {
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    args[2] = arg3;
+                    args[3] = arg4;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 4, info.lambdaArgs.size());
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+	            }
+        	}
+        	context = info.qobject;
+        	thread = context.thread();
+        }else {
+            if(method instanceof QtObjectInterface) {
+                if( ((QtObjectInterface)method).isDisposed() )
+                    return null;
+            }
+        	if(method instanceof QtThreadAffineInterface)
+        		thread = ((QtThreadAffineInterface) method).thread();
+            if(thread!=null) {
+            	if(thread.thread()==thread) {
+            		context = thread;
+            	}else if(QCoreApplication.instance()!=null && thread==QCoreApplication.instance().thread()){
+            		context = QCoreApplication.instance();
+            	}else {
+            		context = null;
+            	}
+            }else {
+            	context = null;
+            }
+        }
+        return invokeMethod(thread, context, method, type, target, arg1, arg2, arg3, arg4);
+    }
+    
+    /**
+     * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+     * 
+	 * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <D> The type of the fourth parameter of the method.
+     * @param <E> The type of the fifth parameter of the method.
+     * @param <R> The return type of the method.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target,A,B,C,D,E,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method6<Target,A,B,C,D,E,R> method, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
+        return invokeMethod(target, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5);
+    }
+    
+    /**
+     * <p>Invokes the method and returns it's result value.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * <p>If the invocation is asynchronous, the return value cannot be evaluated.</p>
+     * 
+	 * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <D> The type of the fourth parameter of the method.
+     * @param <E> The type of the fifth parameter of the method.
+     * @param <R> The return type of the method.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target,A,B,C,D,E,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method6<Target,A,B,C,D,E,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
+    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+        QObject context;
+        QThread thread = null;
+        if(info!=null && info.qobject!=null) {
+        	if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+5) {
+        		switch(type) {
+                case AutoConnection:
+                case DirectConnection:
+                	if(info.qobject.isObjectsThread())
+	                    try {
+	                        return method.invoke(target, arg1, arg2, arg3, arg4, arg5);
+	                    } catch (Throwable e) {
+	                        throw new QUnsuccessfulInvocationException(e);
+	                    }
+                default:
+            	}
+                if(info.lambdaArgs.isEmpty()) {
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    args[2] = arg3;
+                    args[3] = arg4;
+                    args[4] = arg5;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 5, info.lambdaArgs.size());
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+	            }
+        	}
+        	context = info.qobject;
+        	thread = context.thread();
+        }else {
+            if(method instanceof QtObjectInterface) {
+                if( ((QtObjectInterface)method).isDisposed() )
+                    return null;
+            }
+        	if(method instanceof QtThreadAffineInterface)
+        		thread = ((QtThreadAffineInterface) method).thread();
+            if(thread!=null) {
+            	if(thread.thread()==thread) {
+            		context = thread;
+            	}else if(QCoreApplication.instance()!=null && thread==QCoreApplication.instance().thread()){
+            		context = QCoreApplication.instance();
+            	}else {
+            		context = null;
+            	}
+            }else {
+            	context = null;
+            }
+        }
+        return invokeMethod(thread, context, method, type, target, arg1, arg2, arg3, arg4, arg5);
+    }
+    
+    /**
+     * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+     * 
+	 * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <D> The type of the fourth parameter of the method.
+     * @param <E> The type of the fifth parameter of the method.
+     * @param <F> The type of the sixth parameter of the method.
+     * @param <R> The return type of the method.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target,A,B,C,D,E,F,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method7<Target,A,B,C,D,E,F,R> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
+        return invokeMethod(target, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6);
+    }
+    
+    /**
+     * <p>Invokes the method and returns it's result value.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * <p>If the invocation is asynchronous, the return value cannot be evaluated.</p>
+     * 
+	 * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <D> The type of the fourth parameter of the method.
+     * @param <E> The type of the fifth parameter of the method.
+     * @param <F> The type of the sixth parameter of the method.
+     * @param <R> The return type of the method.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target,A,B,C,D,E,F,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method7<Target,A,B,C,D,E,F,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
+    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+        QObject context;
+        QThread thread = null;
+        if(info!=null && info.qobject!=null) {
+        	if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+6) {
+        		switch(type) {
+                case AutoConnection:
+                case DirectConnection:
+                	if(info.qobject.isObjectsThread())
+	                    try {
+	                        return method.invoke(target, arg1, arg2, arg3, arg4, arg5, arg6);
+	                    } catch (Throwable e) {
+	                        throw new QUnsuccessfulInvocationException(e);
+	                    }
+                default:
+            	}
+                if(info.lambdaArgs.isEmpty()) {
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    args[2] = arg3;
+                    args[3] = arg4;
+                    args[4] = arg5;
+                    args[5] = arg6;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 6, info.lambdaArgs.size());
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                }
+        	}
+        	context = info.qobject;
+        	thread = context.thread();
+        }else {
+            if(method instanceof QtObjectInterface) {
+                if( ((QtObjectInterface)method).isDisposed() )
+                    return null;
+            }
+        	if(method instanceof QtThreadAffineInterface)
+        		thread = ((QtThreadAffineInterface) method).thread();
+            if(thread!=null) {
+            	if(thread.thread()==thread) {
+            		context = thread;
+            	}else if(QCoreApplication.instance()!=null && thread==QCoreApplication.instance().thread()){
+            		context = QCoreApplication.instance();
+            	}else {
+            		context = null;
+            	}
+            }else {
+            	context = null;
+            }
+        }
+        return invokeMethod(thread, context, method, type, target, arg1, arg2, arg3, arg4, arg5, arg6);
+    }
+    
+    /**
+     * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+     * 
+	 * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <D> The type of the fourth parameter of the method.
+     * @param <E> The type of the fifth parameter of the method.
+     * @param <F> The type of the sixth parameter of the method.
+     * @param <G> The type of the seventh parameter of the method.
+     * @param <R> The return type of the method.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target,A,B,C,D,E,F,G,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method8<Target,A,B,C,D,E,F,G,R> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
+        return invokeMethod(target, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+    }
+    
+    /**
+     * <p>Invokes the method and returns it's result value.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * <p>If the invocation is asynchronous, the return value cannot be evaluated.</p>
+     * 
+	 * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <D> The type of the fourth parameter of the method.
+     * @param <E> The type of the fifth parameter of the method.
+     * @param <F> The type of the sixth parameter of the method.
+     * @param <G> The type of the seventh parameter of the method.
+     * @param <R> The return type of the method.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target,A,B,C,D,E,F,G,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method8<Target,A,B,C,D,E,F,G,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
+    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+        QObject context;
+        QThread thread = null;
+        if(info!=null && info.qobject!=null) {
+        	if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+7) {
+        		switch(type) {
+                case AutoConnection:
+                case DirectConnection:
+                	if(info.qobject.isObjectsThread())
+	                    try {
+	                        return method.invoke(target, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+	                    } catch (Throwable e) {
+	                        throw new QUnsuccessfulInvocationException(e);
+	                    }
+                default:
+            	}
+                if(info.lambdaArgs.isEmpty()) {
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    args[2] = arg3;
+                    args[3] = arg4;
+                    args[4] = arg5;
+                    args[5] = arg6;
+                    args[6] = arg7;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 7, info.lambdaArgs.size());
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+	            }
+        	}
+        	context = info.qobject;
+        	thread = context.thread();
+        }else {
+            if(method instanceof QtObjectInterface) {
+                if( ((QtObjectInterface)method).isDisposed() )
+                    return null;
+            }
+        	if(method instanceof QtThreadAffineInterface)
+        		thread = ((QtThreadAffineInterface) method).thread();
+            if(thread!=null) {
+            	if(thread.thread()==thread) {
+            		context = thread;
+            	}else if(QCoreApplication.instance()!=null && thread==QCoreApplication.instance().thread()){
+            		context = QCoreApplication.instance();
+            	}else {
+            		context = null;
+            	}
+            }else {
+            	context = null;
+            }
+        }
+        return invokeMethod(thread, context, method, type, target, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+    }
+    
+    /**
+     * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+     * 
+	 * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <D> The type of the fourth parameter of the method.
+     * @param <E> The type of the fifth parameter of the method.
+     * @param <F> The type of the sixth parameter of the method.
+     * @param <G> The type of the seventh parameter of the method.
+     * @param <H> The type of the eighth parameter of the method.
+     * @param <R> The return type of the method.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     * @param arg8 Argument for the eighth parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target,A,B,C,D,E,F,G,H,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method9<Target,A,B,C,D,E,F,G,H,R> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
+        return invokeMethod(target, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+    }
+    
+    /**
+     * <p>Invokes the method and returns it's result value.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * <p>If the invocation is asynchronous, the return value cannot be evaluated.</p>
+     * 
+	 * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <D> The type of the fourth parameter of the method.
+     * @param <E> The type of the fifth parameter of the method.
+     * @param <F> The type of the sixth parameter of the method.
+     * @param <G> The type of the seventh parameter of the method.
+     * @param <H> The type of the eighth parameter of the method.
+     * @param <R> The return type of the method.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     * @param arg8 Argument for the eighth parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target,A,B,C,D,E,F,G,H,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method9<Target,A,B,C,D,E,F,G,H,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
+    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+        QObject context;
+        QThread thread = null;
+        if(info!=null && info.qobject!=null) {
+        	if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+8) {
+        		switch(type) {
+                case AutoConnection:
+                case DirectConnection:
+                	if(info.qobject.isObjectsThread())
+	                    try {
+	                        return method.invoke(target, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+	                    } catch (Throwable e) {
+	                        throw new QUnsuccessfulInvocationException(e);
+	                    }
+                default:
+            	}
+                if(info.lambdaArgs.isEmpty()) {
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    args[2] = arg3;
+                    args[3] = arg4;
+                    args[4] = arg5;
+                    args[5] = arg6;
+                    args[6] = arg7;
+                    args[7] = arg8;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 8, info.lambdaArgs.size());
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+	            }
+        	}
+        	context = info.qobject;
+        	thread = context.thread();
+        }else {
+            if(method instanceof QtObjectInterface) {
+                if( ((QtObjectInterface)method).isDisposed() )
+                    return null;
+            }
+        	if(method instanceof QtThreadAffineInterface)
+        		thread = ((QtThreadAffineInterface) method).thread();
+            if(thread!=null) {
+            	if(thread.thread()==thread) {
+            		context = thread;
+            	}else if(QCoreApplication.instance()!=null && thread==QCoreApplication.instance().thread()){
+            		context = QCoreApplication.instance();
+            	}else {
+            		context = null;
+            	}
+            }else {
+            	context = null;
+            }
+        }
+        return invokeMethod(thread, context, method, type, target, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+    }
+    
+    /**
+     * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+     * 
+	 * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <D> The type of the fourth parameter of the method.
+     * @param <E> The type of the fifth parameter of the method.
+     * @param <F> The type of the sixth parameter of the method.
+     * @param <G> The type of the seventh parameter of the method.
+     * @param <H> The type of the eighth parameter of the method.
+     * @param <I> The type of the ninth parameter of the method.
+     * @param <R> The return type of the method.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     * @param arg8 Argument for the eighth parameter.
+     * @param arg9 Argument for the ninth parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target,A,B,C,D,E,F,G,H,I,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method10<Target,A,B,C,D,E,F,G,H,I,R> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException {
+        return invokeMethod(target, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+    }
+    
+    /**
+     * <p>Invokes the method and returns it's result value.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * <p>If the invocation is asynchronous, the return value cannot be evaluated.</p>
+     * 
+	 * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <D> The type of the fourth parameter of the method.
+     * @param <E> The type of the fifth parameter of the method.
+     * @param <F> The type of the sixth parameter of the method.
+     * @param <G> The type of the seventh parameter of the method.
+     * @param <H> The type of the eighth parameter of the method.
+     * @param <I> The type of the ninth parameter of the method.
+     * @param <R> The return type of the method.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     * @param arg8 Argument for the eighth parameter.
+     * @param arg9 Argument for the ninth parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target,A,B,C,D,E,F,G,H,I,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method10<Target,A,B,C,D,E,F,G,H,I,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
+    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+        QObject context;
+        QThread thread = null;
+        if(info!=null && info.qobject!=null) {
+        	if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+9) {
+        		switch(type) {
+                case AutoConnection:
+                case DirectConnection:
+                	if(info.qobject.isObjectsThread())
+	                    try {
+	                        return method.invoke(target, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+	                    } catch (Throwable e) {
+	                        throw new QUnsuccessfulInvocationException(e);
+	                    }
+                default:
+            	}
+                if(info.lambdaArgs.isEmpty()) {
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    args[2] = arg3;
+                    args[3] = arg4;
+                    args[4] = arg5;
+                    args[5] = arg6;
+                    args[6] = arg7;
+                    args[7] = arg8;
+                    args[8] = arg9;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 9, info.lambdaArgs.size());
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+	            }
+        	}
+        	context = info.qobject;
+        	thread = context.thread();
+        }else {
+            if(method instanceof QtObjectInterface) {
+                if( ((QtObjectInterface)method).isDisposed() )
+                    return null;
+            }
+        	if(method instanceof QtThreadAffineInterface)
+        		thread = ((QtThreadAffineInterface) method).thread();
+            if(thread!=null) {
+            	if(thread.thread()==thread) {
+            		context = thread;
+            	}else if(QCoreApplication.instance()!=null && thread==QCoreApplication.instance().thread()){
+            		context = QCoreApplication.instance();
+            	}else {
+            		context = null;
+            	}
+            }else {
+            	context = null;
+            }
+        }
+        return invokeMethod(thread, context, method, type, target, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+    }
+    
+	/**
+     * Calling <code>invokeMethod(method, AutoConnection)</code>.
+     * @param <Target> The target type.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target extends QObject> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot1<Target> method) throws QUnsuccessfulInvocationException {
+        invokeMethod(target, method, Qt.ConnectionType.AutoConnection);
+    }
+    
+    /**
+     * <p>Invokes the slot.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <Target> The target type.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param type synchronous or asynchronous invocation
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target extends QObject> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot1<Target> method, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
+        switch(type) {
+        case AutoConnection:
+        case DirectConnection:
+        	if(target.isObjectsThread())
+                try {
+                    method.invoke(target);
+                    return;
+                } catch (Throwable e) {
+                    throw new QUnsuccessfulInvocationException(e);
+                }
+        default:
+    	}
+    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, target);
+        if(info!=null && info.methodInfo.metaObject!=null) {
+            if(info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()) {
+                invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, info.lambdaArgs.toArray());
+                return;
+            }
+        }
+        invokeMethod(target.thread(), target, method, type, target);
+    }
+    
+    /**
+     * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+     * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the slot.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target extends QObject,A> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot2<Target,A> method, A arg1) throws QUnsuccessfulInvocationException {
+        invokeMethod(target, method, Qt.ConnectionType.AutoConnection, arg1);
+    }
+    
+    /**
+     * <p>Invokes the slot.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the slot.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target extends QObject,A> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot2<Target,A> method, Qt.@NonNull ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
+		switch(type) {
+        case AutoConnection:
+        case DirectConnection:
+        	if(target.isObjectsThread())
+                try {
+                    method.invoke(target, arg1);
+                    return;
+                } catch (Throwable e) {
+                    throw new QUnsuccessfulInvocationException(e);
+                }
+        default:
+    	}
+    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, target);
+        if(info!=null) {
+            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+1) {
+                if(info.lambdaArgs.isEmpty()) {
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, arg1);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 1, info.lambdaArgs.size());
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, args);
+                }
+                return;
+            }
+        }
+        invokeMethod(target.thread(), target, method, type, target, arg1);
+    }
+	
+	/**
+     * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+     * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target extends QObject,A,B> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot3<Target,A,B> method, A arg1, B arg2) throws QUnsuccessfulInvocationException {
+        invokeMethod(target, method, Qt.ConnectionType.AutoConnection, arg1, arg2);
+    }
+    
+    /**
+     * <p>Invokes the slot.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target extends QObject,A,B> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot3<Target,A,B> method, Qt.@NonNull ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
+		switch(type) {
+        case AutoConnection:
+        case DirectConnection:
+        	if(target.isObjectsThread())
+                try {
+                    method.invoke(target, arg1, arg2);
+                    return;
+                } catch (Throwable e) {
+                    throw new QUnsuccessfulInvocationException(e);
+                }
+        default:
+    	}
+    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, target);
+        if(info!=null) {
+            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+2) {
+                if(info.lambdaArgs.isEmpty()) {
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, arg1, arg2);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 2, info.lambdaArgs.size());
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, args);
+                }
+                return;
+            }
+        }
+        invokeMethod(target.thread(), target, method, type, target, arg1, arg2);
+    }
+    
+    /**
+     * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+     * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target extends QObject,A,B,C> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot4<Target,A,B,C> method, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
+        invokeMethod(target, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3);
+    }
+    
+    /**
+     * <p>Invokes the slot.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target extends QObject,A,B,C> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot4<Target,A,B,C> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
+		switch(type) {
+        case AutoConnection:
+        case DirectConnection:
+        	if(target.isObjectsThread())
+                try {
+                    method.invoke(target, arg1, arg2, arg3);
+                    return;
+                } catch (Throwable e) {
+                    throw new QUnsuccessfulInvocationException(e);
+                }
+        default:
+    	}
+    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, target);
+        if(info!=null) {
+            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+3) {
+                if(info.lambdaArgs.isEmpty()) {
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, arg1, arg2, arg3);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    args[2] = arg3;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 3, info.lambdaArgs.size());
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, args);
+                }
+                return;
+            }
+        }
+        invokeMethod(target.thread(), target, method, type, target, arg1, arg2, arg3);
+    }
+    
+    /**
+     * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+     * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+     * @param <D> The type of the fourth parameter of the slot.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target extends QObject,A,B,C,D> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot5<Target,A,B,C,D> method, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
+        invokeMethod(target, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4);
+    }
+    
+    /**
+     * <p>Invokes the slot.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+     * @param <D> The type of the fourth parameter of the slot.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target extends QObject,A,B,C,D> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot5<Target,A,B,C,D> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
+		switch(type) {
+        case AutoConnection:
+        case DirectConnection:
+        	if(target.isObjectsThread())
+                try {
+                    method.invoke(target, arg1, arg2, arg3, arg4);
+                    return;
+                } catch (Throwable e) {
+                    throw new QUnsuccessfulInvocationException(e);
+                }
+        default:
+    	}
+    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, target);
+        if(info!=null) {
+            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+4) {
+                if(info.lambdaArgs.isEmpty()) {
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, arg1, arg2, arg3, arg4);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    args[2] = arg3;
+                    args[3] = arg4;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 4, info.lambdaArgs.size());
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, args);
+                }
+                return;
+            }
+        }
+        invokeMethod(target.thread(), target, method, type, target, arg1, arg2, arg3, arg4);
+    }
+    
+    /**
+     * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+     * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+     * @param <D> The type of the fourth parameter of the slot.
+     * @param <E> The type of the fifth parameter of the slot.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target extends QObject,A,B,C,D,E> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot6<Target,A,B,C,D,E> method, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
+        invokeMethod(target, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5);
+    }
+    
+    /**
+     * <p>Invokes the slot.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+     * @param <D> The type of the fourth parameter of the slot.
+     * @param <E> The type of the fifth parameter of the slot.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target extends QObject,A,B,C,D,E> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot6<Target,A,B,C,D,E> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
+		switch(type) {
+        case AutoConnection:
+        case DirectConnection:
+        	if(target.isObjectsThread())
+                try {
+                    method.invoke(target, arg1, arg2, arg3, arg4, arg5);
+                    return;
+                } catch (Throwable e) {
+                    throw new QUnsuccessfulInvocationException(e);
+                }
+        default:
+    	}
+    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, target);
+        if(info!=null) {
+            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+5) {
+                if(info.lambdaArgs.isEmpty()) {
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, arg1, arg2, arg3, arg4, arg5);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    args[2] = arg3;
+                    args[3] = arg4;
+                    args[4] = arg5;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 5, info.lambdaArgs.size());
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, args);
+                }
+                return;
+            }
+        }
+        invokeMethod(target.thread(), target, method, type, target, arg1, arg2, arg3, arg4, arg5);
+    }
+    
+    /**
+     * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+     * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+     * @param <D> The type of the fourth parameter of the slot.
+     * @param <E> The type of the fifth parameter of the slot.
+     * @param <F> The type of the sixth parameter of the slot.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    public static <Target extends QObject,A,B,C,D,E,F> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot7<Target,A,B,C,D,E,F> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
+        invokeMethod(target, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6);
+    }
+    
+    /**
+     * <p>Invokes the slot.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+     * @param <D> The type of the fourth parameter of the slot.
+     * @param <E> The type of the fifth parameter of the slot.
+     * @param <F> The type of the sixth parameter of the slot.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target extends QObject,A,B,C,D,E,F> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot7<Target,A,B,C,D,E,F> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
+		switch(type) {
+        case AutoConnection:
+        case DirectConnection:
+        	if(target.isObjectsThread())
+                try {
+                    method.invoke(target, arg1, arg2, arg3, arg4, arg5, arg6);
+                    return;
+                } catch (Throwable e) {
+                    throw new QUnsuccessfulInvocationException(e);
+                }
+        default:
+    	}
+    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, target);
+        if(info!=null) {
+            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+6) {
+                if(info.lambdaArgs.isEmpty()) {
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, arg1, arg2, arg3, arg4, arg5, arg6);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    args[2] = arg3;
+                    args[3] = arg4;
+                    args[4] = arg5;
+                    args[5] = arg6;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 6, info.lambdaArgs.size());
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, args);
+                }
+                return;
+            }
+        }
+        invokeMethod(target.thread(), target, method, type, target, arg1, arg2, arg3, arg4, arg5, arg6);
+    }
+    
+    /**
+     * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+     * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+     * @param <D> The type of the fourth parameter of the slot.
+     * @param <E> The type of the fifth parameter of the slot.
+     * @param <F> The type of the sixth parameter of the slot.
+     * @param <G> The type of the seventh parameter of the slot.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target extends QObject,A,B,C,D,E,F,G> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot8<Target,A,B,C,D,E,F,G> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
+        invokeMethod(target, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+    }
+    
+    /**
+     * <p>Invokes the slot.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+     * @param <D> The type of the fourth parameter of the slot.
+     * @param <E> The type of the fifth parameter of the slot.
+     * @param <F> The type of the sixth parameter of the slot.
+     * @param <G> The type of the seventh parameter of the slot.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target extends QObject,A,B,C,D,E,F,G> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot8<Target,A,B,C,D,E,F,G> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
+		switch(type) {
+        case AutoConnection:
+        case DirectConnection:
+        	if(target.isObjectsThread())
+                try {
+                    method.invoke(target, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+                    return;
+                } catch (Throwable e) {
+                    throw new QUnsuccessfulInvocationException(e);
+                }
+        default:
+    	}
+    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, target);
+        if(info!=null) {
+            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+7) {
+                if(info.lambdaArgs.isEmpty()) {
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    args[2] = arg3;
+                    args[3] = arg4;
+                    args[4] = arg5;
+                    args[5] = arg6;
+                    args[6] = arg7;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 7, info.lambdaArgs.size());
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, args);
+                }
+                return;
+            }
+        }
+        invokeMethod(target.thread(), target, method, type, target, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+    }
+    
+    /**
+     * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+     * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+     * @param <D> The type of the fourth parameter of the slot.
+     * @param <E> The type of the fifth parameter of the slot.
+     * @param <F> The type of the sixth parameter of the slot.
+     * @param <G> The type of the seventh parameter of the slot.
+     * @param <H> The type of the eighth parameter of the slot.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     * @param arg8 Argument for the eighth parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target extends QObject,A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot9<Target,A,B,C,D,E,F,G,H> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
+        invokeMethod(target, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+    }
+    
+    /**
+     * <p>Invokes the slot.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+     * @param <D> The type of the fourth parameter of the slot.
+     * @param <E> The type of the fifth parameter of the slot.
+     * @param <F> The type of the sixth parameter of the slot.
+     * @param <G> The type of the seventh parameter of the slot.
+     * @param <H> The type of the eighth parameter of the slot.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     * @param arg8 Argument for the eighth parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target extends QObject,A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot9<Target,A,B,C,D,E,F,G,H> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
+		switch(type) {
+        case AutoConnection:
+        case DirectConnection:
+        	if(target.isObjectsThread())
+                try {
+                    method.invoke(target, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+                    return;
+                } catch (Throwable e) {
+                    throw new QUnsuccessfulInvocationException(e);
+                }
+        default:
+    	}
+    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, target);
+        if(info!=null) {
+            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+8) {
+                if(info.lambdaArgs.isEmpty()) {
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    args[2] = arg3;
+                    args[3] = arg4;
+                    args[4] = arg5;
+                    args[5] = arg6;
+                    args[6] = arg7;
+                    args[7] = arg8;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 8, info.lambdaArgs.size());
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, args);
+                }
+                return;
+            }
+        }
+        invokeMethod(target.thread(), target, method, type, target, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+    }
+    
+    /**
+     * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+     * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+     * @param <D> The type of the fourth parameter of the slot.
+     * @param <E> The type of the fifth parameter of the slot.
+     * @param <F> The type of the sixth parameter of the slot.
+     * @param <G> The type of the seventh parameter of the slot.
+     * @param <H> The type of the eighth parameter of the slot.
+     * @param <I> The type of the ninth parameter of the slot.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     * @param arg8 Argument for the eighth parameter.
+     * @param arg9 Argument for the ninth parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target extends QObject,A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot10<Target,A,B,C,D,E,F,G,H,I> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException {
+        invokeMethod(target, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+    }
+    
+    /**
+     * <p>Invokes the slot.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+     * @param <D> The type of the fourth parameter of the slot.
+     * @param <E> The type of the fifth parameter of the slot.
+     * @param <F> The type of the sixth parameter of the slot.
+     * @param <G> The type of the seventh parameter of the slot.
+     * @param <H> The type of the eighth parameter of the slot.
+     * @param <I> The type of the ninth parameter of the slot.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     * @param arg8 Argument for the eighth parameter.
+     * @param arg9 Argument for the ninth parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target extends QObject,A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot10<Target,A,B,C,D,E,F,G,H,I> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
+		switch(type) {
+        case AutoConnection:
+        case DirectConnection:
+        	if(target.isObjectsThread())
+                try {
+                    method.invoke(target, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+                    return;
+                } catch (Throwable e) {
+                    throw new QUnsuccessfulInvocationException(e);
+                }
+        default:
+    	}
+        ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, target);
+        if(info!=null) {
+            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+9) {
+                if(info.lambdaArgs.isEmpty()) {
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    args[2] = arg3;
+                    args[3] = arg4;
+                    args[4] = arg5;
+                    args[5] = arg6;
+                    args[6] = arg7;
+                    args[7] = arg8;
+                    args[8] = arg9;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 9, info.lambdaArgs.size());
+                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, args);
+                }
+                return;
+            }
+        }
+        invokeMethod(target.thread(), target, method, type, target, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+    }
+    
+    /**
+     * Calling <code>invokeMethod(method, AutoConnection)</code>.
+     * 
+	 * @param <Target> The target type.
+     * @param <R> The return type of the method.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target extends QObject,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method1<Target,R> method) throws QUnsuccessfulInvocationException {
+        return invokeMethod(target, method, Qt.ConnectionType.AutoConnection);
+    }
+    
+    /**
+     * <p>Invokes the method and returns it's result value.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * <p>If the invocation is asynchronous, the return value cannot be evaluated.</p>
+     * 
+	 * @param <Target> The target type.
+     * @param <R> The return type of the method.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param type synchronous or asynchronous invocation
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target extends QObject,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method1<Target,R> method, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
+		switch(type) {
+        case AutoConnection:
+        case DirectConnection:
+        	if(target.isObjectsThread())
+                try {
+                    return method.invoke(target);
+                } catch (Throwable e) {
+                    throw new QUnsuccessfulInvocationException(e);
+                }
+        default:
+    	}
+    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, target);
+        if(info!=null) {
+        	if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()) {
+                if(info.lambdaArgs.isEmpty()) {
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type);
+                }else {
+                    Object[] args = info.lambdaArgs.toArray();
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, args);
+	            }
+        	}
+        }
+        return invokeMethod(target.thread(), target, method, type, target);
+    }
+    
+    /**
+     * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+     * 
+	 * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the method.
+     * @param <R> The return type of the method.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target extends QObject,A,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method2<Target,A,R> method, A arg1) throws QUnsuccessfulInvocationException {
+        return invokeMethod(target, method, Qt.ConnectionType.AutoConnection, arg1);
+    }
+    
+    /**
+     * <p>Invokes the method and returns it's result value.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * <p>If the invocation is asynchronous, the return value cannot be evaluated.</p>
+     * 
+	 * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the method.
+     * @param <R> The return type of the method.
+     * @param method invoked method
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target extends QObject,A,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method2<Target,A,R> method, Qt.@NonNull ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
+		switch(type) {
+        case AutoConnection:
+        case DirectConnection:
+        	if(target.isObjectsThread())
+                try {
+                    return method.invoke(target, arg1);
+                } catch (Throwable e) {
+                    throw new QUnsuccessfulInvocationException(e);
+                }
+        default:
+    	}
+    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, target);
+        if(info!=null) {
+        	if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+1) {
+                if(info.lambdaArgs.isEmpty()) {
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, arg1);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 1, info.lambdaArgs.size());
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, args);
+	            }
+        	}
+        }
+        return invokeMethod(target.thread(), target, method, type, target, arg1);
+    }
+    
+    /**
+     * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+     * 
+	 * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <R> The return type of the method.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target extends QObject,A,B,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method3<Target,A,B,R> method, A arg1, B arg2) throws QUnsuccessfulInvocationException {
+        return invokeMethod(target, method, Qt.ConnectionType.AutoConnection, arg1, arg2);
+    }
+    
+    /**
+     * <p>Invokes the method and returns it's result value.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * <p>If the invocation is asynchronous, the return value cannot be evaluated.</p>
+     * 
+	 * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <R> The return type of the method.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target extends QObject,A,B,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method3<Target,A,B,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
+		switch(type) {
+        case AutoConnection:
+        case DirectConnection:
+        	if(target.isObjectsThread())
+                try {
+                    return method.invoke(target, arg1, arg2);
+                } catch (Throwable e) {
+                    throw new QUnsuccessfulInvocationException(e);
+                }
+        default:
+    	}
+    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, target);
+        if(info!=null) {
+        	if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+2) {
+                if(info.lambdaArgs.isEmpty()) {
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, arg1, arg2);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 2, info.lambdaArgs.size());
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, args);
+                }
+        	}
+        }
+        return invokeMethod(target.thread(), target, method, type, target, arg1, arg2);
+    }
+    
+    /**
+     * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+     * 
+	 * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <R> The return type of the method.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target extends QObject,A,B,C,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method4<Target,A,B,C,R> method, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
+        return invokeMethod(target, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3);
+    }
+    
+    /**
+     * <p>Invokes the method and returns it's result value.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * <p>If the invocation is asynchronous, the return value cannot be evaluated.</p>
+     * 
+	 * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <R> The return type of the method.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target extends QObject,A,B,C,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method4<Target,A,B,C,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
+		switch(type) {
+        case AutoConnection:
+        case DirectConnection:
+        	if(target.isObjectsThread())
+                try {
+                    return method.invoke(target, arg1, arg2, arg3);
+                } catch (Throwable e) {
+                    throw new QUnsuccessfulInvocationException(e);
+                }
+        default:
+    	}
+    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, target);
+        if(info!=null) {
+        	if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+3) {
+                if(info.lambdaArgs.isEmpty()) {
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, arg1, arg2, arg3);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    args[2] = arg3;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 3, info.lambdaArgs.size());
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, args);
+	            }
+        	}
+        }
+        return invokeMethod(target.thread(), target, method, type, target, arg1, arg2, arg3);
+    }
+    
+    /**
+     * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+     * 
+	 * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <D> The type of the fourth parameter of the method.
+     * @param <R> The return type of the method.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target extends QObject,A,B,C,D,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method5<Target,A,B,C,D,R> method, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
+        return invokeMethod(target, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4);
+    }
+    
+    /**
+     * <p>Invokes the method and returns it's result value.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * <p>If the invocation is asynchronous, the return value cannot be evaluated.</p>
+     * 
+	 * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <D> The type of the fourth parameter of the method.
+     * @param <R> The return type of the method.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target extends QObject,A,B,C,D,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method5<Target,A,B,C,D,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
+		switch(type) {
+        case AutoConnection:
+        case DirectConnection:
+        	if(target.isObjectsThread())
+                try {
+                    return method.invoke(target, arg1, arg2, arg3, arg4);
+                } catch (Throwable e) {
+                    throw new QUnsuccessfulInvocationException(e);
+                }
+        default:
+    	}
+    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, target);
+        if(info!=null) {
+        	if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+4) {
+                if(info.lambdaArgs.isEmpty()) {
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, arg1, arg2, arg3, arg4);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    args[2] = arg3;
+                    args[3] = arg4;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 4, info.lambdaArgs.size());
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, args);
+	            }
+        	}
+        }
+        return invokeMethod(target.thread(), target, method, type, target, arg1, arg2, arg3, arg4);
+    }
+    
+    /**
+     * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+     * 
+	 * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <D> The type of the fourth parameter of the method.
+     * @param <E> The type of the fifth parameter of the method.
+     * @param <R> The return type of the method.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target extends QObject,A,B,C,D,E,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method6<Target,A,B,C,D,E,R> method, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
+        return invokeMethod(target, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5);
+    }
+    
+    /**
+     * <p>Invokes the method and returns it's result value.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * <p>If the invocation is asynchronous, the return value cannot be evaluated.</p>
+     * 
+	 * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <D> The type of the fourth parameter of the method.
+     * @param <E> The type of the fifth parameter of the method.
+     * @param <R> The return type of the method.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target extends QObject,A,B,C,D,E,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method6<Target,A,B,C,D,E,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
+		switch(type) {
+        case AutoConnection:
+        case DirectConnection:
+        	if(target.isObjectsThread())
+                try {
+                    return method.invoke(target, arg1, arg2, arg3, arg4, arg5);
+                } catch (Throwable e) {
+                    throw new QUnsuccessfulInvocationException(e);
+                }
+        default:
+    	}
+    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, target);
+        if(info!=null) {
+        	if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+5) {
+                if(info.lambdaArgs.isEmpty()) {
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, arg1, arg2, arg3, arg4, arg5);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    args[2] = arg3;
+                    args[3] = arg4;
+                    args[4] = arg5;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 5, info.lambdaArgs.size());
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, args);
+	            }
+        	}
+        }
+        return invokeMethod(target.thread(), target, method, type, target, arg1, arg2, arg3, arg4, arg5);
+    }
+    
+    /**
+     * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+     * 
+	 * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <D> The type of the fourth parameter of the method.
+     * @param <E> The type of the fifth parameter of the method.
+     * @param <F> The type of the sixth parameter of the method.
+     * @param <R> The return type of the method.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target extends QObject,A,B,C,D,E,F,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method7<Target,A,B,C,D,E,F,R> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
+        return invokeMethod(target, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6);
+    }
+    
+    /**
+     * <p>Invokes the method and returns it's result value.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * <p>If the invocation is asynchronous, the return value cannot be evaluated.</p>
+     * 
+	 * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <D> The type of the fourth parameter of the method.
+     * @param <E> The type of the fifth parameter of the method.
+     * @param <F> The type of the sixth parameter of the method.
+     * @param <R> The return type of the method.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target extends QObject,A,B,C,D,E,F,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method7<Target,A,B,C,D,E,F,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
+		switch(type) {
+        case AutoConnection:
+        case DirectConnection:
+        	if(target.isObjectsThread())
+                try {
+                    return method.invoke(target, arg1, arg2, arg3, arg4, arg5, arg6);
+                } catch (Throwable e) {
+                    throw new QUnsuccessfulInvocationException(e);
+                }
+        default:
+    	}
+    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, target);
+        if(info!=null) {
+        	if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+6) {
+                if(info.lambdaArgs.isEmpty()) {
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, arg1, arg2, arg3, arg4, arg5, arg6);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    args[2] = arg3;
+                    args[3] = arg4;
+                    args[4] = arg5;
+                    args[5] = arg6;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 6, info.lambdaArgs.size());
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, args);
+                }
+        	}
+        }
+        return invokeMethod(target.thread(), target, method, type, target, arg1, arg2, arg3, arg4, arg5, arg6);
+    }
+    
+    /**
+     * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+     * 
+	 * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <D> The type of the fourth parameter of the method.
+     * @param <E> The type of the fifth parameter of the method.
+     * @param <F> The type of the sixth parameter of the method.
+     * @param <G> The type of the seventh parameter of the method.
+     * @param <R> The return type of the method.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target extends QObject,A,B,C,D,E,F,G,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method8<Target,A,B,C,D,E,F,G,R> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
+        return invokeMethod(target, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+    }
+    
+    /**
+     * <p>Invokes the method and returns it's result value.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * <p>If the invocation is asynchronous, the return value cannot be evaluated.</p>
+     * 
+	 * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <D> The type of the fourth parameter of the method.
+     * @param <E> The type of the fifth parameter of the method.
+     * @param <F> The type of the sixth parameter of the method.
+     * @param <G> The type of the seventh parameter of the method.
+     * @param <R> The return type of the method.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target extends QObject,A,B,C,D,E,F,G,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method8<Target,A,B,C,D,E,F,G,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
+		switch(type) {
+        case AutoConnection:
+        case DirectConnection:
+        	if(target.isObjectsThread())
+                try {
+                    return method.invoke(target, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+                } catch (Throwable e) {
+                    throw new QUnsuccessfulInvocationException(e);
+                }
+        default:
+    	}
+    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, target);
+        if(info!=null) {
+        	if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+7) {
+                if(info.lambdaArgs.isEmpty()) {
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    args[2] = arg3;
+                    args[3] = arg4;
+                    args[4] = arg5;
+                    args[5] = arg6;
+                    args[6] = arg7;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 7, info.lambdaArgs.size());
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, args);
+	            }
+        	}
+        }
+        return invokeMethod(target.thread(), target, method, type, target, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+    }
+    
+    /**
+     * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+     * 
+	 * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <D> The type of the fourth parameter of the method.
+     * @param <E> The type of the fifth parameter of the method.
+     * @param <F> The type of the sixth parameter of the method.
+     * @param <G> The type of the seventh parameter of the method.
+     * @param <H> The type of the eighth parameter of the method.
+     * @param <R> The return type of the method.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     * @param arg8 Argument for the eighth parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target extends QObject,A,B,C,D,E,F,G,H,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method9<Target,A,B,C,D,E,F,G,H,R> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
+        return invokeMethod(target, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+    }
+    
+    /**
+     * <p>Invokes the method and returns it's result value.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * <p>If the invocation is asynchronous, the return value cannot be evaluated.</p>
+     * 
+	 * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <D> The type of the fourth parameter of the method.
+     * @param <E> The type of the fifth parameter of the method.
+     * @param <F> The type of the sixth parameter of the method.
+     * @param <G> The type of the seventh parameter of the method.
+     * @param <H> The type of the eighth parameter of the method.
+     * @param <R> The return type of the method.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     * @param arg8 Argument for the eighth parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target extends QObject,A,B,C,D,E,F,G,H,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method9<Target,A,B,C,D,E,F,G,H,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
+		switch(type) {
+        case AutoConnection:
+        case DirectConnection:
+        	if(target.isObjectsThread())
+                try {
+                    return method.invoke(target, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+                } catch (Throwable e) {
+                    throw new QUnsuccessfulInvocationException(e);
+                }
+        default:
+    	}
+    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, target);
+        if(info!=null) {
+        	if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+8) {
+                if(info.lambdaArgs.isEmpty()) {
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    args[2] = arg3;
+                    args[3] = arg4;
+                    args[4] = arg5;
+                    args[5] = arg6;
+                    args[6] = arg7;
+                    args[7] = arg8;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 8, info.lambdaArgs.size());
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+	            }
+        	}
+        }
+        return invokeMethod(target.thread(), target, method, type, target, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+    }
+    
+    /**
+     * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+     * 
+	 * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <D> The type of the fourth parameter of the method.
+     * @param <E> The type of the fifth parameter of the method.
+     * @param <F> The type of the sixth parameter of the method.
+     * @param <G> The type of the seventh parameter of the method.
+     * @param <H> The type of the eighth parameter of the method.
+     * @param <I> The type of the ninth parameter of the method.
+     * @param <R> The return type of the method.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     * @param arg8 Argument for the eighth parameter.
+     * @param arg9 Argument for the ninth parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target extends QObject,A,B,C,D,E,F,G,H,I,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method10<Target,A,B,C,D,E,F,G,H,I,R> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException {
+        return invokeMethod(target, method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+    }
+    
+    /**
+     * <p>Invokes the method and returns it's result value.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * <p>If the invocation is asynchronous, the return value cannot be evaluated.</p>
+     * 
+	 * @param <Target> The target type.
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <D> The type of the fourth parameter of the method.
+     * @param <E> The type of the fifth parameter of the method.
+     * @param <F> The type of the sixth parameter of the method.
+     * @param <G> The type of the seventh parameter of the method.
+     * @param <H> The type of the eighth parameter of the method.
+     * @param <I> The type of the ninth parameter of the method.
+     * @param <R> The return type of the method.
+     * @param target the target object for invocation
+     * @param method invoked method
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     * @param arg8 Argument for the eighth parameter.
+     * @param arg9 Argument for the ninth parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+     * @throws QUnsuccessfulInvocationException if not able to invoke slot
+     */
+    @QtUninvokable
+    public static <Target extends QObject,A,B,C,D,E,F,G,H,I,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method10<Target,A,B,C,D,E,F,G,H,I,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException {
+    	if(type==null)
+    		type = Qt.ConnectionType.AutoConnection;
+		switch(type) {
+        case AutoConnection:
+        case DirectConnection:
+        	if(target.isObjectsThread())
+                try {
+                    return method.invoke(target, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+                } catch (Throwable e) {
+                    throw new QUnsuccessfulInvocationException(e);
+                }
+        default:
+    	}
+    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, target);
+        if(info!=null) {
+        	if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+9) {
+                if(info.lambdaArgs.isEmpty()) {
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+                }else {
+                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    args[0] = arg1;
+                    args[1] = arg2;
+                    args[2] = arg3;
+                    args[3] = arg4;
+                    args[4] = arg5;
+                    args[5] = arg6;
+                    args[6] = arg7;
+                    args[7] = arg8;
+                    args[8] = arg9;
+                    System.arraycopy(info.lambdaArgs.toArray(), 0, args, 9, info.lambdaArgs.size());
+                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+	            }
+        	}
+        }
+        return invokeMethod(target.thread(), target, method, type, target, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
     }
     
     @QtUninvokable
     private static <R> R invokeMethod(QThread thread, QObject context, Method0<R> method, Qt.ConnectionType type) throws QUnsuccessfulInvocationException {
         switch(type) {
         case AutoConnection:
-            if(thread!=null && thread!=QThread.currentThread()) {
-                throw new QUnsuccessfulInvocationException("Unable to invoke methods with return values in queued connections (auto connection with different threads).");
+            if(!QThread.isCurrentOrNull(thread)) {
+                throw new QUnsuccessfulInvocationException("Unable to invoke method with return value in queued connections (auto connection with different threads).");
             }
             // fall through
         case DirectConnection:
@@ -3860,7 +7927,7 @@ public final class QMetaObject {
                 throw new QUnsuccessfulInvocationException(e);
             }
         case BlockingQueuedConnection:
-            if(thread!=null && thread!=QThread.currentThread()) {
+            if(!QThread.isCurrentOrNull(thread)) {
                 List<R> result = Arrays.asList((R)null);
                 if(context!=null) {
                 	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(context), ()->{
@@ -3877,7 +7944,6 @@ public final class QMetaObject {
 	                    @Override
 	                    public boolean event(QEvent event) {
 	                        if(event.type()==QEvent.Type.DeferredDispose
-	                                && (context==null || !context.isDisposed()) 
 	                                && !(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
 	                            try {
 	                                result.set(0, method.invoke());
@@ -3902,10 +7968,13 @@ public final class QMetaObject {
 	                }
                 }
                 return result.get(0);
+            }else if(thread==null) {
+                throw new QUnsuccessfulInvocationException("Blocking-queued invocation of method on not allowed without thread affinity.");
+            }else {
+                throw new QUnsuccessfulInvocationException("Blocking-queued invocation on object whose thread is the current thread is not allowed.");
             }
-            throw new QUnsuccessfulInvocationException("Blocking-queued invocation of method on not allowed without thread affinity.");
         case QueuedConnection:
-            throw new QUnsuccessfulInvocationException("Unable to invoke methods with return values in queued connections.");
+            throw new QUnsuccessfulInvocationException("Unable to invoke method with return value in queued connections.");
         default:
             break;
         }
@@ -3916,8 +7985,8 @@ public final class QMetaObject {
     private static <A,R> R invokeMethod(QThread thread, QObject context, Method1<A,R> method, Qt.ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
         switch(type) {
         case AutoConnection:
-            if(thread!=null && thread!=QThread.currentThread()) {
-                throw new QUnsuccessfulInvocationException("Unable to invoke methods with return values in queued connections (auto connection with different threads).");
+            if(!QThread.isCurrentOrNull(thread)) {
+                throw new QUnsuccessfulInvocationException("Unable to invoke method with return value in queued connections (auto connection with different threads).");
             }
             // fall through
         case DirectConnection:
@@ -3927,7 +7996,7 @@ public final class QMetaObject {
                 throw new QUnsuccessfulInvocationException(e);
             }
         case BlockingQueuedConnection:
-            if(thread!=null && thread!=QThread.currentThread()) {
+            if(!QThread.isCurrentOrNull(thread)) {
                 List<R> result = Arrays.asList((R)null);
                 if(context!=null) {
                 	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(context), ()->{
@@ -3944,7 +8013,6 @@ public final class QMetaObject {
 	                    @Override
 	                    public boolean event(QEvent event) {
 	                        if(event.type()==QEvent.Type.DeferredDispose
-	                                && (context==null || !context.isDisposed()) 
 	                                && !(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
 	                            try {
 	                                result.set(0, method.invoke(arg1));
@@ -3969,10 +8037,13 @@ public final class QMetaObject {
 	                }
                 }
                 return result.get(0);
+            }else if(thread==null) {
+                throw new QUnsuccessfulInvocationException("Blocking-queued invocation of method on not allowed without thread affinity.");
+            }else {
+                throw new QUnsuccessfulInvocationException("Blocking-queued invocation on object whose thread is the current thread is not allowed.");
             }
-            throw new QUnsuccessfulInvocationException("Blocking-queued invocation of method on not allowed without thread affinity.");
         case QueuedConnection:
-            throw new QUnsuccessfulInvocationException("Unable to invoke methods with return values in queued connections.");
+            throw new QUnsuccessfulInvocationException("Unable to invoke method with return value in queued connections.");
         default:
             break;
         }
@@ -3983,8 +8054,8 @@ public final class QMetaObject {
     private static <A,B,R> R invokeMethod(QThread thread, QObject context, Method2<A,B,R> method, Qt.ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
         switch(type) {
         case AutoConnection:
-            if(thread!=null && thread!=QThread.currentThread()) {
-                throw new QUnsuccessfulInvocationException("Unable to invoke methods with return values in queued connections (auto connection with different threads).");
+            if(!QThread.isCurrentOrNull(thread)) {
+                throw new QUnsuccessfulInvocationException("Unable to invoke method with return value in queued connections (auto connection with different threads).");
             }
         case DirectConnection:
             try {
@@ -3993,7 +8064,7 @@ public final class QMetaObject {
                 throw new QUnsuccessfulInvocationException(e);
             }
         case BlockingQueuedConnection:
-            if(thread!=null && thread!=QThread.currentThread()) {
+            if(!QThread.isCurrentOrNull(thread)) {
                 List<R> result = Arrays.asList((R)null);
                 if(context!=null) {
                 	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(context), ()->{
@@ -4010,7 +8081,6 @@ public final class QMetaObject {
 	                    @Override
 	                    public boolean event(QEvent event) {
 	                        if(event.type()==QEvent.Type.DeferredDispose
-	                                && (context==null || !context.isDisposed()) 
 	                                && !(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
 	                            try {
 	                                result.set(0, method.invoke(arg1, arg2));
@@ -4035,10 +8105,13 @@ public final class QMetaObject {
 	                }
                 }
                 return result.get(0);
+            }else if(thread==null) {
+                throw new QUnsuccessfulInvocationException("Blocking-queued invocation of method on not allowed without thread affinity.");
+            }else {
+                throw new QUnsuccessfulInvocationException("Blocking-queued invocation on object whose thread is the current thread is not allowed.");
             }
-            throw new QUnsuccessfulInvocationException("Blocking-queued invocation of method on not allowed without thread affinity.");
         case QueuedConnection:
-            throw new QUnsuccessfulInvocationException("Unable to invoke methods with return values in queued connections.");
+            throw new QUnsuccessfulInvocationException("Unable to invoke method with return value in queued connections.");
         default:
             break;
         }
@@ -4049,8 +8122,8 @@ public final class QMetaObject {
     private static <A,B,C,R> R invokeMethod(QThread thread, QObject context, Method3<A,B,C,R> method, Qt.ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
         switch(type) {
         case AutoConnection:
-            if(thread!=null && thread!=QThread.currentThread()) {
-                throw new QUnsuccessfulInvocationException("Unable to invoke methods with return values in queued connections (auto connection with different threads).");
+            if(!QThread.isCurrentOrNull(thread)) {
+                throw new QUnsuccessfulInvocationException("Unable to invoke method with return value in queued connections (auto connection with different threads).");
             }
         case DirectConnection:
             try {
@@ -4059,7 +8132,7 @@ public final class QMetaObject {
                 throw new QUnsuccessfulInvocationException(e);
             }
         case BlockingQueuedConnection:
-            if(thread!=null && thread!=QThread.currentThread()) {
+            if(!QThread.isCurrentOrNull(thread)) {
                 List<R> result = Arrays.asList((R)null);
                 if(context!=null) {
                 	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(context), ()->{
@@ -4076,7 +8149,6 @@ public final class QMetaObject {
 	                    @Override
 	                    public boolean event(QEvent event) {
 	                        if(event.type()==QEvent.Type.DeferredDispose
-	                                && (context==null || !context.isDisposed()) 
 	                                && !(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
 	                            try {
 	                                result.set(0, method.invoke(arg1, arg2, arg3));
@@ -4101,10 +8173,13 @@ public final class QMetaObject {
 	                }
                 }
                 return result.get(0);
+            }else if(thread==null) {
+                throw new QUnsuccessfulInvocationException("Blocking-queued invocation of method on not allowed without thread affinity.");
+            }else {
+                throw new QUnsuccessfulInvocationException("Blocking-queued invocation on object whose thread is the current thread is not allowed.");
             }
-            throw new QUnsuccessfulInvocationException("Blocking-queued invocation of method on not allowed without thread affinity.");
         case QueuedConnection:
-            throw new QUnsuccessfulInvocationException("Unable to invoke methods with return values in queued connections.");
+            throw new QUnsuccessfulInvocationException("Unable to invoke method with return value in queued connections.");
         default:
             break;
         }
@@ -4115,8 +8190,8 @@ public final class QMetaObject {
     private static <A,B,C,D,R> R invokeMethod(QThread thread, QObject context, Method4<A,B,C,D,R> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
         switch(type) {
         case AutoConnection:
-            if(thread!=null && thread!=QThread.currentThread()) {
-                throw new QUnsuccessfulInvocationException("Unable to invoke methods with return values in queued connections (auto connection with different threads).");
+            if(!QThread.isCurrentOrNull(thread)) {
+                throw new QUnsuccessfulInvocationException("Unable to invoke method with return value in queued connections (auto connection with different threads).");
             }
         case DirectConnection:
             try {
@@ -4125,7 +8200,7 @@ public final class QMetaObject {
                 throw new QUnsuccessfulInvocationException(e);
             }
         case BlockingQueuedConnection:
-            if(thread!=null && thread!=QThread.currentThread()) {
+            if(!QThread.isCurrentOrNull(thread)) {
                 List<R> result = Arrays.asList((R)null);
                 if(context!=null) {
                 	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(context), ()->{
@@ -4142,7 +8217,6 @@ public final class QMetaObject {
 	                    @Override
 	                    public boolean event(QEvent event) {
 	                        if(event.type()==QEvent.Type.DeferredDispose
-	                                && (context==null || !context.isDisposed()) 
 	                                && !(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
 	                            try {
 	                                result.set(0, method.invoke(arg1, arg2, arg3, arg4));
@@ -4167,10 +8241,13 @@ public final class QMetaObject {
 	                }
                 }
                 return result.get(0);
+            }else if(thread==null) {
+                throw new QUnsuccessfulInvocationException("Blocking-queued invocation of method on not allowed without thread affinity.");
+            }else {
+                throw new QUnsuccessfulInvocationException("Blocking-queued invocation on object whose thread is the current thread is not allowed.");
             }
-            throw new QUnsuccessfulInvocationException("Blocking-queued invocation of method on not allowed without thread affinity.");
         case QueuedConnection:
-            throw new QUnsuccessfulInvocationException("Unable to invoke methods with return values in queued connections.");
+            throw new QUnsuccessfulInvocationException("Unable to invoke method with return value in queued connections.");
         default:
             break;
         }
@@ -4181,8 +8258,8 @@ public final class QMetaObject {
     private static <A,B,C,D,E,R> R invokeMethod(QThread thread, QObject context, Method5<A,B,C,D,E,R> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
         switch(type) {
         case AutoConnection:
-            if(thread!=null && thread!=QThread.currentThread()) {
-                throw new QUnsuccessfulInvocationException("Unable to invoke methods with return values in queued connections (auto connection with different threads).");
+            if(!QThread.isCurrentOrNull(thread)) {
+                throw new QUnsuccessfulInvocationException("Unable to invoke method with return value in queued connections (auto connection with different threads).");
             }
         case DirectConnection:
             try {
@@ -4191,7 +8268,7 @@ public final class QMetaObject {
                 throw new QUnsuccessfulInvocationException(e);
             }
         case BlockingQueuedConnection:
-            if(thread!=null && thread!=QThread.currentThread()) {
+            if(!QThread.isCurrentOrNull(thread)) {
                 List<R> result = Arrays.asList((R)null);
                 if(context!=null) {
                 	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(context), ()->{
@@ -4208,7 +8285,6 @@ public final class QMetaObject {
 	                    @Override
 	                    public boolean event(QEvent event) {
 	                        if(event.type()==QEvent.Type.DeferredDispose
-	                                && (context==null || !context.isDisposed()) 
 	                                && !(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
 	                            try {
 	                                result.set(0, method.invoke(arg1, arg2, arg3, arg4, arg5));
@@ -4233,10 +8309,13 @@ public final class QMetaObject {
 	                }
                 }
                 return result.get(0);
+            }else if(thread==null) {
+                throw new QUnsuccessfulInvocationException("Blocking-queued invocation of method on not allowed without thread affinity.");
+            }else {
+                throw new QUnsuccessfulInvocationException("Blocking-queued invocation on object whose thread is the current thread is not allowed.");
             }
-            throw new QUnsuccessfulInvocationException("Blocking-queued invocation of method on not allowed without thread affinity.");
         case QueuedConnection:
-            throw new QUnsuccessfulInvocationException("Unable to invoke methods with return values in queued connections.");
+            throw new QUnsuccessfulInvocationException("Unable to invoke method with return value in queued connections.");
         default:
             break;
         }
@@ -4247,8 +8326,8 @@ public final class QMetaObject {
     private static <A,B,C,D,E,F,R> R invokeMethod(QThread thread, QObject context, Method6<A,B,C,D,E,F,R> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
         switch(type) {
         case AutoConnection:
-            if(thread!=null && thread!=QThread.currentThread()) {
-                throw new QUnsuccessfulInvocationException("Unable to invoke methods with return values in queued connections (auto connection with different threads).");
+            if(!QThread.isCurrentOrNull(thread)) {
+                throw new QUnsuccessfulInvocationException("Unable to invoke method with return value in queued connections (auto connection with different threads).");
             }
         case DirectConnection:
             try {
@@ -4257,7 +8336,7 @@ public final class QMetaObject {
                 throw new QUnsuccessfulInvocationException(e);
             }
         case BlockingQueuedConnection:
-            if(thread!=null && thread!=QThread.currentThread()) {
+            if(!QThread.isCurrentOrNull(thread)) {
                 List<R> result = Arrays.asList((R)null);
                 if(context!=null) {
                 	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(context), ()->{
@@ -4274,7 +8353,6 @@ public final class QMetaObject {
 	                    @Override
 	                    public boolean event(QEvent event) {
 	                        if(event.type()==QEvent.Type.DeferredDispose
-	                                && (context==null || !context.isDisposed()) 
 	                                && !(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
 	                            try {
 	                                result.set(0, method.invoke(arg1, arg2, arg3, arg4, arg5, arg6));
@@ -4299,10 +8377,13 @@ public final class QMetaObject {
 	                }
                 }
                 return result.get(0);
+            }else if(thread==null) {
+                throw new QUnsuccessfulInvocationException("Blocking-queued invocation of method on not allowed without thread affinity.");
+            }else {
+                throw new QUnsuccessfulInvocationException("Blocking-queued invocation on object whose thread is the current thread is not allowed.");
             }
-            throw new QUnsuccessfulInvocationException("Blocking-queued invocation of method on not allowed without thread affinity.");
         case QueuedConnection:
-            throw new QUnsuccessfulInvocationException("Unable to invoke methods with return values in queued connections.");
+            throw new QUnsuccessfulInvocationException("Unable to invoke method with return value in queued connections.");
         default:
             break;
         }
@@ -4313,8 +8394,8 @@ public final class QMetaObject {
     private static <A,B,C,D,E,F,G,R> R invokeMethod(QThread thread, QObject context, Method7<A,B,C,D,E,F,G,R> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
         switch(type) {
         case AutoConnection:
-            if(thread!=null && thread!=QThread.currentThread()) {
-                throw new QUnsuccessfulInvocationException("Unable to invoke methods with return values in queued connections (auto connection with different threads).");
+            if(!QThread.isCurrentOrNull(thread)) {
+                throw new QUnsuccessfulInvocationException("Unable to invoke method with return value in queued connections (auto connection with different threads).");
             }
         case DirectConnection:
             try {
@@ -4323,7 +8404,7 @@ public final class QMetaObject {
                 throw new QUnsuccessfulInvocationException(e);
             }
         case BlockingQueuedConnection:
-            if(thread!=null && thread!=QThread.currentThread()) {
+            if(!QThread.isCurrentOrNull(thread)) {
                 List<R> result = Arrays.asList((R)null);
                 if(context!=null) {
                 	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(context), ()->{
@@ -4340,7 +8421,6 @@ public final class QMetaObject {
 	                    @Override
 	                    public boolean event(QEvent event) {
 	                        if(event.type()==QEvent.Type.DeferredDispose
-	                                && (context==null || !context.isDisposed()) 
 	                                && !(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
 	                            try {
 	                                result.set(0, method.invoke(arg1, arg2, arg3, arg4, arg5, arg6, arg7));
@@ -4365,10 +8445,13 @@ public final class QMetaObject {
 	                }
                 }
                 return result.get(0);
+            }else if(thread==null) {
+                throw new QUnsuccessfulInvocationException("Blocking-queued invocation of method on not allowed without thread affinity.");
+            }else {
+                throw new QUnsuccessfulInvocationException("Blocking-queued invocation on object whose thread is the current thread is not allowed.");
             }
-            throw new QUnsuccessfulInvocationException("Blocking-queued invocation of method on not allowed without thread affinity.");
         case QueuedConnection:
-            throw new QUnsuccessfulInvocationException("Unable to invoke methods with return values in queued connections.");
+            throw new QUnsuccessfulInvocationException("Unable to invoke method with return value in queued connections.");
         default:
             break;
         }
@@ -4379,8 +8462,8 @@ public final class QMetaObject {
     private static <A,B,C,D,E,F,G,H,R> R invokeMethod(QThread thread, QObject context, Method8<A,B,C,D,E,F,G,H,R> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
         switch(type) {
         case AutoConnection:
-            if(thread!=null && thread!=QThread.currentThread()) {
-                throw new QUnsuccessfulInvocationException("Unable to invoke methods with return values in queued connections (auto connection with different threads).");
+            if(!QThread.isCurrentOrNull(thread)) {
+                throw new QUnsuccessfulInvocationException("Unable to invoke method with return value in queued connections (auto connection with different threads).");
             }
         case DirectConnection:
             try {
@@ -4389,7 +8472,7 @@ public final class QMetaObject {
                 throw new QUnsuccessfulInvocationException(e);
             }
         case BlockingQueuedConnection:
-            if(thread!=null && thread!=QThread.currentThread()) {
+            if(!QThread.isCurrentOrNull(thread)) {
                 List<R> result = Arrays.asList((R)null);
                 if(context!=null) {
                 	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(context), ()->{
@@ -4406,7 +8489,6 @@ public final class QMetaObject {
 	                    @Override
 	                    public boolean event(QEvent event) {
 	                        if(event.type()==QEvent.Type.DeferredDispose
-	                                && (context==null || !context.isDisposed()) 
 	                                && !(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
 	                            try {
 	                                result.set(0, method.invoke(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8));
@@ -4431,10 +8513,13 @@ public final class QMetaObject {
 	                }
                 }
                 return result.get(0);
+            }else if(thread==null) {
+                throw new QUnsuccessfulInvocationException("Blocking-queued invocation of method on not allowed without thread affinity.");
+            }else {
+                throw new QUnsuccessfulInvocationException("Blocking-queued invocation on object whose thread is the current thread is not allowed.");
             }
-            throw new QUnsuccessfulInvocationException("Blocking-queued invocation of method on not allowed without thread affinity.");
         case QueuedConnection:
-            throw new QUnsuccessfulInvocationException("Unable to invoke methods with return values in queued connections.");
+            throw new QUnsuccessfulInvocationException("Unable to invoke method with return value in queued connections.");
         default:
             break;
         }
@@ -4445,8 +8530,8 @@ public final class QMetaObject {
     private static <A,B,C,D,E,F,G,H,I,R> R invokeMethod(QThread thread, QObject context, Method9<A,B,C,D,E,F,G,H,I,R> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException {
         switch(type) {
         case AutoConnection:
-            if(thread!=null && thread!=QThread.currentThread()) {
-                throw new QUnsuccessfulInvocationException("Unable to invoke methods with return values in queued connections (auto connection with different threads).");
+            if(!QThread.isCurrentOrNull(thread)) {
+                throw new QUnsuccessfulInvocationException("Unable to invoke method with return value in queued connections (auto connection with different threads).");
             }
         case DirectConnection:
             try {
@@ -4455,7 +8540,7 @@ public final class QMetaObject {
                 throw new QUnsuccessfulInvocationException(e);
             }
         case BlockingQueuedConnection:
-            if(thread!=null && thread!=QThread.currentThread()) {
+            if(!QThread.isCurrentOrNull(thread)) {
                 List<R> result = Arrays.asList((R)null);
                 if(context!=null) {
                 	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(context), ()->{
@@ -4472,7 +8557,6 @@ public final class QMetaObject {
 	                    @Override
 	                    public boolean event(QEvent event) {
 	                        if(event.type()==QEvent.Type.DeferredDispose
-	                                && (context==null || !context.isDisposed()) 
 	                                && !(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
 	                            try {
 	                                result.set(0, method.invoke(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9));
@@ -4497,10 +8581,81 @@ public final class QMetaObject {
 	                }
                 }
                 return result.get(0);
+            }else if(thread==null) {
+                throw new QUnsuccessfulInvocationException("Blocking-queued invocation of method on not allowed without thread affinity.");
+            }else {
+                throw new QUnsuccessfulInvocationException("Blocking-queued invocation on object whose thread is the current thread is not allowed.");
             }
-            throw new QUnsuccessfulInvocationException("Blocking-queued invocation of method on not allowed without thread affinity.");
         case QueuedConnection:
-            throw new QUnsuccessfulInvocationException("Unable to invoke methods with return values in queued connections.");
+            throw new QUnsuccessfulInvocationException("Unable to invoke method with return value in queued connections.");
+        default:
+            break;
+        }
+        throw new QUnsuccessfulInvocationException("Unable to invoke method.");
+    }
+    
+    @QtUninvokable
+    private static <A,B,C,D,E,F,G,H,I,J,R> R invokeMethod(QThread thread, QObject context, Method10<A,B,C,D,E,F,G,H,I,J,R> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9, J arg10) throws QUnsuccessfulInvocationException {
+        switch(type) {
+        case AutoConnection:
+            if(!QThread.isCurrentOrNull(thread)) {
+                throw new QUnsuccessfulInvocationException("Unable to invoke method with return value in queued connections (auto connection with different threads).");
+            }
+        case DirectConnection:
+            try {
+                return method.invoke(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10);
+            } catch (Throwable e) {
+                throw new QUnsuccessfulInvocationException(e);
+            }
+        case BlockingQueuedConnection:
+            if(!QThread.isCurrentOrNull(thread)) {
+                List<R> result = Arrays.asList((R)null);
+                if(context!=null) {
+                	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(context), ()->{
+                		if(!(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
+                			try {
+                                result.set(0, method.invoke(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10));
+                            } catch (Throwable e) {
+                                Logger.getLogger("io.qt.core").log(Level.SEVERE, "Exception thrown during method invocation.", e);
+                            }
+                		}
+                	}, true);
+                }else {
+	                QObject invoker = new QObject() {
+	                    @Override
+	                    public boolean event(QEvent event) {
+	                        if(event.type()==QEvent.Type.DeferredDispose
+	                                && !(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
+	                            try {
+	                                result.set(0, method.invoke(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10));
+	                            } catch (Throwable e) {
+	                                Logger.getLogger("io.qt.core").log(Level.SEVERE, "Exception thrown during method invocation.", e);
+	                            }
+	                            synchronized (this) {
+	                                notifyAll();
+	                            }
+	                        }
+	                        return super.event(event);
+	                    }
+	                };
+	                invoker.moveToThread(thread);
+	                synchronized (invoker) {
+	                    invoker.disposeLater();
+	                    try {
+	                        invoker.wait();
+	                    } catch (InterruptedException e) {
+	                        throw new QUnsuccessfulInvocationException(e);
+	                    }
+	                }
+                }
+                return result.get(0);
+            }else if(thread==null) {
+                throw new QUnsuccessfulInvocationException("Blocking-queued invocation of method on not allowed without thread affinity.");
+            }else {
+                throw new QUnsuccessfulInvocationException("Blocking-queued invocation on object whose thread is the current thread is not allowed.");
+            }
+        case QueuedConnection:
+            throw new QUnsuccessfulInvocationException("Unable to invoke method with return value in queued connections.");
         default:
             break;
         }
@@ -4509,7 +8664,7 @@ public final class QMetaObject {
     
     @QtUninvokable
     private static void invokeMethod(QThread thread, QObject context, Slot0 method, Qt.ConnectionType type) throws QUnsuccessfulInvocationException {
-        if(type==Qt.ConnectionType.AutoConnection && thread!=null && thread!=QThread.currentThread()) {
+        if(type==Qt.ConnectionType.AutoConnection && !QThread.isCurrentOrNull(thread)) {
             type = Qt.ConnectionType.QueuedConnection;
         }
         switch(type) {
@@ -4522,53 +8677,51 @@ public final class QMetaObject {
                 throw new QUnsuccessfulInvocationException(e);
             }
         case BlockingQueuedConnection:
-            if(thread!=null) {
-                if(thread!=QThread.currentThread()) {
-                    if(context!=null) {
-                    	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(context), ()->{
-                    		if(!(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
-                    			try {
+            if(!QThread.isCurrentOrNull(thread)) {
+                if(context!=null) {
+                	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(context), ()->{
+                		if(!(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
+                			try {
+                                method.invoke();
+                            } catch (Throwable e) {
+                                Logger.getLogger("io.qt.core").log(Level.SEVERE, "Exception thrown during method invocation.", e);
+                            }
+                		}
+                	}, true);
+                }else {
+                    QObject invoker = new QObject() {
+                        @Override
+                        public boolean event(QEvent event) {
+                            if(event.type()==QEvent.Type.DeferredDispose
+                                    && !(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
+                                try {
                                     method.invoke();
                                 } catch (Throwable e) {
                                     Logger.getLogger("io.qt.core").log(Level.SEVERE, "Exception thrown during method invocation.", e);
                                 }
-                    		}
-                    	}, true);
-                    }else {
-	                    QObject invoker = new QObject() {
-	                        @Override
-	                        public boolean event(QEvent event) {
-	                            if(event.type()==QEvent.Type.DeferredDispose
-	                                    && (context==null || !context.isDisposed()) 
-	                                    && !(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
-	                                try {
-	                                    method.invoke();
-	                                } catch (Throwable e) {
-	                                    Logger.getLogger("io.qt.core").log(Level.SEVERE, "Exception thrown during method invocation.", e);
-	                                }
-	                                synchronized (this) {
-	                                    notifyAll();
-	                                }
-	                            }
-	                            return super.event(event);
-	                        }
-	                    };
-	                    invoker.moveToThread(thread);
-	                    synchronized (invoker) {
-	                        invoker.disposeLater();
-	                        try {
-	                            invoker.wait();
-	                        } catch (InterruptedException e) {
-	                            throw new QUnsuccessfulInvocationException(e);
-	                        }
-	                    }
+                                synchronized (this) {
+                                    notifyAll();
+                                }
+                            }
+                            return super.event(event);
+                        }
+                    };
+                    invoker.moveToThread(thread);
+                    synchronized (invoker) {
+                        invoker.disposeLater();
+                        try {
+                            invoker.wait();
+                        } catch (InterruptedException e) {
+                            throw new QUnsuccessfulInvocationException(e);
+                        }
                     }
-                    return;
-                }else {
-                    throw new QUnsuccessfulInvocationException("Blocking-queued invocation on object whose thread is the current thread is not allowed.");
                 }
+                return;
+            }else if(thread==null) {
+                throw new QUnsuccessfulInvocationException("Blocking-queued invocation of method on not allowed without thread affinity.");
+            }else {
+                throw new QUnsuccessfulInvocationException("Blocking-queued invocation on object whose thread is the current thread is not allowed.");
             }
-            throw new QUnsuccessfulInvocationException("Blocking-queued invocation of method on not allowed without thread affinity.");
         case QueuedConnection:
             if(context!=null) {
             	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(context), ()->{
@@ -4585,7 +8738,6 @@ public final class QMetaObject {
 	                @Override
 	                public boolean event(QEvent event) {
 	                    if(event.type()==QEvent.Type.DeferredDispose
-	                            && (context==null || !context.isDisposed()) 
 	                            && !(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
 	                        try {
 	                            method.invoke();
@@ -4610,7 +8762,7 @@ public final class QMetaObject {
     
     @QtUninvokable
     private static <A> void invokeMethod(QThread thread, QObject context, Slot1<A> method, Qt.ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
-        if(type==Qt.ConnectionType.AutoConnection && thread!=null && thread!=QThread.currentThread()) {
+        if(type==Qt.ConnectionType.AutoConnection && !QThread.isCurrentOrNull(thread)) {
             type = Qt.ConnectionType.QueuedConnection;
         }
         switch(type) {
@@ -4623,53 +8775,51 @@ public final class QMetaObject {
                 throw new QUnsuccessfulInvocationException(e);
             }
         case BlockingQueuedConnection:
-            if(thread!=null) {
-                if(thread!=QThread.currentThread()) {
-                    if(context!=null) {
-                    	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(context), ()->{
-                    		if(!(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
-                    			try {
+        	if(!QThread.isCurrentOrNull(thread)) {
+                if(context!=null) {
+                	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(context), ()->{
+                		if(!(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
+                			try {
+                                method.invoke(arg1);
+                            } catch (Throwable e) {
+                                Logger.getLogger("io.qt.core").log(Level.SEVERE, "Exception thrown during method invocation.", e);
+                            }
+                		}
+                	}, true);
+                }else {
+                    QObject invoker = new QObject() {
+                        @Override
+                        public boolean event(QEvent event) {
+                            if(event.type()==QEvent.Type.DeferredDispose
+                                    && !(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
+                                try {
                                     method.invoke(arg1);
                                 } catch (Throwable e) {
                                     Logger.getLogger("io.qt.core").log(Level.SEVERE, "Exception thrown during method invocation.", e);
                                 }
-                    		}
-                    	}, true);
-                    }else {
-	                    QObject invoker = new QObject() {
-	                        @Override
-	                        public boolean event(QEvent event) {
-	                            if(event.type()==QEvent.Type.DeferredDispose
-	                                    && (context==null || !context.isDisposed()) 
-	                                    && !(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
-	                                try {
-	                                    method.invoke(arg1);
-	                                } catch (Throwable e) {
-	                                    Logger.getLogger("io.qt.core").log(Level.SEVERE, "Exception thrown during method invocation.", e);
-	                                }
-	                                synchronized (this) {
-	                                    notifyAll();
-	                                }
-	                            }
-	                            return super.event(event);
-	                        }
-	                    };
-	                    invoker.moveToThread(thread);
-	                    synchronized (invoker) {
-	                        invoker.disposeLater();
-	                        try {
-	                            invoker.wait();
-	                        } catch (InterruptedException e) {
-	                            throw new QUnsuccessfulInvocationException(e);
-	                        }
-	                    }
+                                synchronized (this) {
+                                    notifyAll();
+                                }
+                            }
+                            return super.event(event);
+                        }
+                    };
+                    invoker.moveToThread(thread);
+                    synchronized (invoker) {
+                        invoker.disposeLater();
+                        try {
+                            invoker.wait();
+                        } catch (InterruptedException e) {
+                            throw new QUnsuccessfulInvocationException(e);
+                        }
                     }
-                    return;
-                }else {
-                    throw new QUnsuccessfulInvocationException("Blocking-queued invocation on object whose thread is the current thread is not allowed.");
                 }
+                return;
+        	}else if(thread==null) {
+        		throw new QUnsuccessfulInvocationException("Blocking-queued invocation of method on not allowed without thread affinity.");
+            }else {
+                throw new QUnsuccessfulInvocationException("Blocking-queued invocation on object whose thread is the current thread is not allowed.");
             }
-            throw new QUnsuccessfulInvocationException("Blocking-queued invocation of method on not allowed without thread affinity.");
         case QueuedConnection:
             if(context!=null) {
             	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(context), ()->{
@@ -4686,7 +8836,6 @@ public final class QMetaObject {
 	                @Override
 	                public boolean event(QEvent event) {
 	                    if(event.type()==QEvent.Type.DeferredDispose
-	                            && (context==null || !context.isDisposed()) 
 	                            && !(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
 	                        try {
 	                            method.invoke(arg1);
@@ -4711,7 +8860,7 @@ public final class QMetaObject {
     
     @QtUninvokable
     private static <A,B> void invokeMethod(QThread thread, QObject context, Slot2<A,B> method, Qt.ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
-        if(type==Qt.ConnectionType.AutoConnection && thread!=null && thread!=QThread.currentThread()) {
+        if(type==Qt.ConnectionType.AutoConnection && !QThread.isCurrentOrNull(thread)) {
             type = Qt.ConnectionType.QueuedConnection;
         }
         switch(type) {
@@ -4724,53 +8873,51 @@ public final class QMetaObject {
                 throw new QUnsuccessfulInvocationException(e);
             }
         case BlockingQueuedConnection:
-            if(thread!=null) {
-                if(thread!=QThread.currentThread()) {
-                    if(context!=null) {
-                    	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(context), ()->{
-                    		if(!(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
-                    			try {
+        	if(!QThread.isCurrentOrNull(thread)) {
+                if(context!=null) {
+                	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(context), ()->{
+                		if(!(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
+                			try {
+                                method.invoke(arg1, arg2);
+                            } catch (Throwable e) {
+                                Logger.getLogger("io.qt.core").log(Level.SEVERE, "Exception thrown during method invocation.", e);
+                            }
+                		}
+                	}, true);
+                }else {
+                    QObject invoker = new QObject() {
+                        @Override
+                        public boolean event(QEvent event) {
+                            if(event.type()==QEvent.Type.DeferredDispose
+                                    && !(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
+                                try {
                                     method.invoke(arg1, arg2);
                                 } catch (Throwable e) {
                                     Logger.getLogger("io.qt.core").log(Level.SEVERE, "Exception thrown during method invocation.", e);
                                 }
-                    		}
-                    	}, true);
-                    }else {
-	                    QObject invoker = new QObject() {
-	                        @Override
-	                        public boolean event(QEvent event) {
-	                            if(event.type()==QEvent.Type.DeferredDispose
-	                                    && (context==null || !context.isDisposed()) 
-	                                    && !(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
-	                                try {
-	                                    method.invoke(arg1, arg2);
-	                                } catch (Throwable e) {
-	                                    Logger.getLogger("io.qt.core").log(Level.SEVERE, "Exception thrown during method invocation.", e);
-	                                }
-	                                synchronized (this) {
-	                                    notifyAll();
-	                                }
-	                            }
-	                            return super.event(event);
-	                        }
-	                    };
-	                    invoker.moveToThread(thread);
-	                    synchronized (invoker) {
-	                        invoker.disposeLater();
-	                        try {
-	                            invoker.wait();
-	                        } catch (InterruptedException e) {
-	                            throw new QUnsuccessfulInvocationException(e);
-	                        }
-	                    }
+                                synchronized (this) {
+                                    notifyAll();
+                                }
+                            }
+                            return super.event(event);
+                        }
+                    };
+                    invoker.moveToThread(thread);
+                    synchronized (invoker) {
+                        invoker.disposeLater();
+                        try {
+                            invoker.wait();
+                        } catch (InterruptedException e) {
+                            throw new QUnsuccessfulInvocationException(e);
+                        }
                     }
-                    return;
-                }else {
-                    throw new QUnsuccessfulInvocationException("Blocking-queued invocation on object whose thread is the current thread is not allowed.");
                 }
+                return;
+            }else if(thread==null) {
+                throw new QUnsuccessfulInvocationException("Blocking-queued invocation of method on not allowed without thread affinity.");
+            }else {
+                throw new QUnsuccessfulInvocationException("Blocking-queued invocation on object whose thread is the current thread is not allowed.");
             }
-            throw new QUnsuccessfulInvocationException("Blocking-queued invocation of method on not allowed without thread affinity.");
         case QueuedConnection:
             if(context!=null) {
             	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(context), ()->{
@@ -4787,7 +8934,6 @@ public final class QMetaObject {
 	                @Override
 	                public boolean event(QEvent event) {
 	                    if(event.type()==QEvent.Type.DeferredDispose
-	                            && (context==null || !context.isDisposed()) 
 	                            && !(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
 	                        try {
 	                            method.invoke(arg1, arg2);
@@ -4812,7 +8958,7 @@ public final class QMetaObject {
     
     @QtUninvokable
     private static <A,B,C> void invokeMethod(QThread thread, QObject context, Slot3<A,B,C> method, Qt.ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
-        if(type==Qt.ConnectionType.AutoConnection && thread!=null && thread!=QThread.currentThread()) {
+        if(type==Qt.ConnectionType.AutoConnection && !QThread.isCurrentOrNull(thread)) {
             type = Qt.ConnectionType.QueuedConnection;
         }
         switch(type) {
@@ -4825,53 +8971,51 @@ public final class QMetaObject {
                 throw new QUnsuccessfulInvocationException(e);
             }
         case BlockingQueuedConnection:
-        	if(thread!=null) {
-                if(thread!=QThread.currentThread()) {
-                    if(context!=null) {
-                    	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(context), ()->{
-                    		if(!(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
-                    			try {
+        	if(!QThread.isCurrentOrNull(thread)) {
+                if(context!=null) {
+                	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(context), ()->{
+                		if(!(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
+                			try {
+                                method.invoke(arg1, arg2, arg3);
+                            } catch (Throwable e) {
+                                Logger.getLogger("io.qt.core").log(Level.SEVERE, "Exception thrown during method invocation.", e);
+                            }
+                		}
+                	}, true);
+                }else {
+                    QObject invoker = new QObject() {
+                        @Override
+                        public boolean event(QEvent event) {
+                            if(event.type()==QEvent.Type.DeferredDispose
+                                    && !(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
+                                try {
                                     method.invoke(arg1, arg2, arg3);
                                 } catch (Throwable e) {
                                     Logger.getLogger("io.qt.core").log(Level.SEVERE, "Exception thrown during method invocation.", e);
                                 }
-                    		}
-                    	}, true);
-                    }else {
-	                    QObject invoker = new QObject() {
-	                        @Override
-	                        public boolean event(QEvent event) {
-	                            if(event.type()==QEvent.Type.DeferredDispose
-	                                    && (context==null || !context.isDisposed()) 
-	                                    && !(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
-	                                try {
-	                                    method.invoke(arg1, arg2, arg3);
-	                                } catch (Throwable e) {
-	                                    Logger.getLogger("io.qt.core").log(Level.SEVERE, "Exception thrown during method invocation.", e);
-	                                }
-	                                synchronized (this) {
-	                                    notifyAll();
-	                                }
-	                            }
-	                            return super.event(event);
-	                        }
-	                    };
-	                    invoker.moveToThread(thread);
-	                    synchronized (invoker) {
-	                        invoker.disposeLater();
-	                        try {
-	                            invoker.wait();
-	                        } catch (InterruptedException e) {
-	                            throw new QUnsuccessfulInvocationException(e);
-	                        }
-	                    }
+                                synchronized (this) {
+                                    notifyAll();
+                                }
+                            }
+                            return super.event(event);
+                        }
+                    };
+                    invoker.moveToThread(thread);
+                    synchronized (invoker) {
+                        invoker.disposeLater();
+                        try {
+                            invoker.wait();
+                        } catch (InterruptedException e) {
+                            throw new QUnsuccessfulInvocationException(e);
+                        }
                     }
-                    return;
-                }else {
-                    throw new QUnsuccessfulInvocationException("Blocking-queued invocation on object whose thread is the current thread is not allowed.");
                 }
+                return;
+            }else if(thread==null) {
+                throw new QUnsuccessfulInvocationException("Blocking-queued invocation of method on not allowed without thread affinity.");
+            }else {
+                throw new QUnsuccessfulInvocationException("Blocking-queued invocation on object whose thread is the current thread is not allowed.");
             }
-            throw new QUnsuccessfulInvocationException("Blocking-queued invocation of method on not allowed without thread affinity.");
         case QueuedConnection:
             if(context!=null) {
             	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(context), ()->{
@@ -4888,7 +9032,6 @@ public final class QMetaObject {
 	                @Override
 	                public boolean event(QEvent event) {
 	                    if(event.type()==QEvent.Type.DeferredDispose
-	                            && (context==null || !context.isDisposed()) 
 	                            && !(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
 	                        try {
 	                            method.invoke(arg1, arg2, arg3);
@@ -4913,7 +9056,7 @@ public final class QMetaObject {
     
     @QtUninvokable
     private static <A,B,C,D> void invokeMethod(QThread thread, QObject context, Slot4<A,B,C,D> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
-        if(type==Qt.ConnectionType.AutoConnection && thread!=null && thread!=QThread.currentThread()) {
+        if(type==Qt.ConnectionType.AutoConnection && !QThread.isCurrentOrNull(thread)) {
             type = Qt.ConnectionType.QueuedConnection;
         }
         switch(type) {
@@ -4926,73 +9069,82 @@ public final class QMetaObject {
                 throw new QUnsuccessfulInvocationException(e);
             }
         case BlockingQueuedConnection:
-            if(thread!=null) {
-                if(thread!=QThread.currentThread()) {
-                    if(context!=null) {
-                    	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(context), ()->{
-                    		if(!(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
-                    			try {
+        	if(!QThread.isCurrentOrNull(thread)) {
+                if(context!=null) {
+                	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(context), ()->{
+                		if(!(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
+                			try {
+                                method.invoke(arg1, arg2, arg3, arg4);
+                            } catch (Throwable e) {
+                                Logger.getLogger("io.qt.core").log(Level.SEVERE, "Exception thrown during method invocation.", e);
+                            }
+                		}
+                	}, true);
+                }else {
+                    QObject invoker = new QObject() {
+                        @Override
+                        public boolean event(QEvent event) {
+                            if(event.type()==QEvent.Type.DeferredDispose
+                                    && !(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
+                                try {
                                     method.invoke(arg1, arg2, arg3, arg4);
                                 } catch (Throwable e) {
                                     Logger.getLogger("io.qt.core").log(Level.SEVERE, "Exception thrown during method invocation.", e);
                                 }
-                    		}
-                    	}, true);
-                    }else {
-	                    QObject invoker = new QObject() {
-	                        @Override
-	                        public boolean event(QEvent event) {
-	                            if(event.type()==QEvent.Type.DeferredDispose
-	                                    && (context==null || !context.isDisposed()) 
-	                                    && !(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
-	                                try {
-	                                    method.invoke(arg1, arg2, arg3, arg4);
-	                                } catch (Throwable e) {
-	                                    Logger.getLogger("io.qt.core").log(Level.SEVERE, "Exception thrown during method invocation.", e);
-	                                }
-	                                synchronized (this) {
-	                                    notifyAll();
-	                                }
-	                            }
-	                            return super.event(event);
-	                        }
-	                    };
-	                    invoker.moveToThread(thread);
-	                    synchronized (invoker) {
-	                        invoker.disposeLater();
-	                        try {
-	                            invoker.wait();
-	                        } catch (InterruptedException e) {
-	                            throw new QUnsuccessfulInvocationException(e);
-	                        }
-	                    }
-                    }
-                    return;
-                }else {
-                    throw new QUnsuccessfulInvocationException("Blocking-queued invocation on object whose thread is the current thread is not allowed.");
-                }
-            }
-            throw new QUnsuccessfulInvocationException("Blocking-queued invocation of method on not allowed without thread affinity.");
-        case QueuedConnection:
-            QObject invoker = new QObject() {
-                @Override
-                public boolean event(QEvent event) {
-                    if(event.type()==QEvent.Type.DeferredDispose
-                            && (context==null || !context.isDisposed()) 
-                            && !(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
+                                synchronized (this) {
+                                    notifyAll();
+                                }
+                            }
+                            return super.event(event);
+                        }
+                    };
+                    invoker.moveToThread(thread);
+                    synchronized (invoker) {
+                        invoker.disposeLater();
                         try {
+                            invoker.wait();
+                        } catch (InterruptedException e) {
+                            throw new QUnsuccessfulInvocationException(e);
+                        }
+                    }
+                }
+                return;
+            }else if(thread==null) {
+                throw new QUnsuccessfulInvocationException("Blocking-queued invocation of method on not allowed without thread affinity.");
+            }else {
+                throw new QUnsuccessfulInvocationException("Blocking-queued invocation on object whose thread is the current thread is not allowed.");
+            }
+        case QueuedConnection:
+        	if(context!=null) {
+            	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(context), ()->{
+            		if(!(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
+            			try {
                             method.invoke(arg1, arg2, arg3, arg4);
                         } catch (Throwable e) {
                             Logger.getLogger("io.qt.core").log(Level.SEVERE, "Exception thrown during method invocation.", e);
                         }
-                    }
-                    return super.event(event);
-                }
-            };
-            QtJambi_LibraryUtilities.internal.setCppOwnership(invoker);
-            if(thread!=null)
-                invoker.moveToThread(thread);
-            invoker.disposeLater();
+            		}
+            	}, false);
+            }else {
+	            QObject invoker = new QObject() {
+	                @Override
+	                public boolean event(QEvent event) {
+	                    if(event.type()==QEvent.Type.DeferredDispose
+	                            && !(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
+	                        try {
+	                            method.invoke(arg1, arg2, arg3, arg4);
+	                        } catch (Throwable e) {
+	                            Logger.getLogger("io.qt.core").log(Level.SEVERE, "Exception thrown during method invocation.", e);
+	                        }
+	                    }
+	                    return super.event(event);
+	                }
+	            };
+	            QtJambi_LibraryUtilities.internal.setCppOwnership(invoker);
+	            if(thread!=null)
+	                invoker.moveToThread(thread);
+	            invoker.disposeLater();
+            }
             return;
         default:
             break;
@@ -5002,7 +9154,7 @@ public final class QMetaObject {
     
     @QtUninvokable
     private static <A,B,C,D,E> void invokeMethod(QThread thread, QObject context, Slot5<A,B,C,D,E> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
-        if(type==Qt.ConnectionType.AutoConnection && thread!=null && thread!=QThread.currentThread()) {
+        if(type==Qt.ConnectionType.AutoConnection && !QThread.isCurrentOrNull(thread)) {
             type = Qt.ConnectionType.QueuedConnection;
         }
         switch(type) {
@@ -5015,53 +9167,51 @@ public final class QMetaObject {
                 throw new QUnsuccessfulInvocationException(e);
             }
         case BlockingQueuedConnection:
-            if(thread!=null) {
-                if(thread!=QThread.currentThread()) {
-                    if(context!=null) {
-                    	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(context), ()->{
-                    		if(!(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
-                    			try {
+        	if(!QThread.isCurrentOrNull(thread)) {
+                if(context!=null) {
+                	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(context), ()->{
+                		if(!(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
+                			try {
+                                method.invoke(arg1, arg2, arg3, arg4, arg5);
+                            } catch (Throwable e) {
+                                Logger.getLogger("io.qt.core").log(Level.SEVERE, "Exception thrown during method invocation.", e);
+                            }
+                		}
+                	}, true);
+                }else {
+                    QObject invoker = new QObject() {
+                        @Override
+                        public boolean event(QEvent event) {
+                            if(event.type()==QEvent.Type.DeferredDispose
+                                    && !(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
+                                try {
                                     method.invoke(arg1, arg2, arg3, arg4, arg5);
                                 } catch (Throwable e) {
                                     Logger.getLogger("io.qt.core").log(Level.SEVERE, "Exception thrown during method invocation.", e);
                                 }
-                    		}
-                    	}, true);
-                    }else {
-	                    QObject invoker = new QObject() {
-	                        @Override
-	                        public boolean event(QEvent event) {
-	                            if(event.type()==QEvent.Type.DeferredDispose
-	                                    && (context==null || !context.isDisposed()) 
-	                                    && !(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
-	                                try {
-	                                    method.invoke(arg1, arg2, arg3, arg4, arg5);
-	                                } catch (Throwable e) {
-	                                    Logger.getLogger("io.qt.core").log(Level.SEVERE, "Exception thrown during method invocation.", e);
-	                                }
-	                                synchronized (this) {
-	                                    notifyAll();
-	                                }
-	                            }
-	                            return super.event(event);
-	                        }
-	                    };
-	                    invoker.moveToThread(thread);
-	                    synchronized (invoker) {
-	                        invoker.disposeLater();
-	                        try {
-	                            invoker.wait();
-	                        } catch (InterruptedException e) {
-	                            throw new QUnsuccessfulInvocationException(e);
-	                        }
-	                    }
+                                synchronized (this) {
+                                    notifyAll();
+                                }
+                            }
+                            return super.event(event);
+                        }
+                    };
+                    invoker.moveToThread(thread);
+                    synchronized (invoker) {
+                        invoker.disposeLater();
+                        try {
+                            invoker.wait();
+                        } catch (InterruptedException e) {
+                            throw new QUnsuccessfulInvocationException(e);
+                        }
                     }
-                    return;
-                }else {
-                    throw new QUnsuccessfulInvocationException("Blocking-queued invocation on object whose thread is the current thread is not allowed.");
                 }
+                return;
+            }else if(thread==null) {
+                throw new QUnsuccessfulInvocationException("Blocking-queued invocation of method on not allowed without thread affinity.");
+            }else {
+                throw new QUnsuccessfulInvocationException("Blocking-queued invocation on object whose thread is the current thread is not allowed.");
             }
-            throw new QUnsuccessfulInvocationException("Blocking-queued invocation of method on not allowed without thread affinity.");
         case QueuedConnection:
             if(context!=null) {
             	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(context), ()->{
@@ -5078,7 +9228,6 @@ public final class QMetaObject {
 	                @Override
 	                public boolean event(QEvent event) {
 	                    if(event.type()==QEvent.Type.DeferredDispose
-	                            && (context==null || !context.isDisposed()) 
 	                            && !(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
 	                        try {
 	                            method.invoke(arg1, arg2, arg3, arg4, arg5);
@@ -5103,7 +9252,7 @@ public final class QMetaObject {
     
     @QtUninvokable
     private static <A,B,C,D,E,F> void invokeMethod(QThread thread, QObject context, Slot6<A,B,C,D,E,F> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
-        if(type==Qt.ConnectionType.AutoConnection && thread!=null && thread!=QThread.currentThread()) {
+        if(type==Qt.ConnectionType.AutoConnection && !QThread.isCurrentOrNull(thread)) {
             type = Qt.ConnectionType.QueuedConnection;
         }
         switch(type) {
@@ -5116,53 +9265,51 @@ public final class QMetaObject {
                 throw new QUnsuccessfulInvocationException(e);
             }
         case BlockingQueuedConnection:
-            if(thread!=null) {
-                if(thread!=QThread.currentThread()) {
-                    if(context!=null) {
-                    	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(context), ()->{
-                    		if(!(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
-                    			try {
+        	if(!QThread.isCurrentOrNull(thread)) {
+                if(context!=null) {
+                	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(context), ()->{
+                		if(!(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
+                			try {
+                                method.invoke(arg1, arg2, arg3, arg4, arg5, arg6);
+                            } catch (Throwable e) {
+                                Logger.getLogger("io.qt.core").log(Level.SEVERE, "Exception thrown during method invocation.", e);
+                            }
+                		}
+                	}, true);
+                }else {
+                    QObject invoker = new QObject() {
+                        @Override
+                        public boolean event(QEvent event) {
+                            if(event.type()==QEvent.Type.DeferredDispose
+                                    && !(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
+                                try {
                                     method.invoke(arg1, arg2, arg3, arg4, arg5, arg6);
                                 } catch (Throwable e) {
                                     Logger.getLogger("io.qt.core").log(Level.SEVERE, "Exception thrown during method invocation.", e);
                                 }
-                    		}
-                    	}, true);
-                    }else {
-	                    QObject invoker = new QObject() {
-	                        @Override
-	                        public boolean event(QEvent event) {
-	                            if(event.type()==QEvent.Type.DeferredDispose
-	                                    && (context==null || !context.isDisposed()) 
-	                                    && !(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
-	                                try {
-	                                    method.invoke(arg1, arg2, arg3, arg4, arg5, arg6);
-	                                } catch (Throwable e) {
-	                                    Logger.getLogger("io.qt.core").log(Level.SEVERE, "Exception thrown during method invocation.", e);
-	                                }
-	                                synchronized (this) {
-	                                    notifyAll();
-	                                }
-	                            }
-	                            return super.event(event);
-	                        }
-	                    };
-	                    invoker.moveToThread(thread);
-	                    synchronized (invoker) {
-	                        invoker.disposeLater();
-	                        try {
-	                            invoker.wait();
-	                        } catch (InterruptedException e) {
-	                            throw new QUnsuccessfulInvocationException(e);
-	                        }
-	                    }
+                                synchronized (this) {
+                                    notifyAll();
+                                }
+                            }
+                            return super.event(event);
+                        }
+                    };
+                    invoker.moveToThread(thread);
+                    synchronized (invoker) {
+                        invoker.disposeLater();
+                        try {
+                            invoker.wait();
+                        } catch (InterruptedException e) {
+                            throw new QUnsuccessfulInvocationException(e);
+                        }
                     }
-                    return;
-                }else {
-                    throw new QUnsuccessfulInvocationException("Blocking-queued invocation on object whose thread is the current thread is not allowed.");
                 }
+                return;
+            }else if(thread==null) {
+                throw new QUnsuccessfulInvocationException("Blocking-queued invocation of method on not allowed without thread affinity.");
+            }else {
+                throw new QUnsuccessfulInvocationException("Blocking-queued invocation on object whose thread is the current thread is not allowed.");
             }
-            throw new QUnsuccessfulInvocationException("Blocking-queued invocation of method on not allowed without thread affinity.");
         case QueuedConnection:
             if(context!=null) {
             	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(context), ()->{
@@ -5179,7 +9326,6 @@ public final class QMetaObject {
 	                @Override
 	                public boolean event(QEvent event) {
 	                    if(event.type()==QEvent.Type.DeferredDispose
-	                            && (context==null || !context.isDisposed()) 
 	                            && !(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
 	                        try {
 	                            method.invoke(arg1, arg2, arg3, arg4, arg5, arg6);
@@ -5204,7 +9350,7 @@ public final class QMetaObject {
     
     @QtUninvokable
     private static <A,B,C,D,E,F,G> void invokeMethod(QThread thread, QObject context, Slot7<A,B,C,D,E,F,G> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
-        if(type==Qt.ConnectionType.AutoConnection && thread!=null && thread!=QThread.currentThread()) {
+        if(type==Qt.ConnectionType.AutoConnection && !QThread.isCurrentOrNull(thread)) {
             type = Qt.ConnectionType.QueuedConnection;
         }
         switch(type) {
@@ -5217,53 +9363,51 @@ public final class QMetaObject {
                 throw new QUnsuccessfulInvocationException(e);
             }
         case BlockingQueuedConnection:
-            if(thread!=null) {
-                if(thread!=QThread.currentThread()) {
-                    if(context!=null) {
-                    	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(context), ()->{
-                    		if(!(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
-                    			try {
+        	if(!QThread.isCurrentOrNull(thread)) {
+                if(context!=null) {
+                	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(context), ()->{
+                		if(!(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
+                			try {
+                                method.invoke(arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+                            } catch (Throwable e) {
+                                Logger.getLogger("io.qt.core").log(Level.SEVERE, "Exception thrown during method invocation.", e);
+                            }
+                		}
+                	}, true);
+                }else {
+                    QObject invoker = new QObject() {
+                        @Override
+                        public boolean event(QEvent event) {
+                            if(event.type()==QEvent.Type.DeferredDispose
+                                    && !(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
+                                try {
                                     method.invoke(arg1, arg2, arg3, arg4, arg5, arg6, arg7);
                                 } catch (Throwable e) {
                                     Logger.getLogger("io.qt.core").log(Level.SEVERE, "Exception thrown during method invocation.", e);
                                 }
-                    		}
-                    	}, true);
-                    }else {
-	                    QObject invoker = new QObject() {
-	                        @Override
-	                        public boolean event(QEvent event) {
-	                            if(event.type()==QEvent.Type.DeferredDispose
-	                                    && (context==null || !context.isDisposed()) 
-	                                    && !(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
-	                                try {
-	                                    method.invoke(arg1, arg2, arg3, arg4, arg5, arg6, arg7);
-	                                } catch (Throwable e) {
-	                                    Logger.getLogger("io.qt.core").log(Level.SEVERE, "Exception thrown during method invocation.", e);
-	                                }
-	                                synchronized (this) {
-	                                    notifyAll();
-	                                }
-	                            }
-	                            return super.event(event);
-	                        }
-	                    };
-	                    invoker.moveToThread(thread);
-	                    synchronized (invoker) {
-	                        invoker.disposeLater();
-	                        try {
-	                            invoker.wait();
-	                        } catch (InterruptedException e) {
-	                            throw new QUnsuccessfulInvocationException(e);
-	                        }
-	                    }
+                                synchronized (this) {
+                                    notifyAll();
+                                }
+                            }
+                            return super.event(event);
+                        }
+                    };
+                    invoker.moveToThread(thread);
+                    synchronized (invoker) {
+                        invoker.disposeLater();
+                        try {
+                            invoker.wait();
+                        } catch (InterruptedException e) {
+                            throw new QUnsuccessfulInvocationException(e);
+                        }
                     }
-                    return;
-                }else {
-                    throw new QUnsuccessfulInvocationException("Blocking-queued invocation on object whose thread is the current thread is not allowed.");
                 }
+                return;
+            }else if(thread==null) {
+                throw new QUnsuccessfulInvocationException("Blocking-queued invocation of method on not allowed without thread affinity.");
+            }else {
+                throw new QUnsuccessfulInvocationException("Blocking-queued invocation on object whose thread is the current thread is not allowed.");
             }
-            throw new QUnsuccessfulInvocationException("Blocking-queued invocation of method on not allowed without thread affinity.");
         case QueuedConnection:
             if(context!=null) {
             	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(context), ()->{
@@ -5280,7 +9424,6 @@ public final class QMetaObject {
 	                @Override
 	                public boolean event(QEvent event) {
 	                    if(event.type()==QEvent.Type.DeferredDispose
-	                            && (context==null || !context.isDisposed()) 
 	                            && !(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
 	                        try {
 	                            method.invoke(arg1, arg2, arg3, arg4, arg5, arg6, arg7);
@@ -5305,7 +9448,7 @@ public final class QMetaObject {
     
     @QtUninvokable
     private static <A,B,C,D,E,F,G,H> void invokeMethod(QThread thread, QObject context, Slot8<A,B,C,D,E,F,G,H> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
-        if(type==Qt.ConnectionType.AutoConnection && thread!=null && thread!=QThread.currentThread()) {
+        if(type==Qt.ConnectionType.AutoConnection && !QThread.isCurrentOrNull(thread)) {
             type = Qt.ConnectionType.QueuedConnection;
         }
         switch(type) {
@@ -5318,53 +9461,51 @@ public final class QMetaObject {
                 throw new QUnsuccessfulInvocationException(e);
             }
         case BlockingQueuedConnection:
-            if(thread!=null) {
-                if(thread!=QThread.currentThread()) {
-                    if(context!=null) {
-                    	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(context), ()->{
-                    		if(!(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
-                    			try {
+        	if(!QThread.isCurrentOrNull(thread)) {
+                if(context!=null) {
+                	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(context), ()->{
+                		if(!(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
+                			try {
+                                method.invoke(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+                            } catch (Throwable e) {
+                                Logger.getLogger("io.qt.core").log(Level.SEVERE, "Exception thrown during method invocation.", e);
+                            }
+                		}
+                	}, true);
+                }else {
+                    QObject invoker = new QObject() {
+                        @Override
+                        public boolean event(QEvent event) {
+                            if(event.type()==QEvent.Type.DeferredDispose
+                                    && !(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
+                                try {
                                     method.invoke(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
                                 } catch (Throwable e) {
                                     Logger.getLogger("io.qt.core").log(Level.SEVERE, "Exception thrown during method invocation.", e);
                                 }
-                    		}
-                    	}, true);
-                    }else {
-	                    QObject invoker = new QObject() {
-	                        @Override
-	                        public boolean event(QEvent event) {
-	                            if(event.type()==QEvent.Type.DeferredDispose
-	                                    && (context==null || !context.isDisposed()) 
-	                                    && !(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
-	                                try {
-	                                    method.invoke(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
-	                                } catch (Throwable e) {
-	                                    Logger.getLogger("io.qt.core").log(Level.SEVERE, "Exception thrown during method invocation.", e);
-	                                }
-	                                synchronized (this) {
-	                                    notifyAll();
-	                                }
-	                            }
-	                            return super.event(event);
-	                        }
-	                    };
-	                    invoker.moveToThread(thread);
-	                    synchronized (invoker) {
-	                        invoker.disposeLater();
-	                        try {
-	                            invoker.wait();
-	                        } catch (InterruptedException e) {
-	                            throw new QUnsuccessfulInvocationException(e);
-	                        }
-	                    }
+                                synchronized (this) {
+                                    notifyAll();
+                                }
+                            }
+                            return super.event(event);
+                        }
+                    };
+                    invoker.moveToThread(thread);
+                    synchronized (invoker) {
+                        invoker.disposeLater();
+                        try {
+                            invoker.wait();
+                        } catch (InterruptedException e) {
+                            throw new QUnsuccessfulInvocationException(e);
+                        }
                     }
-                    return;
-                }else {
-                    throw new QUnsuccessfulInvocationException("Blocking-queued invocation on object whose thread is the current thread is not allowed.");
                 }
+                return;
+            }else if(thread==null) {
+                throw new QUnsuccessfulInvocationException("Blocking-queued invocation of method on not allowed without thread affinity.");
+            }else {
+                throw new QUnsuccessfulInvocationException("Blocking-queued invocation on object whose thread is the current thread is not allowed.");
             }
-            throw new QUnsuccessfulInvocationException("Blocking-queued invocation of method on not allowed without thread affinity.");
         case QueuedConnection:
             if(context!=null) {
             	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(context), ()->{
@@ -5381,7 +9522,6 @@ public final class QMetaObject {
 	                @Override
 	                public boolean event(QEvent event) {
 	                    if(event.type()==QEvent.Type.DeferredDispose
-	                            && (context==null || !context.isDisposed()) 
 	                            && !(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
 	                        try {
 	                            method.invoke(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
@@ -5406,7 +9546,7 @@ public final class QMetaObject {
     
     @QtUninvokable
     private static <A,B,C,D,E,F,G,H,I> void invokeMethod(QThread thread, QObject context, Slot9<A,B,C,D,E,F,G,H,I> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException {
-        if(type==Qt.ConnectionType.AutoConnection && thread!=null && thread!=QThread.currentThread()) {
+        if(type==Qt.ConnectionType.AutoConnection && !QThread.isCurrentOrNull(thread)) {
             type = Qt.ConnectionType.QueuedConnection;
         }
         switch(type) {
@@ -5419,53 +9559,51 @@ public final class QMetaObject {
                 throw new QUnsuccessfulInvocationException(e);
             }
         case BlockingQueuedConnection:
-            if(thread!=null) {
-                if(thread!=QThread.currentThread()) {
-                    if(context!=null) {
-                    	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(context), ()->{
-                    		if(!(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
-                    			try {
+        	if(!QThread.isCurrentOrNull(thread)) {
+                if(context!=null) {
+                	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(context), ()->{
+                		if(!(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
+                			try {
+                                method.invoke(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+                            } catch (Throwable e) {
+                                Logger.getLogger("io.qt.core").log(Level.SEVERE, "Exception thrown during method invocation.", e);
+                            }
+                		}
+                	}, true);
+                }else {
+                    QObject invoker = new QObject() {
+                        @Override
+                        public boolean event(QEvent event) {
+                            if(event.type()==QEvent.Type.DeferredDispose
+                                    && !(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
+                                try {
                                     method.invoke(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
                                 } catch (Throwable e) {
                                     Logger.getLogger("io.qt.core").log(Level.SEVERE, "Exception thrown during method invocation.", e);
                                 }
-                    		}
-                    	}, true);
-                    }else {
-	                    QObject invoker = new QObject() {
-	                        @Override
-	                        public boolean event(QEvent event) {
-	                            if(event.type()==QEvent.Type.DeferredDispose
-	                                    && (context==null || !context.isDisposed()) 
-	                                    && !(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
-	                                try {
-	                                    method.invoke(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
-	                                } catch (Throwable e) {
-	                                    Logger.getLogger("io.qt.core").log(Level.SEVERE, "Exception thrown during method invocation.", e);
-	                                }
-	                                synchronized (this) {
-	                                    notifyAll();
-	                                }
-	                            }
-	                            return super.event(event);
-	                        }
-	                    };
-	                    invoker.moveToThread(thread);
-	                    synchronized (invoker) {
-	                        invoker.disposeLater();
-	                        try {
-	                            invoker.wait();
-	                        } catch (InterruptedException e) {
-	                            throw new QUnsuccessfulInvocationException(e);
-	                        }
-	                    }
+                                synchronized (this) {
+                                    notifyAll();
+                                }
+                            }
+                            return super.event(event);
+                        }
+                    };
+                    invoker.moveToThread(thread);
+                    synchronized (invoker) {
+                        invoker.disposeLater();
+                        try {
+                            invoker.wait();
+                        } catch (InterruptedException e) {
+                            throw new QUnsuccessfulInvocationException(e);
+                        }
                     }
-                    return;
-                }else {
-                    throw new QUnsuccessfulInvocationException("Blocking-queued invocation on object whose thread is the current thread is not allowed.");
                 }
+                return;
+            }else if(thread==null) {
+                throw new QUnsuccessfulInvocationException("Blocking-queued invocation of method on not allowed without thread affinity.");
+            }else {
+                throw new QUnsuccessfulInvocationException("Blocking-queued invocation on object whose thread is the current thread is not allowed.");
             }
-            throw new QUnsuccessfulInvocationException("Blocking-queued invocation of method on not allowed without thread affinity.");
         case QueuedConnection:
             if(context!=null) {
             	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(context), ()->{
@@ -5482,7 +9620,6 @@ public final class QMetaObject {
 	                @Override
 	                public boolean event(QEvent event) {
 	                    if(event.type()==QEvent.Type.DeferredDispose
-	                            && (context==null || !context.isDisposed()) 
 	                            && !(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
 	                        try {
 	                            method.invoke(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
@@ -5505,7 +9642,105 @@ public final class QMetaObject {
         throw new QUnsuccessfulInvocationException("Unable to invoke method.");
     }
     
-        /**
+    @QtUninvokable
+    private static <A,B,C,D,E,F,G,H,I,J> void invokeMethod(QThread thread, QObject context, Slot10<A,B,C,D,E,F,G,H,I,J> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9, J arg10) throws QUnsuccessfulInvocationException {
+        if(type==Qt.ConnectionType.AutoConnection && !QThread.isCurrentOrNull(thread)) {
+            type = Qt.ConnectionType.QueuedConnection;
+        }
+        switch(type) {
+        case AutoConnection:
+        case DirectConnection:
+            try {
+                method.invoke(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10);
+                return;
+            } catch (Throwable e) {
+                throw new QUnsuccessfulInvocationException(e);
+            }
+        case BlockingQueuedConnection:
+        	if(!QThread.isCurrentOrNull(thread)) {
+                if(context!=null) {
+                	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(context), ()->{
+                		if(!(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
+                			try {
+                                method.invoke(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10);
+                            } catch (Throwable e) {
+                                Logger.getLogger("io.qt.core").log(Level.SEVERE, "Exception thrown during method invocation.", e);
+                            }
+                		}
+                	}, true);
+                }else {
+                    QObject invoker = new QObject() {
+                        @Override
+                        public boolean event(QEvent event) {
+                            if(event.type()==QEvent.Type.DeferredDispose
+                                    && !(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
+                                try {
+                                    method.invoke(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10);
+                                } catch (Throwable e) {
+                                    Logger.getLogger("io.qt.core").log(Level.SEVERE, "Exception thrown during method invocation.", e);
+                                }
+                                synchronized (this) {
+                                    notifyAll();
+                                }
+                            }
+                            return super.event(event);
+                        }
+                    };
+                    invoker.moveToThread(thread);
+                    synchronized (invoker) {
+                        invoker.disposeLater();
+                        try {
+                            invoker.wait();
+                        } catch (InterruptedException e) {
+                            throw new QUnsuccessfulInvocationException(e);
+                        }
+                    }
+                }
+                return;
+        	}else if(thread==null) {
+        		throw new QUnsuccessfulInvocationException("Blocking-queued invocation of method on not allowed without thread affinity.");
+        	}else {
+                throw new QUnsuccessfulInvocationException("Blocking-queued invocation on object whose thread is the current thread is not allowed.");
+            }
+        case QueuedConnection:
+            if(context!=null) {
+            	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(context), ()->{
+            		if(!(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
+            			try {
+                            method.invoke(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10);
+                        } catch (Throwable e) {
+                            Logger.getLogger("io.qt.core").log(Level.SEVERE, "Exception thrown during method invocation.", e);
+                        }
+            		}
+            	}, false);
+            }else {
+	            QObject invoker = new QObject() {
+	                @Override
+	                public boolean event(QEvent event) {
+	                    if(event.type()==QEvent.Type.DeferredDispose
+	                            && !(method instanceof QtObjectInterface && ((QtObjectInterface)method).isDisposed() )) {
+	                        try {
+	                            method.invoke(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10);
+	                        } catch (Throwable e) {
+	                            Logger.getLogger("io.qt.core").log(Level.SEVERE, "Exception thrown during method invocation.", e);
+	                        }
+	                    }
+	                    return super.event(event);
+	                }
+	            };
+	            QtJambi_LibraryUtilities.internal.setCppOwnership(invoker);
+	            if(thread!=null)
+	                invoker.moveToThread(thread);
+	            invoker.disposeLater();
+            }
+            return;
+        default:
+            break;
+        }
+        throw new QUnsuccessfulInvocationException("Unable to invoke method.");
+    }
+    
+    /**
      * Calling <code>invokeMethod(signal, AutoConnection)</code>.
      * @param signal invoked signal
      */
@@ -5533,22 +9768,23 @@ public final class QMetaObject {
     public static void invokeMethod(@StrictNonNull AbstractPublicSignal0 signal, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
-			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
-					break;
-			case DirectConnection:
-				signal.emit();
-				return;
-			default:
-				break;
-        	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type);
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex, qobject, type);
             }else {
-            	invokeMethod(thread, qobject, signal::emit, type);
+            	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
+    			case AutoConnection:
+    				if(!qobject.isObjectsThread()) {
+    					type = Qt.ConnectionType.QueuedConnection;
+    					break;
+    				}
+    			case DirectConnection:
+    				signal.emit();
+    				return;
+    			default:
+    				break;
+            	}
+            	invokeMethod(qobject.thread(), qobject, signal::emit, type);
             }
         }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
         	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), (QObject)null, signal::emit, type);
@@ -5583,14 +9819,18 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static void invokeMethod(@StrictNonNull AbstractPrivateSignal0 signal, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
-        if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
+        if(signal.containingObject() instanceof QObject) {
             QObject qobject = (QObject)signal.containingObject();
-            QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type);
+            int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex, qobject, type);
                 return;
             }
         }
+        if(signal instanceof AbstractPublicSignal0) {
+        	invokeMethod((AbstractPublicSignal0)signal, type);
+        	return;
+    	}
         throw new QUnsuccessfulInvocationException("Unable to invoke method.");
     }
     
@@ -5627,22 +9867,23 @@ public final class QMetaObject {
     public static <A> void invokeMethod(@StrictNonNull AbstractPublicSignal1<A> signal, Qt.@NonNull ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
-			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
-					break;
-			case DirectConnection:
-				signal.emit(arg1);
-				return;
-			default:
-				break;
-        	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, arg1);
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex, qobject, type, arg1);
             }else {
-            	invokeMethod(thread, qobject, signal::emit, type, arg1);
+            	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
+    			case AutoConnection:
+    				if(!qobject.isObjectsThread()) {
+    					type = Qt.ConnectionType.QueuedConnection;
+    					break;
+    				}
+    			case DirectConnection:
+    				signal.emit(arg1);
+    				return;
+    			default:
+    				break;
+            	}
+            	invokeMethod(qobject.thread(), qobject, signal::emit, type, arg1);
             }
         }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
         	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), (QObject)null, signal::emit, type, arg1);
@@ -5682,14 +9923,18 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A> void invokeMethod(@StrictNonNull AbstractPrivateSignal1<A> signal, Qt.@NonNull ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
-        if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
+        if(signal.containingObject() instanceof QObject) {
             QObject qobject = (QObject)signal.containingObject();
-            QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, arg1);
+            int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex, qobject, type, arg1);
                 return;
             }
         }
+        if(signal instanceof AbstractPublicSignal1) {
+        	invokeMethod((AbstractPublicSignal1<A>)signal, type, arg1);
+        	return;
+    	}
         throw new QUnsuccessfulInvocationException("Unable to invoke method.");
     }
     
@@ -5724,23 +9969,23 @@ public final class QMetaObject {
     public static <A> void invokeMethod(@StrictNonNull AbstractSignal1Default1<A> signal, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
+        	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
 			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
+				if(!qobject.isObjectsThread()) {
+					type = Qt.ConnectionType.QueuedConnection;
 					break;
+				}
 			case DirectConnection:
 				signal.emit();
 				return;
 			default:
 				break;
         	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, 
-                		signal.arg1Default.get());
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex+1, qobject, type);
             }else {
-            	invokeMethod(thread, qobject, 
+            	invokeMethod(qobject.thread(), qobject, 
             			(Slot0)signal::emit, 
             			type);
             }
@@ -5808,22 +10053,23 @@ public final class QMetaObject {
     public static <A,B> void invokeMethod(@StrictNonNull AbstractPublicSignal2<A,B> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
-			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
-					break;
-			case DirectConnection:
-				signal.emit(arg1, arg2);
-				return;
-			default:
-				break;
-        	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, arg1, arg2);
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex, qobject, type, arg1, arg2);
             }else {
-            	invokeMethod(thread, qobject, signal::emit, type, arg1, arg2);
+            	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
+    			case AutoConnection:
+    				if(!qobject.isObjectsThread()) {
+    					type = Qt.ConnectionType.QueuedConnection;
+    					break;
+    				}
+    			case DirectConnection:
+    				signal.emit(arg1, arg2);
+    				return;
+    			default:
+    				break;
+            	}
+            	invokeMethod(qobject.thread(), qobject, signal::emit, type, arg1, arg2);
             }
         }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
         	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), (QObject)null, signal::emit, type, arg1, arg2);
@@ -5853,14 +10099,18 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B> void invokeMethod(@StrictNonNull AbstractPrivateSignal2<A,B> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
-        if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
+        if(signal.containingObject() instanceof QObject) {
             QObject qobject = (QObject)signal.containingObject();
-            QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, arg1, arg2);
+            int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex, qobject, type, arg1, arg2);
                 return;
             }
         }
+        if(signal instanceof AbstractPublicSignal2) {
+        	invokeMethod((AbstractPublicSignal2<A,B>)signal, type, arg1, arg2);
+        	return;
+    	}
         throw new QUnsuccessfulInvocationException("Unable to invoke method.");
     }
     
@@ -5899,24 +10149,23 @@ public final class QMetaObject {
     public static <A,B> void invokeMethod(@StrictNonNull AbstractSignal2Default1<A,B> signal, Qt.@NonNull ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
+        	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
 			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
+				if(!qobject.isObjectsThread()) {
+					type = Qt.ConnectionType.QueuedConnection;
 					break;
+				}
 			case DirectConnection:
 				signal.emit(arg1);
 				return;
 			default:
 				break;
         	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, 
-                		arg1, 
-                		signal.arg2Default.get());
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex+1, qobject, type, arg1);
             }else {
-            	invokeMethod(thread, qobject, 
+            	invokeMethod(qobject.thread(), qobject, 
             			(Slot1<A>)signal::emit, 
             			type, arg1);
             }
@@ -5966,24 +10215,23 @@ public final class QMetaObject {
     public static <A,B> void invokeMethod(@StrictNonNull AbstractSignal2Default2<A,B> signal, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
+        	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
 			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
+				if(!qobject.isObjectsThread()) {
+					type = Qt.ConnectionType.QueuedConnection;
 					break;
+				}
 			case DirectConnection:
 				signal.emit();
 				return;
 			default:
 				break;
         	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, 
-                		signal.arg1Default.get(), 
-                		((AbstractSignal2Default1<A,B>)signal).arg2Default.get());
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex+2, qobject, type);
             }else {
-            	invokeMethod(thread, qobject, 
+            	invokeMethod(qobject.thread(), qobject, 
             			(Slot0)signal::emit, 
             			type);
             }
@@ -6057,22 +10305,23 @@ public final class QMetaObject {
     public static <A,B,C> void invokeMethod(@StrictNonNull AbstractPublicSignal3<A,B,C> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
-			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
-					break;
-			case DirectConnection:
-				signal.emit(arg1, arg2, arg3);
-				return;
-			default:
-				break;
-        	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, arg1, arg2, arg3);
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex, qobject, type, arg1, arg2, arg3);
             }else {
-            	invokeMethod(thread, qobject, signal::emit, type, arg1, arg2, arg3);
+            	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
+    			case AutoConnection:
+    				if(!qobject.isObjectsThread()) {
+    					type = Qt.ConnectionType.QueuedConnection;
+    					break;
+    				}
+    			case DirectConnection:
+    				signal.emit(arg1, arg2, arg3);
+    				return;
+    			default:
+    				break;
+            	}
+            	invokeMethod(qobject.thread(), qobject, signal::emit, type, arg1, arg2, arg3);
             }
         }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
         	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), (QObject)null, signal::emit, type, arg1, arg2, arg3);
@@ -6104,14 +10353,18 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C> void invokeMethod(@StrictNonNull AbstractPrivateSignal3<A,B,C> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
-        if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
+        if(signal.containingObject() instanceof QObject) {
             QObject qobject = (QObject)signal.containingObject();
-            QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, arg1, arg2, arg3);
+            int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex, qobject, type, arg1, arg2, arg3);
                 return;
             }
         }
+        if(signal instanceof AbstractPublicSignal3) {
+        	invokeMethod((AbstractPublicSignal3<A,B,C>)signal, type, arg1, arg2, arg3);
+        	return;
+    	}
         throw new QUnsuccessfulInvocationException("Unable to invoke method.");
     }
     
@@ -6154,24 +10407,24 @@ public final class QMetaObject {
     public static <A,B,C> void invokeMethod(@StrictNonNull AbstractSignal3Default1<A,B,C> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
+        	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
 			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
+				if(!qobject.isObjectsThread()) {
+					type = Qt.ConnectionType.QueuedConnection;
 					break;
+				}
 			case DirectConnection:
 				signal.emit(arg1, arg2);
 				return;
 			default:
 				break;
         	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, 
-                		arg1, arg2, 
-                		signal.arg3Default.get());
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex+1, qobject, type, 
+                		arg1, arg2);
             }else {
-            	invokeMethod(thread, qobject, 
+            	invokeMethod(qobject.thread(), qobject, 
             			(Slot2<A,B>)signal::emit, 
             			type, arg1, arg2);
             }
@@ -6225,25 +10478,24 @@ public final class QMetaObject {
     public static <A,B,C> void invokeMethod(@StrictNonNull AbstractSignal3Default2<A,B,C> signal, Qt.@NonNull ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
+        	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
 			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
+				if(!qobject.isObjectsThread()) {
+					type = Qt.ConnectionType.QueuedConnection;
 					break;
+				}
 			case DirectConnection:
 				signal.emit(arg1);
 				return;
 			default:
 				break;
         	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, 
-                		arg1, 
-                		signal.arg2Default.get(), 
-                		((AbstractSignal3Default1<A,B,C>)signal).arg3Default.get());
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex+2, qobject, type, 
+                		arg1);
             }else {
-            	invokeMethod(thread, qobject, 
+            	invokeMethod(qobject.thread(), qobject, 
             			(Slot1<A>)signal::emit, 
             			type, arg1);
             }
@@ -6295,25 +10547,23 @@ public final class QMetaObject {
     public static <A,B,C> void invokeMethod(@StrictNonNull AbstractSignal3Default3<A,B,C> signal, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
+        	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
 			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
+				if(!qobject.isObjectsThread()) {
+					type = Qt.ConnectionType.QueuedConnection;
 					break;
+				}
 			case DirectConnection:
 				signal.emit();
 				return;
 			default:
 				break;
         	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, 
-                		signal.arg1Default.get(), 
-                		((AbstractSignal3Default2<A,B,C>)signal).arg2Default.get(), 
-                		((AbstractSignal3Default1<A,B,C>)signal).arg3Default.get());
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex+3, qobject, type);
             }else {
-            	invokeMethod(thread, qobject, 
+            	invokeMethod(qobject.thread(), qobject, 
             			(Slot0)signal::emit, 
             			type);
             }
@@ -6393,22 +10643,23 @@ public final class QMetaObject {
     public static <A,B,C,D> void invokeMethod(@StrictNonNull AbstractPublicSignal4<A,B,C,D> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
-			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
-					break;
-			case DirectConnection:
-				signal.emit(arg1, arg2, arg3, arg4);
-				return;
-			default:
-				break;
-        	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, arg1, arg2, arg3, arg4);
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex, qobject, type, arg1, arg2, arg3, arg4);
             }else {
-            	invokeMethod(thread, qobject, signal::emit, type, arg1, arg2, arg3, arg4);
+            	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
+    			case AutoConnection:
+    				if(!qobject.isObjectsThread()) {
+    					type = Qt.ConnectionType.QueuedConnection;
+    					break;
+    				}
+    			case DirectConnection:
+    				signal.emit(arg1, arg2, arg3, arg4);
+    				return;
+    			default:
+    				break;
+            	}
+            	invokeMethod(qobject.thread(), qobject, signal::emit, type, arg1, arg2, arg3, arg4);
             }
         }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
         	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), (QObject)null, signal::emit, type, arg1, arg2, arg3, arg4);
@@ -6442,14 +10693,18 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D> void invokeMethod(@StrictNonNull AbstractPrivateSignal4<A,B,C,D> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
-        if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
+        if(signal.containingObject() instanceof QObject) {
             QObject qobject = (QObject)signal.containingObject();
-            QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, arg1, arg2, arg3, arg4);
+            int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex, qobject, type, arg1, arg2, arg3, arg4);
                 return;
             }
         }
+        if(signal instanceof AbstractPublicSignal4) {
+        	invokeMethod((AbstractPublicSignal4<A,B,C,D>)signal, type, arg1, arg2, arg3, arg4);
+        	return;
+    	}
         throw new QUnsuccessfulInvocationException("Unable to invoke method.");
     }
     
@@ -6496,24 +10751,24 @@ public final class QMetaObject {
     public static <A,B,C,D> void invokeMethod(@StrictNonNull AbstractSignal4Default1<A,B,C,D> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
+        	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
 			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
+				if(!qobject.isObjectsThread()) {
+					type = Qt.ConnectionType.QueuedConnection;
 					break;
+				}
 			case DirectConnection:
 				signal.emit(arg1, arg2, arg3);
 				return;
 			default:
 				break;
         	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, 
-                		arg1, arg2, arg3, 
-                		signal.arg4Default.get());
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex+1, qobject, type, 
+                		arg1, arg2, arg3);
             }else {
-            	invokeMethod(thread, qobject, 
+            	invokeMethod(qobject.thread(), qobject, 
             			(Slot3<A,B,C>)signal::emit, 
             			type, arg1, arg2, arg3);
             }
@@ -6571,25 +10826,24 @@ public final class QMetaObject {
     public static <A,B,C,D> void invokeMethod(@StrictNonNull AbstractSignal4Default2<A,B,C,D> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
+        	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
 			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
+				if(!qobject.isObjectsThread()) {
+					type = Qt.ConnectionType.QueuedConnection;
 					break;
+				}
 			case DirectConnection:
 				signal.emit(arg1, arg2);
 				return;
 			default:
 				break;
         	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, 
-                		arg1, arg2, 
-                		signal.arg3Default.get(), 
-                		((AbstractSignal4Default1<A,B,C,D>)signal).arg4Default.get());
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex+2, qobject, type, 
+                		arg1, arg2);
             }else {
-            	invokeMethod(thread, qobject, 
+            	invokeMethod(qobject.thread(), qobject, 
             			(Slot2<A,B>)signal::emit, 
             			type, arg1, arg2);
             }
@@ -6645,26 +10899,23 @@ public final class QMetaObject {
     public static <A,B,C,D> void invokeMethod(@StrictNonNull AbstractSignal4Default3<A,B,C,D> signal, Qt.@NonNull ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
+        	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
 			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
+				if(!qobject.isObjectsThread()) {
+					type = Qt.ConnectionType.QueuedConnection;
 					break;
+				}
 			case DirectConnection:
 				signal.emit(arg1);
 				return;
 			default:
 				break;
         	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, 
-                		arg1, 
-                		signal.arg2Default.get(),
-                		((AbstractSignal4Default2<A,B,C,D>)signal).arg3Default.get(),
-                		((AbstractSignal4Default1<A,B,C,D>)signal).arg4Default.get());
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex+3, qobject, type, arg1);
             }else {
-            	invokeMethod(thread, qobject, 
+            	invokeMethod(qobject.thread(), qobject, 
             			(Slot1<A>)signal::emit, 
             			type, arg1);
             }
@@ -6718,26 +10969,23 @@ public final class QMetaObject {
     public static <A,B,C,D> void invokeMethod(@StrictNonNull AbstractSignal4Default4<A,B,C,D> signal, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
+        	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
 			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
+				if(!qobject.isObjectsThread()) {
+					type = Qt.ConnectionType.QueuedConnection;
 					break;
+				}
 			case DirectConnection:
 				signal.emit();
 				return;
 			default:
 				break;
         	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, 
-                		signal.arg1Default.get(), 
-                		((AbstractSignal4Default3<A,B,C,D>)signal).arg2Default.get(), 
-                		((AbstractSignal4Default2<A,B,C,D>)signal).arg3Default.get(), 
-                		((AbstractSignal4Default1<A,B,C,D>)signal).arg4Default.get());
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex+4, qobject, type);
             }else {
-            	invokeMethod(thread, qobject, 
+            	invokeMethod(qobject.thread(), qobject, 
             			(Slot0)signal::emit, 
             			type);
             }
@@ -6823,22 +11071,23 @@ public final class QMetaObject {
     public static <A,B,C,D,E> void invokeMethod(@StrictNonNull AbstractPublicSignal5<A,B,C,D,E> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
-			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
-					break;
-			case DirectConnection:
-				signal.emit(arg1, arg2, arg3, arg4, arg5);
-				return;
-			default:
-				break;
-        	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, arg1, arg2, arg3, arg4, arg5);
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex, qobject, type, arg1, arg2, arg3, arg4, arg5);
             }else {
-            	invokeMethod(thread, qobject, signal::emit, type, arg1, arg2, arg3, arg4, arg5);
+            	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
+    			case AutoConnection:
+    				if(!qobject.isObjectsThread()) {
+    					type = Qt.ConnectionType.QueuedConnection;
+    					break;
+    				}
+    			case DirectConnection:
+    				signal.emit(arg1, arg2, arg3, arg4, arg5);
+    				return;
+    			default:
+    				break;
+            	}
+            	invokeMethod(qobject.thread(), qobject, signal::emit, type, arg1, arg2, arg3, arg4, arg5);
             }
         }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
         	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), (QObject)null, signal::emit, type, arg1, arg2, arg3, arg4, arg5);
@@ -6874,14 +11123,18 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E> void invokeMethod(@StrictNonNull AbstractPrivateSignal5<A,B,C,D,E> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
-        if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
+        if(signal.containingObject() instanceof QObject) {
             QObject qobject = (QObject)signal.containingObject();
-            QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, arg1, arg2, arg3, arg4, arg5);
+            int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex, qobject, type, arg1, arg2, arg3, arg4, arg5);
                 return;
             }
         }
+        if(signal instanceof AbstractPublicSignal5) {
+        	invokeMethod((AbstractPublicSignal5<A,B,C,D,E>)signal, type, arg1, arg2, arg3, arg4, arg5);
+        	return;
+    	}
         throw new QUnsuccessfulInvocationException("Unable to invoke method.");
     }
     
@@ -6932,24 +11185,24 @@ public final class QMetaObject {
     public static <A,B,C,D,E> void invokeMethod(@StrictNonNull AbstractSignal5Default1<A,B,C,D,E> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
+        	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
 			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
+				if(!qobject.isObjectsThread()) {
+					type = Qt.ConnectionType.QueuedConnection;
 					break;
+				}
 			case DirectConnection:
 				signal.emit(arg1, arg2, arg3, arg4);
 				return;
 			default:
 				break;
         	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, 
-                		arg1, arg2, arg3, arg4, 
-                		signal.arg5Default.get());
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex+1, qobject, type, 
+                		arg1, arg2, arg3, arg4);
             }else {
-            	invokeMethod(thread, qobject, 
+            	invokeMethod(qobject.thread(), qobject, 
             			(Slot4<A,B,C,D>)signal::emit, 
             			type, arg1, arg2, arg3, arg4);
             }
@@ -7011,25 +11264,24 @@ public final class QMetaObject {
     public static <A,B,C,D,E> void invokeMethod(@StrictNonNull AbstractSignal5Default2<A,B,C,D,E> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
+        	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
 			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
+				if(!qobject.isObjectsThread()) {
+					type = Qt.ConnectionType.QueuedConnection;
 					break;
+				}
 			case DirectConnection:
 				signal.emit(arg1, arg2, arg3);
 				return;
 			default:
 				break;
         	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, 
-                		arg1, arg2, arg3, 
-                		signal.arg4Default.get(), 
-                		((AbstractSignal5Default1<A,B,C,D,E>)signal).arg5Default.get());
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex+2, qobject, type, 
+                		arg1, arg2, arg3);
             }else {
-            	invokeMethod(thread, qobject, 
+            	invokeMethod(qobject.thread(), qobject, 
             			(Slot3<A,B,C>)signal::emit, 
             			type, arg1, arg2, arg3);
             }
@@ -7089,26 +11341,24 @@ public final class QMetaObject {
     public static <A,B,C,D,E> void invokeMethod(@StrictNonNull AbstractSignal5Default3<A,B,C,D,E> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
+        	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
 			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
+				if(!qobject.isObjectsThread()) {
+					type = Qt.ConnectionType.QueuedConnection;
 					break;
+				}
 			case DirectConnection:
 				signal.emit(arg1, arg2);
 				return;
 			default:
 				break;
         	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, 
-                		arg1, arg2, 
-                		signal.arg3Default.get(),
-                		((AbstractSignal5Default2<A,B,C,D,E>)signal).arg4Default.get(),
-                		((AbstractSignal5Default1<A,B,C,D,E>)signal).arg5Default.get());
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex+3, qobject, type, 
+                		arg1, arg2);
             }else {
-            	invokeMethod(thread, qobject, 
+            	invokeMethod(qobject.thread(), qobject, 
             			(Slot2<A,B>)signal::emit, 
             			type, arg1, arg2);
             }
@@ -7166,27 +11416,24 @@ public final class QMetaObject {
     public static <A,B,C,D,E> void invokeMethod(@StrictNonNull AbstractSignal5Default4<A,B,C,D,E> signal, Qt.@NonNull ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
+        	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
 			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
+				if(!qobject.isObjectsThread()) {
+					type = Qt.ConnectionType.QueuedConnection;
 					break;
+				}
 			case DirectConnection:
 				signal.emit(arg1);
 				return;
 			default:
 				break;
         	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, 
-                		arg1, 
-                		signal.arg2Default.get(),
-                		((AbstractSignal5Default3<A,B,C,D,E>)signal).arg3Default.get(),
-                		((AbstractSignal5Default2<A,B,C,D,E>)signal).arg4Default.get(),
-                		((AbstractSignal5Default1<A,B,C,D,E>)signal).arg5Default.get());
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex+4, qobject, type, 
+                		arg1);
             }else {
-            	invokeMethod(thread, qobject, 
+            	invokeMethod(qobject.thread(), qobject, 
             			(Slot1<A>)signal::emit, 
             			type, arg1);
             }
@@ -7242,27 +11489,23 @@ public final class QMetaObject {
     public static <A,B,C,D,E> void invokeMethod(@StrictNonNull AbstractSignal5Default5<A,B,C,D,E> signal, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
+        	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
 			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
+				if(!qobject.isObjectsThread()) {
+					type = Qt.ConnectionType.QueuedConnection;
 					break;
+				}
 			case DirectConnection:
 				signal.emit();
 				return;
 			default:
 				break;
         	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, 
-                		signal.arg1Default.get(), 
-                		((AbstractSignal5Default4<A,B,C,D,E>)signal).arg2Default.get(), 
-                		((AbstractSignal5Default3<A,B,C,D,E>)signal).arg3Default.get(), 
-                		((AbstractSignal5Default2<A,B,C,D,E>)signal).arg4Default.get(), 
-                		((AbstractSignal5Default1<A,B,C,D,E>)signal).arg5Default.get());
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex+5, qobject, type);
             }else {
-            	invokeMethod(thread, qobject, 
+            	invokeMethod(qobject.thread(), qobject, 
             			(Slot0)signal::emit, 
             			type);
             }
@@ -7353,22 +11596,23 @@ public final class QMetaObject {
     public static <A,B,C,D,E,F> void invokeMethod(@StrictNonNull AbstractPublicSignal6<A,B,C,D,E,F> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
-			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
-					break;
-			case DirectConnection:
-				signal.emit(arg1, arg2, arg3, arg4, arg5, arg6);
-				return;
-			default:
-				break;
-        	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, arg1, arg2, arg3, arg4, arg5, arg6);
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex, qobject, type, arg1, arg2, arg3, arg4, arg5, arg6);
             }else {
-            	invokeMethod(thread, qobject, signal::emit, type, arg1, arg2, arg3, arg4, arg5, arg6);
+            	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
+    			case AutoConnection:
+    				if(!qobject.isObjectsThread()) {
+    					type = Qt.ConnectionType.QueuedConnection;
+    					break;
+    				}
+    			case DirectConnection:
+    				signal.emit(arg1, arg2, arg3, arg4, arg5, arg6);
+    				return;
+    			default:
+    				break;
+            	}
+            	invokeMethod(qobject.thread(), qobject, signal::emit, type, arg1, arg2, arg3, arg4, arg5, arg6);
             }
         }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
         	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), (QObject)null, signal::emit, type, arg1, arg2, arg3, arg4, arg5, arg6);
@@ -7405,14 +11649,18 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     public static <A,B,C,D,E,F> void invokeMethod(@StrictNonNull AbstractPrivateSignal6<A,B,C,D,E,F> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
-        if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
+        if(signal.containingObject() instanceof QObject) {
             QObject qobject = (QObject)signal.containingObject();
-            QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, arg1, arg2, arg3, arg4, arg5, arg6);
+            int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex, qobject, type, arg1, arg2, arg3, arg4, arg5, arg6);
                 return;
             }
         }
+        if(signal instanceof AbstractPublicSignal6) {
+        	invokeMethod((AbstractPublicSignal6<A,B,C,D,E,F>)signal, type, arg1, arg2, arg3, arg4, arg5, arg6);
+        	return;
+    	}
         throw new QUnsuccessfulInvocationException("Unable to invoke method.");
     }
     
@@ -7466,24 +11714,24 @@ public final class QMetaObject {
     public static <A,B,C,D,E,F> void invokeMethod(@StrictNonNull AbstractSignal6Default1<A,B,C,D,E,F> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
+        	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
 			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
+				if(!qobject.isObjectsThread()) {
+					type = Qt.ConnectionType.QueuedConnection;
 					break;
+				}
 			case DirectConnection:
 				signal.emit(arg1, arg2, arg3, arg4, arg5);
 				return;
 			default:
 				break;
         	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, 
-                		arg1, arg2, arg3, arg4, arg5, 
-                		signal.arg6Default.get());
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex+1, qobject, type, 
+                		arg1, arg2, arg3, arg4, arg5);
             }else {
-            	invokeMethod(thread, qobject, 
+            	invokeMethod(qobject.thread(), qobject, 
             			(Slot5<A,B,C,D,E>)signal::emit, 
             			type, arg1, arg2, arg3, arg4, arg5);
             }
@@ -7548,25 +11796,24 @@ public final class QMetaObject {
     public static <A,B,C,D,E,F> void invokeMethod(@StrictNonNull AbstractSignal6Default2<A,B,C,D,E,F> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
+        	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
 			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
+				if(!qobject.isObjectsThread()) {
+					type = Qt.ConnectionType.QueuedConnection;
 					break;
+				}
 			case DirectConnection:
 				signal.emit(arg1, arg2, arg3, arg4);
 				return;
 			default:
 				break;
         	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, 
-                		arg1, arg2, arg3, arg4, 
-                		signal.arg5Default.get(), 
-                		((AbstractSignal6Default1<A,B,C,D,E,F>)signal).arg6Default.get());
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex+2, qobject, type, 
+                		arg1, arg2, arg3, arg4);
             }else {
-            	invokeMethod(thread, qobject, 
+            	invokeMethod(qobject.thread(), qobject, 
             			(Slot4<A,B,C,D>)signal::emit, 
             			type, arg1, arg2, arg3, arg4);
             }
@@ -7629,26 +11876,24 @@ public final class QMetaObject {
     public static <A,B,C,D,E,F> void invokeMethod(@StrictNonNull AbstractSignal6Default3<A,B,C,D,E,F> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
+        	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
 			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
+				if(!qobject.isObjectsThread()) {
+					type = Qt.ConnectionType.QueuedConnection;
 					break;
+				}
 			case DirectConnection:
 				signal.emit(arg1, arg2, arg3);
 				return;
 			default:
 				break;
         	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, 
-                		arg1, arg2, arg3, 
-                		signal.arg4Default.get(),
-                		((AbstractSignal6Default2<A,B,C,D,E,F>)signal).arg5Default.get(),
-                		((AbstractSignal6Default1<A,B,C,D,E,F>)signal).arg6Default.get());
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex+3, qobject, type, 
+                		arg1, arg2, arg3);
             }else {
-            	invokeMethod(thread, qobject, 
+            	invokeMethod(qobject.thread(), qobject, 
             			(Slot3<A,B,C>)signal::emit, 
             			type, arg1, arg2, arg3);
             }
@@ -7709,27 +11954,24 @@ public final class QMetaObject {
     public static <A,B,C,D,E,F> void invokeMethod(@StrictNonNull AbstractSignal6Default4<A,B,C,D,E,F> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
+        	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
 			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
+				if(!qobject.isObjectsThread()) {
+					type = Qt.ConnectionType.QueuedConnection;
 					break;
+				}
 			case DirectConnection:
 				signal.emit(arg1, arg2);
 				return;
 			default:
 				break;
         	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, 
-                		arg1, arg2, 
-                		signal.arg3Default.get(),
-                		((AbstractSignal6Default3<A,B,C,D,E,F>)signal).arg4Default.get(),
-                		((AbstractSignal6Default2<A,B,C,D,E,F>)signal).arg5Default.get(),
-                		((AbstractSignal6Default1<A,B,C,D,E,F>)signal).arg6Default.get());
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex+4, qobject, type, 
+                		arg1, arg2);
             }else {
-            	invokeMethod(thread, qobject, 
+            	invokeMethod(qobject.thread(), qobject, 
             			(Slot2<A,B>)signal::emit, 
             			type, arg1, arg2);
             }
@@ -7788,28 +12030,24 @@ public final class QMetaObject {
     public static <A,B,C,D,E,F> void invokeMethod(@StrictNonNull AbstractSignal6Default5<A,B,C,D,E,F> signal, Qt.@NonNull ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
+        	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
 			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
+				if(!qobject.isObjectsThread()) {
+					type = Qt.ConnectionType.QueuedConnection;
 					break;
+				}
 			case DirectConnection:
 				signal.emit(arg1);
 				return;
 			default:
 				break;
         	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, 
-                		arg1, 
-                		signal.arg2Default.get(),
-                		((AbstractSignal6Default4<A,B,C,D,E,F>)signal).arg3Default.get(),
-                		((AbstractSignal6Default3<A,B,C,D,E,F>)signal).arg4Default.get(),
-                		((AbstractSignal6Default2<A,B,C,D,E,F>)signal).arg5Default.get(),
-                		((AbstractSignal6Default1<A,B,C,D,E,F>)signal).arg6Default.get());
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex+5, qobject, type, 
+                		arg1);
             }else {
-            	invokeMethod(thread, qobject, 
+            	invokeMethod(qobject.thread(), qobject, 
             			(Slot1<A>)signal::emit, 
             			type, arg1);
             }
@@ -7866,28 +12104,23 @@ public final class QMetaObject {
     public static <A,B,C,D,E,F> void invokeMethod(@StrictNonNull AbstractSignal6Default6<A,B,C,D,E,F> signal, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
+        	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
 			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
+				if(!qobject.isObjectsThread()) {
+					type = Qt.ConnectionType.QueuedConnection;
 					break;
+				}
 			case DirectConnection:
 				signal.emit();
 				return;
 			default:
 				break;
         	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, 
-                		signal.arg1Default.get(), 
-                		((AbstractSignal6Default5<A,B,C,D,E,F>)signal).arg2Default.get(), 
-                		((AbstractSignal6Default4<A,B,C,D,E,F>)signal).arg3Default.get(), 
-                		((AbstractSignal6Default3<A,B,C,D,E,F>)signal).arg4Default.get(), 
-                		((AbstractSignal6Default2<A,B,C,D,E,F>)signal).arg5Default.get(), 
-                		((AbstractSignal6Default1<A,B,C,D,E,F>)signal).arg6Default.get());
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex+6, qobject, type);
             }else {
-            	invokeMethod(thread, qobject, 
+            	invokeMethod(qobject.thread(), qobject, 
             			(Slot0)signal::emit, 
             			type);
             }
@@ -7985,22 +12218,23 @@ public final class QMetaObject {
     public static <A,B,C,D,E,F,G> void invokeMethod(@StrictNonNull AbstractPublicSignal7<A,B,C,D,E,F,G> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
-			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
-					break;
-			case DirectConnection:
-				signal.emit(arg1, arg2, arg3, arg4, arg5, arg6, arg7);
-				return;
-			default:
-				break;
-        	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex, qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
             }else {
-            	invokeMethod(thread, qobject, signal::emit, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+            	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
+    			case AutoConnection:
+    				if(!qobject.isObjectsThread()) {
+    					type = Qt.ConnectionType.QueuedConnection;
+    					break;
+    				}
+    			case DirectConnection:
+    				signal.emit(arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+    				return;
+    			default:
+    				break;
+            	}
+            	invokeMethod(qobject.thread(), qobject, signal::emit, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
             }
         }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
         	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), (QObject)null, signal::emit, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
@@ -8040,14 +12274,18 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G> void invokeMethod(@StrictNonNull AbstractPrivateSignal7<A,B,C,D,E,F,G> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
-        if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
+        if(signal.containingObject() instanceof QObject) {
             QObject qobject = (QObject)signal.containingObject();
-            QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+            int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex, qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
                 return;
             }
         }
+        if(signal instanceof AbstractPublicSignal7) {
+        	invokeMethod((AbstractPublicSignal7<A,B,C,D,E,F,G>)signal, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+        	return;
+    	}
         throw new QUnsuccessfulInvocationException("Unable to invoke method.");
     }
     
@@ -8106,24 +12344,24 @@ public final class QMetaObject {
     public static <A,B,C,D,E,F,G> void invokeMethod(@StrictNonNull AbstractSignal7Default1<A,B,C,D,E,F,G> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
+        	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
 			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
+				if(!qobject.isObjectsThread()) {
+					type = Qt.ConnectionType.QueuedConnection;
 					break;
+				}
 			case DirectConnection:
 				signal.emit(arg1, arg2, arg3, arg4, arg5, arg6);
 				return;
 			default:
 				break;
         	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, 
-                		arg1, arg2, arg3, arg4, arg5, arg6, 
-                		signal.arg7Default.get());
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex+1, qobject, type, 
+                		arg1, arg2, arg3, arg4, arg5, arg6);
             }else {
-            	invokeMethod(thread, qobject, 
+            	invokeMethod(qobject.thread(), qobject, 
             			(Slot6<A,B,C,D,E,F>)signal::emit, 
             			type, arg1, arg2, arg3, arg4, arg5, arg6);
             }
@@ -8193,25 +12431,24 @@ public final class QMetaObject {
     public static <A,B,C,D,E,F,G> void invokeMethod(@StrictNonNull AbstractSignal7Default2<A,B,C,D,E,F,G> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
+        	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
 			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
+				if(!qobject.isObjectsThread()) {
+					type = Qt.ConnectionType.QueuedConnection;
 					break;
+				}
 			case DirectConnection:
 				signal.emit(arg1, arg2, arg3, arg4, arg5);
 				return;
 			default:
 				break;
         	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, 
-                		arg1, arg2, arg3, arg4, arg5, 
-                		signal.arg6Default.get(), 
-                		((AbstractSignal7Default1<A,B,C,D,E,F,G>)signal).arg7Default.get());
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex+2, qobject, type, 
+                		arg1, arg2, arg3, arg4, arg5);
             }else {
-            	invokeMethod(thread, qobject, 
+            	invokeMethod(qobject.thread(), qobject, 
             			(Slot5<A,B,C,D,E>)signal::emit, 
             			type, arg1, arg2, arg3, arg4, arg5);
             }
@@ -8279,26 +12516,24 @@ public final class QMetaObject {
     public static <A,B,C,D,E,F,G> void invokeMethod(@StrictNonNull AbstractSignal7Default3<A,B,C,D,E,F,G> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
+        	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
 			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
+				if(!qobject.isObjectsThread()) {
+					type = Qt.ConnectionType.QueuedConnection;
 					break;
+				}
 			case DirectConnection:
 				signal.emit(arg1, arg2, arg3, arg4);
 				return;
 			default:
 				break;
         	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, 
-                		arg1, arg2, arg3, arg4, 
-                		signal.arg5Default.get(),
-                		((AbstractSignal7Default2<A,B,C,D,E,F,G>)signal).arg6Default.get(),
-                		((AbstractSignal7Default1<A,B,C,D,E,F,G>)signal).arg7Default.get());
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex+3, qobject, type, 
+                		arg1, arg2, arg3, arg4);
             }else {
-            	invokeMethod(thread, qobject, 
+            	invokeMethod(qobject.thread(), qobject, 
             			(Slot4<A,B,C,D>)signal::emit, 
             			type, arg1, arg2, arg3, arg4);
             }
@@ -8364,27 +12599,24 @@ public final class QMetaObject {
     public static <A,B,C,D,E,F,G> void invokeMethod(@StrictNonNull AbstractSignal7Default4<A,B,C,D,E,F,G> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
+        	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
 			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
+				if(!qobject.isObjectsThread()) {
+					type = Qt.ConnectionType.QueuedConnection;
 					break;
+				}
 			case DirectConnection:
 				signal.emit(arg1, arg2, arg3);
 				return;
 			default:
 				break;
         	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, 
-                		arg1, arg2, arg3, 
-                		signal.arg4Default.get(),
-                		((AbstractSignal7Default3<A,B,C,D,E,F,G>)signal).arg5Default.get(),
-                		((AbstractSignal7Default2<A,B,C,D,E,F,G>)signal).arg6Default.get(),
-                		((AbstractSignal7Default1<A,B,C,D,E,F,G>)signal).arg7Default.get());
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex+4, qobject, type, 
+                		arg1, arg2, arg3);
             }else {
-            	invokeMethod(thread, qobject, 
+            	invokeMethod(qobject.thread(), qobject, 
             			(Slot3<A,B,C>)signal::emit, 
             			type, arg1, arg2, arg3);
             }
@@ -8448,28 +12680,24 @@ public final class QMetaObject {
     public static <A,B,C,D,E,F,G> void invokeMethod(@StrictNonNull AbstractSignal7Default5<A,B,C,D,E,F,G> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
+        	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
 			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
+				if(!qobject.isObjectsThread()) {
+					type = Qt.ConnectionType.QueuedConnection;
 					break;
+				}
 			case DirectConnection:
 				signal.emit(arg1, arg2);
 				return;
 			default:
 				break;
         	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, 
-                		arg1, arg2, 
-                		signal.arg3Default.get(),
-                		((AbstractSignal7Default4<A,B,C,D,E,F,G>)signal).arg4Default.get(),
-                		((AbstractSignal7Default3<A,B,C,D,E,F,G>)signal).arg5Default.get(),
-                		((AbstractSignal7Default2<A,B,C,D,E,F,G>)signal).arg6Default.get(),
-                		((AbstractSignal7Default1<A,B,C,D,E,F,G>)signal).arg7Default.get());
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex+5, qobject, type, 
+                		arg1, arg2);
             }else {
-            	invokeMethod(thread, qobject, 
+            	invokeMethod(qobject.thread(), qobject, 
             			(Slot2<A,B>)signal::emit, 
             			type, arg1, arg2);
             }
@@ -8531,29 +12759,24 @@ public final class QMetaObject {
     public static <A,B,C,D,E,F,G> void invokeMethod(@StrictNonNull AbstractSignal7Default6<A,B,C,D,E,F,G> signal, Qt.@NonNull ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
+        	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
 			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
+				if(!qobject.isObjectsThread()) {
+					type = Qt.ConnectionType.QueuedConnection;
 					break;
+				}
 			case DirectConnection:
 				signal.emit(arg1);
 				return;
 			default:
 				break;
         	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, 
-                		arg1, 
-                		signal.arg2Default.get(),
-                		((AbstractSignal7Default5<A,B,C,D,E,F,G>)signal).arg3Default.get(),
-                		((AbstractSignal7Default4<A,B,C,D,E,F,G>)signal).arg4Default.get(),
-                		((AbstractSignal7Default3<A,B,C,D,E,F,G>)signal).arg5Default.get(),
-                		((AbstractSignal7Default2<A,B,C,D,E,F,G>)signal).arg6Default.get(),
-                		((AbstractSignal7Default1<A,B,C,D,E,F,G>)signal).arg7Default.get());
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex+6, qobject, type, 
+                		arg1);
             }else {
-            	invokeMethod(thread, qobject, 
+            	invokeMethod(qobject.thread(), qobject, 
             			(Slot1<A>)signal::emit, 
             			type, arg1);
             }
@@ -8613,29 +12836,23 @@ public final class QMetaObject {
     public static <A,B,C,D,E,F,G> void invokeMethod(@StrictNonNull AbstractSignal7Default7<A,B,C,D,E,F,G> signal, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
+        	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
 			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
+				if(!qobject.isObjectsThread()) {
+					type = Qt.ConnectionType.QueuedConnection;
 					break;
+				}
 			case DirectConnection:
 				signal.emit();
 				return;
 			default:
 				break;
         	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, 
-                		signal.arg1Default.get(), 
-                		((AbstractSignal7Default6<A,B,C,D,E,F,G>)signal).arg2Default.get(), 
-                		((AbstractSignal7Default5<A,B,C,D,E,F,G>)signal).arg3Default.get(), 
-                		((AbstractSignal7Default4<A,B,C,D,E,F,G>)signal).arg4Default.get(), 
-                		((AbstractSignal7Default3<A,B,C,D,E,F,G>)signal).arg5Default.get(), 
-                		((AbstractSignal7Default2<A,B,C,D,E,F,G>)signal).arg6Default.get(), 
-                		((AbstractSignal7Default1<A,B,C,D,E,F,G>)signal).arg7Default.get());
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex+7, qobject, type);
             }else {
-            	invokeMethod(thread, qobject, 
+            	invokeMethod(qobject.thread(), qobject, 
             			(Slot0)signal::emit, 
             			type);
             }
@@ -8737,14 +12954,18 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull AbstractPrivateSignal8<A,B,C,D,E,F,G,H> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
-        if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
+        if(signal.containingObject() instanceof QObject) {
             QObject qobject = (QObject)signal.containingObject();
-            QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+            int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex, qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
                 return;
             }
         }
+        if(signal instanceof AbstractPublicSignal8) {
+        	invokeMethod((AbstractPublicSignal8<A,B,C,D,E,F,G,H>)signal, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+        	return;
+    	}
         throw new QUnsuccessfulInvocationException("Unable to invoke method.");
     }
     
@@ -8783,22 +13004,23 @@ public final class QMetaObject {
     public static <A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull AbstractPublicSignal8<A,B,C,D,E,F,G,H> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
-			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
-					break;
-			case DirectConnection:
-				signal.emit(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
-				return;
-			default:
-				break;
-        	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex, qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
             }else {
-            	invokeMethod(thread, qobject, signal::emit, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+            	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
+    			case AutoConnection:
+    				if(!qobject.isObjectsThread()) {
+    					type = Qt.ConnectionType.QueuedConnection;
+    					break;
+    				}
+    			case DirectConnection:
+    				signal.emit(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+    				return;
+    			default:
+    				break;
+            	}
+            	invokeMethod(qobject.thread(), qobject, signal::emit, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
             }
         }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
         	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), (QObject)null, signal::emit, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
@@ -8866,24 +13088,24 @@ public final class QMetaObject {
     public static <A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull AbstractSignal8Default1<A,B,C,D,E,F,G,H> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
+        	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
 			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
+				if(!qobject.isObjectsThread()) {
+					type = Qt.ConnectionType.QueuedConnection;
 					break;
+				}
 			case DirectConnection:
 				signal.emit(arg1, arg2, arg3, arg4, arg5, arg6, arg7);
 				return;
 			default:
 				break;
         	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, 
-                		arg1, arg2, arg3, arg4, arg5, arg6, arg7, 
-                		signal.arg8Default.get());
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex+1, qobject, type, 
+                		arg1, arg2, arg3, arg4, arg5, arg6, arg7);
             }else {
-            	invokeMethod(thread, qobject, 
+            	invokeMethod(qobject.thread(), qobject, 
             			(Slot7<A,B,C,D,E,F,G>)signal::emit, 
             			type, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
             }
@@ -8957,25 +13179,24 @@ public final class QMetaObject {
     public static <A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull AbstractSignal8Default2<A,B,C,D,E,F,G,H> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
+        	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
 			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
+				if(!qobject.isObjectsThread()) {
+					type = Qt.ConnectionType.QueuedConnection;
 					break;
+				}
 			case DirectConnection:
 				signal.emit(arg1, arg2, arg3, arg4, arg5, arg6);
 				return;
 			default:
 				break;
         	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, 
-                		arg1, arg2, arg3, arg4, arg5, arg6, 
-                		signal.arg7Default.get(), 
-                		((AbstractSignal8Default1<A,B,C,D,E,F,G,H>)signal).arg8Default.get());
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex+2, qobject, type, 
+                		arg1, arg2, arg3, arg4, arg5, arg6);
             }else {
-            	invokeMethod(thread, qobject, 
+            	invokeMethod(qobject.thread(), qobject, 
             			(Slot6<A,B,C,D,E,F>)signal::emit, 
             			type, arg1, arg2, arg3, arg4, arg5, arg6);
             }
@@ -9047,26 +13268,24 @@ public final class QMetaObject {
     public static <A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull AbstractSignal8Default3<A,B,C,D,E,F,G,H> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
+        	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
 			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
+				if(!qobject.isObjectsThread()) {
+					type = Qt.ConnectionType.QueuedConnection;
 					break;
+				}
 			case DirectConnection:
 				signal.emit(arg1, arg2, arg3, arg4, arg5);
 				return;
 			default:
 				break;
         	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, 
-                		arg1, arg2, arg3, arg4, arg5, 
-                		signal.arg6Default.get(),
-                		((AbstractSignal8Default2<A,B,C,D,E,F,G,H>)signal).arg7Default.get(),
-                		((AbstractSignal8Default1<A,B,C,D,E,F,G,H>)signal).arg8Default.get());
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex+3, qobject, type, 
+                		arg1, arg2, arg3, arg4, arg5);
             }else {
-            	invokeMethod(thread, qobject, 
+            	invokeMethod(qobject.thread(), qobject, 
             			(Slot5<A,B,C,D,E>)signal::emit, 
             			type, arg1, arg2, arg3, arg4, arg5);
             }
@@ -9136,27 +13355,24 @@ public final class QMetaObject {
     public static <A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull AbstractSignal8Default4<A,B,C,D,E,F,G,H> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
+        	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
 			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
+				if(!qobject.isObjectsThread()) {
+					type = Qt.ConnectionType.QueuedConnection;
 					break;
+				}
 			case DirectConnection:
 				signal.emit(arg1, arg2, arg3, arg4);
 				return;
 			default:
 				break;
         	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, 
-                		arg1, arg2, arg3, arg4, 
-                		signal.arg5Default.get(),
-                		((AbstractSignal8Default3<A,B,C,D,E,F,G,H>)signal).arg6Default.get(),
-                		((AbstractSignal8Default2<A,B,C,D,E,F,G,H>)signal).arg7Default.get(),
-                		((AbstractSignal8Default1<A,B,C,D,E,F,G,H>)signal).arg8Default.get());
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex+4, qobject, type, 
+                		arg1, arg2, arg3, arg4);
             }else {
-            	invokeMethod(thread, qobject, 
+            	invokeMethod(qobject.thread(), qobject, 
             			(Slot4<A,B,C,D>)signal::emit, 
             			type, arg1, arg2, arg3, arg4);
             }
@@ -9224,28 +13440,24 @@ public final class QMetaObject {
     public static <A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull AbstractSignal8Default5<A,B,C,D,E,F,G,H> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
+        	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
 			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
+				if(!qobject.isObjectsThread()) {
+					type = Qt.ConnectionType.QueuedConnection;
 					break;
+				}
 			case DirectConnection:
 				signal.emit(arg1, arg2, arg3);
 				return;
 			default:
 				break;
         	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, 
-                		arg1, arg2, arg3, 
-                		signal.arg4Default.get(),
-                		((AbstractSignal8Default4<A,B,C,D,E,F,G,H>)signal).arg5Default.get(),
-                		((AbstractSignal8Default3<A,B,C,D,E,F,G,H>)signal).arg6Default.get(),
-                		((AbstractSignal8Default2<A,B,C,D,E,F,G,H>)signal).arg7Default.get(),
-                		((AbstractSignal8Default1<A,B,C,D,E,F,G,H>)signal).arg8Default.get());
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex+5, qobject, type, 
+                		arg1, arg2, arg3);
             }else {
-            	invokeMethod(thread, qobject, 
+            	invokeMethod(qobject.thread(), qobject, 
             			(Slot3<A,B,C>)signal::emit, 
             			type, arg1, arg2, arg3);
             }
@@ -9311,29 +13523,24 @@ public final class QMetaObject {
     public static <A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull AbstractSignal8Default6<A,B,C,D,E,F,G,H> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
+        	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
 			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
+				if(!qobject.isObjectsThread()) {
+					type = Qt.ConnectionType.QueuedConnection;
 					break;
+				}
 			case DirectConnection:
 				signal.emit(arg1, arg2);
 				return;
 			default:
 				break;
         	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, 
-                		arg1, arg2, 
-                		signal.arg3Default.get(),
-                		((AbstractSignal8Default5<A,B,C,D,E,F,G,H>)signal).arg4Default.get(),
-                		((AbstractSignal8Default4<A,B,C,D,E,F,G,H>)signal).arg5Default.get(),
-                		((AbstractSignal8Default3<A,B,C,D,E,F,G,H>)signal).arg6Default.get(),
-                		((AbstractSignal8Default2<A,B,C,D,E,F,G,H>)signal).arg7Default.get(),
-                		((AbstractSignal8Default1<A,B,C,D,E,F,G,H>)signal).arg8Default.get());
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex+6, qobject, type, 
+                		arg1, arg2);
             }else {
-            	invokeMethod(thread, qobject, 
+            	invokeMethod(qobject.thread(), qobject, 
             			(Slot2<A,B>)signal::emit, 
             			type, arg1, arg2);
             }
@@ -9397,30 +13604,24 @@ public final class QMetaObject {
     public static <A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull AbstractSignal8Default7<A,B,C,D,E,F,G,H> signal, Qt.@NonNull ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
+        	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
 			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
+				if(!qobject.isObjectsThread()) {
+					type = Qt.ConnectionType.QueuedConnection;
 					break;
+				}
 			case DirectConnection:
 				signal.emit(arg1);
 				return;
 			default:
 				break;
         	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, 
-                		arg1, 
-                		signal.arg2Default.get(),
-                		((AbstractSignal8Default6<A,B,C,D,E,F,G,H>)signal).arg3Default.get(),
-                		((AbstractSignal8Default5<A,B,C,D,E,F,G,H>)signal).arg4Default.get(),
-                		((AbstractSignal8Default4<A,B,C,D,E,F,G,H>)signal).arg5Default.get(),
-                		((AbstractSignal8Default3<A,B,C,D,E,F,G,H>)signal).arg6Default.get(),
-                		((AbstractSignal8Default2<A,B,C,D,E,F,G,H>)signal).arg7Default.get(),
-                		((AbstractSignal8Default1<A,B,C,D,E,F,G,H>)signal).arg8Default.get());
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex+7, qobject, type, 
+                		arg1);
             }else {
-            	invokeMethod(thread, qobject, 
+            	invokeMethod(qobject.thread(), qobject, 
             			(Slot1<A>)signal::emit, 
             			type, arg1);
             }
@@ -9482,30 +13683,23 @@ public final class QMetaObject {
     public static <A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull AbstractSignal8Default8<A,B,C,D,E,F,G,H> signal, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
+        	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
 			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
+				if(!qobject.isObjectsThread()) {
+					type = Qt.ConnectionType.QueuedConnection;
 					break;
+				}
 			case DirectConnection:
 				signal.emit();
 				return;
 			default:
 				break;
         	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, 
-                		signal.arg1Default.get(), 
-                		((AbstractSignal8Default7<A,B,C,D,E,F,G,H>)signal).arg2Default.get(), 
-                		((AbstractSignal8Default6<A,B,C,D,E,F,G,H>)signal).arg3Default.get(), 
-                		((AbstractSignal8Default5<A,B,C,D,E,F,G,H>)signal).arg4Default.get(), 
-                		((AbstractSignal8Default4<A,B,C,D,E,F,G,H>)signal).arg5Default.get(), 
-                		((AbstractSignal8Default3<A,B,C,D,E,F,G,H>)signal).arg6Default.get(), 
-                		((AbstractSignal8Default2<A,B,C,D,E,F,G,H>)signal).arg7Default.get(), 
-                		((AbstractSignal8Default1<A,B,C,D,E,F,G,H>)signal).arg8Default.get());
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex+8, qobject, type);
             }else {
-            	invokeMethod(thread, qobject, 
+            	invokeMethod(qobject.thread(), qobject, 
             			(Slot0)signal::emit, 
             			type);
             }
@@ -9822,22 +14016,23 @@ public final class QMetaObject {
     public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull AbstractPublicSignal9<A,B,C,D,E,F,G,H,I> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
-			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
-					break;
-			case DirectConnection:
-				signal.emit(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
-				return;
-			default:
-				break;
-        	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex, qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
             }else {
-            	invokeMethod(thread, qobject, signal::emit, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+            	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
+    			case AutoConnection:
+    				if(!qobject.isObjectsThread()) {
+    					type = Qt.ConnectionType.QueuedConnection;
+    					break;
+    				}
+    			case DirectConnection:
+    				signal.emit(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+    				return;
+    			default:
+    				break;
+            	}
+            	invokeMethod(qobject.thread(), qobject, signal::emit, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
             }
         }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
         	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), (QObject)null, signal::emit, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
@@ -9881,14 +14076,18 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull AbstractPrivateSignal9<A,B,C,D,E,F,G,H,I> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException {
-        if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
+        if(signal.containingObject() instanceof QObject) {
             QObject qobject = (QObject)signal.containingObject();
-            QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+            int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex, qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
                 return;
             }
         }
+        if(signal instanceof AbstractPublicSignal9) {
+        	invokeMethod((AbstractPublicSignal9<A,B,C,D,E,F,G,H,I>)signal, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+        	return;
+    	}
         throw new QUnsuccessfulInvocationException("Unable to invoke method.");
     }
     
@@ -9928,24 +14127,24 @@ public final class QMetaObject {
     public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull AbstractSignal9Default1<A,B,C,D,E,F,G,H,I> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
+        	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
 			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
+				if(!qobject.isObjectsThread()) {
+					type = Qt.ConnectionType.QueuedConnection;
 					break;
+				}
 			case DirectConnection:
 				signal.emit(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
 				return;
 			default:
 				break;
         	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, 
-                		arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, 
-                		signal.arg9Default.get());
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex+1, qobject, type, 
+                		arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
             }else {
-            	invokeMethod(thread, qobject, 
+            	invokeMethod(qobject.thread(), qobject, 
             			(Slot8<A,B,C,D,E,F,G,H>)signal::emit, 
             			type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
             }
@@ -9997,25 +14196,24 @@ public final class QMetaObject {
     public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull AbstractSignal9Default2<A,B,C,D,E,F,G,H,I> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
+        	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
 			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
+				if(!qobject.isObjectsThread()) {
+					type = Qt.ConnectionType.QueuedConnection;
 					break;
+				}
 			case DirectConnection:
 				signal.emit(arg1, arg2, arg3, arg4, arg5, arg6, arg7);
 				return;
 			default:
 				break;
         	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, 
-                		arg1, arg2, arg3, arg4, arg5, arg6, arg7, 
-                		signal.arg8Default.get(), 
-                		((AbstractSignal9Default1<A,B,C,D,E,F,G,H,I>)signal).arg9Default.get());
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex+2, qobject, type, 
+                		arg1, arg2, arg3, arg4, arg5, arg6, arg7);
             }else {
-            	invokeMethod(thread, qobject, 
+            	invokeMethod(qobject.thread(), qobject, 
             			(Slot7<A,B,C,D,E,F,G>)signal::emit, 
             			type, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
             }
@@ -10066,26 +14264,24 @@ public final class QMetaObject {
     public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull AbstractSignal9Default3<A,B,C,D,E,F,G,H,I> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
+        	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
 			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
+				if(!qobject.isObjectsThread()) {
+					type = Qt.ConnectionType.QueuedConnection;
 					break;
+				}
 			case DirectConnection:
 				signal.emit(arg1, arg2, arg3, arg4, arg5, arg6);
 				return;
 			default:
 				break;
         	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, 
-                		arg1, arg2, arg3, arg4, arg5, arg6, 
-                		signal.arg7Default.get(), 
-                		((AbstractSignal9Default2<A,B,C,D,E,F,G,H,I>)signal).arg8Default.get(), 
-                		((AbstractSignal9Default1<A,B,C,D,E,F,G,H,I>)signal).arg9Default.get());
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex+3, qobject, type, 
+                		arg1, arg2, arg3, arg4, arg5, arg6);
             }else {
-            	invokeMethod(thread, qobject, 
+            	invokeMethod(qobject.thread(), qobject, 
             			(Slot6<A,B,C,D,E,F>)signal::emit, 
             			type, arg1, arg2, arg3, arg4, arg5, arg6);
             }
@@ -10135,27 +14331,24 @@ public final class QMetaObject {
     public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull AbstractSignal9Default4<A,B,C,D,E,F,G,H,I> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
+        	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
 			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
+				if(!qobject.isObjectsThread()) {
+					type = Qt.ConnectionType.QueuedConnection;
 					break;
+				}
 			case DirectConnection:
 				signal.emit(arg1, arg2, arg3, arg4, arg5);
 				return;
 			default:
 				break;
         	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, 
-                		arg1, arg2, arg3, arg4, arg5, 
-                		signal.arg6Default.get(),
-                		((AbstractSignal9Default3<A,B,C,D,E,F,G,H,I>)signal).arg7Default.get(),
-                		((AbstractSignal9Default2<A,B,C,D,E,F,G,H,I>)signal).arg8Default.get(),
-                		((AbstractSignal9Default1<A,B,C,D,E,F,G,H,I>)signal).arg9Default.get());
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex+4, qobject, type, 
+                		arg1, arg2, arg3, arg4, arg5);
             }else {
-            	invokeMethod(thread, qobject, 
+            	invokeMethod(qobject.thread(), qobject, 
             			(Slot5<A,B,C,D,E>)signal::emit, 
             			type, arg1, arg2, arg3, arg4, arg5);
             }
@@ -10204,28 +14397,24 @@ public final class QMetaObject {
     public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull AbstractSignal9Default5<A,B,C,D,E,F,G,H,I> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
+        	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
 			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
+				if(!qobject.isObjectsThread()) {
+					type = Qt.ConnectionType.QueuedConnection;
 					break;
+				}
 			case DirectConnection:
 				signal.emit(arg1, arg2, arg3, arg4);
 				return;
 			default:
 				break;
         	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, 
-                		arg1, arg2, arg3, arg4, 
-                		signal.arg5Default.get(),
-                		((AbstractSignal9Default4<A,B,C,D,E,F,G,H,I>)signal).arg6Default.get(),
-                		((AbstractSignal9Default3<A,B,C,D,E,F,G,H,I>)signal).arg7Default.get(),
-                		((AbstractSignal9Default2<A,B,C,D,E,F,G,H,I>)signal).arg8Default.get(),
-                		((AbstractSignal9Default1<A,B,C,D,E,F,G,H,I>)signal).arg9Default.get());
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex+5, qobject, type, 
+                		arg1, arg2, arg3, arg4);
             }else {
-            	invokeMethod(thread, qobject, 
+            	invokeMethod(qobject.thread(), qobject, 
             			(Slot4<A,B,C,D>)signal::emit, 
             			type, arg1, arg2, arg3, arg4);
             }
@@ -10273,29 +14462,24 @@ public final class QMetaObject {
     public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull AbstractSignal9Default6<A,B,C,D,E,F,G,H,I> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
+        	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
 			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
+				if(!qobject.isObjectsThread()) {
+					type = Qt.ConnectionType.QueuedConnection;
 					break;
+				}
 			case DirectConnection:
 				signal.emit(arg1, arg2, arg3);
 				return;
 			default:
 				break;
         	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, 
-                		arg1, arg2, arg3, 
-                		signal.arg4Default.get(),
-                		((AbstractSignal9Default5<A,B,C,D,E,F,G,H,I>)signal).arg5Default.get(),
-                		((AbstractSignal9Default4<A,B,C,D,E,F,G,H,I>)signal).arg6Default.get(),
-                		((AbstractSignal9Default3<A,B,C,D,E,F,G,H,I>)signal).arg7Default.get(),
-                		((AbstractSignal9Default2<A,B,C,D,E,F,G,H,I>)signal).arg8Default.get(),
-                		((AbstractSignal9Default1<A,B,C,D,E,F,G,H,I>)signal).arg9Default.get());
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex+6, qobject, type, 
+                		arg1, arg2, arg3);
             }else {
-            	invokeMethod(thread, qobject, 
+            	invokeMethod(qobject.thread(), qobject, 
             			(Slot3<A,B,C>)signal::emit, 
             			type, arg1, arg2, arg3);
             }
@@ -10342,30 +14526,24 @@ public final class QMetaObject {
     public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull AbstractSignal9Default7<A,B,C,D,E,F,G,H,I> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
+        	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
 			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
+				if(!qobject.isObjectsThread()) {
+					type = Qt.ConnectionType.QueuedConnection;
 					break;
+				}
 			case DirectConnection:
 				signal.emit(arg1, arg2);
 				return;
 			default:
 				break;
         	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, 
-                		arg1, arg2, 
-                		signal.arg3Default.get(),
-                		((AbstractSignal9Default6<A,B,C,D,E,F,G,H,I>)signal).arg4Default.get(),
-                		((AbstractSignal9Default5<A,B,C,D,E,F,G,H,I>)signal).arg5Default.get(),
-                		((AbstractSignal9Default4<A,B,C,D,E,F,G,H,I>)signal).arg6Default.get(),
-                		((AbstractSignal9Default3<A,B,C,D,E,F,G,H,I>)signal).arg7Default.get(),
-                		((AbstractSignal9Default2<A,B,C,D,E,F,G,H,I>)signal).arg8Default.get(),
-                		((AbstractSignal9Default1<A,B,C,D,E,F,G,H,I>)signal).arg9Default.get());
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex+7, qobject, type, 
+                		arg1, arg2);
             }else {
-            	invokeMethod(thread, qobject, 
+            	invokeMethod(qobject.thread(), qobject, 
             			(Slot2<A,B>)signal::emit, 
             			type, arg1, arg2);
             }
@@ -10411,31 +14589,24 @@ public final class QMetaObject {
     public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull AbstractSignal9Default8<A,B,C,D,E,F,G,H,I> signal, Qt.@NonNull ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
+        	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
 			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
+				if(!qobject.isObjectsThread()) {
+					type = Qt.ConnectionType.QueuedConnection;
 					break;
+				}
 			case DirectConnection:
 				signal.emit(arg1);
 				return;
 			default:
 				break;
         	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, 
-                		arg1, 
-                		signal.arg2Default.get(),
-                		((AbstractSignal9Default7<A,B,C,D,E,F,G,H,I>)signal).arg3Default.get(),
-                		((AbstractSignal9Default6<A,B,C,D,E,F,G,H,I>)signal).arg4Default.get(),
-                		((AbstractSignal9Default5<A,B,C,D,E,F,G,H,I>)signal).arg5Default.get(),
-                		((AbstractSignal9Default4<A,B,C,D,E,F,G,H,I>)signal).arg6Default.get(),
-                		((AbstractSignal9Default3<A,B,C,D,E,F,G,H,I>)signal).arg7Default.get(),
-                		((AbstractSignal9Default2<A,B,C,D,E,F,G,H,I>)signal).arg8Default.get(),
-                		((AbstractSignal9Default1<A,B,C,D,E,F,G,H,I>)signal).arg9Default.get());
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex+8, qobject, type, 
+                		arg1);
             }else {
-            	invokeMethod(thread, qobject, 
+            	invokeMethod(qobject.thread(), qobject, 
             			(Slot1<A>)signal::emit, 
             			type, arg1);
             }
@@ -10480,31 +14651,23 @@ public final class QMetaObject {
     public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull AbstractSignal9Default9<A,B,C,D,E,F,G,H,I> signal, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
     	if(signal.containingObject() instanceof QObject) {
         	QObject qobject = (QObject)signal.containingObject();
-        	QThread thread = qobject.thread();
-        	switch(type){
+        	switch(type==null ? Qt.ConnectionType.AutoConnection : type){
 			case AutoConnection:
-				if(thread!=null && thread!=QThread.currentThread())
+				if(!qobject.isObjectsThread()) {
+					type = Qt.ConnectionType.QueuedConnection;
 					break;
+				}
 			case DirectConnection:
 				signal.emit();
 				return;
 			default:
 				break;
         	}
-        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null && qmethod.isValid()) {
-                qmethod.invoke(qobject, type, 
-                		signal.arg1Default.get(),
-                		((AbstractSignal9Default8<A,B,C,D,E,F,G,H,I>)signal).arg2Default.get(),
-                		((AbstractSignal9Default7<A,B,C,D,E,F,G,H,I>)signal).arg3Default.get(),
-                		((AbstractSignal9Default6<A,B,C,D,E,F,G,H,I>)signal).arg4Default.get(),
-                		((AbstractSignal9Default5<A,B,C,D,E,F,G,H,I>)signal).arg5Default.get(),
-                		((AbstractSignal9Default4<A,B,C,D,E,F,G,H,I>)signal).arg6Default.get(),
-                		((AbstractSignal9Default3<A,B,C,D,E,F,G,H,I>)signal).arg7Default.get(),
-                		((AbstractSignal9Default2<A,B,C,D,E,F,G,H,I>)signal).arg8Default.get(),
-                		((AbstractSignal9Default1<A,B,C,D,E,F,G,H,I>)signal).arg9Default.get());
+        	int methodIndex = signal.methodIndex();
+            if(methodIndex>=0) {
+                invokeMethod(methodIndex+9, qobject, type);
             }else {
-            	invokeMethod(thread, qobject, 
+            	invokeMethod(qobject.thread(), qobject, 
             			(Slot0)signal::emit, 
             			type);
             }
@@ -10520,6 +14683,17 @@ public final class QMetaObject {
         			type);
         }
     }
+    
+    private static <R> R invokeMethod(QMetaObject metaObject, int methodIndex, QObject object, Qt.ConnectionType connection, Object... args) throws IllegalArgumentException, QUnsuccessfulInvocationException {
+        return invokeMethodByIndex(metaObject.metaObjectPointer, methodIndex, QtJambi_LibraryUtilities.internal.checkedNativeId(object), connection==null ? 0 : connection.value(), args);
+    }
+    
+    private static <R> R invokeMethod(int methodIndex, QObject object, Qt.ConnectionType connection, Object... args) throws IllegalArgumentException, QUnsuccessfulInvocationException {
+        return invokeMethodByIndex(0, methodIndex, QtJambi_LibraryUtilities.internal.checkedNativeId(object), connection==null ? 0 : connection.value(), args);
+    }
+    
+    @QtUninvokable
+    private native static <R> R invokeMethodByIndex(long metaObjectPointer, int methodIndex, long object__id, int connection, Object[] args);
     
     private static native void invokeMethod(long context, Runnable runnable, boolean blocking);
     
@@ -10568,6 +14742,7 @@ public final class QMetaObject {
         
         /**
          * Internal
+         * @hidden
          */
         @Override
         protected final void checkConnection(Object receiver, boolean slotObject) {
@@ -10837,6 +15012,24 @@ public final class QMetaObject {
     @FunctionalInterface
     public static interface Slot9<A,B,C,D,E,F,G,H,I> extends AbstractSlot{
         public void invoke(A a, B b, C c, D d, E e, F f, G g, H h, I i) throws Throwable;
+    }
+    
+    /**
+     * A handle to slot with nine parameters.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+     * @param <D> The type of the fourth parameter of the slot.
+     * @param <E> The type of the fifth parameter of the slot.
+     * @param <F> The type of the sixth parameter of the slot.
+     * @param <G> The type of the seventh parameter of the slot.
+     * @param <H> The type of the eighth parameter of the slot.
+     * @param <I> The type of the ninth parameter of the slot.
+     * @param <J> The type of the tenth parameter of the slot.
+     */
+    @FunctionalInterface
+    public static interface Slot10<A,B,C,D,E,F,G,H,I,J> extends AbstractSlot{
+        public void invoke(A a, B b, C c, D d, E e, F f, G g, H h, I i, J j) throws Throwable;
     }
     
     /**
@@ -11219,6 +15412,25 @@ public final class QMetaObject {
     public static interface Method9<A,B,C,D,E,F,G,H,I,R> extends AbstractSlot{
         public R invoke(A a, B b, C c, D d, E e, F f, G g, H h, I i) throws Throwable;
     }
+    
+    /**
+     * A handle to method with nine parameters and return value.
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <D> The type of the fourth parameter of the method.
+     * @param <E> The type of the fifth parameter of the method.
+     * @param <F> The type of the sixth parameter of the method.
+     * @param <G> The type of the seventh parameter of the method.
+     * @param <H> The type of the eighth parameter of the method.
+     * @param <I> The type of the ninth parameter of the method.
+     * @param <J> The type of the tenth parameter of the method.
+     * @param <R> The type of the return value of the method.
+     */
+    @FunctionalInterface
+    public static interface Method10<A,B,C,D,E,F,G,H,I,J,R> extends AbstractSlot{
+        public R invoke(A a, B b, C c, D d, E e, F f, G g, H h, I i, J j) throws Throwable;
+    }
 
     /**
      * An interface for testing signal emits with one argument.
@@ -11365,6 +15577,32 @@ public final class QMetaObject {
         }
     
         /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot1<Receiver> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot1<Receiver> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
+    
+        /**
          * Initializes a connection to the <i>signal</i>.
          * 
          * @param signal the signal to be connected
@@ -11452,6 +15690,58 @@ public final class QMetaObject {
          */
         public final boolean disconnect(@StrictNonNull Slot1<? super A> slot) {
             return removeConnectionToSlotObject(slot);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot1<Receiver> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot1<Receiver> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot2<Receiver,? super A> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot2<Receiver,? super A> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
         }
     
         /**
@@ -11563,6 +15853,84 @@ public final class QMetaObject {
          */
         public final boolean disconnect(@StrictNonNull Slot2<? super A,? super B> slot) {
             return removeConnectionToSlotObject(slot);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot1<Receiver> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot1<Receiver> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot2<Receiver,? super A> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot2<Receiver,? super A> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot3<Receiver,? super A,? super B> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot3<Receiver,? super A,? super B> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
         }
     
         /**
@@ -11721,6 +16089,110 @@ public final class QMetaObject {
         public final boolean disconnect(@StrictNonNull Connectable3<? super A,? super B,? super C> signal) {
             return removeConnectionToSignalObject((AbstractSignal)signal);
         }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot1<Receiver> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot1<Receiver> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot2<Receiver,? super A> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot2<Receiver,? super A> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot3<Receiver,? super A,? super B> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot3<Receiver,? super A,? super B> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot4<Receiver,? super A,? super B,? super C> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot4<Receiver,? super A,? super B,? super C> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
     }
 
     /**
@@ -11878,6 +16350,136 @@ public final class QMetaObject {
          */
         public final boolean disconnect(@StrictNonNull Connectable4<? super A,? super B,? super C,? super D> signal) {
             return removeConnectionToSignalObject((AbstractSignal)signal);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot1<Receiver> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot1<Receiver> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot2<Receiver,? super A> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot2<Receiver,? super A> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot3<Receiver,? super A,? super B> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot3<Receiver,? super A,? super B> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot4<Receiver,? super A,? super B,? super C> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot4<Receiver,? super A,? super B,? super C> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot5<Receiver,? super A,? super B,? super C,? super D> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot5<Receiver,? super A,? super B,? super C,? super D> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
         }
     }
 
@@ -12058,6 +16660,162 @@ public final class QMetaObject {
          */
         public final boolean disconnect(@StrictNonNull Connectable5<? super A,? super B,? super C,? super D,? super E> signal) {
             return removeConnectionToSignalObject((AbstractSignal)signal);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot1<Receiver> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot1<Receiver> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot2<Receiver,? super A> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot2<Receiver,? super A> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot3<Receiver,? super A,? super B> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot3<Receiver,? super A,? super B> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot4<Receiver,? super A,? super B,? super C> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot4<Receiver,? super A,? super B,? super C> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot5<Receiver,? super A,? super B,? super C,? super D> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot5<Receiver,? super A,? super B,? super C,? super D> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot6<Receiver,? super A,? super B,? super C,? super D,? super E> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot6<Receiver,? super A,? super B,? super C,? super D,? super E> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
         }
     }
 
@@ -12262,6 +17020,188 @@ public final class QMetaObject {
          */
         public final boolean disconnect(@StrictNonNull Connectable6<? super A,? super B,? super C,? super D,? super E,? super F> signal) {
             return removeConnectionToSignalObject((AbstractSignal)signal);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot1<Receiver> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot1<Receiver> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot2<Receiver,? super A> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot2<Receiver,? super A> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot3<Receiver,? super A,? super B> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot3<Receiver,? super A,? super B> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot4<Receiver,? super A,? super B,? super C> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot4<Receiver,? super A,? super B,? super C> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot5<Receiver,? super A,? super B,? super C,? super D> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot5<Receiver,? super A,? super B,? super C,? super D> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot6<Receiver,? super A,? super B,? super C,? super D,? super E> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot6<Receiver,? super A,? super B,? super C,? super D,? super E> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot7<Receiver,? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot7<Receiver,? super A,? super B,? super C,? super D,? super E,? super F> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
         }
     }
 
@@ -12490,6 +17430,214 @@ public final class QMetaObject {
          */
         public final boolean disconnect(@StrictNonNull Connectable7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> signal) {
             return removeConnectionToSignalObject((AbstractSignal)signal);
+        }
+        
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot1<Receiver> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot1<Receiver> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot2<Receiver,? super A> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot2<Receiver,? super A> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot3<Receiver,? super A,? super B> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot3<Receiver,? super A,? super B> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot4<Receiver,? super A,? super B,? super C> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot4<Receiver,? super A,? super B,? super C> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot5<Receiver,? super A,? super B,? super C,? super D> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot5<Receiver,? super A,? super B,? super C,? super D> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot6<Receiver,? super A,? super B,? super C,? super D,? super E> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot6<Receiver,? super A,? super B,? super C,? super D,? super E> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot7<Receiver,? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot7<Receiver,? super A,? super B,? super C,? super D,? super E,? super F> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot8<Receiver,? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot8<Receiver,? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
         }
     }
 
@@ -12740,6 +17888,240 @@ public final class QMetaObject {
          */
         public final boolean disconnect(@StrictNonNull Connectable8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> signal) {
             return removeConnectionToSignalObject((AbstractSignal)signal);
+        }
+        
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot1<Receiver> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot1<Receiver> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot2<Receiver,? super A> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot2<Receiver,? super A> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot3<Receiver,? super A,? super B> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot3<Receiver,? super A,? super B> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot4<Receiver,? super A,? super B,? super C> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot4<Receiver,? super A,? super B,? super C> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot5<Receiver,? super A,? super B,? super C,? super D> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot5<Receiver,? super A,? super B,? super C,? super D> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot6<Receiver,? super A,? super B,? super C,? super D,? super E> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot6<Receiver,? super A,? super B,? super C,? super D,? super E> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot7<Receiver,? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot7<Receiver,? super A,? super B,? super C,? super D,? super E,? super F> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot8<Receiver,? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot8<Receiver,? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot9<Receiver,? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot9<Receiver,? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
         }
     }
 
@@ -13014,6 +18396,266 @@ public final class QMetaObject {
         public final boolean disconnect(@StrictNonNull Connectable9<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> signal) {
             return removeConnectionToSignalObject((AbstractSignal)signal);
         }
+        
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot1<Receiver> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot1<Receiver> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot2<Receiver,? super A> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot2<Receiver,? super A> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot3<Receiver,? super A,? super B> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot3<Receiver,? super A,? super B> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot4<Receiver,? super A,? super B,? super C> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot4<Receiver,? super A,? super B,? super C> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot5<Receiver,? super A,? super B,? super C,? super D> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot5<Receiver,? super A,? super B,? super C,? super D> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot6<Receiver,? super A,? super B,? super C,? super D,? super E> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot6<Receiver,? super A,? super B,? super C,? super D,? super E> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot7<Receiver,? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot7<Receiver,? super A,? super B,? super C,? super D,? super E,? super F> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot8<Receiver,? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot8<Receiver,? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot9<Receiver,? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot9<Receiver,? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
+    
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, @StrictNonNull Slot10<Receiver,? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+    
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         * 
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, @StrictNonNull Slot10<Receiver,? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
     }
 
     /**
@@ -13042,14 +18684,16 @@ public final class QMetaObject {
             super(signalName);
         }
         
+        private final static Object[] zeroarray = {};
+        
         /**
          * Emits the signal.
          */
         @Override
         public final void emit() {
-            emitSignal();
+            emitSignal(zeroarray);
         }
-
+        
         /**
          * @hidden
          */
@@ -17108,18 +22752,24 @@ public final class QMetaObject {
                 if(parameters.isEmpty()) {
                     return name+"()";
                 }else {
+                	if(parameters.indexOf('<')>=0 || parameters.indexOf("::")>=0) {
+                		return signalName;
+                	}
                     String[] argumentTypes = parameters.split("\\,");
                     List<Parameter[]> possibleMethods = new ArrayList<>();
-                    while(classType!=null) {
-                    	for(Method method : classType.getDeclaredMethods()) {
-                    		if(method.getParameterCount()==argumentTypes.length) {
-                    			try {
-                    				possibleMethods.add(method.getParameters());
-                    			}catch(java.lang.reflect.MalformedParametersException e) {}
-                    		}
-                    	}
-                    	classType = classType.getSuperclass();
-                    }
+                    {
+	                    Class<?> superType = classType;
+	                    while(superType!=null) {
+	                    	for(Method method : superType.getDeclaredMethods()) {
+	                    		if(method.getParameterCount()==argumentTypes.length) {
+	                    			try {
+	                    				possibleMethods.add(method.getParameters());
+	                    			}catch(java.lang.reflect.MalformedParametersException e) {}
+	                    		}
+	                    	}
+	                    	superType = superType.getSuperclass();
+	                    }
+	                }
                     name += "(";
                     for (int i = 0; i < argumentTypes.length; ++i) {
                         if(i>0) {
@@ -17129,115 +22779,131 @@ public final class QMetaObject {
                         Type genericParamType = null;
                         AnnotatedElement annotatedParamType = null;
                         int arrayDimension = 0;
-                        argumentTypes[i] = argumentTypes[i].replace(" ", "");
-                        while(argumentTypes[i].endsWith("[]")) {
-                        	++arrayDimension;
-                        	argumentTypes[i] = argumentTypes[i].substring(0, argumentTypes[i].length()-2);
+                        argumentTypes[i] = argumentTypes[i].replace(" ", "").replace("/", ".");
+                        if(argumentTypes[i].endsWith("[]")) {
+	                        while(argumentTypes[i].endsWith("[]")) {
+	                        	++arrayDimension;
+	                        	argumentTypes[i] = argumentTypes[i].substring(0, argumentTypes[i].length()-2);
+	                        }
+                        }else if(argumentTypes[i].startsWith("[")) {
+                        	while(argumentTypes[i].startsWith("[")) {
+	                        	++arrayDimension;
+	                        	argumentTypes[i] = argumentTypes[i].substring(1);
+	                        }
+                        	if(argumentTypes[i].startsWith("L") && argumentTypes[i].endsWith(";"))
+                        		argumentTypes[i] = argumentTypes[i].substring(1, argumentTypes[i].length()-1);
                         }
-                        try {
-                        	if(arrayDimension==0)
-                        		paramType = Class.forName(argumentTypes[i].replace(" ", ""));
-                        	else {
-                        		String predix = "";
-                        		for (int j = 0; j < arrayDimension; j++) {
-                        			predix += '[';
-								}
-                        		switch(argumentTypes[i]) {
-                        		case "int":
-                            		paramType = Class.forName(predix + "I");
-                        			break;
-                        		case "long":
-                            		paramType = Class.forName(predix + "J");
-                        			break;
-                        		case "short":
-                            		paramType = Class.forName(predix + "S");
-                        			break;
-                        		case "byte":
-                            		paramType = Class.forName(predix + "B");
-                        			break;
-                        		case "char":
-                            		paramType = Class.forName(predix + "C");
-                        			break;
-                        		case "float":
-                            		paramType = Class.forName(predix + "F");
-                        			break;
-                        		case "double":
-                            		paramType = Class.forName(predix + "D");
-                        			break;
-                        		case "boolean":
-                            		paramType = Class.forName(predix + "Z");
-                        			break;
-                    			default:
-                            		paramType = Class.forName(predix + "L" + argumentTypes[i] + ";");
-                    				break;
-                        		}
-                        	}
-						} catch (Throwable e) {
-						}
-                        if(paramType==null && classType!=null) {
-                        	try {
-                        		if(arrayDimension==0)
-                        			paramType = classType.getClassLoader().loadClass(argumentTypes[i].replace(" ", ""));
-                        		else {
-                        			String predix = "";
-                            		for (int j = 0; j < arrayDimension; j++) {
-                            			predix += '[';
-    								}
-                            		paramType = Class.forName(predix + "L" + argumentTypes[i] + ";");
-                        		}
-    						} catch (Throwable e) {
-    						}
-                        }
-                        if(paramType==null) {
-                        	if(arrayDimension==0) {
-	                        	for(Parameter[] method : possibleMethods) {
-	                        		if(method[i].getType().getName().equals(argumentTypes[i])
-	                        				|| method[i].getType().getSimpleName().equals(argumentTypes[i])
-	                        				|| method[i].getParameterizedType().getTypeName().equals(argumentTypes[i])) {
-	                        			paramType = method[i].getType();
-	                        			genericParamType = method[i].getParameterizedType();
-										if(ClassAnalyzerUtility.useAnnotatedType) {
-	                        				annotatedParamType = method[i].getAnnotatedType();
-	                        			}
+                        if(argumentTypes[i].matches("^([a-zA-Z][a-zA-Z0-9_]*\\.)*[a-zA-Z][a-zA-Z0-9_\\$]*$")) {
+	                        try {
+	                        	if(arrayDimension==0) {
+	                        		paramType = Class.forName(argumentTypes[i]);
+	                        	}else {
+	                        		String predix = "";
+	                        		for (int j = 0; j < arrayDimension; j++) {
+	                        			predix += '[';
+									}
+	                        		switch(argumentTypes[i]) {
+	                        		case "int":
+	                            		paramType = Class.forName(predix + "I");
 	                        			break;
+	                        		case "long":
+	                            		paramType = Class.forName(predix + "J");
+	                        			break;
+	                        		case "short":
+	                            		paramType = Class.forName(predix + "S");
+	                        			break;
+	                        		case "byte":
+	                            		paramType = Class.forName(predix + "B");
+	                        			break;
+	                        		case "char":
+	                            		paramType = Class.forName(predix + "C");
+	                        			break;
+	                        		case "float":
+	                            		paramType = Class.forName(predix + "F");
+	                        			break;
+	                        		case "double":
+	                            		paramType = Class.forName(predix + "D");
+	                        			break;
+	                        		case "boolean":
+	                            		paramType = Class.forName(predix + "Z");
+	                        			break;
+	                    			default:
+	                            		paramType = Class.forName(predix + "L" + argumentTypes[i] + ";");
+	                    				break;
 	                        		}
 	                        	}
-                        	}else {
-                        		for(Parameter[] method : possibleMethods) {
-                        			Class<?> type = method[i].getType();
-                        			int _arrayDimension = 0;
-                        			while(type.isArray()) {
-                        				type = type.getComponentType();
-                        				++_arrayDimension;
-                        			}
-                        			
-                        			if(arrayDimension==_arrayDimension 
-                        					&& (type.getName().equals(argumentTypes[i])
-	                        				 || type.getSimpleName().equals(argumentTypes[i]))) {
-	                        			paramType = method[i].getType();
-	                        			genericParamType = method[i].getParameterizedType();
-										if(ClassAnalyzerUtility.useAnnotatedType) {
-	                        				annotatedParamType = method[i].getAnnotatedType();
-	                        			}
-	                        			break;
-	                        		}
-                        		}
-                        	}
-                        }
-                        if(arrayDimension>0) {
-                        	String predix = "";
-                    		for (int j = 0; j < arrayDimension; j++) {
-                    			predix += '[';
+							} catch (Throwable e) {
 							}
-                    		argumentTypes[i] = predix + "L" + argumentTypes[i] + ";";
+	                        if(paramType==null && classType!=null) {
+	                        	try {
+	                        		if(arrayDimension==0)
+	                        			paramType = classType.getClassLoader().loadClass(argumentTypes[i]);
+	                        		else {
+	                        			String predix = "";
+	                            		for (int j = 0; j < arrayDimension; j++) {
+	                            			predix += '[';
+	    								}
+	                            		paramType = Class.forName(predix + "L" + argumentTypes[i] + ";");
+	                        		}
+	    						} catch (Throwable e) {
+	    						}
+	                        }
+	                        if(paramType==null) {
+	                        	if(arrayDimension==0) {
+		                        	for(Parameter[] method : possibleMethods) {
+		                        		if(method[i].getType().getName().equals(argumentTypes[i])
+		                        				|| method[i].getType().getSimpleName().equals(argumentTypes[i])
+		                        				|| method[i].getParameterizedType().getTypeName().equals(argumentTypes[i])) {
+		                        			paramType = method[i].getType();
+		                        			genericParamType = method[i].getParameterizedType();
+		                        			if(ClassAnalyzerUtility.useAnnotatedType) {
+		                        				annotatedParamType = method[i].getAnnotatedType();
+		                        			}
+		                        			break;
+		                        		}
+		                        	}
+	                        	}else {
+	                        		for(Parameter[] method : possibleMethods) {
+	                        			Class<?> type = method[i].getType();
+	                        			int _arrayDimension = 0;
+	                        			while(type.isArray()) {
+	                        				type = type.getComponentType();
+	                        				++_arrayDimension;
+	                        			}
+	                        			
+	                        			if(arrayDimension==_arrayDimension 
+	                        					&& (type.getName().equals(argumentTypes[i])
+		                        				 || type.getSimpleName().equals(argumentTypes[i]))) {
+		                        			paramType = method[i].getType();
+		                        			genericParamType = method[i].getParameterizedType();
+		                        			if(ClassAnalyzerUtility.useAnnotatedType) {
+		                        				annotatedParamType = method[i].getAnnotatedType();
+		                        			}
+		                        			break;
+		                        		}
+	                        		}
+	                        	}
+	                        }
+	                        if(arrayDimension>0) {
+	                        	String predix = "";
+	                    		for (int j = 0; j < arrayDimension; j++) {
+	                    			predix += '[';
+								}
+	                    		argumentTypes[i] = predix + "L" + argumentTypes[i] + ";";
+	                        }
+	                        String cpptype;
+	                        if(paramType==null) {
+	                        	String className = argumentTypes[i].replace(" ", "");
+	                        	cpptype = internalTypeName(className, QMetaObject.class.getClassLoader());
+	                        }else {
+	                        	cpptype = internalTypeNameOfClass(paramType, genericParamType==null ? paramType : genericParamType, annotatedParamType);
+	                        }
+	                        if(cpptype.isEmpty())
+	                        	cpptype = argumentTypes[i];
+	                        name += cpptype;
+                        }else {
+                        	name += argumentTypes[i];
                         }
-                        String cpptype = 
-                        		paramType==null
-                        		? internalTypeName(argumentTypes[i], QMetaObject.class.getClassLoader())
-                        				: internalTypeNameOfClass(paramType, genericParamType==null ? paramType : genericParamType, annotatedParamType);
-                        if(cpptype.isEmpty())
-                        	cpptype = argumentTypes[i];
-                        name += cpptype;
                     }
                     name += ")";
                 }
@@ -17256,8 +22922,9 @@ public final class QMetaObject {
         }else {
 	        QtSignalEmitterInterface containingObject = signal.containingObject();
 	        if(containingObject instanceof QObject) {
-	            if(signal.methodIndex()>=0) {
-	                method = ((QObject)containingObject).metaObject().method(signal.methodIndex());
+	        	int methodIndex = signal.methodIndex();
+	            if(methodIndex>=0) {
+	                method = ((QObject)containingObject).metaObject().method(methodIndex);
 	            }else{
 	                java.util.List<Class<?>> signalTypeClasses = signal.argumentTypes();
 	                method = ((QObject)containingObject).metaObject().method(signal.name(), signalTypeClasses.toArray(new Class[signalTypeClasses.size()]));

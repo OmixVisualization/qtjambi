@@ -241,6 +241,28 @@ TypeSystem{
                 }
             }
         }
+        ModifyFunction{
+            signature: "newShadingRateMap()"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+            since: 6.9
+        }
+        ModifyFunction{
+            signature: "setQueueSubmitParams(QRhiNativeHandles*)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcQueueSubmitParams"
+                    action: ReferenceCount.Set
+                }
+            }
+            since: 6.9
+        }
         InjectCode{
             target: CodeClass.Java
             position: Position.Beginning
@@ -474,6 +496,17 @@ if(%out_buffer.size()<array.size()*4)
             since: 6.8
         }
         ModifyFunction{
+            signature: "setShadingRateMap(QRhiShadingRateMap*)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcShadingRateMap"
+                    action: ReferenceCount.Set
+                }
+            }
+            since: 6.9
+        }
+        ModifyFunction{
             signature: "setDepthStencilBuffer(QRhiRenderBuffer*)"
             ModifyArgument{
                 index: 1
@@ -568,7 +601,7 @@ if(%out_buffer.size()<array.size()*4)
         }
         ObjectType{
             name: "NativeShaderInfo"
-            since: 6.7
+            since: 6.6
         }
         EnumType{
             name: "SerializedFormatVersion"
@@ -1050,6 +1083,17 @@ if(%out_buffer.size()<array.size()*4)
                 }
             }
         }
+        ModifyFunction{
+            signature: "setShadingRateMap(QRhiShadingRateMap*)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcShadingRateMap"
+                    action: ReferenceCount.Set
+                }
+            }
+            since: 6.9
+        }
     }
     ObjectType{
         name: "QRhiTexture"
@@ -1319,5 +1363,27 @@ public final void setLuminanceInNits(float minLuminance, float maxLuminance) {
         EnumType{
             name: "Flag"
         }
+    }
+
+    ObjectType{
+        name: "QRhiShadingRateMap"
+        ObjectType{
+            name: "NativeShadingRateMap"
+        }
+        ModifyFunction{
+            signature: "createFrom(QRhiTexture *)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcTexture"
+                    action: ReferenceCount.Set
+                }
+            }
+        }
+        since: 6.9
+    }
+    ObjectType{
+        name: "QRhiVulkanQueueSubmitParams"
+        since: 6.9
     }
 }

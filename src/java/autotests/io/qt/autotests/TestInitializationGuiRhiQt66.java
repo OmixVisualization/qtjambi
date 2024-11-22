@@ -32,16 +32,25 @@ package io.qt.autotests;
 import org.junit.Assert;
 import org.junit.Test;
 
+import io.qt.core.QTimer;
 import io.qt.gui.QGuiApplication;
+import io.qt.gui.QIcon;
 import io.qt.gui.rhi.QRhi;
 import io.qt.gui.rhi.QRhiInitParams;
+import io.qt.widgets.QApplication;
 
 public class TestInitializationGuiRhiQt66 extends UnitTestInitializer {
     @Test
     public void initialize() {
     	Assert.assertTrue(io.qt.QtUtilities.initializePackage("io.qt.gui.rhi"));
     	QGuiApplication.initialize(new String[0]);
-    	QRhiInitParams params = new QRhiInitParams();
-    	QRhi.probe(QRhi.Implementation.Null, params);
+    	QGuiApplication.setWindowIcon(new QIcon(":io/qt/autotests/icon.png"));
+    	{
+	    	QRhiInitParams params = new QRhiInitParams();
+	    	QRhi.probe(QRhi.Implementation.Null, params);
+	    	QTimer.singleShot(500, QGuiApplication.instance(), QGuiApplication::quit);
+	    	QGuiApplication.exec();
+    	}
+    	QGuiApplication.shutdown();
     }
 }

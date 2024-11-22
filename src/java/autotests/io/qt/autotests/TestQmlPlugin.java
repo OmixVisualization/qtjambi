@@ -30,6 +30,7 @@ package io.qt.autotests;
 
 import java.io.File;
 
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.BeforeClass;
@@ -37,10 +38,15 @@ import org.junit.Test;
 
 import io.qt.core.QByteArray;
 import io.qt.core.QCoreApplication;
+import io.qt.core.QLibraryInfo;
 import io.qt.core.QMetaObject;
 import io.qt.core.QMetaProperty;
 import io.qt.core.QObject;
+import io.qt.core.QOperatingSystemVersion;
+import io.qt.core.QTimer;
 import io.qt.core.QUrl;
+import io.qt.gui.QGuiApplication;
+import io.qt.gui.QWindow;
 import io.qt.qml.QQmlComponent;
 import io.qt.qml.QQmlEngine;
 import io.qt.qml.QtQml;
@@ -52,6 +58,22 @@ public class TestQmlPlugin extends ApplicationInitializer{
 		ApplicationInitializer.testInitializeWithGui();
 		Assume.assumeTrue(io.qt.QtUtilities.initializePackage("io.qt.quick"));
 	}
+	
+	@AfterClass
+    public static void testDispose() throws Exception {
+		if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.MacOS) 
+    			&& QLibraryInfo.version().majorVersion()==6 
+    			&& QLibraryInfo.version().minorVersion()==5) {
+	    	QWindow window = new QWindow();
+	    	window.show();
+	    	QTimer.singleShot(200, QGuiApplication.instance(), QGuiApplication::quit);
+	    	QGuiApplication.exec();
+	    	window.close();
+	    	window.disposeLater();
+	    	window = null;
+    	}
+    	ApplicationInitializer.testDispose();
+    }
 	
 	@Test
     public void run_testQmlPlugin() {

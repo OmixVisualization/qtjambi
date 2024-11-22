@@ -1461,8 +1461,9 @@ jobject QtJambiAPI::createQPromise(JNIEnv* env, jobject futureInterface, const v
     if(scope){
         JObjectWrapper _result(env, result);
         scope->addFinalAction([env, _result](){
-            jobject ni = Java::QtCore::QPromise::nativeInstance(env, _result.object());
-            Java::QtCore::QPromise::set_nativeInstance(env, _result.object(), nullptr);
+            jobject promise = _result.object(env);
+            jobject ni = Java::QtCore::QPromise::nativeInstance(env, promise);
+            Java::QtCore::QPromise::set_nativeInstance(env, promise, nullptr);
             InvalidateAfterUse::invalidate(env, ni);
         });
     }

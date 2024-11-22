@@ -90,41 +90,63 @@
 		<condition property="qstackversion" value="8" else="21">
 			<less arg1="${target.java.version}" arg2="21"/>
 		</condition>
+		<path id="basesourcedirs">
+			<pathelement location="${generator.outputdir}/java/${module}"/>
+			<pathelement location="${antfile.dir}/main"/>
+			<pathelement location="${antfile.dir}/Qt${qtjambi.soname.version.major}"/>
+			<pathelement location="${antfile.dir}/Qt${qtjambi.soname.version.major}-JDK${qstackversion}"/>
+			<pathelement location="${antfile.dir}/Retro-JDK${retroversion}"/>
+			<pathelement location="${antfile.dir}/${jsr305-dir}"/>
+		</path>
 		<if>
-			<equals arg1="${qtjambi.soname.version.major}" arg2="6"/>
+			<equals arg1="${qtjambi.soname.version.major}" arg2="5"/>
 			<then>
-				<condition property="subversion" value="0" else="5">
+				<!-- Qt 5 -->
+				<path id="sourcedirs">
+					<path refid="basesourcedirs"/>
+				</path>
+			</then>
+			<else>
+				<!-- Qt 6 (and higher) -->
+				<if>
 					<and>
 						<equals arg1="${qtjambi.soname.version.major}" arg2="6"/>
 						<less arg1="${qtjambi.soname.version.minor}" arg2="5"/>
 					</and>
-				</condition>
-				<condition property="listsrc" value="Qt6-no-span" else="Qt6-span">
-					<and>
-						<equals arg1="${qtjambi.soname.version.major}" arg2="6"/>
-						<less arg1="${qtjambi.soname.version.minor}" arg2="7"/>
-					</and>
-				</condition>
-				<path id="sourcedirs">
-					<pathelement location="${generator.outputdir}/java/${module}"/>
-					<pathelement location="${antfile.dir}/main"/>
-					<pathelement location="${antfile.dir}/Retro-JDK${retroversion}"/>
-					<pathelement location="${antfile.dir}/Qt${qtjambi.soname.version.major}"/>
-					<pathelement location="${antfile.dir}/Qt${qtjambi.soname.version.major}-JDK${qstackversion}"/>
-					<pathelement location="${antfile.dir}/Qt${qtjambi.soname.version.major}.${subversion}"/>
-					<pathelement location="${antfile.dir}/${listsrc}"/>
-					<pathelement location="${antfile.dir}/${jsr305-dir}"/>
-				</path>
-			</then>
-			<else>
-				<path id="sourcedirs">
-					<pathelement location="${generator.outputdir}/java/${module}"/>
-					<pathelement location="${antfile.dir}/main"/>
-					<pathelement location="${antfile.dir}/Retro-JDK${retroversion}"/>
-					<pathelement location="${antfile.dir}/Qt${qtjambi.soname.version.major}-JDK${qstackversion}"/>
-					<pathelement location="${antfile.dir}/Qt${qtjambi.soname.version.major}"/>
-					<pathelement location="${antfile.dir}/${jsr305-dir}"/>
-				</path>
+					<then>
+						<!-- Qt 6.0 to 6.5 -->
+						<path id="sourcedirs">
+							<path refid="basesourcedirs"/>
+							<pathelement location="${antfile.dir}/Qt6.0"/>
+							<pathelement location="${antfile.dir}/Qt6-nospan"/>
+						</path>
+					</then>
+					<else>
+						<!-- Qt 6.5 and higher -->
+						<if>
+							<and>
+								<equals arg1="${qtjambi.soname.version.major}" arg2="6"/>
+								<less arg1="${qtjambi.soname.version.minor}" arg2="7"/>
+							</and>
+							<then>
+								<!-- Qt 6.5 to 6.6 -->
+								<path id="sourcedirs">
+									<path refid="basesourcedirs"/>
+									<pathelement location="${antfile.dir}/Qt6.5"/>
+									<pathelement location="${antfile.dir}/Qt6-nospan"/>
+								</path>
+							</then>
+							<else>
+								<!-- Qt 6.7 and higher -->
+								<path id="sourcedirs">
+									<path refid="basesourcedirs"/>
+									<pathelement location="${antfile.dir}/Qt6.5"/>
+									<pathelement location="${antfile.dir}/Qt6-span"/>
+								</path>
+							</else>
+						</if>
+					</else>
+				</if>
 			</else>
 		</if>
         <ant antfile="${basedir}/../modules.xml" inheritrefs="true" target="build-impl">

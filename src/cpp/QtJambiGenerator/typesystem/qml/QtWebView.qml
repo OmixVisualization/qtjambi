@@ -36,7 +36,24 @@ TypeSystem{
     module: "qtjambi.webview"
     description: "Displays web content in a QML application by using APIs native to the platform, without the need to include a full web browser stack."
     RequiredLibrary{
+        name: "QtWebEngineQuick"
+        mode: RequiredLibrary.Supressed
+        since: 6.8
+    }
+    RequiredLibrary{
+        name: "QtWebEngineQuick"
+        mode: RequiredLibrary.ProvideOnly
+        since: 6
+    }
+    RequiredLibrary{
+        name: "QtWebEngine"
+        mode: RequiredLibrary.ProvideOnly
+        until: 5
+    }
+    RequiredLibrary{
         name: "QtQuick"
+        mode: RequiredLibrary.Mandatory
+        until: 5
     }
     
     NamespaceType{

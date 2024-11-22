@@ -35,11 +35,14 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.BiConsumer;
 
 import io.qt.InternalAccess.CallerContext;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QMetaObject;
+import io.qt.core.QObject;
 import io.qt.core.QVersionNumber;
+import io.qt.core.Qt;
 
 /**
  * This class contains static members that gives information and performs QtJambi related tasks.
@@ -439,6 +442,85 @@ public final class QtUtilities {
     public static native void threadCheck(io.qt.core.@Nullable QObject object) throws QThreadAffinityException;
     
     /**
+     * Enum entries for string comparison
+     */
+    public enum StringComparison implements QtEnumerator{
+    	/**
+    	 * @see io.qt.core.QString#compare(CharSequence, io.qt.core.Qt.CaseSensitivity)
+    	 */
+    	Equal,
+    	/**
+    	 * @see io.qt.core.QString#compare(CharSequence, io.qt.core.Qt.CaseSensitivity)
+    	 */
+    	NotEqual,
+    	/**
+    	 * @see io.qt.core.QString#compare(CharSequence, io.qt.core.Qt.CaseSensitivity)
+    	 */
+    	LessThan,
+    	/**
+    	 * @see io.qt.core.QString#compare(CharSequence, io.qt.core.Qt.CaseSensitivity)
+    	 */
+    	GreaterThan,
+    	/**
+    	 * @see io.qt.core.QString#compare(CharSequence, io.qt.core.Qt.CaseSensitivity)
+    	 */
+    	LessThanOrEqual,
+    	/**
+    	 * @see io.qt.core.QString#compare(CharSequence, io.qt.core.Qt.CaseSensitivity)
+    	 */
+    	GreaterThanOrEqual,
+    	/**
+    	 * @see io.qt.core.QString#contains(CharSequence, io.qt.core.Qt.CaseSensitivity)
+    	 */
+    	Contains,
+    	/**
+    	 * @see io.qt.core.QString#contains(CharSequence, io.qt.core.Qt.CaseSensitivity)
+    	 */
+    	ContainsNot,
+    	/**
+    	 * @see io.qt.core.QString#startsWith(CharSequence, io.qt.core.Qt.CaseSensitivity)
+    	 */
+    	StartsWith,
+    	/**
+    	 * @see io.qt.core.QString#startsWith(CharSequence, io.qt.core.Qt.CaseSensitivity)
+    	 */
+    	StartsNotWith,
+    	/**
+    	 * @see io.qt.core.QString#endsWith(CharSequence, io.qt.core.Qt.CaseSensitivity)
+    	 */
+    	EndsWith,
+    	/**
+    	 * @see io.qt.core.QString#endsWith(CharSequence, io.qt.core.Qt.CaseSensitivity)
+    	 */
+    	EndsNotWith
+    }
+    
+    /**
+     * Reduces the number of native-to-java conversions by pre-filtering the receiver objects according to the given object names (case sensitive comparison).
+     * @param eventFilter
+     * @param stringComparison
+     * @param objectName
+     * @param objectNames
+     * @return selective event filter
+     */
+    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter, @StrictNonNull StringComparison stringComparison, @NonNull String objectName, @NonNull String @NonNull... objectNames) {
+    	return asSelectiveEventFilter(eventFilter, stringComparison, Qt.CaseSensitivity.CaseSensitive, objectName, objectNames);
+    }
+    
+    /**
+     * Reduces the number of native-to-java conversions by pre-filtering the receiver objects according to the given object names.
+     * @param eventFilter
+     * @param stringComparison
+     * @param caseSensitivity
+     * @param objectName
+     * @param objectNames
+     * @return selective event filter
+     */
+    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter, @StrictNonNull StringComparison stringComparison, Qt.@StrictNonNull CaseSensitivity caseSensitivity, @NonNull String objectName, @NonNull String @NonNull... objectNames) {
+    	return asSelectiveEventFilterObjectNames(QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(eventFilter, "Argument 'eventFilter': null not expected.")), stringComparison.value(), caseSensitivity.value(), objectName, objectNames);
+    }
+    
+    /**
      * Reduces the number of native-to-java conversions by pre-filtering the events according to the given event types.
      * @param eventFilter
      * @param eventType
@@ -446,10 +528,195 @@ public final class QtUtilities {
      * @return selective event filter
      */
     public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter, io.qt.core.QEvent.@NonNull Type eventType, io.qt.core.QEvent.@NonNull Type @NonNull... eventTypes) {
-    	return asSelectiveEventFilter(QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(eventFilter, "Argument 'eventFilter': null not expected.")), eventType, eventTypes);
+    	return asSelectiveEventFilterEventTypes(QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(eventFilter, "Argument 'eventFilter': null not expected.")), eventType, eventTypes);
     }
     
-    private static native io.qt.core.@NonNull QObject asSelectiveEventFilter(long objectId, io.qt.core.QEvent.@NonNull Type eventType, io.qt.core.QEvent.@NonNull Type @NonNull... eventTypes);
+    /**
+     * Reduces the number of native-to-java conversions by pre-filtering the receiver objects according to the given object types.
+     * @param eventFilter
+     * @param metaObject
+     * @param metaObjects
+     * @return selective event filter
+     */
+    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter, io.qt.core.@StrictNonNull QMetaObject metaObject, io.qt.core.@StrictNonNull QMetaObject @NonNull... metaObjects) {
+    	return asSelectiveEventFilterMetaObjects(QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(eventFilter, "Argument 'eventFilter': null not expected.")), metaObject, metaObjects);
+    }
+    
+    /**
+     * Reduces the number of native-to-java conversions by pre-filtering the receiver objects according to the given object name filter.
+     * @param eventFilter
+     * @param regexp object name regexp
+     * @param matchType the match type
+     * @return selective event filter
+     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter, io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchType matchType) {
+    	return asSelectiveEventFilter(eventFilter, regexp, 0, matchType, io.qt.core.QRegularExpression.MatchOption.NoMatchOption.asFlags());
+    }
+    
+    /**
+     * Reduces the number of native-to-java conversions by pre-filtering the receiver objects according to the given object name filter.
+     * @param eventFilter
+     * @param regexp object name regexp
+     * @param matchType the match type
+     * @param matchOptions options for the match
+     * @return selective event filter
+     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter, io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchType matchType, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
+    	return asSelectiveEventFilter(eventFilter, regexp, 0, matchType, new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
+    }
+    
+    /**
+     * Reduces the number of native-to-java conversions by pre-filtering the receiver objects according to the given object name filter.
+     * @param eventFilter
+     * @param regexp object name regexp
+     * @param matchOptions options for the match
+     * @return selective event filter
+     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter, io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchType matchType, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
+    	return asSelectiveEventFilter(eventFilter, regexp, 0, matchType, matchOptions);
+    }
+    
+    /**
+     * Reduces the number of native-to-java conversions by pre-filtering the receiver objects according to the given object name filter.
+     * @param eventFilter
+     * @param regexp object name regexp
+     * @param offset the offset of the match
+     * @return selective event filter
+     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter, io.qt.core.@NonNull QRegularExpression regexp, long offset) {
+    	return asSelectiveEventFilter(eventFilter, regexp, offset, io.qt.core.QRegularExpression.MatchType.NormalMatch, io.qt.core.QRegularExpression.MatchOption.NoMatchOption.asFlags());
+    }
+    
+    /**
+     * Reduces the number of native-to-java conversions by pre-filtering the receiver objects according to the given object name filter.
+     * @param eventFilter
+     * @param regexp object name regexp
+     * @param offset the offset of the match
+     * @param matchOptions options for the match
+     * @return selective event filter
+     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter, io.qt.core.@NonNull QRegularExpression regexp, long offset, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
+    	return asSelectiveEventFilter(eventFilter, regexp, offset, io.qt.core.QRegularExpression.MatchType.NormalMatch, new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
+    }
+    
+    /**
+     * Reduces the number of native-to-java conversions by pre-filtering the receiver objects according to the given object name filter.
+     * @param eventFilter
+     * @param regexp object name regexp
+     * @param offset the offset of the match
+     * @param matchOptions options for the match
+     * @return selective event filter
+     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter, io.qt.core.@NonNull QRegularExpression regexp, long offset, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
+    	return asSelectiveEventFilter(eventFilter, regexp, offset, io.qt.core.QRegularExpression.MatchType.NormalMatch, matchOptions);
+    }
+    
+    /**
+     * Reduces the number of native-to-java conversions by pre-filtering the receiver objects according to the given object name filter.
+     * @param eventFilter
+     * @param regexp object name regexp
+     * @return selective event filter
+     * @see io.qt.core.QRegularExpression#match(String)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter, io.qt.core.@NonNull QRegularExpression regexp) {
+    	return asSelectiveEventFilter(eventFilter, regexp, 0, io.qt.core.QRegularExpression.MatchType.NormalMatch, io.qt.core.QRegularExpression.MatchOption.NoMatchOption.asFlags());
+    }
+    
+    /**
+     * Reduces the number of native-to-java conversions by pre-filtering the receiver objects according to the given object name filter.
+     * @param eventFilter
+     * @param regexp object name regexp
+     * @param matchOptions options for the match
+     * @return selective event filter
+     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter, io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
+    	return asSelectiveEventFilter(eventFilter, regexp, 0, io.qt.core.QRegularExpression.MatchType.NormalMatch, new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
+    }
+    
+    /**
+     * Reduces the number of native-to-java conversions by pre-filtering the receiver objects according to the given object name filter.
+     * @param eventFilter
+     * @param regexp object name regexp
+     * @param matchOptions options for the match
+     * @return selective event filter
+     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter, io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
+    	return asSelectiveEventFilter(eventFilter, regexp, 0, io.qt.core.QRegularExpression.MatchType.NormalMatch, matchOptions);
+    }
+    
+    /**
+     * Reduces the number of native-to-java conversions by pre-filtering the receiver objects according to the given object name filter.
+     * @param eventFilter
+     * @param regexp object name regexp
+     * @param offset the offset of the match
+     * @param matchType the match type
+     * @param matchOptions options for the match
+     * @return selective event filter
+     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOption...)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter, io.qt.core.@NonNull QRegularExpression regexp, long offset, io.qt.core.QRegularExpression.@NonNull MatchType matchType, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
+    	return asSelectiveEventFilter(eventFilter, regexp, offset, matchType, new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
+    }
+    
+    /**
+     * Reduces the number of native-to-java conversions by pre-filtering the receiver objects according to the given object name filter.
+     * @param eventFilter
+     * @param regexp object name regexp
+     * @param offset the offset of the match
+     * @param matchType the match type
+     * @return selective event filter
+     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter, io.qt.core.@NonNull QRegularExpression regexp, long offset, io.qt.core.QRegularExpression.@NonNull MatchType matchType) {
+    	return asSelectiveEventFilter(eventFilter, regexp, offset, matchType, io.qt.core.QRegularExpression.MatchOption.NoMatchOption.asFlags());
+    }
+    
+    /**
+     * Reduces the number of native-to-java conversions by pre-filtering the receiver objects according to the given object name filter.
+     * @param eventFilter
+     * @param regexp object name regexp
+     * @param offset the offset of the match
+     * @param matchType the match type
+     * @param matchOptions options for the match
+     * @return selective event filter
+     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter, io.qt.core.@NonNull QRegularExpression regexp, long offset, io.qt.core.QRegularExpression.@NonNull MatchType matchType, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
+        java.util.Objects.requireNonNull(regexp, "Argument 'regexp': null not expected.");
+        if(!regexp.isValid())
+                throw new IllegalArgumentException("Argument 'regexp' invalid");
+        if(offset<0)
+                throw new IllegalArgumentException("Argument 'offset' < 0");
+    	return asSelectiveEventFilterObjectNameMatches(QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(eventFilter, "Argument 'eventFilter': null not expected.")), QtJambi_LibraryUtilities.internal.checkedNativeId(regexp), offset, matchType==null ? 0 : matchType.value(), matchOptions==null ? 0 : matchOptions.value());
+    }
+    
+    private static native io.qt.core.QObject asSelectiveEventFilterEventTypes(long objectId, io.qt.core.QEvent.Type eventType, io.qt.core.QEvent.Type[] eventTypes);
+    
+    private static native io.qt.core.QObject asSelectiveEventFilterObjectNames(long objectId, int stringComparisonType, int caseSensitivity, String objectName, String[] objectNames);
+    
+    private static native io.qt.core.QObject asSelectiveEventFilterMetaObjects(long objectId, io.qt.core.QMetaObject firstMetaObject, io.qt.core.QMetaObject[] metaObjects);
+    
+    private static native io.qt.core.QObject asSelectiveEventFilterObjectNameMatches(long objectId, long regexp, long offset, int matchType, int matchOptions);
     
     /**
      * Enables or disables the dangling pointer checks at runtime.
@@ -487,4 +754,34 @@ public final class QtUtilities {
      * @param enabled
      */
     public static native void setEventLogsEnabled(boolean enabled);
+    
+    /**
+     * Enables or disables thread checks at signal emit.
+     * <p><b>CAUTION:</b> This function is experimental and may have unexpected behavior.</p>
+     * @param enabled
+     */
+    public static native void setSignalEmitThreadCheckEnabled(boolean enabled);
+    
+    /**
+     * Install a handler for signal emit thread checks. The handler is executed
+     * every time an event is emitted from a thread different than the object's thread.
+     * The handler may throw {@code QThreadAffinityException} if necessary.
+     * Call this method with {@Code null} to remove the installed handler.
+     * @param handler
+     */
+    public static native void installSignalEmitThreadCheckHandler(@Nullable BiConsumer<@NonNull QObject,QMetaObject.@NonNull AbstractSignal> handler);
+    
+    /**
+     * Specify `true` to avoid `QMetaObject` calls (like method invocation and property access) forwarding exceptions to the Qt caller in any case.
+     * <p><b>CAUTION:</b> This function is experimental and may have unexpected behavior.</p>
+     * @param enabled
+     */
+    public static native void setNoExceptionForwardingFromMetaCallsEnabled(boolean enabled);
+    
+    /**
+     * Specify `true` to avoid virtual calls (i.e. Java overrides) forwarding exceptions to the Qt caller in any case.
+     * <p><b>CAUTION:</b> This function is experimental and may have unexpected behavior.</p>
+     * @param enabled
+     */
+    public static native void setNoExceptionForwardingFromVirtualCallsEnabled(boolean enabled);
 }

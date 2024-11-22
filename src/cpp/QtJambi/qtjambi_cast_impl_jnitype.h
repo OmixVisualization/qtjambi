@@ -285,7 +285,9 @@ struct qtjambi_jnitype_qobject_decider_cast<true, has_scope, NativeType, true, i
         if(in){
             try{
                 QtJambiAPI::checkDanglingPointer(env, in);
-                o = QtJambiShellInterface::getJavaObjectLocalRef(env, dynamic_cast<const QtJambiShellInterface*>(in));
+                // check rtti availability:
+                if(QtJambiPrivate::CheckPointer<NativeType>::trySupplyType(in)!=nullptr)
+                    o = QtJambiShellInterface::getJavaObjectLocalRef(env, dynamic_cast<const QtJambiShellInterface*>(in));
             }catch(...){}
         }
         if(!o){

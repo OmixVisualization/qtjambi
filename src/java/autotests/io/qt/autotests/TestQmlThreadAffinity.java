@@ -30,6 +30,7 @@ package io.qt.autotests;
 
 import static org.junit.Assert.fail;
 
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -40,9 +41,12 @@ import io.qt.core.QByteArray;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QEvent;
 import io.qt.core.QEventLoop;
+import io.qt.core.QMetaObject;
 import io.qt.core.QObject;
 import io.qt.core.QThread;
+import io.qt.core.QTimer;
 import io.qt.core.QUrl;
+import io.qt.core.Qt;
 import io.qt.qml.QJSEngine;
 import io.qt.qml.QJSValue;
 import io.qt.qml.QQmlComponent;
@@ -52,18 +56,23 @@ import io.qt.qml.QQmlIncubationController;
 import io.qt.qml.QQmlIncubator;
 import io.qt.qml.QtQml;
 import io.qt.quick.QQuickItem;
+import io.qt.quick.QQuickWindow;
 
 public class TestQmlThreadAffinity extends ApplicationInitializer{
-	
-	static {
-		System.setProperty("io.qt.enable-thread-affinity-check", "true");
-		System.setProperty("io.qt.enable-event-thread-affinity-check", "true");
-	}
 	
 	@BeforeClass
     public static void testInitialize() throws Exception {
     	ApplicationInitializer.testInitializeWithGui();
+    	QtUtilities.setThreadAffinityCheckEnabled(true);
+    	QtUtilities.setEventThreadAffinityCheckEnabled(true);
     }
+	
+	@AfterClass
+    public static void testDispose() throws Exception {
+    	QtUtilities.setThreadAffinityCheckEnabled(false);
+    	QtUtilities.setEventThreadAffinityCheckEnabled(false);
+    	ApplicationInitializer.testDispose();
+	}
 	
 	private Throwable throwable;
 	
@@ -236,6 +245,51 @@ public class TestQmlThreadAffinity extends ApplicationInitializer{
 		}finally {
 			engine.dispose();
 		}
+	}
+	
+	static class PropertyCarrier extends QObject{
+		private int count;
+
+		public int getCount() {
+			return count;
+		}
+
+		public void setCount(int count) {
+			if(this.count != count) {
+				this.count = count;
+				countChanged.emit();
+			}
+		}
+		
+		public final Signal0 countChanged = new Signal0();
+	}
+	
+	@Test
+    public void testPropertyNotifier() throws Throwable{
+		QtQml.qmlClearTypeRegistrations();
+		QQmlEngine engine = new QQmlEngine();
+		PropertyCarrier propertyCarrier = new PropertyCarrier();
+		QTimer timer = new QTimer();
+		timer.timeout.connect(()->{
+			propertyCarrier.setCount(propertyCarrier.getCount()+1);
+		}, Qt.ConnectionType.DirectConnection);
+		timer.setInterval(50);
+		QThread thread = new QThread();
+		timer.moveToThread(thread);
+		thread.started.connect(timer, QTimer::start, Qt.ConnectionType.DirectConnection);
+		thread.finished.connect(timer, QTimer::stop, Qt.ConnectionType.DirectConnection);
+		engine.rootContext().setContextProperty("propertyCarrier", propertyCarrier);
+		QQmlComponent component = new QQmlComponent(engine);
+		component.setData(new QByteArray("import QtQml 2.15\nimport QtQuick 2.15\nimport QtQuick.Window 2.15\n Window { Text { id: txt; text: \"\" + propertyCarrier.count } }"), (QUrl)null);
+		Assert.assertFalse(component.errorString(), component.isError());
+		QQuickWindow object = component.create(QQuickWindow.class);
+		object.show();
+		QEventLoop loop = new QEventLoop();
+		QMetaObject.invokeMethod(thread, (QMetaObject.Slot1<QThread>)QThread::start, Qt.ConnectionType.QueuedConnection);
+		QTimer.singleShot(1000, loop::quit);
+		loop.exec();
+		timer = null;
+		thread.quit();
 	}
 	
     public static void main(String args[]) {

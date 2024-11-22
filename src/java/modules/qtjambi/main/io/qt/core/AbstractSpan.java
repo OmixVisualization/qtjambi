@@ -57,20 +57,24 @@ abstract class AbstractSpan<T> extends AbstractContainer<T> implements java.lang
         	return list;
     	}
     	default QtObject owner() {return null;}
-		static <T> SpanData<T> asManaged() {return ()->true;}
-    	static <T> SpanData<T> defaultData() {return ()->false;}
     }
+	private static <T> SpanData<T> asManagedSpanData() {return ()->true;}
+	private static <T> SpanData<T> asUnmanagedSpanData() {return ()->false;}
 	
 	private static interface Owner<T> extends SpanData<T>{
 		QtObject owner();
 		default boolean isManagedSpan() {return false;}
-		static <T> Owner<T> of(QtObject owner) {return ()->owner;}
+	}
+	private static <T> Owner<T> ofOwner(QtObject owner) {
+		return ()->owner;
 	}
 	
 	private static interface BufferData<T> extends SpanData<T>{
 		QtObject storage();
 		default boolean isManagedSpan() {return true;}
-		static <T> BufferData<T> of(QtObject owner) {return ()->owner;}
+	}
+	private static <T> BufferData<T> ofStorage(QtObject owner) {
+		return ()->owner;
 	}
 	
 	private static class ArrayCommitter<T> implements SpanData<T>{
@@ -102,18 +106,20 @@ abstract class AbstractSpan<T> extends AbstractContainer<T> implements java.lang
 		QList<T> storage();
 		default QList<T> toList(AbstractSpan<T> span) {return storage().clone();}
 		default boolean isManagedSpan() {return false;}
-		static <T> ListSupplier<T> of(QList<T> list) {return ()->list;}
+	}
+	private static <T> ListSupplier<T> ofListStorage(QList<T> list) {
+		return ()->list;
 	}
 	
 	private static interface BufferedSpanData<T> extends SpanData<T>{
     	void commit(AbstractSpan<T> span);
     	default boolean isManagedSpan() {return true;}
     	default boolean isBuffered() {return true;}
-    	static <T> BufferedSpanData<T> instance(){ return span->AbstractSpan.commit(QtJambi_LibraryUtilities.internal.nativeId(span)); }
     }
+	private static <T> BufferedSpanData<T> newBufferedSpanData(){ return span->AbstractSpan.commit(QtJambi_LibraryUtilities.internal.nativeId(span)); }
 	
 	AbstractSpan(QPrivateConstructor c, QtObject owner) { 
-		this(c, owner!=null ? Owner.of(owner) : SpanData.defaultData());
+		this(c, owner!=null ? ofOwner(owner) : asUnmanagedSpanData());
 	}
 	
     private AbstractSpan(QPrivateConstructor c, SpanData<T> d) { 
@@ -124,34 +130,34 @@ abstract class AbstractSpan<T> extends AbstractContainer<T> implements java.lang
     AbstractSpan(QByteArray byteArray){
 		super((QPrivateConstructor)null);
 		ByteBuffer buffer = isConstSpan() ? byteArray.data() : QtJambi_LibraryUtilities.internal.mutableData(byteArray);
-		this.d = BufferData.of(byteArray.clone());
+		this.d = ofStorage(byteArray.clone());
 		initializeFromBuffer(this, buffer, 'B', 0, buffer.isReadOnly());
 	}
     
     AbstractSpan(ByteBuffer buffer, Supplier<QtObject> ownerSupplier){
 		super((QPrivateConstructor)null);
-		this.d = BufferData.of(ownerSupplier.get());
+		this.d = ofStorage(ownerSupplier.get());
 		initializeFromBuffer(this, buffer, 'B', 0, buffer.isReadOnly());
 	}
     
     AbstractSpan(QString string){
 		super((QPrivateConstructor)null);
 		CharBuffer buffer = isConstSpan() ? string.data() : QtJambi_LibraryUtilities.internal.mutableData(string);
-		this.d = BufferData.of(string.clone());
+		this.d = ofStorage(string.clone());
 		initializeFromBuffer(this, buffer, 'C', 0, buffer.isReadOnly());
 	}
     
 	AbstractSpan(java.nio.Buffer buffer, char type) {
 		super((QPrivateConstructor)null);
 		boolean isBuffered = initializeFromBuffer(this, buffer, type, 0, buffer.isReadOnly());
-		this.d = isBuffered ? BufferedSpanData.instance() : SpanData.asManaged();
+		this.d = isBuffered ? newBufferedSpanData() : asManagedSpanData();
 	}
 	
     AbstractSpan(QList<T> list){
 		super((QPrivateConstructor)null);
 		int size = list.size();
 		AbstractIterator<T> iter = isConstSpan() ? list.constBegin() : list.begin();
-		this.d = ListSupplier.of(list.clone());
+		this.d = ofListStorage(list.clone());
 		list = ((ListSupplier<T>)d).storage();
     	initializeFromBegin(this, QtJambi_LibraryUtilities.internal.nativeId(list), QtJambi_LibraryUtilities.internal.nativeId(iter), size, QtJambi_LibraryUtilities.internal.nativeId(d.owner()));
 		this.__rcContainer = list.__rcContainer;
@@ -161,7 +167,7 @@ abstract class AbstractSpan<T> extends AbstractContainer<T> implements java.lang
 		super(p);
 		int size = list.size();
 		AbstractIterator<T> iter = isConstSpan() ? list.constBegin() : list.begin();
-		this.d = ListSupplier.of(list);
+		this.d = ofListStorage(list);
     	initializeFromBegin(this, QtJambi_LibraryUtilities.internal.nativeId(list), QtJambi_LibraryUtilities.internal.nativeId(iter), size, QtJambi_LibraryUtilities.internal.nativeId(d.owner()));
 		this.__rcContainer = list.__rcContainer;
 	}
@@ -185,53 +191,53 @@ abstract class AbstractSpan<T> extends AbstractContainer<T> implements java.lang
     AbstractSpan(boolean[] array) {
 		super((QPrivateConstructor)null);
 		boolean isBuffered = initializeFromBooleanArray(this, array, isConstSpan());
-		this.d = isBuffered ? BufferedSpanData.instance() : SpanData.asManaged();
+		this.d = isBuffered ? newBufferedSpanData() : asManagedSpanData();
 	}
     
     AbstractSpan(byte[] array) {
     	super((QPrivateConstructor)null);
 		boolean isBuffered = initializeFromByteArray(this, array, isConstSpan());
-		this.d = isBuffered ? BufferedSpanData.instance() : SpanData.asManaged();
+		this.d = isBuffered ? newBufferedSpanData() : asManagedSpanData();
 	}
     
     AbstractSpan(short[] array) {
     	super((QPrivateConstructor)null);
 		boolean isBuffered = initializeFromShortArray(this, array, isConstSpan());
-		this.d = isBuffered ? BufferedSpanData.instance() : SpanData.asManaged();
+		this.d = isBuffered ? newBufferedSpanData() : asManagedSpanData();
 	}
     
     AbstractSpan(int[] array) {
     	super((QPrivateConstructor)null);
 		boolean isBuffered = initializeFromIntArray(this, array, isConstSpan());
-		this.d = isBuffered ? BufferedSpanData.instance() : SpanData.asManaged();
+		this.d = isBuffered ? newBufferedSpanData() : asManagedSpanData();
 	}
 
     AbstractSpan(long[] array) {
     	super((QPrivateConstructor)null);
 		boolean isBuffered = initializeFromLongArray(this, array, isConstSpan());
-		this.d = isBuffered ? BufferedSpanData.instance() : SpanData.asManaged();
+		this.d = isBuffered ? newBufferedSpanData() : asManagedSpanData();
 	}
     
     AbstractSpan(float[] array) {
     	super((QPrivateConstructor)null);
 		boolean isBuffered = initializeFromFloatArray(this, array, isConstSpan());
-		this.d = isBuffered ? BufferedSpanData.instance() : SpanData.asManaged();
+		this.d = isBuffered ? newBufferedSpanData() : asManagedSpanData();
 	}
     
     AbstractSpan(double[] array) {
     	super((QPrivateConstructor)null);
 		boolean isBuffered = initializeFromDoubleArray(this, array, isConstSpan());
-		this.d = isBuffered ? BufferedSpanData.instance() : SpanData.asManaged();
+		this.d = isBuffered ? newBufferedSpanData() : asManagedSpanData();
 	}
     
     AbstractSpan(char[] array) {
     	super((QPrivateConstructor)null);
 		boolean isBuffered = initializeFromCharArray(this, array, isConstSpan());
-		this.d = isBuffered ? BufferedSpanData.instance() : SpanData.asManaged();
+		this.d = isBuffered ? newBufferedSpanData() : asManagedSpanData();
 	}
     
     AbstractSpan() { 
-		this((QPrivateConstructor)null, SpanData.defaultData());
+		this((QPrivateConstructor)null, asUnmanagedSpanData());
 		initializeFromBegin(this, 0, 0, 0, 0);
 	}
     

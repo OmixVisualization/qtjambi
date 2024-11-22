@@ -706,9 +706,9 @@ void initialize_meta_info_QFutureInterface(){
     {
         const std::type_info& typeId = registerValueTypeInfo<QFutureInterface<QVariant>>("QFutureInterface<QVariant>", "io/qt/core/QFutureInterface");
         registerConstructorInfos(typeId, 0, &__qt_destruct_QFutureInterface_QVariant_, {
-            ConstructorInfo(&__qt_construct_QFutureInterface_QVariant__0, nullptr)
-           ,ConstructorInfo(&__qt_construct_QFutureInterface_QVariant__1, "Lio/qt/core/QFutureInterfaceBase$State;")
-           ,ConstructorInfo(&__qt_construct_QFutureInterface_QVariant__2, "Lio/qt/core/QFutureInterface;")
+                                                                                         {&__qt_construct_QFutureInterface_QVariant__0, nullptr}
+                                                                                        ,{&__qt_construct_QFutureInterface_QVariant__1, "Lio/qt/core/QFutureInterfaceBase$State;"}
+                                                                                        ,{&__qt_construct_QFutureInterface_QVariant__2, "Lio/qt/core/QFutureInterface;"}
         });
         registerMetaType<QFutureInterface<QVariant>>("QFutureInterface<QVariant>");
         registerSizeOfShell(typeId, sizeof(QFutureInterface_shell<QVariant>));
@@ -716,9 +716,9 @@ void initialize_meta_info_QFutureInterface(){
     {
         const std::type_info& typeId = registerValueTypeInfo<QFutureInterface<void>>("QFutureInterface<void>", "io/qt/core/QFutureInterface");
         registerConstructorInfos(typeId, 0, &__qt_destruct_QFutureInterface_void_, {
-            ConstructorInfo(&__qt_construct_QFutureInterface_void__0, nullptr)
-           ,ConstructorInfo(&__qt_construct_QFutureInterface_void__1, "Lio/qt/core/QFutureInterfaceBase$State;")
-           ,ConstructorInfo(&__qt_construct_QFutureInterface_void__2, "Lio/qt/core/QFutureInterface;")
+             {&__qt_construct_QFutureInterface_void__0, nullptr}
+            ,{&__qt_construct_QFutureInterface_void__1, "Lio/qt/core/QFutureInterfaceBase$State;"}
+            ,{&__qt_construct_QFutureInterface_void__2, "Lio/qt/core/QFutureInterface;"}
         });
         registerMetaType<QFutureInterface<void>>("QFutureInterface<void>");
         registerSizeOfShell(typeId, sizeof(QFutureInterface_shell<void>));

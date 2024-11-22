@@ -218,7 +218,7 @@ TypeSystem{
                         Text{content: "JObjectWrapper functor(%env, %in);\n"+
                                       "auto %out = [functor](const QHttpServerRequest& request) -> QHttpServerWebSocketUpgradeResponse {\n"+
                                       "                    if(JniEnvironment env{200}){\n"+
-                                      "                        jobject result = Java::Runtime::Function::apply(env, functor.object(), qtjambi_cast<jobject>(env, request));\n"+
+                                      "                        jobject result = Java::Runtime::Function::apply(env, functor.object(env), qtjambi_cast<jobject>(env, request));\n"+
                                       "                        return qtjambi_cast<QHttpServerWebSocketUpgradeResponse>(env, result);\n"+
                                       "                    }\n"+
                                       "                    else return QHttpServerWebSocketUpgradeResponse::deny();\n"+
@@ -317,7 +317,7 @@ TypeSystem{
                         Text{content: String.raw`
 auto %out = [slot = JObjectWrapper(%env, %in)](const QHttpServerRequest & request, QHttpServerResponder & responder){
                 if(JniEnvironment env{200}){
-                    Java::QtCore::QMetaObject$Slot2::invoke(env, slot.object(),
+                    Java::QtCore::QMetaObject$Slot2::invoke(env, slot.object(env),
                                             qtjambi_cast<jobject>(env, request),
                                             qtjambi_cast<jobject>(env, responder));
                 }
@@ -347,7 +347,7 @@ auto %out = [slot = JObjectWrapper(%env, %in)](const QHttpServerRequest & reques
                         Text{content: String.raw`
 auto %out = [slot = JObjectWrapper(%env, %in)](const QHttpServerRequest & request, QHttpServerResponse & responde){
                 if(JniEnvironment env{200}){
-                    Java::QtCore::QMetaObject$Slot2::invoke(env, slot.object(),
+                    Java::QtCore::QMetaObject$Slot2::invoke(env, slot.object(env),
                                             qtjambi_cast<jobject>(env, request),
                                             qtjambi_cast<jobject>(env, responde));
                 }
@@ -695,12 +695,12 @@ auto %out = [slot = JObjectWrapper(%env, %in)](const QHttpServerRequest & reques
                     index: 4
                     NoNullPointer{}
                     AsSlot{
-                        targetType: "io.qt.httpserver.QHttpServerRouterRule$RouterHandler"
+                        targetType: "io.qt.core.QMetaObject$Slot3<io.qt.core.@NonNull QRegularExpressionMatch,io.qt.httpserver.@NonNull QHttpServerRequest,io.qt.httpserver.@StrictNonNull QHttpServerResponder>"
                         contextParameter: 3
                     }
                     ConversionRule{
                         codeClass: CodeClass.Native
-                        Text{content: "auto %out = convertSlot3(%env, %in);"}
+                        Text{content: "auto %out = convertSlot(%env, %in);"}
                     }
                 }
             }
@@ -717,12 +717,55 @@ auto %out = [slot = JObjectWrapper(%env, %in)](const QHttpServerRequest & reques
                     index: 3
                     NoNullPointer{}
                     AsSlot{
-                        targetType: "io.qt.httpserver.QHttpServerRouterRule$RouterHandler"
+                        targetType: "io.qt.core.QMetaObject$Slot3<io.qt.core.@NonNull QRegularExpressionMatch,io.qt.httpserver.@NonNull QHttpServerRequest,io.qt.httpserver.@StrictNonNull QHttpServerResponder>"
                         contextParameter: 2
                     }
                     ConversionRule{
                         codeClass: CodeClass.Native
-                        Text{content: "auto %out = convertSlot3(%env, %in);"}
+                        Text{content: "auto %out = convertSlot(%env, %in);"}
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "RouterHandler"
+                    isImplicit: true
+                }
+                AddTypeParameter{
+                    name: "Receiver"
+                    extending: "io.qt.core.QObject"
+                }
+                ModifyArgument{
+                    index: 3
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.core.QMetaObject$Slot4<@NonNull Receiver, io.qt.core.@NonNull QRegularExpressionMatch,io.qt.httpserver.@NonNull QHttpServerRequest,io.qt.httpserver.@StrictNonNull QHttpServerResponder>"
+                        contextParameter: 2
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertSlot(%env, %2, %in);"}
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "RouterHandler"
+                    isImplicit: true
+                }
+                AddTypeParameter{
+                    name: "Receiver"
+                }
+                ModifyArgument{
+                    index: 3
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.core.QMetaObject$Slot4<@NonNull Receiver, io.qt.core.@NonNull QRegularExpressionMatch,io.qt.httpserver.@NonNull QHttpServerRequest,io.qt.httpserver.@StrictNonNull QHttpServerResponder>"
+                        contextParameter: 2
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertSlot(%env, __qt_%2, %2, %in);"}
                     }
                 }
             }
@@ -755,11 +798,24 @@ public:
             target: CodeClass.Native
             position: Position.End
             Text{content: String.raw`
-inline auto convertSlot3(JNIEnv* _env, jobject _slot){
-    JObjectWrapper slot(_env, _slot);
-    return [slot](const QRegularExpressionMatch & regexp, const QHttpServerRequest & request, QHttpServerResponder & responder){
+inline auto convertSlot(JNIEnv* _env, jobject _slot){
+    return [slot = JObjectWrapper(_env, _slot)](const QRegularExpressionMatch & regexp, const QHttpServerRequest & request, QHttpServerResponder & responder){
                     if(JniEnvironment env{200}){
-                        Java::QtCore::QMetaObject$Slot3::invoke(env, slot.object(),
+                        Java::QtCore::QMetaObject$Slot3::invoke(env, slot.object(env),
+                                                qtjambi_cast<jobject>(env, regexp),
+                                                qtjambi_cast<jobject>(env, request),
+                                                qtjambi_cast<jobject>(env, responder));
+                    }
+                };
+}
+inline auto convertSlot(JNIEnv* _env, QObject*& qobject, jobject _receiver, jobject _slot){
+    if(Java::QtCore::QObject::isInstanceOf(_env, _receiver)){
+        qobject = qtjambi_cast<QObject*>(_env, _receiver);
+    }
+    return [receiver = JObjectWrapper(_env, _receiver), slot = JObjectWrapper(_env, _slot)](const QRegularExpressionMatch & regexp, const QHttpServerRequest & request, QHttpServerResponder & responder){
+                    if(JniEnvironment env{200}){
+                        Java::QtCore::QMetaObject$Slot4::invoke(env, slot.object(env),
+                                                receiver.object(env),
                                                 qtjambi_cast<jobject>(env, regexp),
                                                 qtjambi_cast<jobject>(env, request),
                                                 qtjambi_cast<jobject>(env, responder));
@@ -794,7 +850,7 @@ void __qt_construct_QHttpServerRouterRule_cref_QString_const_QtPrivate_ContextTy
     QTJAMBI_NATIVE_METHOD_CALL("construct QHttpServerRouterRule(QString,const QObject*,Handler&&)")
     QString __qt_pathPattern0 = qtjambi_cast<QString>(__jni_env, static_cast<jstring>(__java_arguments[0].l));
     QObject* __qt_context1 = qtjambi_cast<QObject*>(__jni_env, __java_arguments[1].l);
-    auto __qt_func2 = convertSlot3(__jni_env, __java_arguments[2].l);
+    auto __qt_func2 = convertSlot(__jni_env, __java_arguments[2].l);
     QHttpServerRouterRule_shell *__qt_this = new(__qtjambi_ptr) QHttpServerRouterRule_shell(__qt_pathPattern0, __qt_context1, std::move(__qt_func2));
     Q_UNUSED(__qt_this)
     Q_UNUSED(__qtjambi_is_generic)
@@ -808,7 +864,34 @@ void __qt_construct_QHttpServerRouterRule_cref_QString_const_QHttpServerRequest_
     QString __qt_pathPattern0 = qtjambi_cast<QString>(__jni_env, static_cast<jstring>(__java_arguments[0].l));
     QHttpServerRequest::Methods __qt_methods1 = qtjambi_cast<QHttpServerRequest::Methods>(__jni_env, __java_arguments[1].l);
     QObject* __qt_context2 = qtjambi_cast<QObject*>(__jni_env, __java_arguments[2].l);
-    auto __qt_func3 = convertSlot3(__jni_env, __java_arguments[3].l);
+    auto __qt_func3 = convertSlot(__jni_env, __java_arguments[3].l);
+    QHttpServerRouterRule_shell *__qt_this = new(__qtjambi_ptr) QHttpServerRouterRule_shell(__qt_pathPattern0, __qt_methods1, __qt_context2, std::move(__qt_func3));
+    Q_UNUSED(__qt_this)
+    Q_UNUSED(__qtjambi_is_generic)
+    Q_UNUSED(__jni_object)
+}
+
+// new QHttpServerRouterRule(QString,const QHttpServerRequest::Methods,const QObject*,Handler&&)
+void __qt_construct_QHttpServerRouterRule_cref_QString_const_QHttpServerRequest_Methods_const_QtPrivate_ContextTypeForFunctor_ContextType_Handler__ptr_rval_Handler_3(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, bool, bool, bool __qtjambi_is_generic)
+{
+    QTJAMBI_NATIVE_METHOD_CALL("construct QHttpServerRouterRule(QString,const QHttpServerRequest::Methods,const QObject*,Handler&&)")
+    QString __qt_pathPattern0 = qtjambi_cast<QString>(__jni_env, static_cast<jstring>(__java_arguments[0].l));
+    QObject* __qt_context2 = nullptr;
+    auto __qt_func3 = convertSlot(__jni_env, __qt_context2, __java_arguments[1].l, __java_arguments[2].l);
+    QHttpServerRouterRule_shell *__qt_this = new(__qtjambi_ptr) QHttpServerRouterRule_shell(__qt_pathPattern0, __qt_context2, std::move(__qt_func3));
+    Q_UNUSED(__qt_this)
+    Q_UNUSED(__qtjambi_is_generic)
+    Q_UNUSED(__jni_object)
+}
+
+// new QHttpServerRouterRule(QString,const QHttpServerRequest::Methods,const QObject*,Handler&&)
+void __qt_construct_QHttpServerRouterRule_cref_QString_const_QHttpServerRequest_Methods_const_QtPrivate_ContextTypeForFunctor_ContextType_Handler__ptr_rval_Handler_4(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, bool, bool, bool __qtjambi_is_generic)
+{
+    QTJAMBI_NATIVE_METHOD_CALL("construct QHttpServerRouterRule(QString,const QHttpServerRequest::Methods,const QObject*,Handler&&)")
+    QString __qt_pathPattern0 = qtjambi_cast<QString>(__jni_env, static_cast<jstring>(__java_arguments[0].l));
+    QHttpServerRequest::Methods __qt_methods1 = qtjambi_cast<QHttpServerRequest::Methods>(__jni_env, __java_arguments[1].l);
+    QObject* __qt_context2 = nullptr;
+    auto __qt_func3 = convertSlot(__jni_env, __qt_context2, __java_arguments[2].l, __java_arguments[3].l);
     QHttpServerRouterRule_shell *__qt_this = new(__qtjambi_ptr) QHttpServerRouterRule_shell(__qt_pathPattern0, __qt_methods1, __qt_context2, std::move(__qt_func3));
     Q_UNUSED(__qt_this)
     Q_UNUSED(__qtjambi_is_generic)
@@ -858,6 +941,50 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_httpser
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
 }
+
+// QHttpServerRouterRule::QHttpServerRouterRule(QString,const QHttpServerRequest::Methods,const QObject*,Handler&&)
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_httpserver_QHttpServerRouterRule_initialize_1native3)
+(JNIEnv *__jni_env,
+ jclass __jni_class,
+ jobject __jni_object,
+ jstring pathPattern0,
+ jobject context2,
+ jobject func3)
+{
+    QTJAMBI_NATIVE_METHOD_CALL("QHttpServerRouterRule::QHttpServerRouterRule(QString,const QHttpServerRequest::Methods,const QObject*,Handler&&)")
+    QTJAMBI_TRY {
+        jvalue arguments[3];
+        arguments[0].l = pathPattern0;
+        arguments[1].l = context2;
+        arguments[2].l = func3;
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QHttpServerRouterRule_cref_QString_const_QHttpServerRequest_Methods_const_QtPrivate_ContextTypeForFunctor_ContextType_Handler__ptr_rval_Handler_3, sizeof(QHttpServerRouterRule_shell), typeid(QHttpServerRouterRule), 0, true, &deleter_QHttpServerRouterRule, arguments);
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+}
+
+// QHttpServerRouterRule::QHttpServerRouterRule(QString,const QHttpServerRequest::Methods,const QObject*,Handler&&)
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_httpserver_QHttpServerRouterRule_initialize_1native4)
+(JNIEnv *__jni_env,
+ jclass __jni_class,
+ jobject __jni_object,
+ jstring pathPattern0,
+ jobject methods1,
+ jobject context2,
+ jobject func3)
+{
+    QTJAMBI_NATIVE_METHOD_CALL("QHttpServerRouterRule::QHttpServerRouterRule(QString,const QHttpServerRequest::Methods,const QObject*,Handler&&)")
+    QTJAMBI_TRY {
+        jvalue arguments[4];
+        arguments[0].l = pathPattern0;
+        arguments[1].l = methods1;
+        arguments[2].l = context2;
+        arguments[3].l = func3;
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QHttpServerRouterRule_cref_QString_const_QHttpServerRequest_Methods_const_QtPrivate_ContextTypeForFunctor_ContextType_Handler__ptr_rval_Handler_4, sizeof(QHttpServerRouterRule_shell), typeid(QHttpServerRouterRule), 0, true, &deleter_QHttpServerRouterRule, arguments);
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+}
                 `}
             since: 6.8
         }
@@ -871,10 +998,9 @@ public interface RouterHandler extends io.qt.core.QMetaObject.Slot3<io.qt.core.@
 /**
  * <p>See <code>QHttpServerRouterRule::<wbr/>QHttpServerRouterRule&lt;Handler&gt;(QString,,<wbr/>Handler&amp;&amp;)</code></p>
  * @param pathPattern
- * @param context
  * @param func
  */
-public QHttpServerRouterRule(java.lang.@NonNull String pathPattern, @StrictNonNull RouterHandler func){
+public QHttpServerRouterRule(java.lang.@NonNull String pathPattern, io.qt.core.QMetaObject.@StrictNonNull Slot3<io.qt.core.@NonNull QRegularExpressionMatch,io.qt.httpserver.@NonNull QHttpServerRequest,io.qt.httpserver.@StrictNonNull QHttpServerResponder> func){
     super((QPrivateConstructor)null);
     java.util.Objects.requireNonNull(func, "Argument 'func': null not expected.");
     initialize_native1(this, pathPattern, QtJambi_LibraryUtilities.internal.lambdaContext(func), func);
@@ -886,13 +1012,11 @@ public QHttpServerRouterRule(java.lang.@NonNull String pathPattern, @StrictNonNu
  * @param context
  * @param func
  */
-public QHttpServerRouterRule(java.lang.@NonNull String pathPattern, io.qt.core.@Nullable QObject context, @StrictNonNull RouterHandler func){
+public QHttpServerRouterRule(java.lang.@NonNull String pathPattern, io.qt.core.@Nullable QObject context, io.qt.core.QMetaObject.@StrictNonNull Slot3<io.qt.core.@NonNull QRegularExpressionMatch,io.qt.httpserver.@NonNull QHttpServerRequest,io.qt.httpserver.@StrictNonNull QHttpServerResponder> func){
     super((QPrivateConstructor)null);
     java.util.Objects.requireNonNull(func, "Argument 'func': null not expected.");
     initialize_native1(this, pathPattern, context, func);
 }
-
-private native static void initialize_native1(QHttpServerRouterRule instance, java.lang.String pathPattern, io.qt.core.QObject context, RouterHandler func);
 
 /**
  * <p>See <code>QHttpServerRouterRule::<wbr/>QHttpServerRouterRule&lt;Handler&gt;(QString,<wbr/>const QHttpServerRequest::Methods,<wbr/>const QObject*,<wbr/>Handler&amp;&amp;)</code></p>
@@ -900,7 +1024,7 @@ private native static void initialize_native1(QHttpServerRouterRule instance, ja
  * @param methods
  * @param func
  */
-public QHttpServerRouterRule(java.lang.@NonNull String pathPattern, io.qt.httpserver.QHttpServerRequest.@NonNull Methods methods, @StrictNonNull RouterHandler func){
+public QHttpServerRouterRule(java.lang.@NonNull String pathPattern, io.qt.httpserver.QHttpServerRequest.@NonNull Methods methods, io.qt.core.QMetaObject.@StrictNonNull Slot3<io.qt.core.@NonNull QRegularExpressionMatch,io.qt.httpserver.@NonNull QHttpServerRequest,io.qt.httpserver.@StrictNonNull QHttpServerResponder> func){
     super((QPrivateConstructor)null);
     java.util.Objects.requireNonNull(func, "Argument 'func': null not expected.");
     initialize_native2(this, pathPattern, methods, QtJambi_LibraryUtilities.internal.lambdaContext(func), func);
@@ -913,13 +1037,41 @@ public QHttpServerRouterRule(java.lang.@NonNull String pathPattern, io.qt.httpse
  * @param context
  * @param func
  */
-public QHttpServerRouterRule(java.lang.@NonNull String pathPattern, io.qt.httpserver.QHttpServerRequest.@NonNull Methods methods, io.qt.core.@Nullable QObject context, @StrictNonNull RouterHandler func){
+public QHttpServerRouterRule(java.lang.@NonNull String pathPattern, io.qt.httpserver.QHttpServerRequest.@NonNull Methods methods, io.qt.core.@Nullable QObject context, io.qt.core.QMetaObject.@StrictNonNull Slot3<io.qt.core.@NonNull QRegularExpressionMatch,io.qt.httpserver.@NonNull QHttpServerRequest,io.qt.httpserver.@StrictNonNull QHttpServerResponder> func){
     super((QPrivateConstructor)null);
     java.util.Objects.requireNonNull(func, "Argument 'func': null not expected.");
     initialize_native2(this, pathPattern, methods, context, func);
 }
 
-private native static void initialize_native2(QHttpServerRouterRule instance, java.lang.String pathPattern, io.qt.httpserver.QHttpServerRequest.Methods methods, io.qt.core.QObject context, RouterHandler func);
+/**
+ * <p>See <code>QHttpServerRouterRule::<wbr/>QHttpServerRouterRule&lt;Handler&gt;(QString,<wbr/>const QObject*,<wbr/>Handler&amp;&amp;)</code></p>
+ * @param pathPattern
+ * @param func
+ */
+public <Receiver> QHttpServerRouterRule(java.lang.@NonNull String pathPattern, @StrictNonNull Receiver receiver, io.qt.core.QMetaObject.@StrictNonNull Slot4<@NonNull Receiver,io.qt.core.@NonNull QRegularExpressionMatch,io.qt.httpserver.@NonNull QHttpServerRequest,io.qt.httpserver.@StrictNonNull QHttpServerResponder> func){
+    super((QPrivateConstructor)null);
+    java.util.Objects.requireNonNull(func, "Argument 'func': null not expected.");
+    java.util.Objects.requireNonNull(func, "Argument 'receiver': null not expected.");
+    initialize_native3(this, pathPattern, receiver, func);
+}
+
+/**
+ * <p>See <code>QHttpServerRouterRule::<wbr/>QHttpServerRouterRule&lt;Handler&gt;(QString,<wbr/>const QHttpServerRequest::Methods,<wbr/>const QObject*,<wbr/>Handler&amp;&amp;)</code></p>
+ * @param pathPattern
+ * @param methods
+ * @param func
+ */
+public <Receiver> QHttpServerRouterRule(java.lang.@NonNull String pathPattern, io.qt.httpserver.QHttpServerRequest.@NonNull Methods methods, @StrictNonNull Receiver receiver, io.qt.core.QMetaObject.@StrictNonNull Slot4<@NonNull Receiver,io.qt.core.@NonNull QRegularExpressionMatch,io.qt.httpserver.@NonNull QHttpServerRequest,io.qt.httpserver.@StrictNonNull QHttpServerResponder> func){
+    super((QPrivateConstructor)null);
+    java.util.Objects.requireNonNull(func, "Argument 'func': null not expected.");
+    java.util.Objects.requireNonNull(func, "Argument 'receiver': null not expected.");
+    initialize_native4(this, pathPattern, methods, receiver, func);
+}
+
+private native static void initialize_native1(QHttpServerRouterRule instance, java.lang.String pathPattern, io.qt.core.QObject context, io.qt.core.QMetaObject.Slot3<io.qt.core.QRegularExpressionMatch,io.qt.httpserver.QHttpServerRequest,io.qt.httpserver.QHttpServerResponder> func);
+private native static void initialize_native2(QHttpServerRouterRule instance, java.lang.String pathPattern, io.qt.httpserver.QHttpServerRequest.Methods methods, io.qt.core.QObject context, io.qt.core.QMetaObject.Slot3<io.qt.core.QRegularExpressionMatch,io.qt.httpserver.QHttpServerRequest,io.qt.httpserver.QHttpServerResponder> func);
+private native static <Receiver> void initialize_native3(QHttpServerRouterRule instance, java.lang.String pathPattern, Receiver context, io.qt.core.QMetaObject.Slot4<Receiver,io.qt.core.QRegularExpressionMatch,io.qt.httpserver.QHttpServerRequest,io.qt.httpserver.QHttpServerResponder> func);
+private native static <Receiver> void initialize_native4(QHttpServerRouterRule instance, java.lang.String pathPattern, io.qt.httpserver.QHttpServerRequest.Methods methods, Receiver context, io.qt.core.QMetaObject.Slot4<Receiver,io.qt.core.QRegularExpressionMatch,io.qt.httpserver.QHttpServerRequest,io.qt.httpserver.QHttpServerResponder> func);
                 `}
             since: 6.8
         }

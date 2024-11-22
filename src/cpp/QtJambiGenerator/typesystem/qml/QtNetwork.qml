@@ -1059,15 +1059,38 @@ TypeSystem{
         InjectCode{
             target: CodeClass.Native
             position: Position.Beginning
-            Text{content: "auto convertSlot(JNIEnv* _env, jobject _slot){\n"+
-                          "    JObjectWrapper slot(_env, _slot);\n"+
-                          "    return [slot](const QHostInfo& info){\n"+
-                          "                    if(JniEnvironment env{200}){\n"+
-                          "                        jobject _info = qtjambi_cast<jobject>(env, info);\n"+
-                          "                        Java::QtCore::QMetaObject$Slot1::invoke(env, slot.object(), _info);\n"+
-                          "                    }\n"+
-                          "                };\n"+
-                          "}"}
+            Text{content: String.raw`
+inline auto convertSlot(JNIEnv* _env, jobject _slot){
+    JObjectWrapper slot(_env, _slot);
+    return [slot](const QHostInfo& info){
+                    if(JniEnvironment env{200}){
+                        jobject _info = qtjambi_cast<jobject>(env, info);
+                        Java::QtCore::QMetaObject$Slot1::invoke(env, slot.object(env), _info);
+                    }
+                };
+}
+
+inline auto convertSlot(JNIEnv* _env, QObject*& qobject, jobject _receiver, jobject _slot){
+    if(Java::QtCore::QObject::isInstanceOf(_env, _receiver)){
+        qobject = qtjambi_cast<QObject*>(_env, _receiver);
+    }
+    return [slot = JObjectWrapper(_env, _slot), receiver = JObjectWrapper(_env, _receiver)](const QHostInfo& info){
+        if(JniEnvironment env{200}){
+            jobject _info = qtjambi_cast<jobject>(env, info);
+            Java::QtCore::QMetaObject$Slot2::invoke(env, slot.object(env), receiver.object(env), _info);
+        }
+    };
+}
+
+inline auto convertSlot(JNIEnv* _env, jobject _receiver, jobject _slot){
+    return [slot = JObjectWrapper(_env, _slot), receiver = JObjectWrapper(_env, _receiver)](const QHostInfo& info){
+        if(JniEnvironment env{200}){
+            jobject _info = qtjambi_cast<jobject>(env, info);
+            Java::QtCore::QMetaObject$Slot2::invoke(env, slot.object(env), receiver.object(env), _info);
+        }
+    };
+}
+`}
         }
 
         InjectCode{
@@ -1103,7 +1126,7 @@ TypeSystem{
                               "            slot = \"2\" + method.cppMethodSignature();\n"+
                               "        else\n"+
                               "            slot = \"1\" + method.cppMethodSignature();\n"+
-                              "    }\n"+
+                              "    }else slot = \"1\" + slot;\n"+
                               "}"}
             }
             until: 6.6
@@ -1129,7 +1152,7 @@ TypeSystem{
                               "            slot = \"2\" + method.cppMethodSignature();\n"+
                               "        else\n"+
                               "            slot = \"1\" + method.cppMethodSignature();\n"+
-                              "    }\n"+
+                              "    }else slot = \"1\" + slot;\n"+
                               "}"}
             }
             since: 6.7
@@ -1141,20 +1164,32 @@ TypeSystem{
             generate: false
         }
 
+        FunctionalType{
+            name: "ObjectSlot"
+            using: "std::function<void(QVariant,QHostInfo)>"
+            generate: false
+        }
+
+        FunctionalType{
+            name: "QObjectSlot"
+            using: "std::function<void(QObject*,QHostInfo)>"
+            generate: false
+        }
+
         ModifyFunction{
             signature: "lookupHost<Func>(const QString&,const QtPrivate::FunctionPointer::Object<Func>*,Func)"
+            ModifyArgument{
+                index: 0
+                replaceType: "int"
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "%out = %in;"}
+                }
+            }
             Instantiation{
                 Argument{
                     type: "std::function<void(QHostInfo)>"
                     isImplicit: true
-                }
-                ModifyArgument{
-                    index: 0
-                    replaceType: "int"
-                    ConversionRule{
-                        codeClass: CodeClass.Native
-                        Text{content: "%out = %in;"}
-                    }
                 }
                 ModifyArgument{
                     index: 3
@@ -1199,6 +1234,125 @@ TypeSystem{
                                   "        default:\n"+
                                   "            break;\n"+
                                   "        }\n"+
+                                  "    }\n"+
+                                  "}\n"}
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QVariant,QHostInfo)>"
+                    isImplicit: true
+                }
+                AddTypeParameter{
+                    name: "Receiver"
+                }
+                ModifyArgument{
+                    index: 2
+                    NoNullPointer{}
+                    replaceType: "Receiver"
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "QObject* %out{nullptr};"}
+                    }
+                }
+                ModifyArgument{
+                    index: 3
+                    NoNullPointer{}
+                    replaceType: "io.qt.core.QMetaObject$Slot2<Receiver,@NonNull QHostInfo>"
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertSlot(%env, __qt_%2, %2, %in);"}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    ArgumentMap{
+                        index: 1
+                        metaName: "name"
+                    }
+                    ArgumentMap{
+                        index: 2
+                        metaName: "context"
+                    }
+                    ArgumentMap{
+                        index: 3
+                        metaName: "slot"
+                    }
+                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
+                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
+                                  "    if(metaMethod.parameterCount()!=1 && metaMethod.parameterType(0)!=io.qt.core.QMetaType.fromType(QHostInfo.class).id()) {\n"+
+                                  "        throw new IllegalArgumentException(\"Method does not take a single QHostInfo argument: \"+metaMethod.cppMethodSignature());\n"+
+                                  "    }\n"+
+                                  "    if(context instanceof io.qt.core.QObject) {\n"+
+                                  "        switch(metaMethod.methodType()) {\n"+
+                                  "        case Signal:\n"+
+                                  "            return lookupHost(name, (io.qt.core.QObject)context, \"2\"+metaMethod.cppMethodSignature());\n"+
+                                  "        case Method:\n"+
+                                  "        case Slot:\n"+
+                                  "            return lookupHost(name, (io.qt.core.QObject)context, \"1\"+metaMethod.cppMethodSignature());\n"+
+                                  "        default:\n"+
+                                  "            break;\n"+
+                                  "        }\n"+
+                                  "    }\n"+
+                                  "}\n"}
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QObject*,QHostInfo)>"
+                    isImplicit: true
+                }
+                AddTypeParameter{
+                    name: "Receiver"
+                    extending: "io.qt.core.QObject"
+                }
+                ModifyArgument{
+                    index: 2
+                    NoNullPointer{}
+                    replaceType: "Receiver"
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "QObject* %out = qtjambi_cast<QObject*>(%env, %in);"}
+                    }
+                }
+                ModifyArgument{
+                    index: 3
+                    NoNullPointer{}
+                    replaceType: "io.qt.core.QMetaObject$Slot2<Receiver,@NonNull QHostInfo>"
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertSlot(%env, %2, %in);"}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    ArgumentMap{
+                        index: 1
+                        metaName: "name"
+                    }
+                    ArgumentMap{
+                        index: 2
+                        metaName: "context"
+                    }
+                    ArgumentMap{
+                        index: 3
+                        metaName: "slot"
+                    }
+                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
+                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
+                                  "    if(metaMethod.parameterCount()!=1 && metaMethod.parameterType(0)!=io.qt.core.QMetaType.fromType(QHostInfo.class).id()) {\n"+
+                                  "        throw new IllegalArgumentException(\"Method does not take a single QHostInfo argument: \"+metaMethod.cppMethodSignature());\n"+
+                                  "    }\n"+
+                                  "    switch(metaMethod.methodType()) {\n"+
+                                  "    case Signal:\n"+
+                                  "        return lookupHost(name, context, \"2\"+metaMethod.cppMethodSignature());\n"+
+                                  "    case Method:\n"+
+                                  "    case Slot:\n"+
+                                  "        return lookupHost(name, context, \"1\"+metaMethod.cppMethodSignature());\n"+
+                                  "    default:\n"+
+                                  "        break;\n"+
                                   "    }\n"+
                                   "}\n"}
                 }
@@ -1252,6 +1406,117 @@ TypeSystem{
                                   "        default:\n"+
                                   "            break;\n"+
                                   "        }\n"+
+                                  "    }\n"+
+                                  "}\n"}
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QVariant,QHostInfo)>"
+                    isImplicit: true
+                }
+                AddTypeParameter{
+                    name: "Receiver"
+                }
+                ModifyArgument{
+                    index: 2
+                    NoNullPointer{}
+                    replaceType: "Receiver"
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "QObject* %out{nullptr};"}
+                    }
+                }
+                ModifyArgument{
+                    index: 3
+                    NoNullPointer{}
+                    replaceType: "io.qt.core.QMetaObject$Slot2<@NonNull Receiver,@NonNull QHostInfo>"
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertSlot(%env, __qt_%2, %2, %in);"}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    ArgumentMap{
+                        index: 2
+                        metaName: "context"
+                    }
+                    ArgumentMap{
+                        index: 3
+                        metaName: "slot"
+                    }
+                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(slot);\n"+
+                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
+                                  "    if(metaMethod.parameterCount()!=1 && metaMethod.parameterType(0)!=io.qt.core.QMetaType.fromType(QHostInfo.class).id()) {\n"+
+                                  "        throw new IllegalArgumentException(\"Method does not take a single QHostInfo argument: \"+metaMethod.cppMethodSignature());\n"+
+                                  "    }\n"+
+                                  "    if(context instanceof io.qt.core.QObject) {\n"+
+                                  "        switch(metaMethod.methodType()) {\n"+
+                                  "        case Signal:\n"+
+                                  "            return lookupHost(name, (io.qt.core.QObject)context, \"2\"+metaMethod.cppMethodSignature());\n"+
+                                  "        case Method:\n"+
+                                  "        case Slot:\n"+
+                                  "            return lookupHost(name, (io.qt.core.QObject)context, \"1\"+metaMethod.cppMethodSignature());\n"+
+                                  "        default:\n"+
+                                  "            break;\n"+
+                                  "        }\n"+
+                                  "    }\n"+
+                                  "}\n"}
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QObject*,QHostInfo)>"
+                    isImplicit: true
+                }
+                AddTypeParameter{
+                    name: "Receiver"
+                    extending: "io.qt.core.QObject"
+                }
+                ModifyArgument{
+                    index: 2
+                    NoNullPointer{}
+                    replaceType: "Receiver"
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "QObject* %out = qtjambi_cast<QObject*>(%env, %in);"}
+                    }
+                }
+                ModifyArgument{
+                    index: 3
+                    NoNullPointer{}
+                    replaceType: "io.qt.core.QMetaObject$Slot2<@NonNull Receiver,@NonNull QHostInfo>"
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertSlot(%env, %2, %in);"}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    ArgumentMap{
+                        index: 2
+                        metaName: "context"
+                    }
+                    ArgumentMap{
+                        index: 3
+                        metaName: "slot"
+                    }
+                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(slot);\n"+
+                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
+                                  "    if(metaMethod.parameterCount()!=1 && metaMethod.parameterType(0)!=io.qt.core.QMetaType.fromType(QHostInfo.class).id()) {\n"+
+                                  "        throw new IllegalArgumentException(\"Method does not take a single QHostInfo argument: \"+metaMethod.cppMethodSignature());\n"+
+                                  "    }\n"+
+                                  "    switch(metaMethod.methodType()) {\n"+
+                                  "    case Signal:\n"+
+                                  "        return lookupHost(name, context, \"2\"+metaMethod.cppMethodSignature());\n"+
+                                  "    case Method:\n"+
+                                  "    case Slot:\n"+
+                                  "        return lookupHost(name, context, \"1\"+metaMethod.cppMethodSignature());\n"+
+                                  "    default:\n"+
+                                  "        break;\n"+
                                   "    }\n"+
                                   "}\n"}
                 }
@@ -1905,7 +2170,7 @@ TypeSystem{
                       "auto %out = [wrapper](QRestReply* reply){\n"+
                       "                    if(JniEnvironment env{200}){\n"+
                       "                        jobject _reply = qtjambi_cast<jobject>(env, reply);\n"+
-                      "                        Java::Runtime::Consumer::accept(env, wrapper.object(), _reply);\n"+
+                      "                        Java::Runtime::Consumer::accept(env, wrapper.object(env), _reply);\n"+
                       "                    }\n"+
                       "                };"}
     }
@@ -1932,7 +2197,7 @@ TypeSystem{
                           "                    if(JniEnvironment env{200}){\n"+
                           "                        jobject _reply = qtjambi_cast<jobject>(env, &reply);\n"+
                           "                        InvalidateAfterUse inv(env, _reply);\n"+
-                          "                        Java::Runtime::Consumer::accept(env, consumer.object(), _reply);\n"+
+                          "                        Java::Runtime::Consumer::accept(env, consumer.object(env), _reply);\n"+
                           "                    }\n"+
                           "                };\n"+
                           "}"}

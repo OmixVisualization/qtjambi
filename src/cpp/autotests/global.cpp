@@ -258,7 +258,7 @@ QList<bool> General::start_qtjambi_cast_test(jobject list, jobject qObject, jobj
             results << (qtjambi_cast<const QWidgetItem*>(env, o)==item.data());
             results << (qtjambi_cast<QSharedPointer<QLayoutItem>>(env, o)==item);
             results << (qtjambi_cast<const QSharedPointer<QLayoutItem>>(env, o)==item);
-            results << (qtjambi_cast<const QSharedPointer<QLayoutItem>&>(env, o)==item);
+            results << (qtjambi_cast<const QSharedPointer<QLayoutItem>&>(env, scope, o)==item);
         }
         {
             QSharedPointer<QObject> item(new QPushButton());
@@ -277,7 +277,7 @@ QList<bool> General::start_qtjambi_cast_test(jobject list, jobject qObject, jobj
             results << (qtjambi_cast<QObject*>(env, o)==ptr.data());
             results << (qtjambi_cast<QSharedPointer<QObject>>(env, o)==ptr);
             results << (qtjambi_cast<const QSharedPointer<QObject>>(env, o)==ptr);
-            results << (qtjambi_cast<const QSharedPointer<QObject>&>(env, o)==ptr);
+            results << (qtjambi_cast<const QSharedPointer<QObject>&>(env, scope, o)==ptr);
         }
 #endif
         {

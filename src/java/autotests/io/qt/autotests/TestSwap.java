@@ -33,18 +33,23 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.Collections;
 
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
 import io.qt.core.QByteArray;
+import io.qt.core.QLibraryInfo;
+import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QPoint;
 import io.qt.core.QPointF;
 import io.qt.core.QRect;
 import io.qt.core.QRegularExpression;
+import io.qt.core.QTimer;
 import io.qt.core.QUrl;
 import io.qt.core.Qt;
 import io.qt.gui.QBitmap;
 import io.qt.gui.QBrush;
 import io.qt.gui.QColor;
+import io.qt.gui.QGuiApplication;
 import io.qt.gui.QImage;
 import io.qt.gui.QKeySequence;
 import io.qt.gui.QLinearGradient;
@@ -55,12 +60,29 @@ import io.qt.gui.QPixmap;
 import io.qt.gui.QPolygon;
 import io.qt.gui.QPolygonF;
 import io.qt.gui.QRegion;
+import io.qt.gui.QWindow;
 
 public class TestSwap extends ApplicationInitializer{
 	
 	@BeforeClass
     public static void testInitialize() throws Exception {
     	ApplicationInitializer.testInitializeWithGui();
+    }
+	
+	@AfterClass
+    public static void testDispose() throws Exception {
+		if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.MacOS) 
+    			&& QLibraryInfo.version().majorVersion()==6 
+    			&& QLibraryInfo.version().minorVersion()==5) {
+	    	QWindow window = new QWindow();
+	    	window.show();
+	    	QTimer.singleShot(200, QGuiApplication.instance(), QGuiApplication::quit);
+	    	QGuiApplication.exec();
+	    	window.close();
+	    	window.disposeLater();
+	    	window = null;
+    	}
+    	ApplicationInitializer.testDispose();
     }
 	
 	public final static byte[] RED5x5 = {

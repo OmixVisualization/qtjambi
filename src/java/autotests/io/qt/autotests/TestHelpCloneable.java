@@ -38,7 +38,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.autotests.generated.*;
-import io.qt.core.QMetaType;
 import io.qt.core.QVersionNumber;
 import io.qt.help.*;
 

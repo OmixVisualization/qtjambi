@@ -1394,7 +1394,7 @@ TypeSystem{
                               "            member = \"2\" + method.cppMethodSignature();\n"+
                               "        else\n"+
                               "            member = \"1\" + method.cppMethodSignature();\n"+
-                              "    }\n"+
+                              "    }else member = \"1\" + member;\n"+
                               "}\n"+
                               "if(errorSlot!=null && !errorSlot.startsWith(\"1\") && !errorSlot.startsWith(\"2\")) {\n"+
                               "    io.qt.core.QMetaMethod method = object.metaObject().method(errorSlot);\n"+
@@ -1403,7 +1403,7 @@ TypeSystem{
                               "            errorSlot = \"2\" + method.cppMethodSignature();\n"+
                               "        else\n"+
                               "            errorSlot = \"1\" + method.cppMethodSignature();\n"+
-                              "    }\n"+
+                              "    }else errorSlot = \"1\" + errorSlot;\n"+
                               "}"}
             }
         }
@@ -1427,7 +1427,7 @@ TypeSystem{
                               "            slot = \"2\" + method.cppMethodSignature();\n"+
                               "        else\n"+
                               "            slot = \"1\" + method.cppMethodSignature();\n"+
-                              "    }\n"+
+                              "    }else slot = \"1\" + slot;\n"+
                               "}"}
             }
         }
@@ -1451,7 +1451,7 @@ TypeSystem{
                               "            slot = \"2\" + method.cppMethodSignature();\n"+
                               "        else\n"+
                               "            slot = \"1\" + method.cppMethodSignature();\n"+
-                              "    }\n"+
+                              "    }else slot = \"1\" + slot;\n"+
                               "}"}
             }
         }
@@ -1475,7 +1475,7 @@ TypeSystem{
                               "            slot = \"2\" + method.cppMethodSignature();\n"+
                               "        else\n"+
                               "            slot = \"1\" + method.cppMethodSignature();\n"+
-                              "    }\n"+
+                              "    }else slot = \"1\" + slot;\n"+
                               "}"}
             }
         }
@@ -1499,7 +1499,7 @@ TypeSystem{
                               "            slot = \"2\" + method.cppMethodSignature();\n"+
                               "        else\n"+
                               "            slot = \"1\" + method.cppMethodSignature();\n"+
-                              "    }\n"+
+                              "    }else slot = \"1\" + slot;\n"+
                               "}"}
             }
         }
@@ -1523,7 +1523,7 @@ TypeSystem{
                               "            slot = \"2\" + method.cppMethodSignature();\n"+
                               "        else\n"+
                               "            slot = \"1\" + method.cppMethodSignature();\n"+
-                              "    }\n"+
+                              "    }else slot = \"1\" + slot;\n"+
                               "}"}
             }
         }
@@ -1547,7 +1547,7 @@ TypeSystem{
                               "            slot = \"2\" + method.cppMethodSignature();\n"+
                               "        else\n"+
                               "            slot = \"1\" + method.cppMethodSignature();\n"+
-                              "    }\n"+
+                              "    }else slot = \"1\" + slot;\n"+
                               "}"}
             }
         }
@@ -1571,7 +1571,7 @@ TypeSystem{
                               "            slot = \"2\" + method.cppMethodSignature();\n"+
                               "        else\n"+
                               "            slot = \"1\" + method.cppMethodSignature();\n"+
-                              "    }\n"+
+                              "    }else slot = \"1\" + slot;\n"+
                               "}"}
             }
         }

@@ -38,7 +38,7 @@
 #include <QtCore/QString>
 #include <QtCore/QReadWriteLock>
 #include <functional>
-#include "utils.h"
+#include "typeutils.h"
 #include "utils_p.h"
 
 class QtJambiTypeManager {
@@ -126,6 +126,8 @@ private:
         SharedPointer,
         WeakPointer,
         ScopedPointer,
+        ScopedArrayPointer,
+        TrackingPointer,
         unique_ptr,
         shared_ptr,
         weak_ptr,

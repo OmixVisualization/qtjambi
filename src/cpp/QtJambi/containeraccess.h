@@ -38,77 +38,80 @@
 #include "typetests.h"
 #include "containerapi.h"
 #include "registryapi.h"
-#include "utils.h"
 #include "qtjambi_cast_impl_container_iterator.h"
 #include "qtjambi_cast_impl_container_sequential.h"
 
-class QTJAMBI_EXPORT AbstractNestedSequentialAccess{
+#if defined(QTJAMBI_GENERIC_ACCESS)
+#define ACCESS_EXPORT QTJAMBI_EXPORT
+#else
+#define ACCESS_EXPORT
+#endif
+
+namespace ContainerAccessAPI{
+ACCESS_EXPORT AbstractContainerAccess* createContainerAccess(JNIEnv* env, SequentialContainerType containerType,
+                                               const QMetaType& metaType,
+                                               size_t align, size_t size,
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                                               bool isStaticType,
+#endif
+                                               bool isPointer,
+                                               const QtJambiUtils::QHashFunction& hashFunction,
+                                               const QtJambiUtils::InternalToExternalConverter& memberConverter,
+                                               const QtJambiUtils::ExternalToInternalConverter& memberReConverter,
+                                               const QSharedPointer<AbstractContainerAccess>& memberNestedContainerAccess,
+                                               PtrOwnerFunction ownerFunction);
+ACCESS_EXPORT AbstractContainerAccess* createContainerAccess(JNIEnv* env, AssociativeContainerType mapType,
+                                               const QMetaType& memberMetaType1,
+                                               size_t align1, size_t size1,
+                                               bool isPointer1,
+                                               const QtJambiUtils::QHashFunction& hashFunction1,
+                                               const QtJambiUtils::InternalToExternalConverter& memberConverter1,
+                                               const QtJambiUtils::ExternalToInternalConverter& memberReConverter1,
+                                               const QSharedPointer<AbstractContainerAccess>& memberNestedContainerAccess1,
+                                               PtrOwnerFunction ownerFunction1,
+                                               const QMetaType& memberMetaType2,
+                                               size_t align2, size_t size2,
+                                               bool isPointer2,
+                                               const QtJambiUtils::QHashFunction& hashFunction2,
+                                               const QtJambiUtils::InternalToExternalConverter& memberConverter2,
+                                               const QtJambiUtils::ExternalToInternalConverter& memberReConverter2,
+                                               const QSharedPointer<AbstractContainerAccess>& memberNestedContainerAccess2,
+                                               PtrOwnerFunction ownerFunction2);
+ACCESS_EXPORT AbstractContainerAccess* createContainerAccess(SequentialContainerType containerType, const QMetaType& memberMetaType);
+ACCESS_EXPORT AbstractContainerAccess* createContainerAccess(AssociativeContainerType mapType,
+                                               const QMetaType& memberMetaType1,
+                                               const QMetaType& memberMetaType2);
+ACCESS_EXPORT hash_type pointerHashFunction(const void* ptr, hash_type seed);
+}//namespace ContainerAccessAPI
+
+class AbstractNestedSequentialAccess{
 protected:
     AbstractNestedSequentialAccess() = default;
-    virtual ~AbstractNestedSequentialAccess();
+    ACCESS_EXPORT virtual ~AbstractNestedSequentialAccess();
     Q_DISABLE_COPY_MOVE(AbstractNestedSequentialAccess)
 public:
     virtual const QSharedPointer<AbstractContainerAccess>& sharedElementNestedContainerAccess() = 0;
 };
 
-class QTJAMBI_EXPORT AbstractNestedAssociativeAccess{
+class AbstractNestedAssociativeAccess{
 protected:
     AbstractNestedAssociativeAccess() = default;
-    virtual ~AbstractNestedAssociativeAccess();
+    ACCESS_EXPORT virtual ~AbstractNestedAssociativeAccess();
     Q_DISABLE_COPY_MOVE(AbstractNestedAssociativeAccess)
 public:
     virtual const QSharedPointer<AbstractContainerAccess>& sharedKeyNestedContainerAccess() = 0;
     virtual const QSharedPointer<AbstractContainerAccess>& sharedValueNestedContainerAccess() = 0;
 };
 
-class QTJAMBI_EXPORT AbstractNestedPairAccess{
+class AbstractNestedPairAccess{
 protected:
     AbstractNestedPairAccess() = default;
-    virtual ~AbstractNestedPairAccess();
+    ACCESS_EXPORT virtual ~AbstractNestedPairAccess();
     Q_DISABLE_COPY_MOVE(AbstractNestedPairAccess)
 public:
     virtual const QSharedPointer<AbstractContainerAccess>& sharedFirstNestedContainerAccess() = 0;
     virtual const QSharedPointer<AbstractContainerAccess>& sharedSecondNestedContainerAccess() = 0;
 };
-
-namespace ContainerAccessAPI{
-
-QTJAMBI_EXPORT AbstractContainerAccess* createContainerAccess(SequentialContainerType containerType, const QMetaType& memberMetaType);
-QTJAMBI_EXPORT AbstractContainerAccess* createContainerAccess(AssociativeContainerType mapType,
-                                                              const QMetaType& memberMetaType1,
-                                                              const QMetaType& memberMetaType2);
-QTJAMBI_EXPORT AbstractContainerAccess* createContainerAccess(JNIEnv* env, SequentialContainerType containerType,
-                                                              const QMetaType& metaType,
-                                                              size_t align, size_t size,
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                              bool isStaticType,
-#endif
-                                                              bool isPointer,
-                                                              const QtJambiUtils::QHashFunction& hashFunction,
-                                                              const QtJambiUtils::InternalToExternalConverter& memberConverter,
-                                                              const QtJambiUtils::ExternalToInternalConverter& memberReConverter,
-                                                              const QSharedPointer<AbstractContainerAccess>& memberNestedContainerAccess,
-                                                              PtrOwnerFunction ownerFunction);
-QTJAMBI_EXPORT AbstractContainerAccess* createContainerAccess(JNIEnv* env, AssociativeContainerType mapType,
-                                                              const QMetaType& memberMetaType1,
-                                                              size_t align1, size_t size1,
-                                                              bool isPointer1,
-                                                              const QtJambiUtils::QHashFunction& hashFunction1,
-                                                              const QtJambiUtils::InternalToExternalConverter& memberConverter1,
-                                                              const QtJambiUtils::ExternalToInternalConverter& memberReConverter1,
-                                                              const QSharedPointer<AbstractContainerAccess>& memberNestedContainerAccess1,
-                                                              PtrOwnerFunction ownerFunction1,
-                                                              const QMetaType& memberMetaType2,
-                                                              size_t align2, size_t size2,
-                                                              bool isPointer2,
-                                                              const QtJambiUtils::QHashFunction& hashFunction2,
-                                                              const QtJambiUtils::InternalToExternalConverter& memberConverter2,
-                                                              const QtJambiUtils::ExternalToInternalConverter& memberReConverter2,
-                                                              const QSharedPointer<AbstractContainerAccess>& memberNestedContainerAccess2,
-                                                              PtrOwnerFunction ownerFunction2);
-QTJAMBI_EXPORT hash_type pointerHashFunction(const void* ptr, hash_type seed);
-
-}//namespace ContainerAccessAPI
 
 #if defined(QTJAMBI_GENERIC_ACCESS)
 
@@ -183,18 +186,18 @@ struct AssociativeContainerAnalyzer<QPair>{
 };
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-QTJAMBI_EXPORT bool pointerLessFunction(const void* ptr1, const void* ptr2);
-QTJAMBI_EXPORT bool pointerEqualFunction(const void* ptr1, const void* ptr2);
+ACCESS_EXPORT bool pointerLessFunction(const void* ptr1, const void* ptr2);
+ACCESS_EXPORT bool pointerEqualFunction(const void* ptr1, const void* ptr2);
 #endif
 
-QTJAMBI_EXPORT QDebug containerElementDebugStream(QDebug debug, uint i, const void* ptr);
-QTJAMBI_EXPORT QDataStream & containerElementDataStreamIn(QDataStream & stream, uint i, void* ptr);
-QTJAMBI_EXPORT QDataStream & containerElementDataStreamOut(QDataStream & stream, uint i, const void* ptr);
-QTJAMBI_EXPORT hash_type containerElementHash(uint i, const void* ptr, hash_type seed);
-QTJAMBI_EXPORT bool containerElementEqual(uint i, const void* ptr, const void* ptr2);
-QTJAMBI_EXPORT bool containerElementLess(uint i, const void* ptr, const void* ptr2);
-QTJAMBI_EXPORT void constructContainerElement(uint i, void* ptr, const void* copy = nullptr);
-QTJAMBI_EXPORT void destructContainerElement(uint i, void* ptr);
+ACCESS_EXPORT QDebug containerElementDebugStream(QDebug debug, uint i, const void* ptr);
+ACCESS_EXPORT QDataStream & containerElementDataStreamIn(QDataStream & stream, uint i, void* ptr);
+ACCESS_EXPORT QDataStream & containerElementDataStreamOut(QDataStream & stream, uint i, const void* ptr);
+ACCESS_EXPORT hash_type containerElementHash(uint i, const void* ptr, hash_type seed);
+ACCESS_EXPORT bool containerElementEqual(uint i, const void* ptr, const void* ptr2);
+ACCESS_EXPORT bool containerElementLess(uint i, const void* ptr, const void* ptr2);
+ACCESS_EXPORT void constructContainerElement(uint i, void* ptr, const void* copy = nullptr);
+ACCESS_EXPORT void destructContainerElement(uint i, void* ptr);
 
 template<int index, bool isPointer>
 class MetaTypeInfo{
@@ -266,7 +269,7 @@ public:
     }
 };
 
-struct QTJAMBI_EXPORT AbstractMetaTypeInfoLocker{
+struct ACCESS_EXPORT AbstractMetaTypeInfoLocker{
 protected:
     AbstractMetaTypeInfoLocker(int index, const QMetaType& _metaType, const QtJambiUtils::QHashFunction& _hashFunction);
     ~AbstractMetaTypeInfoLocker();
@@ -838,8 +841,8 @@ typedef AbstractContainerAccess*(*AssociativeContainerAccessFactory)(const QMeta
                                                                       const QSharedPointer<AbstractContainerAccess>& valueNestedContainerAccess,
                                                                       PtrOwnerFunction valueOwnerFunction);
 
-QTJAMBI_EXPORT void registerAccessFactory(SequentialContainerType containerType, size_t align, size_t size, bool isStatic, SequentialContainerAccessFactory factory);
-QTJAMBI_EXPORT void registerAccessFactory(AssociativeContainerType containerType, size_t align1, size_t size1, size_t align2, size_t size2, AssociativeContainerAccessFactory factory);
+ACCESS_EXPORT void registerAccessFactory(SequentialContainerType containerType, size_t align, size_t size, bool isStatic, SequentialContainerAccessFactory factory);
+ACCESS_EXPORT void registerAccessFactory(AssociativeContainerType containerType, size_t align1, size_t size1, size_t align2, size_t size2, AssociativeContainerAccessFactory factory);
 
 template<template<typename> class Container, size_t align, size_t size, bool isStatic, bool = (align<=size && align <= alignof(std::max_align_t) && (!isStatic || size <= sizeof(void*))) >
 struct SequentialContainerAccessFactoryHelper{

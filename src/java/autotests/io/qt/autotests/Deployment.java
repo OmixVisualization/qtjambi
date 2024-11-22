@@ -33,6 +33,8 @@ import io.qt.core.QEvent;
 import io.qt.core.QFile;
 import io.qt.core.QIODevice;
 import io.qt.core.QObject;
+import io.qt.gui.QGuiApplication;
+import io.qt.gui.QIcon;
 import io.qt.widgets.QApplication;
 
 public class Deployment {
@@ -63,6 +65,7 @@ public class Deployment {
 class DeploymentFileWriter extends QObject {
 	static void main(String args[]) {
     	QApplication.initialize(args);
+    	QGuiApplication.setWindowIcon(new QIcon(":io/qt/autotests/icon.png"));
     	try {
 			if(QApplication.arguments().size()>=3) {
 		    	QObject object = new DeploymentFileWriter();

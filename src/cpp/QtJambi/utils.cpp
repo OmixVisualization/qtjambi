@@ -76,9 +76,12 @@ struct MetaTypeSmartPointerHelper<DummyType,DummyType>{
 }
 
 Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, gFunctionsLock, (QReadWriteLock::Recursive))
-typedef QHash<int,const QtPrivate::AbstractComparatorFunction *> ComparatorFunctions;
+QReadWriteLock* functionsLock(){
+    return gFunctionsLock();
+}
+typedef SecureContainer<QHash<int,const QtPrivate::AbstractComparatorFunction *>,QReadWriteLock,&functionsLock> ComparatorFunctions;
 Q_GLOBAL_STATIC(ComparatorFunctions, gComparatorFunctions)
-typedef QHash<int,const QtPrivate::AbstractDebugStreamFunction *> DebugStreamFunctions;
+typedef SecureContainer<QHash<int,const QtPrivate::AbstractDebugStreamFunction *>,QReadWriteLock,&functionsLock> DebugStreamFunctions;
 Q_GLOBAL_STATIC(DebugStreamFunctions, gDebugStreamFunctions)
 
 bool RegistryAPI::registerComparator(const QtPrivate::AbstractComparatorFunction *f, int typeId){
@@ -138,6 +141,31 @@ void qtjambi_unregister_converter(int from, int to){
 #endif
 }
 #endif
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
+typedef QVariant (*MoveConstruct)(QMetaType type, void *data);
+template<> inline MoveConstruct qvariant_cast<MoveConstruct>(const QVariant &)
+{
+    return QVariant::moveConstruct;
+}
+QVariant VariantUtility::createVariant(QMetaType type, void *data){
+    static MoveConstruct moveConstruct = qvariant_cast<MoveConstruct>(*reinterpret_cast<QVariant*>(1));
+    if(type.iface()->moveCtr)
+        return moveConstruct(type, data);
+    else
+        return QVariant(type, data);
+}
+#endif
+QVariant VariantUtility::createVariant(const QMetaType& type, const void *data){
+    return QVariant(type, data);
+}
+#else
+QVariant VariantUtility::createVariant(const QMetaType& type, const void *data){
+    return QVariant(type.id(), data);
+}
+#endif
+
 
 struct InternalToExternalConverterPrivate : QSharedData{
     void* data = nullptr;

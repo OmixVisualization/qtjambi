@@ -29,6 +29,8 @@
 ****************************************************************************/
 package io.qt.qtjambi.deployer;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.JarURLConnection;
@@ -40,7 +42,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Properties;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 import io.qt.QtLongEnumerator;
@@ -56,6 +60,33 @@ import io.qt.core.QScopeGuard;
  * @hidden
  */
 public class Main {
+	
+	static {
+		try {
+			String logLevel = System.getProperty("qtjambi.log-level", "");
+			switch(logLevel) {
+			case "ALL":
+			case "FINE":
+			case "FINEST":
+			case "SEVERE":
+			case "INFO":
+			case "WARNING":
+				ByteArrayOutputStream out = new ByteArrayOutputStream();
+				Properties properties = new Properties();
+				properties.setProperty("handlers", "java.util.logging.ConsoleHandler");
+				properties.setProperty("java.util.logging.ConsoleHandler.level", logLevel);
+				properties.setProperty(".level", logLevel);
+				properties.setProperty("io.qt.internal.level", logLevel);
+				properties.store(out, null);
+				LogManager.getLogManager().readConfiguration(new ByteArrayInputStream(out.toByteArray()));
+				break;
+			default:
+				break;
+			}
+		} catch (SecurityException | IOException e1) {
+			e1.printStackTrace();
+		}
+	}
 	
 	enum JVMDetectionModes implements QtLongEnumerator{
 	    AutoDetect,

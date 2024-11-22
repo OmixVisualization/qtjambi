@@ -33,22 +33,27 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import io.qt.core.QCoreApplication;
+import io.qt.core.QTimer;
 import io.qt.core.Qt;
 import io.qt.gui.QGuiApplication;
+import io.qt.gui.QIcon;
 import io.qt.qt3d.extras.Qt3DWindow;
+import io.qt.widgets.QApplication;
 
 public class TestInitializationQt3DExtras extends UnitTestInitializer {
     @Test
     public void initialize() {
     	Assert.assertTrue(io.qt.QtUtilities.initializePackage("io.qt.qt3d.extras"));
     	QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts);
+    	QCoreApplication.setApplicationName("QtJambiUnitTest");
     	QGuiApplication.initialize(new String[0]);
-    	Qt3DWindow window = new Qt3DWindow();
-    	window.show();
-    	QGuiApplication.processEvents();
-    	window.hide();
-    	QGuiApplication.processEvents();
-    	window.dispose();
+    	QGuiApplication.setWindowIcon(new QIcon(":io/qt/autotests/icon.png"));
+    	{
+	    	Qt3DWindow window = new Qt3DWindow();
+	    	window.show();
+	    	QTimer.singleShot(500, QApplication.instance(), QApplication::quit);
+	    	QApplication.exec();
+    	}
     	QGuiApplication.shutdown();
     }
 }

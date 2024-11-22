@@ -318,7 +318,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_initializeMultiSignal)
 {
     try{
         const QMetaObject* mo = CoreAPI::metaObjectForClass(env, declaringClass);
-        QVector<QtJambiMetaObject::SignalInfo> signalInfos = QtJambiMetaObject::signalInfos(mo, env->FromReflectedField(reflectedField));
+        QVector<QtJambiMetaObject::SignalInfo> signalInfos = QtJambiMetaObject::signalInfos(env, mo, env->FromReflectedField(reflectedField));
         if(!signalInfos.isEmpty()){
             jintArray methodIndexes = env->NewIntArray(jsize(signalInfos.size()));
             jlongArray metaObjects = env->NewLongArray(jsize(signalInfos.size()));
@@ -357,9 +357,9 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_signalInfo)
         const QMetaObject* mo = qtjambi_cast<const QMetaObject*>(env, _metaObject);
         QtJambiMetaObject::SignalInfo result;
         if(emitMethod){
-            result = QtJambiMetaObject::signalInfo(mo, env->FromReflectedField(field), env->FromReflectedMethod(emitMethod));
+            result = QtJambiMetaObject::signalInfo(env, mo, env->FromReflectedField(field), env->FromReflectedMethod(emitMethod));
         }else{
-            QVector<QtJambiMetaObject::SignalInfo> signalInfos = QtJambiMetaObject::signalInfos(mo, env->FromReflectedField(field));
+            QVector<QtJambiMetaObject::SignalInfo> signalInfos = QtJambiMetaObject::signalInfos(env, mo, env->FromReflectedField(field));
             for(const QtJambiMetaObject::SignalInfo& signalInfo : signalInfos){
                 // in case of default-arg signals take the smallest methodIndex. all subsequent methodIndexes are clones.
                 if(result.methodIndex==-1 || result.methodIndex>signalInfo.methodIndex){
@@ -482,10 +482,33 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_signalReceivers)
     return 0;
 }
 
+bool checkThreadOnSignalEmit(QObject* object);
+
+Q_LOGGING_CATEGORY(internalSignalCategory, "io.qtjambi.internal.signal")
+
+Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, gSignalEmitThreadCheckHandlerLock, (QReadWriteLock::Recursive));
+Q_GLOBAL_STATIC(JObjectWrapper, gSignalEmitThreadCheckHandler)
+
+void installSignalEmitThreadCheckHandler(JNIEnv *env, jobject handler){
+    QWriteLocker locker(gSignalEmitThreadCheckHandlerLock());
+    if(handler)
+        *gSignalEmitThreadCheckHandler = JObjectWrapper(env, handler);
+    else
+        gSignalEmitThreadCheckHandler->clear(env);
+}
+
+void clearInstallSignalEmitThreadCheckHandler(JNIEnv *env){
+    if(!gSignalEmitThreadCheckHandler.isDestroyed()){
+        QWriteLocker locker(gSignalEmitThreadCheckHandlerLock());
+        gSignalEmitThreadCheckHandler->clear(env);
+    }
+}
+
 extern "C" Q_DECL_EXPORT void JNICALL
 QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_emitNativeSignal)
 (JNIEnv *env,
  jclass,
+ jobject signalObject,
  QtJambiNativeID senderId,
  jint methodIndex,
  jlong senderMetaObjectId,
@@ -517,7 +540,23 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_emitNativeSignal)
                     }
                 }
                 if (!failed) {
-                    Q_ASSERT(method.isValid());
+                    if(!checkThreadOnSignalEmit(o)){
+                        jobject signalEmitThreadCheckHandler;
+                        {
+                            QReadLocker locker(gSignalEmitThreadCheckHandlerLock());
+                            signalEmitThreadCheckHandler = env->NewLocalRef(gSignalEmitThreadCheckHandler->object(env));
+                        }
+                        if(signalEmitThreadCheckHandler){
+                            jobject qobject = link->getJavaObjectLocalRef(env);
+                            if(!signalObject)
+                                signalObject = Java::QtCore::QMetaMethod::toSignal(env, qtjambi_cast<jobject>(env, method), qobject);
+                            Java::Runtime::BiConsumer::accept(env, signalEmitThreadCheckHandler, qobject, signalObject);
+                        }else{
+                            qCWarning(internalSignalCategory).noquote().nospace() << "Emitting signal "
+                                                                                  << metaObject->className() << "::" << method.methodSignature() << " in thread " << QThread::currentThread()
+                                                                                  << " on object " << o << " with different thread affinity " << o->thread();
+                        }
+                    }
                     if(defaults==0){
                         int signalIndex = QMetaObjectPrivate::signalIndex(method);
                         Q_ASSERT(signalIndex>=0);
@@ -537,10 +576,11 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_emitNativeSignal)
 
 struct NativeSlotObject : public QtPrivate::QSlotObjectBase
 {
-    NativeSlotObject(JNIEnv * env, const QSharedPointer<QtJambiLink>& link, const QMetaMethod& signal, jobject connection, jint argumentCount, jint connectionType, bool nothrow, QObject* deletable = nullptr);
+    NativeSlotObject(JNIEnv * env, const QSharedPointer<QtJambiLink>& link, bool noJNIInitialization, const QMetaMethod& signal, jobject connection, jint argumentCount, jint connectionType, bool nothrow, QObject* deletable = nullptr);
     ~NativeSlotObject();
     int* types();
     static void impl(int which, QSlotObjectBase *this_, QObject *r, void **a, bool *ret);
+    bool m_noJNIInitialization;
     QMetaMethod m_signal;
     QWeakPointer<QtJambiLink> m_link;
     JObjectWrapper m_connection;
@@ -559,7 +599,8 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_connectNative)
         NativeSlotObject *slotObj;
         QObject* sender = senderLink->qobject();
         Q_ASSERT(senderMetaObjectId);
-        QMetaMethod qt_signalMethod = reinterpret_cast<const QMetaObject*>(senderMetaObjectId)->method(signal);
+        const QMetaObject* senderMetaObject = reinterpret_cast<const QMetaObject*>(senderMetaObjectId);
+        QMetaMethod qt_signalMethod = senderMetaObject->method(signal);
         QObject* deletable = nullptr;
         QObject* context = QtJambiAPI::objectFromNativeId<QObject>(contextNativeId);
         int reducedConnectionType = (connectionType & ~Qt::UniqueConnection)
@@ -588,7 +629,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_connectNative)
         if(!context)
             context = sender;
         int signalIndex = QMetaObjectPrivate::signalIndex(qt_signalMethod);
-        slotObj = new NativeSlotObject(env, senderLink, qt_signalMethod, connection, argumentCount, connectionType, signalIndex==0, deletable);
+        slotObj = new NativeSlotObject(env, senderLink, senderMetaObject==&QThread::staticMetaObject && qt_signalMethod.name()=="finished", qt_signalMethod, connection, argumentCount, connectionType, signalIndex==0, deletable);
         QMetaObject::Connection c = QObjectPrivate::connectImpl(sender,
                                                                 signalIndex,
                                                                 context,
@@ -655,7 +696,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_disconnectNative__JIJL
                                 && c->isSlotObject
                                 && SLOT_OBJECT_CAST(c->slotObj)->isImpl(&NativeSlotObject::impl)){
                                 NativeSlotObject* slotObj = static_cast<NativeSlotObject*>(c->slotObj);
-                                if(Java::Runtime::Predicate::test(env, predicate, slotObj->m_connection.object())){
+                                if(Java::Runtime::Predicate::test(env, predicate, slotObj->m_connection.object(env))){
                                     list << *reinterpret_cast<QMetaObject::Connection*>(&c);
                                 }
                             }
@@ -770,6 +811,21 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_signalSignature)
     return nullptr;
 }
 
+extern "C" Q_DECL_EXPORT jstring JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_fullSignalSignature)
+    (JNIEnv * env, jclass, jint signal, jlong senderMetaObjectId)
+{
+    try{
+        if(const QMetaObject* mo = reinterpret_cast<const QMetaObject*>(senderMetaObjectId)){
+            QMetaMethod signalMethod = mo->method(signal);
+            return signalMethod.isValid() ? env->NewStringUTF(QStringLiteral(u"%1::%2").arg(mo->className(), signalMethod.methodSignature()).toUtf8()) : nullptr;
+        }
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+    return nullptr;
+}
+
 jobject invokeReflectiveMethod(JNIEnv *env,
                             jobject receiver,
                             jmethodID methodId,
@@ -862,8 +918,9 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_invokeReflectiveMethod
     return nullptr;
 }
 
-NativeSlotObject::NativeSlotObject(JNIEnv * env, const QSharedPointer<QtJambiLink>& link, const QMetaMethod& signal, jobject connection, jint argumentCount, jint connectionType, bool nothrow, QObject* deletable)
+NativeSlotObject::NativeSlotObject(JNIEnv * env, const QSharedPointer<QtJambiLink>& link, bool noJNIInitialization, const QMetaMethod& signal, jobject connection, jint argumentCount, jint connectionType, bool nothrow, QObject* deletable)
     : QSlotObjectBase(&NativeSlotObject::impl),
+      m_noJNIInitialization(noJNIInitialization),
       m_signal(signal),
       m_link(link),
       m_connection(env, connection),
@@ -897,7 +954,7 @@ NativeSlotObject::~NativeSlotObject()
     if(m_connection){
         if(JniEnvironment env{200}){
             try{
-                Java::QtJambi::SignalUtility$AbstractConnection::onDisconnect(env,m_connection.object());
+                Java::QtJambi::SignalUtility$AbstractConnection::onDisconnect(env,m_connection.object(env));
                 m_connection.clear(env);
             } catch (const JavaException& exn) {
                 exn.report(env);
@@ -912,6 +969,10 @@ NativeSlotObject::~NativeSlotObject()
 
 int* NativeSlotObject::types() { return m_types; }
 
+struct SlotJniEnvironment : JniEnvironment{
+    SlotJniEnvironment(bool initializeJavaThread, int capacity) : JniEnvironment(initializeJavaThread, capacity){}
+};
+
 void NativeSlotObject::impl(int which, QSlotObjectBase *this_, QObject *, void **a, bool *ret){
     switch (which) {
     case Destroy:
@@ -921,7 +982,7 @@ void NativeSlotObject::impl(int which, QSlotObjectBase *this_, QObject *, void *
             NativeSlotObject* _this = static_cast<NativeSlotObject*>(this_);
             QSharedPointer<QtJambiLink> link = _this->m_link.toStrongRef();
             if(link && link->isQObject()){
-                if(JniEnvironment env{300}){
+                if(SlotJniEnvironment env{!_this->m_noJNIInitialization, 300}){
                     QtJambiExceptionHandler __qt_exnhandler;
                     try{
                         QtJambiLinkScope scope(link);
@@ -944,15 +1005,22 @@ void NativeSlotObject::impl(int which, QSlotObjectBase *this_, QObject *, void *
                                     env->SetObjectArrayElement(args, i, converted_arguments[i].l);
                                     JavaException::check(env QTJAMBI_STACKTRACEINFO );
                                 }
-                                Java::QtJambi::SignalUtility$AbstractConnection::invoke(env,_this->m_connection.object(), args);
+                                Java::QtJambi::SignalUtility$AbstractConnection::invoke(env,_this->m_connection.object(env), args);
                             } else {
-                                qCWarning(DebugAPI::internalCategory, "SlotObject::CallSignal: Failed to convert arguments");
+                                qCWarning(DebugAPI::internalCategory) << "SlotObject::CallSignal: Failed to convert arguments";
                             }
                         }else{
-                            qCWarning(DebugAPI::internalCategory, )<< "SlotObject::CallSignal: Failed to convert method types for signal " << _this->m_signal.methodSignature();
+                            qCWarning(DebugAPI::internalCategory) << "SlotObject::CallSignal: Failed to convert method types for signal " << _this->m_signal.methodSignature();
                         }
                     } catch (const JavaException& exn) {
-                        if(_this->m_nothrow){
+                        if(noExceptionForwarding()){
+                            QtJambiExceptionBlocker __blocker;
+                            {
+                                QtJambiExceptionHandler __handler;
+                                __handler.handle(env, exn, "signal connection");
+                            }
+                            __blocker.release(env);
+                        }else if(_this->m_nothrow){
                             exn.report(env);
                         }else{
                             //QString message("connection to %1::%2");

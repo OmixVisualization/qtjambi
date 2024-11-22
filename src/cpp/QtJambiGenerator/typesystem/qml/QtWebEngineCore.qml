@@ -52,7 +52,7 @@ TypeSystem{
                       "    %out = [wrapper](%TYPE value){\n"+
                       "                        if(JniEnvironment env{200}){\n"+
                       "                            jobject _value = qtjambi_cast<jobject>(env, value);\n"+
-                      "                            Java::Runtime::Consumer::accept(env, wrapper.object(), _value);\n"+
+                      "                            Java::Runtime::Consumer::accept(env, wrapper.object(env), _value);\n"+
                       "                        }\n"+
                       "                    };\n"+
                       "}"}
@@ -209,7 +209,7 @@ TypeSystem{
                                   "    %out = [wrapper](const QWebEngineCookieStore::FilterRequest & value) -> bool {\n"+
                                   "                        if(JniEnvironment env{200}){\n"+
                                   "                            jobject _value = qtjambi_cast<jobject>(env, value);\n"+
-                                  "                            return Java::Runtime::Predicate::test(env, wrapper.object(), _value);\n"+
+                                  "                            return Java::Runtime::Predicate::test(env, wrapper.object(env), _value);\n"+
                                   "                        }\n"+
                                   "                    return false;\n"+
                                   "                };\n"+
@@ -710,7 +710,7 @@ TypeSystem{
                                   "                        if(JniEnvironment env{200}){\n"+
                                   "                            QtJambiScope __qtjambi_scope;\n"+
                                   "                            jobject _value = qtjambi_cast<jobject>(env, __qtjambi_scope, value);\n"+
-                                  "                            Java::Runtime::Consumer::accept(env, wrapper.object(), _value);\n"+
+                                  "                            Java::Runtime::Consumer::accept(env, wrapper.object(env), _value);\n"+
                                   "                        }\n"+
                                   "                    };\n"+
                                   "}"}
@@ -739,7 +739,7 @@ TypeSystem{
                                   "                        if(JniEnvironment env{200}){\n"+
                                   "                            jobject _icon = qtjambi_cast<jobject>(env, icon);\n"+
                                   "                            jobject _url = qtjambi_cast<jobject>(env, url);\n"+
-                                  "                            Java::Runtime::BiConsumer::accept(env, wrapper.object(), _icon, _url);\n"+
+                                  "                            Java::Runtime::BiConsumer::accept(env, wrapper.object(env), _icon, _url);\n"+
                                   "                        }\n"+
                                   "                    };\n"+
                                   "}"}
@@ -766,7 +766,7 @@ TypeSystem{
                                   "                            jobject _icon = qtjambi_cast<jobject>(env, icon);\n"+
                                   "                            jobject _url = qtjambi_cast<jobject>(env, url);\n"+
                                   "                            jobject _url2 = qtjambi_cast<jobject>(env, url2);\n"+
-                                  "                            Java::QtWebEngineCore::QWebEngineProfile$IconAvailableCallback::accept(env, wrapper.object(), _icon, _url, _url2);\n"+
+                                  "                            Java::QtWebEngineCore::QWebEngineProfile$IconAvailableCallback::accept(env, wrapper.object(env), _icon, _url, _url2);\n"+
                                   "                        }\n"+
                                   "                    };\n"+
                                   "}"}
@@ -1158,4 +1158,5 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/webengine/core,QWebEngineProfile$IconAvail
     SuppressedWarning{text: "WARNING(CppImplGenerator) :: Value type 'QWebEngineFullScreenRequest' is missing a default constructor. If possible, use CustomConstructor{} element to specify default construction."}
     SuppressedWarning{text: "WARNING(CppImplGenerator) :: Value type 'QWebEngineFileSystemAccessRequest' is missing a default constructor. If possible, use CustomConstructor{} element to specify default construction."}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Final class 'QWebEngineDownloadRequest' set to non-final, as it is extended by other classes"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping signal 'QWebEnginePage::fileSystemAccessRequested(QWebEngineFileSystemAccessRequest) -> void', unmatched parameter type 'QWebEngineFileSystemAccessRequest'"; since: 6; until: 6.2}
 }

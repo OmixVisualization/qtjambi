@@ -157,9 +157,21 @@ private:
     Q_DISABLE_COPY_MOVE(LibraryFile);
 };
 
+Q_GLOBAL_STATIC(QRecursiveMutex, gMutex)
+QRecursiveMutex* mutex(){
+    return gMutex();
+}
+
 struct Libraries{
     Libraries():dir(nullptr){}
     ~Libraries(){
+        QHash<QString,QVector<QExplicitlySharedDataPointer<LibraryFile>>> libraries;
+        QHash<quintptr,QExplicitlySharedDataPointer<LibraryFile>> filesByFunction;
+        {
+            QMutexLocker locker(gMutex());
+            this->libraries.swap(libraries);
+            this->filesByFunction.swap(filesByFunction);
+        }
         filesByFunction.clear();
         libraries.clear();
     }
@@ -225,10 +237,9 @@ private:
     friend void unregister_file_by_function(QFunctionPointer fn);
 };
 
-typedef QHash<void*,void(*)(void*)> FunctionPointerCleanupHash;
+typedef SecureContainer<QHash<void*,void(*)(void*)>,QRecursiveMutex,&mutex> FunctionPointerCleanupHash;
 Q_GLOBAL_STATIC(FunctionPointerCleanupHash, gFunctionPointerCleanups)
 Q_GLOBAL_STATIC(Libraries, gLibraries)
-Q_GLOBAL_STATIC(QRecursiveMutex, gMutex)
 
 void register_file_by_function(LibraryFile* libFile, QFunctionPointer fn){
     if(!gLibraries.isDestroyed()){

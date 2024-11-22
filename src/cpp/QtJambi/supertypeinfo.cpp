@@ -38,8 +38,11 @@
 #include "supertypeinfo_p.h"
 #include "registryutil_p.h"
 
-typedef QHash<jint,SuperTypeInfos> SuperTypeInfosMap;
 Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, gSuperTypeInfosLock, (QReadWriteLock::Recursive))
+QReadWriteLock* superTypeInfosLock(){
+    return gSuperTypeInfosLock();
+}
+typedef SecureContainer<QHash<jint,SuperTypeInfos>,QReadWriteLock,&superTypeInfosLock> SuperTypeInfosMap;
 Q_GLOBAL_STATIC(SuperTypeInfosMap, gSuperTypeInfosMap)
 
 void resolveClasses(JNIEnv *env, QString signature, QList<jclass> &argumentTypes){
@@ -97,7 +100,7 @@ SuperTypeInfo::SuperTypeInfo(  const char* _qtName,
                 bool _hasShell,
                 size_t _offset,
                 const QVector<ResolvedConstructorInfo>& _constructorInfos,
-                Destructor _destructor,
+                RegistryAPI::DestructorFn _destructor,
                 PtrOwnerFunction _ownerFunction,
                 const std::type_info& typeId,
                 char const* _iid)
@@ -242,7 +245,7 @@ const QVector<ResolvedConstructorInfo>& SuperTypeInfo::constructorInfos() const 
     return m_constructorInfos;
 }
 
-Destructor SuperTypeInfo::destructor() const {
+RegistryAPI::DestructorFn SuperTypeInfo::destructor() const {
     return m_destructor;
 }
 
@@ -277,6 +280,22 @@ SuperTypeInfos& SuperTypeInfos::operator=(SuperTypeInfos&& other){
     return *this;
 }
 
+void SuperTypeInfos::assign(const SuperTypeInfos& other){
+    if(this!=&other){
+        QVector<SuperTypeInfo>& _this = *this;
+        _this = std::move(other);
+        m_interfaceInfos.assign(other.m_interfaceInfos);
+    }
+}
+
+void SuperTypeInfos::assign(JNIEnv *env, SuperTypeInfos&& other){
+    if(this!=&other){
+        QVector<SuperTypeInfo>& _this = *this;
+        _this = std::move(other);
+        m_interfaceInfos.assign(env, std::move(other.m_interfaceInfos));
+    }
+}
+
 SuperTypeInfos::~SuperTypeInfos(){
 }
 
@@ -285,7 +304,7 @@ jobject SuperTypeInfos::interfaceInfos() const{
 }
 
 void clearSuperTypesAtShutdown(JNIEnv *env){
-    SuperTypeInfosMap superTypeInfosMap;
+    QHash<jint,SuperTypeInfos> superTypeInfosMap;
     {
         QWriteLocker locker(gSuperTypeInfosLock());
         Q_UNUSED(locker)
@@ -329,13 +348,13 @@ SuperTypeInfos SuperTypeInfos::fromClass(JNIEnv *env, jclass clazz)
                         hasShell = false;
                         size = getValueSize(*typeId);
                     }
-                    const QVector<const ConstructorInfo>* constructorInfos = registeredConstructorInfos(*typeId);
-                    Destructor destructor = registeredDestructor(*typeId);
+                    const QVector<const RegistryAPI::ConstructorInfo>* constructorInfos = registeredConstructorInfos(*typeId);
+                    RegistryAPI::DestructorFn destructor = registeredDestructor(*typeId);
                     QVector<ResolvedConstructorInfo> resolvedConstructorInfos;
                     if(constructorInfos && destructor){
                         resolvedConstructorInfos.resize(constructorInfos->size());
                         for (int i=0; i<constructorInfos->size(); ++i) {
-                            const ConstructorInfo& info = constructorInfos->at(i);
+                            const RegistryAPI::ConstructorInfo& info = constructorInfos->at(i);
                             resolvedConstructorInfos[i].constructorFunction = info.constructorFunction;
                             if(info.signature){
                                 resolveClasses(env, QLatin1String(info.signature), resolvedConstructorInfos[i].argumentTypes);
@@ -367,13 +386,13 @@ SuperTypeInfos SuperTypeInfos::fromClass(JNIEnv *env, jclass clazz)
                             hasShell = false;
                             size = getValueSize(*typeId);
                         }
-                        const QVector<const ConstructorInfo>* constructorInfos = registeredConstructorInfos(*typeId);
-                        Destructor destructor = registeredDestructor(*typeId);
+                        const QVector<const RegistryAPI::ConstructorInfo>* constructorInfos = registeredConstructorInfos(*typeId);
+                        RegistryAPI::DestructorFn destructor = registeredDestructor(*typeId);
                         if(qtName && size>0 && constructorInfos && !constructorInfos->isEmpty() && destructor){
                             Java::QtJambi::ClassAnalyzerUtility::checkImplementation(env, interfaceClass, clazz);
                             QVector<ResolvedConstructorInfo> resolvedConstructorInfos(constructorInfos->size());
                             for (int i=0; i<constructorInfos->size(); ++i) {
-                                const ConstructorInfo& info = constructorInfos->at(i);
+                                const RegistryAPI::ConstructorInfo& info = constructorInfos->at(i);
                                 resolvedConstructorInfos[i].constructorFunction = info.constructorFunction;
                                 if(info.signature){
                                     resolveClasses(env, QLatin1String(info.signature), resolvedConstructorInfos[i].argumentTypes);
@@ -395,7 +414,7 @@ SuperTypeInfos SuperTypeInfos::fromClass(JNIEnv *env, jclass clazz)
             Q_UNUSED(locker)
             if(gSuperTypeInfosMap->contains(hashCode)) // if it has been inserted meanwhile by other thread
                 return (*gSuperTypeInfosMap)[hashCode];
-            (*gSuperTypeInfosMap)[hashCode] = std::move(superTypeInfos);
+            (*gSuperTypeInfosMap)[hashCode].assign(env, std::move(superTypeInfos));
             return (*gSuperTypeInfosMap)[hashCode];
         }
     }

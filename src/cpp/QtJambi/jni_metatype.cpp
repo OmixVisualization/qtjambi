@@ -397,7 +397,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_MetaTypeUtility_registerConverter)
                     if(parameter1.convertInternalToExternal(env, &scope, src, jv, true)){
                         jobject result{nullptr};
                         try{
-                            result = Java::Runtime::Function::apply(env, converter.object(), jv.l);
+                            result = Java::Runtime::Function::apply(env, converter.object(env), jv.l);
                         }catch(const JavaException&){
                             return false;
                         }

@@ -36,6 +36,11 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import io.qt.NonNull;
+import io.qt.QtPropertyReader;
+import io.qt.QtPropertyWriter;
+import io.qt.QtUtilities;
+import io.qt.core.QMetaMethod;
 import io.qt.core.QMetaObject;
 import io.qt.core.QObject;
 import io.qt.core.QThread;
@@ -100,6 +105,40 @@ public class TestExceptions2 extends ApplicationInitializer {
 	    	assertEquals("Dialog exit with unexpected result.", QDialog.DialogCode.Accepted.value(), code);
     	}finally {
     		receiver.dispose();
+    	}
+    }
+    
+    @Test
+    public void testInhibirtedExceptiom() {
+    	QtUtilities.setNoExceptionForwardingFromVirtualCallsEnabled(true);
+    	try {
+    		QObject object = new QObject() {
+				@Override
+				protected void connectNotify(@NonNull QMetaMethod signal) {
+					throw new RuntimeException("Connection Exception");
+				}
+    		};
+    		object.objectNameChanged.connect(name->{});
+    	}finally {
+        	QtUtilities.setNoExceptionForwardingFromVirtualCallsEnabled(false);
+    	}
+    	QtUtilities.setNoExceptionForwardingFromMetaCallsEnabled(true);
+    	try {
+    		QObject object = new QObject() {
+				@QtPropertyReader
+				public int number() {
+					throw new RuntimeException("Property Getter Exception");
+				}
+				@QtPropertyWriter
+				public void setNumber(int number) {
+					throw new RuntimeException("Property Setter Exception");
+				}
+    		};
+    		Object result = object.property("number");
+    		assertEquals("Number expected to be 0.", 0, result);
+    		object.setProperty("number", 5);
+    	}finally {
+        	QtUtilities.setNoExceptionForwardingFromMetaCallsEnabled(false);
     	}
     }
 

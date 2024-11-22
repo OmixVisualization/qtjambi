@@ -42,7 +42,7 @@ public class TestReferenceCountingQHashNested extends ApplicationInitializer {
 					return 0;
 	    		};
 	    		QList<QEasingCurve.EasingFunction> list = QList.of(object);
-	    		General.internalAccess.setJavaOwnership(object);
+//	    		General.internalAccess.setJavaOwnership(object);
 	    		container.put(""+i, list);
 	    		General.internalAccess.registerCleaner(object, counter::incrementAndGet);
 	    		Assert.assertTrue(General.internalAccess.isJavaOwnership(list));

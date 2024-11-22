@@ -96,7 +96,7 @@ void qtjambi_qRegisterRemoteObjectsClient(JNIEnv *env, jclass type, const QStrin
         [_type,constructor](QObject * o) -> ClientIoDevice*{
         if(JniEnvironment env{300}){
                 jobject parent = QtJambiAPI::convertQObjectToJavaObject(env, o);
-                jobject newObject = env->NewObject(jclass(_type.object()), constructor, parent);
+                jobject newObject = env->NewObject(jclass(_type.object(env)), constructor, parent);
                 JavaException::check(env QTJAMBI_STACKTRACEINFO );
                 return reinterpret_cast<ClientIoDevice*>(QtJambiAPI::convertJavaObjectToQObject(env, newObject));
             }
@@ -121,7 +121,7 @@ void qtjambi_qRegisterRemoteObjectsServer(JNIEnv *env, jclass type, const QStrin
         [_type,constructor](QObject * o) -> QConnectionAbstractServer*{
         if(JniEnvironment env{300}){
                 jobject parent = QtJambiAPI::convertQObjectToJavaObject(env, o);
-                jobject newObject = env->NewObject(jclass(_type.object()), constructor, parent);
+                jobject newObject = env->NewObject(jclass(_type.object(env)), constructor, parent);
                 JavaException::check(env QTJAMBI_STACKTRACEINFO );
                 return reinterpret_cast<QConnectionAbstractServer*>(QtJambiAPI::convertJavaObjectToQObject(env, newObject));
             }

@@ -50,24 +50,27 @@ public:
     struct Data{
         jweak m_jthreadObject;
         QPointer<QThread> m_thread;
-        bool m_detach;
+        Qt::HANDLE m_threadId;
+        bool m_isAdoptedQThread;
         int m_associationHashcode;
         QWeakPointer<QtJambiLink> m_wlink;
         QList<QtJambiUtils::Runnable> m_finalActions;
         ~Data();
     };
 
-    typedef void (*CleanupFunction)(Data*);
-    static void adoptThread(JNIEnv *env, jobject jthreadObject, QThread* thread, bool detach, jint associationHashcode, QWeakPointer<QtJambiLink>&& wlink, CleanupFunction _cleaner = nullptr);
-    static void detach();
+    typedef void (*CleanupFunction)(JNIEnv *env, Data*);
+    static void adoptThread(JNIEnv *env, jobject jthreadObject, QThread* thread, jint associationHashcode, QWeakPointer<QtJambiLink>&& wlink, CleanupFunction _cleaner = nullptr);
+    static void detach(JNIEnv *env);
     static bool isAlive();
-    ~EventDispatcherCheck();
 private:
+    ~EventDispatcherCheck();
+    void finalize(JNIEnv *env);
     static QThreadStorage<EventDispatcherCheckPointer> Instance;
     EventDispatcherCheck(Data& data, CleanupFunction _cleaner);
     Data* m_data;
     QMutex m_mutex;
     CleanupFunction cleaner;
+    friend EventDispatcherCheckPointer;
 };
 
 class QThreadUserData : public QtJambiObjectData
@@ -90,14 +93,14 @@ public:
     inline void setDaemon(bool isDaemon) { m_isDaemon = isDaemon; }
     inline QByteArray getName() const { return m_name; }
     inline void setName(const QByteArray& name) { m_name = name; }
-    inline jobject getThreadGroup() const { return m_threadGroup.object(); }
-    inline jobject getUncaughtExceptionHandler() const { return m_uncaughtExceptionHandler.object(); }
-    inline void setUncaughtExceptionHandler(JNIEnv *env, jobject uncaughtExceptionHandler) { m_uncaughtExceptionHandler = JObjectWrapper(env, uncaughtExceptionHandler); }
-    inline jobject getContextClassLoader() const { return m_contextClassLoader.object(); }
-    inline void setContextClassLoader(JNIEnv *env, jobject contextClassLoader) { m_contextClassLoader = JObjectWrapper(env, contextClassLoader); }
-    inline void clearContextClassLoader(JNIEnv *env) { m_contextClassLoader.clear(env); }
-    inline void clearThreadGroup(JNIEnv *env){ m_threadGroup.clear(env); }
-    inline void clearUncaughtExceptionHandler(JNIEnv *env){ m_uncaughtExceptionHandler.clear(env); }
+    jobject getThreadGroup() const;
+    jobject getUncaughtExceptionHandler() const;
+    void setUncaughtExceptionHandler(JNIEnv *env, jobject uncaughtExceptionHandler);
+    jobject getContextClassLoader() const;
+    void setContextClassLoader(JNIEnv *env, jobject contextClassLoader);
+    void clearContextClassLoader(JNIEnv *env);
+    void clearThreadGroup(JNIEnv *env);
+    void clearUncaughtExceptionHandler(JNIEnv *env);
     inline bool purgeOnExit() const {return m_threadType!=ProcessMainThread;}
     inline QObject* threadDeleter() const {return m_threadDeleter.get();}
     inline ThreadType threadType() const { return m_threadType; }
@@ -107,17 +110,20 @@ public:
         bool initRequired;
     };
     static Result ensureThreadUserDataLocked(QThread* thread);
+#if QT_VERSION < QT_VERSION_CHECK(6, 8, 0)
+    static QBasicAtomicPointer<void> theMainThreadId;
+#endif
 private:
     void cleanup(bool isInDestructor);
     QSharedPointer<QObject> m_threadDeleter;
     QList<QPointer<QObject>> m_objectsForDeletion;
     QList<QtJambiUtils::Runnable>* m_finalActions;
     QMutex* m_mutex;
-    JObjectWrapper m_threadGroup;
+    jobject m_threadGroup;
     bool m_isDaemon;
     QByteArray m_name;
-    JObjectWrapper m_uncaughtExceptionHandler;
-    JObjectWrapper m_contextClassLoader;
+    jobject m_uncaughtExceptionHandler;
+    jobject m_contextClassLoader;
     QMetaObject::Connection m_finishedConnection;
 
     ThreadType m_threadType;

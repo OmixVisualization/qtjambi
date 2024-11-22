@@ -42,13 +42,16 @@ struct SwitchTable{
     bool isSwitchTable;
 };
 
-typedef QHash<jint,jfieldID> EnumClassValuesHash;
-typedef QHash<jint,bool> EnumClassExtensibleHash;
-typedef QHash<QString,QList<SwitchTable>> SwitchTableFieldHash;
+Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, gEnumLock, (QReadWriteLock::Recursive))
+QReadWriteLock* enumLock(){
+    return gEnumLock();
+}
+typedef SecureContainer<QHash<jint,jfieldID>,QReadWriteLock,&enumLock> EnumClassValuesHash;
+typedef SecureContainer<QHash<jint,bool>,QReadWriteLock,&enumLock> EnumClassExtensibleHash;
+typedef SecureContainer<QHash<QString,QList<SwitchTable>>,QReadWriteLock,&enumLock> SwitchTableFieldHash;
 Q_GLOBAL_STATIC(EnumClassValuesHash, enumClassValuesFields)
 Q_GLOBAL_STATIC(EnumClassExtensibleHash, enumClassExtensible)
 Q_GLOBAL_STATIC(SwitchTableFieldHash, gSwitchTableFields)
-Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, gEnumLock, (QReadWriteLock::Recursive))
 
 bool isClassExtensible(JNIEnv *env, jint hashCode, jclass enumClass){
     {

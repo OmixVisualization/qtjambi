@@ -34,7 +34,6 @@ import java.util.*;
 import java.util.function.*;
 
 import io.qt.*;
-import io.qt.core.QtJambi_LibraryUtilities;
 
 /**
  * <p>Java wrapper for Qt class <a href="https://doc.qt.io/qt/qmap.html"><code>QMap</code></a></p>

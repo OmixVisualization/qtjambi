@@ -33,6 +33,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -42,7 +46,9 @@ import io.qt.QtInvokable;
 import io.qt.QtPropertyReader;
 import io.qt.QtPropertyWriter;
 import io.qt.autotests.generated.SignalsAndSlots;
+import io.qt.core.QAbstractItemModel;
 import io.qt.core.QCoreApplication;
+import io.qt.core.QList;
 import io.qt.core.QMetaEnum;
 import io.qt.core.QMetaMethod;
 import io.qt.core.QMetaObject;
@@ -50,6 +56,7 @@ import io.qt.core.QMetaProperty;
 import io.qt.core.QObject;
 import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QPair;
+import io.qt.core.QPersistentModelIndex;
 import io.qt.core.QStringListModel;
 import io.qt.core.QThread;
 import io.qt.core.Qt;
@@ -421,6 +428,109 @@ public class TestMetaObject extends ApplicationInitializer {
     	thread.join(20000);
     	QCoreApplication.processEvents();
     	QCoreApplication.sendPostedEvents();
+    }
+    
+    @Test public void testInvokeDefaultSignal() {
+    	class StringListModel extends QStringListModel{
+    	    public final Signal2Default2<List<QPersistentModelIndex>, QAbstractItemModel.LayoutChangeHint> layoutChanged2 = 
+    	    		new Signal2Default2<>(()->java.util.Collections.singletonList(new QPersistentModelIndex()), ()->QAbstractItemModel.LayoutChangeHint.VerticalSortHint);
+    	}
+    	StringListModel model = new StringListModel();
+    	model.setStringList(Arrays.asList("A", "B", "C"));
+    	AtomicReference<List<QPersistentModelIndex>> receivedIndexes = new AtomicReference<>();
+    	AtomicReference<QAbstractItemModel.LayoutChangeHint> receivedHints = new AtomicReference<>();
+    	model.layoutChanged.connect((indexes,hints)->{
+    		receivedIndexes.set(indexes);
+    		receivedHints.set(hints);
+    	});
+    	model.layoutChanged2.connect((indexes,hints)->{
+    		receivedIndexes.set(indexes);
+    		receivedHints.set(hints);
+    	});
+    	
+    	receivedIndexes.set(null);
+		receivedHints.set(null);
+    	QMetaObject.invokeMethod(model.layoutChanged);
+    	Assert.assertEquals(QAbstractItemModel.LayoutChangeHint.NoLayoutChangeHint, receivedHints.get());
+    	Assert.assertEquals(java.util.Collections.emptyList(), receivedIndexes.get());
+    	receivedIndexes.set(null);
+		receivedHints.set(null);
+		QList<QPersistentModelIndex> list = QList.of(new QPersistentModelIndex(model.index(0, 0)));
+    	QMetaObject.invokeMethod(model.layoutChanged, list);
+    	Assert.assertEquals(QAbstractItemModel.LayoutChangeHint.NoLayoutChangeHint, receivedHints.get());
+    	Assert.assertEquals(list, receivedIndexes.get());
+    	receivedIndexes.set(null);
+		receivedHints.set(null);
+		list = QList.of(new QPersistentModelIndex(model.index(0, 0)), new QPersistentModelIndex(model.index(0, 1)));
+    	QMetaObject.invokeMethod(model.layoutChanged, list, QAbstractItemModel.LayoutChangeHint.HorizontalSortHint);
+    	Assert.assertEquals(QAbstractItemModel.LayoutChangeHint.HorizontalSortHint, receivedHints.get());
+    	Assert.assertEquals(list, receivedIndexes.get());
+    	
+    	receivedIndexes.set(null);
+		receivedHints.set(null);
+		QMetaMethod layoutChanged = model.metaObject().method("layoutChanged()");
+		Assert.assertTrue(layoutChanged.isValid());
+		layoutChanged.invoke(model);
+    	Assert.assertEquals(QAbstractItemModel.LayoutChangeHint.NoLayoutChangeHint, receivedHints.get());
+    	Assert.assertEquals(java.util.Collections.emptyList(), receivedIndexes.get());
+    	receivedIndexes.set(null);
+		receivedHints.set(null);
+		layoutChanged = model.metaObject().method("layoutChanged(QList<QPersistentModelIndex>)");
+		Assert.assertTrue(layoutChanged.isValid());
+		list = QList.of(new QPersistentModelIndex(model.index(0, 0)));
+		layoutChanged.invoke(model, list);
+    	Assert.assertEquals(QAbstractItemModel.LayoutChangeHint.NoLayoutChangeHint, receivedHints.get());
+    	Assert.assertEquals(list, receivedIndexes.get());
+    	receivedIndexes.set(null);
+		receivedHints.set(null);
+		layoutChanged = model.metaObject().method("layoutChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)");
+		Assert.assertTrue(layoutChanged.isValid());
+		list = QList.of(new QPersistentModelIndex(model.index(0, 0)), new QPersistentModelIndex(model.index(0, 1)));
+		layoutChanged.invoke(model, list, QAbstractItemModel.LayoutChangeHint.HorizontalSortHint);
+    	Assert.assertEquals(QAbstractItemModel.LayoutChangeHint.HorizontalSortHint, receivedHints.get());
+    	Assert.assertEquals(list, receivedIndexes.get());
+    	
+    	receivedIndexes.set(null);
+		receivedHints.set(null);
+    	QMetaObject.invokeMethod(model.layoutChanged2);
+    	Assert.assertEquals(QAbstractItemModel.LayoutChangeHint.VerticalSortHint, receivedHints.get());
+    	Assert.assertEquals(java.util.Collections.singletonList(new QPersistentModelIndex()), receivedIndexes.get());
+    	receivedIndexes.set(null);
+		receivedHints.set(null);
+		list = QList.of(new QPersistentModelIndex(model.index(0, 0)));
+    	QMetaObject.invokeMethod(model.layoutChanged2, list);
+    	Assert.assertEquals(QAbstractItemModel.LayoutChangeHint.VerticalSortHint, receivedHints.get());
+    	Assert.assertEquals(list, receivedIndexes.get());
+    	receivedIndexes.set(null);
+		receivedHints.set(null);
+		list = QList.of(new QPersistentModelIndex(model.index(0, 0)), new QPersistentModelIndex(model.index(0, 1)));
+    	QMetaObject.invokeMethod(model.layoutChanged2, list, QAbstractItemModel.LayoutChangeHint.HorizontalSortHint);
+    	Assert.assertEquals(QAbstractItemModel.LayoutChangeHint.HorizontalSortHint, receivedHints.get());
+    	Assert.assertEquals(list, receivedIndexes.get());
+    	
+    	receivedIndexes.set(null);
+		receivedHints.set(null);
+		QMetaMethod layoutChanged2 = model.metaObject().method("layoutChanged2()");
+		Assert.assertTrue(layoutChanged2.isValid());
+		layoutChanged2.invoke(model);
+    	Assert.assertEquals(QAbstractItemModel.LayoutChangeHint.VerticalSortHint, receivedHints.get());
+    	Assert.assertEquals(java.util.Collections.singletonList(new QPersistentModelIndex()), receivedIndexes.get());
+    	receivedIndexes.set(null);
+		receivedHints.set(null);
+		layoutChanged2 = model.metaObject().method("layoutChanged2(QList<QPersistentModelIndex>)");
+		Assert.assertTrue(layoutChanged2.isValid());
+		list = QList.of(new QPersistentModelIndex(model.index(0, 0)));
+		layoutChanged2.invoke(model, list);
+    	Assert.assertEquals(QAbstractItemModel.LayoutChangeHint.VerticalSortHint, receivedHints.get());
+    	Assert.assertEquals(list, receivedIndexes.get());
+    	receivedIndexes.set(null);
+		receivedHints.set(null);
+		layoutChanged2 = model.metaObject().method("layoutChanged2(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)");
+		Assert.assertTrue(layoutChanged2.isValid());
+		list = QList.of(new QPersistentModelIndex(model.index(0, 0)), new QPersistentModelIndex(model.index(0, 1)));
+		layoutChanged2.invoke(model, list, QAbstractItemModel.LayoutChangeHint.HorizontalSortHint);
+    	Assert.assertEquals(QAbstractItemModel.LayoutChangeHint.HorizontalSortHint, receivedHints.get());
+    	Assert.assertEquals(list, receivedIndexes.get());
     }
     
     public static void main(String args[]) {

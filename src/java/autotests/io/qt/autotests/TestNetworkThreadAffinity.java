@@ -30,28 +30,50 @@ package io.qt.autotests;
 
 import static org.junit.Assert.fail;
 
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.QThreadAffinityException;
+import io.qt.QtUtilities;
 import io.qt.core.QBuffer;
 import io.qt.core.QByteArray;
+import io.qt.core.QLibraryInfo;
+import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QThread;
+import io.qt.core.QTimer;
 import io.qt.core.QUrl;
+import io.qt.gui.QGuiApplication;
+import io.qt.gui.QWindow;
 import io.qt.network.QHttpMultiPart;
 import io.qt.network.QNetworkAccessManager;
 import io.qt.network.QNetworkRequest;
 
 public class TestNetworkThreadAffinity extends ApplicationInitializer{
 	
-	static {
-		System.setProperty("io.qt.enable-thread-affinity-check", "true");
-		System.setProperty("io.qt.enable-event-thread-affinity-check", "true");
-	}
-	
 	@BeforeClass
     public static void testInitialize() throws Exception {
     	ApplicationInitializer.testInitializeWithGui();
+    	QtUtilities.setThreadAffinityCheckEnabled(true);
+    	QtUtilities.setEventThreadAffinityCheckEnabled(true);
+    }
+	
+	@AfterClass
+    public static void testDispose() throws Exception {
+    	QtUtilities.setThreadAffinityCheckEnabled(false);
+    	QtUtilities.setEventThreadAffinityCheckEnabled(false);
+		if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.MacOS) 
+    			&& QLibraryInfo.version().majorVersion()==6 
+    			&& QLibraryInfo.version().minorVersion()==5) {
+	    	QWindow window = new QWindow();
+	    	window.show();
+	    	QTimer.singleShot(200, QGuiApplication.instance(), QGuiApplication::quit);
+	    	QGuiApplication.exec();
+	    	window.close();
+	    	window.disposeLater();
+	    	window = null;
+    	}
+    	ApplicationInitializer.testDispose();
     }
 	
 	@Test

@@ -39,6 +39,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import io.qt.QtUtilities;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QEvent;
 import io.qt.core.QEventLoop;
@@ -47,11 +48,6 @@ import io.qt.core.QThread;
 import io.qt.internal.TestUtility;
 
 public class TestQThreadSignalHandling extends ApplicationInitializer{
-	
-	static {
-		System.setProperty("io.qt.enable-thread-affinity-check", "true");
-		System.setProperty("io.qt.enable-event-thread-affinity-check", "true");
-	}
 	
     @Before
     public void setUp() {
@@ -63,10 +59,14 @@ public class TestQThreadSignalHandling extends ApplicationInitializer{
     @BeforeClass
 	public static void testInitialize() throws Exception {
 		ApplicationInitializer.testInitializeWithWidgets();
-    }
-
-    @AfterClass
+    	QtUtilities.setThreadAffinityCheckEnabled(true);
+    	QtUtilities.setEventThreadAffinityCheckEnabled(true);
+	}
+	
+	@AfterClass
     public static void testDispose() throws Exception {
+    	QtUtilities.setThreadAffinityCheckEnabled(false);
+    	QtUtilities.setEventThreadAffinityCheckEnabled(false);
         PingPong.ID_PING = null;   // clean up static reference to QObject
         ApplicationInitializer.testDispose();
     }

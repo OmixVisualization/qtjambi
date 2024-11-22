@@ -34,7 +34,7 @@ TypeSystem{
     defaultSuperClass: "QtObject"
     qtLibrary: "QtGraphsWidgets"
     module: "qtjambi.graphswidgets"
-    description: ""    
+    description: "Widget support for QtGraphs is included in its own module to avoid a hard dependency on QtWidgets when building only QML applications."
     ObjectType{
         name: "Q3DBarsWidgetItem"
         ModifyFunction{

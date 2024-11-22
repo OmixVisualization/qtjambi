@@ -167,7 +167,7 @@ static bool customIsNull(const QVariant::Private *d)
             || d_type == qMetaTypeId<JCollectionWrapper>()
             || d_type == qMetaTypeId<JIteratorWrapper>()){
         const JObjectWrapper *wrapper = asJObjectWrapper(d);
-        return wrapper->object()!=nullptr; // JObjectWrapper can also carry "null" reference
+        return wrapper->operator jobject()!=nullptr; // JObjectWrapper can also carry "null" reference
     }else
         return defaultIsNull(d);
 }
@@ -194,7 +194,7 @@ static bool customConvert(const QVariant::Private *d, int t,
 
             jobject java_object =  nullptr;
             if(wrapper != nullptr) {
-                java_object =  wrapper->object();
+                java_object =  wrapper->object(env);
             }else{
                 QMetaType typeInfo(d_type);
                 //if (!(typeInfo.flags() & QMetaType::IsEnumeration))
@@ -352,7 +352,7 @@ static bool customConvert(const QVariant::Private *d, int t,
             }
             if(typeId){
                 if(JniEnvironment env{200}){
-                    if(jobject java_object = wrapper->object()){
+                    if(jobject java_object = wrapper->object(env)){
                         if(QtJambiAPI::convertJavaToNative(env, *typeId, java_object, result)){
                             if(ok) *ok=true;
                             return true;
@@ -371,7 +371,7 @@ static bool customConvert(const QVariant::Private *d, int t,
                 int elementMetaType = QMetaType::type(instantiation);
                 if(elementMetaType!=QMetaType::UnknownType){
                     if(JniEnvironment env{200}){
-                        if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, wrapper->object())){
+                        if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, wrapper->object(env))){
                             if(AbstractContainerAccess* _containerAccess = link->containerAccess()){
                                 if(targetType.startsWith("QList<") || targetType.startsWith("QQueue<")){
                                     if(AbstractListAccess* containerAccess = dynamic_cast<AbstractListAccess*>(_containerAccess)){
@@ -421,7 +421,7 @@ static bool customConvert(const QVariant::Private *d, int t,
                     int valueMetaType = QMetaType::type(instantiations[0]);
                     if(keyMetaType!=QMetaType::UnknownType && valueMetaType!=QMetaType::UnknownType){
                         if(JniEnvironment env{200}){
-                            if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, wrapper->object())){
+                            if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, wrapper->object(env))){
                                 if(AbstractContainerAccess* _containerAccess = link->containerAccess()){
                                     if(targetType.startsWith("QMap<")){
                                         if(AbstractMapAccess* containerAccess = dynamic_cast<AbstractMapAccess*>(_containerAccess)){
@@ -531,7 +531,7 @@ static bool customCanConvert(const QVariant::Private *d, int t)
 
             jobject java_object =  nullptr;
             if(wrapper != nullptr) {
-                java_object =  wrapper->object();
+                java_object =  wrapper->object(env);
             }else{
                 int d_type = d->type;
                 QMetaType typeInfo(d_type);
@@ -630,7 +630,7 @@ static bool customCanConvert(const QVariant::Private *d, int t)
             }
             if(typeId){
                 if(JniEnvironment env{200}){
-                    if(jobject java_object = wrapper->object()){
+                    if(jobject java_object = wrapper->object(env)){
                         void* result = QMetaType::create(t);
                         bool can = QtJambiAPI::convertJavaToNative(env, *typeId, java_object, result);
                         QMetaType::destroy(t, result);

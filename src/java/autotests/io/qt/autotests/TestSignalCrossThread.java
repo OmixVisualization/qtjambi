@@ -47,22 +47,29 @@ import static org.junit.Assert.fail;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.Thread.UncaughtExceptionHandler;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import io.qt.QNoNativeResourcesException;
+import io.qt.QThreadAffinityException;
+import io.qt.QtUtilities;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QEvent;
 import io.qt.core.QEventLoop;
+import io.qt.core.QLogging;
 import io.qt.core.QMetaObject;
 import io.qt.core.QObject;
+import io.qt.core.QStringListModel;
 import io.qt.core.QThread;
 import io.qt.core.QTimer;
 import io.qt.core.Qt;
+import io.qt.core.QtMessageHandler;
 
 // This testcase attempts to validate that the APIs allow and emit/deliver
 //  signals across threads correctly.
@@ -723,6 +730,50 @@ public class TestSignalCrossThread extends ApplicationInitializer implements Unc
 	}
 	
 	private HashMap<Thread,String> uncaughtExceptions = new HashMap<>();
+	
+	@Test
+	public void testSignalEmitThreadCheckLog() {
+		QtUtilities.setSignalEmitThreadCheckEnabled(true);
+		QtMessageHandler mh = QLogging.qInstallMessageHandler((a,b,msg)->{
+			System.out.println(a+" ["+b.category()+"] "+msg);
+		});
+		QThread thread = new QThread();
+		QStringListModel model = new QStringListModel(Arrays.asList("A", "B", "C"));
+		try {
+			QtUtilities.setSignalEmitThreadCheckEnabled(true);
+			model.moveToThread(thread);
+			thread.start();
+			model.dataChanged.emit(model.index(0, 0), model.index(0, 1));
+		}finally {
+			model.disposeLater();
+			thread.quit();
+			QLogging.qInstallMessageHandler(mh);
+			QtUtilities.setSignalEmitThreadCheckEnabled(false);
+		}
+	}
+	
+	@Test
+	public void testSignalEmitThreadCheckException() {
+		QtUtilities.setSignalEmitThreadCheckEnabled(true);
+		QtUtilities.installSignalEmitThreadCheckHandler((object, signal)->{
+			throw new QThreadAffinityException("", object, object.thread(), QThread.currentThread());
+		});
+		QThread thread = new QThread();
+		QStringListModel model = new QStringListModel(Arrays.asList("A", "B", "C"));
+		try {
+			QtUtilities.setSignalEmitThreadCheckEnabled(true);
+			model.moveToThread(thread);
+			thread.start();
+			model.dataChanged.emit(model.index(0, 0), model.index(0, 1));
+			Assert.fail("QThreadAffinityException expected to be thrown");
+		}catch(QThreadAffinityException e) {
+		}finally {
+			model.disposeLater();
+			thread.quit();
+			QtUtilities.installSignalEmitThreadCheckHandler(null);
+			QtUtilities.setSignalEmitThreadCheckEnabled(false);
+		}
+	}
 	
 	public static void main(String[] args) {
 		org.junit.runner.JUnitCore.main(TestSignalCrossThread.class.getName());

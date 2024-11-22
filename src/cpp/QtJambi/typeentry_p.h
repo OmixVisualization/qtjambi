@@ -47,6 +47,12 @@ struct PolymorphicIdHandler{
     PolymorphyHandler m_polymorphyHandler;
 };
 
+struct InterfaceOffsetInfo{
+    QMap<size_t,uint> offsets;
+    QSet<size_t> interfaces;
+    QMap<size_t, QSet<const std::type_info*>> inheritedInterfaces;
+};
+
 enum class EntryTypes
 {
     Unspecific = 0,
@@ -98,10 +104,10 @@ public:
     size_t valueSize() const;
     virtual uint offset(const std::type_info& toType) const;
 
-    QtJambiTypeEntryPtr getFittingTypeEntry(JNIEnv *env, void *ptr_shared_pointer, const SmartPointerGetterFunction& sharedPointerGetter, qintptr& offset) const;
     virtual QtJambiTypeEntryPtr getFittingTypeEntry(JNIEnv *env, const void *qt_object, qintptr& offset) const;
     virtual NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const = 0;
-    virtual bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue& output, jValueType valueType) const = 0;
+    virtual bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const = 0;
+    virtual bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const = 0;
     virtual bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const = 0;
 
     static QtJambiTypeEntryPtr getTypeEntry(JNIEnv* env, const std::type_info& typeId);
@@ -130,7 +136,8 @@ public:
     const FlagsTypeEntry* flagType() const;
     EnumTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, jmethodID creator_method, size_t value_size);
     NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
-    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
     bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
 private:
     FlagsTypeEntry* m_flagType;
@@ -143,7 +150,8 @@ public:
     const EnumTypeEntry* enumType() const;
     FlagsTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, jmethodID creator_method, size_t value_size, const EnumTypeEntry* enumType);
     NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
-    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
     bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
 private:
     const EnumTypeEntry* m_enumType;
@@ -152,7 +160,8 @@ private:
 class AbstractSimpleTypeEntry : public QtJambiTypeEntry{
 public:
     AbstractSimpleTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size);
-    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
 private:
 };
 
@@ -170,8 +179,12 @@ class StringTypeEntry : public AbstractSimpleTypeEntry{
 public:
     StringTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size);
     NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
     bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
 private:
+    template<template<typename> class SmartPointer>
+    bool convertSmartPointerToJava(JNIEnv *env, const SmartPointer<char>& smartPointer, jvalue& output, jValueType valueType) const;
 };
 
 class StringUtilTypeEntry : public AbstractSimpleTypeEntry{
@@ -194,8 +207,12 @@ class QVariantTypeEntry : public AbstractSimpleTypeEntry{
 public:
     QVariantTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size);
     NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
     bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
 private:
+    template<template<typename> class SmartPointer>
+    bool convertSmartPointerToJava(JNIEnv *env, const SmartPointer<char>& smartPointer, jvalue& output, jValueType valueType) const;
 };
 
 class JLongTypeEntry : public AbstractSimpleTypeEntry{
@@ -283,8 +300,8 @@ public:
     jclass creatableClass() const override;
     jclass implementationClass() const;
     size_t shellSize() const;
-    const QVector<const FunctionInfo>* virtualFunctions() const;
-    Destructor destructor() const;
+    const QVector<const RegistryAPI::FunctionInfo>* virtualFunctions() const;
+    RegistryAPI::DestructorFn destructor() const;
     ~InterfaceTypeEntry() override;
     InterfaceTypeEntry(JNIEnv* env, const std::type_info& typeId,
                        const char *qt_name,
@@ -297,24 +314,28 @@ public:
                        const std::type_info* super_type,
                        size_t shell_size,
                        PtrDeleterFunction deleter,
-                       const QVector<const FunctionInfo>* virtualFunctions,
-                       Destructor destructor,
+                       const QVector<const RegistryAPI::FunctionInfo>* virtualFunctions,
+                       RegistryAPI::DestructorFn destructor,
                        const QList<const PolymorphicIdHandler*>& polymorphicHandlers,
                        TypeInfoSupplier typeInfoSupplier
                     );
     QtJambiTypeEntryPtr getFittingTypeEntry(JNIEnv *env, const void *qt_object, qintptr& offset) const override;
     NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
-    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
     bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
     const QList<const PolymorphicIdHandler*>& polymorphicIdHandlers() const override;
+private:
+    template<template<typename> class SmartPointer>
+    bool convertSmartPointerToJava(JNIEnv *env, const SmartPointer<char>& smartPointer, jvalue& output, jValueType valueType) const;
 protected:
     jclass m_java_impl_class;
     jclass m_java_wrapper_class;
     const std::type_info* m_super_type;
     size_t m_shell_size;
     PtrDeleterFunction m_deleter;
-    const QVector<const FunctionInfo>* m_virtualFunctions;
-    Destructor m_destructor;
+    const QVector<const RegistryAPI::FunctionInfo>* m_virtualFunctions;
+    RegistryAPI::DestructorFn m_destructor;
 private:
     QList<const PolymorphicIdHandler*> m_polymorphicIdHandlers;
     TypeInfoSupplier m_typeInfoSupplier;
@@ -335,13 +356,17 @@ public:
                        size_t shell_size,
                        PtrDeleterFunction deleter,
                        PtrOwnerFunction owner_function,
-                       const QVector<const FunctionInfo>* virtualFunctions,
-                       Destructor destructor,
+                       const QVector<const RegistryAPI::FunctionInfo>* virtualFunctions,
+                       RegistryAPI::DestructorFn destructor,
                        const QList<const PolymorphicIdHandler*>& polymorphicHandlers,
                        TypeInfoSupplier typeInfoSupplier
                        );
     NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
-    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
+private:
+    template<template<typename> class SmartPointer>
+    bool convertSmartPointerToJava(JNIEnv *env, const SmartPointer<char>& smartPointer, jvalue& output, jValueType valueType) const;
 protected:
     PtrOwnerFunction m_owner_function;
 };
@@ -359,20 +384,20 @@ public:
                          const std::type_info* super_type,
                          size_t shell_size,
                          PtrDeleterFunction deleter,
-                         const QVector<const FunctionInfo>* virtualFunctions,
-                         Destructor destructor,
+                         const QVector<const RegistryAPI::FunctionInfo>* virtualFunctions,
+                         RegistryAPI::DestructorFn destructor,
                          const QList<const PolymorphicIdHandler*>& polymorphicHandlers,
                          TypeInfoSupplier typeInfoSupplier,
-                         const QMap<size_t,uint>& interfaceOffsets,
-                         const QSet<size_t>& interfaceTypes,
-                         const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces);
+                         const InterfaceOffsetInfo& interfaceOffsetInfo);
     NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
-    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
     uint offset(const std::type_info& toType) const override;
+private:
+    template<template<typename> class SmartPointer>
+    bool convertSmartPointerToJava(JNIEnv *env, const SmartPointer<char>& smartPointer, jvalue& output, jValueType valueType) const;
 protected:
-    QMap<size_t,uint> m_interfaceOffsets;
-    QSet<size_t> m_interfaceTypes;
-    QMap<size_t, QSet<const std::type_info*>> m_inheritedInterfaces;
+    const InterfaceOffsetInfo m_interfaceOffsetInfo;
 };
 
 class OwnedInterfaceIFTypeEntry : public InterfaceIFTypeEntry{
@@ -389,15 +414,17 @@ public:
                          size_t shell_size,
                          PtrDeleterFunction deleter,
                          PtrOwnerFunction owner_function,
-                         const QVector<const FunctionInfo>* virtualFunctions,
-                         Destructor destructor,
+                         const QVector<const RegistryAPI::FunctionInfo>* virtualFunctions,
+                         RegistryAPI::DestructorFn destructor,
                          const QList<const PolymorphicIdHandler*>& polymorphicHandlers,
                          TypeInfoSupplier typeInfoSupplier,
-                         const QMap<size_t,uint>& interfaceOffsets,
-                         const QSet<size_t>& interfaceTypes,
-                         const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces);
+                         const InterfaceOffsetInfo& interfaceOffsetInfo);
     NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
-    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
+private:
+    template<template<typename> class SmartPointer>
+    bool convertSmartPointerToJava(JNIEnv *env, const SmartPointer<char>& smartPointer, jvalue& output, jValueType valueType) const;
 protected:
     PtrOwnerFunction m_owner_function;
 };
@@ -416,14 +443,18 @@ public:
                        const std::type_info* super_type,
                        size_t shell_size,
                        PtrDeleterFunction deleter,
-                       const QVector<const FunctionInfo>* virtualFunctions,
-                       Destructor destructor,
+                       const QVector<const RegistryAPI::FunctionInfo>* virtualFunctions,
+                       RegistryAPI::DestructorFn destructor,
                        const QList<const PolymorphicIdHandler*>& polymorphicHandlers,
                             TypeInfoSupplier typeInfoSupplier,
                        const QMetaType& qt_meta_type
                     );
     NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
-    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
+private:
+    template<template<typename> class SmartPointer>
+    bool convertSmartPointerToJava(JNIEnv *env, const SmartPointer<char>& smartPointer, jvalue& output, jValueType valueType) const;
 protected:
     QMetaType m_qt_meta_type;
 };
@@ -442,14 +473,18 @@ public:
                             size_t shell_size,
                             PtrDeleterFunction deleter,
                             PtrOwnerFunction owner_function,
-                            const QVector<const FunctionInfo>* virtualFunctions,
-                            Destructor destructor,
+                            const QVector<const RegistryAPI::FunctionInfo>* virtualFunctions,
+                            RegistryAPI::DestructorFn destructor,
                             const QList<const PolymorphicIdHandler*>& polymorphicHandlers,
                             TypeInfoSupplier typeInfoSupplier,
                                  const QMetaType& qt_meta_type
                             );
     NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
-    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
+private:
+    template<template<typename> class SmartPointer>
+    bool convertSmartPointerToJava(JNIEnv *env, const SmartPointer<char>& smartPointer, jvalue& output, jValueType valueType) const;
 protected:
     PtrOwnerFunction m_owner_function;
 };
@@ -467,16 +502,15 @@ public:
                               const std::type_info* super_type,
                               size_t shell_size,
                               PtrDeleterFunction deleter,
-                              const QVector<const FunctionInfo>* virtualFunctions,
-                              Destructor destructor,
+                              const QVector<const RegistryAPI::FunctionInfo>* virtualFunctions,
+                              RegistryAPI::DestructorFn destructor,
                               const QList<const PolymorphicIdHandler*>& polymorphicHandlers,
                               TypeInfoSupplier typeInfoSupplier,
                               const QMetaType& qt_meta_type,
-                              const QMap<size_t,uint>& interfaceOffsets,
-                              const QSet<size_t>& interfaceTypes,
-                              const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces);
+                              const InterfaceOffsetInfo& interfaceOffsetInfo);
     NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
-protected:
+private:
+    friend class OwnedInterfaceValueIFTypeEntry;
     QMetaType m_qt_meta_type;
 };
 
@@ -494,25 +528,23 @@ public:
                               size_t shell_size,
                               PtrDeleterFunction deleter,
                               PtrOwnerFunction owner_function,
-                              const QVector<const FunctionInfo>* virtualFunctions,
-                              Destructor destructor,
+                              const QVector<const RegistryAPI::FunctionInfo>* virtualFunctions,
+                              RegistryAPI::DestructorFn destructor,
                               const QList<const PolymorphicIdHandler*>& polymorphicHandlers,
                               TypeInfoSupplier typeInfoSupplier,
                               const QMetaType& qt_meta_type,
-                              const QMap<size_t,uint>& interfaceOffsets,
-                              const QSet<size_t>& interfaceTypes,
-                              const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces);
+                              const InterfaceOffsetInfo& interfaceOffsetInfo);
     NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
-protected:
+private:
     PtrOwnerFunction m_owner_function;
 };
 
 class FunctionalTypeEntry : public QtJambiTypeEntry{
 public:
     bool isFunctional() const final;
-    const QVector<const FunctionInfo>* virtualFunctions() const;
+    const QVector<const RegistryAPI::FunctionInfo>* virtualFunctions() const;
     jclass creatableClass() const override;
-    Destructor destructor() const;
+    RegistryAPI::DestructorFn destructor() const;
     FunctionalResolver registeredFunctionalResolver() const;
     size_t shellSize() const;
     ~FunctionalTypeEntry() override;
@@ -525,21 +557,22 @@ public:
                         size_t shell_size,
                         jclass java_impl_class,
                         jclass java_wrapper_class,
-                        const QVector<const FunctionInfo>* virtualFunctions,
-                        Destructor destructor,
+                        const QVector<const RegistryAPI::FunctionInfo>* virtualFunctions,
+                        RegistryAPI::DestructorFn destructor,
                         FunctionalResolver registered_functional_resolver,
                         const QMetaType& qt_meta_type,
                         bool is_std_function
                     );
     NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
-    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
     bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
 private:
     size_t m_shell_size;
     jclass m_java_impl_class;
     jclass m_java_wrapper_class;
-    const QVector<const FunctionInfo>* m_virtualFunctions;
-    Destructor m_destructor;
+    const QVector<const RegistryAPI::FunctionInfo>* m_virtualFunctions;
+    RegistryAPI::DestructorFn m_destructor;
     FunctionalResolver m_registered_functional_resolver;
     QMetaType m_qt_meta_type;
     bool m_is_std_function;
@@ -550,8 +583,8 @@ public:
     bool isObject() const final;
     const std::type_info* superType() const final;
     size_t shellSize() const;
-    const QVector<const FunctionInfo>* virtualFunctions() const;
-    Destructor destructor() const;
+    const QVector<const RegistryAPI::FunctionInfo>* virtualFunctions() const;
+    RegistryAPI::DestructorFn destructor() const;
     ObjectTypeEntry(JNIEnv* env,
                     const std::type_info& typeId,
                     const char *qt_name,
@@ -562,22 +595,26 @@ public:
                     const std::type_info* super_type,
                     size_t shell_size,
                     PtrDeleterFunction deleter,
-                    const QVector<const FunctionInfo>* virtualFunctions,
-                    Destructor destructor,
+                    const QVector<const RegistryAPI::FunctionInfo>* virtualFunctions,
+                    RegistryAPI::DestructorFn destructor,
                     const QList<const PolymorphicIdHandler*>& polymorphicHandlers,
                     TypeInfoSupplier typeInfoSupplier
                 );
     QtJambiTypeEntryPtr getFittingTypeEntry(JNIEnv *env, const void *qt_object, qintptr& offset) const override;
     NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
-    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
     bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
     const QList<const PolymorphicIdHandler*>& polymorphicIdHandlers() const override;
+private:
+    template<template<typename> class SmartPointer>
+    bool convertSmartPointerToJava(JNIEnv *env, const SmartPointer<char>& smartPointer, jvalue& output, jValueType valueType) const;
 protected:
     const std::type_info* m_super_type;
     size_t m_shell_size;
     PtrDeleterFunction m_deleter;
-    const QVector<const FunctionInfo>* m_virtualFunctions;
-    Destructor m_destructor;
+    const QVector<const RegistryAPI::FunctionInfo>* m_virtualFunctions;
+    RegistryAPI::DestructorFn m_destructor;
 private:
     QList<const PolymorphicIdHandler*> m_polymorphicIdHandlers;
     TypeInfoSupplier m_typeInfoSupplier;
@@ -600,13 +637,17 @@ public:
                               size_t shell_size,
                               PtrDeleterFunction deleter,
                               PtrOwnerFunction owner_function,
-                              const QVector<const FunctionInfo>* virtualFunctions,
-                              Destructor destructor,
+                              const QVector<const RegistryAPI::FunctionInfo>* virtualFunctions,
+                              RegistryAPI::DestructorFn destructor,
                               const QList<const PolymorphicIdHandler*>& polymorphicHandlers,
                               TypeInfoSupplier typeInfoSupplier
                               );
     NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
-    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
+private:
+    template<template<typename> class SmartPointer>
+    bool convertSmartPointerToJava(JNIEnv *env, const SmartPointer<char>& smartPointer, jvalue& output, jValueType valueType) const;
 private:
     PtrOwnerFunction m_owner_function;
 };
@@ -623,21 +664,21 @@ public:
                     const std::type_info* super_type,
                     size_t shell_size,
                     PtrDeleterFunction deleter,
-                    const QVector<const FunctionInfo>* virtualFunctions,
-                    Destructor destructor,
+                    const QVector<const RegistryAPI::FunctionInfo>* virtualFunctions,
+                    RegistryAPI::DestructorFn destructor,
                     const QList<const PolymorphicIdHandler*>& polymorphicHandlers,
                     TypeInfoSupplier typeInfoSupplier,
-                    const QMap<size_t,uint>& interfaceOffsets,
-                    const QSet<size_t>& interfaceTypes,
-                    const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces
+                    const InterfaceOffsetInfo& interfaceOffsetInfo
                 );
     NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
-    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
     uint offset(const std::type_info& toType) const override;
+private:
+    template<template<typename> class SmartPointer>
+    bool convertSmartPointerToJava(JNIEnv *env, const SmartPointer<char>& smartPointer, jvalue& output, jValueType valueType) const;
 protected:
-    QMap<size_t,uint> m_interfaceOffsets;
-    QSet<size_t> m_interfaceTypes;
-    QMap<size_t, QSet<const std::type_info*>> m_inheritedInterfaces;
+    const InterfaceOffsetInfo m_interfaceOffsetInfo;
 };
 
 class OwnedObjectIFTypeEntry : public ObjectIFTypeEntry{
@@ -653,16 +694,18 @@ public:
                       size_t shell_size,
                       PtrDeleterFunction deleter,
                       PtrOwnerFunction owner_function,
-                      const QVector<const FunctionInfo>* virtualFunctions,
-                      Destructor destructor,
+                      const QVector<const RegistryAPI::FunctionInfo>* virtualFunctions,
+                      RegistryAPI::DestructorFn destructor,
                       const QList<const PolymorphicIdHandler*>& polymorphicHandlers,
                       TypeInfoSupplier typeInfoSupplier,
-                      const QMap<size_t,uint>& interfaceOffsets,
-                      const QSet<size_t>& interfaceTypes,
-                      const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces
+                      const InterfaceOffsetInfo& interfaceOffsetInfo
                       );
     NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
-    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
+private:
+    template<template<typename> class SmartPointer>
+    bool convertSmartPointerToJava(JNIEnv *env, const SmartPointer<char>& smartPointer, jvalue& output, jValueType valueType) const;
 private:
     PtrOwnerFunction m_owner_function;
 };
@@ -680,8 +723,8 @@ public:
                             const std::type_info* super_type,
                             size_t shell_size,
                             PtrDeleterFunction deleter,
-                            const QVector<const FunctionInfo>* virtualFunctions,
-                            Destructor destructor,
+                            const QVector<const RegistryAPI::FunctionInfo>* virtualFunctions,
+                            RegistryAPI::DestructorFn destructor,
                             const QList<const PolymorphicIdHandler*>& polymorphicHandlers,
                             TypeInfoSupplier typeInfoSupplier,
                             jclass java_wrapper_class
@@ -704,8 +747,8 @@ public:
                     size_t shell_size,
                     PtrDeleterFunction deleter,
                     PtrOwnerFunction owner_function,
-                    const QVector<const FunctionInfo>* virtualFunctions,
-                    Destructor destructor,
+                    const QVector<const RegistryAPI::FunctionInfo>* virtualFunctions,
+                    RegistryAPI::DestructorFn destructor,
                     const QList<const PolymorphicIdHandler*>& polymorphicHandlers,
                     TypeInfoSupplier typeInfoSupplier,
                     jclass java_wrapper_class
@@ -727,14 +770,12 @@ public:
                               const std::type_info* super_type,
                               size_t shell_size,
                               PtrDeleterFunction deleter,
-                              const QVector<const FunctionInfo>* virtualFunctions,
-                              Destructor destructor,
+                              const QVector<const RegistryAPI::FunctionInfo>* virtualFunctions,
+                              RegistryAPI::DestructorFn destructor,
                               const QList<const PolymorphicIdHandler*>& polymorphicHandlers,
                               TypeInfoSupplier typeInfoSupplier,
                               jclass java_wrapper_class,
-                              const QMap<size_t,uint>& interfaceOffsets,
-                              const QSet<size_t>& interfaceTypes,
-                              const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces
+                              const InterfaceOffsetInfo& interfaceOffsetInfo
                               );
 private:
     jclass m_java_wrapper_class;
@@ -754,14 +795,12 @@ public:
                     size_t shell_size,
                     PtrDeleterFunction deleter,
                     PtrOwnerFunction owner_function,
-                    const QVector<const FunctionInfo>* virtualFunctions,
-                    Destructor destructor,
+                    const QVector<const RegistryAPI::FunctionInfo>* virtualFunctions,
+                    RegistryAPI::DestructorFn destructor,
                     const QList<const PolymorphicIdHandler*>& polymorphicHandlers,
                     TypeInfoSupplier typeInfoSupplier,
                     jclass java_wrapper_class,
-                    const QMap<size_t,uint>& interfaceOffsets,
-                    const QSet<size_t>& interfaceTypes,
-                    const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces
+                    const InterfaceOffsetInfo& interfaceOffsetInfo
                 );
 private:
     jclass m_java_wrapper_class;
@@ -780,14 +819,18 @@ public:
                     const std::type_info* super_type,
                     size_t shell_size,
                     PtrDeleterFunction deleter,
-                    const QVector<const FunctionInfo>* virtualFunctions,
-                    Destructor destructor,
+                    const QVector<const RegistryAPI::FunctionInfo>* virtualFunctions,
+                    RegistryAPI::DestructorFn destructor,
                     const QList<const PolymorphicIdHandler*>& polymorphicHandlers,
                     TypeInfoSupplier typeInfoSupplier,
                     const QMetaType& qt_meta_type
                 );
     NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
-    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
+private:
+    template<template<typename> class SmartPointer>
+    bool convertSmartPointerToJava(JNIEnv *env, const SmartPointer<char>& smartPointer, jvalue& output, jValueType valueType) const;
 protected:
     QMetaType m_qt_meta_type;
     friend class ObjectContainerTypeEntry;
@@ -808,14 +851,18 @@ public:
                          size_t shell_size,
                          PtrDeleterFunction deleter,
                          PtrOwnerFunction owner_function,
-                         const QVector<const FunctionInfo>* virtualFunctions,
-                         Destructor destructor,
+                         const QVector<const RegistryAPI::FunctionInfo>* virtualFunctions,
+                         RegistryAPI::DestructorFn destructor,
                          const QList<const PolymorphicIdHandler*>& polymorphicHandlers,
                          TypeInfoSupplier typeInfoSupplier,
                          const QMetaType& qt_meta_type
                          );
     NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
-    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
+private:
+    template<template<typename> class SmartPointer>
+    bool convertSmartPointerToJava(JNIEnv *env, const SmartPointer<char>& smartPointer, jvalue& output, jValueType valueType) const;
 private:
     PtrOwnerFunction m_owner_function;
 };
@@ -832,18 +879,19 @@ public:
                     const std::type_info* super_type,
                     size_t shell_size,
                     PtrDeleterFunction deleter,
-                    const QVector<const FunctionInfo>* virtualFunctions,
-                    Destructor destructor,
+                    const QVector<const RegistryAPI::FunctionInfo>* virtualFunctions,
+                    RegistryAPI::DestructorFn destructor,
                     const QList<const PolymorphicIdHandler*>& polymorphicHandlers,
                     TypeInfoSupplier typeInfoSupplier,
                     const QMetaType& qt_meta_type,
-                    const QMap<size_t,uint>& interfaceOffsets,
-                    const QSet<size_t>& interfaceTypes,
-                    const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces
+                    const InterfaceOffsetInfo& interfaceOffsetInfo
                 );
     NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
-protected:
+private:
     QMetaType m_qt_meta_type;
+    friend class ObjectOwnedValueIFTypeEntry;
+    friend class ObjectContainerIFTypeEntry;
+    friend class ObjectAbstractContainerIFTypeEntry;
     friend class ObjectContainerTypeEntry;
     friend class ObjectAbstractContainerTypeEntry;
 };
@@ -861,17 +909,15 @@ public:
                            size_t shell_size,
                            PtrDeleterFunction deleter,
                            PtrOwnerFunction owner_function,
-                           const QVector<const FunctionInfo>* virtualFunctions,
-                           Destructor destructor,
+                           const QVector<const RegistryAPI::FunctionInfo>* virtualFunctions,
+                           RegistryAPI::DestructorFn destructor,
                            const QList<const PolymorphicIdHandler*>& polymorphicHandlers,
                            TypeInfoSupplier typeInfoSupplier,
                            const QMetaType& qt_meta_type,
-                           const QMap<size_t,uint>& interfaceOffsets,
-                           const QSet<size_t>& interfaceTypes,
-                           const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces
+                           const InterfaceOffsetInfo& interfaceOffsetInfo
                            );
     NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
-protected:
+private:
     PtrOwnerFunction m_owner_function;
 };
 
@@ -883,15 +929,18 @@ public:
                          const char *java_name,
                          jclass java_class,
                          PtrDeleterFunction deleter,
-                         Destructor destructor,
+                         RegistryAPI::DestructorFn destructor,
                          TypeInfoSupplier typeInfoSupplier);
     static NativeToJavaResult convertModelIndexToJava(JNIEnv *env, const QModelIndex *qt_object, NativeToJavaConversionMode mode, jobject& output, QtJambiScope* scope = nullptr);
     static bool convertJavaToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope);
     NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
-    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
     bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
     static void deleter(void *ptr, bool isShell);
 private:
+    template<template<typename> class SmartPointer>
+    bool convertSmartPointerToJava(JNIEnv *env, const SmartPointer<char>& smartPointer, jvalue& output, jValueType valueType) const;
 };
 
 class QMessageLogContextTypeEntry : public ObjectTypeEntry{
@@ -906,8 +955,8 @@ public:
                                 const std::type_info* super_type,
                                 size_t shell_size,
                                 PtrDeleterFunction deleter,
-                                const QVector<const FunctionInfo>* virtualFunctions,
-                                Destructor destructor,
+                                const QVector<const RegistryAPI::FunctionInfo>* virtualFunctions,
+                                RegistryAPI::DestructorFn destructor,
                                 const QList<const PolymorphicIdHandler*>& polymorphicHandlers,
                                 TypeInfoSupplier typeInfoSupplier
                                 );
@@ -927,8 +976,8 @@ public:
                     const std::type_info* super_type,
                     size_t shell_size,
                     PtrDeleterFunction deleter,
-                    const QVector<const FunctionInfo>* virtualFunctions,
-                    Destructor destructor,
+                    const QVector<const RegistryAPI::FunctionInfo>* virtualFunctions,
+                    RegistryAPI::DestructorFn destructor,
                     const QList<const PolymorphicIdHandler*>& polymorphicHandlers,
                     TypeInfoSupplier typeInfoSupplier,
                     const QMetaType& qt_meta_type,
@@ -952,8 +1001,8 @@ public:
                                  size_t shell_size,
                                  PtrDeleterFunction deleter,
                                  PtrOwnerFunction owner_function,
-                                 const QVector<const FunctionInfo>* virtualFunctions,
-                                 Destructor destructor,
+                                 const QVector<const RegistryAPI::FunctionInfo>* virtualFunctions,
+                                 RegistryAPI::DestructorFn destructor,
                                  const QList<const PolymorphicIdHandler*>& polymorphicHandlers,
                                  TypeInfoSupplier typeInfoSupplier,
                                  const QMetaType& qt_meta_type,
@@ -976,15 +1025,13 @@ public:
                     const std::type_info* super_type,
                     size_t shell_size,
                     PtrDeleterFunction deleter,
-                    const QVector<const FunctionInfo>* virtualFunctions,
-                    Destructor destructor,
+                    const QVector<const RegistryAPI::FunctionInfo>* virtualFunctions,
+                    RegistryAPI::DestructorFn destructor,
                     const QList<const PolymorphicIdHandler*>& polymorphicHandlers,
                     TypeInfoSupplier typeInfoSupplier,
                     const QMetaType& qt_meta_type,
                     jclass java_wrapper_class,
-                    const QMap<size_t,uint>& interfaceOffsets,
-                    const QSet<size_t>& interfaceTypes,
-                    const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces
+                    const InterfaceOffsetInfo& interfaceOffsetInfo
                 );
 private:
     jclass m_java_wrapper_class;
@@ -1004,15 +1051,13 @@ public:
                                    size_t shell_size,
                                    PtrDeleterFunction deleter,
                                    PtrOwnerFunction owner_function,
-                                   const QVector<const FunctionInfo>* virtualFunctions,
-                                   Destructor destructor,
+                                   const QVector<const RegistryAPI::FunctionInfo>* virtualFunctions,
+                                   RegistryAPI::DestructorFn destructor,
                                    const QList<const PolymorphicIdHandler*>& polymorphicHandlers,
                                    TypeInfoSupplier typeInfoSupplier,
                                    const QMetaType& qt_meta_type,
                                    jclass java_wrapper_class,
-                                   const QMap<size_t,uint>& interfaceOffsets,
-                                   const QSet<size_t>& interfaceTypes,
-                                   const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces
+                                   const InterfaceOffsetInfo& interfaceOffsetInfo
                                    );
 private:
     jclass m_java_wrapper_class;
@@ -1031,15 +1076,18 @@ public:
                     size_t shell_size,
                     NewContainerAccessFunction containerAccessFactory,
                     PtrDeleterFunction deleter,
-                    const QVector<const FunctionInfo>* virtualFunctions,
-                    Destructor destructor,
+                    const QVector<const RegistryAPI::FunctionInfo>* virtualFunctions,
+                    RegistryAPI::DestructorFn destructor,
                     const QList<const PolymorphicIdHandler*>& polymorphicHandlers,
                     TypeInfoSupplier typeInfoSupplier,
                     const QMetaType& qt_meta_type
                 );
     NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
-    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
 private:
+    template<template<typename> class SmartPointer>
+    bool convertSmartPointerToJava(JNIEnv *env, const SmartPointer<char>& smartPointer, jvalue& output, jValueType valueType) const;
     NewContainerAccessFunction m_containerAccessFactory;
 };
 
@@ -1056,18 +1104,19 @@ public:
                     size_t shell_size,
                     NewContainerAccessFunction containerAccessFactory,
                     PtrDeleterFunction deleter,
-                    const QVector<const FunctionInfo>* virtualFunctions,
-                    Destructor destructor,
+                    const QVector<const RegistryAPI::FunctionInfo>* virtualFunctions,
+                    RegistryAPI::DestructorFn destructor,
                     const QList<const PolymorphicIdHandler*>& polymorphicHandlers,
                     TypeInfoSupplier typeInfoSupplier,
                     const QMetaType& qt_meta_type,
-                    const QMap<size_t,uint>& interfaceOffsets,
-                    const QSet<size_t>& interfaceTypes,
-                    const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces
+                    const InterfaceOffsetInfo& interfaceOffsetInfo
                 );
     NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
-    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
 private:
+    template<template<typename> class SmartPointer>
+    bool convertSmartPointerToJava(JNIEnv *env, const SmartPointer<char>& smartPointer, jvalue& output, jValueType valueType) const;
     NewContainerAccessFunction m_containerAccessFactory;
 };
 
@@ -1084,16 +1133,19 @@ public:
                     size_t shell_size,
                     NewContainerAccessFunction containerAccessFactory,
                     PtrDeleterFunction deleter,
-                    const QVector<const FunctionInfo>* virtualFunctions,
-                    Destructor destructor,
+                    const QVector<const RegistryAPI::FunctionInfo>* virtualFunctions,
+                    RegistryAPI::DestructorFn destructor,
                     const QList<const PolymorphicIdHandler*>& polymorphicHandlers,
                     TypeInfoSupplier typeInfoSupplier,
                     const QMetaType& qt_meta_type,
                     jclass java_wrapper_class
                 );
     NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
-    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
 private:
+    template<template<typename> class SmartPointer>
+    bool convertSmartPointerToJava(JNIEnv *env, const SmartPointer<char>& smartPointer, jvalue& output, jValueType valueType) const;
     NewContainerAccessFunction m_containerAccessFactory;
 };
 
@@ -1110,19 +1162,20 @@ public:
                     size_t shell_size,
                     NewContainerAccessFunction containerAccessFactory,
                     PtrDeleterFunction deleter,
-                    const QVector<const FunctionInfo>* virtualFunctions,
-                    Destructor destructor,
+                    const QVector<const RegistryAPI::FunctionInfo>* virtualFunctions,
+                    RegistryAPI::DestructorFn destructor,
                     const QList<const PolymorphicIdHandler*>& polymorphicHandlers,
                     TypeInfoSupplier typeInfoSupplier,
                     const QMetaType& qt_meta_type,
                     jclass java_wrapper_class,
-                    const QMap<size_t,uint>& interfaceOffsets,
-                    const QSet<size_t>& interfaceTypes,
-                    const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces
+                    const InterfaceOffsetInfo& interfaceOffsetInfo
                 );
     NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
-    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
 private:
+    template<template<typename> class SmartPointer>
+    bool convertSmartPointerToJava(JNIEnv *env, const SmartPointer<char>& smartPointer, jvalue& output, jValueType valueType) const;
     NewContainerAccessFunction m_containerAccessFactory;
 };
 
@@ -1131,7 +1184,7 @@ public:
     bool isQObject() const final;
     const std::type_info* superType() const override;
     size_t shellSize() const;
-    const QVector<const FunctionInfo>* virtualFunctions() const;
+    const QVector<const RegistryAPI::FunctionInfo>* virtualFunctions() const;
     const QMetaObject* originalMetaObject() const;
     QObjectTypeEntry(JNIEnv* env,
                      const std::type_info& typeId,
@@ -1142,18 +1195,22 @@ public:
                      size_t value_size,
                      const std::type_info* super_type,
                      size_t shell_size,
-                     const QVector<const FunctionInfo>* virtualFunctions,
+                     const QVector<const RegistryAPI::FunctionInfo>* virtualFunctions,
                      const QMetaObject* original_meta_object
                 );
     QtJambiTypeEntryPtr getFittingTypeEntry(JNIEnv *env, const void *qt_object, qintptr& offset) const override;
     NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
-    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
     bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
+private:
+    template<template<typename> class SmartPointer>
+    bool convertSmartPointerToJava(JNIEnv *env, const SmartPointer<QObject>& smartPointer, jvalue& output, jValueType valueType) const;
 protected:
     virtual const QSharedPointer<QtJambiLink>& createLinkForNativeQObject(JNIEnv *env, jobject javaObject, QObject *object) const;
     const std::type_info* m_super_type;
     size_t m_shell_size;
-    const QVector<const FunctionInfo>* m_virtualFunctions;
+    const QVector<const RegistryAPI::FunctionInfo>* m_virtualFunctions;
     const QMetaObject* m_original_meta_object;
     const QMetaObject* m_superTypeForCustomMetaObject;
     friend class QObjectPolymorphicTypeEntry;
@@ -1170,19 +1227,19 @@ public:
                      size_t value_size,
                      const std::type_info* super_type,
                      size_t shell_size,
-                     const QVector<const FunctionInfo>* virtualFunctions,
+                     const QVector<const RegistryAPI::FunctionInfo>* virtualFunctions,
                      const QMetaObject* original_meta_object,
-                       const QMap<size_t,uint>& interfaceOffsets,
-                       const QSet<size_t>& interfaceTypes,
-                       const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces
+                     const InterfaceOffsetInfo& interfaceOffsetInfo
                 );
     uint offset(const std::type_info& toType) const override;
-    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
+private:
+    template<template<typename> class SmartPointer>
+    bool convertSmartPointerToJava(JNIEnv *env, const SmartPointer<QObject>& smartPointer, jvalue& output, jValueType valueType) const;
 protected:
     const QSharedPointer<QtJambiLink>& createLinkForNativeQObject(JNIEnv *env, jobject javaObject, QObject *object) const override;
-    QMap<size_t,uint> m_interfaceOffsets;
-    QSet<size_t> m_interfaceTypes;
-    QMap<size_t, QSet<const std::type_info*>> m_inheritedInterfaces;
+    const InterfaceOffsetInfo m_interfaceOffsetInfo;
 };
 
 class QObjectPolymorphicTypeEntry : public QObjectTypeEntry, public PolymorphicTypeEntryInterface{
@@ -1196,7 +1253,7 @@ public:
                      size_t value_size,
                      const std::type_info* super_type,
                      size_t shell_size,
-                     const QVector<const FunctionInfo>* virtualFunctions,
+                     const QVector<const RegistryAPI::FunctionInfo>* virtualFunctions,
                      const QMetaObject* original_meta_object,
                      const QList<const PolymorphicIdHandler*>& polymorphicIdHandlers
                 );
@@ -1219,12 +1276,10 @@ public:
                      size_t value_size,
                      const std::type_info* super_type,
                      size_t shell_size,
-                     const QVector<const FunctionInfo>* virtualFunctions,
+                     const QVector<const RegistryAPI::FunctionInfo>* virtualFunctions,
                      const QMetaObject* original_meta_object,
                      const QList<const PolymorphicIdHandler*>& polymorphicIdHandlers,
-                    const QMap<size_t,uint>& interfaceOffsets,
-                    const QSet<size_t>& interfaceTypes,
-                    const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces
+                     const InterfaceOffsetInfo& interfaceOffsetInfo
                 );
     QtJambiTypeEntryPtr getFittingTypeEntry(JNIEnv *env, const void *qt_object, qintptr& offset) const override;
     const QList<const PolymorphicIdHandler*>& polymorphicIdHandlers() const override;
@@ -1245,10 +1300,14 @@ public:
                      size_t value_size,
                      const std::type_info* super_type,
                      size_t shell_size,
-                     const QVector<const FunctionInfo>* virtualFunctions,
+                     const QVector<const RegistryAPI::FunctionInfo>* virtualFunctions,
                      const QMetaObject* original_meta_object);
     NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
-    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
+private:
+    template<template<typename> class SmartPointer>
+    bool convertSmartPointerToJava(JNIEnv *env, const SmartPointer<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const;
 };
 
 class QObjectAbstractTypeEntry : public QObjectTypeEntry{
@@ -1262,7 +1321,7 @@ public:
                      size_t value_size,
                      const std::type_info* super_type,
                      size_t shell_size,
-                     const QVector<const FunctionInfo>* virtualFunctions,
+                     const QVector<const RegistryAPI::FunctionInfo>* virtualFunctions,
                      const QMetaObject* original_meta_object,
                      jclass java_wrapper_class
                 );
@@ -1282,12 +1341,10 @@ public:
                      size_t value_size,
                      const std::type_info* super_type,
                      size_t shell_size,
-                     const QVector<const FunctionInfo>* virtualFunctions,
+                     const QVector<const RegistryAPI::FunctionInfo>* virtualFunctions,
                      const QMetaObject* original_meta_object,
                      jclass java_wrapper_class,
-                   const QMap<size_t,uint>& interfaceOffsets,
-                   const QSet<size_t>& interfaceTypes,
-                   const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces
+                     const InterfaceOffsetInfo& interfaceOffsetInfo
                 );
     jclass creatableClass() const final;
 private:
@@ -1305,7 +1362,7 @@ public:
                      size_t value_size,
                      const std::type_info* super_type,
                      size_t shell_size,
-                     const QVector<const FunctionInfo>* virtualFunctions,
+                     const QVector<const RegistryAPI::FunctionInfo>* virtualFunctions,
                      const QMetaObject* original_meta_object,
                      const QList<const PolymorphicIdHandler*>& polymorphicIdHandlers,
                      jclass java_wrapper_class
@@ -1326,13 +1383,11 @@ public:
                      size_t value_size,
                      const std::type_info* super_type,
                      size_t shell_size,
-                     const QVector<const FunctionInfo>* virtualFunctions,
+                     const QVector<const RegistryAPI::FunctionInfo>* virtualFunctions,
                      const QMetaObject* original_meta_object,
                      const QList<const PolymorphicIdHandler*>& polymorphicIdHandlers,
                      jclass java_wrapper_class,
-                      const QMap<size_t,uint>& interfaceOffsets,
-                      const QSet<size_t>& interfaceTypes,
-                      const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces
+                     const InterfaceOffsetInfo& interfaceOffsetInfo
                 );
     jclass creatableClass() const final;
 private:

@@ -58,7 +58,7 @@ public abstract class TestUtility {
 	private native static boolean isSharedPointer(long nativeId);
 
 	public static boolean isSharedPointer(QtObjectInterface object) {
-		return isSharedPointer(NativeUtility.nativeId(object));
+		return isSharedPointer(NativeUtility.checkedNativeId(object));
 	}
     
     public static native boolean hasDeleteLaterEvents();

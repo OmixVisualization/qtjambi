@@ -949,7 +949,7 @@ void GeneratorApplication::analyzeDependencies()
         for(const QString& dependency : dependenciesByLib[entry->qtLibrary()]){
             bool skip = false;
             for(const Dependency& requiredQtLibrary : entry->requiredQtLibraries()){
-                if(requiredQtLibrary.entry==dependency && requiredQtLibrary.mode==TS::Dependency::Mandatory){
+                if(requiredQtLibrary.entry==dependency && (requiredQtLibrary.mode==TS::Dependency::Mandatory || requiredQtLibrary.mode==TS::Dependency::Supressed)){
                     skip = true;
                     break;
                 }

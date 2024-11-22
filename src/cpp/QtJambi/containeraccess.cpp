@@ -67,9 +67,9 @@ QReadWriteLock* containerAccessLock(){
     return gContainerAccessLock();
 }
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-typedef QMap<int, QtMetaContainerPrivate::QMetaAssociationInterface> MetaAssociationHash;
+typedef SecureContainer<QMap<int, QtMetaContainerPrivate::QMetaAssociationInterface>, QReadWriteLock, &containerAccessLock> MetaAssociationHash;
 Q_GLOBAL_STATIC(MetaAssociationHash, gMetaAssociationHash)
-typedef QMap<int, QtMetaContainerPrivate::QMetaSequenceInterface> MetaSequenceHash;
+typedef SecureContainer<QMap<int, QtMetaContainerPrivate::QMetaSequenceInterface>, QReadWriteLock, &containerAccessLock> MetaSequenceHash;
 Q_GLOBAL_STATIC(MetaSequenceHash, gMetaSequenceHash)
 
 QMap<int, QtMetaContainerPrivate::QMetaAssociationInterface>& metaAssociationHash(){
@@ -83,8 +83,8 @@ QMap<int, QtMetaContainerPrivate::QMetaSequenceInterface>& metaSequenceHash(){
 
 #if defined(QTJAMBI_GENERIC_ACCESS)
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, gContainerAccessLoader, ("io.qt.qtjambi.ContainerAccess", QLatin1String("/containeraccess"), Qt::CaseInsensitive))
-typedef QMap<hash_type, ContainerAccessAPI::SequentialContainerAccessFactory> SequentialContainerAccessFactoryHash;
-typedef QMap<hash_type, ContainerAccessAPI::AssociativeContainerAccessFactory> AssociativeContainerAccessFactoryHash;
+typedef SecureContainer<QMap<hash_type, ContainerAccessAPI::SequentialContainerAccessFactory>, QReadWriteLock, &containerAccessLock> SequentialContainerAccessFactoryHash;
+typedef SecureContainer<QMap<hash_type, ContainerAccessAPI::AssociativeContainerAccessFactory>, QReadWriteLock, &containerAccessLock> AssociativeContainerAccessFactoryHash;
 Q_GLOBAL_STATIC(SequentialContainerAccessFactoryHash, gSequentialContainerAccessFactoryHash)
 Q_GLOBAL_STATIC(AssociativeContainerAccessFactoryHash, gAssociativeContainerAccessFactoryHash)
 
@@ -7186,7 +7186,7 @@ void registerPointerContainerAccess(){
     AssociativeContainerAccessFactoryHelper<QMultiMap,0, 0, 0, 0>::registerContainerAccessFactory();
     AssociativeContainerAccessFactoryHelper<QMultiHash,0, 0, 0, 0>::registerContainerAccessFactory();
     AssociativeContainerAccessFactoryHelper<QPair,0, 0, 0, 0>::registerContainerAccessFactory();
-    AssociativeContainerAccessFactoryHelper<QHash, alignof(QStrng), sizeof(QString), 0, 0>::registerContainerAccessFactory();
+    AssociativeContainerAccessFactoryHelper<QHash, alignof(QString), sizeof(QString), 0, 0>::registerContainerAccessFactory();
     AssociativeContainerAccessFactoryHelper<QMap, alignof(QString), sizeof(QString), 0, 0>::registerContainerAccessFactory();
     AssociativeContainerAccessFactoryHelper<QMultiMap, alignof(QString), sizeof(QString), 0, 0>::registerContainerAccessFactory();
     AssociativeContainerAccessFactoryHelper<QMultiHash, alignof(QString), sizeof(QString), 0, 0>::registerContainerAccessFactory();
@@ -7223,9 +7223,9 @@ struct PairContainerConverter : QtPrivate::AbstractConverterFunction{
         if(JniEnvironment env{500}){
             const PairContainerConverter* converter = static_cast<const PairContainerConverter *>(_this);
             const JObjectWrapper* javaObject = reinterpret_cast<const JObjectWrapper*>(in);
-            if(converter && javaObject && Java::QtCore::QPair::isInstanceOf(env, javaObject->object())){
-                jobject first = Java::QtCore::QPair::first(env, javaObject->object());
-                jobject second = Java::QtCore::QPair::second(env, javaObject->object());
+            if(converter && javaObject && Java::QtCore::QPair::isInstanceOf(env, javaObject->object(env))){
+                jobject first = Java::QtCore::QPair::first(env, javaObject->object(env));
+                jobject second = Java::QtCore::QPair::second(env, javaObject->object(env));
                 converter->m_pairAccess->setFirst(env, out, first);
                 converter->m_pairAccess->setSecond(env, out, second);
                 return true;
@@ -7256,8 +7256,8 @@ struct SequentialContainerConverter : QtPrivate::AbstractConverterFunction{
         if(JniEnvironment env{500}){
             const SequentialContainerConverter* converter = static_cast<const SequentialContainerConverter *>(_this);
             const JObjectWrapper* javaObject = reinterpret_cast<const JObjectWrapper*>(in);
-            if(converter && javaObject && Java::QtJambi::NativeUtility$Object::isInstanceOf(env, javaObject->object())){
-                if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, javaObject->object())){
+            if(converter && javaObject && Java::QtJambi::NativeUtility$Object::isInstanceOf(env, javaObject->object(env))){
+                if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, javaObject->object(env))){
                     if(AbstractContainerAccess* _containerAccess = link->containerAccess()){
                         switch(converter->m_containerType){
                         case SequentialContainerType::QStack:
@@ -7329,8 +7329,8 @@ struct AssociativeContainerConverter : QtPrivate::AbstractConverterFunction{
         if(JniEnvironment env{500}){
             const AssociativeContainerConverter* converter = static_cast<const AssociativeContainerConverter *>(_this);
             const JObjectWrapper* javaObject = reinterpret_cast<const JObjectWrapper*>(in);
-            if(converter && javaObject && Java::QtJambi::NativeUtility$Object::isInstanceOf(env, javaObject->object())){
-                if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, javaObject->object())){
+            if(converter && javaObject && Java::QtJambi::NativeUtility$Object::isInstanceOf(env, javaObject->object(env))){
+                if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, javaObject->object(env))){
                     if(AbstractContainerAccess* _containerAccess = link->containerAccess()){
                         switch(converter->m_containerType){
                         case AssociativeContainerType::QMap:
@@ -7403,8 +7403,9 @@ void registerContainerConverter(SequentialContainerType collectionType, const QM
             if(src){
                 if(JniEnvironment env{500}){
                     const JObjectWrapper* javaObject = reinterpret_cast<const JObjectWrapper*>(src);
-                    if(javaObject && Java::QtJambi::NativeUtility$Object::isInstanceOf(env, javaObject->object())){
-                        if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, javaObject->object())){
+                    jobject jobj;
+                    if(javaObject && Java::QtJambi::NativeUtility$Object::isInstanceOf(env, jobj = javaObject->object(env))){
+                        if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, jobj)){
                             if(AbstractContainerAccess* _containerAccess = link->containerAccess()){
                                 switch(collectionType){
                                 case SequentialContainerType::QStack:
@@ -7467,8 +7468,9 @@ void registerContainerConverter(AssociativeContainerType mapType, const QMetaTyp
             if(src){
                 if(JniEnvironment env{500}){
                     const JObjectWrapper* javaObject = reinterpret_cast<const JObjectWrapper*>(src);
-                    if(javaObject && Java::QtJambi::NativeUtility$Object::isInstanceOf(env, javaObject->object())){
-                        if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, javaObject->object())){
+                    jobject jobj;
+                    if(javaObject && Java::QtJambi::NativeUtility$Object::isInstanceOf(env, jobj = javaObject->object(env))){
+                        if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, jobj)){
                             if(AbstractContainerAccess* _containerAccess = link->containerAccess()){
                                 switch(mapType){
                                 case AssociativeContainerType::QMap:
@@ -7527,12 +7529,14 @@ void registerContainerConverter(QSharedPointer<AbstractPairAccess> pairAccess, c
                                 if(src){
                                     if(JniEnvironment env{500}){
                                         const JObjectWrapper* javaObject = reinterpret_cast<const JObjectWrapper*>(src);
-                                        if(javaObject && javaObject->object()){
-                                            jobject first = Java::QtCore::QPair::first(env, javaObject->object());
-                                            jobject second = Java::QtCore::QPair::second(env, javaObject->object());
-                                            pairAccess->setFirst(env, target, first);
-                                            pairAccess->setSecond(env, target, second);
-                                            return true;
+                                        if(javaObject){
+                                            if(jobject jobj = javaObject->object(env)){
+                                                jobject first = Java::QtCore::QPair::first(env, jobj);
+                                                jobject second = Java::QtCore::QPair::second(env, jobj);
+                                                pairAccess->setFirst(env, target, first);
+                                                pairAccess->setSecond(env, target, second);
+                                                return true;
+                                            }
                                         }
                                     }
                                 }

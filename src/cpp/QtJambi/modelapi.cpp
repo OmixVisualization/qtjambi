@@ -29,6 +29,7 @@
 
 #include <QtCore/QAbstractItemModel>
 #include "modelapi.h"
+#include <QtCore/private/qobject_p.h>
 
 struct CachedValue{
     int value = 0;
@@ -133,4 +134,63 @@ void ModelData::set_columnCount(int value, const QModelIndex& parent){
     }else{
         d->columnCounts[parent] = CachedValue{value, true};
     }
+}
+
+struct Dummy : public JniEnvironment{
+public:
+    quint8 data;
+};
+
+void JniEnvironmentExceptionModelHandler::handleException(const JavaException& exn, const QAbstractItemModel* model, const char* methodName){
+    bool blockException = false;
+    if(model && reinterpret_cast<Dummy*>(this)->data==0){
+        const QObjectPrivate* p = QObjectPrivate::get(model);
+        blockException = !p->isDeletingChildren && p->declarativeData;
+    }
+    //static ResettableBoolFlag noExceptionForwardingByMetaObject("io.qt.no-exception-forwarding-from-");
+    if(blockException/* || noExceptionForwardingByMetaObject*/){
+        QtJambiExceptionBlocker __blocker;
+        {
+            QtJambiExceptionHandler __handler;
+            __handler.handle(environment(), exn, nullptr);
+        }
+        __blocker.release(environment());
+        return;
+    }
+    JniEnvironmentExceptionHandler::handleException(exn, methodName);
+}
+
+void JniEnvironmentScopeExceptionModelHandler::handleException(const JavaException& exn, const QAbstractItemModel* model, const char* methodName){
+    bool blockException = false;
+    if(model && reinterpret_cast<Dummy*>(this)->data==0){
+        const QObjectPrivate* p = QObjectPrivate::get(model);
+        blockException = !p->isDeletingChildren && p->declarativeData;
+    }
+    //static ResettableBoolFlag noExceptionForwardingByMetaObject("io.qt.no-exception-forwarding-from-");
+    if(blockException/* || noExceptionForwardingByMetaObject*/){
+        QtJambiExceptionBlocker __blocker;
+        {
+            QtJambiExceptionHandler __handler;
+            __handler.handle(environment(), exn, nullptr);
+        }
+        __blocker.release(environment());
+        return;
+    }
+    JniEnvironmentScopeExceptionHandler::handleException(exn, methodName);
+}
+
+void JniEnvironmentScopeExceptionModelInhibitor::handleException(const JavaException& exn, const QAbstractItemModel*, const char* methodName){
+    JniEnvironmentScopeExceptionInhibitor::handleException(exn, methodName);
+}
+
+void JniEnvironmentScopeExceptionModelHandlerAndBlocker::handleException(const JavaException& exn, const QAbstractItemModel*, const char* methodName){
+    JniEnvironmentScopeExceptionHandlerAndBlocker::handleException(exn, methodName);
+}
+
+void JniEnvironmentScopeExceptionModelInhibitorAndBlocker::handleException(const JavaException& exn, const QAbstractItemModel*, const char* methodName){
+    JniEnvironmentScopeExceptionInhibitorAndBlocker::handleException(exn, methodName);
+}
+
+void JniEnvironmentExceptionModelInhibitorAndBlocker::handleException(const JavaException& exn, const QAbstractItemModel*, const char* methodName){
+    JniEnvironmentExceptionInhibitorAndBlocker::handleException(exn, methodName);
 }

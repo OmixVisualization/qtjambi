@@ -473,7 +473,8 @@ struct ExceptionContainer{
     ~ExceptionContainer(){
         if(exn){
             bool requiresDetach = false;
-            if(JNIEnv *env = currentJNIEnvironment(requiresDetach, false)){
+            JNIEnv *env = currentJNIEnvironment(requiresDetach, false);
+            if(env){
                 JniLocalFrame frame(env, 200);
                 try{
                     jstring msg = methodName ? env->NewStringUTF(methodName) : nullptr;
@@ -499,7 +500,7 @@ struct ExceptionContainer{
                 qCWarning(DebugAPI::internalCategory, "An exception occured in thread %s: %s", thread_id_str.c_str(), exn.what());
             }
             if(requiresDetach)
-                EventDispatcherCheck::detach();
+                EventDispatcherCheck::detach(env);
         }
     }
     // QThreadStorage is needed because thread_local is deleted after JNI's thread detach and thus cannot treat java exceptions
@@ -574,7 +575,7 @@ void QtJambiExceptionHandler::handle(JNIEnv *env, const JavaException& exn, cons
             exceptionContainer.methodName = methodName;
         }
         if(requiresDetach)
-            EventDispatcherCheck::detach();
+            EventDispatcherCheck::detach(env);
     }else if(exn){
         throw JavaException(exn);//JavaException(env, exn.object());
     }
@@ -653,7 +654,7 @@ void QtJambiExceptionInhibitor::handle(JNIEnv *env, const JavaException& exn, co
         }
     }
     if(requiresDetach)
-        EventDispatcherCheck::detach();
+        EventDispatcherCheck::detach(env);
 }
 
 QtJambiExceptionBlocker::QtJambiExceptionBlocker()
@@ -717,7 +718,7 @@ void QtJambiExceptionBlocker::release(JNIEnv *env){
         }
     }
     if(requiresDetach)
-        EventDispatcherCheck::detach();
+        EventDispatcherCheck::detach(env);
 }
 
 QtJambiExceptionRaiser::QtJambiExceptionRaiser()
@@ -792,6 +793,11 @@ JniEnvironmentExceptionHandler::~JniEnvironmentExceptionHandler(){
     ExceptionHandler::instance.blocking = data;
 }
 
+bool noExceptionForwarding(){
+    static ResettableBoolFlag flag("io.qt.no-exception-forwarding-from-virtual-calls");
+    return flag;
+}
+
 void JniEnvironmentExceptionHandler::handleException(const JavaException& exn, const char* methodName){
     if(data){
         ExceptionHandler& exceptionHandler = ExceptionHandler::instance;
@@ -804,6 +810,15 @@ void JniEnvironmentExceptionHandler::handleException(const JavaException& exn, c
             exceptionContainer.methodName = methodName;
         }
     }else if(exn){
+        if(noExceptionForwarding()){
+            QtJambiExceptionBlocker __blocker;
+            {
+                QtJambiExceptionHandler __handler;
+                __handler.handle(environment(), exn, methodName);
+            }
+            __blocker.release(environment());
+            return;
+        }
         throw JavaException(exn);//JavaException(env, exn.object());
     }
 }

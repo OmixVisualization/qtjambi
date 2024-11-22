@@ -1306,7 +1306,7 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
         ModifyFunction{
             signature: "clearSingletons()"
             threadAffinity: true
-            since: 6
+            since: 6.3
         }
         ModifyFunction{
             signature: "addImageProvider(QString,QQmlImageProviderBase*)"
@@ -1916,7 +1916,7 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
                               "            slot = \"2\" + method.cppMethodSignature();\n"+
                               "        else\n"+
                               "            slot = \"1\" + method.cppMethodSignature();\n"+
-                              "    }\n"+
+                              "    }else slot = \"1\" + slot;\n"+
                               "}"}
             }
         }

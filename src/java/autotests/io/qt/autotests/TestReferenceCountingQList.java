@@ -212,7 +212,7 @@ public class TestReferenceCountingQList extends ApplicationInitializer {
 					return 0;
 	    		};
 	    		container.add(object);
-	    		General.internalAccess.setJavaOwnership(object);
+//	    		General.internalAccess.setJavaOwnership(object);
 	    		General.internalAccess.registerCleaner(object, counter::incrementAndGet);
 	    		object = null;
 	    	}
@@ -258,7 +258,7 @@ public class TestReferenceCountingQList extends ApplicationInitializer {
 					return 0;
 	    		};
 	    		container.add(object);
-	    		General.internalAccess.setJavaOwnership(object);
+//	    		General.internalAccess.setJavaOwnership(object);
 	    		General.internalAccess.registerCleaner(object, counter::incrementAndGet);
 	    		object = null;
 	    	}

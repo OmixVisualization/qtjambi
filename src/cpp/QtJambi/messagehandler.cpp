@@ -35,7 +35,11 @@
 #include "qtjambi_cast.h"
 
 Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, gMessageHandlerLock, (QReadWriteLock::Recursive))
-Q_GLOBAL_STATIC(QSet<QtMsgType>, gEnabledMessages)
+QReadWriteLock* messageHandlerLock(){
+    return gMessageHandlerLock();
+}
+typedef SecureContainer<QSet<QtMsgType>,QReadWriteLock,&messageHandlerLock> Messages;
+Q_GLOBAL_STATIC(Messages, gEnabledMessages)
 static bool messageHandlerInstalled = false;
 
 void qtjambi_messagehandler_proxy(QtMsgType type, const QMessageLogContext & context, const QString & message)

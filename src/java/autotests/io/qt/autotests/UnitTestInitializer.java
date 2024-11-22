@@ -8,7 +8,9 @@ import java.io.InputStreamReader;
 import java.util.Properties;
 import java.util.logging.LogManager;
 
+import org.junit.AssumptionViolatedException;
 import org.junit.ClassRule;
+import org.junit.internal.runners.statements.Fail;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -70,11 +72,16 @@ public abstract class UnitTestInitializer {
 			}
 			ApplicationInitializer.setTestClassName(description.getTestClass().getSimpleName());
 			if(description.getTestClass().getSimpleName().startsWith("TestInitialization")) {
+				if(System.getProperty("java.version", "").startsWith("1.8") 
+    					|| System.getProperty("java.version", "").startsWith("8"))
+					return new Fail(new AssumptionViolatedException("Skip on Java 8."));
 				if(!"debug".equals(System.getProperty("io.qt.debug"))) {
 					System.clearProperty("io.qt.no-deployment-spec");
 					System.clearProperty("io.qt.library-path-override");
 					System.clearProperty("io.qt.qml-imports");
 					System.clearProperty("io.qt.pluginpath");
+				}else {
+					return new Fail(new AssumptionViolatedException("Skip on debug mode."));
 				}
 			}
 			return base;

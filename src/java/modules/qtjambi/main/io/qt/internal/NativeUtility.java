@@ -39,7 +39,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -64,16 +63,53 @@ public abstract class NativeUtility {
 	private static final java.util.logging.Logger CLEANUP_LOGGER = java.util.logging.Logger.getLogger("io.qt.cleanup");
 	private static Function<java.lang.Object, QMetaObject.DisposedSignal> disposedSignalFactory;
 	private static final Map<Integer, NativeLink> interfaceLinks;
+	private static final Map<Long, java.lang.Object> globalReferences;
+	private static final Map<Long, WeakReference<java.lang.Object>> weakGlobalReferences;
 	private static final Map<Long, QMetaObject.DisposedSignal> disposedSignals;
 	private static final Thread cleanupRegistrationThread;
 	static {
 		interfaceLinks = Collections.synchronizedMap(new HashMap<>());
-		disposedSignals = Collections.synchronizedMap(new TreeMap<>());
+		disposedSignals = Collections.synchronizedMap(new HashMap<>());
+		globalReferences = Collections.synchronizedMap(new HashMap<>());
+		weakGlobalReferences = Collections.synchronizedMap(new HashMap<>());
 		cleanupRegistrationThread = new Thread(QueuedCleaner::cleanup);
 		cleanupRegistrationThread.setName("QtJambiCleanupThread");
 		cleanupRegistrationThread.setDaemon(true);
 		QtJambi_LibraryUtilities.initialize();
 		cleanupRegistrationThread.start();
+	}
+	
+	@NativeAccess
+	private static void pushGlobalReference(long id, java.lang.Object object) {
+		globalReferences.put(id, object);
+	}
+	
+	@NativeAccess
+	private static java.lang.Object getGlobalReference(long id) {
+		return globalReferences.get(id);
+	}
+	
+	@NativeAccess
+	private static void releaseGlobalReference(long id) {
+		globalReferences.remove(id);
+	}
+	
+	@NativeAccess
+	private static void pushWeakGlobalReference(long id, java.lang.Object object) {
+		weakGlobalReferences.put(id, new WeakReference<>(object));
+	}
+	
+	@NativeAccess
+	private static java.lang.Object getWeakGlobalReference(long id) {
+		WeakReference<java.lang.Object> weak = weakGlobalReferences.get(id);
+		if(weak!=null)
+			return weak.get();
+		return null;
+	}
+	
+	@NativeAccess
+	private static void releaseWeakGlobalReference(long id) {
+		weakGlobalReferences.remove(id);
 	}
 
 	@NativeAccess
@@ -179,6 +215,12 @@ public abstract class NativeUtility {
 			}
 			enqueue();
 		}
+		@NativeAccess
+		private static void detachForID(long native__id, boolean hasDisposedSignal) {
+			java.lang.Object object = getGlobalReference(native__id);
+			if(object instanceof NativeLink)
+				((NativeLink)object).detach(native__id, hasDisposedSignal);
+		}
 
 		@Override
 		public synchronized void clean() {
@@ -206,6 +248,12 @@ public abstract class NativeUtility {
 				if (disposed != null)
 					disposed.disconnect();
 			}
+		}
+		@NativeAccess
+		private static void resetForID(long native__id, boolean hasDisposedSignal) {
+			java.lang.Object object = getGlobalReference(native__id);
+			if(object instanceof NativeLink)
+				((NativeLink)object).reset(native__id, hasDisposedSignal);
 		}
 
 		private static native void clean(long native__id);
@@ -285,6 +333,14 @@ public abstract class NativeUtility {
 		public final synchronized QtObjectInterface get() {
 			return referent__strong==null ? super.get() : referent__strong;
 		}
+		@NativeAccess
+		private static QtObjectInterface getForID(long native__id) {
+			java.lang.Object object = getGlobalReference(native__id);
+			if(object instanceof NativeLink) {
+				return ((NativeLink)object).get();
+			}
+			return null;
+		}
 		
 		final synchronized QtObjectInterface weak() {
 			return super.get();
@@ -294,10 +350,28 @@ public abstract class NativeUtility {
 		private final synchronized void releaseOwnership() {
 			this.referent__strong = null;
 		}
+		@NativeAccess
+		private static boolean releaseOwnershipForID(long native__id) {
+			java.lang.Object object = getGlobalReference(native__id);
+			if(object instanceof NativeLink) {
+				((NativeLink)object).releaseOwnership();
+				return true;
+			}
+			return false;
+		}
 		
 		@NativeAccess
 		private final synchronized void takeOwnership() {
 			this.referent__strong = super.get();
+		}
+		@NativeAccess
+		private static boolean takeOwnershipForID(long native__id) {
+			java.lang.Object object = getGlobalReference(native__id);
+			if(object instanceof NativeLink) {
+				((NativeLink)object).takeOwnership();
+				return true;
+			}
+			return false;
 		}
 		
 		@NativeAccess
@@ -1192,6 +1266,38 @@ public abstract class NativeUtility {
 	static void unregisterDependentObject(QtObject dependentObject, Object owner) {
 		unregisterDependentObject(nativeId(dependentObject), nativeId(owner));
 	}
+	
+	static void registerConDestroyedObject(QtObjectInterface dependentObject, QtObjectInterface owner) {
+		registerConDestroyedObject(nativeId(dependentObject), nativeId(owner));
+	}
+	
+	static void unregisterConDestroyedObject(QtObjectInterface dependentObject, QtObjectInterface owner) {
+		unregisterConDestroyedObject(nativeId(dependentObject), nativeId(owner));
+	}
+	
+	static void registerConDestroyedObject(QtObjectInterface dependentObject, QtObject owner) {
+		registerConDestroyedObject(nativeId(dependentObject), nativeId(owner));
+	}
+	
+	static void unregisterConDestroyedObject(QtObjectInterface dependentObject, QtObject owner) {
+		unregisterConDestroyedObject(nativeId(dependentObject), nativeId(owner));
+	}
+	
+	static void registerConDestroyedObject(QtObject dependentObject, QtObjectInterface owner) {
+		registerConDestroyedObject(nativeId(dependentObject), nativeId(owner));
+	}
+	
+	static void unregisterConDestroyedObject(QtObject dependentObject, QtObjectInterface owner) {
+		unregisterConDestroyedObject(nativeId(dependentObject), nativeId(owner));
+	}
+	
+	static void registerConDestroyedObject(QtObject dependentObject, QtObject owner) {
+		registerConDestroyedObject(nativeId(dependentObject), nativeId(owner));
+	}
+	
+	static void unregisterConDestroyedObject(QtObject dependentObject, QtObject owner) {
+		unregisterConDestroyedObject(nativeId(dependentObject), nativeId(owner));
+	}
 
 	private static native void setCppOwnership(long native__id);
 
@@ -1214,6 +1320,10 @@ public abstract class NativeUtility {
 	private native static void registerDependentObject(long dependentObject, long owner);
 
 	private native static void unregisterDependentObject(long dependentObject, long owner);
+	
+	private native static void registerConDestroyedObject(long dependentObject, long owner);
+
+	private native static void unregisterConDestroyedObject(long dependentObject, long owner);
 	
 	private native static Map<Class<? extends QtObjectInterface>, Function<QtObjectInterface,io.qt.MemberAccess<?>>> getInterfaceInfos(QtObjectInterface object);
 }

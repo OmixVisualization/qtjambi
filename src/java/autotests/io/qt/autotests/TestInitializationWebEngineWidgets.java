@@ -33,6 +33,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import io.qt.core.*;
+import io.qt.gui.QGuiApplication;
+import io.qt.gui.QIcon;
 import io.qt.webengine.core.*;
 import io.qt.webengine.widgets.*;
 import io.qt.widgets.*;
@@ -43,16 +45,17 @@ public class TestInitializationWebEngineWidgets extends UnitTestInitializer {
 		Assert.assertTrue(io.qt.QtUtilities.initializePackage("io.qt.webengine.widgets"));
         QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts);
     	QApplication.initialize(new String[0]);
+    	QGuiApplication.setWindowIcon(new QIcon(":io/qt/autotests/icon.png"));
     	QWebEngineProfile.defaultProfile().settings().setAttribute(QWebEngineSettings.WebAttribute.PluginsEnabled, true);
         QWebEngineProfile.defaultProfile().settings().setAttribute(QWebEngineSettings.WebAttribute.DnsPrefetchEnabled, true);
         QWebEngineProfile.defaultProfile().setPersistentCookiesPolicy(QWebEngineProfile.PersistentCookiesPolicy.AllowPersistentCookies);
-    	QWebEngineView window = new QWebEngineView();
-    	window.setUrl("http://info.cern.ch");
-    	window.show();
-    	QApplication.processEvents();
-    	window.hide();
-    	QApplication.processEvents();
-    	window.dispose();
+        {
+	    	QWebEngineView window = new QWebEngineView();
+	    	window.setUrl("http://info.cern.ch");
+	    	window.show();
+	    	QTimer.singleShot(500, QApplication.instance(), QApplication::quit);
+	    	QApplication.exec();
+	    }
     	QApplication.shutdown();
     }
 }

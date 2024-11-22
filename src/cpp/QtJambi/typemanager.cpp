@@ -114,29 +114,34 @@ const std::type_info* getTypeByMetaType(const QtJambiMetaType& metaType){
 const char* getInterface(const char*qt_interface);
 
 Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, gCacheLock, (QReadWriteLock::Recursive))
-typedef QHash<hash_type, QtJambiUtils::InternalToExternalConverter> InternalToExternalConverterHash;
-typedef QHash<hash_type, QtJambiUtils::ExternalToInternalConverter> ExternalToInternalConverterHash;
+QReadWriteLock* cacheLock(){
+    return gCacheLock();
+}
+typedef SecureContainer<QHash<hash_type, QtJambiUtils::InternalToExternalConverter>,QReadWriteLock,&cacheLock> InternalToExternalConverterHash;
+typedef SecureContainer<QHash<hash_type, QtJambiUtils::ExternalToInternalConverter>,QReadWriteLock,&cacheLock> ExternalToInternalConverterHash;
 Q_GLOBAL_STATIC(InternalToExternalConverterHash, gInternalToExternalConverters)
 Q_GLOBAL_STATIC(ExternalToInternalConverterHash, gExternalToInternalConverters)
-typedef QMap<int, QtJambiUtils::QHashFunction> HashFunctionHash;
+typedef SecureContainer<QMap<int, QtJambiUtils::QHashFunction>,QReadWriteLock,&cacheLock> HashFunctionHash;
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #if defined(QTJAMBI_GENERIC_ACCESS)
-typedef QHash<hash_type, QtMetaContainerPrivate::QMetaAssociationInterface> MetaAssociationHash;
-typedef QHash<hash_type, QtMetaContainerPrivate::QMetaSequenceInterface> MetaSequenceHash;
+typedef SecureContainer<QHash<hash_type, QtMetaContainerPrivate::QMetaAssociationInterface>,QReadWriteLock,&cacheLock> MetaAssociationHash;
+typedef SecureContainer<QHash<hash_type, QtMetaContainerPrivate::QMetaSequenceInterface>,QReadWriteLock,&cacheLock> MetaSequenceHash;
 Q_GLOBAL_STATIC(MetaAssociationHash, gMetaAssociationHash)
 Q_GLOBAL_STATIC(MetaSequenceHash, gMetaSequenceHash)
 #endif //defined(QTJAMBI_GENERIC_ACCESS)
 #endif
-typedef QMap<int, QMetaEnum> MetaEnumHash;
+typedef SecureContainer<QMap<int, QMetaEnum>,QReadWriteLock,&cacheLock> MetaEnumHash;
 Q_GLOBAL_STATIC(HashFunctionHash, gHashFunctionByMetaTypeHash)
 Q_GLOBAL_STATIC(MetaEnumHash, gMetaEnumByMetaTypeHash)
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-typedef QMap<QByteArray, size_t> SizeByTypeHash;
+typedef SecureContainer<QMap<QByteArray, size_t>,QReadWriteLock,&cacheLock> SizeByTypeHash;
 Q_GLOBAL_STATIC(SizeByTypeHash, gAlignmentByTypeHash)
 #endif
 
-jobject internal_convertQObjectSmartPointerToJavaObject(JNIEnv *env, const char *className, void* ptr_shared_pointer, SmartPointerDeleter shared_pointer_deleter, SmartPointerGetter pointerGetter);
-jobject internal_convertQObjectSmartPointerToJavaObject(JNIEnv *env, const std::type_info& typeId, void* ptr_shared_pointer, SmartPointerDeleter shared_pointer_deleter, SmartPointerGetter pointerGetter);
+jobject internal_convertQObjectSmartPointerToJavaObject(JNIEnv *env, const char *className,
+                                                    const std::shared_ptr<QObject>& ptr_shared_pointer);
+jobject internal_convertQObjectSmartPointerToJavaObject(JNIEnv *env, const char *className,
+                                                    const QSharedPointer<QObject>& ptr_shared_pointer);
 
 int registerMetaTypeImpl(const std::type_info* typeId,
                      const std::type_info* nonPointerTypeId,
@@ -334,9 +339,15 @@ QString QtJambiTypeManager::processInternalTypeName(const QString &_internalType
     }else if(_internalTypeName.startsWith("QWeakPointer<") && _internalTypeName.endsWith(">")){
         _pointerType = PointerType::WeakPointer;
         return _internalTypeName.mid(13, _internalTypeName.length() - 14)+"*";
+    }else if(_internalTypeName.startsWith("QScopedArrayPointer<") && _internalTypeName.endsWith(">")){
+        _pointerType = PointerType::ScopedArrayPointer;
+        return _internalTypeName.mid(20, _internalTypeName.length() - 21)+"*";
     }else if(_internalTypeName.startsWith("QScopedPointer<") && _internalTypeName.endsWith(">")){
         _pointerType = PointerType::ScopedPointer;
-        return _internalTypeName.mid(15, _internalTypeName.length() - 15)+"*";
+        return _internalTypeName.mid(15, _internalTypeName.length() - 16)+"*";
+    }else if(_internalTypeName.startsWith("QPointer<") && _internalTypeName.endsWith(">")){
+        _pointerType = PointerType::TrackingPointer;
+        return _internalTypeName.mid(9, _internalTypeName.length() - 10)+"*";
     }else if(_internalTypeName.startsWith("std::shared_ptr<") && _internalTypeName.endsWith(">")){
         _pointerType = PointerType::shared_ptr;
         return _internalTypeName.mid(16, _internalTypeName.length() - 17)+"*";
@@ -743,13 +754,20 @@ QString QtJambiTypeManager::getExternalTypeName(JNIEnv* environment, const QStri
     }
     if(typeId){
         javaName = getJavaName(*typeId);
+        if(pointerType!=PointerType::NoPointer && pointerType!=PointerType::initializer_list){
+            if(typeid_equals(*typeId, typeid(QString))){
+                javaName = "io/qt/core/QString";
+            }else if(typeid_equals(*typeId, typeid(QVariant))){
+                javaName = "io/qt/core/QVariant";
+            }
+        }
     }
     if(javaName.isEmpty())
         javaName = QLatin1String(getInterface(qPrintable(internalTypeName)));// TODO adapt!!
     if(javaName.isEmpty()){
         if(!metaType.isValid()){
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            QMetaType _metaType(QMetaType::type(qPrintable(_internalTypeName)));
+            QMetaType _metaType(QMetaType::type(qPrintable(internalTypeName)));
 #else
             QMetaType _metaType = QMetaType::fromName(internalTypeName.toLatin1());
 #endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -914,7 +932,7 @@ QString QtJambiTypeManager::getExternalTypeName(JNIEnv* environment, const QStri
             }
         }else{
             QString metaTypeName(QLatin1String(metaType.name()));
-            if(metaTypeName!=_internalTypeName){
+            if(metaTypeName!=internalTypeName && metaTypeName!=_internalTypeName){
                 return getExternalTypeName(environment, metaTypeName, metaType);
             }
         }
@@ -932,7 +950,7 @@ QString QtJambiTypeManager::getExternalTypeName(JNIEnv* environment, const QStri
                 return QLatin1String("io/qt/core/QObject");
             }else if(metaType.flags() & QMetaType::PointerToGadget){
                 return QLatin1String("io/qt/core/QMetaType$GenericGadget");
-            }else if(isPointerType(_internalTypeName)){
+            }else if(isPointer){
                 return QLatin1String("io/qt/core/QMetaType$GenericObject");
             }else{
                 return QLatin1String("io/qt/core/QMetaType$GenericValue");
@@ -1095,11 +1113,52 @@ QtJambiUtils::InternalToExternalConverter QtJambiTypeManager::getInternalToExter
     PointerType pointerType = PointerType::NoPointer;
     internalTypeName = processInternalTypeName(internalTypeName, pointerType);
 
-    if (internalMetaType.id() == QMetaType::QVariant) {
-        return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-            p.l = QtJambiAPI::convertQVariantToJavaObject(env, *reinterpret_cast<const QVariant*>(in));
-            return true;
-        };
+    if (internalMetaType.id() == QMetaType::QVariant
+            || (pointerType!=PointerType::NoPointer && internalTypeName=="QVariant*")) {
+        switch(pointerType){
+        case PointerType::NoPointer:
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                        p.l = QtJambiAPI::convertQVariantToJavaObject(env, *reinterpret_cast<const QVariant*>(in));
+                        return true;
+                    };
+            ///if(Java::QtCore::QVariant::isSameClass(_env,externalClass)){
+        case PointerType::SharedPointer:
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                const QSharedPointer<QVariant>* ptr = reinterpret_cast<const QSharedPointer<QVariant>*>(in);
+                if(ptr){
+                    p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, *ptr);
+                }
+                return true;
+            };
+        case PointerType::shared_ptr:
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                const std::shared_ptr<QVariant>* ptr = reinterpret_cast<const std::shared_ptr<QVariant>*>(in);
+                if(ptr){
+                    p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, *ptr);
+                }
+                return true;
+            };
+        case PointerType::WeakPointer:
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                const QWeakPointer<QVariant>* ptr = reinterpret_cast<const QWeakPointer<QVariant>*>(in);
+                if(ptr){
+                    if(const QSharedPointer<QVariant> _ptr{*ptr})
+                        p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, _ptr);
+                }
+                return true;
+            };
+        case PointerType::weak_ptr:
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                const std::weak_ptr<QVariant>* ptr = reinterpret_cast<const std::weak_ptr<QVariant>*>(in);
+                if(ptr){
+                    if(const std::shared_ptr<QVariant> _ptr{*ptr})
+                        p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, _ptr);
+                }
+                return true;
+            };
+        default:
+            return ParameterTypeInfo::default_internalToExternalConverter();
+        }
     }else if ( internalMetaType.id() == QMetaType::Nullptr
                || internalMetaType.id() == QMetaType::Void
                || Java::Runtime::Void::isSameClass(_env, externalClass)
@@ -1118,12 +1177,82 @@ QtJambiUtils::InternalToExternalConverter QtJambiTypeManager::getInternalToExter
             p.l = reinterpret_cast<const JObjectValueWrapper*>(in)->value(env);
             return true;
         };
-    }else if(isJObjectWrappedMetaType(internalMetaType)){
+#endif
+    } else if (internalMetaType.id() == registeredMetaTypeID(typeid(JObjectWrapper))
+               || internalMetaType.id() == registeredMetaTypeID(typeid(JCollectionWrapper))
+               || internalMetaType.id() == registeredMetaTypeID(typeid(JMapWrapper))
+               || internalMetaType.id() == registeredMetaTypeID(typeid(JIteratorWrapper))
+               || internalMetaType.id() == registeredMetaTypeID(typeid(JObjectArrayWrapper))
+               || internalMetaType.id() == registeredMetaTypeID(typeid(JIntArrayWrapper))
+               || internalMetaType.id() == registeredMetaTypeID(typeid(JLongArrayWrapper))
+               || internalMetaType.id() == registeredMetaTypeID(typeid(JShortArrayWrapper))
+               || internalMetaType.id() == registeredMetaTypeID(typeid(JByteArrayWrapper))
+               || internalMetaType.id() == registeredMetaTypeID(typeid(JBooleanArrayWrapper))
+               || internalMetaType.id() == registeredMetaTypeID(typeid(JCharArrayWrapper))
+               || internalMetaType.id() == registeredMetaTypeID(typeid(JFloatArrayWrapper))
+               || internalMetaType.id() == registeredMetaTypeID(typeid(JDoubleArrayWrapper))
+               || isJObjectWrappedMetaType(internalMetaType)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+               || isNativeWrapperMetaType(internalMetaType)
+#endif
+               ) {
         return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-            p.l = env->NewLocalRef(reinterpret_cast<const JObjectWrapper*>(in)->object());
+            p.l = reinterpret_cast<const JObjectWrapper *>(in)->object(env);
             return true;
         };
+    }else if(pointerType!=PointerType::NoPointer
+             && (internalTypeName=="JObjectWrapper*"
+                 || internalTypeName=="JCollectionWrapper*"
+                 || internalTypeName=="JMapWrapper*"
+                 || internalTypeName=="JIteratorWrapper*"
+                 || internalTypeName=="JObjectArrayWrapper*"
+                 || internalTypeName=="JIntArrayWrapper*"
+                 || internalTypeName=="JLongArrayWrapper*"
+                 || internalTypeName=="JByteArrayWrapper*"
+                 || internalTypeName=="JBooleanArrayWrapper*"
+                 || internalTypeName=="JCharArrayWrapper*"
+                 || internalTypeName=="JCharArrayWrapper*"
+                 || internalTypeName=="JDoubleArrayWrapper*"
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+                 || (internalTypeName.startsWith("JObjectValueWrapper<") && internalTypeName.endsWith(">*"))
 #endif
+                 || (internalTypeName.startsWith("JObjectWrapper<") && internalTypeName.endsWith(">*")))){
+        switch(pointerType){
+        case PointerType::SharedPointer:
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                const QSharedPointer<JObjectWrapper>* ptr = reinterpret_cast<const QSharedPointer<JObjectWrapper>*>(in);
+                if(ptr)
+                    p.l = (*ptr)->object(env);
+                return true;
+            };
+        case PointerType::shared_ptr:
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                const std::shared_ptr<JObjectWrapper>* ptr = reinterpret_cast<const std::shared_ptr<JObjectWrapper>*>(in);
+                if(ptr)
+                    p.l = (*ptr)->object(env);
+                return true;
+            };
+        case PointerType::WeakPointer:
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                const QWeakPointer<JObjectWrapper>* ptr = reinterpret_cast<const QWeakPointer<JObjectWrapper>*>(in);
+                if(ptr){
+                    if(const QSharedPointer<JObjectWrapper> _ptr{*ptr})
+                        p.l = _ptr->object(env);
+                }
+                return true;
+            };
+        case PointerType::weak_ptr:
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                const std::weak_ptr<JObjectWrapper>* ptr = reinterpret_cast<const std::weak_ptr<JObjectWrapper>*>(in);
+                if(ptr){
+                    if(const std::shared_ptr<JObjectWrapper> _ptr{*ptr})
+                        p.l = _ptr->object(env);
+                }
+                return true;
+            };
+        default:
+            return ParameterTypeInfo::default_internalToExternalConverter();
+        }
     }
     bool isArrayClass = externalClass ? Java::Runtime::Class::isArray(_env, externalClass) : false;
 
@@ -1313,102 +1442,438 @@ QtJambiUtils::InternalToExternalConverter QtJambiTypeManager::getInternalToExter
             }
         }
     }else if(Java::Runtime::Integer::isPrimitiveType(_env,externalClass) || Java::Runtime::Integer::isSameClass(_env,externalClass)){
-        return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool forceBoxedType)->bool{
-            memcpy(&p.i, in, 4);
-            if(forceBoxedType){
-                p.l = QtJambiAPI::toJavaIntegerObject(env, p.i);
-            }
-            return true;
-        };
-    }else if(Java::Runtime::Long::isPrimitiveType(_env,externalClass) || Java::Runtime::Long::isSameClass(_env,externalClass)){
-        return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool forceBoxedType)->bool{
-            memcpy(&p.j, in, 8);
-            if(forceBoxedType){
-                p.l = QtJambiAPI::toJavaLongObject(env, p.j);
-            }
-            return true;
-        };
-    }else if(Java::Runtime::Short::isPrimitiveType(_env,externalClass) || Java::Runtime::Short::isSameClass(_env,externalClass)){
-        return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool forceBoxedType)->bool{
-            memcpy(&p.s, in, 2);
-            if(forceBoxedType){
-                p.l = QtJambiAPI::toJavaShortObject(env, p.s);
-            }
-            return true;
-        };
-    }else if(Java::Runtime::Byte::isPrimitiveType(_env,externalClass) || Java::Runtime::Byte::isSameClass(_env,externalClass)){
-        return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool forceBoxedType)->bool{
-            memcpy(&p.b, in, 1);
-            if(forceBoxedType){
-                p.l = QtJambiAPI::toJavaByteObject(env, p.b);
-            }
-            return true;
-        };
-    }else if(Java::Runtime::Boolean::isPrimitiveType(_env,externalClass) || Java::Runtime::Boolean::isSameClass(_env,externalClass)){
-        return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool forceBoxedType)->bool{
-            memcpy(&p.z, in, 1);
-            if(forceBoxedType){
-                p.l = QtJambiAPI::toJavaBooleanObject(env, p.z);
-            }
-            return true;
-        };
-    }else if(Java::Runtime::Character::isPrimitiveType(_env,externalClass) || Java::Runtime::Character::isSameClass(_env,externalClass)){
-        if(internalMetaType.id()==QMetaType::QChar){
+        switch(pointerType){
+        case PointerType::NoPointer:{
             return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool forceBoxedType)->bool{
-                const QChar* qchr = reinterpret_cast<const QChar*>(in);
-                p.c = qchr->unicode();
+                memcpy(&p.i, in, 4);
                 if(forceBoxedType){
-                    p.l = QtJambiAPI::toJavaCharacterObject(env, p.c);
+                    p.l = QtJambiAPI::toJavaIntegerObject(env, p.i);
                 }
                 return true;
             };
-        }else{
+        }break;
+        case PointerType::SharedPointer:{
             return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool forceBoxedType)->bool{
-                memcpy(&p.c, in, 2);
-                if(forceBoxedType){
-                    p.l = QtJambiAPI::toJavaCharacterObject(env, p.c);
+                const QSharedPointer<jint>* ptr = reinterpret_cast<const QSharedPointer<jint>*>(in);
+                if(ptr && *ptr){
+                    p.i = *ptr->get();
+                    if(forceBoxedType){
+                        p.l = QtJambiAPI::toJavaIntegerObject(env, p.i);
+                    }
                 }
+                return true;
+            };
+        }break;
+        case PointerType::shared_ptr:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool forceBoxedType)->bool{
+                const std::shared_ptr<jint>* ptr = reinterpret_cast<const std::shared_ptr<jint>*>(in);
+                if(ptr && *ptr){
+                    p.i = *ptr->get();
+                    if(forceBoxedType){
+                        p.l = QtJambiAPI::toJavaIntegerObject(env, p.i);
+                    }
+                }
+                return true;
+            };
+        }break;
+        default:
+            return ParameterTypeInfo::default_internalToExternalConverter();
+        }
+    }else if(Java::Runtime::Long::isPrimitiveType(_env,externalClass) || Java::Runtime::Long::isSameClass(_env,externalClass)){
+        switch(pointerType){
+        case PointerType::NoPointer:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool forceBoxedType)->bool{
+                memcpy(&p.j, in, 8);
+                if(forceBoxedType){
+                    p.l = QtJambiAPI::toJavaLongObject(env, p.j);
+                }
+                return true;
+            };
+        }break;
+        case PointerType::SharedPointer:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool forceBoxedType)->bool{
+                const QSharedPointer<jlong>* ptr = reinterpret_cast<const QSharedPointer<jlong>*>(in);
+                if(ptr && *ptr){
+                    p.j = *ptr->get();
+                    if(forceBoxedType){
+                        p.l = QtJambiAPI::toJavaLongObject(env, p.j);
+                    }
+                }
+                return true;
+            };
+        }break;
+        case PointerType::shared_ptr:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool forceBoxedType)->bool{
+                const std::shared_ptr<jlong>* ptr = reinterpret_cast<const std::shared_ptr<jlong>*>(in);
+                if(ptr && *ptr){
+                    p.j = *ptr->get();
+                    if(forceBoxedType){
+                        p.l = QtJambiAPI::toJavaLongObject(env, p.j);
+                    }
+                }
+                return true;
+            };
+        }break;
+        default:
+            return ParameterTypeInfo::default_internalToExternalConverter();
+        }
+    }else if(Java::Runtime::Short::isPrimitiveType(_env,externalClass) || Java::Runtime::Short::isSameClass(_env,externalClass)){
+        switch(pointerType){
+        case PointerType::NoPointer:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool forceBoxedType)->bool{
+                memcpy(&p.s, in, 2);
+                if(forceBoxedType){
+                    p.l = QtJambiAPI::toJavaShortObject(env, p.s);
+                }
+                return true;
+            };
+        }break;
+        case PointerType::SharedPointer:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool forceBoxedType)->bool{
+                const QSharedPointer<jshort>* ptr = reinterpret_cast<const QSharedPointer<jshort>*>(in);
+                if(ptr && *ptr){
+                    p.s = *ptr->get();
+                    if(forceBoxedType){
+                        p.l = QtJambiAPI::toJavaShortObject(env, p.s);
+                    }
+                }
+                return true;
+            };
+        }break;
+        case PointerType::shared_ptr:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool forceBoxedType)->bool{
+                const std::shared_ptr<jshort>* ptr = reinterpret_cast<const std::shared_ptr<jshort>*>(in);
+                if(ptr && *ptr){
+                    p.s = *ptr->get();
+                    if(forceBoxedType){
+                        p.l = QtJambiAPI::toJavaShortObject(env, p.s);
+                    }
+                }
+                return true;
+            };
+        }break;
+        default:
+            return ParameterTypeInfo::default_internalToExternalConverter();
+        }
+    }else if(Java::Runtime::Byte::isPrimitiveType(_env,externalClass) || Java::Runtime::Byte::isSameClass(_env,externalClass)){
+        switch(pointerType){
+        case PointerType::NoPointer:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool forceBoxedType)->bool{
+                memcpy(&p.b, in, 1);
+                if(forceBoxedType){
+                    p.l = QtJambiAPI::toJavaByteObject(env, p.b);
+                }
+                return true;
+            };
+        }break;
+        case PointerType::SharedPointer:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool forceBoxedType)->bool{
+                const QSharedPointer<jbyte>* ptr = reinterpret_cast<const QSharedPointer<jbyte>*>(in);
+                if(ptr && *ptr){
+                    p.b = *ptr->get();
+                    if(forceBoxedType){
+                        p.l = QtJambiAPI::toJavaByteObject(env, p.b);
+                    }
+                }
+                return true;
+            };
+        }break;
+        case PointerType::shared_ptr:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool forceBoxedType)->bool{
+                const std::shared_ptr<jbyte>* ptr = reinterpret_cast<const std::shared_ptr<jbyte>*>(in);
+                if(ptr && *ptr){
+                    p.b = *ptr->get();
+                    if(forceBoxedType){
+                        p.l = QtJambiAPI::toJavaLongObject(env, p.b);
+                    }
+                }
+                return true;
+            };
+        }break;
+        default:
+            return ParameterTypeInfo::default_internalToExternalConverter();
+        }
+    }else if(Java::Runtime::Boolean::isPrimitiveType(_env,externalClass) || Java::Runtime::Boolean::isSameClass(_env,externalClass)){
+        switch(pointerType){
+        case PointerType::NoPointer:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool forceBoxedType)->bool{
+                memcpy(&p.z, in, sizeof(bool));
+                if(forceBoxedType){
+                    p.l = QtJambiAPI::toJavaBooleanObject(env, p.z);
+                }
+                return true;
+            };
+        }break;
+        case PointerType::SharedPointer:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool forceBoxedType)->bool{
+                const QSharedPointer<bool>* ptr = reinterpret_cast<const QSharedPointer<bool>*>(in);
+                if(ptr && *ptr){
+                    p.z = *ptr->get();
+                    if(forceBoxedType){
+                        p.l = QtJambiAPI::toJavaBooleanObject(env, p.z);
+                    }
+                }
+                return true;
+            };
+        }break;
+        case PointerType::shared_ptr:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool forceBoxedType)->bool{
+                const std::shared_ptr<bool>* ptr = reinterpret_cast<const std::shared_ptr<bool>*>(in);
+                if(ptr && *ptr){
+                    p.z = *ptr->get();
+                    if(forceBoxedType){
+                        p.l = QtJambiAPI::toJavaBooleanObject(env, p.z);
+                    }
+                }
+                return true;
+            };
+        }break;
+        default:
+            return ParameterTypeInfo::default_internalToExternalConverter();
+        }
+    }else if(Java::Runtime::Character::isPrimitiveType(_env,externalClass) || Java::Runtime::Character::isSameClass(_env,externalClass)){
+        switch(pointerType){
+        case PointerType::NoPointer:{
+            if(internalMetaType.id()==QMetaType::QChar){
+                return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool forceBoxedType)->bool{
+                    const QChar* qchr = reinterpret_cast<const QChar*>(in);
+                    p.c = qchr->unicode();
+                    if(forceBoxedType){
+                        p.l = QtJambiAPI::toJavaCharacterObject(env, p.c);
+                    }
+                    return true;
+                };
+            }else{
+                return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool forceBoxedType)->bool{
+                    memcpy(&p.c, in, 2);
+                    if(forceBoxedType){
+                        p.l = QtJambiAPI::toJavaCharacterObject(env, p.c);
+                    }
+                    return true;
+                };
+            }
+        }break;
+        case PointerType::SharedPointer:{
+            if(internalMetaType.id()==QMetaType::QChar){
+                return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool forceBoxedType)->bool{
+                    const QSharedPointer<QChar>* ptr = reinterpret_cast<const QSharedPointer<QChar>*>(in);
+                    if(ptr && *ptr){
+                        p.c = (*ptr)->unicode();
+                        if(forceBoxedType){
+                            p.l = QtJambiAPI::toJavaCharacterObject(env, p.c);
+                        }
+                    }
+                    return true;
+                };
+            }else{
+                return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool forceBoxedType)->bool{
+                    const QSharedPointer<jchar>* ptr = reinterpret_cast<const QSharedPointer<jchar>*>(in);
+                    if(ptr && *ptr){
+                        p.c = *ptr->get();
+                        if(forceBoxedType){
+                            p.l = QtJambiAPI::toJavaCharacterObject(env, p.c);
+                        }
+                    }
+                    return true;
+                };
+            }
+        }break;
+        case PointerType::shared_ptr:{
+            if(internalMetaType.id()==QMetaType::QChar){
+                return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool forceBoxedType)->bool{
+                    const std::shared_ptr<QChar>* ptr = reinterpret_cast<const std::shared_ptr<QChar>*>(in);
+                    if(ptr && *ptr){
+                        p.c = (*ptr)->unicode();
+                        if(forceBoxedType){
+                            p.l = QtJambiAPI::toJavaCharacterObject(env, p.c);
+                        }
+                    }
+                    return true;
+                };
+            }else{
+                return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool forceBoxedType)->bool{
+                    const std::shared_ptr<jchar>* ptr = reinterpret_cast<const std::shared_ptr<jchar>*>(in);
+                    if(ptr && *ptr){
+                        p.c = *ptr->get();
+                        if(forceBoxedType){
+                            p.l = QtJambiAPI::toJavaCharacterObject(env, p.c);
+                        }
+                    }
+                    return true;
+                };
+            }
+        }break;
+        default:
+            return ParameterTypeInfo::default_internalToExternalConverter();
+        }
+    }else if(Java::Runtime::Float::isPrimitiveType(_env,externalClass) || Java::Runtime::Float::isSameClass(_env,externalClass)){
+        switch(pointerType){
+        case PointerType::NoPointer:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool forceBoxedType)->bool{
+                memcpy(&p.f, in, 4);
+                if(forceBoxedType){
+                    p.l = QtJambiAPI::toJavaFloatObject(env, p.f);
+                }
+                return true;
+            };
+        }break;
+        case PointerType::SharedPointer:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool forceBoxedType)->bool{
+                const QSharedPointer<jfloat>* ptr = reinterpret_cast<const QSharedPointer<jfloat>*>(in);
+                if(ptr && *ptr){
+                    p.f = *ptr->get();
+                    if(forceBoxedType){
+                        p.l = QtJambiAPI::toJavaFloatObject(env, p.f);
+                    }
+                }
+                return true;
+            };
+        }break;
+        case PointerType::shared_ptr:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool forceBoxedType)->bool{
+                const std::shared_ptr<jfloat>* ptr = reinterpret_cast<const std::shared_ptr<jfloat>*>(in);
+                if(ptr && *ptr){
+                    p.f = *ptr->get();
+                    if(forceBoxedType){
+                        p.l = QtJambiAPI::toJavaFloatObject(env, p.f);
+                    }
+                }
+                return true;
+            };
+        }break;
+        default:
+            return ParameterTypeInfo::default_internalToExternalConverter();
+        }
+    }else if(Java::Runtime::Double::isPrimitiveType(_env,externalClass) || Java::Runtime::Double::isSameClass(_env,externalClass)){
+        switch(pointerType){
+        case PointerType::NoPointer:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool forceBoxedType)->bool{
+                memcpy(&p.d, in, 8);
+                if(forceBoxedType){
+                    p.l = QtJambiAPI::toJavaDoubleObject(env, p.d);
+                }
+                return true;
+            };
+        }break;
+        case PointerType::SharedPointer:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool forceBoxedType)->bool{
+                const QSharedPointer<jdouble>* ptr = reinterpret_cast<const QSharedPointer<jdouble>*>(in);
+                if(ptr && *ptr){
+                    p.d = *ptr->get();
+                    if(forceBoxedType){
+                        p.l = QtJambiAPI::toJavaDoubleObject(env, p.d);
+                    }
+                }
+                return true;
+            };
+        }break;
+        case PointerType::shared_ptr:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool forceBoxedType)->bool{
+                const std::shared_ptr<jdouble>* ptr = reinterpret_cast<const std::shared_ptr<jdouble>*>(in);
+                if(ptr && *ptr){
+                    p.d = *ptr->get();
+                    if(forceBoxedType){
+                        p.l = QtJambiAPI::toJavaDoubleObject(env, p.d);
+                    }
+                }
+                return true;
+            };
+        }break;
+        default:
+            return ParameterTypeInfo::default_internalToExternalConverter();
+        }
+    }else if(Java::Runtime::String::isSameClass(_env,externalClass)){
+        switch(pointerType){
+        case PointerType::NoPointer:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                const QString *strp = reinterpret_cast<const QString *>(in);
+                p.l = qtjambi_cast<jstring>(env, *strp);
+                return true;
+            };
+        }break;
+        case PointerType::SharedPointer:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                const QSharedPointer<QString>* ptr = reinterpret_cast<const QSharedPointer<QString>*>(in);
+                if(ptr && *ptr){
+                    p.l = qtjambi_cast<jstring>(env, **ptr);
+                }
+                return true;
+            };
+        }break;
+        case PointerType::shared_ptr:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                const std::shared_ptr<QString>* ptr = reinterpret_cast<const std::shared_ptr<QString>*>(in);
+                if(ptr && *ptr){
+                    p.l = qtjambi_cast<jstring>(env, **ptr);
+                }
+                return true;
+            };
+        }break;
+        default:
+            return ParameterTypeInfo::default_internalToExternalConverter();
+        }
+    }else if(Java::Runtime::CharSequence::isSameClass(_env,externalClass) || Java::QtCore::QString::isSameClass(_env,externalClass)){
+        switch(pointerType){
+        case PointerType::NoPointer:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                const QString *strp = reinterpret_cast<const QString *>(in);
+                p.l = QtJambiAPI::convertQStringToJavaObject(env, *strp);
+                return true;
+            };
+        }break;
+        case PointerType::SharedPointer:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                const QSharedPointer<QString>* ptr = reinterpret_cast<const QSharedPointer<QString>*>(in);
+                if(ptr){
+                    p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, *ptr);
+                }
+                return true;
+            };
+        }break;
+        case PointerType::shared_ptr:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                const std::shared_ptr<QString>* ptr = reinterpret_cast<const std::shared_ptr<QString>*>(in);
+                if(ptr){
+                    p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, *ptr);
+                }
+                return true;
+            };
+        }break;
+        case PointerType::WeakPointer:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                const QWeakPointer<QString>* ptr = reinterpret_cast<const QWeakPointer<QString>*>(in);
+                if(ptr){
+                    if(const QSharedPointer<QString> _ptr{*ptr})
+                        p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, _ptr);
+                }
+                return true;
+            };
+        }break;
+        case PointerType::weak_ptr:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                const std::weak_ptr<QString>* ptr = reinterpret_cast<const std::weak_ptr<QString>*>(in);
+                if(ptr){
+                    if(const std::shared_ptr<QString> _ptr{*ptr})
+                        p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, _ptr);
+                }
+                return true;
+            };
+        }break;
+        default:
+            return ParameterTypeInfo::default_internalToExternalConverter();
+        }
+    }else if(Java::QtJambi::QNativePointer::isSameClass(_env,externalClass)){
+        if(pointerType==PointerType::NoPointer){
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                const void * const*in_p = reinterpret_cast<const void * const*>(in);
+                p.l = QtJambiAPI::convertNativeToQNativePointer(env, *in_p, QNativePointer::Type::Pointer, -1, 1);
                 return true;
             };
         }
-    }else if(Java::Runtime::Float::isPrimitiveType(_env,externalClass) || Java::Runtime::Float::isSameClass(_env,externalClass)){
-        return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool forceBoxedType)->bool{
-            memcpy(&p.f, in, 4);
-            if(forceBoxedType){
-                p.l = QtJambiAPI::toJavaFloatObject(env, p.f);
-            }
-            return true;
-        };
-    }else if(Java::Runtime::Double::isPrimitiveType(_env,externalClass) || Java::Runtime::Double::isSameClass(_env,externalClass)){
-        return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool forceBoxedType)->bool{
-            memcpy(&p.d, in, 8);
-            if(forceBoxedType){
-                p.l = QtJambiAPI::toJavaDoubleObject(env, p.d);
-            }
-            return true;
-        };
-    }else if(Java::Runtime::String::isSameClass(_env,externalClass)){
-        return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-            const QString *strp = reinterpret_cast<const QString *>(in);
-            p.l = qtjambi_cast<jstring>(env, *strp);
-            return true;
-        };
-    }else if(Java::Runtime::CharSequence::isSameClass(_env,externalClass) || Java::QtCore::QString::isSameClass(_env,externalClass)){
-        return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-            const QString *strp = reinterpret_cast<const QString *>(in);
-            p.l = QtJambiAPI::convertQStringToJavaObject(env, *strp);
-            return true;
-        };
-    }else if(Java::QtJambi::QNativePointer::isSameClass(_env,externalClass)){
-        return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-            const void * const*in_p = reinterpret_cast<const void * const*>(in);
-            p.l = QtJambiAPI::convertNativeToQNativePointer(env, *in_p, QNativePointer::Type::Pointer, -1, 1);
-            return true;
-        };
     } else if (Java::QtJambi::QFlags::isAssignableFrom(_env,externalClass)) {
         if (internalMetaType.id() == registeredMetaTypeID(typeid(JObjectWrapper))) {
             return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-                p.l = env->NewLocalRef(reinterpret_cast<const JObjectWrapper *>(in)->object());
+                p.l = reinterpret_cast<const JObjectWrapper *>(in)->object(env);
                 return true;
             };
         }else if (Java::QtCore::QMetaType$GenericFlags::isSameClass(_env,externalClass)) {
@@ -1420,10 +1885,34 @@ QtJambiUtils::InternalToExternalConverter QtJambiTypeManager::getInternalToExter
             };
         }else{
             externalClass = getGlobalClassRef(_env, externalClass);
-            return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-                p.l = QtJambiAPI::convertQFlagsToJavaObject(env, *reinterpret_cast<const int *>(in), externalClass);
-                return p.l!=nullptr;
-            };
+            switch(pointerType){
+            case PointerType::NoPointer:{
+                return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                    p.l = QtJambiAPI::convertQFlagsToJavaObject(env, *reinterpret_cast<const int *>(in), externalClass);
+                    return p.l!=nullptr;
+                };
+            }break;
+            case PointerType::SharedPointer:{
+                return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                    const QSharedPointer<jint>* ptr = reinterpret_cast<const QSharedPointer<jint>*>(in);
+                    if(ptr && *ptr){
+                        p.l = QtJambiAPI::convertQFlagsToJavaObject(env, **ptr, externalClass);
+                    }
+                    return true;
+                };
+            }break;
+            case PointerType::shared_ptr:{
+                return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                    const std::shared_ptr<jint>* ptr = reinterpret_cast<const std::shared_ptr<jint>*>(in);
+                    if(ptr && *ptr){
+                        p.l = QtJambiAPI::convertQFlagsToJavaObject(env, **ptr, externalClass);
+                    }
+                    return true;
+                };
+            }break;
+            default:
+                return ParameterTypeInfo::default_internalToExternalConverter();
+            }
         }
     } else if(Java::Runtime::Enum::isAssignableFrom(_env,externalClass)
               || Java::QtJambi::QtEnumerator::isAssignableFrom(_env,externalClass)
@@ -1432,10 +1921,12 @@ QtJambiUtils::InternalToExternalConverter QtJambiTypeManager::getInternalToExter
               || Java::QtJambi::QtByteEnumerator::isAssignableFrom(_env,externalClass)){
         if (internalMetaType.id() == registeredMetaTypeID(typeid(JObjectWrapper)) || internalMetaType.id() == registeredMetaTypeID(typeid(JEnumWrapper))) {
             return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-                p.l = env->NewLocalRef(reinterpret_cast<const JObjectWrapper *>(in)->object());
+                p.l = reinterpret_cast<const JObjectWrapper *>(in)->object(env);
                 return true;
             };
         }else if (Java::QtCore::QMetaType$GenericEnumerator::isSameClass(_env,externalClass)) {
+            if(pointerType!=PointerType::NoPointer)
+                return ParameterTypeInfo::default_internalToExternalConverter();
             jint _internalMetaType = internalMetaType.id();
             return [_internalMetaType](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
                 jint index = -1;
@@ -1462,6 +1953,8 @@ QtJambiUtils::InternalToExternalConverter QtJambiTypeManager::getInternalToExter
                 return true;
             };
         } else if (Java::QtCore::QMetaType$GenericShortEnumerator::isSameClass(_env,externalClass)) {
+            if(pointerType!=PointerType::NoPointer)
+                return ParameterTypeInfo::default_internalToExternalConverter();
             jint _internalMetaType = internalMetaType.id();
             return [_internalMetaType](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
                 jint index = -1;
@@ -1488,6 +1981,8 @@ QtJambiUtils::InternalToExternalConverter QtJambiTypeManager::getInternalToExter
                 return true;
             };
         } else if (Java::QtCore::QMetaType$GenericByteEnumerator::isSameClass(_env,externalClass)) {
+            if(pointerType!=PointerType::NoPointer)
+                return ParameterTypeInfo::default_internalToExternalConverter();
             jint _internalMetaType = internalMetaType.id();
             return [_internalMetaType](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
                 jint index = -1;
@@ -1514,6 +2009,8 @@ QtJambiUtils::InternalToExternalConverter QtJambiTypeManager::getInternalToExter
                 return true;
             };
         } else if (Java::QtCore::QMetaType$GenericLongEnumerator::isSameClass(_env,externalClass)) {
+            if(pointerType!=PointerType::NoPointer)
+                return ParameterTypeInfo::default_internalToExternalConverter();
             jint _internalMetaType = internalMetaType.id();
             return [_internalMetaType](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
                 jint index = -1;
@@ -1541,35 +2038,131 @@ QtJambiUtils::InternalToExternalConverter QtJambiTypeManager::getInternalToExter
             };
         }else{
             externalClass = getGlobalClassRef(_env, externalClass);
-            if (Java::QtJambi::QtEnumerator::isAssignableFrom(_env,externalClass)) {
-                return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-                    p.l = QtJambiAPI::convertEnumToJavaObject(env, *reinterpret_cast<const qint32 *>(in), externalClass);
-                    return p.l!=nullptr;
-                };
-            }else if (Java::QtJambi::QtShortEnumerator::isAssignableFrom(_env,externalClass)) {
-                return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-                    p.l = QtJambiAPI::convertEnumToJavaObject(env, *reinterpret_cast<const qint16 *>(in), externalClass);
-                    return p.l!=nullptr;
-                };
-            }else if (Java::QtJambi::QtByteEnumerator::isAssignableFrom(_env,externalClass)) {
-                return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-                    p.l = QtJambiAPI::convertEnumToJavaObject(env, *reinterpret_cast<const qint8 *>(in), externalClass);
-                    return p.l!=nullptr;
-                };
-            }else if (Java::QtJambi::QtLongEnumerator::isAssignableFrom(_env,externalClass)) {
-                return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-                    p.l = QtJambiAPI::convertEnumToJavaObject(env, *reinterpret_cast<const qint64 *>(in), externalClass);
-                    return p.l!=nullptr;
-                };
-            }else /*if (Java::Runtime::Enum::isAssignableFrom(_env,externalClass))*/ {
-                return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-                    jobjectArray enumConstants = Java::Runtime::Class::getEnumConstants(env, externalClass);
-                    p.l = env->GetObjectArrayElement(enumConstants, *reinterpret_cast<const qint32 *>(in));
-                    return p.l!=nullptr;
-                };
+            switch(pointerType){
+            case PointerType::NoPointer:{
+                if (Java::QtJambi::QtEnumerator::isAssignableFrom(_env,externalClass)) {
+                    return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                        p.l = QtJambiAPI::convertEnumToJavaObject(env, *reinterpret_cast<const qint32 *>(in), externalClass);
+                        return p.l!=nullptr;
+                    };
+                }else if (Java::QtJambi::QtShortEnumerator::isAssignableFrom(_env,externalClass)) {
+                    return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                        p.l = QtJambiAPI::convertEnumToJavaObject(env, *reinterpret_cast<const qint16 *>(in), externalClass);
+                        return p.l!=nullptr;
+                    };
+                }else if (Java::QtJambi::QtByteEnumerator::isAssignableFrom(_env,externalClass)) {
+                    return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                        p.l = QtJambiAPI::convertEnumToJavaObject(env, *reinterpret_cast<const qint8 *>(in), externalClass);
+                        return p.l!=nullptr;
+                    };
+                }else if (Java::QtJambi::QtLongEnumerator::isAssignableFrom(_env,externalClass)) {
+                    return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                        p.l = QtJambiAPI::convertEnumToJavaObject(env, *reinterpret_cast<const qint64 *>(in), externalClass);
+                        return p.l!=nullptr;
+                    };
+                }else /*if (Java::Runtime::Enum::isAssignableFrom(_env,externalClass))*/ {
+                    return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                        jobjectArray enumConstants = Java::Runtime::Class::getEnumConstants(env, externalClass);
+                        p.l = env->GetObjectArrayElement(enumConstants, *reinterpret_cast<const qint32 *>(in));
+                        return p.l!=nullptr;
+                    };
+                }
+            }break;
+            case PointerType::SharedPointer:{
+                if (Java::QtJambi::QtEnumerator::isAssignableFrom(_env,externalClass)) {
+                    return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                        const QSharedPointer<jint>* ptr = reinterpret_cast<const QSharedPointer<jint>*>(in);
+                        if(ptr && *ptr){
+                            p.l = QtJambiAPI::convertQFlagsToJavaObject(env, **ptr, externalClass);
+                        }
+                        return true;
+                    };
+                }else if (Java::QtJambi::QtShortEnumerator::isAssignableFrom(_env,externalClass)) {
+                    return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                        const QSharedPointer<jshort>* ptr = reinterpret_cast<const QSharedPointer<jshort>*>(in);
+                        if(ptr && *ptr){
+                            p.l = QtJambiAPI::convertQFlagsToJavaObject(env, **ptr, externalClass);
+                        }
+                        return true;
+                    };
+                }else if (Java::QtJambi::QtByteEnumerator::isAssignableFrom(_env,externalClass)) {
+                    return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                        const QSharedPointer<jbyte>* ptr = reinterpret_cast<const QSharedPointer<jbyte>*>(in);
+                        if(ptr && *ptr){
+                            p.l = QtJambiAPI::convertQFlagsToJavaObject(env, **ptr, externalClass);
+                        }
+                        return true;
+                    };
+                }else if (Java::QtJambi::QtLongEnumerator::isAssignableFrom(_env,externalClass)) {
+                    return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                        const QSharedPointer<jlong>* ptr = reinterpret_cast<const QSharedPointer<jlong>*>(in);
+                        if(ptr && *ptr){
+                            p.l = QtJambiAPI::convertQFlagsToJavaObject(env, **ptr, externalClass);
+                        }
+                        return true;
+                    };
+                }else /*if (Java::Runtime::Enum::isAssignableFrom(_env,externalClass))*/ {
+                    return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                        const QSharedPointer<jint>* ptr = reinterpret_cast<const QSharedPointer<jint>*>(in);
+                        if(ptr && *ptr){
+                            jobjectArray enumConstants = Java::Runtime::Class::getEnumConstants(env, externalClass);
+                            p.l = env->GetObjectArrayElement(enumConstants, *reinterpret_cast<const qint32 *>(in));
+                        }
+                        return true;
+                    };
+                }
+            }break;
+            case PointerType::shared_ptr:{
+                if (Java::QtJambi::QtEnumerator::isAssignableFrom(_env,externalClass)) {
+                    return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                        const std::shared_ptr<jint>* ptr = reinterpret_cast<const std::shared_ptr<jint>*>(in);
+                        if(ptr && *ptr){
+                            p.l = QtJambiAPI::convertQFlagsToJavaObject(env, **ptr, externalClass);
+                        }
+                        return true;
+                    };
+                }else if (Java::QtJambi::QtShortEnumerator::isAssignableFrom(_env,externalClass)) {
+                    return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                        const std::shared_ptr<jshort>* ptr = reinterpret_cast<const std::shared_ptr<jshort>*>(in);
+                        if(ptr && *ptr){
+                            p.l = QtJambiAPI::convertQFlagsToJavaObject(env, **ptr, externalClass);
+                        }
+                        return true;
+                    };
+                }else if (Java::QtJambi::QtByteEnumerator::isAssignableFrom(_env,externalClass)) {
+                    return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                        const std::shared_ptr<jbyte>* ptr = reinterpret_cast<const std::shared_ptr<jbyte>*>(in);
+                        if(ptr && *ptr){
+                            p.l = QtJambiAPI::convertQFlagsToJavaObject(env, **ptr, externalClass);
+                        }
+                        return true;
+                    };
+                }else if (Java::QtJambi::QtLongEnumerator::isAssignableFrom(_env,externalClass)) {
+                    return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                        const std::shared_ptr<jlong>* ptr = reinterpret_cast<const std::shared_ptr<jlong>*>(in);
+                        if(ptr && *ptr){
+                            p.l = QtJambiAPI::convertQFlagsToJavaObject(env, **ptr, externalClass);
+                        }
+                        return true;
+                    };
+                }else /*if (Java::Runtime::Enum::isAssignableFrom(_env,externalClass))*/ {
+                    return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                        const std::shared_ptr<jint>* ptr = reinterpret_cast<const std::shared_ptr<jint>*>(in);
+                        if(ptr && *ptr){
+                            jobjectArray enumConstants = Java::Runtime::Class::getEnumConstants(env, externalClass);
+                            p.l = env->GetObjectArrayElement(enumConstants, *reinterpret_cast<const qint32 *>(in));
+                        }
+                        return true;
+                    };
+                }
+            }break;
+            default:
+                return ParameterTypeInfo::default_internalToExternalConverter();
             }
         }
     } else if (Java::QtCore::QMetaType$GenericValue::isSameClass(_env,externalClass)) {
+        if(pointerType!=PointerType::NoPointer)
+            return ParameterTypeInfo::default_internalToExternalConverter();
         jint _internalMetaType = internalMetaType.id();
         return [_internalMetaType](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
             p.l = QtJambiAPI::convertNativeToJavaOwnedObjectAsWrapper(env, QMetaType::create(_internalMetaType, in), Java::QtCore::QMetaType$GenericValue::getClass(env));
@@ -1579,6 +2172,8 @@ QtJambiUtils::InternalToExternalConverter QtJambiTypeManager::getInternalToExter
             return true;
         };
     } else if (Java::QtCore::QMetaType$GenericObject::isSameClass(_env,externalClass)) {
+        if(pointerType!=PointerType::NoPointer)
+            return ParameterTypeInfo::default_internalToExternalConverter();
         jint _internalMetaType = internalMetaType.id();
         return [_internalMetaType](JNIEnv* env, QtJambiScope* scope, const void* in, jvalue& p, bool)->bool{
             p.l = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, in, Java::QtCore::QMetaType$GenericObject::getClass(env));
@@ -1590,6 +2185,8 @@ QtJambiUtils::InternalToExternalConverter QtJambiTypeManager::getInternalToExter
             return true;
         };
     } else if (Java::QtCore::QMetaType$GenericGadget::isSameClass(_env,externalClass)) {
+        if(pointerType!=PointerType::NoPointer)
+            return ParameterTypeInfo::default_internalToExternalConverter();
         jint _internalMetaType = internalMetaType.id();
         if(internalMetaType.flags() & QMetaType::PointerToGadget){
             return [_internalMetaType](JNIEnv* env, QtJambiScope* scope, const void* in, jvalue& p, bool)->bool{
@@ -1615,6 +2212,8 @@ QtJambiUtils::InternalToExternalConverter QtJambiTypeManager::getInternalToExter
             };
         }
     }else if (Java::QtCore::QModelIndex::isAssignableFrom(_env,externalClass)) {
+        if(pointerType!=PointerType::NoPointer)
+            return ParameterTypeInfo::default_internalToExternalConverter();
         if (allowValuePointers && internalTypeName.contains(QLatin1Char('*'))){
             return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
                 if(in){
@@ -1630,6 +2229,8 @@ QtJambiUtils::InternalToExternalConverter QtJambiTypeManager::getInternalToExter
             };
         }
     }else if (Java::QtCore::QMetaObject::isAssignableFrom(_env,externalClass)) {
+        if(pointerType!=PointerType::NoPointer)
+            return ParameterTypeInfo::default_internalToExternalConverter();
         if (allowValuePointers && internalTypeName.contains(QLatin1Char('*'))){
             return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
                 if(in){
@@ -1644,54 +2245,242 @@ QtJambiUtils::InternalToExternalConverter QtJambiTypeManager::getInternalToExter
             };
         }
     }else if (Java::QtCore::QMetaObject$Connection::isAssignableFrom(_env,externalClass)) {
-        return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-            if(in){
-                p.l = qtjambi_cast<jobject>(env, *reinterpret_cast<const QMetaObject::Connection*>(in));
-            }
-            return true;
-        };
+        switch(pointerType){
+        case PointerType::NoPointer:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                if(in){
+                    p.l = qtjambi_cast<jobject>(env, *reinterpret_cast<const QMetaObject::Connection*>(in));
+                }
+                return true;
+            };
+        }break;
+        case PointerType::SharedPointer:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                const QSharedPointer<QMetaObject::Connection>* ptr = reinterpret_cast<const QSharedPointer<QMetaObject::Connection>*>(in);
+                if(ptr){
+                    p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, *ptr);
+                }
+                return true;
+            };
+        }break;
+        case PointerType::shared_ptr:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                const std::shared_ptr<QMetaObject::Connection>* ptr = reinterpret_cast<const std::shared_ptr<QMetaObject::Connection>*>(in);
+                if(ptr){
+                    p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, *ptr);
+                }
+                return true;
+            };
+        }break;
+        case PointerType::WeakPointer:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                const QWeakPointer<QMetaObject::Connection>* ptr = reinterpret_cast<const QWeakPointer<QMetaObject::Connection>*>(in);
+                if(ptr){
+                    if(const QSharedPointer<QMetaObject::Connection> _ptr{*ptr})
+                        p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, _ptr);
+                }
+                return true;
+            };
+        }break;
+        case PointerType::weak_ptr:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                const std::weak_ptr<QMetaObject::Connection>* ptr = reinterpret_cast<const std::weak_ptr<QMetaObject::Connection>*>(in);
+                if(ptr){
+                    if(const std::shared_ptr<QMetaObject::Connection> _ptr{*ptr})
+                        p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, _ptr);
+                }
+                return true;
+            };
+        }break;
+        default:
+            return ParameterTypeInfo::default_internalToExternalConverter();
+        }
     }else if((internalMetaType.id()==QMetaType::QStringList
-              || internalTypeName=="QStringList")
+             || internalTypeName=="QStringList"
+             || (pointerType!=PointerType::NoPointer && internalTypeName=="QStringList*")
+             || internalTypeName=="QList<QString>"
+             || (pointerType!=PointerType::NoPointer && internalTypeName=="QList<QString>*"))
              &&
              ( Java::QtCore::QList::isAssignableFrom(_env,externalClass)
                || Java::Runtime::List::isSameClass(_env,externalClass)
                || Java::Runtime::Collection::isSameClass(_env,externalClass)
                || Java::Runtime::Object::isSameClass(_env,externalClass))
              ){
-        return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-            if(in){
-                p.l = qtjambi_cast<jobject>(env, *reinterpret_cast<const QStringList*>(in));
-            }
-            return true;
-        };
+        switch(pointerType){
+        case PointerType::NoPointer:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                if(in){
+                    p.l = qtjambi_cast<jobject>(env, *reinterpret_cast<const QStringList*>(in));
+                }
+                return true;
+            };
+        }break;
+        case PointerType::SharedPointer:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                const QSharedPointer<QStringList>* ptr = reinterpret_cast<const QSharedPointer<QStringList>*>(in);
+                if(ptr){
+                    p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, *ptr);
+                }
+                return true;
+            };
+        }break;
+        case PointerType::shared_ptr:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                const std::shared_ptr<QStringList>* ptr = reinterpret_cast<const std::shared_ptr<QStringList>*>(in);
+                if(ptr){
+                    p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, *ptr);
+                }
+                return true;
+            };
+        }break;
+        case PointerType::WeakPointer:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                const QWeakPointer<QStringList>* ptr = reinterpret_cast<const QWeakPointer<QStringList>*>(in);
+                if(ptr){
+                    if(const QSharedPointer<QStringList> _ptr{*ptr})
+                        p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, _ptr);
+                }
+                return true;
+            };
+        }break;
+        case PointerType::weak_ptr:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                const std::weak_ptr<QStringList>* ptr = reinterpret_cast<const std::weak_ptr<QStringList>*>(in);
+                if(ptr){
+                    if(const std::shared_ptr<QStringList> _ptr{*ptr})
+                        p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, _ptr);
+                }
+                return true;
+            };
+        }break;
+        default:
+            return ParameterTypeInfo::default_internalToExternalConverter();
+        }
     }else if((internalMetaType.id()==QMetaType::QByteArrayList
-              || internalTypeName=="QByteArrayList")
+             || internalTypeName=="QByteArrayList"
+             || (pointerType!=PointerType::NoPointer && internalTypeName=="QByteArrayList*")
+             || internalTypeName=="QList<QByteArray>"
+             || (pointerType!=PointerType::NoPointer && internalTypeName=="QList<QByteArray>*")
+             )
              &&
              ( Java::QtCore::QList::isAssignableFrom(_env,externalClass)
                || Java::Runtime::List::isSameClass(_env,externalClass)
                || Java::Runtime::Collection::isSameClass(_env,externalClass)
                || Java::Runtime::Object::isSameClass(_env,externalClass))
              ){
-        return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-            if(in){
-                p.l = qtjambi_cast<jobject>(env, *reinterpret_cast<const QByteArrayList*>(in));
-            }
-            return true;
-        };
+        switch(pointerType){
+        case PointerType::NoPointer:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                if(in){
+                    p.l = qtjambi_cast<jobject>(env, *reinterpret_cast<const QByteArrayList*>(in));
+                }
+                return true;
+            };
+        }break;
+        case PointerType::SharedPointer:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                const QSharedPointer<QByteArrayList>* ptr = reinterpret_cast<const QSharedPointer<QByteArrayList>*>(in);
+                if(ptr){
+                    p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, *ptr);
+                }
+                return true;
+            };
+        }break;
+        case PointerType::shared_ptr:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                const std::shared_ptr<QByteArrayList>* ptr = reinterpret_cast<const std::shared_ptr<QByteArrayList>*>(in);
+                if(ptr){
+                    p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, *ptr);
+                }
+                return true;
+            };
+        }break;
+        case PointerType::WeakPointer:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                const QWeakPointer<QByteArrayList>* ptr = reinterpret_cast<const QWeakPointer<QByteArrayList>*>(in);
+                if(ptr){
+                    if(const QSharedPointer<QByteArrayList> _ptr{*ptr})
+                        p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, _ptr);
+                }
+                return true;
+            };
+        }break;
+        case PointerType::weak_ptr:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                const std::weak_ptr<QByteArrayList>* ptr = reinterpret_cast<const std::weak_ptr<QByteArrayList>*>(in);
+                if(ptr){
+                    if(const std::shared_ptr<QByteArrayList> _ptr{*ptr})
+                        p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, _ptr);
+                }
+                return true;
+            };
+        }break;
+        default:
+            return ParameterTypeInfo::default_internalToExternalConverter();
+        }
     }else if((internalMetaType.id()==QMetaType::QVariantList
-              || internalTypeName=="QVariantList")
+              || internalTypeName=="QVariantList"
+              || (pointerType!=PointerType::NoPointer && internalTypeName=="QVariantList*")
+              || internalTypeName=="QList<QVariant>"
+              || (pointerType!=PointerType::NoPointer && internalTypeName=="QList<QVariant>*")
+              )
              &&
              ( Java::QtCore::QList::isAssignableFrom(_env,externalClass)
                || Java::Runtime::List::isSameClass(_env,externalClass)
                || Java::Runtime::Collection::isSameClass(_env,externalClass)
                || Java::Runtime::Object::isSameClass(_env,externalClass))
+             && pointerType==PointerType::NoPointer
              ){
-        return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-            if(in){
-                p.l = qtjambi_cast<jobject>(env, *reinterpret_cast<const QVariantList*>(in));
-            }
-            return true;
-        };
+        switch(pointerType){
+        case PointerType::NoPointer:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                if(in){
+                    p.l = qtjambi_cast<jobject>(env, *reinterpret_cast<const QVariantList*>(in));
+                }
+                return true;
+            };
+        }break;
+        case PointerType::SharedPointer:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                const QSharedPointer<QVariantList>* ptr = reinterpret_cast<const QSharedPointer<QVariantList>*>(in);
+                if(ptr){
+                    p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, *ptr);
+                }
+                return true;
+            };
+        }break;
+        case PointerType::shared_ptr:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                const std::shared_ptr<QVariantList>* ptr = reinterpret_cast<const std::shared_ptr<QVariantList>*>(in);
+                if(ptr){
+                    p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, *ptr);
+                }
+                return true;
+            };
+        }break;
+        case PointerType::WeakPointer:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                const QWeakPointer<QVariantList>* ptr = reinterpret_cast<const QWeakPointer<QVariantList>*>(in);
+                if(ptr){
+                    if(const QSharedPointer<QVariantList> _ptr{*ptr})
+                        p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, _ptr);
+                }
+                return true;
+            };
+        }break;
+        case PointerType::weak_ptr:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                const std::weak_ptr<QVariantList>* ptr = reinterpret_cast<const std::weak_ptr<QVariantList>*>(in);
+                if(ptr){
+                    if(const std::shared_ptr<QVariantList> _ptr{*ptr})
+                        p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, _ptr);
+                }
+                return true;
+            };
+        }break;
+        default:
+            return ParameterTypeInfo::default_internalToExternalConverter();
+        }
     }else if( (
                 (
                     internalTypeName.startsWith("QList<")
@@ -1761,7 +2550,8 @@ QtJambiUtils::InternalToExternalConverter QtJambiTypeManager::getInternalToExter
                      || Java::Runtime::Collection::isSameClass(_env,externalClass)
                      || Java::Runtime::Object::isSameClass(_env,externalClass))
                 )
-             ) && internalTypeName.endsWith(">")){
+             ) && (internalTypeName.endsWith(">")
+                   || (pointerType!=PointerType::NoPointer && internalTypeName.endsWith(">*")))){
         auto idx = internalTypeName.indexOf("<");
         SequentialContainerType containerType;
         if(internalTypeName.startsWith("QStack<")){
@@ -2026,6 +2816,14 @@ QtJambiUtils::InternalToExternalConverter QtJambiTypeManager::getInternalToExter
                     containerAccess = checkContainerAccess(_env, dynamic_cast<AbstractLinkedListAccess*>(containerAccess));
                     break;
 #endif
+#if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
+                case SequentialContainerType::QSpan:
+                case SequentialContainerType::QConstSpan:
+                    if(pointerType!=PointerType::NoPointer)
+                        return ParameterTypeInfo::default_internalToExternalConverter();
+                    containerAccess = dynamic_cast<AbstractSpanAccess*>(containerAccess);
+                    break;
+#endif
                 case SequentialContainerType::QQueue:
                 case SequentialContainerType::QList:
                     containerAccess = checkContainerAccess(_env, dynamic_cast<AbstractListAccess*>(containerAccess));
@@ -2033,16 +2831,28 @@ QtJambiUtils::InternalToExternalConverter QtJambiTypeManager::getInternalToExter
                 case SequentialContainerType::QSet:
                     containerAccess = checkContainerAccess(_env, dynamic_cast<AbstractSetAccess*>(containerAccess));
                     break;
+                default:
+                    return ParameterTypeInfo::default_internalToExternalConverter();
                 }
 #endif //defined(QTJAMBI_GENERIC_ACCESS)
-                {
-                    QSharedPointer<AbstractContainerAccess> sharedAccess(containerAccess, &containerDisposer);
-                    int containerMetaType = containerAccess->registerContainer(internalTypeName.toLatin1());
-                    return [containerMetaType, containerType, sharedAccess]
+                if(!containerAccess)
+                    return ParameterTypeInfo::default_internalToExternalConverter();
+                QSharedPointer<AbstractContainerAccess> sharedAccess(containerAccess, &containerDisposer);
+                switch(pointerType){
+                case PointerType::NoPointer:{
+                    return [LINK_NAME_ARG(internalTypeName) containerType, sharedAccess]
                             (JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
                         if(in){
                             AbstractContainerAccess* access = sharedAccess->clone();
                             switch(containerType){
+#if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
+                            case SequentialContainerType::QSpan:
+                                p.l = Java::QtCore::QSpan::newInstance(env, nullptr, nullptr);
+                                break;
+                            case SequentialContainerType::QConstSpan:
+                                p.l = Java::QtCore::QConstSpan::newInstance(env, nullptr, nullptr);
+                                break;
+#endif
                             case SequentialContainerType::QStack:
                                 p.l = Java::QtCore::QStack::newInstance(env, nullptr);
                                 break;
@@ -2059,22 +2869,15 @@ QtJambiUtils::InternalToExternalConverter QtJambiTypeManager::getInternalToExter
                             case SequentialContainerType::QVector:
                                 p.l = Java::QtCore::QVector::newInstance(env, nullptr);
                                 break;
-#elif QT_VERSION >= QT_VERSION_CHECK(6,7,0)
-                            case SequentialContainerType::QConstSpan:
-                                p.l = Java::QtCore::QConstSpan::newInstance(env, nullptr, nullptr);
-                                break;
-                            case SequentialContainerType::QSpan:
-                                p.l = Java::QtCore::QSpan::newInstance(env, nullptr, nullptr);
-                                break;
 #endif
                             default:
                                 p.l = Java::QtCore::QList::newInstance(env, nullptr);
                                 break;
                             }
                             void* ptr = access->createContainer(in);
-                            QMetaType _containerMetaType(containerMetaType);
-                            QSharedPointer<QtJambiLink> link = QtJambiLink::createLinkForContainer(env, p.l, ptr, _containerMetaType,
-                                                                                                false, true, access);
+                            QSharedPointer<QtJambiLink> link = QtJambiLink::createLinkForNativeObject(env, p.l, ptr,
+                                                                                                      LINK_NAME_ARG(internalTypeName.toLatin1())
+                                                                                                      false, true, access);
                             if (!link) {
                                 p.l = nullptr;
                                 if(access)
@@ -2084,53 +2887,339 @@ QtJambiUtils::InternalToExternalConverter QtJambiTypeManager::getInternalToExter
                         }
                         return true;
                     };
+                }break;
+                case PointerType::SharedPointer:{
+                    return [containerType, sharedAccess](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                        const QSharedPointer<char>* ptr = reinterpret_cast<const QSharedPointer<char>*>(in);
+                        if(ptr){
+                            AbstractContainerAccess* access = sharedAccess->clone();
+                            switch(containerType){
+                            case SequentialContainerType::QQueue:
+                                p.l = QtJambiAPI::convertQListToJavaObject(env, *ptr, QtJambiAPI::ListType::QQueue, static_cast<AbstractListAccess*>(access));
+                                break;
+                            case SequentialContainerType::QSet:
+                                p.l = QtJambiAPI::convertQSetToJavaObject(env, *ptr, static_cast<AbstractSetAccess*>(access));
+                                break;
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                            case SequentialContainerType::QLinkedList:
+                                p.l = QtJambiAPI::convertQLinkedListToJavaObject(env, *ptr, static_cast<AbstractLinkedListAccess*>(access));
+                                break;
+                            case SequentialContainerType::QVector:
+                                p.l = QtJambiAPI::convertQVectorToJavaObject(env, *ptr, QtJambiAPI::VectorType::QVector, static_cast<AbstractVectorAccess*>(access));
+                                break;
+                            case SequentialContainerType::QStack:
+                                p.l = QtJambiAPI::convertQVectorToJavaObject(env, *ptr, QtJambiAPI::VectorType::QStack, static_cast<AbstractVectorAccess*>(access));
+                                break;
+#else
+                            case SequentialContainerType::QStack:
+                                p.l = QtJambiAPI::convertQListToJavaObject(env, *ptr, QtJambiAPI::ListType::QStack, static_cast<AbstractListAccess*>(access));
+                                break;
+#endif
+                            default:
+                                p.l = QtJambiAPI::convertQListToJavaObject(env, *ptr, QtJambiAPI::ListType::QList, static_cast<AbstractListAccess*>(access));
+                                break;
+                            }
+                        }
+                        return true;
+                    };
+                }break;
+                case PointerType::shared_ptr:{
+                    return [containerType, sharedAccess](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                        const std::shared_ptr<char>* ptr = reinterpret_cast<const std::shared_ptr<char>*>(in);
+                        if(ptr){
+                            AbstractContainerAccess* access = sharedAccess->clone();
+                            switch(containerType){
+                            case SequentialContainerType::QQueue:
+                                p.l = QtJambiAPI::convertQListToJavaObject(env, *ptr, QtJambiAPI::ListType::QQueue, static_cast<AbstractListAccess*>(access));
+                                break;
+                            case SequentialContainerType::QSet:
+                                p.l = QtJambiAPI::convertQSetToJavaObject(env, *ptr, static_cast<AbstractSetAccess*>(access));
+                                break;
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                            case SequentialContainerType::QLinkedList:
+                                p.l = QtJambiAPI::convertQLinkedListToJavaObject(env, *ptr, static_cast<AbstractLinkedListAccess*>(access));
+                                break;
+                            case SequentialContainerType::QVector:
+                                p.l = QtJambiAPI::convertQVectorToJavaObject(env, *ptr, QtJambiAPI::VectorType::QVector, static_cast<AbstractVectorAccess*>(access));
+                                break;
+                            case SequentialContainerType::QStack:
+                                p.l = QtJambiAPI::convertQVectorToJavaObject(env, *ptr, QtJambiAPI::VectorType::QStack, static_cast<AbstractVectorAccess*>(access));
+                                break;
+#else
+                            case SequentialContainerType::QStack:
+                                p.l = QtJambiAPI::convertQListToJavaObject(env, *ptr, QtJambiAPI::ListType::QStack, static_cast<AbstractListAccess*>(access));
+                                break;
+#endif
+                            default:
+                                p.l = QtJambiAPI::convertQListToJavaObject(env, *ptr, QtJambiAPI::ListType::QList, static_cast<AbstractListAccess*>(access));
+                                break;
+                            }
+                        }
+                        return true;
+                    };
+                }break;
+                case PointerType::WeakPointer:{
+                    return [containerType, sharedAccess](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                        const QWeakPointer<char>* ptr = reinterpret_cast<const QWeakPointer<char>*>(in);
+                        if(ptr){
+                            if(const QSharedPointer<char> _ptr = *ptr){
+                                AbstractContainerAccess* access = sharedAccess->clone();
+                                switch(containerType){
+                                case SequentialContainerType::QQueue:
+                                    p.l = QtJambiAPI::convertQListToJavaObject(env, _ptr, QtJambiAPI::ListType::QQueue, static_cast<AbstractListAccess*>(access));
+                                    break;
+                                case SequentialContainerType::QSet:
+                                    p.l = QtJambiAPI::convertQSetToJavaObject(env, _ptr, static_cast<AbstractSetAccess*>(access));
+                                    break;
+    #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                                case SequentialContainerType::QLinkedList:
+                                    p.l = QtJambiAPI::convertQLinkedListToJavaObject(env, _ptr, static_cast<AbstractLinkedListAccess*>(access));
+                                    break;
+                                case SequentialContainerType::QVector:
+                                    p.l = QtJambiAPI::convertQVectorToJavaObject(env, _ptr, QtJambiAPI::VectorType::QVector, static_cast<AbstractVectorAccess*>(access));
+                                    break;
+                                case SequentialContainerType::QStack:
+                                    p.l = QtJambiAPI::convertQVectorToJavaObject(env, _ptr, QtJambiAPI::VectorType::QStack, static_cast<AbstractVectorAccess*>(access));
+                                    break;
+    #else
+                                case SequentialContainerType::QStack:
+                                    p.l = QtJambiAPI::convertQListToJavaObject(env, _ptr, QtJambiAPI::ListType::QStack, static_cast<AbstractListAccess*>(access));
+                                    break;
+    #endif
+                                default:
+                                    p.l = QtJambiAPI::convertQListToJavaObject(env, _ptr, QtJambiAPI::ListType::QList, static_cast<AbstractListAccess*>(access));
+                                    break;
+                                }
+                            }
+                        }
+                        return true;
+                    };
+                }break;
+                case PointerType::weak_ptr:{
+                    return [containerType, sharedAccess](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                        const std::weak_ptr<char>* ptr = reinterpret_cast<const std::weak_ptr<char>*>(in);
+                        if(ptr){
+                            if(const std::shared_ptr<char> _ptr{*ptr}){
+                                AbstractContainerAccess* access = sharedAccess->clone();
+                                switch(containerType){
+                                case SequentialContainerType::QQueue:
+                                    p.l = QtJambiAPI::convertQListToJavaObject(env, _ptr, QtJambiAPI::ListType::QQueue, static_cast<AbstractListAccess*>(access));
+                                    break;
+                                case SequentialContainerType::QSet:
+                                    p.l = QtJambiAPI::convertQSetToJavaObject(env, _ptr, static_cast<AbstractSetAccess*>(access));
+                                    break;
+    #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                                case SequentialContainerType::QLinkedList:
+                                    p.l = QtJambiAPI::convertQLinkedListToJavaObject(env, _ptr, static_cast<AbstractLinkedListAccess*>(access));
+                                    break;
+                                case SequentialContainerType::QVector:
+                                    p.l = QtJambiAPI::convertQVectorToJavaObject(env, _ptr, QtJambiAPI::VectorType::QVector, static_cast<AbstractVectorAccess*>(access));
+                                    break;
+                                case SequentialContainerType::QStack:
+                                    p.l = QtJambiAPI::convertQVectorToJavaObject(env, _ptr, QtJambiAPI::VectorType::QStack, static_cast<AbstractVectorAccess*>(access));
+                                    break;
+    #else
+                                case SequentialContainerType::QStack:
+                                    p.l = QtJambiAPI::convertQListToJavaObject(env, _ptr, QtJambiAPI::ListType::QStack, static_cast<AbstractListAccess*>(access));
+                                    break;
+    #endif
+                                default:
+                                    p.l = QtJambiAPI::convertQListToJavaObject(env, _ptr, QtJambiAPI::ListType::QList, static_cast<AbstractListAccess*>(access));
+                                    break;
+                                }
+                            }
+                        }
+                        return true;
+                    };
+                }break;
+                default:
+                    return ParameterTypeInfo::default_internalToExternalConverter();
                 }
             }
         }
-        return [](JNIEnv*, QtJambiScope*, const void*, jvalue&, bool)->bool{
-            return false;
-        };
+        return ParameterTypeInfo::default_internalToExternalConverter();
     }else if((internalMetaType.id()==QMetaType::QVariantMap
-              || internalTypeName=="QVariantMap")
+              || internalTypeName=="QVariantMap"
+              || (pointerType!=PointerType::NoPointer && internalTypeName=="QVariantMap*")
+              || internalTypeName=="QMap<QString,QVariant>"
+              || (pointerType!=PointerType::NoPointer && internalTypeName=="QMap<QString,QVariant>*"))
              &&
              ( Java::QtCore::QMap::isAssignableFrom(_env,externalClass)
                || Java::Runtime::NavigableMap::isSameClass(_env,externalClass)
                || Java::Runtime::Map::isSameClass(_env,externalClass)
                || Java::Runtime::Object::isSameClass(_env,externalClass))
              ){
-        return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-            if(in){
-                p.l = qtjambi_cast<jobject>(env, *reinterpret_cast<const QVariantMap*>(in));
-            }
-            return true;
-        };
+        switch(pointerType){
+        case PointerType::NoPointer:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                if(in){
+                    p.l = qtjambi_cast<jobject>(env, *reinterpret_cast<const QVariantMap*>(in));
+                }
+                return true;
+            };
+        }break;
+        case PointerType::SharedPointer:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                const QSharedPointer<QVariantMap>* ptr = reinterpret_cast<const QSharedPointer<QVariantMap>*>(in);
+                if(ptr){
+                    p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, *ptr);
+                }
+                return true;
+            };
+        }break;
+        case PointerType::shared_ptr:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                const std::shared_ptr<QVariantMap>* ptr = reinterpret_cast<const std::shared_ptr<QVariantMap>*>(in);
+                if(ptr){
+                    p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, *ptr);
+                }
+                return true;
+            };
+        }break;
+        case PointerType::WeakPointer:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                const QWeakPointer<QVariantMap>* ptr = reinterpret_cast<const QWeakPointer<QVariantMap>*>(in);
+                if(ptr){
+                    if(const QSharedPointer<QVariantMap> _ptr{*ptr})
+                        p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, _ptr);
+                }
+                return true;
+            };
+        }break;
+        case PointerType::weak_ptr:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                const std::weak_ptr<QVariantMap>* ptr = reinterpret_cast<const std::weak_ptr<QVariantMap>*>(in);
+                if(ptr){
+                    if(const std::shared_ptr<QVariantMap> _ptr{*ptr})
+                        p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, _ptr);
+                }
+                return true;
+            };
+        }break;
+        default:
+            return ParameterTypeInfo::default_internalToExternalConverter();
+        }
     }else if((internalMetaType.id()==QMetaType::QVariantHash
-              || internalTypeName=="QVariantHash")
+              || internalTypeName=="QVariantHash"
+              || (pointerType!=PointerType::NoPointer && internalTypeName=="QVariantHash*")
+              || internalTypeName=="QHash<QString,QVariant>"
+              || (pointerType!=PointerType::NoPointer && internalTypeName=="QHash<QString,QVariant>*"))
              &&
              ( Java::QtCore::QHash::isAssignableFrom(_env,externalClass)
                || Java::Runtime::Map::isSameClass(_env,externalClass)
                || Java::Runtime::Object::isSameClass(_env,externalClass))
              ){
-        return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-            if(in){
-                p.l = qtjambi_cast<jobject>(env, *reinterpret_cast<const QVariantHash*>(in));
-            }
-            return true;
-        };
+        switch(pointerType){
+        case PointerType::NoPointer:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                if(in){
+                    p.l = qtjambi_cast<jobject>(env, *reinterpret_cast<const QVariantHash*>(in));
+                }
+                return true;
+            };
+        }break;
+        case PointerType::SharedPointer:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                const QSharedPointer<QVariantHash>* ptr = reinterpret_cast<const QSharedPointer<QVariantHash>*>(in);
+                if(ptr){
+                    p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, *ptr);
+                }
+                return true;
+            };
+        }break;
+        case PointerType::shared_ptr:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                const std::shared_ptr<QVariantHash>* ptr = reinterpret_cast<const std::shared_ptr<QVariantHash>*>(in);
+                if(ptr){
+                    p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, *ptr);
+                }
+                return true;
+            };
+        }break;
+        case PointerType::WeakPointer:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                const QWeakPointer<QVariantHash>* ptr = reinterpret_cast<const QWeakPointer<QVariantHash>*>(in);
+                if(ptr){
+                    if(const QSharedPointer<QVariantHash> _ptr{*ptr})
+                        p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, _ptr);
+                }
+                return true;
+            };
+        }break;
+        case PointerType::weak_ptr:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                const std::weak_ptr<QVariantHash>* ptr = reinterpret_cast<const std::weak_ptr<QVariantHash>*>(in);
+                if(ptr){
+                    if(const std::shared_ptr<QVariantHash> _ptr{*ptr})
+                        p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, _ptr);
+                }
+                return true;
+            };
+        }break;
+        default:
+            return ParameterTypeInfo::default_internalToExternalConverter();
+        }
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     }else if((internalMetaType.id()==QMetaType::QVariantPair
-              || internalTypeName=="QVariantPair")
+              || internalTypeName=="QVariantPair"
+              || (pointerType!=PointerType::NoPointer && internalTypeName=="QVariantPair*")
+              || internalTypeName=="QPair<QVariant,QVariant>"
+              || (pointerType!=PointerType::NoPointer && internalTypeName=="QPair<QVariant,QVariant>*"))
              &&
              ( Java::QtCore::QPair::isSameClass(_env,externalClass)
                || Java::Runtime::Object::isSameClass(_env,externalClass))
+             && pointerType==PointerType::NoPointer
              ){
-        return []
-                (JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-            if(in){
-                p.l = qtjambi_cast<jobject>(env, *reinterpret_cast<const QVariantPair*>(in));
-            }
-            return true;
-        };
+        switch(pointerType){
+        case PointerType::NoPointer:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                if(in){
+                    p.l = qtjambi_cast<jobject>(env, *reinterpret_cast<const QVariantPair*>(in));
+                }
+                return true;
+            };
+        }break;
+        case PointerType::SharedPointer:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                const QSharedPointer<QVariantPair>* ptr = reinterpret_cast<const QSharedPointer<QVariantPair>*>(in);
+                if(ptr){
+                    p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, *ptr);
+                }
+                return true;
+            };
+        }break;
+        case PointerType::shared_ptr:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                const std::shared_ptr<QVariantPair>* ptr = reinterpret_cast<const std::shared_ptr<QVariantPair>*>(in);
+                if(ptr){
+                    p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, *ptr);
+                }
+                return true;
+            };
+        }break;
+        case PointerType::WeakPointer:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                const QWeakPointer<QVariantPair>* ptr = reinterpret_cast<const QWeakPointer<QVariantPair>*>(in);
+                if(ptr){
+                    if(const QSharedPointer<QVariantPair> _ptr{*ptr})
+                        p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, _ptr);
+                }
+                return true;
+            };
+        }break;
+        case PointerType::weak_ptr:{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                const std::weak_ptr<QVariantPair>* ptr = reinterpret_cast<const std::weak_ptr<QVariantPair>*>(in);
+                if(ptr){
+                    if(const std::shared_ptr<QVariantPair> _ptr{*ptr})
+                        p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, _ptr);
+                }
+                return true;
+            };
+        }break;
+        default:
+            return ParameterTypeInfo::default_internalToExternalConverter();
+        }
 #endif
     }else if( ( (
                     internalTypeName.startsWith("QMap<")
@@ -2172,7 +3261,8 @@ QtJambiUtils::InternalToExternalConverter QtJambiTypeManager::getInternalToExter
                     (Java::QtCore::QPair::isSameClass(_env,externalClass)
                      || Java::Runtime::Object::isSameClass(_env,externalClass))
                 )
-             ) && internalTypeName.endsWith(">")){
+             ) && (internalTypeName.endsWith(">")
+                   || (pointerType!=PointerType::NoPointer && internalTypeName.endsWith(">*")))){
         auto idx = internalTypeName.indexOf("<");
         AssociativeContainerType mapType;
         if(internalTypeName.startsWith("QMap<")){
@@ -2592,50 +3682,205 @@ QtJambiUtils::InternalToExternalConverter QtJambiTypeManager::getInternalToExter
                     }
 #endif //defined(QTJAMBI_GENERIC_ACCESS)
                     QSharedPointer<AbstractContainerAccess> sharedAccess(containerAccess, &containerDisposer);
-                    int containerMetaType = sharedAccess->registerContainer(internalTypeName.toLatin1());
                     if(mapType == AssociativeContainerType::QPair){
                         QSharedPointer<AbstractPairAccess> pairAccess(sharedAccess.dynamicCast<AbstractPairAccess>());
-                        return [pairAccess]
-                                (JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-                            if(in){
-                                jobject first = pairAccess->first(env, in);
-                                jobject second = pairAccess->second(env, in);
-                                p.l = Java::QtCore::QPair::newInstance(env, first, second);
-                            }
-                            return true;
-                        };
+                        switch(pointerType){
+                        case PointerType::NoPointer:{
+                            return [pairAccess]
+                                    (JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                                if(in){
+                                    jobject first = pairAccess->first(env, in);
+                                    jobject second = pairAccess->second(env, in);
+                                    p.l = Java::QtCore::QPair::newInstance(env, first, second);
+                                }
+                                return true;
+                            };
+                        }break;
+                        case PointerType::SharedPointer:{
+                            return [pairAccess](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                                const QSharedPointer<char>* ptr = reinterpret_cast<const QSharedPointer<char>*>(in);
+                                if(ptr && *ptr){
+                                    jobject first = pairAccess->first(env, ptr->get());
+                                    jobject second = pairAccess->second(env, ptr->get());
+                                    p.l = Java::QtCore::QPair::newInstance(env, first, second);
+                                }
+                                return true;
+                            };
+                        }break;
+                        case PointerType::shared_ptr:{
+                            return [pairAccess](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                                const std::shared_ptr<char>* ptr = reinterpret_cast<const std::shared_ptr<char>*>(in);
+                                if(ptr && *ptr){
+                                    jobject first = pairAccess->first(env, ptr->get());
+                                    jobject second = pairAccess->second(env, ptr->get());
+                                    p.l = Java::QtCore::QPair::newInstance(env, first, second);
+                                }
+                                return true;
+                            };
+                        }break;
+                        case PointerType::WeakPointer:{
+                            return [pairAccess](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                                const QWeakPointer<char>* ptr = reinterpret_cast<const QWeakPointer<char>*>(in);
+                                if(ptr){
+                                    if(const QSharedPointer<char> _ptr{*ptr}){
+                                        jobject first = pairAccess->first(env, _ptr.get());
+                                        jobject second = pairAccess->second(env, _ptr.get());
+                                        p.l = Java::QtCore::QPair::newInstance(env, first, second);
+                                    }
+                                }
+                                return true;
+                            };
+                        }break;
+                        case PointerType::weak_ptr:{
+                            return [pairAccess](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                                const std::weak_ptr<char>* ptr = reinterpret_cast<const std::weak_ptr<char>*>(in);
+                                if(ptr){
+                                    if(const std::shared_ptr<char> _ptr{*ptr}){
+                                        jobject first = pairAccess->first(env, _ptr.get());
+                                        jobject second = pairAccess->second(env, _ptr.get());
+                                        p.l = Java::QtCore::QPair::newInstance(env, first, second);
+                                    }
+                                }
+                                return true;
+                            };
+                        }break;
+                        default:
+                            return ParameterTypeInfo::default_internalToExternalConverter();
+                        }
                     }else{
-                        return [containerMetaType, mapType, sharedAccess]
-                                (JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-                            if(in){
-                                AbstractContainerAccess* access = sharedAccess->clone();
-                                switch(mapType){
-                                case AssociativeContainerType::QMap:
-                                    p.l = Java::QtCore::QMap::newInstance(env, nullptr);
-                                    break;
-                                case AssociativeContainerType::QMultiMap:
-                                    p.l = Java::QtCore::QMultiMap::newInstance(env, nullptr);
-                                    break;
-                                case AssociativeContainerType::QMultiHash:
-                                    p.l = Java::QtCore::QMultiHash::newInstance(env, nullptr);
-                                    break;
-                                default:
-                                    p.l = Java::QtCore::QHash::newInstance(env, nullptr);
-                                    break;
+                        switch(pointerType){
+                        case PointerType::NoPointer:{
+                            return [LINK_NAME_ARG(internalTypeName) mapType, sharedAccess]
+                                    (JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                                if(in){
+                                    AbstractContainerAccess* access = sharedAccess->clone();
+                                    switch(mapType){
+                                    case AssociativeContainerType::QMap:
+                                        p.l = Java::QtCore::QMap::newInstance(env, nullptr);
+                                        break;
+                                    case AssociativeContainerType::QMultiMap:
+                                        p.l = Java::QtCore::QMultiMap::newInstance(env, nullptr);
+                                        break;
+                                    case AssociativeContainerType::QMultiHash:
+                                        p.l = Java::QtCore::QMultiHash::newInstance(env, nullptr);
+                                        break;
+                                    default:
+                                        p.l = Java::QtCore::QHash::newInstance(env, nullptr);
+                                        break;
+                                    }
+                                    void* ptr = access->createContainer(in);
+                                    QSharedPointer<QtJambiLink> link = QtJambiLink::createLinkForNativeObject(env, p.l, ptr,
+                                                                                                              LINK_NAME_ARG(internalTypeName.toLatin1())
+                                                                                                              false, true, access, QtJambiLink::Ownership::None);
+                                    if (!link) {
+                                        p.l = nullptr;
+                                        if(access)
+                                            access->dispose();
+                                    }
+                                    return !!link;
                                 }
-                                void* ptr = access->createContainer(in);
-                                QMetaType _containerMetaType(containerMetaType);
-                                QSharedPointer<QtJambiLink> link = QtJambiLink::createLinkForNativeObject(env, p.l, ptr, _containerMetaType,
-                                                                                                    false, true, access, QtJambiLink::Ownership::None);
-                                if (!link) {
-                                    p.l = nullptr;
-                                    if(access)
-                                        access->dispose();
+                                return true;
+                            };
+                        }break;
+                        case PointerType::SharedPointer:{
+                            return [mapType, sharedAccess](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                                const QSharedPointer<char>* ptr = reinterpret_cast<const QSharedPointer<char>*>(in);
+                                if(ptr && *ptr){
+                                    AbstractContainerAccess* access = sharedAccess->clone();
+                                    switch(mapType){
+                                    case AssociativeContainerType::QMap:
+                                        p.l = QtJambiAPI::convertQMapToJavaObject(env, *ptr, static_cast<AbstractMapAccess*>(access));
+                                        break;
+                                    case AssociativeContainerType::QMultiMap:
+                                        p.l = QtJambiAPI::convertQMultiMapToJavaObject(env, *ptr, static_cast<AbstractMultiMapAccess*>(access));
+                                        break;
+                                    case AssociativeContainerType::QMultiHash:
+                                        p.l = QtJambiAPI::convertQMultiHashToJavaObject(env, *ptr, static_cast<AbstractMultiHashAccess*>(access));
+                                        break;
+                                    default:
+                                        p.l = QtJambiAPI::convertQHashToJavaObject(env, *ptr, static_cast<AbstractHashAccess*>(access));
+                                        break;
+                                    }
                                 }
-                                return !!link;
-                            }
-                            return true;
-                        };
+                                return true;
+                            };
+                        }break;
+                        case PointerType::shared_ptr:{
+                            return [mapType, sharedAccess](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                                const std::shared_ptr<char>* ptr = reinterpret_cast<const std::shared_ptr<char>*>(in);
+                                if(ptr && *ptr){
+                                    AbstractContainerAccess* access = sharedAccess->clone();
+                                    switch(mapType){
+                                    case AssociativeContainerType::QMap:
+                                        p.l = QtJambiAPI::convertQMapToJavaObject(env, *ptr, static_cast<AbstractMapAccess*>(access));
+                                        break;
+                                    case AssociativeContainerType::QMultiMap:
+                                        p.l = QtJambiAPI::convertQMultiMapToJavaObject(env, *ptr, static_cast<AbstractMultiMapAccess*>(access));
+                                        break;
+                                    case AssociativeContainerType::QMultiHash:
+                                        p.l = QtJambiAPI::convertQMultiHashToJavaObject(env, *ptr, static_cast<AbstractMultiHashAccess*>(access));
+                                        break;
+                                    default:
+                                        p.l = QtJambiAPI::convertQHashToJavaObject(env, *ptr, static_cast<AbstractHashAccess*>(access));
+                                        break;
+                                    }
+                                }
+                                return true;
+                            };
+                        }break;
+                        case PointerType::WeakPointer:{
+                            return [mapType, sharedAccess](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                                const QWeakPointer<char>* ptr = reinterpret_cast<const QWeakPointer<char>*>(in);
+                                if(ptr){
+                                    if(const QSharedPointer<char> _ptr{*ptr}){
+                                        AbstractContainerAccess* access = sharedAccess->clone();
+                                        switch(mapType){
+                                        case AssociativeContainerType::QMap:
+                                            p.l = QtJambiAPI::convertQMapToJavaObject(env, _ptr, static_cast<AbstractMapAccess*>(access));
+                                            break;
+                                        case AssociativeContainerType::QMultiMap:
+                                            p.l = QtJambiAPI::convertQMultiMapToJavaObject(env, _ptr, static_cast<AbstractMultiMapAccess*>(access));
+                                            break;
+                                        case AssociativeContainerType::QMultiHash:
+                                            p.l = QtJambiAPI::convertQMultiHashToJavaObject(env, _ptr, static_cast<AbstractMultiHashAccess*>(access));
+                                            break;
+                                        default:
+                                            p.l = QtJambiAPI::convertQHashToJavaObject(env, _ptr, static_cast<AbstractHashAccess*>(access));
+                                            break;
+                                        }
+                                    }
+                                }
+                                return true;
+                            };
+                        }break;
+                        case PointerType::weak_ptr:{
+                            return [mapType, sharedAccess](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                                const std::weak_ptr<char>* ptr = reinterpret_cast<const std::weak_ptr<char>*>(in);
+                                if(ptr){
+                                    if(const std::shared_ptr<char> _ptr{*ptr}){
+                                        AbstractContainerAccess* access = sharedAccess->clone();
+                                        switch(mapType){
+                                        case AssociativeContainerType::QMap:
+                                            p.l = QtJambiAPI::convertQMapToJavaObject(env, _ptr, static_cast<AbstractMapAccess*>(access));
+                                            break;
+                                        case AssociativeContainerType::QMultiMap:
+                                            p.l = QtJambiAPI::convertQMultiMapToJavaObject(env, _ptr, static_cast<AbstractMultiMapAccess*>(access));
+                                            break;
+                                        case AssociativeContainerType::QMultiHash:
+                                            p.l = QtJambiAPI::convertQMultiHashToJavaObject(env, _ptr, static_cast<AbstractMultiHashAccess*>(access));
+                                            break;
+                                        default:
+                                            p.l = QtJambiAPI::convertQHashToJavaObject(env, _ptr, static_cast<AbstractHashAccess*>(access));
+                                            break;
+                                        }
+                                    }
+                                }
+                                return true;
+                            };
+                        }break;
+                        default:
+                            return ParameterTypeInfo::default_internalToExternalConverter();
+                        }
                     }
                 }
             }
@@ -2682,51 +3927,59 @@ QtJambiUtils::InternalToExternalConverter QtJambiTypeManager::getInternalToExter
         }
         if(typeId){
             if (Java::QtCore::QObject::isAssignableFrom(_env,externalClass)) {
-                if(pointerType == PointerType::SharedPointer){
+                switch(pointerType){
+                case PointerType::NoPointer:
+                    return [typeId](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                        QObject * const *ptr = reinterpret_cast<QObject * const *>(in);
+                        if(ptr){
+                            QObject * qobject = *ptr;
+                            p.l = QtJambiAPI::convertQObjectToJavaObject(env, qobject, *typeId);
+                        }
+                        return true;
+                    };
+                case PointerType::SharedPointer:
                     return [typeId](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
                         const QSharedPointer<QObject>* ptr = reinterpret_cast<const QSharedPointer<QObject>*>(in);
                         if(ptr){
-                            p.l = internal_convertQObjectSmartPointerToJavaObject(env, *typeId,
-                                                                       new QSharedPointer<QObject>(*ptr),
-                                                                       &QtJambiPrivate::SmartPointerHelper<QSharedPointer, QObject>::deletePointer,
-                                                                       &QtJambiPrivate::SmartPointerHelper<QSharedPointer, void*>::getFromPointer);
+                            p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, *typeId, *ptr);
                         }
                         return true;
                     };
-                }else if(pointerType == PointerType::WeakPointer){
+                case PointerType::WeakPointer:
                     return [typeId](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
                         const QWeakPointer<QObject>* ptr = reinterpret_cast<const QWeakPointer<QObject>*>(in);
                         if(ptr){
-                            p.l = internal_convertQObjectSmartPointerToJavaObject(env, *typeId,
-                                                                       new QSharedPointer<QObject>(*ptr),
-                                                                       &QtJambiPrivate::SmartPointerHelper<QSharedPointer, QObject>::deletePointer,
-                                                                       &QtJambiPrivate::SmartPointerHelper<QSharedPointer, void*>::getFromPointer);
+                            p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, *typeId, *ptr);
                         }
                         return true;
                     };
-                }else if(pointerType == PointerType::shared_ptr){
+                case PointerType::shared_ptr:
                     return [typeId](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
                         const std::shared_ptr<QObject>* ptr = reinterpret_cast<const std::shared_ptr<QObject>*>(in);
                         if(ptr){
-                            p.l = internal_convertQObjectSmartPointerToJavaObject(env, *typeId,
-                                                                       new std::shared_ptr<QObject>(*ptr),
-                                                                       &QtJambiPrivate::SmartPointerHelper<std::shared_ptr, QObject>::deletePointer,
-                                                                       &QtJambiPrivate::SmartPointerHelper<std::shared_ptr, void*>::getFromPointer);
+                            p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, *typeId, *ptr);
                         }
                         return true;
                     };
-                }else if(pointerType == PointerType::weak_ptr){
+                case PointerType::weak_ptr:
                     return [typeId](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
                         const std::weak_ptr<QObject>* ptr = reinterpret_cast<const std::weak_ptr<QObject>*>(in);
                         if(ptr){
-                            p.l = internal_convertQObjectSmartPointerToJavaObject(env, *typeId,
-                                                                       new std::shared_ptr<QObject>(*ptr),
-                                                                       &QtJambiPrivate::SmartPointerHelper<std::shared_ptr, QObject>::deletePointer,
-                                                                       &QtJambiPrivate::SmartPointerHelper<std::shared_ptr, void*>::getFromPointer);
+                            p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, *typeId, std::shared_ptr<QObject>(*ptr));
                         }
                         return true;
                     };
-                }else if(pointerType == PointerType::ScopedPointer){
+                case PointerType::TrackingPointer:
+                    return [typeId](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                        const QPointer<QObject>* ptr = reinterpret_cast<const QPointer<QObject>*>(in);
+                        if(ptr){
+                            QObject* obj = const_cast<QPointer<QObject>*>(ptr)->data();
+                            p.l = QtJambiAPI::convertQObjectToJavaObject(env, obj, *typeId);
+                            QtJambiAPI::setJavaOwnershipForTopLevelObject(env, obj);
+                        }
+                        return true;
+                    };
+                case PointerType::ScopedPointer:
                     return [typeId](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
                         const QScopedPointer<QObject>* ptr = reinterpret_cast<const QScopedPointer<QObject>*>(in);
                         if(ptr){
@@ -2736,7 +3989,7 @@ QtJambiUtils::InternalToExternalConverter QtJambiTypeManager::getInternalToExter
                         }
                         return true;
                     };
-                }else if(pointerType == PointerType::unique_ptr){
+                case PointerType::unique_ptr:
                     return [typeId](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
                         const std::unique_ptr<QObject>* ptr = reinterpret_cast<const std::unique_ptr<QObject>*>(in);
                         if(ptr){
@@ -2746,82 +3999,15 @@ QtJambiUtils::InternalToExternalConverter QtJambiTypeManager::getInternalToExter
                         }
                         return true;
                     };
-                }else{
-                    return [typeId](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-                        QObject * const *ptr = reinterpret_cast<QObject * const *>(in);
-                        if(ptr){
-                            QObject * qobject = *ptr;
-                            p.l = QtJambiAPI::convertQObjectToJavaObject(env, qobject, *typeId);
-                        }
-                        return true;
-                    };
+                case PointerType::ScopedArrayPointer:
+                    qCWarning(CATEGORY) << "Cannot convert QScopedArrayPointer to Java.";
+                    return ParameterTypeInfo::default_internalToExternalConverter();
+                default:
+                    return ParameterTypeInfo::default_internalToExternalConverter();
                 }
             } else if(isInterface(*typeId)){
-                if(pointerType == PointerType::SharedPointer){
-                    return [typeId](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-                        const QSharedPointer<void*>* ptr = reinterpret_cast<const QSharedPointer<void*>*>(in);
-                        if(ptr){
-                            p.l = internal_convertSmartPointerToJavaInterface(env,
-                                                                      *typeId,
-                                                                      new QSharedPointer<void*>(*ptr),
-                                                                      &QtJambiPrivate::SmartPointerHelper<QSharedPointer, void*>::deletePointer,
-                                                                      &QtJambiPrivate::SmartPointerHelper<QSharedPointer, void*>::getFromPointer);
-                        }
-                        return true;
-                    };
-                }else if(pointerType == PointerType::WeakPointer){
-                    return [typeId](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-                        const QWeakPointer<void*>* ptr = reinterpret_cast<const QWeakPointer<void*>*>(in);
-                        if(ptr){
-                            p.l = internal_convertSmartPointerToJavaInterface(env,
-                                                                      *typeId,
-                                                                      new QSharedPointer<void*>(*ptr),
-                                                                      &QtJambiPrivate::SmartPointerHelper<QSharedPointer, void*>::deletePointer,
-                                                                      &QtJambiPrivate::SmartPointerHelper<QSharedPointer, void*>::getFromPointer);
-                        }
-                        return true;
-                    };
-                }else if(pointerType == PointerType::shared_ptr){
-                    return [typeId](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-                        const std::shared_ptr<void*>* ptr = reinterpret_cast<const std::shared_ptr<void*>*>(in);
-                        if(ptr){
-                            p.l = internal_convertSmartPointerToJavaInterface(env, *typeId,
-                                                                       new std::shared_ptr<void*>(*ptr),
-                                                                       &QtJambiPrivate::SmartPointerHelper<std::shared_ptr, void*>::deletePointer,
-                                                                       &QtJambiPrivate::SmartPointerHelper<std::shared_ptr, void*>::getFromPointer);
-                        }
-                        return true;
-                    };
-                }else if(pointerType == PointerType::weak_ptr){
-                    return [typeId](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-                        const std::weak_ptr<void*>* ptr = reinterpret_cast<const std::weak_ptr<void*>*>(in);
-                        if(ptr){
-                            p.l = internal_convertSmartPointerToJavaInterface(env, *typeId,
-                                                                       new std::shared_ptr<void*>(*ptr),
-                                                                       &QtJambiPrivate::SmartPointerHelper<std::shared_ptr, void*>::deletePointer,
-                                                                       &QtJambiPrivate::SmartPointerHelper<std::shared_ptr, void*>::getFromPointer);
-                        }
-                        return true;
-                    };
-                }else if(pointerType == PointerType::ScopedPointer){
-                    return [typeId](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-                        const QScopedPointer<void*>* ptr = reinterpret_cast<const QScopedPointer<void*>*>(in);
-                        if(ptr){
-                            p.l = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, const_cast<QScopedPointer<void*>*>(ptr)->take(), *typeId);
-                            QtJambiAPI::setJavaOwnership(env, p.l);
-                        }
-                        return true;
-                    };
-                }else if(pointerType == PointerType::unique_ptr){
-                    return [typeId](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-                        const std::unique_ptr<void*>* ptr = reinterpret_cast<const std::unique_ptr<void*>*>(in);
-                        if(ptr){
-                            p.l = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, const_cast<std::unique_ptr<void*>*>(ptr)->release(), *typeId);
-                            QtJambiAPI::setJavaOwnership(env, p.l);
-                        }
-                        return true;
-                    };
-                }else{
+                switch(pointerType){
+                case PointerType::NoPointer:
                     if (internalTypeName.endsWith(QLatin1Char('*'))){
                         return [typeId](JNIEnv* env, QtJambiScope* scope, const void* in, jvalue& p, bool)->bool{
                             void * const *ptr = reinterpret_cast<void * const *>(in);
@@ -2865,55 +4051,39 @@ QtJambiUtils::InternalToExternalConverter QtJambiTypeManager::getInternalToExter
                             return true;
                         };
                     }
-                }
-            }else {
-                if(pointerType == PointerType::SharedPointer){
+                case PointerType::SharedPointer:
                     return [typeId](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-                        const QSharedPointer<void*>* ptr = reinterpret_cast<const QSharedPointer<void*>*>(in);
+                        const QSharedPointer<char>* ptr = reinterpret_cast<const QSharedPointer<char>*>(in);
                         if(ptr){
-                            p.l = QtJambiAPI::convertSmartPointerToJavaObject(env,
-                                                                      *typeId,
-                                                                      new QSharedPointer<void*>(*ptr),
-                                                                      &QtJambiPrivate::SmartPointerHelper<QSharedPointer, void*>::deletePointer,
-                                                                      &QtJambiPrivate::SmartPointerHelper<QSharedPointer, void*>::getFromPointer);
+                            p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, *typeId, *ptr);
                         }
                         return true;
                     };
-                }else if(pointerType == PointerType::WeakPointer){
+                case PointerType::WeakPointer:
                     return [typeId](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-                        const QWeakPointer<void*>* ptr = reinterpret_cast<const QWeakPointer<void*>*>(in);
+                        const QWeakPointer<char>* ptr = reinterpret_cast<const QWeakPointer<char>*>(in);
                         if(ptr){
-                            p.l = QtJambiAPI::convertSmartPointerToJavaObject(env,
-                                                                      *typeId,
-                                                                      new QSharedPointer<void*>(*ptr),
-                                                                      &QtJambiPrivate::SmartPointerHelper<QSharedPointer, void*>::deletePointer,
-                                                                      &QtJambiPrivate::SmartPointerHelper<QSharedPointer, void*>::getFromPointer);
+                            p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, *typeId, *ptr);
                         }
                         return true;
                     };
-                }else if(pointerType == PointerType::shared_ptr){
+                case PointerType::shared_ptr:
                     return [typeId](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-                        const std::shared_ptr<void*>* ptr = reinterpret_cast<const std::shared_ptr<void*>*>(in);
+                        const std::shared_ptr<char>* ptr = reinterpret_cast<const std::shared_ptr<char>*>(in);
                         if(ptr){
-                            p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, *typeId,
-                                                                       new std::shared_ptr<void*>(*ptr),
-                                                                       &QtJambiPrivate::SmartPointerHelper<std::shared_ptr, void*>::deletePointer,
-                                                                       &QtJambiPrivate::SmartPointerHelper<std::shared_ptr, void*>::getFromPointer);
+                            p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, *typeId, *ptr);
                         }
                         return true;
                     };
-                }else if(pointerType == PointerType::weak_ptr){
+                case PointerType::weak_ptr:
                     return [typeId](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-                        const std::weak_ptr<void*>* ptr = reinterpret_cast<const std::weak_ptr<void*>*>(in);
+                        const std::weak_ptr<char>* ptr = reinterpret_cast<const std::weak_ptr<char>*>(in);
                         if(ptr){
-                            p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, *typeId,
-                                                                       new std::shared_ptr<void*>(*ptr),
-                                                                       &QtJambiPrivate::SmartPointerHelper<std::shared_ptr, void*>::deletePointer,
-                                                                       &QtJambiPrivate::SmartPointerHelper<std::shared_ptr, void*>::getFromPointer);
+                            p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, *typeId, std::shared_ptr<char>(*ptr));
                         }
                         return true;
                     };
-                }else if(pointerType == PointerType::ScopedPointer){
+                case PointerType::ScopedPointer:
                     return [typeId](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
                         const QScopedPointer<void*>* ptr = reinterpret_cast<const QScopedPointer<void*>*>(in);
                         if(ptr){
@@ -2922,7 +4092,7 @@ QtJambiUtils::InternalToExternalConverter QtJambiTypeManager::getInternalToExter
                         }
                         return true;
                     };
-                }else if(pointerType == PointerType::unique_ptr){
+                case PointerType::unique_ptr:
                     return [typeId](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
                         const std::unique_ptr<void*>* ptr = reinterpret_cast<const std::unique_ptr<void*>*>(in);
                         if(ptr){
@@ -2931,7 +4101,18 @@ QtJambiUtils::InternalToExternalConverter QtJambiTypeManager::getInternalToExter
                         }
                         return true;
                     };
-                }else{
+                case PointerType::TrackingPointer:
+                    qCWarning(CATEGORY) << "Cannot convert QPointer of non-QObject to Java.";
+                    return ParameterTypeInfo::default_internalToExternalConverter();
+                case PointerType::ScopedArrayPointer:
+                    qCWarning(CATEGORY) << "Cannot convert QScopedArrayPointer to Java.";
+                    return ParameterTypeInfo::default_internalToExternalConverter();
+                default:
+                    return ParameterTypeInfo::default_internalToExternalConverter();
+                }
+            }else {
+                switch(pointerType){
+                case PointerType::NoPointer:
                     if (internalTypeName.endsWith(QLatin1Char('*')) || (isFunctional(*typeId) &&
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                                 [&]()->bool{QString typeName = QtJambiAPI::typeName(*typeId);
@@ -3019,57 +4200,123 @@ QtJambiUtils::InternalToExternalConverter QtJambiTypeManager::getInternalToExter
                             };
                         }
                     }
+                case PointerType::SharedPointer:
+                    return [typeId](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                        const QSharedPointer<char>* ptr = reinterpret_cast<const QSharedPointer<char>*>(in);
+                        if(ptr){
+                            p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, *typeId, *ptr);
+                        }
+                        return true;
+                    };
+                case PointerType::WeakPointer:
+                    return [typeId](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                        const QWeakPointer<char>* ptr = reinterpret_cast<const QWeakPointer<char>*>(in);
+                        if(ptr){
+                            p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, *typeId, *ptr);
+                        }
+                        return true;
+                    };
+                case PointerType::shared_ptr:
+                    return [typeId](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                        const std::shared_ptr<char>* ptr = reinterpret_cast<const std::shared_ptr<char>*>(in);
+                        if(ptr){
+                            p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, *typeId, *ptr);
+                        }
+                        return true;
+                    };
+                case PointerType::weak_ptr:
+                    return [typeId](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                        const std::weak_ptr<char>* ptr = reinterpret_cast<const std::weak_ptr<char>*>(in);
+                        if(ptr){
+                            p.l = QtJambiAPI::convertSmartPointerToJavaObject(env, *typeId, std::shared_ptr<char>(*ptr));
+                        }
+                        return true;
+                    };
+                case PointerType::ScopedPointer:
+                    return [typeId](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                        const QScopedPointer<void*>* ptr = reinterpret_cast<const QScopedPointer<void*>*>(in);
+                        if(ptr){
+                            p.l = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, const_cast<QScopedPointer<void*>*>(ptr)->take(), *typeId);
+                            QtJambiAPI::setJavaOwnership(env, p.l);
+                        }
+                        return true;
+                    };
+                case PointerType::unique_ptr:
+                    return [typeId](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                        const std::unique_ptr<void*>* ptr = reinterpret_cast<const std::unique_ptr<void*>*>(in);
+                        if(ptr){
+                            p.l = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, const_cast<std::unique_ptr<void*>*>(ptr)->release(), *typeId);
+                            QtJambiAPI::setJavaOwnership(env, p.l);
+                        }
+                        return true;
+                    };
+                case PointerType::TrackingPointer:
+                    qCWarning(CATEGORY) << "Cannot convert QPointer of non-QObject to Java.";
+                    return ParameterTypeInfo::default_internalToExternalConverter();
+                case PointerType::ScopedArrayPointer:
+                    qCWarning(CATEGORY) << "Cannot convert QScopedArrayPointer to Java.";
+                    return ParameterTypeInfo::default_internalToExternalConverter();
+                default:
+                    return ParameterTypeInfo::default_internalToExternalConverter();
                 }
             }
         }else{
             QByteArray className = QtJambiAPI::getClassName(_env, externalClass).replace(".", "/").toLatin1();
             externalClass = getGlobalClassRef(_env, externalClass, className);
             if (Java::QtCore::QObject::isAssignableFrom(_env,externalClass)) {
-                if(pointerType == PointerType::SharedPointer){
+                switch(pointerType){
+                case PointerType::NoPointer:
+                    return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                        QObject * const *ptr = reinterpret_cast<QObject * const *>(in);
+                        if(ptr){
+                            QObject * qobject = *ptr;
+                            p.l = QtJambiAPI::convertQObjectToJavaObject(env, qobject, externalClass);
+                        }
+                        return true;
+                    };
+                case PointerType::SharedPointer:
                     return [className](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
                         const QSharedPointer<QObject>* ptr = reinterpret_cast<const QSharedPointer<QObject>*>(in);
                         if(ptr){
-                            p.l = internal_convertQObjectSmartPointerToJavaObject(env, className,
-                                                                       new QSharedPointer<QObject>(*ptr),
-                                                                       &QtJambiPrivate::SmartPointerHelper<QSharedPointer, QObject>::deletePointer,
-                                                                       &QtJambiPrivate::SmartPointerHelper<QSharedPointer, void*>::getFromPointer);
+                            p.l = internal_convertQObjectSmartPointerToJavaObject(env, className, *ptr);
                         }
                         return true;
                     };
-                }else if(pointerType == PointerType::WeakPointer){
+                case PointerType::WeakPointer:
                     return [className](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
                         const QWeakPointer<QObject>* ptr = reinterpret_cast<const QWeakPointer<QObject>*>(in);
                         if(ptr){
-                            p.l = internal_convertQObjectSmartPointerToJavaObject(env, className,
-                                                                       new QSharedPointer<QObject>(*ptr),
-                                                                       &QtJambiPrivate::SmartPointerHelper<QSharedPointer, QObject>::deletePointer,
-                                                                       &QtJambiPrivate::SmartPointerHelper<QSharedPointer, void*>::getFromPointer);
+                            p.l = internal_convertQObjectSmartPointerToJavaObject(env, className, *ptr);
                         }
                         return true;
                     };
-                }else if(pointerType == PointerType::shared_ptr){
+                case PointerType::shared_ptr:
                     return [className](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
                         const std::shared_ptr<QObject>* ptr = reinterpret_cast<const std::shared_ptr<QObject>*>(in);
                         if(ptr){
-                            p.l = internal_convertQObjectSmartPointerToJavaObject(env, className,
-                                                                       new std::shared_ptr<QObject>(*ptr),
-                                                                       &QtJambiPrivate::SmartPointerHelper<std::shared_ptr, QObject>::deletePointer,
-                                                                       &QtJambiPrivate::SmartPointerHelper<std::shared_ptr, void*>::getFromPointer);
+                            p.l = internal_convertQObjectSmartPointerToJavaObject(env, className, *ptr);
                         }
                         return true;
                     };
-                }else if(pointerType == PointerType::weak_ptr){
+                case PointerType::weak_ptr:
                     return [className](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
                         const std::weak_ptr<QObject>* ptr = reinterpret_cast<const std::weak_ptr<QObject>*>(in);
                         if(ptr){
-                            p.l = internal_convertQObjectSmartPointerToJavaObject(env, className,
-                                                                       new std::shared_ptr<QObject>(*ptr),
-                                                                       &QtJambiPrivate::SmartPointerHelper<std::shared_ptr, QObject>::deletePointer,
-                                                                       &QtJambiPrivate::SmartPointerHelper<std::shared_ptr, void*>::getFromPointer);
+                            p.l = internal_convertQObjectSmartPointerToJavaObject(env, className, std::shared_ptr<QObject>(*ptr));
                         }
                         return true;
                     };
-                }else if(pointerType == PointerType::ScopedPointer){
+                case PointerType::TrackingPointer:
+                    return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                        const QPointer<QObject>* ptr = reinterpret_cast<const QPointer<QObject>*>(in);
+                        if(ptr){
+                            QObject* obj = const_cast<QPointer<QObject>*>(ptr)->data();
+                            p.l = QtJambiAPI::convertQObjectToJavaObject(env, obj, externalClass);
+                            QtJambiAPI::setJavaOwnershipForTopLevelObject(env, obj);
+                        }
+                        return true;
+                    };
+                case PointerType::ScopedPointer:
                     return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
                         const QScopedPointer<QObject>* ptr = reinterpret_cast<const QScopedPointer<QObject>*>(in);
                         if(ptr){
@@ -3079,7 +4326,7 @@ QtJambiUtils::InternalToExternalConverter QtJambiTypeManager::getInternalToExter
                         }
                         return true;
                     };
-                }else if(pointerType == PointerType::unique_ptr){
+                case PointerType::unique_ptr:
                     return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
                         const std::unique_ptr<QObject>* ptr = reinterpret_cast<const std::unique_ptr<QObject>*>(in);
                         if(ptr){
@@ -3089,81 +4336,13 @@ QtJambiUtils::InternalToExternalConverter QtJambiTypeManager::getInternalToExter
                         }
                         return true;
                     };
-                }else{
-                    return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-                        QObject * const *ptr = reinterpret_cast<QObject * const *>(in);
-                        if(ptr){
-                            QObject * qobject = *ptr;
-                            p.l = QtJambiAPI::convertQObjectToJavaObject(env, qobject, externalClass);
-                        }
-                        return true;
-                    };
+                case PointerType::ScopedArrayPointer:
+                    qCWarning(CATEGORY) << "Cannot convert QScopedArrayPointer to Java.";
+                    return ParameterTypeInfo::default_internalToExternalConverter();
+                default:
+                    return ParameterTypeInfo::default_internalToExternalConverter();
                 }
-            } else if(pointerType == PointerType::SharedPointer){
-                return [className](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-                    const QSharedPointer<void*>* ptr = reinterpret_cast<const QSharedPointer<void*>*>(in);
-                    if(ptr){
-                        p.l = internal_convertSmartPointerToJavaObject(env,
-                                                                  className,
-                                                                  new QSharedPointer<void*>(*ptr),
-                                                                  &QtJambiPrivate::SmartPointerHelper<QSharedPointer, void*>::deletePointer,
-                                                                  &QtJambiPrivate::SmartPointerHelper<QSharedPointer, void*>::getFromPointer);
-                    }
-                    return true;
-                };
-            }else if(pointerType == PointerType::WeakPointer){
-                return [className](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-                    const QWeakPointer<void*>* ptr = reinterpret_cast<const QWeakPointer<void*>*>(in);
-                    if(ptr){
-                        p.l = internal_convertSmartPointerToJavaObject(env,
-                                                                  className,
-                                                                  new QSharedPointer<void*>(*ptr),
-                                                                  &QtJambiPrivate::SmartPointerHelper<QSharedPointer, void*>::deletePointer,
-                                                                  &QtJambiPrivate::SmartPointerHelper<QSharedPointer, void*>::getFromPointer);
-                    }
-                    return true;
-                };
-            }else if(pointerType == PointerType::shared_ptr){
-                return [className](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-                    const std::shared_ptr<void*>* ptr = reinterpret_cast<const std::shared_ptr<void*>*>(in);
-                    if(ptr){
-                        p.l = internal_convertSmartPointerToJavaObject(env, className,
-                                                                   new std::shared_ptr<void*>(*ptr),
-                                                                   &QtJambiPrivate::SmartPointerHelper<std::shared_ptr, void*>::deletePointer,
-                                                                   &QtJambiPrivate::SmartPointerHelper<std::shared_ptr, void*>::getFromPointer);
-                    }
-                    return true;
-                };
-            }else if(pointerType == PointerType::weak_ptr){
-                return [className](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-                    const std::weak_ptr<void*>* ptr = reinterpret_cast<const std::weak_ptr<void*>*>(in);
-                    if(ptr){
-                        p.l = internal_convertSmartPointerToJavaObject(env, className,
-                                                                   new std::shared_ptr<void*>(*ptr),
-                                                                   &QtJambiPrivate::SmartPointerHelper<std::shared_ptr, void*>::deletePointer,
-                                                                   &QtJambiPrivate::SmartPointerHelper<std::shared_ptr, void*>::getFromPointer);
-                    }
-                    return true;
-                };
-            }else if(pointerType == PointerType::ScopedPointer){
-                return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-                    const QScopedPointer<void*>* ptr = reinterpret_cast<const QScopedPointer<void*>*>(in);
-                    if(ptr){
-                        p.l = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, const_cast<QScopedPointer<void*>*>(ptr)->take(), externalClass);
-                        QtJambiAPI::setJavaOwnership(env, p.l);
-                    }
-                    return true;
-                };
-            }else if(pointerType == PointerType::unique_ptr){
-                return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-                    const std::unique_ptr<void*>* ptr = reinterpret_cast<const std::unique_ptr<void*>*>(in);
-                    if(ptr){
-                        p.l = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, const_cast<std::unique_ptr<void*>*>(ptr)->release(), externalClass);
-                        QtJambiAPI::setJavaOwnership(env, p.l);
-                    }
-                    return true;
-                };
-            }else{
+            } else {
                 const SuperTypeInfos superTypes = SuperTypeInfos::fromClass(_env, externalClass);
                 bool forcePointerConversion = false;
                 if(!superTypes.isEmpty()){
@@ -3177,98 +4356,136 @@ QtJambiUtils::InternalToExternalConverter QtJambiTypeManager::getInternalToExter
                     default: break;
                     }
                 }
-                if (internalTypeName.contains(QLatin1Char('*')) || forcePointerConversion){
-                    return [externalClass](JNIEnv* env, QtJambiScope* scope, const void* in, jvalue& p, bool)->bool{
-                        void * const *ptr = reinterpret_cast<void * const *>(in);
-                        if(ptr){
-                            // If we found a link for the object, we use the java object
-                            // from the link.
-                            bool found = false;
-                            for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(*ptr)) {
-                                jobject obj = link->getJavaObjectLocalRef(env);
-                                if(!obj && link->ownership()==QtJambiLink::Ownership::Split){
-                                    link->invalidate(env);
+                switch(pointerType){
+                case PointerType::NoPointer:
+                    if (internalTypeName.contains(QLatin1Char('*')) || forcePointerConversion){
+                        return [externalClass](JNIEnv* env, QtJambiScope* scope, const void* in, jvalue& p, bool)->bool{
+                            void * const *ptr = reinterpret_cast<void * const *>(in);
+                            if(ptr){
+                                // If we found a link for the object, we use the java object
+                                // from the link.
+                                bool found = false;
+                                for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(*ptr)) {
+                                    jobject obj = link->getJavaObjectLocalRef(env);
+                                    if(!obj && link->ownership()==QtJambiLink::Ownership::Split){
+                                        link->invalidate(env);
+                                        p.l = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, *ptr, externalClass);
+                                        found = true;
+                                        if(scope)
+                                            scope->addObjectInvalidation(env, p.l);
+                                    }else{
+                                        if(env->IsInstanceOf(obj, externalClass)){
+                                            p.l = obj;
+                                            found = true;
+                                        }
+                                    }
+                                }
+                                if(!found){
                                     p.l = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, *ptr, externalClass);
-                                    found = true;
                                     if(scope)
                                         scope->addObjectInvalidation(env, p.l);
-                                }else{
-                                    if(env->IsInstanceOf(obj, externalClass)){
-                                        p.l = obj;
-                                        found = true;
-                                    }
                                 }
                             }
-                            if(!found){
-                                p.l = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, *ptr, externalClass);
-                                if(scope)
-                                    scope->addObjectInvalidation(env, p.l);
-                            }
-                        }
-                        return true;
-                    };
-                }else if(internalTypeName.endsWith(QLatin1Char('&'))){
-                    return [externalClass](JNIEnv* env, QtJambiScope* scope, const void* in, jvalue& p, bool)->bool{
-                        if(in){
-                            // If we found a link for the object, we use the java object
-                            // from the link.
-                            bool found = false;
-                            for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(in)) {
-                                jobject obj = link->getJavaObjectLocalRef(env);
-                                if(!obj && link->ownership()==QtJambiLink::Ownership::Split){
-                                    link->invalidate(env);
+                            return true;
+                        };
+                    }else if(internalTypeName.endsWith(QLatin1Char('&'))){
+                        return [externalClass](JNIEnv* env, QtJambiScope* scope, const void* in, jvalue& p, bool)->bool{
+                            if(in){
+                                // If we found a link for the object, we use the java object
+                                // from the link.
+                                bool found = false;
+                                for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(in)) {
+                                    jobject obj = link->getJavaObjectLocalRef(env);
+                                    if(!obj && link->ownership()==QtJambiLink::Ownership::Split){
+                                        link->invalidate(env);
+                                        p.l = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, in, externalClass);
+                                        found = true;
+                                        if(scope)
+                                            scope->addObjectInvalidation(env, p.l);
+                                    }else{
+                                        if(env->IsInstanceOf(obj, externalClass)){
+                                            p.l = obj;
+                                            found = true;
+                                        }
+                                    }
+                                }
+                                if(!found){
                                     p.l = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, in, externalClass);
-                                    found = true;
                                     if(scope)
                                         scope->addObjectInvalidation(env, p.l);
-                                }else{
-                                    if(env->IsInstanceOf(obj, externalClass)){
-                                        p.l = obj;
-                                        found = true;
-                                    }
                                 }
                             }
-                            if(!found){
-                                p.l = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, in, externalClass);
-                                if(scope)
-                                    scope->addObjectInvalidation(env, p.l);
+                            return true;
+                        };
+                    }else{
+                        return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                            if(in){
+                                p.l = QtJambiAPI::convertNativeToJavaObjectAsCopy(env, in, externalClass);
                             }
+                            return true;
+                        };
+                    }
+                case PointerType::SharedPointer:
+                    return [className](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                        const QSharedPointer<char>* ptr = reinterpret_cast<const QSharedPointer<char>*>(in);
+                        if(ptr){
+                            p.l = internal_convertSmartPointerToJavaObject(env, className, *ptr);
                         }
                         return true;
                     };
-                }else{
+                case PointerType::WeakPointer:
+                    return [className](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                        const QWeakPointer<char>* ptr = reinterpret_cast<const QWeakPointer<char>*>(in);
+                        if(ptr){
+                            p.l = internal_convertSmartPointerToJavaObject(env, className, *ptr);
+                        }
+                        return true;
+                    };
+                case PointerType::shared_ptr:
+                    return [className](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                        const std::shared_ptr<char>* ptr = reinterpret_cast<const std::shared_ptr<char>*>(in);
+                        if(ptr){
+                            p.l = internal_convertSmartPointerToJavaObject(env, className, *ptr);
+                        }
+                        return true;
+                    };
+                case PointerType::weak_ptr:
+                    return [className](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                        const std::weak_ptr<char>* ptr = reinterpret_cast<const std::weak_ptr<char>*>(in);
+                        if(ptr){
+                            p.l = internal_convertSmartPointerToJavaObject(env, className, std::shared_ptr<char>(*ptr));
+                        }
+                        return true;
+                    };
+                case PointerType::ScopedPointer:
                     return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-                        if(in){
-                            p.l = QtJambiAPI::convertNativeToJavaObjectAsCopy(env, in, externalClass);
+                        const QScopedPointer<void*>* ptr = reinterpret_cast<const QScopedPointer<void*>*>(in);
+                        if(ptr){
+                            p.l = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, const_cast<QScopedPointer<void*>*>(ptr)->take(), externalClass);
+                            QtJambiAPI::setJavaOwnership(env, p.l);
                         }
                         return true;
                     };
+                case PointerType::unique_ptr:
+                    return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                        const std::unique_ptr<void*>* ptr = reinterpret_cast<const std::unique_ptr<void*>*>(in);
+                        if(ptr){
+                            p.l = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, const_cast<std::unique_ptr<void*>*>(ptr)->release(), externalClass);
+                            QtJambiAPI::setJavaOwnership(env, p.l);
+                        }
+                        return true;
+                    };
+                case PointerType::TrackingPointer:
+                    qCWarning(CATEGORY) << "Cannot convert QPointer of non-QObject to Java.";
+                    return ParameterTypeInfo::default_internalToExternalConverter();
+                case PointerType::ScopedArrayPointer:
+                    qCWarning(CATEGORY) << "Cannot convert QScopedArrayPointer to Java.";
+                    return ParameterTypeInfo::default_internalToExternalConverter();
+                default:
+                    return ParameterTypeInfo::default_internalToExternalConverter();
                 }
             }
         }
-    } else if (internalMetaType.id() == registeredMetaTypeID(typeid(JObjectWrapper))
-               || internalMetaType.id() == registeredMetaTypeID(typeid(JCollectionWrapper))
-               || internalMetaType.id() == registeredMetaTypeID(typeid(JMapWrapper))
-               || internalMetaType.id() == registeredMetaTypeID(typeid(JIteratorWrapper))
-               || internalMetaType.id() == registeredMetaTypeID(typeid(JObjectArrayWrapper))
-               || internalMetaType.id() == registeredMetaTypeID(typeid(JIntArrayWrapper))
-               || internalMetaType.id() == registeredMetaTypeID(typeid(JLongArrayWrapper))
-               || internalMetaType.id() == registeredMetaTypeID(typeid(JShortArrayWrapper))
-               || internalMetaType.id() == registeredMetaTypeID(typeid(JByteArrayWrapper))
-               || internalMetaType.id() == registeredMetaTypeID(typeid(JBooleanArrayWrapper))
-               || internalMetaType.id() == registeredMetaTypeID(typeid(JCharArrayWrapper))
-               || internalMetaType.id() == registeredMetaTypeID(typeid(JFloatArrayWrapper))
-               || internalMetaType.id() == registeredMetaTypeID(typeid(JDoubleArrayWrapper))) {
-        return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-            p.l = env->NewLocalRef(reinterpret_cast<const JObjectWrapper *>(in)->object());
-            return true;
-        };
-    }else if (internalMetaType.id() == QMetaType::QVariant) {
-        return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-            const QVariant & variant = *reinterpret_cast<const QVariant*>(in);
-            p.l = QtJambiAPI::convertQVariantToJavaObject(env, variant);
-            return true;
-        };
     }else if(const QMetaObject* metaObject = internalMetaType.metaObject()){
         if(metaObject->inherits(&QObject::staticMetaObject)){
             return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
@@ -4271,7 +5488,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
     } else if (Java::QtCore::QMetaType$GenericValue::isSameClass(_env,externalClass)) {
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         int _internalMetaType = internalMetaType.id();
-        if(isPointerType(internalTypeName)){
+        if(isPointerType(internalMetaType.name())){
 #else
         QMetaType _internalMetaType = internalMetaType;
         if(internalMetaType.flags() & QMetaType::IsPointer){
@@ -4420,7 +5637,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
     } else if (Java::QtCore::QMetaType$GenericObject::isSameClass(_env,externalClass)) {
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         int _internalMetaType = internalMetaType.id();
-        if(isPointerType(internalTypeName)){
+        if(isPointerType(internalMetaType.name())){
 #else
         QMetaType _internalMetaType = internalMetaType;
         if(internalMetaType.flags() & QMetaType::IsPointer){
@@ -4572,7 +5789,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
 #else
         QMetaType _internalMetaType = internalMetaType;
 #endif
-        if(internalTypeName.endsWith("&")){
+        if(pointerType==PointerType::NoPointer && internalTypeName.endsWith("&")){
             return [_internalMetaType](JNIEnv* env, QtJambiScope*, jvalue val, void* &out, jValueType) -> bool{
                 if(val.l){
                     if(!Java::QtCore::QMetaType$GenericGadget::isInstanceOf(env, val.l)){
@@ -4667,7 +5884,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                 jobject v;
                 switch(valueType){
                 case jValueType::l:
-                    if(!env->IsInstanceOf(val.l, externalClass))
+                    if(val.l && !env->IsInstanceOf(val.l, externalClass))
                         Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassName(env, val.l).replace("$", "."), QtJambiAPI::getClassName(env, externalClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                     v = val.l;
                     break;
@@ -4784,7 +6001,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                             return false;
                         *reinterpret_cast<qint32*>(out) = int_for_QtEnumerator_or_QFlags(env, val.l).value<qint32>();
                     }else{
-                        if(!env->IsInstanceOf(val.l, externalClass))
+                        if(val.l && !env->IsInstanceOf(val.l, externalClass))
                             Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassName(env, val.l).replace("$", "."), QtJambiAPI::getClassName(env, externalClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                         if(scope && !out){
                             qint32* ptr;
@@ -4978,7 +6195,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
 #endif
                             value = int_for_QtEnumerator_or_QFlags(env, val.l);
                         }else{
-                            if(!env->IsInstanceOf(val.l, externalClass))
+                            if(val.l && !env->IsInstanceOf(val.l, externalClass))
                                 Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassName(env, val.l).replace("$", "."), QtJambiAPI::getClassName(env, externalClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                             value = !val.l ? 0 : int_for_QtEnumerator_or_QFlags(env, val.l);
                         }
@@ -5061,7 +6278,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
             return [externalClass](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType valueType) -> bool{
                 switch(valueType){
                 case jValueType::l:
-                    if(!env->IsInstanceOf(val.l, externalClass))
+                    if(val.l && !env->IsInstanceOf(val.l, externalClass))
                         Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassName(env, val.l).replace("$", "."), QtJambiAPI::getClassName(env, externalClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                     if(scope && !out){
                         qint32* ptr;
@@ -5089,7 +6306,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
             return [externalClass](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType valueType) -> bool{
                 switch(valueType){
                 case jValueType::l:
-                    if(!env->IsInstanceOf(val.l, externalClass))
+                    if(val.l && !env->IsInstanceOf(val.l, externalClass))
                         Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassName(env, val.l).replace("$", "."), QtJambiAPI::getClassName(env, externalClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                     if(scope && !out){
                         qint64* ptr;
@@ -5117,7 +6334,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
             return [externalClass](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType valueType) -> bool{
                 switch(valueType){
                     case jValueType::l:
-                    if(!env->IsInstanceOf(val.l, externalClass))
+                    if(val.l && !env->IsInstanceOf(val.l, externalClass))
                         Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassName(env, val.l).replace("$", "."), QtJambiAPI::getClassName(env, externalClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                     if(scope && !out){
                         qint16* ptr;
@@ -5145,7 +6362,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
             return [externalClass](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType valueType) -> bool{
                 switch(valueType){
                     case jValueType::l:
-                    if(!env->IsInstanceOf(val.l, externalClass))
+                    if(val.l && !env->IsInstanceOf(val.l, externalClass))
                         Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassName(env, val.l).replace("$", "."), QtJambiAPI::getClassName(env, externalClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                     if(scope && !out){
                         qint8* ptr;
@@ -5170,8 +6387,518 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                 return true;
             };
         }
+    }else if (pointerType != PointerType::NoPointer) {
+        struct DeleterDeleter{
+            PtrDeleterFunction deleter_function;
+            void operator()(char* ptr){
+                deleter_function(ptr, false);
+            }
+        };
+        struct MetaTypeDeleter{
+            QtJambiMetaType elementMetaType;
+            void operator()(char* ptr){
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                QMetaType::destroy(elementMetaType.id(), ptr);
+#else
+                elementMetaType.destroy(ptr);
+#endif
+            }
+        };
+
+        QString instantiation = internalTypeName.chopped(1);
+        QtJambiMetaType memberMetaType(QMetaType::UnknownType);
+        const std::type_info* t = getTypeByQtName(instantiation);
+        PtrDeleterFunction deleter_function{nullptr};
+        bool isPointer{false};
+        if(t){
+            deleter_function = deleter(*t);
+            EntryTypes entryType = getEntryType(*t);
+            switch(entryType){
+            case EntryTypes::QObjectTypeInfo:
+            case EntryTypes::ObjectTypeInfo:
+            case EntryTypes::InterfaceTypeInfo:
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                memberMetaType = QMetaType::type(qPrintable(instantiation+"*"));
+#else
+                memberMetaType = QMetaType::fromName(qPrintable(instantiation+"*"));
+#endif
+                isPointer = true;
+                break;
+            default:
+                memberMetaType = QMetaType(registeredMetaTypeID(*t));
+                break;
+            }
+        }else{
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+            memberMetaType = QMetaType::type(qPrintable(instantiation));
+            if(!memberMetaType.isValid()){
+                memberMetaType = QMetaType::type(qPrintable(instantiation+"*"));
+                isPointer = true;
+            }
+#else
+            memberMetaType = QMetaType::fromName(qPrintable(instantiation));
+            if(!memberMetaType.isValid()){
+                memberMetaType = QMetaType::fromName(qPrintable(instantiation+"*"));
+                isPointer = true;
+            }
+#endif
+        }
+        if(memberMetaType.isValid())
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+            isPointer = isPointerType(memberMetaType.name());
+#else
+            isPointer = memberMetaType.flags() & QMetaType::IsPointer;
+#endif
+        bool isQObject = Java::QtCore::QObject::isAssignableFrom(_env, externalClass);
+        QtJambiUtils::ExternalToInternalConverter memberReConverter = getExternalToInternalConverter(
+                                                        _env,
+                                                        externalClass,
+                                                        instantiation, memberMetaType);
+        switch(pointerType){
+        case PointerType::SharedPointer:{
+            if(isQObject){
+                return [externalClass](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType jvt)->bool{
+                    if(jvt!=jValueType::l)
+                        return false;
+                    if(val.l && !env->IsInstanceOf(val.l, externalClass))
+                        Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassName(env, val.l).replace("$", "."), QtJambiAPI::getClassName(env, externalClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                    if(scope && !out){
+                        QSharedPointer<QObject>* ptr;
+                        out = ptr = new QSharedPointer<QObject>;
+                        scope->addDeletion(ptr);
+                    }
+                    if(!out)
+                        return false;
+                    QSharedPointer<QObject>& smartPointer = *reinterpret_cast<QSharedPointer<QObject>*>(out);
+                    smartPointer = QtJambiAPI::convertJavaObjectToQSharedPointer(env, val.l);
+                    return true;
+                };
+            }else if(t){
+                return [externalClass, t](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType jvt)->bool{
+                    if(jvt!=jValueType::l)
+                        return false;
+                    if(val.l && !env->IsInstanceOf(val.l, externalClass))
+                        Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassName(env, val.l).replace("$", "."), QtJambiAPI::getClassName(env, externalClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                    if(scope && !out){
+                        QSharedPointer<char>* ptr;
+                        out = ptr = new QSharedPointer<char>;
+                        scope->addDeletion(ptr);
+                    }
+                    if(!out)
+                        return false;
+                    QSharedPointer<char>& smartPointer = *reinterpret_cast<QSharedPointer<char>*>(out);
+                    smartPointer = QtJambiAPI::convertJavaObjectToQSharedPointer(env, t, val.l);
+                    return true;
+                };
+            }else if(!isPointer && memberMetaType.isValid()){
+                return [externalClass, memberReConverter, memberMetaType](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType jvt)->bool{
+                    if(jvt!=jValueType::l)
+                        return false;
+                    if(val.l && !env->IsInstanceOf(val.l, externalClass))
+                        Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassName(env, val.l).replace("$", "."), QtJambiAPI::getClassName(env, externalClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                    if(scope && !out){
+                        QSharedPointer<char>* ptr;
+                        out = ptr = new QSharedPointer<char>;
+                        scope->addDeletion(ptr);
+                    }
+                    if(!out)
+                        return false;
+                    QSharedPointer<char>& smartPointer = *reinterpret_cast<QSharedPointer<char>*>(out);
+                    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, val.l)){
+                        link.clear();
+                        smartPointer = QtJambiAPI::convertJavaObjectToQSharedPointer(env, nullptr, val.l);
+                        return true;
+                    }else{
+                        char* ptr{nullptr};
+                        void* out{&ptr};
+                        if(memberReConverter(env, nullptr, val, out, jValueType::l)){
+                            smartPointer.reset(ptr, MetaTypeDeleter{memberMetaType});
+                        }
+                        return true;
+                    }
+                    return false;
+                };
+            }else if(deleter_function){
+                return [externalClass, memberReConverter, deleter_function](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType jvt)->bool{
+                    if(jvt!=jValueType::l)
+                        return false;
+                    if(val.l && !env->IsInstanceOf(val.l, externalClass))
+                        Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassName(env, val.l).replace("$", "."), QtJambiAPI::getClassName(env, externalClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                    if(scope && !out){
+                        QSharedPointer<char>* ptr;
+                        out = ptr = new QSharedPointer<char>;
+                        scope->addDeletion(ptr);
+                    }
+                    if(!out)
+                        return false;
+                    QSharedPointer<char>& smartPointer = *reinterpret_cast<QSharedPointer<char>*>(out);
+                    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, val.l)){
+                        link.clear();
+                        smartPointer = QtJambiAPI::convertJavaObjectToQSharedPointer(env, nullptr, val.l);
+                        return true;
+                    }else if(deleter_function){
+                        char* ptr{nullptr};
+                        void* out{&ptr};
+                        if(memberReConverter(env, nullptr, val, out, jValueType::l)){
+                            smartPointer.reset(ptr, DeleterDeleter{deleter_function});
+                        }
+                        return true;
+                    }
+                    return false;
+                };
+            }else{
+                return [externalClass, t, memberReConverter](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType jvt)->bool{
+                    if(jvt!=jValueType::l)
+                        return false;
+                    if(val.l && !env->IsInstanceOf(val.l, externalClass))
+                        Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassName(env, val.l).replace("$", "."), QtJambiAPI::getClassName(env, externalClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                    if(scope && !out){
+                        QSharedPointer<char>* ptr;
+                        out = ptr = new QSharedPointer<char>;
+                        scope->addDeletion(ptr);
+                    }
+                    if(!out)
+                        return false;
+                    QSharedPointer<char>& smartPointer = *reinterpret_cast<QSharedPointer<char>*>(out);
+                    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, val.l)){
+                        link.clear();
+                        smartPointer = QtJambiAPI::convertJavaObjectToQSharedPointer(env, t, val.l);
+                        return true;
+                    }
+                    return false;
+                };
+            }
+        }
+            break;
+        case PointerType::WeakPointer:{
+            if(isQObject){
+                return [externalClass](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType jvt)->bool{
+                    if(jvt!=jValueType::l)
+                        return false;
+                    if(val.l && !env->IsInstanceOf(val.l, externalClass))
+                        Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassName(env, val.l).replace("$", "."), QtJambiAPI::getClassName(env, externalClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                    if(scope && !out){
+                        QWeakPointer<QObject>* ptr;
+                        out = ptr = new QWeakPointer<QObject>;
+                        scope->addDeletion(ptr);
+                    }
+                    if(!out)
+                        return false;
+                    QWeakPointer<QObject>& smartPointer = *reinterpret_cast<QWeakPointer<QObject>*>(out);
+                    smartPointer = QtJambiAPI::convertJavaObjectToQWeakPointer(env, val.l);
+                    return true;
+                };
+            }else{
+                return [externalClass,t](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType jvt)->bool{
+                    if(jvt!=jValueType::l)
+                        return false;
+                    if(val.l && !env->IsInstanceOf(val.l, externalClass))
+                        Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassName(env, val.l).replace("$", "."), QtJambiAPI::getClassName(env, externalClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                    if(scope && !out){
+                        QWeakPointer<char>* ptr;
+                        out = ptr = new QWeakPointer<char>;
+                        scope->addDeletion(ptr);
+                    }
+                    if(!out)
+                        return false;
+                    QWeakPointer<char>& smartPointer = *reinterpret_cast<QWeakPointer<char>*>(out);
+                    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, val.l)){
+                        link.clear();
+                        smartPointer = QtJambiAPI::convertJavaObjectToQWeakPointer(env, t, val.l);
+                        return true;
+                    }
+                    return false;
+                };
+            }
+        }
+            break;
+        case PointerType::TrackingPointer:{
+            if(isQObject){
+                return [externalClass](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType jvt)->bool{
+                    if(jvt!=jValueType::l)
+                        return false;
+                    if(val.l && !env->IsInstanceOf(val.l, externalClass))
+                        Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassName(env, val.l).replace("$", "."), QtJambiAPI::getClassName(env, externalClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                    if(scope && !out){
+                        QPointer<QObject>* ptr;
+                        out = ptr = new QPointer<QObject>;
+                        scope->addDeletion(ptr);
+                    }
+                    if(!out)
+                        return false;
+                    QPointer<QObject>& smartPointer = *reinterpret_cast<QPointer<QObject>*>(out);
+                    smartPointer = QtJambiAPI::convertJavaObjectToQObject(env, val.l);
+                    return true;
+                };
+            }else{
+                qCWarning(CATEGORY) << "Cannot convert QPointer of non-QObject to Java.";
+                return ParameterTypeInfo::default_externalToInternalConverter();
+            }
+            break;
+        }
+        case PointerType::ScopedPointer:{
+            if(isQObject){
+                return [externalClass](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType jvt)->bool{
+                    if(jvt!=jValueType::l)
+                        return false;
+                    if(val.l && !env->IsInstanceOf(val.l, externalClass))
+                        Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassName(env, val.l).replace("$", "."), QtJambiAPI::getClassName(env, externalClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                    if(scope && !out){
+                        QScopedPointer<QObject>* ptr;
+                        out = ptr = new QScopedPointer<QObject>;
+                        scope->addDeletion(ptr);
+                    }
+                    if(!out)
+                        return false;
+                    QScopedPointer<QObject>& smartPointer = *reinterpret_cast<QScopedPointer<QObject>*>(out);
+                    QObject* data = smartPointer.take();
+                    smartPointer.reset(QtJambiAPI::convertJavaObjectToQObject(env, val.l));
+                    if(data)
+                        delete data;
+                    return true;
+                };
+            }else if(!isPointer && memberMetaType.isValid()){
+                return [externalClass,t,memberReConverter,memberMetaType](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType jvt)->bool{
+                    if(jvt!=jValueType::l)
+                        return false;
+                    if(val.l && !env->IsInstanceOf(val.l, externalClass))
+                        Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassName(env, val.l).replace("$", "."), QtJambiAPI::getClassName(env, externalClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                    if(scope && !out){
+                        QScopedPointer<char>* ptr;
+                        out = ptr = new QScopedPointer<char>;
+                        scope->addDeletion(ptr);
+                    }
+                    if(!out)
+                        return false;
+                    QScopedPointer<char>& smartPointer = *reinterpret_cast<QScopedPointer<char>*>(out);
+                    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, val.l)){
+                        void* data = smartPointer.take();
+                        smartPointer.reset(reinterpret_cast<char*>(t ? link->typedPointer(*t) : link->pointer()));
+                        if(data)
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                            QMetaType::destroy(memberMetaType.id(), data);
+#else
+                            memberMetaType.destroy(data);
+#endif
+                        return true;
+                    }else{
+                        char* ptr{nullptr};
+                        void* out{&ptr};
+                        if(memberReConverter(env, nullptr, val, out, jValueType::l)){
+                            void* data = smartPointer.take();
+                            smartPointer.reset(ptr);
+                            if(data)
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                                QMetaType::destroy(memberMetaType.id(), data);
+#else
+                                memberMetaType.destroy(data);
+#endif
+                        }
+                        return true;
+                    }
+                    return false;
+                };
+            }else if(deleter_function){
+                return [externalClass,t,memberReConverter,deleter_function](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType jvt)->bool{
+                    if(jvt!=jValueType::l)
+                        return false;
+                    if(val.l && !env->IsInstanceOf(val.l, externalClass))
+                        Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassName(env, val.l).replace("$", "."), QtJambiAPI::getClassName(env, externalClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                    if(scope && !out){
+                        QScopedPointer<char>* ptr;
+                        out = ptr = new QScopedPointer<char>;
+                        scope->addDeletion(ptr);
+                    }
+                    if(!out)
+                        return false;
+                    QScopedPointer<char>& smartPointer = *reinterpret_cast<QScopedPointer<char>*>(out);
+                    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, val.l)){
+                        void* data = smartPointer.take();
+                        smartPointer.reset(reinterpret_cast<char*>(t ? link->typedPointer(*t) : link->pointer()));
+                        if(data)
+                            deleter_function(data, false);
+                        return true;
+                    }else if(deleter_function){
+                        char* ptr{nullptr};
+                        void* out{&ptr};
+                        if(memberReConverter(env, nullptr, val, out, jValueType::l)){
+                            void* data = smartPointer.take();
+                            smartPointer.reset(ptr);
+                            if(data)
+                                deleter_function(data, false);
+                        }
+                        return true;
+                    }
+                    return false;
+                };
+            }
+            break;
+        }
+        case PointerType::shared_ptr:{
+            if(isQObject){
+                return [externalClass](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType jvt)->bool{
+                    if(jvt!=jValueType::l)
+                        return false;
+                    if(val.l && !env->IsInstanceOf(val.l, externalClass))
+                        Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassName(env, val.l).replace("$", "."), QtJambiAPI::getClassName(env, externalClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                    if(scope && !out){
+                        std::shared_ptr<QObject>* ptr;
+                        out = ptr = new std::shared_ptr<QObject>;
+                        scope->addDeletion(ptr);
+                    }
+                    if(!out)
+                        return false;
+                    std::shared_ptr<QObject>& smartPointer = *reinterpret_cast<std::shared_ptr<QObject>*>(out);
+                    smartPointer = QtJambiAPI::convertJavaObjectToSharedPtr(env, val.l);
+                    return true;
+                };
+            }else if(t){
+                return [externalClass,t](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType jvt)->bool{
+                    if(jvt!=jValueType::l)
+                        return false;
+                    if(val.l && !env->IsInstanceOf(val.l, externalClass))
+                        Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassName(env, val.l).replace("$", "."), QtJambiAPI::getClassName(env, externalClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                    if(scope && !out){
+                        std::shared_ptr<char>* ptr;
+                        out = ptr = new std::shared_ptr<char>;
+                        scope->addDeletion(ptr);
+                    }
+                    if(!out)
+                        return false;
+                    std::shared_ptr<char>& smartPointer = *reinterpret_cast<std::shared_ptr<char>*>(out);
+                    smartPointer = QtJambiAPI::convertJavaObjectToSharedPtr(env, t, val.l);
+                    return true;
+                };
+            }else if(isPointer && memberMetaType.isValid()){
+                return [externalClass,memberReConverter,memberMetaType](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType jvt)->bool{
+                    if(jvt!=jValueType::l)
+                        return false;
+                    if(val.l && !env->IsInstanceOf(val.l, externalClass))
+                        Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassName(env, val.l).replace("$", "."), QtJambiAPI::getClassName(env, externalClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                    if(scope && !out){
+                        std::shared_ptr<char>* ptr;
+                        out = ptr = new std::shared_ptr<char>;
+                        scope->addDeletion(ptr);
+                    }
+                    if(!out)
+                        return false;
+                    std::shared_ptr<char>& smartPointer = *reinterpret_cast<std::shared_ptr<char>*>(out);
+                    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, val.l)){
+                        link.clear();
+                        smartPointer = QtJambiAPI::convertJavaObjectToSharedPtr(env, nullptr, val.l);
+                        return true;
+                    }else{
+                        char* ptr{nullptr};
+                        void* out{&ptr};
+                        if(memberReConverter(env, nullptr, val, out, jValueType::l)){
+                            smartPointer.reset(ptr, MetaTypeDeleter{memberMetaType});
+                        }
+                        return true;
+                    }
+                    return false;
+                };
+            }else if(deleter_function){
+                return [externalClass,memberReConverter,deleter_function](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType jvt)->bool{
+                    if(jvt!=jValueType::l)
+                        return false;
+                    if(val.l && !env->IsInstanceOf(val.l, externalClass))
+                        Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassName(env, val.l).replace("$", "."), QtJambiAPI::getClassName(env, externalClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                    if(scope && !out){
+                        std::shared_ptr<char>* ptr;
+                        out = ptr = new std::shared_ptr<char>;
+                        scope->addDeletion(ptr);
+                    }
+                    if(!out)
+                        return false;
+                    std::shared_ptr<char>& smartPointer = *reinterpret_cast<std::shared_ptr<char>*>(out);
+                    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, val.l)){
+                        link.clear();
+                        smartPointer = QtJambiAPI::convertJavaObjectToSharedPtr(env, nullptr, val.l);
+                        return true;
+                    }else if(deleter_function){
+                        char* ptr{nullptr};
+                        void* out{&ptr};
+                        if(memberReConverter(env, nullptr, val, out, jValueType::l)){
+                            smartPointer.reset(ptr, DeleterDeleter{deleter_function});
+                        }
+                        return true;
+                    }
+                    return false;
+                };
+            }else{
+                return [externalClass,t](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType jvt)->bool{
+                    if(jvt!=jValueType::l)
+                        return false;
+                    if(val.l && !env->IsInstanceOf(val.l, externalClass))
+                        Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassName(env, val.l).replace("$", "."), QtJambiAPI::getClassName(env, externalClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                    if(scope && !out){
+                        std::shared_ptr<char>* ptr;
+                        out = ptr = new std::shared_ptr<char>;
+                        scope->addDeletion(ptr);
+                    }
+                    if(!out)
+                        return false;
+                    std::shared_ptr<char>& smartPointer = *reinterpret_cast<std::shared_ptr<char>*>(out);
+                    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, val.l)){
+                        link.clear();
+                        smartPointer = QtJambiAPI::convertJavaObjectToSharedPtr(env, t, val.l);
+                        return true;
+                    }
+                    return false;
+                };
+            }
+            break;
+        }
+        case PointerType::weak_ptr:{
+            if(isQObject){
+                return [externalClass](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType jvt)->bool{
+                    if(jvt!=jValueType::l)
+                        return false;
+                    if(val.l && !env->IsInstanceOf(val.l, externalClass))
+                        Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassName(env, val.l).replace("$", "."), QtJambiAPI::getClassName(env, externalClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                    if(scope && !out){
+                        std::weak_ptr<QObject>* ptr;
+                        out = ptr = new std::weak_ptr<QObject>;
+                        scope->addDeletion(ptr);
+                    }
+                    if(!out)
+                        return false;
+                    std::weak_ptr<QObject>& smartPointer = *reinterpret_cast<std::weak_ptr<QObject>*>(out);
+                    smartPointer = QtJambiAPI::convertJavaObjectToWeakPtr(env, val.l);
+                    return true;
+                };
+            }else{
+                return [externalClass,t](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType jvt)->bool{
+                    if(jvt!=jValueType::l)
+                        return false;
+                    if(val.l && !env->IsInstanceOf(val.l, externalClass))
+                        Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassName(env, val.l).replace("$", "."), QtJambiAPI::getClassName(env, externalClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                    if(scope && !out){
+                        std::weak_ptr<char>* ptr;
+                        out = ptr = new std::weak_ptr<char>;
+                        scope->addDeletion(ptr);
+                    }
+                    if(!out)
+                        return false;
+                    std::weak_ptr<char>& smartPointer = *reinterpret_cast<std::weak_ptr<char>*>(out);
+                    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, val.l)){
+                        link.clear();
+                        smartPointer = QtJambiAPI::convertJavaObjectToWeakPtr(env, t, val.l);
+                        return true;
+                    }
+                    return false;
+                };
+            }
+            break;
+        }
+        case PointerType::ScopedArrayPointer:
+            qCWarning(CATEGORY) << "Cannot convert QScopedArrayPointer to Java.";
+            return ParameterTypeInfo::default_externalToInternalConverter();
+        default: break;
+        }
     }else if (internalMetaType.id()==QMetaType::QStringList
-              || internalTypeName=="QStringList") {
+              || internalTypeName=="QStringList"
+              || internalTypeName=="QList<QString>") {
         return [](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType t) -> bool{
             if(t!=jValueType::l)
                 return false;
@@ -5231,7 +6958,8 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
             return true;
         };
     }else if (internalMetaType.id()==QMetaType::QByteArrayList
-              || internalTypeName=="QByteArrayList") {
+              || internalTypeName=="QByteArrayList"
+              || internalTypeName=="QList<QByteArray>") {
         return [](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType t) -> bool{
             if(t!=jValueType::l)
                 return false;
@@ -5291,7 +7019,8 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
             return true;
         };
     }else if (internalMetaType.id()==QMetaType::QVariantList
-              || internalTypeName=="QVariantList") {
+              || internalTypeName=="QVariantList"
+              || internalTypeName=="QList<QVariant>") {
         return [](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType t) -> bool{
             if(t!=jValueType::l)
                 return false;
@@ -5341,7 +7070,8 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
             return true;
         };
     }else if (internalMetaType.id()==QMetaType::QVariantMap
-              || internalTypeName=="QVariantMap") {
+              || internalTypeName=="QVariantMap"
+              || internalTypeName=="QMap<QString,QVariant>") {
         return [](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType t) -> bool{
             if(t!=jValueType::l)
                 return false;
@@ -5406,7 +7136,8 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
             return true;
         };
     }else if (internalMetaType.id()==QMetaType::QVariantHash
-              || internalTypeName=="QVariantHash") {
+              || internalTypeName=="QVariantHash"
+              || internalTypeName=="QHash<QString,QVariant>") {
         return [](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType t) -> bool{
             if(t!=jValueType::l)
                 return false;
@@ -5472,7 +7203,8 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
         };
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     }else if(internalMetaType.id()==QMetaType::QVariantPair
-              || internalTypeName=="QVariantPair"){
+              || internalTypeName=="QVariantPair"
+              || internalTypeName=="QPair<QVariant,QVariant>"){
         return [](JNIEnv* env, QtJambiScope* scope, jvalue in, void* &out, jValueType valueType) -> bool{
             bool response = false;
             if(valueType==jValueType::l){
@@ -5873,7 +7605,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                             Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QMetaType::typeName(given), QMetaType::typeName(_internalMetaType)) QTJAMBI_STACKTRACEINFO );
                         }
                     }else{
-                        if(!env->IsInstanceOf(val.l, externalClass))
+                        if(val.l && !env->IsInstanceOf(val.l, externalClass))
                             Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassName(env, val.l).replace("$", "."), QtJambiAPI::getClassName(env, externalClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                     }
                     if(!val.l){
@@ -6245,30 +7977,12 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                         case SequentialContainerType::QSet:
                             containerAccess = checkContainerAccess(_env, dynamic_cast<AbstractSetAccess*>(containerAccess));
                             break;
+                        case SequentialContainerType::QConstSpan:
+                        case SequentialContainerType::QSpan:
+                            containerAccess = dynamic_cast<AbstractSpanAccess*>(containerAccess);
+                            break;
                         }
 #endif //defined(QTJAMBI_GENERIC_ACCESS)
-                        QSharedPointer<AbstractContainerAccess> sharedAccess(containerAccess, &containerDisposer);
-                        if(Java::Runtime::Map::isAssignableFrom(_env, elementClass)){
-                            elementClass = getGlobalClassRef(_env, Java::Runtime::Map::getClass(_env));
-                        }else if(Java::Runtime::Collection::isAssignableFrom(_env, elementClass)){
-                            elementClass = getGlobalClassRef(_env, Java::Runtime::Collection::getClass(_env));
-                        }else if(Java::Runtime::Byte::isPrimitiveType(_env, elementClass)){
-                            elementClass = getGlobalClassRef(_env, Java::Runtime::Byte::getClass(_env));
-                        }else if(Java::Runtime::Short::isPrimitiveType(_env, elementClass)){
-                            elementClass = getGlobalClassRef(_env, Java::Runtime::Short::getClass(_env));
-                        }else if(Java::Runtime::Integer::isPrimitiveType(_env, elementClass)){
-                            elementClass = getGlobalClassRef(_env, Java::Runtime::Integer::getClass(_env));
-                        }else if(Java::Runtime::Long::isPrimitiveType(_env, elementClass)){
-                            elementClass = getGlobalClassRef(_env, Java::Runtime::Long::getClass(_env));
-                        }else if(Java::Runtime::Character::isPrimitiveType(_env, elementClass)){
-                            elementClass = getGlobalClassRef(_env, Java::Runtime::Character::getClass(_env));
-                        }else if(Java::Runtime::Boolean::isPrimitiveType(_env, elementClass)){
-                            elementClass = getGlobalClassRef(_env, Java::Runtime::Boolean::getClass(_env));
-                        }else if(Java::Runtime::Float::isPrimitiveType(_env, elementClass)){
-                            elementClass = getGlobalClassRef(_env, Java::Runtime::Float::getClass(_env));
-                        }else if(Java::Runtime::Double::isPrimitiveType(_env, elementClass)){
-                            elementClass = getGlobalClassRef(_env, Java::Runtime::Double::getClass(_env));
-                        }
 #if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
                         switch(containerType){
                         case SequentialContainerType::QConstSpan:
@@ -6306,6 +8020,29 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                             break;
                         default:
 #endif //QT_VERSION >= QT_VERSION_CHECK(6,7,0)
+                        {
+                            if(Java::Runtime::Map::isAssignableFrom(_env, elementClass)){
+                                elementClass = getGlobalClassRef(_env, Java::Runtime::Map::getClass(_env));
+                            }else if(Java::Runtime::Collection::isAssignableFrom(_env, elementClass)){
+                                elementClass = getGlobalClassRef(_env, Java::Runtime::Collection::getClass(_env));
+                            }else if(Java::Runtime::Byte::isPrimitiveType(_env, elementClass)){
+                                elementClass = getGlobalClassRef(_env, Java::Runtime::Byte::getClass(_env));
+                            }else if(Java::Runtime::Short::isPrimitiveType(_env, elementClass)){
+                                elementClass = getGlobalClassRef(_env, Java::Runtime::Short::getClass(_env));
+                            }else if(Java::Runtime::Integer::isPrimitiveType(_env, elementClass)){
+                                elementClass = getGlobalClassRef(_env, Java::Runtime::Integer::getClass(_env));
+                            }else if(Java::Runtime::Long::isPrimitiveType(_env, elementClass)){
+                                elementClass = getGlobalClassRef(_env, Java::Runtime::Long::getClass(_env));
+                            }else if(Java::Runtime::Character::isPrimitiveType(_env, elementClass)){
+                                elementClass = getGlobalClassRef(_env, Java::Runtime::Character::getClass(_env));
+                            }else if(Java::Runtime::Boolean::isPrimitiveType(_env, elementClass)){
+                                elementClass = getGlobalClassRef(_env, Java::Runtime::Boolean::getClass(_env));
+                            }else if(Java::Runtime::Float::isPrimitiveType(_env, elementClass)){
+                                elementClass = getGlobalClassRef(_env, Java::Runtime::Float::getClass(_env));
+                            }else if(Java::Runtime::Double::isPrimitiveType(_env, elementClass)){
+                                elementClass = getGlobalClassRef(_env, Java::Runtime::Double::getClass(_env));
+                            }
+                            QSharedPointer<AbstractContainerAccess> sharedAccess(containerAccess, &containerDisposer);
                             return [sharedAccess,
                                     containerAppendFunction,
                                     elementClass,
@@ -6389,6 +8126,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                                 }
                                 return response;
                             };
+                        }
 #if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
                         }
 #endif //QT_VERSION >= QT_VERSION_CHECK(6,7,0)
@@ -7128,7 +8866,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                     if(isInterface){
                         return [typeId, externalClass](JNIEnv* env, QtJambiScope*, jvalue val, void* &out, jValueType) -> bool{
                             if(val.l){
-                                if(!env->IsInstanceOf(val.l, externalClass))
+                                if(val.l && !env->IsInstanceOf(val.l, externalClass))
                                     Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassName(env, val.l).replace("$", "."), QtJambiAPI::getClassName(env, externalClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                                 out = QtJambiLink::findPointerForJavaInterface(env, val.l, *typeId);
                             }else{
@@ -7148,7 +8886,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                             return [typeId, externalClass, metaTypeId](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType) -> bool{
                                 if(val.l){
                                     QMetaType metaType(metaTypeId);
-                                    if(!env->IsInstanceOf(val.l, externalClass))
+                                    if(val.l && !env->IsInstanceOf(val.l, externalClass))
                                         Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassName(env, val.l).replace("$", "."), QtJambiAPI::getClassName(env, externalClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                                     if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, val.l)){
                                         if(!out){
@@ -7182,7 +8920,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                         }else{
                             return [typeId, externalClass](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType) -> bool{
                                 if(val.l){
-                                    if(!env->IsInstanceOf(val.l, externalClass))
+                                    if(val.l && !env->IsInstanceOf(val.l, externalClass))
                                         Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassName(env, val.l).replace("$", "."), QtJambiAPI::getClassName(env, externalClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                                     if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, val.l)){
                                         if(!out){
@@ -7220,7 +8958,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                     }else{
                         return [externalClass](JNIEnv* env, QtJambiScope*, jvalue val, void* &out, jValueType) -> bool{
                             if(val.l){
-                                if(!env->IsInstanceOf(val.l, externalClass))
+                                if(val.l && !env->IsInstanceOf(val.l, externalClass))
                                     Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassName(env, val.l).replace("$", "."), QtJambiAPI::getClassName(env, externalClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                                 if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, val.l)){
                                     out = link->pointer();
@@ -7244,7 +8982,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                                         Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QMetaType::typeName(given), QMetaType::typeName(_internalMetaType)) QTJAMBI_STACKTRACEINFO );
                                     }
                                 }else{
-                                    if(!env->IsInstanceOf(val.l, externalClass))
+                                    if(val.l && !env->IsInstanceOf(val.l, externalClass))
                                         Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassName(env, val.l).replace("$", "."), QtJambiAPI::getClassName(env, externalClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                                 }
                                 ptr = QtJambiLink::findPointerForJavaInterface(env, val.l, *typeId);
@@ -7295,7 +9033,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                                         Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassName(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                                     }
                                 }else{
-                                    if(!env->IsInstanceOf(val.l, externalClass))
+                                    if(val.l && !env->IsInstanceOf(val.l, externalClass))
                                         Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassName(env, val.l).replace("$", "."), QtJambiAPI::getClassName(env, externalClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                                     if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, val.l)){
                                         ptr = link->pointer();
@@ -7341,7 +9079,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                         return [typeId,externalClass](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType) -> bool{
                             void* ptr = nullptr;
                             if(val.l){
-                                if(!env->IsInstanceOf(val.l, externalClass))
+                                if(val.l && !env->IsInstanceOf(val.l, externalClass))
                                     Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassName(env, val.l).replace("$", "."), QtJambiAPI::getClassName(env, externalClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                                 ptr = QtJambiLink::findPointerForJavaInterface(env, val.l, *typeId);
                             }
@@ -7357,7 +9095,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                         return [externalClass](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType) -> bool{
                             void* ptr = nullptr;
                             if(val.l){
-                                if(!env->IsInstanceOf(val.l, externalClass))
+                                if(val.l && !env->IsInstanceOf(val.l, externalClass))
                                     Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassName(env, val.l).replace("$", "."), QtJambiAPI::getClassName(env, externalClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                                 if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, val.l)){
                                     ptr = link->pointer();
@@ -8304,8 +10042,8 @@ struct BiContainerTypeInfo{
     QtPrivate::QMetaTypeInterface::DataStreamInFn dataStreamIn;
 };
 
-typedef QHash<const QtPrivate::QMetaTypeInterface*,ContainerTypeInfo> ContainerTypeInfoHash;
-typedef QHash<const QtPrivate::QMetaTypeInterface*,BiContainerTypeInfo> BiContainerTypeInfoHash;
+typedef SecureContainer<QHash<const QtPrivate::QMetaTypeInterface*,ContainerTypeInfo>,QReadWriteLock,&cacheLock> ContainerTypeInfoHash;
+typedef SecureContainer<QHash<const QtPrivate::QMetaTypeInterface*,BiContainerTypeInfo>,QReadWriteLock,&cacheLock> BiContainerTypeInfoHash;
 Q_GLOBAL_STATIC(ContainerTypeInfoHash, gContainerTypeInfos)
 Q_GLOBAL_STATIC(BiContainerTypeInfoHash, gBiContainerTypeInfos)
 
@@ -8314,7 +10052,7 @@ void qtjambi_container_destruct(const QtPrivate::QMetaTypeInterface * metaTypeIn
     if(gContainerTypeInfos->contains(metaTypeInterface)){
         const ContainerTypeInfo& info = (*gContainerTypeInfos)[metaTypeInterface];
         locker.unlock();
-        auto sg = qScopeGuard([&](){locker.lock();});
+        auto sg = qScopeGuard([&](){locker.relock();});
         if(info.isPointer){
             info.dtor(metaTypeInterface, ptr);
         }else{
@@ -8326,7 +10064,7 @@ void qtjambi_container_destruct(const QtPrivate::QMetaTypeInterface * metaTypeIn
     }else if(gBiContainerTypeInfos->contains(metaTypeInterface)){
         const BiContainerTypeInfo& info = (*gBiContainerTypeInfos)[metaTypeInterface];
         locker.unlock();
-        auto sg = qScopeGuard([&](){locker.lock();});
+        auto sg = qScopeGuard([&](){locker.relock();});
         if(info.isPointer1 && info.isPointer2){
             info.dtor(metaTypeInterface, ptr);
         }else if(info.isPointer1){
@@ -8356,7 +10094,7 @@ void container_default_construct(const QtPrivate::QMetaTypeInterface * metaTypeI
     if(gContainerTypeInfos->contains(metaTypeInterface)){
         const ContainerTypeInfo& info = (*gContainerTypeInfos)[metaTypeInterface];
         locker.unlock();
-        auto sg = qScopeGuard([&](){locker.lock();});
+        auto sg = qScopeGuard([&](){locker.relock();});
         if(info.isPointer){
             info.defaultCtr(metaTypeInterface, where);
         }else{
@@ -8369,7 +10107,7 @@ void container_default_construct(const QtPrivate::QMetaTypeInterface * metaTypeI
     }else if(gBiContainerTypeInfos->contains(metaTypeInterface)){
         const BiContainerTypeInfo& info = (*gBiContainerTypeInfos)[metaTypeInterface];
         locker.unlock();
-        auto sg = qScopeGuard([&](){locker.lock();});
+        auto sg = qScopeGuard([&](){locker.relock();});
         if(info.isPointer1 && info.isPointer2){
             info.defaultCtr(metaTypeInterface, where);
         }else if(info.isPointer1){
@@ -8399,7 +10137,7 @@ void qtjambi_container_copy_construct(const QtPrivate::QMetaTypeInterface * meta
     if(gContainerTypeInfos->contains(metaTypeInterface)){
         const ContainerTypeInfo& info = (*gContainerTypeInfos)[metaTypeInterface];
         locker.unlock();
-        auto sg = qScopeGuard([&](){locker.lock();});
+        auto sg = qScopeGuard([&](){locker.relock();});
         if(info.isPointer){
             info.copyCtr(metaTypeInterface, where, copy);
         }else{
@@ -8411,7 +10149,7 @@ void qtjambi_container_copy_construct(const QtPrivate::QMetaTypeInterface * meta
     }else if(gBiContainerTypeInfos->contains(metaTypeInterface)){
         const BiContainerTypeInfo& info = (*gBiContainerTypeInfos)[metaTypeInterface];
         locker.unlock();
-        auto sg = qScopeGuard([&](){locker.lock();});
+        auto sg = qScopeGuard([&](){locker.relock();});
         if(info.isPointer1 && info.isPointer2){
             info.copyCtr(metaTypeInterface, where, copy);
         }else if(info.isPointer1){
@@ -8441,7 +10179,7 @@ void qtjambi_container_move_construct(const QtPrivate::QMetaTypeInterface * meta
     if(gContainerTypeInfos->contains(metaTypeInterface)){
         const ContainerTypeInfo& info = (*gContainerTypeInfos)[metaTypeInterface];
         locker.unlock();
-        auto sg = qScopeGuard([&](){locker.lock();});
+        auto sg = qScopeGuard([&](){locker.relock();});
         if(info.isPointer){
             info.moveCtr(metaTypeInterface, where, copy);
         }else{
@@ -8453,7 +10191,7 @@ void qtjambi_container_move_construct(const QtPrivate::QMetaTypeInterface * meta
     }else if(gBiContainerTypeInfos->contains(metaTypeInterface)){
         const BiContainerTypeInfo& info = (*gBiContainerTypeInfos)[metaTypeInterface];
         locker.unlock();
-        auto sg = qScopeGuard([&](){locker.lock();});
+        auto sg = qScopeGuard([&](){locker.relock();});
         if(info.isPointer1 && info.isPointer2){
             info.moveCtr(metaTypeInterface, where, copy);
         }else if(info.isPointer1){
@@ -8483,7 +10221,7 @@ bool qtjambi_container_equals(const QtPrivate::QMetaTypeInterface * metaTypeInte
     if(gContainerTypeInfos->contains(metaTypeInterface)){
         const ContainerTypeInfo& info = (*gContainerTypeInfos)[metaTypeInterface];
         locker.unlock();
-        auto sg = qScopeGuard([&](){locker.lock();});
+        auto sg = qScopeGuard([&](){locker.relock();});
         if(info.equals){
             if(info.isPointer){
                 return info.equals(metaTypeInterface, container1, container2);
@@ -8498,7 +10236,7 @@ bool qtjambi_container_equals(const QtPrivate::QMetaTypeInterface * metaTypeInte
     }else if(gBiContainerTypeInfos->contains(metaTypeInterface)){
         const BiContainerTypeInfo& info = (*gBiContainerTypeInfos)[metaTypeInterface];
         locker.unlock();
-        auto sg = qScopeGuard([&](){locker.lock();});
+        auto sg = qScopeGuard([&](){locker.relock();});
         if(info.equals){
             bool result;
             if(info.isPointer1 && info.isPointer2){
@@ -8533,7 +10271,7 @@ bool container_lessThan(const QtPrivate::QMetaTypeInterface * metaTypeInterface,
     if(gContainerTypeInfos->contains(metaTypeInterface)){
         const ContainerTypeInfo& info = (*gContainerTypeInfos)[metaTypeInterface];
         locker.unlock();
-        auto sg = qScopeGuard([&](){locker.lock();});
+        auto sg = qScopeGuard([&](){locker.relock();});
         if(info.lessThan){
             if(info.isPointer){
                 return info.lessThan(metaTypeInterface, container1, container2);
@@ -8548,7 +10286,7 @@ bool container_lessThan(const QtPrivate::QMetaTypeInterface * metaTypeInterface,
     }else if(gBiContainerTypeInfos->contains(metaTypeInterface)){
         const BiContainerTypeInfo& info = (*gBiContainerTypeInfos)[metaTypeInterface];
         locker.unlock();
-        auto sg = qScopeGuard([&](){locker.lock();});
+        auto sg = qScopeGuard([&](){locker.relock();});
         if(info.lessThan){
             bool result;
             if(info.isPointer1 && info.isPointer2){
@@ -8583,7 +10321,7 @@ void qtjambi_container_debugStream(const QtPrivate::QMetaTypeInterface * metaTyp
     if(gContainerTypeInfos->contains(metaTypeInterface)){
         const ContainerTypeInfo& info = (*gContainerTypeInfos)[metaTypeInterface];
         locker.unlock();
-        auto sg = qScopeGuard([&](){locker.lock();});
+        auto sg = qScopeGuard([&](){locker.relock();});
         if(info.debugStream){
             if(info.isPointer){
                 info.debugStream(metaTypeInterface, debug, container);
@@ -8597,7 +10335,7 @@ void qtjambi_container_debugStream(const QtPrivate::QMetaTypeInterface * metaTyp
     }else if(gBiContainerTypeInfos->contains(metaTypeInterface)){
         const BiContainerTypeInfo& info = (*gBiContainerTypeInfos)[metaTypeInterface];
         locker.unlock();
-        auto sg = qScopeGuard([&](){locker.lock();});
+        auto sg = qScopeGuard([&](){locker.relock();});
         if(info.debugStream){
             if(info.isPointer1 && info.isPointer2){
                 info.debugStream(metaTypeInterface, debug, container);
@@ -8629,7 +10367,7 @@ void qtjambi_container_dataStreamOut(const QtPrivate::QMetaTypeInterface * metaT
     if(gContainerTypeInfos->contains(metaTypeInterface)){
         const ContainerTypeInfo& info = (*gContainerTypeInfos)[metaTypeInterface];
         locker.unlock();
-        auto sg = qScopeGuard([&](){locker.lock();});
+        auto sg = qScopeGuard([&](){locker.relock();});
         if(info.dataStreamOut){
             if(info.isPointer){
                 info.dataStreamOut(metaTypeInterface, dataStream, container);
@@ -8643,7 +10381,7 @@ void qtjambi_container_dataStreamOut(const QtPrivate::QMetaTypeInterface * metaT
     }else if(gBiContainerTypeInfos->contains(metaTypeInterface)){
         const BiContainerTypeInfo& info = (*gBiContainerTypeInfos)[metaTypeInterface];
         locker.unlock();
-        auto sg = qScopeGuard([&](){locker.lock();});
+        auto sg = qScopeGuard([&](){locker.relock();});
         if(info.dataStreamOut){
             if(info.isPointer1 && info.isPointer2){
                 info.dataStreamOut(metaTypeInterface, dataStream, container);
@@ -8675,7 +10413,7 @@ void qtjambi_container_dataStreamIn(const QtPrivate::QMetaTypeInterface * metaTy
     if(gContainerTypeInfos->contains(metaTypeInterface)){
         const ContainerTypeInfo& info = (*gContainerTypeInfos)[metaTypeInterface];
         locker.unlock();
-        auto sg = qScopeGuard([&](){locker.lock();});
+        auto sg = qScopeGuard([&](){locker.relock();});
         if(info.dataStreamIn){
             if(info.isPointer){
                 info.dataStreamIn(metaTypeInterface, dataStream, container);
@@ -8689,7 +10427,7 @@ void qtjambi_container_dataStreamIn(const QtPrivate::QMetaTypeInterface * metaTy
     }else if(gBiContainerTypeInfos->contains(metaTypeInterface)){
         const BiContainerTypeInfo& info = (*gBiContainerTypeInfos)[metaTypeInterface];
         locker.unlock();
-        auto sg = qScopeGuard([&](){locker.lock();});
+        auto sg = qScopeGuard([&](){locker.relock();});
         if(info.dataStreamIn){
             if(info.isPointer1 && info.isPointer2){
                 info.dataStreamIn(metaTypeInterface, dataStream, container);
@@ -9173,14 +10911,14 @@ int QtJambiPrivate::registerAssociativeContainerType(const QByteArray& typeName,
 
 void clearTypeManagerAtShutdown(){
     {
-        InternalToExternalConverterHash hash;
+        QHash<hash_type, QtJambiUtils::InternalToExternalConverter> hash;
         if(!gInternalToExternalConverters.isDestroyed()){
             QWriteLocker locker(gCacheLock());
             gInternalToExternalConverters->swap(hash);
         }
     }
     {
-        ExternalToInternalConverterHash hash;
+        QHash<hash_type, QtJambiUtils::ExternalToInternalConverter> hash;
         if(!gExternalToInternalConverters.isDestroyed()){
             QWriteLocker locker(gCacheLock());
             gExternalToInternalConverters->swap(hash);
@@ -9189,14 +10927,14 @@ void clearTypeManagerAtShutdown(){
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #if defined(QTJAMBI_GENERIC_ACCESS)
     {
-        MetaAssociationHash hash;
+        QHash<hash_type, QtMetaContainerPrivate::QMetaAssociationInterface> hash;
         if(!gMetaAssociationHash.isDestroyed()){
             QWriteLocker locker(gCacheLock());
             gMetaAssociationHash->swap(hash);
         }
     }
     {
-        MetaSequenceHash hash;
+        QHash<hash_type, QtMetaContainerPrivate::QMetaSequenceInterface> hash;
         if(!gMetaSequenceHash.isDestroyed()){
             QWriteLocker locker(gCacheLock());
             gMetaSequenceHash->swap(hash);
@@ -9205,14 +10943,14 @@ void clearTypeManagerAtShutdown(){
 #endif //defined(QTJAMBI_GENERIC_ACCESS)
 #endif
     {
-        HashFunctionHash hash;
+        QMap<int, QtJambiUtils::QHashFunction> hash;
         if(!gHashFunctionByMetaTypeHash.isDestroyed()){
             QWriteLocker locker(gCacheLock());
             gHashFunctionByMetaTypeHash->swap(hash);
         }
     }
     {
-        MetaEnumHash hash;
+        QMap<int, QMetaEnum> hash;
         if(!gMetaEnumByMetaTypeHash.isDestroyed()){
             QWriteLocker locker(gCacheLock());
             gMetaEnumByMetaTypeHash->swap(hash);
@@ -9220,7 +10958,7 @@ void clearTypeManagerAtShutdown(){
     }
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     {
-        SizeByTypeHash hash;
+        QMap<QByteArray, size_t> hash;
         if(!gAlignmentByTypeHash.isDestroyed()){
             QWriteLocker locker(gCacheLock());
             gAlignmentByTypeHash->swap(hash);
@@ -9229,14 +10967,14 @@ void clearTypeManagerAtShutdown(){
 #endif
 #if defined(QTJAMBI_GENERIC_ACCESS)
     {
-        ContainerTypeInfoHash hash;
+        QHash<const QtPrivate::QMetaTypeInterface*,ContainerTypeInfo> hash;
         if(!gContainerTypeInfos.isDestroyed()){
             QWriteLocker locker(gCacheLock());
             gContainerTypeInfos->swap(hash);
         }
     }
     {
-        BiContainerTypeInfoHash hash;
+        QHash<const QtPrivate::QMetaTypeInterface*,BiContainerTypeInfo> hash;
         if(!gBiContainerTypeInfos.isDestroyed()){
             QWriteLocker locker(gCacheLock());
             gBiContainerTypeInfos->swap(hash);

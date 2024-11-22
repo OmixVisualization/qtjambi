@@ -56,4 +56,50 @@ public:
     static QTJAMBI_EXPORT void initialize(JNIEnv *env, jclass callingClass, jobject object, ConstructorFunction constructorFunction, size_t size, const std::type_info& typeId, uint returnScopeRequired, const QMetaObject& originalMetaObject, bool isShell, bool hasCustomMetaObject, bool isDeclarativeCall, jvalue* arguments);
 };
 
+class QTJAMBI_EXPORT JniEnvironmentExceptionModelHandler : public JniEnvironmentExceptionHandler{
+public:
+    using JniEnvironmentExceptionHandler::JniEnvironmentExceptionHandler;
+    void handleException(const JavaException& exn, const QAbstractItemModel* model, const char* methodName);
+private:
+    Q_DISABLE_COPY_MOVE(JniEnvironmentExceptionModelHandler)
+};
+
+class QTJAMBI_EXPORT JniEnvironmentScopeExceptionModelHandler : public JniEnvironmentScopeExceptionHandler{
+public:
+    using JniEnvironmentScopeExceptionHandler::JniEnvironmentScopeExceptionHandler;
+    void handleException(const JavaException& exn, const QAbstractItemModel* model, const char* methodName);
+private:
+    Q_DISABLE_COPY_MOVE(JniEnvironmentScopeExceptionModelHandler)
+};
+
+class QTJAMBI_EXPORT JniEnvironmentScopeExceptionModelInhibitor : public JniEnvironmentScopeExceptionInhibitor{
+public:
+    using JniEnvironmentScopeExceptionInhibitor::JniEnvironmentScopeExceptionInhibitor;
+    void handleException(const JavaException& exn, const QAbstractItemModel* model, const char* methodName);
+private:
+    Q_DISABLE_COPY_MOVE(JniEnvironmentScopeExceptionModelInhibitor)
+};
+
+class QTJAMBI_EXPORT JniEnvironmentScopeExceptionModelHandlerAndBlocker : public JniEnvironmentScopeExceptionHandlerAndBlocker{
+public:
+    using JniEnvironmentScopeExceptionHandlerAndBlocker::JniEnvironmentScopeExceptionHandlerAndBlocker;
+    void handleException(const JavaException& exn, const QAbstractItemModel* model, const char* methodName);
+private:
+    Q_DISABLE_COPY_MOVE(JniEnvironmentScopeExceptionModelHandlerAndBlocker)
+};
+
+class QTJAMBI_EXPORT JniEnvironmentScopeExceptionModelInhibitorAndBlocker : public JniEnvironmentScopeExceptionInhibitorAndBlocker{
+public:
+    using JniEnvironmentScopeExceptionInhibitorAndBlocker::JniEnvironmentScopeExceptionInhibitorAndBlocker;
+    void handleException(const JavaException& exn, const QAbstractItemModel* model, const char* methodName);
+private:
+    Q_DISABLE_COPY_MOVE(JniEnvironmentScopeExceptionModelInhibitorAndBlocker)
+};
+
+class QTJAMBI_EXPORT JniEnvironmentExceptionModelInhibitorAndBlocker : public JniEnvironmentExceptionInhibitorAndBlocker{
+public:
+    using JniEnvironmentExceptionInhibitorAndBlocker::JniEnvironmentExceptionInhibitorAndBlocker;
+    void handleException(const JavaException& exn, const QAbstractItemModel* model, const char* methodName);
+};
+
 #endif // QTJAMBI_MODELAPI_H

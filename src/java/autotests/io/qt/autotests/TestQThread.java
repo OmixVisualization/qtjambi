@@ -797,6 +797,7 @@ public class TestQThread extends ApplicationInitializer{
 					currentThread.exit();
 					currentThread = null;
 				}
+				System.out.println("Adopted Thread about to finish...");
 			});
 			General.internalAccess.registerCleaner(thread, ()->threadCleaned.set(true));
 			thread.start();

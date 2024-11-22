@@ -141,7 +141,7 @@ if(%in){
     %out = [wrapper](%TYPE value){
             if(JniEnvironment env{200}){
                 jobject _value = qtjambi_cast<jobject>(env, value);
-                Java::Runtime::Consumer::accept(env, wrapper.object(), _value);
+                Java::Runtime::Consumer::accept(env, wrapper.object(env), _value);
             }
         };
 }`
@@ -156,7 +156,7 @@ if(%in){
     JObjectWrapper wrapper(%env, %in);
     %out = [wrapper](){
             if(JniEnvironment env{200}){
-                Java::Runtime::Runnable::run(env, wrapper.object());
+                Java::Runtime::Runnable::run(env, wrapper.object(env));
             }
         };
 }`
@@ -171,7 +171,7 @@ if(%in){
     JObjectWrapper wrapper(%env, %in);
     %out = [wrapper]() -> %TYPE {
             if(JniEnvironment env{200}){
-                jobject value = Java::Runtime::Supplier::get(env, wrapper.object());
+                jobject value = Java::Runtime::Supplier::get(env, wrapper.object(env));
                 return qtjambi_cast<%TYPE>(env, value);
             }
             return {};
@@ -2155,10 +2155,6 @@ public final %ITERATOR_TYPE iterator() {
     }
 
     Rejection{
-        className: "QStringMatcher::Data"
-    }
-
-    Rejection{
         className: "QLatin1StringMatcher"
     }
 
@@ -3858,7 +3854,7 @@ public final %ITERATOR_TYPE iterator() {
                     action: ReferenceCount.Set
                 }
             }
-            since: 6
+            since: 6.3
         }
         ModifyFunction{
             signature: "QByteArrayMatcher(QByteArray)"
@@ -4159,12 +4155,12 @@ public final %ITERATOR_TYPE iterator() {
         ModifyFunction{
             signature: "operator+=(std::chrono::milliseconds)"
             remove: RemoveFlag.All
-            since: 6
+            since: 6.4
         }
         ModifyFunction{
             signature: "operator-=(std::chrono::milliseconds)"
             remove: RemoveFlag.All
-            since: 6
+            since: 6.4
         }
     }
 
@@ -4568,39 +4564,144 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_cor
 
     ValueType{
         name: "QStringMatcher"
+        Rejection{
+            className: "Data"
+        }
         ModifyFunction{
-            signature: "operator=(QStringMatcher)"
-            remove: RemoveFlag.All
+            signature: "QStringMatcher(QStringMatcher)"
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.Beginning
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: "__rcData = %1.__rcData;"}
+            }
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Position5
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: "Java::QtJambi::ReferenceUtility::copyReferenceCount(__jni_env, __jni_object, nullptr, __jni_env->NewStringUTF(\"__rcData\"), %1);"}
+            }
+        }
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Clone
+            Text{content: "clone.__rcData = __rcData;"}
         }
         ModifyFunction{
             signature: "QStringMatcher(const QChar*,int,Qt::CaseSensitivity)"
-            remove: RemoveFlag.All
+            ModifyArgument{
+                index: 1
+                NoNullPointer{
+                }
+                AsBuffer{
+                    lengthParameter: 2
+                    AsArray{}
+                }
+                ReferenceCount{
+                    variableName: "__rcData"
+                    action: ReferenceCount.Set
+                }
+            }
             until: 5
         }
         ModifyFunction{
             signature: "QStringMatcher(const QChar*,qsizetype,Qt::CaseSensitivity)"
-            remove: RemoveFlag.All
+            ModifyArgument{
+                index: 1
+                NoNullPointer{
+                }
+                AsBuffer{
+                    lengthParameter: 2
+                    AsArray{}
+                }
+                ReferenceCount{
+                    variableName: "__rcData"
+                    action: ReferenceCount.Set
+                }
+            }
+            ModifyArgument{
+                index: 2
+                replaceType: "int"
+                RemoveDefaultExpression{}
+            }
             since: 6
         }
         ModifyFunction{
             signature: "indexIn(const QChar*,int,int)const"
-            remove: RemoveFlag.All
+            ModifyArgument{
+                index: 1
+                AsBuffer{
+                    lengthParameter: 2
+                    AsArray{}
+                }
+            }
             until: 5
         }
         ModifyFunction{
             signature: "indexIn(const QChar*,qsizetype,qsizetype)const"
-            remove: RemoveFlag.All
+            ModifyArgument{
+                index: 1
+                AsBuffer{
+                    lengthParameter: 2
+                    AsArray{}
+                }
+            }
+            ModifyArgument{
+                index: 2
+                replaceType: "int"
+            }
             since: 6
         }
         ModifyFunction{
-            signature: "QStringMatcher(QStringView,Qt::CaseSensitivity)"
-            remove: RemoveFlag.All
+            signature: "QStringMatcher(QString,Qt::CaseSensitivity)"
+            ModifyArgument{
+                index: 1
+                replaceType: "java.lang.@NonNull CharSequence"
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "const QString& %out = qtjambi_cast<const QString&>(%env, %scope, %in);"}
+                }
+            }
             since: [5, 14]
         }
         ModifyFunction{
+            signature: "indexIn(const QString &, qsizetype)const"
+            ModifyArgument{
+                index: 1
+                replaceType: "java.lang.@NonNull CharSequence"
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "const QString& %out = qtjambi_cast<const QString&>(%env, %scope, %in);"}
+                }
+            }
+            since: 6
+        }
+        ModifyFunction{
             signature: "indexIn(QStringView,qsizetype)const"
-            remove: RemoveFlag.All
+            ModifyArgument{
+                index: 2
+                RemoveDefaultExpression{}
+            }
             since: [5, 14]
+            until: 6
+        }
+        ModifyFunction{
+            signature: "pattern()const"
+            remove: RemoveFlag.All
+            since: 6.7
+        }
+        ModifyFunction{
+            signature: "patternView()const"
+            rename: "pattern"
+            Delegate{
+                name: "patternView"
+                deprecated: true
+            }
+            ModifyArgument{
+                index: 1
+                rename: "subject"
+            }
+            since: 6.7
         }
     }
 
@@ -7378,6 +7479,10 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
                 name: "globalMatchView"
                 deprecated: true
             }
+            ModifyArgument{
+                index: 1
+                rename: "subject"
+            }
             since: 6.5
         }
         ModifyFunction{
@@ -7387,7 +7492,34 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
                 name: "matchView"
                 deprecated: true
             }
+            ModifyArgument{
+                index: 1
+                rename: "subject"
+            }
             since: 6.5
+        }
+        InjectCode{
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class QRegularExpression___"
+                quoteBeforeLine: "}// class"
+            }
+        }
+        InjectCode{
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class QRegularExpression_5__"
+                quoteBeforeLine: "}// class"
+            }
+            until: 5
+        }
+        InjectCode{
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class QRegularExpression_6__"
+                quoteBeforeLine: "}// class"
+            }
+            since: 6
         }
     }
 
@@ -8980,6 +9112,16 @@ if(destinationChildV<0)
                 since: 6.8
             }
             since: 6
+        }
+        ModifyFunction{
+            signature: "operator==(QByteArray,QByteArrayView)"
+            ModifyArgument{
+                index: 2
+                AddImplicitCall{
+                    type: "java.lang.@NonNull String"
+                }
+            }
+            since: 6.8
         }
         ModifyFunction{
             signature: "operator!=(QByteArray,const char*)"
@@ -11465,7 +11607,7 @@ if(destinationChildV<0)
         ModifyFunction{
             signature: "addData(QByteArray)"
             noImplicitArguments: true
-            until: 5
+            until: 6.2
         }
         ModifyFunction{
             signature: "addData(QByteArrayView)"
@@ -11474,7 +11616,7 @@ if(destinationChildV<0)
                 index: 1
                 AddImplicitCall{type: "QByteArray"}
             }
-            since: 6
+            since: 6.3
         }
         ModifyFunction{
             signature: "hashInto(QSpan<std::byte>, QByteArrayView, QCryptographicHash::Algorithm)"
@@ -12298,7 +12440,7 @@ if(destinationChildV<0)
                               "            slot = \"2\" + method.cppMethodSignature();\n"+
                               "        else\n"+
                               "            slot = \"1\" + method.cppMethodSignature();\n"+
-                              "    }\n"+
+                              "    }else slot = \"1\" + slot;\n"+
                               "}"}
             }
         }
@@ -12322,7 +12464,7 @@ if(destinationChildV<0)
                               "            slot = \"2\" + method.cppMethodSignature();\n"+
                               "        else\n"+
                               "            slot = \"1\" + method.cppMethodSignature();\n"+
-                              "    }\n"+
+                              "    }else slot = \"1\" + slot;\n"+
                               "}"}
             }
         }
@@ -12346,7 +12488,7 @@ if(destinationChildV<0)
                               "            slot = \"2\" + method.cppMethodSignature();\n"+
                               "        else\n"+
                               "            slot = \"1\" + method.cppMethodSignature();\n"+
-                              "    }\n"+
+                              "    }else slot = \"1\" + slot;\n"+
                               "}"}
             }
             ppCondition: "__has_include(<chrono>)"
@@ -12372,16 +12514,80 @@ if(destinationChildV<0)
                               "            slot = \"2\" + method.cppMethodSignature();\n"+
                               "        else\n"+
                               "            slot = \"1\" + method.cppMethodSignature();\n"+
-                              "    }\n"+
+                              "    }else slot = \"1\" + slot;\n"+
                               "}"}
             }
             ppCondition: "__has_include(<chrono>)"
             until: 6.7
         }
+        ModifyFunction{
+            signature: "singleShot(std::chrono::nanoseconds, const QObject*, const char*)"
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.Beginning
+                ArgumentMap{
+                    index: 3
+                    metaName: "slot"
+                }
+                ArgumentMap{
+                    index: 2
+                    metaName: "dest"
+                }
+                Text{content: "if(slot!=null && !slot.startsWith(\"1\") && !slot.startsWith(\"2\")) {\n"+
+                              "    io.qt.core.QMetaMethod method = dest.metaObject().method(slot);\n"+
+                              "    if(method!=null && method.isValid()) {\n"+
+                              "        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)\n"+
+                              "            slot = \"2\" + method.cppMethodSignature();\n"+
+                              "        else\n"+
+                              "            slot = \"1\" + method.cppMethodSignature();\n"+
+                              "    }else slot = \"1\" + slot;\n"+
+                              "}"}
+            }
+            ppCondition: "__has_include(<chrono>)"
+            since: 6.8
+        }
+        ModifyFunction{
+            signature: "singleShot(std::chrono::nanoseconds, Qt::TimerType, const QObject*, const char*)"
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.Beginning
+                ArgumentMap{
+                    index: 4
+                    metaName: "slot"
+                }
+                ArgumentMap{
+                    index: 3
+                    metaName: "dest"
+                }
+                Text{content: "if(slot!=null && !slot.startsWith(\"1\") && !slot.startsWith(\"2\")) {\n"+
+                              "    io.qt.core.QMetaMethod method = dest.metaObject().method(slot);\n"+
+                              "    if(method!=null && method.isValid()) {\n"+
+                              "        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)\n"+
+                              "            slot = \"2\" + method.cppMethodSignature();\n"+
+                              "        else\n"+
+                              "            slot = \"1\" + method.cppMethodSignature();\n"+
+                              "    }else slot = \"1\" + slot;\n"+
+                              "}"}
+            }
+            ppCondition: "__has_include(<chrono>)"
+            since: 6.8
+        }
 
         FunctionalType{
             name: "Slot"
             using: "std::function<void()>"
+            generate: false
+        }
+
+        FunctionalType{
+            name: "ObjectSlot"
+            using: "std::function<void(QVariant)>"
+            generate: false
+        }
+
+        FunctionalType{
+            name: "QObjectSlot"
+            using: "std::function<void(QObject*)>"
             generate: false
         }
 
@@ -12408,6 +12614,39 @@ if(destinationChildV<0)
                         Text{content: "auto %out = convertSlot(%env, %in);"}
                     }
                 }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    ArgumentMap{
+                        index: 1
+                        metaName: "dur"
+                    }
+                    ArgumentMap{
+                        index: 2
+                        metaName: "context"
+                    }
+                    ArgumentMap{
+                        index: 3
+                        metaName: "slot"
+                    }
+                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
+                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
+                                  "    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);\n"+
+                                  "    if(context!=null && context==object) {\n"+
+                                  "        switch(metaMethod.methodType()) {\n"+
+                                  "        case Signal:\n"+
+                                  "            singleShot(dur, context, \"2\"+metaMethod.cppMethodSignature());\n"+
+                                  "            return;\n"+
+                                  "        case Method:\n"+
+                                  "        case Slot:\n"+
+                                  "            singleShot(dur, context, \"1\"+metaMethod.cppMethodSignature());\n"+
+                                  "            return;\n"+
+                                  "        default:\n"+
+                                  "            break;\n"+
+                                  "        }\n"+
+                                  "    }\n"+
+                                  "}\n"}
+                }
             }
             Instantiation{
                 Argument{
@@ -12430,40 +12669,294 @@ if(destinationChildV<0)
                         Text{content: "auto %out = convertSlot(%env, %in);"}
                     }
                 }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    ArgumentMap{
+                        index: 1
+                        metaName: "dur"
+                    }
+                    ArgumentMap{
+                        index: 2
+                        metaName: "context"
+                    }
+                    ArgumentMap{
+                        index: 3
+                        metaName: "slot"
+                    }
+                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
+                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
+                                  "    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);\n"+
+                                  "    if(context!=null && context==object) {\n"+
+                                  "        switch(metaMethod.methodType()) {\n"+
+                                  "        case Signal:\n"+
+                                  "            singleShot(dur, context, \"2\"+metaMethod.cppMethodSignature());\n"+
+                                  "            return;\n"+
+                                  "        case Method:\n"+
+                                  "        case Slot:\n"+
+                                  "            singleShot(dur, context, \"1\"+metaMethod.cppMethodSignature());\n"+
+                                  "            return;\n"+
+                                  "        default:\n"+
+                                  "            break;\n"+
+                                  "        }\n"+
+                                  "    }\n"+
+                                  "}\n"}
+                }
                 ppCondition: "__has_include(<chrono>)"
             }
-            InjectCode{
-                target: CodeClass.Java
-                position: Position.Beginning
-                ArgumentMap{
-                    index: 1
-                    metaName: "dur"
+            Instantiation{
+                Argument{
+                    type: "int"
+                    isImplicit: true
                 }
-                ArgumentMap{
+                Argument{
+                    type: "std::function<void(QVariant)>"
+                    isImplicit: true
+                }
+                AddTypeParameter{
+                    name: "Receiver"
+                }
+                ModifyArgument{
                     index: 2
-                    metaName: "context"
+                    NoNullPointer{}
+                    replaceType: "Receiver"
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "QObject* %out{nullptr};"}
+                    }
                 }
-                ArgumentMap{
+                ModifyArgument{
                     index: 3
-                    metaName: "slot"
+                    NoNullPointer{}
+                    replaceType: "io.qt.core.QMetaObject$Slot1<@NonNull Receiver>"
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertSlot(%env, __qt_%2, %2, %in);"}
+                    }
                 }
-                Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
-                              "if(metaMethod!=null && metaMethod.isValid()) {\n"+
-                              "    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);\n"+
-                              "    if(context!=null && context==object) {\n"+
-                              "        switch(metaMethod.methodType()) {\n"+
-                              "        case Signal:\n"+
-                              "            singleShot(dur, context, \"2\"+metaMethod.cppMethodSignature());\n"+
-                              "            return;\n"+
-                              "        case Method:\n"+
-                              "        case Slot:\n"+
-                              "            singleShot(dur, context, \"1\"+metaMethod.cppMethodSignature());\n"+
-                              "            return;\n"+
-                              "        default:\n"+
-                              "            break;\n"+
-                              "        }\n"+
-                              "    }\n"+
-                              "}\n"}
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    ArgumentMap{
+                        index: 1
+                        metaName: "dur"
+                    }
+                    ArgumentMap{
+                        index: 2
+                        metaName: "context"
+                    }
+                    ArgumentMap{
+                        index: 3
+                        metaName: "slot"
+                    }
+                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
+                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
+                                  "    if(context instanceof QObject) {\n"+
+                                  "        switch(metaMethod.methodType()) {\n"+
+                                  "        case Signal:\n"+
+                                  "            singleShot(dur, (QObject)context, \"2\"+metaMethod.cppMethodSignature());\n"+
+                                  "            return;\n"+
+                                  "        case Method:\n"+
+                                  "        case Slot:\n"+
+                                  "            singleShot(dur, (QObject)context, \"1\"+metaMethod.cppMethodSignature());\n"+
+                                  "            return;\n"+
+                                  "        default:\n"+
+                                  "            break;\n"+
+                                  "        }\n"+
+                                  "    }\n"+
+                                  "}\n"}
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::chrono::milliseconds"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<void(QVariant)>"
+                    isImplicit: true
+                }
+                AddTypeParameter{
+                    name: "Receiver"
+                }
+                ModifyArgument{
+                    index: 2
+                    NoNullPointer{}
+                    replaceType: "Receiver"
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "QObject* %out{nullptr};"}
+                    }
+                }
+                ModifyArgument{
+                    index: 3
+                    NoNullPointer{}
+                    replaceType: "io.qt.core.QMetaObject$Slot1<@NonNull Receiver>"
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertSlot(%env, __qt_%2, %2, %in);"}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    ArgumentMap{
+                        index: 1
+                        metaName: "dur"
+                    }
+                    ArgumentMap{
+                        index: 2
+                        metaName: "context"
+                    }
+                    ArgumentMap{
+                        index: 3
+                        metaName: "slot"
+                    }
+                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
+                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
+                                  "    if(context instanceof QObject) {\n"+
+                                  "        switch(metaMethod.methodType()) {\n"+
+                                  "        case Signal:\n"+
+                                  "            singleShot(dur, (QObject)context, \"2\"+metaMethod.cppMethodSignature());\n"+
+                                  "            return;\n"+
+                                  "        case Method:\n"+
+                                  "        case Slot:\n"+
+                                  "            singleShot(dur, (QObject)context, \"1\"+metaMethod.cppMethodSignature());\n"+
+                                  "            return;\n"+
+                                  "        default:\n"+
+                                  "            break;\n"+
+                                  "        }\n"+
+                                  "    }\n"+
+                                  "}\n"}
+                }
+                ppCondition: "__has_include(<chrono>)"
+            }
+            Instantiation{
+                Argument{
+                    type: "int"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<void(QObject*)>"
+                    isImplicit: true
+                }
+                AddTypeParameter{
+                    name: "Receiver"
+                    extending: "io.qt.core.QObject"
+                }
+                ModifyArgument{
+                    index: 2
+                    NoNullPointer{}
+                    replaceType: "Receiver"
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "QObject* %out = qtjambi_cast<QObject*>(%env, %in);"}
+                    }
+                }
+                ModifyArgument{
+                    index: 3
+                    NoNullPointer{}
+                    replaceType: "io.qt.core.QMetaObject$Slot1<@NonNull Receiver>"
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertSlot(%env, %2, %in);"}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    ArgumentMap{
+                        index: 1
+                        metaName: "dur"
+                    }
+                    ArgumentMap{
+                        index: 2
+                        metaName: "context"
+                    }
+                    ArgumentMap{
+                        index: 3
+                        metaName: "slot"
+                    }
+                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
+                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
+                                  "    switch(metaMethod.methodType()) {\n"+
+                                  "    case Signal:\n"+
+                                  "        singleShot(dur, context, \"2\"+metaMethod.cppMethodSignature());\n"+
+                                  "        return;\n"+
+                                  "    case Method:\n"+
+                                  "    case Slot:\n"+
+                                  "        singleShot(dur, context, \"1\"+metaMethod.cppMethodSignature());\n"+
+                                  "        return;\n"+
+                                  "    default:\n"+
+                                  "        break;\n"+
+                                  "    }\n"+
+                                  "}\n"}
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::chrono::milliseconds"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<void(QObject*)>"
+                    isImplicit: true
+                }
+                AddTypeParameter{
+                    name: "Receiver"
+                    extending: "io.qt.core.QObject"
+                }
+                ModifyArgument{
+                    index: 2
+                    NoNullPointer{}
+                    replaceType: "Receiver"
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "QObject* %out = qtjambi_cast<QObject*>(%env, %in);"}
+                    }
+                }
+                ModifyArgument{
+                    index: 3
+                    NoNullPointer{}
+                    replaceType: "io.qt.core.QMetaObject$Slot1<@NonNull Receiver>"
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertSlot(%env, %2, %in);"}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    ArgumentMap{
+                        index: 1
+                        metaName: "dur"
+                    }
+                    ArgumentMap{
+                        index: 2
+                        metaName: "context"
+                    }
+                    ArgumentMap{
+                        index: 3
+                        metaName: "slot"
+                    }
+                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
+                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
+                                  "    if(context instanceof QObject) {\n"+
+                                  "        switch(metaMethod.methodType()) {\n"+
+                                  "        case Signal:\n"+
+                                  "            singleShot(dur, (QObject)context, \"2\"+metaMethod.cppMethodSignature());\n"+
+                                  "            return;\n"+
+                                  "        case Method:\n"+
+                                  "        case Slot:\n"+
+                                  "            singleShot(dur, (QObject)context, \"1\"+metaMethod.cppMethodSignature());\n"+
+                                  "            return;\n"+
+                                  "        default:\n"+
+                                  "            break;\n"+
+                                  "        }\n"+
+                                  "    }\n"+
+                                  "}\n"}
+                }
+                ppCondition: "__has_include(<chrono>)"
             }
             since: 6.6
         }
@@ -12491,6 +12984,43 @@ if(destinationChildV<0)
                         Text{content: "auto %out = convertSlot(%env, %in);"}
                     }
                 }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    ArgumentMap{
+                        index: 1
+                        metaName: "dur"
+                    }
+                    ArgumentMap{
+                        index: 2
+                        metaName: "tt"
+                    }
+                    ArgumentMap{
+                        index: 3
+                        metaName: "context"
+                    }
+                    ArgumentMap{
+                        index: 4
+                        metaName: "slot"
+                    }
+                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
+                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
+                                  "    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);\n"+
+                                  "    if(context!=null && context==object) {\n"+
+                                  "        switch(metaMethod.methodType()) {\n"+
+                                  "        case Signal:\n"+
+                                  "            singleShot(dur, tt, context, \"2\"+metaMethod.cppMethodSignature());\n"+
+                                  "            return;\n"+
+                                  "        case Method:\n"+
+                                  "        case Slot:\n"+
+                                  "            singleShot(dur, tt, context, \"1\"+metaMethod.cppMethodSignature());\n"+
+                                  "            return;\n"+
+                                  "        default:\n"+
+                                  "            break;\n"+
+                                  "        }\n"+
+                                  "    }\n"+
+                                  "}\n"}
+                }
             }
             Instantiation{
                 Argument{
@@ -12513,44 +13043,179 @@ if(destinationChildV<0)
                         Text{content: "auto %out = convertSlot(%env, %in);"}
                     }
                 }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    ArgumentMap{
+                        index: 1
+                        metaName: "dur"
+                    }
+                    ArgumentMap{
+                        index: 2
+                        metaName: "tt"
+                    }
+                    ArgumentMap{
+                        index: 3
+                        metaName: "context"
+                    }
+                    ArgumentMap{
+                        index: 4
+                        metaName: "slot"
+                    }
+                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
+                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
+                                  "    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);\n"+
+                                  "    if(context!=null && context==object) {\n"+
+                                  "        switch(metaMethod.methodType()) {\n"+
+                                  "        case Signal:\n"+
+                                  "            singleShot(dur, tt, context, \"2\"+metaMethod.cppMethodSignature());\n"+
+                                  "            return;\n"+
+                                  "        case Method:\n"+
+                                  "        case Slot:\n"+
+                                  "            singleShot(dur, tt, context, \"1\"+metaMethod.cppMethodSignature());\n"+
+                                  "            return;\n"+
+                                  "        default:\n"+
+                                  "            break;\n"+
+                                  "        }\n"+
+                                  "    }\n"+
+                                  "}\n"}
+                }
                 ppCondition: "__has_include(<chrono>)"
             }
-            InjectCode{
-                target: CodeClass.Java
-                position: Position.Beginning
-                ArgumentMap{
-                    index: 1
-                    metaName: "dur"
+            Instantiation{
+                Argument{
+                    type: "int"
+                    isImplicit: true
                 }
-                ArgumentMap{
-                    index: 2
-                    metaName: "tt"
+                Argument{
+                    type: "std::function<void(QObject*)>"
+                    isImplicit: true
                 }
-                ArgumentMap{
+                AddTypeParameter{
+                    name: "Receiver"
+                }
+                ModifyArgument{
                     index: 3
-                    metaName: "context"
+                    NoNullPointer{}
+                    replaceType: "Receiver"
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "QObject* %out = qtjambi_cast<QObject*>(%env, %in);"}
+                    }
                 }
-                ArgumentMap{
+                ModifyArgument{
                     index: 4
-                    metaName: "slot"
+                    NoNullPointer{}
+                    replaceType: "io.qt.core.QMetaObject$Slot1<@NonNull Receiver>"
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertSlot(%env, %3, %in);"}
+                    }
                 }
-                Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
-                              "if(metaMethod!=null && metaMethod.isValid()) {\n"+
-                              "    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);\n"+
-                              "    if(context!=null && context==object) {\n"+
-                              "        switch(metaMethod.methodType()) {\n"+
-                              "        case Signal:\n"+
-                              "            singleShot(dur, tt, context, \"2\"+metaMethod.cppMethodSignature());\n"+
-                              "            return;\n"+
-                              "        case Method:\n"+
-                              "        case Slot:\n"+
-                              "            singleShot(dur, tt, context, \"1\"+metaMethod.cppMethodSignature());\n"+
-                              "            return;\n"+
-                              "        default:\n"+
-                              "            break;\n"+
-                              "        }\n"+
-                              "    }\n"+
-                              "}\n"}
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    ArgumentMap{
+                        index: 1
+                        metaName: "dur"
+                    }
+                    ArgumentMap{
+                        index: 2
+                        metaName: "tt"
+                    }
+                    ArgumentMap{
+                        index: 3
+                        metaName: "context"
+                    }
+                    ArgumentMap{
+                        index: 4
+                        metaName: "slot"
+                    }
+                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
+                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
+                                  "    if(context instanceof QObject) {\n"+
+                                  "        switch(metaMethod.methodType()) {\n"+
+                                  "        case Signal:\n"+
+                                  "            singleShot(dur, tt, (QObject)context, \"2\"+metaMethod.cppMethodSignature());\n"+
+                                  "            return;\n"+
+                                  "        case Method:\n"+
+                                  "        case Slot:\n"+
+                                  "            singleShot(dur, tt, (QObject)context, \"1\"+metaMethod.cppMethodSignature());\n"+
+                                  "            return;\n"+
+                                  "        default:\n"+
+                                  "            break;\n"+
+                                  "        }\n"+
+                                  "    }\n"+
+                                  "}\n"}
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::chrono::milliseconds"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<void(QObject*)>"
+                    isImplicit: true
+                }
+                AddTypeParameter{
+                    name: "Receiver"
+                }
+                ModifyArgument{
+                    index: 3
+                    NoNullPointer{}
+                    replaceType: "Receiver"
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "QObject* %out = qtjambi_cast<QObject*>(%env, %in);"}
+                    }
+                }
+                ModifyArgument{
+                    index: 4
+                    NoNullPointer{}
+                    replaceType: "io.qt.core.QMetaObject$Slot1<@NonNull Receiver>"
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertSlot(%env, %3, %in);"}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    ArgumentMap{
+                        index: 1
+                        metaName: "dur"
+                    }
+                    ArgumentMap{
+                        index: 2
+                        metaName: "tt"
+                    }
+                    ArgumentMap{
+                        index: 3
+                        metaName: "context"
+                    }
+                    ArgumentMap{
+                        index: 4
+                        metaName: "slot"
+                    }
+                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
+                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
+                                  "    if(context instanceof QObject) {\n"+
+                                  "        switch(metaMethod.methodType()) {\n"+
+                                  "        case Signal:\n"+
+                                  "            singleShot(dur, tt, (QObject)context, \"2\"+metaMethod.cppMethodSignature());\n"+
+                                  "            return;\n"+
+                                  "        case Method:\n"+
+                                  "        case Slot:\n"+
+                                  "            singleShot(dur, tt, (QObject)context, \"1\"+metaMethod.cppMethodSignature());\n"+
+                                  "            return;\n"+
+                                  "        default:\n"+
+                                  "            break;\n"+
+                                  "        }\n"+
+                                  "    }\n"+
+                                  "}\n"}
+                }
+                ppCondition: "__has_include(<chrono>)"
             }
             since: 6.6
         }
@@ -12592,6 +13257,39 @@ if(destinationChildV<0)
                         Text{content: "auto %out = convertSlot(%env, %in);"}
                     }
                 }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    ArgumentMap{
+                        index: 1
+                        metaName: "dur"
+                    }
+                    ArgumentMap{
+                        index: 2
+                        metaName: "context"
+                    }
+                    ArgumentMap{
+                        index: 3
+                        metaName: "slot"
+                    }
+                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
+                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
+                                  "    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);\n"+
+                                  "    if(context!=null && context==object) {\n"+
+                                  "        switch(metaMethod.methodType()) {\n"+
+                                  "        case Signal:\n"+
+                                  "            singleShot(dur, context, \"2\"+metaMethod.cppMethodSignature());\n"+
+                                  "            return;\n"+
+                                  "        case Method:\n"+
+                                  "        case Slot:\n"+
+                                  "            singleShot(dur, context, \"1\"+metaMethod.cppMethodSignature());\n"+
+                                  "            return;\n"+
+                                  "        default:\n"+
+                                  "            break;\n"+
+                                  "        }\n"+
+                                  "    }\n"+
+                                  "}\n"}
+                }
             }
             Instantiation{
                 Argument{
@@ -12614,40 +13312,298 @@ if(destinationChildV<0)
                         Text{content: "auto %out = convertSlot(%env, %in);"}
                     }
                 }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    ArgumentMap{
+                        index: 1
+                        metaName: "dur"
+                    }
+                    ArgumentMap{
+                        index: 2
+                        metaName: "context"
+                    }
+                    ArgumentMap{
+                        index: 3
+                        metaName: "slot"
+                    }
+                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
+                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
+                                  "    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);\n"+
+                                  "    if(context!=null && context==object) {\n"+
+                                  "        switch(metaMethod.methodType()) {\n"+
+                                  "        case Signal:\n"+
+                                  "            singleShot(dur, context, \"2\"+metaMethod.cppMethodSignature());\n"+
+                                  "            return;\n"+
+                                  "        case Method:\n"+
+                                  "        case Slot:\n"+
+                                  "            singleShot(dur, context, \"1\"+metaMethod.cppMethodSignature());\n"+
+                                  "            return;\n"+
+                                  "        default:\n"+
+                                  "            break;\n"+
+                                  "        }\n"+
+                                  "    }\n"+
+                                  "}\n"}
+                }
                 ppCondition: "__has_include(<chrono>)"
             }
-            InjectCode{
-                target: CodeClass.Java
-                position: Position.Beginning
-                ArgumentMap{
-                    index: 1
-                    metaName: "dur"
+            Instantiation{
+                Argument{
+                    type: "int"
+                    isImplicit: true
                 }
-                ArgumentMap{
+                Argument{
+                    type: "std::function<void(QVariant)>"
+                    isImplicit: true
+                }
+                AddTypeParameter{
+                    name: "Receiver"
+                }
+                ModifyArgument{
                     index: 2
-                    metaName: "context"
+                    NoNullPointer{}
+                    replaceType: "Receiver"
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "QObject* %out{nullptr};"}
+                    }
                 }
-                ArgumentMap{
+                ModifyArgument{
                     index: 3
-                    metaName: "slot"
+                    NoNullPointer{}
+                    replaceType: "io.qt.core.QMetaObject$Slot1<@NonNull Receiver>"
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertSlot(%env, __qt_%2, %2, %in);"}
+                    }
                 }
-                Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
-                              "if(metaMethod!=null && metaMethod.isValid()) {\n"+
-                              "    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);\n"+
-                              "    if(context!=null && context==object) {\n"+
-                              "        switch(metaMethod.methodType()) {\n"+
-                              "        case Signal:\n"+
-                              "            singleShot(dur, context, \"2\"+metaMethod.cppMethodSignature());\n"+
-                              "            return;\n"+
-                              "        case Method:\n"+
-                              "        case Slot:\n"+
-                              "            singleShot(dur, context, \"1\"+metaMethod.cppMethodSignature());\n"+
-                              "            return;\n"+
-                              "        default:\n"+
-                              "            break;\n"+
-                              "        }\n"+
-                              "    }\n"+
-                              "}\n"}
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    ArgumentMap{
+                        index: 1
+                        metaName: "dur"
+                    }
+                    ArgumentMap{
+                        index: 2
+                        metaName: "context"
+                    }
+                    ArgumentMap{
+                        index: 3
+                        metaName: "slot"
+                    }
+                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
+                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
+                                  "    if(context instanceof QObject) {\n"+
+                                  "        switch(metaMethod.methodType()) {\n"+
+                                  "        case Signal:\n"+
+                                  "            singleShot(dur, (QObject)context, \"2\"+metaMethod.cppMethodSignature());\n"+
+                                  "            return;\n"+
+                                  "        case Method:\n"+
+                                  "        case Slot:\n"+
+                                  "            singleShot(dur, (QObject)context, \"1\"+metaMethod.cppMethodSignature());\n"+
+                                  "            return;\n"+
+                                  "        default:\n"+
+                                  "            break;\n"+
+                                  "        }\n"+
+                                  "    }\n"+
+                                  "}\n"}
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::chrono::milliseconds"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<void(QVariant)>"
+                    isImplicit: true
+                }
+                AddTypeParameter{
+                    name: "Receiver"
+                }
+                ModifyArgument{
+                    index: 2
+                    NoNullPointer{}
+                    replaceType: "Receiver"
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "QObject* %out{nullptr};"}
+                    }
+                }
+                ModifyArgument{
+                    index: 3
+                    NoNullPointer{}
+                    replaceType: "io.qt.core.QMetaObject$Slot1<@NonNull Receiver>"
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertSlot(%env, __qt_%2, %2, %in);"}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    ArgumentMap{
+                        index: 1
+                        metaName: "dur"
+                    }
+                    ArgumentMap{
+                        index: 2
+                        metaName: "context"
+                    }
+                    ArgumentMap{
+                        index: 3
+                        metaName: "slot"
+                    }
+                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
+                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
+                                  "    if(context instanceof QObject) {\n"+
+                                  "        switch(metaMethod.methodType()) {\n"+
+                                  "        case Signal:\n"+
+                                  "            singleShot(dur, (QObject)context, \"2\"+metaMethod.cppMethodSignature());\n"+
+                                  "            return;\n"+
+                                  "        case Method:\n"+
+                                  "        case Slot:\n"+
+                                  "            singleShot(dur, (QObject)context, \"1\"+metaMethod.cppMethodSignature());\n"+
+                                  "            return;\n"+
+                                  "        default:\n"+
+                                  "            break;\n"+
+                                  "        }\n"+
+                                  "    }\n"+
+                                  "}\n"}
+                }
+                ppCondition: "__has_include(<chrono>)"
+            }
+            Instantiation{
+                Argument{
+                    type: "int"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<void(QObject*)>"
+                    isImplicit: true
+                }
+                AddTypeParameter{
+                    name: "Receiver"
+                    extending: "io.qt.core.QObject"
+                }
+                ModifyArgument{
+                    index: 2
+                    NoNullPointer{}
+                    replaceType: "Receiver"
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "QObject* %out = qtjambi_cast<QObject*>(%env, %in);"}
+                    }
+                }
+                ModifyArgument{
+                    index: 3
+                    NoNullPointer{}
+                    replaceType: "io.qt.core.QMetaObject$Slot1<@NonNull Receiver>"
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertSlot(%env, %2, %in);"}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    ArgumentMap{
+                        index: 1
+                        metaName: "dur"
+                    }
+                    ArgumentMap{
+                        index: 2
+                        metaName: "context"
+                    }
+                    ArgumentMap{
+                        index: 3
+                        metaName: "slot"
+                    }
+                    Text{content: String.raw`
+io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, "Argument 'slot': null not expected."));
+if(metaMethod!=null && metaMethod.isValid()) {
+    switch(metaMethod.methodType()) {
+    case Signal:
+        singleShot(dur, context, "2"+metaMethod.cppMethodSignature());
+        return;
+    case Method:
+    case Slot:
+        singleShot(dur, context, "1"+metaMethod.cppMethodSignature());
+        return;
+    default:
+        break;
+    }
+}
+`
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::chrono::milliseconds"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<void(QObject*)>"
+                    extending: "io.qt.core.QObject"
+                    isImplicit: true
+                }
+                AddTypeParameter{
+                    name: "Receiver"
+                    extending: "io.qt.core.QObject"
+                }
+                ModifyArgument{
+                    index: 2
+                    NoNullPointer{}
+                    replaceType: "Receiver"
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "QObject* %out = qtjambi_cast<QObject*>(%env, %in);"}
+                    }
+                }
+                ModifyArgument{
+                    index: 3
+                    NoNullPointer{}
+                    replaceType: "io.qt.core.QMetaObject$Slot1<@NonNull Receiver>"
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertSlot(%env, %2, %in);"}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    ArgumentMap{
+                        index: 1
+                        metaName: "dur"
+                    }
+                    ArgumentMap{
+                        index: 2
+                        metaName: "context"
+                    }
+                    ArgumentMap{
+                        index: 3
+                        metaName: "slot"
+                    }
+                    Text{content: String.raw`
+io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, "Argument 'slot': null not expected."));
+if(metaMethod!=null && metaMethod.isValid()) {
+    switch(metaMethod.methodType()) {
+    case Signal:
+        singleShot(dur, context, "2"+metaMethod.cppMethodSignature());
+        return;
+    case Method:
+    case Slot:
+        singleShot(dur, context, "1"+metaMethod.cppMethodSignature());
+        return;
+    default:
+        break;
+    }
+}
+`}
+                }
+                ppCondition: "__has_include(<chrono>)"
             }
             until: 6.5
         }
@@ -12679,6 +13635,43 @@ if(destinationChildV<0)
                         Text{content: "auto %out = convertSlot(%env, %in);"}
                     }
                 }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    ArgumentMap{
+                        index: 1
+                        metaName: "dur"
+                    }
+                    ArgumentMap{
+                        index: 2
+                        metaName: "tt"
+                    }
+                    ArgumentMap{
+                        index: 3
+                        metaName: "context"
+                    }
+                    ArgumentMap{
+                        index: 4
+                        metaName: "slot"
+                    }
+                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
+                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
+                                  "    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);\n"+
+                                  "    if(context!=null && context==object) {\n"+
+                                  "        switch(metaMethod.methodType()) {\n"+
+                                  "        case Signal:\n"+
+                                  "            singleShot(dur, tt, context, \"2\"+metaMethod.cppMethodSignature());\n"+
+                                  "            return;\n"+
+                                  "        case Method:\n"+
+                                  "        case Slot:\n"+
+                                  "            singleShot(dur, tt, context, \"1\"+metaMethod.cppMethodSignature());\n"+
+                                  "            return;\n"+
+                                  "        default:\n"+
+                                  "            break;\n"+
+                                  "        }\n"+
+                                  "    }\n"+
+                                  "}\n"}
+                }
             }
             Instantiation{
                 Argument{
@@ -12701,44 +13694,316 @@ if(destinationChildV<0)
                         Text{content: "auto %out = convertSlot(%env, %in);"}
                     }
                 }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    ArgumentMap{
+                        index: 1
+                        metaName: "dur"
+                    }
+                    ArgumentMap{
+                        index: 2
+                        metaName: "tt"
+                    }
+                    ArgumentMap{
+                        index: 3
+                        metaName: "context"
+                    }
+                    ArgumentMap{
+                        index: 4
+                        metaName: "slot"
+                    }
+                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
+                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
+                                  "    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);\n"+
+                                  "    if(context!=null && context==object) {\n"+
+                                  "        switch(metaMethod.methodType()) {\n"+
+                                  "        case Signal:\n"+
+                                  "            singleShot(dur, tt, context, \"2\"+metaMethod.cppMethodSignature());\n"+
+                                  "            return;\n"+
+                                  "        case Method:\n"+
+                                  "        case Slot:\n"+
+                                  "            singleShot(dur, tt, context, \"1\"+metaMethod.cppMethodSignature());\n"+
+                                  "            return;\n"+
+                                  "        default:\n"+
+                                  "            break;\n"+
+                                  "        }\n"+
+                                  "    }\n"+
+                                  "}\n"}
+                }
                 ppCondition: "__has_include(<chrono>)"
             }
-            InjectCode{
-                target: CodeClass.Java
-                position: Position.Beginning
-                ArgumentMap{
-                    index: 1
-                    metaName: "dur"
+            Instantiation{
+                Argument{
+                    type: "int"
+                    isImplicit: true
                 }
-                ArgumentMap{
-                    index: 2
-                    metaName: "tt"
+                Argument{
+                    type: "std::function<void(QVariant)>"
+                    isImplicit: true
                 }
-                ArgumentMap{
+                AddTypeParameter{
+                    name: "Receiver"
+                }
+                ModifyArgument{
                     index: 3
-                    metaName: "context"
+                    NoNullPointer{}
+                    replaceType: "Receiver"
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "QObject* %out{nullptr};"}
+                    }
                 }
-                ArgumentMap{
+                ModifyArgument{
                     index: 4
-                    metaName: "slot"
+                    NoNullPointer{}
+                    replaceType: "io.qt.core.QMetaObject$Slot1<@NonNull Receiver>"
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertSlot(%env, __qt_%3, %3, %in);"}
+                    }
                 }
-                Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
-                              "if(metaMethod!=null && metaMethod.isValid()) {\n"+
-                              "    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);\n"+
-                              "    if(context!=null && context==object) {\n"+
-                              "        switch(metaMethod.methodType()) {\n"+
-                              "        case Signal:\n"+
-                              "            singleShot(dur, tt, context, \"2\"+metaMethod.cppMethodSignature());\n"+
-                              "            return;\n"+
-                              "        case Method:\n"+
-                              "        case Slot:\n"+
-                              "            singleShot(dur, tt, context, \"1\"+metaMethod.cppMethodSignature());\n"+
-                              "            return;\n"+
-                              "        default:\n"+
-                              "            break;\n"+
-                              "        }\n"+
-                              "    }\n"+
-                              "}\n"}
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    ArgumentMap{
+                        index: 1
+                        metaName: "dur"
+                    }
+                    ArgumentMap{
+                        index: 2
+                        metaName: "tt"
+                    }
+                    ArgumentMap{
+                        index: 3
+                        metaName: "context"
+                    }
+                    ArgumentMap{
+                        index: 4
+                        metaName: "slot"
+                    }
+                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
+                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
+                                  "    if(context instanceof QObject) {\n"+
+                                  "        switch(metaMethod.methodType()) {\n"+
+                                  "        case Signal:\n"+
+                                  "            singleShot(dur, tt, (QObject)context, \"2\"+metaMethod.cppMethodSignature());\n"+
+                                  "            return;\n"+
+                                  "        case Method:\n"+
+                                  "        case Slot:\n"+
+                                  "            singleShot(dur, tt, (QObject)context, \"1\"+metaMethod.cppMethodSignature());\n"+
+                                  "            return;\n"+
+                                  "        default:\n"+
+                                  "            break;\n"+
+                                  "        }\n"+
+                                  "    }\n"+
+                                  "}\n"}
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::chrono::milliseconds"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<void(QVariant)>"
+                    isImplicit: true
+                }
+                AddTypeParameter{
+                    name: "Receiver"
+                }
+                ModifyArgument{
+                    index: 3
+                    NoNullPointer{}
+                    replaceType: "Receiver"
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "QObject* %out{nullptr};"}
+                    }
+                }
+                ModifyArgument{
+                    index: 4
+                    NoNullPointer{}
+                    replaceType: "io.qt.core.QMetaObject$Slot1<@NonNull Receiver>"
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertSlot(%env, __qt_%3, %3, %in);"}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    ArgumentMap{
+                        index: 1
+                        metaName: "dur"
+                    }
+                    ArgumentMap{
+                        index: 2
+                        metaName: "tt"
+                    }
+                    ArgumentMap{
+                        index: 3
+                        metaName: "context"
+                    }
+                    ArgumentMap{
+                        index: 4
+                        metaName: "slot"
+                    }
+                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
+                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
+                                  "    if(context instanceof QObject) {\n"+
+                                  "        switch(metaMethod.methodType()) {\n"+
+                                  "        case Signal:\n"+
+                                  "            singleShot(dur, tt, (QObject)context, \"2\"+metaMethod.cppMethodSignature());\n"+
+                                  "            return;\n"+
+                                  "        case Method:\n"+
+                                  "        case Slot:\n"+
+                                  "            singleShot(dur, tt, (QObject)context, \"1\"+metaMethod.cppMethodSignature());\n"+
+                                  "            return;\n"+
+                                  "        default:\n"+
+                                  "            break;\n"+
+                                  "        }\n"+
+                                  "    }\n"+
+                                  "}\n"}
+                }
+                ppCondition: "__has_include(<chrono>)"
+            }
+            Instantiation{
+                Argument{
+                    type: "int"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<void(QObject*)>"
+                    isImplicit: true
+                }
+                AddTypeParameter{
+                    name: "Receiver"
+                    extending: "io.qt.core.QObject"
+                }
+                ModifyArgument{
+                    index: 3
+                    NoNullPointer{}
+                    replaceType: "Receiver"
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "QObject* %out = qtjambi_cast<QObject*>(%env, %in);"}
+                    }
+                }
+                ModifyArgument{
+                    index: 4
+                    NoNullPointer{}
+                    replaceType: "io.qt.core.QMetaObject$Slot1<@NonNull Receiver>"
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertSlot(%env, %3, %in);"}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    ArgumentMap{
+                        index: 1
+                        metaName: "dur"
+                    }
+                    ArgumentMap{
+                        index: 2
+                        metaName: "tt"
+                    }
+                    ArgumentMap{
+                        index: 3
+                        metaName: "context"
+                    }
+                    ArgumentMap{
+                        index: 4
+                        metaName: "slot"
+                    }
+                    Text{content: String.raw`
+io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, "Argument 'slot': null not expected."));
+if(metaMethod!=null && metaMethod.isValid()) {
+    switch(metaMethod.methodType()) {
+    case Signal:
+        singleShot(dur, tt, context, "2"+metaMethod.cppMethodSignature());
+        return;
+    case Method:
+    case Slot:
+        singleShot(dur, tt, context, "1"+metaMethod.cppMethodSignature());
+        return;
+    default:
+        break;
+    }
+}
+`}
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::chrono::milliseconds"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<void(QObject*)>"
+                    isImplicit: true
+                }
+                AddTypeParameter{
+                    name: "Receiver"
+                    extending: "io.qt.core.QObject"
+                }
+                ModifyArgument{
+                    index: 3
+                    NoNullPointer{}
+                    replaceType: "Receiver"
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "QObject* %out = qtjambi_cast<QObject*>(%env, %in);"}
+                    }
+                }
+                ModifyArgument{
+                    index: 4
+                    NoNullPointer{}
+                    replaceType: "io.qt.core.QMetaObject$Slot1<@NonNull Receiver>"
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertSlot(%env, %3, %in);"}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    ArgumentMap{
+                        index: 1
+                        metaName: "dur"
+                    }
+                    ArgumentMap{
+                        index: 2
+                        metaName: "tt"
+                    }
+                    ArgumentMap{
+                        index: 3
+                        metaName: "context"
+                    }
+                    ArgumentMap{
+                        index: 4
+                        metaName: "slot"
+                    }
+                    Text{content: String.raw`
+io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, "Argument 'slot': null not expected."));
+if(metaMethod!=null && metaMethod.isValid()) {
+    switch(metaMethod.methodType()) {
+    case Signal:
+        singleShot(dur, tt, context, "2"+metaMethod.cppMethodSignature());
+        return;
+    case Method:
+    case Slot:
+        singleShot(dur, tt, context, "1"+metaMethod.cppMethodSignature());
+        return;
+    default:
+        break;
+    }
+}
+`}
+                }
+                ppCondition: "__has_include(<chrono>)"
             }
             until: 6.5
         }
@@ -12746,14 +14011,35 @@ if(destinationChildV<0)
         InjectCode{
             target: CodeClass.Native
             position: Position.Beginning
-            Text{content: "inline auto convertSlot(JNIEnv* _env, jobject _slot){\n"+
-                          "    JObjectWrapper slot(_env, _slot);\n"+
-                          "    return [slot](){\n"+
-                          "                    if(JniEnvironment env{200}){\n"+
-                          "                        Java::QtCore::QMetaObject$Slot0::invoke(env, slot.object());\n"+
-                          "                    }\n"+
-                          "                };\n"+
-                          "}"}
+            Text{content: String.raw`
+inline auto convertSlot(JNIEnv* _env, jobject _slot){
+    JObjectWrapper slot(_env, _slot);
+    return [slot](){
+        if(JniEnvironment env{200}){
+            Java::QtCore::QMetaObject$Slot0::invoke(env, slot.object(env));
+        }
+    };
+}
+
+inline auto convertSlot(JNIEnv* _env, jobject _receiver, jobject _slot){
+    return [slot = JObjectWrapper(_env, _slot), receiver = JObjectWrapper(_env, _receiver)](){
+        if(JniEnvironment env{200}){
+            Java::QtCore::QMetaObject$Slot1::invoke(env, slot.object(env), receiver.object(env));
+        }
+    };
+}
+
+inline auto convertSlot(JNIEnv* _env, QObject*& qobject, jobject _receiver, jobject _slot){
+    if(Java::QtCore::QObject::isInstanceOf(_env, _receiver)){
+        qobject = qtjambi_cast<QObject*>(_env, _receiver);
+    }
+    return [slot = JObjectWrapper(_env, _slot), receiver = JObjectWrapper(_env, _receiver)](){
+        if(JniEnvironment env{200}){
+            Java::QtCore::QMetaObject$Slot1::invoke(env, slot.object(env), receiver.object(env));
+        }
+    };
+}
+                `}
         }
 
         InjectCode{
@@ -12772,6 +14058,15 @@ if(destinationChildV<0)
         ModifyFunction{
             signature: "callOnTimeout<Args...>(Args&&)"
             remove: RemoveFlag.All
+        }
+
+        InjectCode{
+            target: CodeClass.Java
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class QChronoTimer___"
+                quoteBeforeLine: "}// class"
+            }
         }
         since: 6.8
     }
@@ -13326,6 +14621,18 @@ if(!Java::QtCore::QThread::javaThread(%env, __this) && !__qt_this->isRunning() &
                 name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
                 quoteAfterLine: "class QThread___"
                 quoteBeforeLine: "}// class"
+            }
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class QThread_67__"
+                quoteBeforeLine: "}// class"
+                until: 6.7
+            }
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class QThread_68__"
+                quoteBeforeLine: "}// class"
+                since: 6.8
             }
         }
     }
@@ -15933,21 +17240,25 @@ try{
         ModifyFunction{
             signature: "whenAll<OutputSequence,InputIt,ValueType,0>(InputIt,InputIt)"
             remove: RemoveFlag.All
+            since: 6.3
         }
 
         ModifyFunction{
             signature: "whenAll<OutputSequence,Futures...,0>(Futures&&)"
             remove: RemoveFlag.All
+            since: 6.3
         }
 
         ModifyFunction{
             signature: "whenAny<InputIt,ValueType,0>(InputIt,InputIt)"
             remove: RemoveFlag.All
+            since: 6.3
         }
 
         ModifyFunction{
             signature: "whenAny<Futures...,0>(Futures&&)"
             remove: RemoveFlag.All
+            since: 6.3
         }
 
         InjectCode{
@@ -16315,7 +17626,7 @@ if(%1!=null){
                                   "            QTJAMBI_TRY_ANY{\n"+
                                   "                if(JniEnvironment env{300}){\n"+
                                   "                    QtJambiExceptionInhibitor __exnHandler;\n"+
-                                  "                    jobject object = env->NewLocalRef(__wrapper_runnable0.object());\n"+
+                                  "                    jobject object = env->NewLocalRef(__wrapper_runnable0.object(env));\n"+
                                   "                    QTJAMBI_TRY{\n"+
                                   "                        Java::Runtime::Runnable::run(env, object);\n"+
                                   "                    }QTJAMBI_CATCH(const JavaException& exn){\n"+
@@ -16347,7 +17658,7 @@ if(%1!=null){
                                   "            QTJAMBI_TRY_ANY{\n"+
                                   "                if(JniEnvironment env{300}){\n"+
                                   "                    QtJambiExceptionInhibitor __exnHandler;\n"+
-                                  "                    jobject object = env->NewLocalRef(__wrapper_runnable0.object());\n"+
+                                  "                    jobject object = env->NewLocalRef(__wrapper_runnable0.object(env));\n"+
                                   "                    QTJAMBI_TRY{\n"+
                                   "                        Java::Runtime::Runnable::run(env, object);\n"+
                                   "                    }QTJAMBI_CATCH(const JavaException& exn){\n"+
@@ -16382,7 +17693,7 @@ if(%1!=null){
                                   "            QTJAMBI_TRY_ANY{\n"+
                                   "                if(JniEnvironment env{300}){\n"+
                                   "                    QtJambiExceptionInhibitor __exnHandler;\n"+
-                                  "                    jobject object = env->NewLocalRef(__wrapper_runnable0.object());\n"+
+                                  "                    jobject object = env->NewLocalRef(__wrapper_runnable0.object(env));\n"+
                                   "                    QTJAMBI_TRY{\n"+
                                   "                        Java::Runtime::Runnable::run(env, object);\n"+
                                   "                    }QTJAMBI_CATCH(const JavaException& exn){\n"+
@@ -16819,6 +18130,11 @@ if(%1!=null){
         Implements{
             interfaces: "Iterable<@NonNull String>, java.util.Iterator<@NonNull String>"
             until: 6.7
+        }
+        ModifyFunction{
+            signature: "currentFilePath()const"
+            remove: RemoveFlag.All
+            until: 5
         }
         InjectCode{
             InsertTemplate{
@@ -17301,7 +18617,7 @@ if(%1!=null){
         ModifyFunction{
             signature: "QOperatingSystemVersion(QOperatingSystemVersionBase)"
             remove: RemoveFlag.All
-            since: 6
+            since: 6.3
         }
         CustomConstructor{
             Text{content: "if(copy){\n"+
@@ -17661,12 +18977,12 @@ if(%1!=null){
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "erase(QString::const_iterator)"
+            signature: "erase(QString::const_iterator,QString::const_iterator)"
             remove: RemoveFlag.All
             since: 6.1
         }
         ModifyFunction{
-            signature: "erase(QString::const_iterator,QString::const_iterator)"
+            signature: "erase(QString::const_iterator)"
             remove: RemoveFlag.All
             since: 6.5
         }
@@ -20631,7 +21947,7 @@ if(%1!=null){
             since: 6
         }
         ModifyFunction{
-            signature: "fromValue<T>(T&&)"
+            signature: "fromValue<T>(const T&)"
             remove: RemoveFlag.All
             since: 6
             until: 6.4
@@ -20644,7 +21960,7 @@ if(%1!=null){
         ModifyFunction{
             signature: "fromValue(QVariant)"
             remove: RemoveFlag.All
-            until: 6.6
+            until: 6.5
         }
         ModifyFunction{
             signature: "setValue<T>(T)"
@@ -21065,20 +22381,73 @@ else
                     comment: "value of the variant (converted to target class if necessary)"
                     ConversionRule{
                         codeClass: CodeClass.Native
-                        Text{content: "int typeId = CoreAPI::metaTypeId(%env, clazz, instantiations);\n"+
-                                      "if(typeId==QMetaType::UnknownType || (%in.userType()!=typeId && !%in.convert(typeId)))\n"+
-                                      "    %in = QVariant(typeId, nullptr);\n"+
-                                      "%out = qtjambi_cast<jobject>(%env, %in);"}
+                        Text{content: String.raw`
+                            QByteArray variantTypeName = QMetaType::typeName(%in.userType());
+                            if(variantTypeName.startsWith("QSharedPointer<")
+                                || variantTypeName.startsWith("QWeakPointer<")
+                                || variantTypeName.startsWith("QPointer<")
+                                || variantTypeName.startsWith("QScopedPointer<")
+                                || variantTypeName.startsWith("QScopedArrayPointer<")
+                                || variantTypeName.startsWith("std::shared_ptr<")
+                                || variantTypeName.startsWith("std::weak_ptr<")
+                                || variantTypeName.startsWith("std::unique_ptr<")
+                                || variantTypeName.startsWith("std::initializer_list<")){
+                                %out = QtJambiAPI::convertQVariantToJavaObject(%env, %in);
+                            }else{
+                                int typeId = CoreAPI::metaTypeId(%env, clazz, instantiations);
+                                if(typeId==QMetaType::UnknownType || (%in.userType()!=typeId && !%in.convert(typeId)))
+                                    %in = QVariant(typeId, nullptr);
+                                %out = qtjambi_cast<jobject>(%env, %in);
+                            }
+                            if(%out && !%env->IsInstanceOf(%out, clazz)){
+                                if(Java::Runtime::String::isSameClass(%env, clazz))
+                                    %out = Java::Runtime::Object::toString(%env, %out);
+                                else
+                                    %out = nullptr;
+                            }
+                            `}
                         until: [5, 15]
                     }
                     ConversionRule{
                         codeClass: CodeClass.Native
-                        Text{content: "QMetaType typeId(CoreAPI::metaTypeId(%env, clazz, instantiations));\n"+
-                                      "if(!typeId.isValid() || (%in.metaType()!=typeId && !%in.convert(typeId)))\n"+
-                                      "    %in = QVariant(typeId, nullptr);\n"+
-                                      "%out = qtjambi_cast<jobject>(%env, %in);"}
+                        Text{content: String.raw`
+                            QByteArray variantTypeName = %in.metaType().name();
+                            if(variantTypeName.startsWith("QSharedPointer<")
+                                || variantTypeName.startsWith("QWeakPointer<")
+                                || variantTypeName.startsWith("QPointer<")
+                                || variantTypeName.startsWith("QScopedPointer<")
+                                || variantTypeName.startsWith("QScopedArrayPointer<")
+                                || variantTypeName.startsWith("std::shared_ptr<")
+                                || variantTypeName.startsWith("std::weak_ptr<")
+                                || variantTypeName.startsWith("std::unique_ptr<")
+                                || variantTypeName.startsWith("std::initializer_list<")){
+                                %out = QtJambiAPI::convertQVariantToJavaObject(%env, %in);
+                            }else{
+                                QMetaType typeId(CoreAPI::metaTypeId(%env, clazz, instantiations));
+                                if(!typeId.isValid() || (%in.metaType()!=typeId && !%in.convert(typeId)))
+                                    %in = QVariant(typeId, nullptr);
+                                %out = qtjambi_cast<jobject>(%env, %in);
+                            }
+                            if(%out && !%env->IsInstanceOf(%out, clazz)){
+                                if(Java::Runtime::String::isSameClass(%env, clazz))
+                                    %out = Java::Runtime::Object::toString(%env, %out);
+                                else
+                                    %out = nullptr;
+                            }
+                            `}
                         since: 6
                     }
+                }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    Text{content: String.raw`
+                        if(clazz==QSharedPointer.class
+                                        || clazz==QWeakPointer.class
+                                        || clazz==QScopedPointer.class
+                                        || clazz==QScopedArrayPointer.class)
+                                    throw new IllegalArgumentException("Cannot convert variant to smart pointer class "+clazz.getSimpleName());
+                        `}
                 }
             }
         }
@@ -22237,9 +23606,6 @@ static FilterResetter resetter(%0);
         Rejection{
             enumName: "System"
         }
-        Rejection{
-            functionName: "bounded"
-        }
         ModifyFunction{
             signature: "QRandomGenerator(const quint32*, const quint32*)"
             remove: RemoveFlag.All
@@ -22274,6 +23640,44 @@ static FilterResetter resetter(%0);
                 index: 2
                 RemoveArgument{}
             }
+        }
+        ModifyFunction{
+            signature: "bounded(quint32)"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "bounded(quint32, quint32)"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "bounded(quint64)"
+            remove: RemoveFlag.All
+            since: 6
+        }
+        ModifyFunction{
+            signature: "bounded(quint64, quint64)"
+            remove: RemoveFlag.All
+            since: 6
+        }
+        ModifyFunction{
+            signature: "bounded(int, qint64)"
+            remove: RemoveFlag.All
+            since: 6
+        }
+        ModifyFunction{
+            signature: "bounded(qint64, int)"
+            remove: RemoveFlag.All
+            since: 6
+        }
+        ModifyFunction{
+            signature: "bounded(unsigned, quint64)"
+            remove: RemoveFlag.All
+            since: 6
+        }
+        ModifyFunction{
+            signature: "bounded(quint64, unsigned)"
+            remove: RemoveFlag.All
+            since: 6
         }
         ModifyFunction{
             signature: "QRandomGenerator(const quint32*, qsizetype)"

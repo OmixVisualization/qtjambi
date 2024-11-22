@@ -58,7 +58,7 @@ import io.qt.QtObjectInterface;
  * </code>
  * 
  */
-public final class QScopedArrayPointer<O> implements AutoCloseable {
+public final class QScopedArrayPointer<O> implements AutoCloseable, SmartPointer<O[]> {
 	
 	private static class Data<O>{
 		private O[] data;

@@ -43,7 +43,7 @@ TypeSystem{
                       "    %out = [wrapper](%TYPE value){\n"+
                       "                        if(JniEnvironment env{200}){\n"+
                       "                            jobject _value = qtjambi_cast<jobject>(env, value);\n"+
-                      "                            Java::Runtime::Consumer::accept(env, wrapper.object(), _value);\n"+
+                      "                            Java::Runtime::Consumer::accept(env, wrapper.object(env), _value);\n"+
                       "                        }\n"+
                       "                    };\n"+
                       "}"}
@@ -57,7 +57,7 @@ TypeSystem{
                       "    %out = [wrapper](%TYPE value){\n"+
                       "                        if(JniEnvironment env{200}){\n"+
                       "                            jobject _value = qtjambi_cast<jobject>(env, value);\n"+
-                      "                            Java::Runtime::Consumer::accept(env, wrapper.object(), _value);\n"+
+                      "                            Java::Runtime::Consumer::accept(env, wrapper.object(env), _value);\n"+
                       "                        }\n"+
                       "                    };\n"+
                       "}"}
@@ -680,7 +680,7 @@ TypeSystem{
                                   "                        if(JniEnvironment env{200}){\n"+
                                   "                            QtJambiScope __qtjambi_scope;\n"+
                                   "                            jobject _value = qtjambi_cast<jobject>(env, __qtjambi_scope, value);\n"+
-                                  "                            Java::Runtime::Consumer::accept(env, wrapper.object(), _value);\n"+
+                                  "                            Java::Runtime::Consumer::accept(env, wrapper.object(env), _value);\n"+
                                   "                        }\n"+
                                   "                    };\n"+
                                   "}"}

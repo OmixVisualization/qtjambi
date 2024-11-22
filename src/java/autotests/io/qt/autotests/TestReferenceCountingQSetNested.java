@@ -33,7 +33,7 @@ public class TestReferenceCountingQSetNested extends ApplicationInitializer {
 					return 0;
 	    		};
 	    		container.add(QList.of(object));
-	    		General.internalAccess.setJavaOwnership(object);
+//	    		General.internalAccess.setJavaOwnership(object);
 	    		General.internalAccess.registerCleaner(object, counter::incrementAndGet);
 	    		object = null;
 	    	}

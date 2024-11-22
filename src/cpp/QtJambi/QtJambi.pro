@@ -157,6 +157,7 @@ HEADERS += \
     typeentry_p.h \
     typemanager_p.h \
     typetests.h \
+    typeutils.h \
     utils.h \
     utils_p.h
 

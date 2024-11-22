@@ -35,7 +35,7 @@
 #include <QtCore/QSharedPointer>
 #include <QtCore/private/qobject_p.h>
 #include "qtjambiapi.h"
-#include "utils.h"
+#include "typeutils.h"
 #include "jobjectwrapper.h"
 
 typedef void (*StaticMetaCallFunction)(QObject *, QMetaObject::Call, int, void **);
@@ -95,24 +95,24 @@ private:
 class QtJambiMetaObject final : public QMetaObject
 {
 public:
-    int invokeSignalOrSlot(JNIEnv *env, jobject object, int _id, void **_a, bool direct = false) const;
-    int readProperty(JNIEnv *env, jobject object, int _id, void **_a, bool direct = false) const;
-    int writeProperty(JNIEnv *env, jobject object, int _id, void **_a, bool direct = false) const;
-    int resetProperty(JNIEnv *env, jobject object, int _id, void **_a, bool direct = false) const;
-    int notifyProperty(JNIEnv *env, jobject object, int _id, void **_a, bool direct = false) const;
+    int invokeSignalOrSlot(JNIEnv *env, jobject object, QObject* qobject, int _id, void **_a, bool direct = false) const;
+    int readProperty(JNIEnv *env, jobject object, QObject* qobject, int _id, void **_a, bool direct = false) const;
+    int writeProperty(JNIEnv *env, jobject object, QObject* qobject, int _id, void **_a, bool direct = false) const;
+    int resetProperty(JNIEnv *env, jobject object, QObject* qobject, int _id, void **_a, bool direct = false) const;
+    int notifyProperty(JNIEnv *env, jobject object, QObject* qobject, int _id, void **_a, bool direct = false) const;
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    int queryPropertyDesignable(JNIEnv *env, jobject object, int _id, void **_a, bool direct = false) const;
-    int queryPropertyScriptable(JNIEnv *env, jobject object, int _id, void **_a, bool direct = false) const;
+    int queryPropertyDesignable(JNIEnv *env, jobject object, QObject* qobject, int _id, void **_a, bool direct = false) const;
+    int queryPropertyScriptable(JNIEnv *env, jobject object, QObject* qobject, int _id, void **_a, bool direct = false) const;
 #else
-    int bindableProperty(JNIEnv *env, jobject object, int _id, void **_a, bool direct = false) const;
+    int bindableProperty(JNIEnv *env, jobject object, QObject* qobject, int _id, void **_a, bool direct = false) const;
 #endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 
 #if QT_VERSION >= 0x050000
     int invokeConstructor(JNIEnv *env, int _id, void **_a) const;
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    int queryPropertyUser(JNIEnv *env, jobject object, int _id, void **_a, bool direct = false) const;
-    int queryPropertyStored(JNIEnv *env, jobject object, int _id, void **_a, bool direct = false) const;
-    int queryPropertyEditable(JNIEnv *env, jobject object, int _id, void **_a, bool direct = false) const;
+    int queryPropertyUser(JNIEnv *env, jobject object, QObject* qobject, int _id, void **_a, bool direct = false) const;
+    int queryPropertyStored(JNIEnv *env, jobject object, QObject* qobject, int _id, void **_a, bool direct = false) const;
+    int queryPropertyEditable(JNIEnv *env, jobject object, QObject* qobject, int _id, void **_a, bool direct = false) const;
 #endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #endif
     int originalSignalOrSlotSignature(JNIEnv *env, int _id, QString *signature) const;
@@ -144,8 +144,8 @@ public:
             : metaObject(_metaObject), methodIndex(_methodIndex), signalTypes(_signalTypes), signalClass(_signalClass) {}
     };
 
-    static SignalInfo signalInfo(const QMetaObject* metaObject, jfieldID fieldId, jmethodID emitMethodID);
-    static QVector<SignalInfo> signalInfos(const QMetaObject* metaObject, jfieldID fieldId);
+    static SignalInfo signalInfo(JNIEnv *env, const QMetaObject* metaObject, jfieldID fieldId, jmethodID emitMethodID);
+    static QVector<SignalInfo> signalInfos(JNIEnv *env, const QMetaObject* metaObject, jfieldID fieldId);
     static const QList<ParameterTypeInfo>& methodParameterInfo(JNIEnv * env, const QMetaMethod& method);
     static jobject toReflected(JNIEnv * env, const QMetaMethod& method);
     static void resolveSignals(JNIEnv *env, jobject java_object, const QMetaObject* metaObject, JavaException& ocurredException);

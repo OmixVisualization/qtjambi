@@ -34,7 +34,6 @@ import java.nio.*;
 import java.util.*;
 import java.util.function.*;
 import io.qt.*;
-import io.qt.core.QtJambi_LibraryUtilities;
 
 /**
  * <p>Java wrapper for Qt class <code><a href="https://doc.qt.io/qt/qlist.html">QList</a></code></p>
@@ -176,7 +175,7 @@ public class QList<T> extends AbstractList<T> implements Cloneable
     /**
      * Creating a container with given content.
      * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#QList">QList::<wbr>QList(InputIterator,InputIterator)</a></code></p>
-     * @param other container
+     * @param iterable
      */
     public QList(@StrictNonNull Iterable<T> iterable) {
 		super(null);

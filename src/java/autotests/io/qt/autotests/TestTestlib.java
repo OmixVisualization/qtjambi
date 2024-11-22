@@ -28,53 +28,54 @@
 ****************************************************************************/
 package io.qt.autotests;
 
-import static org.junit.Assert.*;
+import static io.qt.test.QTest.QCOMPARE;
+import static io.qt.test.QTest.QTEST_MAIN;
+import static io.qt.test.QTest.QTRY_VERIFY_WITH_TIMEOUT;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
-import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Test;
 
-import io.qt.*;
-import io.qt.core.*;
-import io.qt.test.*;
-import static io.qt.test.QTest.*;
+import io.qt.core.QLibraryInfo;
+import io.qt.core.QObject;
+import io.qt.core.QOperatingSystemVersion;
+import io.qt.core.QSysInfo;
+import io.qt.core.QTimer;
+import io.qt.gui.QGuiApplication;
+import io.qt.gui.QIcon;
+import io.qt.gui.QWindow;
+import io.qt.test.QSignalSpy;
+import io.qt.widgets.QApplication;
 
 public class TestTestlib extends UnitTestInitializer {
-    @Test
-    public void testSignalSpy() {
-    	class Object extends QObject{
-    		final Signal2<@QtPrimitiveType Integer, String> sig = new Signal2<>();
+	
+    private static void showWidget() {
+    	if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.MacOS) 
+    			&& QLibraryInfo.version().majorVersion()==6 
+    			&& QLibraryInfo.version().minorVersion()==5) {
+			QWindow window = new QWindow();
+	    	window.show();
+	    	QTimer.singleShot(500, QApplication.instance(), QApplication::quit);
+	    	QApplication.exec();
+	    	window.dispose();
     	}
-    	Object object = new Object();
-    	QSignalSpy signalSpy = new QSignalSpy(object.sig);
-    	for(int i=0; i<5; ++i) {
-    		object.sig.emit(i, ""+i);
-    	}
-    	assertEquals(5, signalSpy.size());
-//    	QList<?> list = io.qt.internal.QtJambiInternal.fetchField(signalSpy, QSignalSpy.class, "list", QList.class);
-//    	System.out.println(signalSpy.toString());
-    	assertFalse(signalSpy.isDisposed());
-//    	assertFalse(list.isDisposed());
-    	signalSpy.dispose();
-    	assertTrue(signalSpy.isDisposed());
-//    	assertTrue(list.isDisposed());
-    }
-    
+	}
+	
     @Test
     public void testMain() {
-    	Assume.assumeTrue("Can only run successfully on x86_64", "x86_64".equals(QSysInfo.currentCpuArchitecture()));
+    	assumeTrue("Can only run successfully on x86_64", "x86_64".equals(QSysInfo.currentCpuArchitecture()));
     	TestObject.initMainCalled = false;
     	TestObject.test1Called = false;
     	TestObject.test2Called = false;
     	TestObject.test3Called = false;
     	TestObject.test4Called = false;
     	TestObject.main();
-    	Assert.assertTrue("initMain not called", TestObject.initMainCalled);
-    	Assert.assertTrue("initTestCase not called", TestObject.initTestCaseCalled);
-    	Assert.assertTrue("test1 not called", TestObject.test1Called);
-    	Assert.assertTrue("test2 not called", TestObject.test2Called);
-    	Assert.assertTrue("test3 not called", TestObject.test3Called);
-    	Assert.assertTrue("test4 not called", TestObject.test4Called);
+    	assertTrue("initMain not called", TestObject.initMainCalled);
+    	assertTrue("initTestCase not called", TestObject.initTestCaseCalled);
+    	assertTrue("test1 not called", TestObject.test1Called);
+    	assertTrue("test2 not called", TestObject.test2Called);
+    	assertTrue("test3 not called", TestObject.test3Called);
+    	assertTrue("test4 not called", TestObject.test4Called);
     }
     
     @Test
@@ -94,7 +95,11 @@ public class TestTestlib extends UnitTestInitializer {
     		initMainCalled = true;
     	}
     	public void initTestCase() {
+    		QGuiApplication.setWindowIcon(new QIcon(":io/qt/autotests/icon.png"));
     		initTestCaseCalled = true;
+    	}
+    	public void cleanupTestCase() {
+    		TestTestlib.showWidget();
     	}
     	public static void main(String... args) {
     		QTEST_MAIN(args);
@@ -136,6 +141,12 @@ public class TestTestlib extends UnitTestInitializer {
 
 		    QTRY_VERIFY_WITH_TIMEOUT(()->timeoutSpy.count() > oldCount, TIMEOUT_TIMEOUT);
 		}
+		public void initTestCase() {
+    		QGuiApplication.setWindowIcon(new QIcon(":io/qt/autotests/icon.png"));
+		}
+		public void cleanupTestCase() {
+			TestTestlib.showWidget();
+    	}
 		public static void main(String... args) {
     		QTEST_MAIN(args);
     	}

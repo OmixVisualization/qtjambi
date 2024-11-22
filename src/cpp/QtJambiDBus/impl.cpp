@@ -410,7 +410,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus_QD
 #else
                         QVariant variant(QMetaType(metaTypeId), t);
 #endif
-                        Java::Runtime::BiConsumer::accept(env, _marshallFunction.object(), _arg, qtjambi_cast<jobject>(env, variant));
+                        Java::Runtime::BiConsumer::accept(env, _marshallFunction.object(env), _arg, qtjambi_cast<jobject>(env, variant));
                     }
                 }, qHash(metaTypeId));
                 JObjectWrapper _demarshallFunction(__jni_env, demarshallFunction);
@@ -418,7 +418,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus_QD
                     if(JniEnvironment env{300}){
                         jobject _arg = qtjambi_cast<jobject>(env, &arg);
                         QTJAMBI_INVALIDATE_AFTER_USE(env, _arg);
-                        jobject result = Java::Runtime::Function::apply(env, _demarshallFunction.object(), _arg);
+                        jobject result = Java::Runtime::Function::apply(env, _demarshallFunction.object(env), _arg);
                         QVariant variant = qtjambi_cast<QVariant>(env, result);
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
                         if(variant.userType()!=metaTypeId){
@@ -612,12 +612,11 @@ void initialize_meta_info_QtDBus()
 #else
     QMetaType::registerNormalizedTypedef("QDBusReply", QMetaType(metaTypeID));
 #endif
-    registerConstructorInfos(typeId, 0, &__qt_destruct_QDBusReply, {
-        ConstructorInfo(&__qt_construct_QDBusReply, nullptr)
-       ,ConstructorInfo(&__qt_construct_QDBusReply_QDBusError, "Lio/qt/dbus/QDBusError;")
-       ,ConstructorInfo(&__qt_construct_QDBusReply_QDBusMessage, "Lio/qt/dbus/QDBusMessage;")
-       ,ConstructorInfo(&__qt_construct_QDBusReply_QDBusPendingCall, "Lio/qt/dbus/QDBusPendingCall;")
-    });
+    registerConstructorInfos(typeId, 0, &__qt_destruct_QDBusReply,  {{&__qt_construct_QDBusReply, nullptr}
+                                                                    ,{&__qt_construct_QDBusReply_QDBusError, "Lio/qt/dbus/QDBusError;"}
+                                                                    ,{&__qt_construct_QDBusReply_QDBusMessage, "Lio/qt/dbus/QDBusMessage;"}
+                                                                    ,{&__qt_construct_QDBusReply_QDBusPendingCall, "Lio/qt/dbus/QDBusPendingCall;"}
+                                                                    });
     QDBusMetaType::MarshallFunction mf = [](QDBusArgument &arg, const void *t) {
         if(const JObjectWrapper* objectWrapper = reinterpret_cast<const JObjectWrapper*>(t)){
             QByteArray buffer;

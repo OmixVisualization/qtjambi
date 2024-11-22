@@ -558,11 +558,21 @@ this.textChanged.connect(this, "onTextChanged(String)");
 this.lengthChanged.connect(this, "onLengthChanged(int)");
 
 // connecting signals in Java with method references
+QObject.connect(this.statechanged, this, ObjectType::onStatechanged);
+QObject.connect(this.textChanged, this, ObjectType::onTextChanged);
+QObject.connect(this.lengthChanged, this, ObjectType::onLengthChanged);
+
+// alternatively (1)
 QObject.connect(this.statechanged, this::onStatechanged);
 QObject.connect(this.textChanged, this::onTextChanged);
 QObject.connect(this.lengthChanged, this::onLengthChanged);
 
-// alternatively
+// alternatively (2)
+this.statechanged.connect(this, ObjectType::::onStatechanged);
+this.textChanged.connect(this, ObjectType::::onTextChanged);
+this.lengthChanged.connect(this, ObjectType::::onLengthChanged);
+
+// alternatively (3)
 this.statechanged.connect(this::onStatechanged);
 this.textChanged.connect(this::onTextChanged);
 this.lengthChanged.connect(this::onLengthChanged);
@@ -1166,7 +1176,7 @@ device.close();
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.8.0.jar:qtjambi-uic-6.8.0.jar
+     -p qtjambi-6.8.1.jar:qtjambi-uic-6.8.1.jar
      -m qtjambi.uic --output=src --package=com.myapplication.widgets com/myapplication/widgets/mainwindow.ui
 ```
 
@@ -1174,7 +1184,7 @@ Alternative way to call it:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -cp qtjambi-6.8.0.jar:qtjambi-uic-6.8.0.jar
+     -cp qtjambi-6.8.1.jar:qtjambi-uic-6.8.1.jar
      io.qt.uic.Main --output=src --package=com.myapplication.widgets com/myapplication/widgets/mainwindow.ui
 ```
 
@@ -1495,7 +1505,7 @@ and *QtJambi* libraries:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.8.0.jar:qtjambi-deployer-6.8.0.jar
+     -p qtjambi-6.8.1.jar:qtjambi-deployer-6.8.1.jar
      -m qtjambi.deployer plugin
      --class-name=my.company.CustomImageIOPlugin
      --class-path=my-company-library.jar
@@ -1507,7 +1517,7 @@ Alternative way to call it:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -cp qtjambi-6.8.0.jar:qtjambi-deployer-6.8.0.jar
+     -cp qtjambi-6.8.1.jar:qtjambi-deployer-6.8.1.jar
      io.qt.qtjambi.deployer.Main plugin
      --class-name=my.company.CustomImageIOPlugin
      --class-path=my-company-library.jar
@@ -1534,7 +1544,7 @@ This is especially necessary on macOS (arm64).
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.8.0.jar:qtjambi-deployer-6.8.0.jar
+     -p qtjambi-6.8.1.jar:qtjambi-deployer-6.8.1.jar
      -m qtjambi.deployer plugin
      --class-name=my.company.CustomImageIOPlugin
      --class-path=my-company-library.jar

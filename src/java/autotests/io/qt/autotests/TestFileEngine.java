@@ -56,6 +56,7 @@ import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QRegularExpression;
 import io.qt.core.QResource;
 import io.qt.core.QStringList;
+import io.qt.core.Qt;
 import io.qt.core.internal.QAbstractFileEngineHandler;
 import io.qt.core.internal.QFSFileEngine;
 import io.qt.gui.QGuiApplication;
@@ -529,10 +530,10 @@ public class TestFileEngine extends ApplicationInitializer {
 		assertFalse(fileInfo.exists());
 		assertFalse(fileInfo.isDir());
 		boolean[] used = {false};
-		QAbstractFileEngineHandler handler = QAbstractFileEngineHandler.fromStartsWith(file->{
+		QAbstractFileEngineHandler handler = QAbstractFileEngineHandler.fromFileNameTest(file->{
 				used[0] = true;
 				return new QFSFileEngine(file.substring(15));
-			}, "FileEngineTest:");
+			}, QtUtilities.StringComparison.StartsWith, "FileEngineTest:");
 		assertTrue("handler is null", handler!=null);
 		try {
 			fileInfo = new QFileInfo("FileEngineTest:"+currentPath);
@@ -551,10 +552,10 @@ public class TestFileEngine extends ApplicationInitializer {
 		assertFalse(fileInfo.exists());
 		assertFalse(fileInfo.isDir());
 		boolean[] used = {false};
-		QAbstractFileEngineHandler handler = QAbstractFileEngineHandler.fromEndsWith(file->{
+		QAbstractFileEngineHandler handler = QAbstractFileEngineHandler.fromFileNameTest(file->{
 				used[0] = true;
 				return new QFSFileEngine(file.substring(0, file.length() - 16));
-			}, "::FileEngineTest");
+			}, QtUtilities.StringComparison.EndsWith, Qt.CaseSensitivity.CaseInsensitive, "::fileenginetest");
 		assertTrue("handler is null", handler!=null);
 		try {
 			fileInfo = new QFileInfo(currentPath+"::FileEngineTest");
@@ -574,7 +575,7 @@ public class TestFileEngine extends ApplicationInitializer {
 		assertFalse(fileInfo.exists());
 		assertFalse(fileInfo.isDir());
 		boolean[] used = {false};
-		QAbstractFileEngineHandler handler = QAbstractFileEngineHandler.fromMatch(file->{
+		QAbstractFileEngineHandler handler = QAbstractFileEngineHandler.fromFileNameTest(file->{
 				used[0] = true;
 				return new QFSFileEngine(file.substring(15));
 			}, expr);

@@ -29,61 +29,13 @@
 ****************************************************************************/
 package io.qt.internal;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.ObjectStreamConstants;
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.AnnotatedParameterizedType;
-import java.lang.reflect.Array;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Parameter;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.NavigableMap;
-import java.util.Queue;
-import java.util.Set;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.io.*;
+import java.lang.reflect.*;
+import java.util.*;
+import java.util.function.*;
 
-import io.qt.NativeAccess;
-import io.qt.QFlags;
-import io.qt.QtMetaType;
-import io.qt.QtObjectInterface;
-import io.qt.QtPointerType;
-import io.qt.QtReferenceType;
-import io.qt.QtUtilities;
-import io.qt.core.QByteArray;
-import io.qt.core.QDataStream;
-import io.qt.core.QDebug;
-import io.qt.core.QHash;
-import io.qt.core.QIODevice;
-import io.qt.core.QList;
-import io.qt.core.QMap;
-import io.qt.core.QMetaType;
-import io.qt.core.QMultiHash;
-import io.qt.core.QMultiMap;
-import io.qt.core.QObject;
-import io.qt.core.QPair;
-import io.qt.core.QQueue;
-import io.qt.core.QSet;
-import io.qt.core.QStack;
-import io.qt.core.QStringList;
-import io.qt.core.QVariant;
-import io.qt.core.Qt;
+import io.qt.*;
+import io.qt.core.*;
 
 /**
  * @hidden
@@ -93,6 +45,8 @@ public final class MetaTypeUtility {
 		QtJambi_LibraryUtilities.initialize();
 	}
 
+	public interface SmartPointer {
+	}
 	
 	private MetaTypeUtility() {
 		throw new RuntimeException();
@@ -621,7 +575,7 @@ public final class MetaTypeUtility {
 				}
 			}
 			if (parameterizedType.getRawType() instanceof Class<?>) {
-				if (isQConstSpan((Class<?>) parameterizedType.getRawType())) {
+				if (ContainerUtility.isQConstSpan((Class<?>) parameterizedType.getRawType())) {
 					String spanPropertyName = internalTypeNameOfClass(clazz, genericType, annotatedType);
 					int id = findMetaType(spanPropertyName);
 					if (id != QMetaType.Type.UnknownType.value()) {
@@ -641,10 +595,10 @@ public final class MetaTypeUtility {
 							}
 						}
 						if(elementType!=0) {
-							if(isQSpan((Class<?>) parameterizedType.getRawType())) {
-								return QMetaType.qRegisterMetaType(qspanClass, new QMetaType(elementType));
+							if(ContainerUtility.isQSpan((Class<?>) parameterizedType.getRawType())) {
+								return QMetaType.qRegisterMetaType(ContainerUtility.spanClass(), new QMetaType(elementType));
 							}else {
-								return QMetaType.qRegisterMetaType(qspanConstClass, new QMetaType(elementType));
+								return QMetaType.qRegisterMetaType(ContainerUtility.spanConstClass(), new QMetaType(elementType));
 							}
 						}else {
 							return id;
@@ -658,7 +612,7 @@ public final class MetaTypeUtility {
 					} else {
 						return registerQmlListProperty(listPropertyName);
 					}
-				} else if ((AbstractMetaObjectUtility.isListType(clazz)
+				} else if ((ContainerUtility.isSequentialContainerType(clazz)
 						|| List.class==parameterizedType.getRawType()
 						|| Collection.class==parameterizedType.getRawType()
 						|| Deque.class==parameterizedType.getRawType()
@@ -691,7 +645,7 @@ public final class MetaTypeUtility {
 					}
 					if(elementType!=0) {
 						int cotainerMetaType;
-						if(AbstractMetaObjectUtility.isListType(clazz)) {
+						if(ContainerUtility.isSequentialContainerType(clazz)) {
 							cotainerMetaType = QMetaType.qRegisterMetaType(clazz, new QMetaType(elementType));
 						}else if(Deque.class==parameterizedType.getRawType()) {
 							cotainerMetaType = QMetaType.qRegisterMetaType(QStack.class, new QMetaType(elementType));
@@ -826,7 +780,7 @@ public final class MetaTypeUtility {
 					}
 					return "QQmlListProperty<" + argumentName + ">";
 				}
-			}else if (isQConstSpan(cls) && genericType instanceof ParameterizedType) {
+			}else if (ContainerUtility.isQConstSpan(cls) && genericType instanceof ParameterizedType) {
 				ParameterizedType ptype = (ParameterizedType) genericType;
 				Type actualTypes[] = ptype.getActualTypeArguments();
 				AnnotatedElement actualAnnotatedTypes[] = null;
@@ -841,7 +795,7 @@ public final class MetaTypeUtility {
 					if (argumentName.endsWith("*")) {
 						argumentName = argumentName.substring(0, argumentName.length() - 1);
 					}
-					return isQSpan(cls) ? "QSpan<" + argumentName + ">" : "QSpan<const " + argumentName + ">";
+					return ContainerUtility.isQSpan(cls) ? "QSpan<" + argumentName + ">" : "QSpan<const " + argumentName + ">";
 				}
 			}else if (( cls==QMap.class
 						|| cls==QHash.class
@@ -901,7 +855,7 @@ public final class MetaTypeUtility {
 					}
 				}
 			}else if ((
-					AbstractMetaObjectUtility.isListType(cls)
+					ContainerUtility.isSequentialContainerType(cls)
 					|| cls==Collection.class
 					|| cls==Queue.class
 					|| cls==Deque.class
@@ -991,32 +945,6 @@ public final class MetaTypeUtility {
 		return qmlListPropertiesClass != null && qmlListPropertiesClass.isAssignableFrom(cls);
 	}
 	
-	private static Class<?> qspanClass;
-	private static Class<?> qspanConstClass;
-	private static boolean qspanClassResolved;
-
-	static boolean isQSpan(Class<? extends Object> cls) {
-		if(qspanClass != null && qspanClass.isAssignableFrom(cls))
-			return true;
-		return false;
-	}
-	
-	static boolean isQConstSpan(Class<? extends Object> cls) {
-		if (!qspanClassResolved) {
-			qspanClassResolved = true;
-			try {
-				qspanConstClass = Class.forName("io.qt.core.QConstSpan");
-				qspanClass = Class.forName("io.qt.core.QSpan");
-			} catch (Exception e) {
-				qspanConstClass = null;
-				qspanClass = null;
-			}
-		}
-		if(qspanConstClass != null && qspanConstClass.isAssignableFrom(cls))
-			return true;
-		return false;
-	}
-	
 	static native int registerQmlListProperty(String type);
 	
 	@NativeAccess
@@ -1043,8 +971,13 @@ public final class MetaTypeUtility {
         				return QMetaType.Type.QByteArrayList;
         			}else if(clazz==QList.class && instantiations[0].id()==QMetaType.Type.QVariant.value()) {
         				return QMetaType.Type.QVariantList;
-        			}else if(clazz.getName().startsWith("io.qt.core.Q") && AbstractMetaObjectUtility.isSequentialContainer(clazz)) {
-        				return String.format("%1$s<%2$s>", clazz.getSimpleName(), instantiations[0].name());
+        			}else if(ContainerUtility.isSequentialContainerType(clazz)) {
+    					return String.format("%1$s<%2$s>", clazz.getSimpleName(), instantiations[0].name());
+        			}else if(SmartPointer.class.isAssignableFrom(clazz)) {
+        				if(instantiations[0].name().endsWith("*"))
+        					return String.format("%1$s<%2$s>", clazz.getSimpleName(), instantiations[0].name().toString().substring(0, instantiations[0].name().length()-1));
+        				else
+        					return String.format("%1$s<%2$s>", clazz.getSimpleName(), instantiations[0].name());
         			}else if(clazz==java.util.Set.class) {
         				return String.format("QSet<%1$s>", instantiations[0].name());
         			}else if(clazz==java.util.Queue.class) {
@@ -1053,8 +986,8 @@ public final class MetaTypeUtility {
         				return String.format("QStack<%1$s>", instantiations[0].name());
         			}else if(clazz.isInterface() && java.util.List.class.isAssignableFrom(clazz)) {
         				return String.format("QList<%1$s>", instantiations[0].name());
-        			}else if(isQConstSpan(clazz)) {
-        				if(isQSpan(clazz)) {
+        			}else if(ContainerUtility.isQConstSpan(clazz)) {
+        				if(ContainerUtility.isQSpan(clazz)) {
         					return String.format("QSpan<%1$s>", instantiations[0].name());
         				}else {
         					return String.format("QSpan<const %1$s>", instantiations[0].name());
@@ -1072,9 +1005,8 @@ public final class MetaTypeUtility {
 						&& instantiations[0].id()==QMetaType.Type.QString.value()
 						&& instantiations[1].id()==QMetaType.Type.QVariant.value()) {
 	    				return QMetaType.Type.QVariantHash;
-	    			}else if(clazz.getName().startsWith("io.qt.core.Q") 
-	    					&& (QMap.class.isAssignableFrom(clazz) || QMultiMap.class.isAssignableFrom(clazz)
-    							 || QHash.class.isAssignableFrom(clazz) || QMultiHash.class.isAssignableFrom(clazz))) {
+	    			}else if(QMap.class==clazz || QMultiMap.class==clazz
+    							 || QHash.class==clazz || QMultiHash.class==clazz) {
         				return String.format("%1$s<%2$s,%3$s>", clazz.getSimpleName(), instantiations[0].name(), instantiations[1].name());
         			}else if(clazz==java.util.Map.class) {
         				return String.format("QHash<%1$s,%2$s>", instantiations[0].name(), instantiations[1].name());

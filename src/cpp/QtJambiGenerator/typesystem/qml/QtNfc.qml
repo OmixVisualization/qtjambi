@@ -52,6 +52,11 @@ TypeSystem{
         mode: RequiredLibrary.Optional
         until: 5
     }
+    RequiredLibrary{
+        name: "QtDBus"
+        mode: RequiredLibrary.ProvideOnly
+        since: 6
+    }
     
     Rejection{
         className: "RequestIdPrivate"

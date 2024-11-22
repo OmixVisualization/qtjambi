@@ -783,7 +783,7 @@ struct pointer_ref_or_clone_decider{
 };
 
 template<bool is_const, class Type, bool has_default_ctor, bool has_copy_ctor, bool has_move_ctor>
-    struct pointer_ref_or_clone_decider</*is_pointer=*/true, is_const, /*is_reference=*/false, /*has_scope=*/false, Type, has_default_ctor, has_copy_ctor, has_move_ctor>{
+struct pointer_ref_or_clone_decider</*is_pointer=*/true, is_const, /*is_reference=*/false, /*has_scope=*/false, Type, has_default_ctor, has_copy_ctor, has_move_ctor>{
     typedef typename std::conditional<is_const, typename std::add_const<Type>::type, Type>::type Type_const;
     static Type* convert(JNIEnv *, QtJambiScope*, std::nullptr_t){
         return nullptr;
@@ -876,6 +876,7 @@ struct pointer_ref_or_clone_decider</*is_pointer=*/false, /*is_const=*/true, /*i
         return getDefaultValue<Type>();
     }
     static const Type& convert(JNIEnv *env, QtJambiScope* scope, Type&& t){
+        Q_STATIC_ASSERT_X(has_scope, "Cannot cast to const T& without scope.");
         if(!scope)
             JavaException::raiseError(env, QStringLiteral("Cannot cast to %1* without scope.").arg(QLatin1String(QtJambiAPI::typeName(typeid(Type)))) QTJAMBI_STACKTRACEINFO );
         Type* result = new Type(std::move(t));
@@ -890,6 +891,7 @@ struct pointer_ref_or_clone_decider</*is_pointer=*/false, /*is_const=*/true, /*i
 template<bool has_scope, class Type, bool has_copy_ctor, bool has_move_ctor>
 struct pointer_ref_or_clone_decider</*is_pointer=*/false, /*is_const=*/true, /*is_reference=*/true, has_scope, Type, /*has_default_ctor=*/false, has_copy_ctor, has_move_ctor>{
     static const Type& convert(JNIEnv *env, QtJambiScope* scope, Type&& t){
+        Q_STATIC_ASSERT_X(has_scope, "Cannot cast to const T& without scope.");
         if(!scope)
             JavaException::raiseError(env, QStringLiteral("Cannot cast to %1* without scope.").arg(QLatin1String(QtJambiAPI::typeName(typeid(Type)))) QTJAMBI_STACKTRACEINFO );
         Type* result = new Type(std::move(t));

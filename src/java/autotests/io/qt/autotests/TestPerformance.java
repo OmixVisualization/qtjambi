@@ -71,14 +71,14 @@ public class TestPerformance extends ApplicationInitializer {
     	ApplicationInitializer.testInitializeWithWidgets();
     }
 	
-	private final int count = 5000;
+	static final int count = 5000;
 	private AbstractVirtualHost host1;
 	private AbstractVirtualHost host2;
 	private AbstractVirtualHost host3;
 	private QAbstractItemModel model1;
 	private QAbstractItemModel model2;
 	private QAbstractItemModel model3;
-	private final static DecimalFormat format = new DecimalFormat();
+	final static DecimalFormat format = new DecimalFormat();
 	static {
 		format.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ENGLISH));
 	}

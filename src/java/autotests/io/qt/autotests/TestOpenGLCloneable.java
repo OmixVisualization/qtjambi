@@ -34,9 +34,12 @@ package io.qt.autotests;
 
 import static org.junit.Assert.assertEquals;
 
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import io.qt.core.*;
+import io.qt.gui.*;
 import io.qt.opengl.*;
 
 public class TestOpenGLCloneable extends ApplicationInitializer {
@@ -45,6 +48,22 @@ public class TestOpenGLCloneable extends ApplicationInitializer {
 	public static void testInitialize() throws Exception {
 		ApplicationInitializer.testInitializeWithGui();
 	}
+	
+	@AfterClass
+    public static void testDispose() throws Exception {
+		if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.MacOS) 
+    			&& QLibraryInfo.version().majorVersion()==6 
+    			&& QLibraryInfo.version().minorVersion()==5) {
+	    	QWindow window = new QWindow();
+	    	window.show();
+	    	QTimer.singleShot(200, QGuiApplication.instance(), QGuiApplication::quit);
+	    	QGuiApplication.exec();
+	    	window.close();
+	    	window.disposeLater();
+	    	window = null;
+    	}
+    	ApplicationInitializer.testDispose();
+    }
 
     // this test does not make sense because QGLBuffer does not have an equals operator
     //@Test

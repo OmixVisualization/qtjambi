@@ -3020,6 +3020,20 @@ class QObject___ extends QObject {
         }
 
         /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         *
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+         */
+        public final <Receiver> io.qt.core.QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver, io.qt.core.QMetaObject.@StrictNonNull Slot1<Receiver> slot, io.qt.core.Qt.@NonNull ConnectionType @NonNull... connectionType) throws QNoSuchSignalException{
+            return super.connect(receiver, slot, connectionType);
+        }
+
+        /**
          * Removes the connection to the given <i>slot</i>.
          * 
          * @param slot the slot to be disconnected
@@ -3027,6 +3041,18 @@ class QObject___ extends QObject {
          */
         public final boolean disconnect(QMetaObject.@NonNull Slot0 slot) {
             return super.disconnect(slot);
+        }
+
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         *
+         * @param <Receiver> The type of the receiver
+         * @param receiver the target receiver
+         * @param slot the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver, io.qt.core.QMetaObject.@StrictNonNull Slot1<Receiver> slot) {
+            return super.disconnect(receiver, slot);
         }
         
         /**
@@ -3081,6 +3107,16 @@ class QObject___ extends QObject {
         @QtUninvokable
         private boolean disconnectSlot(QMetaObject.AbstractSlot slotObject) {
             return super.disconnect(slotObject);
+        }
+
+        @QtUninvokable
+        private QMetaObject.Connection connectSlot(Object receiver, QMetaObject.AbstractSlot slotObject, Qt.ConnectionType[] connectionType) {
+            return super.connect(receiver, slotObject, connectionType);
+        }
+
+        @QtUninvokable
+        private boolean disconnectSlot(Object receiver, QMetaObject.AbstractSlot slotObject) {
+            return super.disconnect(receiver, slotObject);
         }
         
         @QtUninvokable
@@ -3973,6 +4009,995 @@ class QObject___ extends QObject {
     public static <A,B,C,D,E,F,G,H,I> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,D,E,F,G,H,I> signal, QMetaObject.@StrictNonNull Slot9<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
+
+/**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal0 signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot1<Receiver> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal1<?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot1<Receiver> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver,A> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal1<A> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot2<Receiver,? super A> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal2<?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot1<Receiver> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver,A> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal2<A,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot2<Receiver,? super A> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver,A,B> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal2<A,B> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot3<Receiver,? super A,? super B> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal3<?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot1<Receiver> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver,A> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal3<A,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot2<Receiver,? super A> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver,A,B> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal3<A,B,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot3<Receiver,? super A,? super B> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver,A,B,C> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal3<A,B,C> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot4<Receiver,? super A,? super B,? super C> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal4<?,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot1<Receiver> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver,A> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal4<A,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot2<Receiver,? super A> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver,A,B> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal4<A,B,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot3<Receiver,? super A,? super B> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver,A,B,C> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal4<A,B,C,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot4<Receiver,? super A,? super B,? super C> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver,A,B,C,D> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal4<A,B,C,D> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot5<Receiver,? super A,? super B,? super C,? super D> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal5<?,?,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot1<Receiver> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver,A> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal5<A,?,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot2<Receiver,? super A> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver,A,B> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal5<A,B,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot3<Receiver,? super A,? super B> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver,A,B,C> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal5<A,B,C,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot4<Receiver,? super A,? super B,? super C> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver,A,B,C,D> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal5<A,B,C,D,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot5<Receiver,? super A,? super B,? super C,? super D> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver,A,B,C,D,E> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal5<A,B,C,D,E> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot6<Receiver,? super A,? super B,? super C,? super D,? super E> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<?,?,?,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot1<Receiver> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver,A> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<A,?,?,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot2<Receiver,? super A> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver,A,B> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<A,B,?,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot3<Receiver,? super A,? super B> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver,A,B,C> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<A,B,C,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot4<Receiver,? super A,? super B,? super C> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver,A,B,C,D> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<A,B,C,D,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot5<Receiver,? super A,? super B,? super C,? super D> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver,A,B,C,D,E> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<A,B,C,D,E,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot6<Receiver,? super A,? super B,? super C,? super D,? super E> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver,A,B,C,D,E,F> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<A,B,C,D,E,F> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot7<Receiver,? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<?,?,?,?,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot1<Receiver> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver,A> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,?,?,?,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot2<Receiver,? super A> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver,A,B> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,B,?,?,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot3<Receiver,? super A,? super B> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver,A,B,C> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,B,C,?,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot4<Receiver,? super A,? super B,? super C> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver,A,B,C,D> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,B,C,D,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot5<Receiver,? super A,? super B,? super C,? super D> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver,A,B,C,D,E> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,B,C,D,E,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot6<Receiver,? super A,? super B,? super C,? super D,? super E> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver,A,B,C,D,E,F> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,B,C,D,E,F,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot7<Receiver,? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver,A,B,C,D,E,F,G> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,B,C,D,E,F,G> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot8<Receiver,? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<?,?,?,?,?,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot1<Receiver> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver,A> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,?,?,?,?,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot2<Receiver,? super A> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver,A,B> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,?,?,?,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot3<Receiver,? super A,? super B> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver,A,B,C> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,C,?,?,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot4<Receiver,? super A,? super B,? super C> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver,A,B,C,D> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,C,D,?,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot5<Receiver,? super A,? super B,? super C,? super D> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver,A,B,C,D,E> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,C,D,E,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot6<Receiver,? super A,? super B,? super C,? super D,? super E> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver,A,B,C,D,E,F> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,C,D,E,F,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot7<Receiver,? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver,A,B,C,D,E,F,G> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,C,D,E,F,G,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot8<Receiver,? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver,A,B,C,D,E,F,G,H> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,C,D,E,F,G,H> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot9<Receiver,? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<?,?,?,?,?,?,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot1<Receiver> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver,A> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,?,?,?,?,?,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot2<Receiver,? super A> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver,A,B> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,?,?,?,?,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot3<Receiver,? super A,? super B> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver,A,B,C> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,?,?,?,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot4<Receiver,? super A,? super B,? super C> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver,A,B,C,D> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,D,?,?,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot5<Receiver,? super A,? super B,? super C,? super D> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver,A,B,C,D,E> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,D,E,?,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot6<Receiver,? super A,? super B,? super C,? super D,? super E> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver,A,B,C,D,E,F> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,D,E,F,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot7<Receiver,? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver,A,B,C,D,E,F,G> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,D,E,F,G,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot8<Receiver,? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver,A,B,C,D,E,F,G,H> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,D,E,F,G,H,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot9<Receiver,? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <Receiver,A,B,C,D,E,F,G,H,I> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,D,E,F,G,H,I> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot10<Receiver,? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(receiver, slot, connectionType);
+    }
     
     /**
      * Removes the connection between the given <i>signal</i> and <i>slot</i>.
@@ -4743,6 +5768,885 @@ class QObject___ extends QObject {
     public static <A,B,C,D,E,F,G,H,I> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,D,E,F,G,H,I> signal, QMetaObject.@StrictNonNull Slot9<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> slot) {
         return signal.disconnect(slot);
     }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal0 signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot1<Receiver> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal1<?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot1<Receiver> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal1<A> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot2<Receiver,? super A> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal2<?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot1<Receiver> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal2<A,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot2<Receiver,? super A> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A,B> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal2<A,B> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot3<Receiver,? super A,? super B> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal3<?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot1<Receiver> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal3<A,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot2<Receiver,? super A> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A,B> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal3<A,B,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot3<Receiver,? super A,? super B> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A,B,C> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal3<A,B,C> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot4<Receiver,? super A,? super B,? super C> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal4<?,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot1<Receiver> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal4<A,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot2<Receiver,? super A> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A,B> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal4<A,B,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot3<Receiver,? super A,? super B> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A,B,C> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal4<A,B,C,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot4<Receiver,? super A,? super B,? super C> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A,B,C,D> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal4<A,B,C,D> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot5<Receiver,? super A,? super B,? super C,? super D> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal5<?,?,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot1<Receiver> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal5<A,?,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot2<Receiver,? super A> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A,B> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal5<A,B,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot3<Receiver,? super A,? super B> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A,B,C> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal5<A,B,C,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot4<Receiver,? super A,? super B,? super C> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A,B,C,D> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal5<A,B,C,D,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot5<Receiver,? super A,? super B,? super C,? super D> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A,B,C,D,E> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal5<A,B,C,D,E> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot6<Receiver,? super A,? super B,? super C,? super D,? super E> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<?,?,?,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot1<Receiver> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<A,?,?,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot2<Receiver,? super A> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A,B> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<A,B,?,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot3<Receiver,? super A,? super B> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A,B,C> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<A,B,C,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot4<Receiver,? super A,? super B,? super C> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A,B,C,D> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<A,B,C,D,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot5<Receiver,? super A,? super B,? super C,? super D> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A,B,C,D,E> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<A,B,C,D,E,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot6<Receiver,? super A,? super B,? super C,? super D,? super E> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A,B,C,D,E,F> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<A,B,C,D,E,F> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot7<Receiver,? super A,? super B,? super C,? super D,? super E,? super F> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<?,?,?,?,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot1<Receiver> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,?,?,?,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot2<Receiver,? super A> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A,B> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,B,?,?,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot3<Receiver,? super A,? super B> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A,B,C> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,B,C,?,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot4<Receiver,? super A,? super B,? super C> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A,B,C,D> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,B,C,D,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot5<Receiver,? super A,? super B,? super C,? super D> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A,B,C,D,E> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,B,C,D,E,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot6<Receiver,? super A,? super B,? super C,? super D,? super E> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A,B,C,D,E,F> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,B,C,D,E,F,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot7<Receiver,? super A,? super B,? super C,? super D,? super E,? super F> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A,B,C,D,E,F,G> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,B,C,D,E,F,G> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot8<Receiver,? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<?,?,?,?,?,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot1<Receiver> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,?,?,?,?,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot2<Receiver,? super A> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A,B> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,?,?,?,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot3<Receiver,? super A,? super B> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A,B,C> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,C,?,?,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot4<Receiver,? super A,? super B,? super C> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A,B,C,D> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,C,D,?,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot5<Receiver,? super A,? super B,? super C,? super D> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A,B,C,D,E> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,C,D,E,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot6<Receiver,? super A,? super B,? super C,? super D,? super E> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A,B,C,D,E,F> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,C,D,E,F,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot7<Receiver,? super A,? super B,? super C,? super D,? super E,? super F> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A,B,C,D,E,F,G> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,C,D,E,F,G,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot8<Receiver,? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A,B,C,D,E,F,G,H> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,C,D,E,F,G,H> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot9<Receiver,? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<?,?,?,?,?,?,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot1<Receiver> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,?,?,?,?,?,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot2<Receiver,? super A> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A,B> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,?,?,?,?,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot3<Receiver,? super A,? super B> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A,B,C> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,?,?,?,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot4<Receiver,? super A,? super B,? super C> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A,B,C,D> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,D,?,?,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot5<Receiver,? super A,? super B,? super C,? super D> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A,B,C,D,E> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,D,E,?,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot6<Receiver,? super A,? super B,? super C,? super D,? super E> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A,B,C,D,E,F> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,D,E,F,?,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot7<Receiver,? super A,? super B,? super C,? super D,? super E,? super F> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A,B,C,D,E,F,G> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,D,E,F,G,?,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot8<Receiver,? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A,B,C,D,E,F,G,H> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,D,E,F,G,H,?> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot9<Receiver,? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot) {
+        return signal.disconnect(receiver, slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A,B,C,D,E,F,G,H,I> boolean disconnect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,D,E,F,G,H,I> signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot10<Receiver,? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> slot) {
+        return signal.disconnect(receiver, slot);
+    }
     
     /**
      * Initializes a connection between the given <i>signal</i> and <i>connectSignal</i>.
@@ -5247,6 +7151,201 @@ class QObject___ extends QObject {
      */
     public static <A,B,C,D,E,F,G,H,I> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Slot9<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connectSlot(slot, connectionType);
+    }    
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if slot does not match to any of the signatures.
+     */
+    public static <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot1<Receiver> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connectSlot(slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if slot does not match to any of the signatures.
+     */
+    public static <Receiver,A> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot2<Receiver,? super A> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connectSlot(slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if slot does not match to any of the signatures.
+     */
+    public static <Receiver,A,B> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot3<Receiver,? super A,? super B> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connectSlot(slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if slot does not match to any of the signatures.
+     */
+    public static <Receiver,A,B,C> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot4<Receiver,? super A,? super B,? super C> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connectSlot(slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if slot does not match to any of the signatures.
+     */
+    public static <Receiver,A,B,C,D> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot5<Receiver,? super A,? super B,? super C,? super D> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connectSlot(slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if slot does not match to any of the signatures.
+     */
+    public static <Receiver,A,B,C,D,E> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot6<Receiver,? super A,? super B,? super C,? super D,? super E> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connectSlot(slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if slot does not match to any of the signatures.
+     */
+    public static <Receiver,A,B,C,D,E,F> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot7<Receiver,? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connectSlot(slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if slot does not match to any of the signatures.
+     */
+    public static <Receiver,A,B,C,D,E,F,G> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot8<Receiver,? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connectSlot(slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if slot does not match to any of the signatures.
+     */
+    public static <Receiver,A,B,C,D,E,F,G,H> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot9<Receiver,? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connectSlot(slot, connectionType);
+    }
+
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+     * @param signal the signal to be connected
+     * @param receiver the target receiver
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if slot does not match to any of the signatures.
+     */
+    public static <Receiver,A,B,C,D,E,F,G,H,I> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot10<Receiver,? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connectSlot(slot, connectionType);
     }
     
     /**
@@ -5576,6 +7675,181 @@ class QObject___ extends QObject {
      * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
      */
     public static <A,B,C,D,E,F,G,H,I> boolean disconnect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Slot9<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> slot) {
+        return signal.disconnectSlot(slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver> boolean disconnect(@StrictNonNull MultiSignal signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot1<Receiver> slot) {
+        return signal.disconnectSlot(slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A> boolean disconnect(@StrictNonNull MultiSignal signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot2<Receiver,? super A> slot) {
+        return signal.disconnectSlot(slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A,B> boolean disconnect(@StrictNonNull MultiSignal signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot3<Receiver,? super A,? super B> slot) {
+        return signal.disconnectSlot(slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A,B,C> boolean disconnect(@StrictNonNull MultiSignal signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot4<Receiver,? super A,? super B,? super C> slot) {
+        return signal.disconnectSlot(slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A,B,C,D> boolean disconnect(@StrictNonNull MultiSignal signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot5<Receiver,? super A,? super B,? super C,? super D> slot) {
+        return signal.disconnectSlot(slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A,B,C,D,E> boolean disconnect(@StrictNonNull MultiSignal signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot6<Receiver,? super A,? super B,? super C,? super D,? super E> slot) {
+        return signal.disconnectSlot(slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A,B,C,D,E,F> boolean disconnect(@StrictNonNull MultiSignal signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot7<Receiver,? super A,? super B,? super C,? super D,? super E,? super F> slot) {
+        return signal.disconnectSlot(slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A,B,C,D,E,F,G> boolean disconnect(@StrictNonNull MultiSignal signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot8<Receiver,? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot) {
+        return signal.disconnectSlot(slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A,B,C,D,E,F,G,H> boolean disconnect(@StrictNonNull MultiSignal signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot9<Receiver,? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot) {
+        return signal.disconnectSlot(slot);
+    }
+
+    /**
+     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+     *
+     * @param <Receiver> The type of the receiver
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+     * @param signal the signal to be disconnected
+     * @param receiver the target receiver
+     * @param slot the slot to be disconnected
+     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+     */
+    public static <Receiver,A,B,C,D,E,F,G,H,I> boolean disconnect(@StrictNonNull MultiSignal signal, @StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot10<Receiver,? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> slot) {
         return signal.disconnectSlot(slot);
     }
     
@@ -6037,7 +8311,12 @@ class QObject___ extends QObject {
      * @return the object's meta-object
      */
     @QtUninvokable
-    public native final QMetaObject metaObject();
+    public final QMetaObject metaObject(){
+        return metaObject(QtJambi_LibraryUtilities.internal.nativeId(this));
+    }
+
+    @QtUninvokable
+    private static native QMetaObject metaObject(long object);
         
     /**
      * Casts an object to the given <i>targetType</i>. Returns null if object is not instance of <i>targetType</i>.
@@ -6095,9 +8374,18 @@ class QObject___ extends QObject {
             return io.qt.internal.CoreUtility.disconnectOne(connection);
         }
     }
+
+    @QtUninvokable
+    boolean isObjectsThread() {
+        return isObjectsThread(QtJambi_LibraryUtilities.internal.checkedNativeId(this));
+    }
+
+    @QtUninvokable
+    private native boolean isObjectsThread(long __this__nativeId);
 }// class
 
 class QObject_5__ extends QObject {
+    @QtUninvokable
     static QObject getQPropertyOwner(io.qt.internal.ClassAnalyzerUtility.LambdaInfo info) {
         return null;
     }
@@ -6107,7 +8395,16 @@ class QObject_6__ extends QObject {
 
     private static Runnable MIGHT_HAVE_SIGNAL = ()->{};
     private static Runnable NO_SIGNAL = ()->{};
-    
+
+    @QtUninvokable
+    private static void registerProperty(QObject object, QUntypedPropertyData property){
+        registerProperty(QtJambi_LibraryUtilities.internal.nativeId(object), QtJambi_LibraryUtilities.internal.nativeId(property));
+    }
+
+    @QtUninvokable
+    private static native void registerProperty(long object, long property);
+
+    @QtUninvokable
     private static QMetaMethod findNotifySignalByBindables(QObject object, java.lang.reflect.Field reflectedField, QUntypedPropertyData property) {
         for(QMetaProperty metaProperty : object.metaObject().properties()) {
             if(metaProperty.isBindable()) {
@@ -6314,9 +8611,11 @@ class QObject_6__ extends QObject {
                     }
                 }
                 io.qt.core.QProperty.initialize_native(property, result.metaType, val);
+                registerProperty(property.owner(), property);
             }else {
                 property.core = new PropertyCore<>(result.metaType);
                 io.qt.core.QProperty.initialize_native(property, result.metaType, val);
+                registerProperty(property.owner(), property);
                 QMetaMethod notifySignal = findNotifySignalByBindables(property.owner(), result.reflectedField, property);
                 if(notifySignal!=null) {
                     if(notifySignal.parameterCount()==0) {
@@ -6764,6 +9063,7 @@ class QObject_6__ extends QObject {
          */
         public QBooleanProperty() {
             super();
+            registerProperty(QObject.this, this);
         }
     
         /**
@@ -6772,6 +9072,7 @@ class QObject_6__ extends QObject {
          */
         public QBooleanProperty(boolean initialValue) {
             super(initialValue);
+            registerProperty(QObject.this, this);
         }
         
         /**
@@ -6780,6 +9081,7 @@ class QObject_6__ extends QObject {
          */
         public QBooleanProperty(QBooleanPropertyBinding binding) {
             super();
+            registerProperty(QObject.this, this);
             Runnable signal = this.signal;
             this.signal = MIGHT_HAVE_SIGNAL;
             bindingData().setBinding(binding, this);
@@ -6792,6 +9094,7 @@ class QObject_6__ extends QObject {
          */
         public QBooleanProperty(QPropertyBinding<@QtPrimitiveType@StrictNonNull Boolean> binding) {
             super();
+            registerProperty(QObject.this, this);
             if(io.qt.core.QBooleanProperty.checkType(binding.valueMetaType())){
                 Runnable signal = this.signal;
                 this.signal = MIGHT_HAVE_SIGNAL;
@@ -7060,6 +9363,7 @@ class QObject_6__ extends QObject {
          */
         public QByteProperty() {
             super();
+            registerProperty(QObject.this, this);
         }
     
         /**
@@ -7068,6 +9372,7 @@ class QObject_6__ extends QObject {
          */
         public QByteProperty(byte initialValue) {
             super(initialValue);
+            registerProperty(QObject.this, this);
         }
         
         /**
@@ -7076,6 +9381,7 @@ class QObject_6__ extends QObject {
          */
         public QByteProperty(QBytePropertyBinding binding) {
             super();
+            registerProperty(QObject.this, this);
             Runnable signal = this.signal;
             this.signal = MIGHT_HAVE_SIGNAL;
             bindingData().setBinding(binding, this);
@@ -7088,6 +9394,7 @@ class QObject_6__ extends QObject {
          */
         public QByteProperty(QPropertyBinding<@QtPrimitiveType@StrictNonNull Byte> binding) {
             super();
+            registerProperty(QObject.this, this);
             if(io.qt.core.QByteProperty.checkType(binding.valueMetaType())){
                 Runnable signal = this.signal;
                 this.signal = MIGHT_HAVE_SIGNAL;
@@ -7356,6 +9663,7 @@ class QObject_6__ extends QObject {
          */
         public QShortProperty() {
             super();
+            registerProperty(QObject.this, this);
         }
     
         /**
@@ -7364,6 +9672,7 @@ class QObject_6__ extends QObject {
          */
         public QShortProperty(short initialValue) {
             super(initialValue);
+            registerProperty(QObject.this, this);
         }
         
         /**
@@ -7372,6 +9681,7 @@ class QObject_6__ extends QObject {
          */
         public QShortProperty(QShortPropertyBinding binding) {
             super();
+            registerProperty(QObject.this, this);
             Runnable signal = this.signal;
             this.signal = MIGHT_HAVE_SIGNAL;
             bindingData().setBinding(binding, this);
@@ -7384,6 +9694,7 @@ class QObject_6__ extends QObject {
          */
         public QShortProperty(QPropertyBinding<@QtPrimitiveType@StrictNonNull Short> binding) {
             super();
+            registerProperty(QObject.this, this);
             if(io.qt.core.QShortProperty.checkType(binding.valueMetaType())){
                 Runnable signal = this.signal;
                 this.signal = MIGHT_HAVE_SIGNAL;
@@ -7654,6 +9965,7 @@ class QObject_6__ extends QObject {
          */
         public QIntProperty() {
             super();
+            registerProperty(QObject.this, this);
         }
     
         /**
@@ -7662,6 +9974,7 @@ class QObject_6__ extends QObject {
          */
         public QIntProperty(int initialValue) {
             super(initialValue);
+            registerProperty(QObject.this, this);
         }
         
         /**
@@ -7670,6 +9983,7 @@ class QObject_6__ extends QObject {
          */
         public QIntProperty(QIntPropertyBinding binding) {
             super();
+            registerProperty(QObject.this, this);
             Runnable signal = this.signal;
             this.signal = MIGHT_HAVE_SIGNAL;
             bindingData().setBinding(binding, this);
@@ -7682,6 +9996,7 @@ class QObject_6__ extends QObject {
          */
         public QIntProperty(QPropertyBinding<@QtPrimitiveType@StrictNonNull Integer> binding) {
             super();
+            registerProperty(QObject.this, this);
             if(io.qt.core.QIntProperty.checkType(binding.valueMetaType())){
                 Runnable signal = this.signal;
                 this.signal = MIGHT_HAVE_SIGNAL;
@@ -7950,6 +10265,7 @@ class QObject_6__ extends QObject {
          */
         public QLongProperty() {
             super();
+            registerProperty(QObject.this, this);
         }
     
         /**
@@ -7958,6 +10274,7 @@ class QObject_6__ extends QObject {
          */
         public QLongProperty(long initialValue) {
             super(initialValue);
+            registerProperty(QObject.this, this);
         }
         
         /**
@@ -7966,6 +10283,7 @@ class QObject_6__ extends QObject {
          */
         public QLongProperty(QLongPropertyBinding binding) {
             super();
+            registerProperty(QObject.this, this);
             Runnable signal = this.signal;
             this.signal = MIGHT_HAVE_SIGNAL;
             bindingData().setBinding(binding, this);
@@ -7978,6 +10296,7 @@ class QObject_6__ extends QObject {
          */
         public QLongProperty(QPropertyBinding<@QtPrimitiveType@StrictNonNull Long> binding) {
             super();
+            registerProperty(QObject.this, this);
             if(io.qt.core.QLongProperty.checkType(binding.valueMetaType())){
                 Runnable signal = this.signal;
                 this.signal = MIGHT_HAVE_SIGNAL;
@@ -8246,6 +10565,7 @@ class QObject_6__ extends QObject {
          */
         public QFloatProperty() {
             super();
+            registerProperty(QObject.this, this);
         }
     
         /**
@@ -8254,6 +10574,7 @@ class QObject_6__ extends QObject {
          */
         public QFloatProperty(float initialValue) {
             super(initialValue);
+            registerProperty(QObject.this, this);
         }
         
         /**
@@ -8262,6 +10583,7 @@ class QObject_6__ extends QObject {
          */
         public QFloatProperty(QFloatPropertyBinding binding) {
             super();
+            registerProperty(QObject.this, this);
             Runnable signal = this.signal;
             this.signal = MIGHT_HAVE_SIGNAL;
             bindingData().setBinding(binding, this);
@@ -8274,6 +10596,7 @@ class QObject_6__ extends QObject {
          */
         public QFloatProperty(QPropertyBinding<@QtPrimitiveType@StrictNonNull Float> binding) {
             super();
+            registerProperty(QObject.this, this);
             if(io.qt.core.QFloatProperty.checkType(binding.valueMetaType())){
                 Runnable signal = this.signal;
                 this.signal = MIGHT_HAVE_SIGNAL;
@@ -8542,6 +10865,7 @@ class QObject_6__ extends QObject {
          */
         public QDoubleProperty() {
             super();
+            registerProperty(QObject.this, this);
         }
     
         /**
@@ -8550,6 +10874,7 @@ class QObject_6__ extends QObject {
          */
         public QDoubleProperty(double initialValue) {
             super(initialValue);
+            registerProperty(QObject.this, this);
         }
         
         /**
@@ -8558,6 +10883,7 @@ class QObject_6__ extends QObject {
          */
         public QDoubleProperty(QDoublePropertyBinding binding) {
             super();
+            registerProperty(QObject.this, this);
             Runnable signal = this.signal;
             this.signal = MIGHT_HAVE_SIGNAL;
             bindingData().setBinding(binding, this);
@@ -8570,6 +10896,7 @@ class QObject_6__ extends QObject {
          */
         public QDoubleProperty(QPropertyBinding<@QtPrimitiveType@StrictNonNull Double> binding) {
             super();
+            registerProperty(QObject.this, this);
             if(io.qt.core.QDoubleProperty.checkType(binding.valueMetaType())){
                 Runnable signal = this.signal;
                 this.signal = MIGHT_HAVE_SIGNAL;
@@ -8838,6 +11165,7 @@ class QObject_6__ extends QObject {
          */
         public QCharProperty() {
             super();
+            registerProperty(QObject.this, this);
         }
     
         /**
@@ -8846,6 +11174,7 @@ class QObject_6__ extends QObject {
          */
         public QCharProperty(char initialValue) {
             super(initialValue);
+            registerProperty(QObject.this, this);
         }
         
         /**
@@ -8854,6 +11183,7 @@ class QObject_6__ extends QObject {
          */
         public QCharProperty(QCharPropertyBinding binding) {
             super();
+            registerProperty(QObject.this, this);
             Runnable signal = this.signal;
             this.signal = MIGHT_HAVE_SIGNAL;
             bindingData().setBinding(binding, this);
@@ -8866,6 +11196,7 @@ class QObject_6__ extends QObject {
          */
         public QCharProperty(QPropertyBinding<@QtPrimitiveType@NonNull Character> binding) {
             super();
+            registerProperty(QObject.this, this);
             if(io.qt.core.QCharProperty.checkType(binding.valueMetaType())){
                 Runnable signal = this.signal;
                 this.signal = MIGHT_HAVE_SIGNAL;
@@ -9223,6 +11554,7 @@ class QObject_6__ extends QObject {
          */
         public QComputedProperty(QtUtilities.@StrictNonNull Supplier<? extends T> getter) {
             super();
+            registerProperty(QObject.this, this);
             QPropertyBinding.analyzeMetaType(getter);
             this.getter = getter;
         }
@@ -9264,6 +11596,7 @@ class QObject_6__ extends QObject {
          */
         public QComputedBooleanProperty(java.util.function.@NonNull BooleanSupplier getter) {
             super();
+            registerProperty(QObject.this, this);
             this.getter = getter;
         }
     
@@ -9304,6 +11637,7 @@ class QObject_6__ extends QObject {
          */
         public QComputedByteProperty(QtUtilities.@NonNull ByteSupplier getter) {
             super();
+            registerProperty(QObject.this, this);
             this.getter = getter;
         }
     
@@ -9344,6 +11678,7 @@ class QObject_6__ extends QObject {
          */
         public QComputedShortProperty(QtUtilities.@NonNull ShortSupplier getter) {
             super();
+            registerProperty(QObject.this, this);
             this.getter = getter;
         }
     
@@ -9384,6 +11719,7 @@ class QObject_6__ extends QObject {
          */
         public QComputedIntProperty(java.util.function.@NonNull IntSupplier getter) {
             super();
+            registerProperty(QObject.this, this);
             this.getter = getter;
         }
     
@@ -9424,6 +11760,7 @@ class QObject_6__ extends QObject {
          */
         public QComputedLongProperty(java.util.function.@NonNull LongSupplier getter) {
             super();
+            registerProperty(QObject.this, this);
             this.getter = getter;
         }
     
@@ -9464,6 +11801,7 @@ class QObject_6__ extends QObject {
          */
         public QComputedFloatProperty(QtUtilities.@NonNull FloatSupplier getter) {
             super();
+            registerProperty(QObject.this, this);
             this.getter = getter;
         }
     
@@ -9504,6 +11842,7 @@ class QObject_6__ extends QObject {
          */
         public QComputedDoubleProperty(java.util.function.@NonNull DoubleSupplier getter) {
             super();
+            registerProperty(QObject.this, this);
             this.getter = getter;
         }
     
@@ -9544,6 +11883,7 @@ class QObject_6__ extends QObject {
          */
         public QComputedCharProperty(QtUtilities.@NonNull CharSupplier getter) {
             super();
+            registerProperty(QObject.this, this);
             this.getter = getter;
         }
     
@@ -9572,7 +11912,7 @@ class QObject_6__ extends QObject {
 
     static QObject getQPropertyOwner(io.qt.internal.ClassAnalyzerUtility.LambdaInfo info) {
         if(info!=null) {
-            if(info.owner==null && info.isStatic && info.lambdaArgs.size()>0) {
+            if(info.owner==null && info.methodInfo.isStaticMethod && info.lambdaArgs.size()>0) {
                 Object arg = info.lambdaArgs.get(0);
                 if(arg instanceof QUntypedPropertyData) {
                     if(arg instanceof QProperty) {
@@ -10053,6 +12393,13 @@ class QTimer___ extends QTimer {
         return timeout.connect(receiver, method, type);
     }
 
+    /**
+     * <p>See <a href="https://doc.qt.io/qt/qtimer.html#callOnTimeout"><code>QTimer::callOnTimeout(Args&amp;&amp;...)</code></a></p>
+     */
+    public final <Receiver> QMetaObject.@NonNull Connection callOnTimeout(@StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot1<Receiver> slot, Qt.@NonNull ConnectionType @NonNull... type){
+        return timeout.connect(receiver, slot, type);
+    }
+
 }// class
 
 class QChronoTimer___ extends QChronoTimer {
@@ -10075,6 +12422,13 @@ class QChronoTimer___ extends QChronoTimer {
      */
     public final QMetaObject.@NonNull Connection callOnTimeout(@Nullable QObject receiver, @NonNull String method, Qt.@NonNull ConnectionType @NonNull... type){
         return timeout.connect(receiver, method, type);
+    }
+
+    /**
+     * <p>See <a href="https://doc.qt.io/qt/qchronotimer.html#callOnTimeout"><code>QChronoTimer::callOnTimeout(Args&amp;&amp;...)</code></a></p>
+     */
+    public final <Receiver> QMetaObject.@NonNull Connection callOnTimeout(@StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot1<Receiver> slot, Qt.@NonNull ConnectionType @NonNull... type){
+        return timeout.connect(receiver, slot, type);
     }
 
 }// class
@@ -15066,72 +17420,29 @@ class QMetaMethod___ {
      */
     @QtUninvokable
     public final @Nullable Object invoke(@NonNull QObject object, Qt.@NonNull ConnectionType connection, @Nullable Object @NonNull... args) throws IllegalArgumentException, QUnsuccessfulInvocationException {
-        if(!isValid())
-            throw new QUnsuccessfulInvocationException("Cannot invoke an invalid QMetaMethod.");
-        if(parameterCount() != args.length) {
-            throw new IllegalArgumentException(String.format("Wrong number of arguments. expected: %2$s, given: %1$s", args.length, parameterCount()));
-        }
-        {
-            QMetaObject enclosingMetaObject = enclosingMetaObject();
-            QMetaObject objectMO = object.metaObject();
-            if(objectMO!=enclosingMetaObject && !objectMO.inherits(enclosingMetaObject)) {
-                throw new IllegalArgumentException(String.format("Given object is not an instance of %1$s", enclosingMetaObject.className()));
-            }
-        }
-        if(connection==Qt.ConnectionType.BlockingQueuedConnection && object.thread()==QThread.currentThread()) {
-            throw new QUnsuccessfulInvocationException("Blocking-queued invocation on object whose thread is the current thread is not allowed.");
-        }
-        Class<?>[] argClassTypes = new Class<?>[1+parameterCount()];
-        Class<?> returnType = returnClassType();
-        argClassTypes[0] = returnType==null ? void.class : returnType;
-        if(argClassTypes[0]!=void.class && argClassTypes[0]!=Void.class) {
-            if(connection==Qt.ConnectionType.QueuedConnection) {
-                throw new QUnsuccessfulInvocationException("Unable to invoke methods with return values in queued connections.");
-            }else if(connection==Qt.ConnectionType.AutoConnection) {
-                if(QThread.currentThread() != object.thread()) {
-                    throw new QUnsuccessfulInvocationException("Unable to invoke methods with return values in queued connections (auto connection with different threads).");
-                }
-            }
-        }
-        java.util.List<Class<?>> parameterClassTypes = parameterClassTypes();
-        for(int i=0; i<parameterClassTypes.size(); ++i) {
-            argClassTypes[i+1] = parameterClassTypes.get(i);
-        }
-        return invoke_native(object, argClassTypes, connection.ordinal(), args);
+        return invoke(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.checkedNativeId(object), connection==null ? 0 : connection.value(), args);
     }
     
     @QtUninvokable
-    private native Object invoke_native(QObject object__id, Class<?>[] argClassTypes, int connection, Object[] args);
+    private native Object invoke(long nativeId, long object__id, int connection, Object[] args);
     
     /**
      * <p>See <a href="@docRoot/qmetamethod.html#invokeOnGadget"><code>QMetaMethod::invokeOnGadget(void *gadget, QGenericReturnArgument returnValue, QGenericArgument val0 = QGenericArgument(nullptr), QGenericArgument val1 = QGenericArgument(), QGenericArgument val2 = QGenericArgument(), QGenericArgument val3 = QGenericArgument(), QGenericArgument val4 = QGenericArgument(), QGenericArgument val5 = QGenericArgument(), QGenericArgument val6 = QGenericArgument(), QGenericArgument val7 = QGenericArgument(), QGenericArgument val8 = QGenericArgument(), QGenericArgument val9 = QGenericArgument()) const</code></a></p>
      */
     @QtUninvokable
     public final @Nullable Object invokeOnGadget(@NonNull Object object, @Nullable Object @NonNull... args) throws IllegalArgumentException, QUnsuccessfulInvocationException {
-        if(!isValid())
-            throw new QUnsuccessfulInvocationException("Cannot invoke an invalid QMetaMethod.");
-        if(parameterCount() != args.length) {
-            throw new IllegalArgumentException(String.format("Wrong number of arguments. expected: %2$s, given: %1$s", args.length, parameterCount()));
-        }
-        {
+        if(isValid()){
             QMetaObject enclosingMetaObject = enclosingMetaObject();
             QMetaObject objectMO = QMetaObject.forGadget(object);
             if(objectMO!=enclosingMetaObject && !objectMO.inherits(enclosingMetaObject)) {
                 throw new IllegalArgumentException(String.format("Given gadget is not an instance of %1$s", enclosingMetaObject.className()));
             }
         }
-        Class<?>[] argClassTypes = new Class<?>[1+parameterCount()];
-        Class<?> returnType = returnClassType();
-        argClassTypes[0] = returnType==null ? void.class : returnType;
-        java.util.List<Class<?>> parameterClassTypes = parameterClassTypes();
-        for(int i=0; i<parameterClassTypes.size(); ++i) {
-            argClassTypes[i+1] = parameterClassTypes.get(i);
-        }
-        return invoke_native(object, argClassTypes, args);
+        return invokeOnGadget(QtJambi_LibraryUtilities.internal.nativeId(this), object, args);
     }
     
     @QtUninvokable
-    private native Object invoke_native(Object object, Class<?>[] argClassTypes, Object[] args);
+    private static native Object invokeOnGadget(long nativeId, Object object, Object[] args);
     
     /**
      * Returns this meta method as Java reflection method.
@@ -15292,16 +17603,8 @@ class QMetaMethod___ {
     
     private static QMetaMethod fromMethodImpl(QMetaObject.AbstractSlot method) {
         io.qt.internal.ClassAnalyzerUtility.LambdaInfo info = io.qt.internal.ClassAnalyzerUtility.lambdaInfo(method);
-        if(info!=null) {
-            if(info.owner instanceof QMetaObject.Signal
-                && info.reflectiveMethod!=null
-                && info.reflectiveMethod.getName().equals("emit"))
-                return fromSignal((QMetaObject.Signal)info.owner);
-            if(info.reflectiveMethod!=null)
-                return fromReflectedMethod(info.reflectiveMethod);
-            if(info.reflectiveConstructor!=null)
-                return fromReflectedConstructor(info.reflectiveConstructor);
-        }
+        if(info!=null)
+            return info.methodInfo.metaMethod();
         return new QMetaMethod();
     }
     
@@ -16841,7 +19144,23 @@ class QStaticPlugin_java__{
     public final native QObject instance();
 }// class
 
-class QThread___{    
+class QThread_67__{
+    @QtUninvokable
+    static boolean isCurrentOrNull(QThread thread) {
+        return thread==null || isCurrentThread(QtJambi_LibraryUtilities.internal.checkedNativeId(thread));
+    }
+    @QtUninvokable
+    private static native boolean isCurrentThread(long thread);
+}// class
+
+class QThread_68__{
+    @QtUninvokable
+    static boolean isCurrentOrNull(QThread thread) {
+        return thread==null || thread.isCurrentThread();
+    }
+}// class
+
+class QThread___{
     static native void initialize();
     /**
      * @see Thread#Thread(ThreadGroup, Runnable, String, long)
@@ -18169,6 +20488,251 @@ class QCborArray___{
     }
 }// class
 
+class QRegularExpression_5__{
+    /**
+     * <p>Overloaded function for {@link #globalMatch(java.lang.String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)}.</p>
+     */
+    @QtUninvokable
+    public final io.qt.core.@NonNull QRegularExpressionMatchIterator globalMatch(java.lang.@NonNull String subject, int offset, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
+        return globalMatch(subject, offset, io.qt.core.QRegularExpression.MatchType.NormalMatch, new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
+    }
+
+    /**
+     * <p>Overloaded function for {@link #globalMatch(java.lang.String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)}.</p>
+     */
+    @QtUninvokable
+    public final io.qt.core.@NonNull QRegularExpressionMatchIterator globalMatch(java.lang.@NonNull String subject, int offset, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
+        return globalMatch(subject, offset, io.qt.core.QRegularExpression.MatchType.NormalMatch, matchOptions);
+    }
+
+    /**
+     * <p>Overloaded function for {@link #match(java.lang.String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)}.</p>
+     */
+    @QtUninvokable
+    public final io.qt.core.@NonNull QRegularExpressionMatch match(java.lang.@NonNull String subject, int offset, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
+        return match(subject, offset, io.qt.core.QRegularExpression.MatchType.NormalMatch, new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
+    }
+
+    /**
+     * <p>Overloaded function for {@link #match(java.lang.String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)}.</p>
+     */
+    @QtUninvokable
+    public final io.qt.core.@NonNull QRegularExpressionMatch match(java.lang.@NonNull String subject, int offset, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
+        return match(subject, offset, io.qt.core.QRegularExpression.MatchType.NormalMatch, matchOptions);
+    }
+
+    /**
+     * <p>Overloaded function for {@link #globalMatch(java.lang.String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)}.</p>
+     */
+    @QtUninvokable
+    public final io.qt.core.@NonNull QRegularExpressionMatchIterator globalMatch(java.lang.@NonNull String subject, io.qt.core.QRegularExpression.@NonNull MatchType matchType, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
+        return globalMatch(subject, 0, matchType, new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
+    }
+
+    /**
+     * <p>Overloaded function for {@link #globalMatch(java.lang.String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)}.</p>
+     */
+    @QtUninvokable
+    public final io.qt.core.@NonNull QRegularExpressionMatchIterator globalMatch(java.lang.@NonNull String subject, io.qt.core.QRegularExpression.@NonNull MatchType matchType, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
+        return globalMatch(subject, 0, matchType, matchOptions);
+    }
+
+    /**
+     * <p>Overloaded function for {@link #globalMatch(java.lang.String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)}.</p>
+     */
+    @QtUninvokable
+    public final io.qt.core.@NonNull QRegularExpressionMatchIterator globalMatch(java.lang.@NonNull String subject, io.qt.core.QRegularExpression.@NonNull MatchType matchType) {
+        return globalMatch(subject, 0, matchType, new io.qt.core.QRegularExpression.MatchOptions(0));
+    }
+
+    /**
+     * <p>Overloaded function for {@link #globalMatch(java.lang.String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)}.</p>
+     */
+    @QtUninvokable
+    public final io.qt.core.@NonNull QRegularExpressionMatchIterator globalMatch(java.lang.@NonNull String subject, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
+        return globalMatch(subject, 0, io.qt.core.QRegularExpression.MatchType.NormalMatch, new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
+    }
+
+    /**
+     * <p>Overloaded function for {@link #globalMatch(java.lang.String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)}.</p>
+     */
+    @QtUninvokable
+    public final io.qt.core.@NonNull QRegularExpressionMatchIterator globalMatch(java.lang.@NonNull String subject, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
+        return globalMatch(subject, 0, io.qt.core.QRegularExpression.MatchType.NormalMatch, matchOptions);
+    }
+
+    /**
+     * <p>Overloaded function for {@link #match(java.lang.String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)}.</p>
+     */
+    @QtUninvokable
+    public final io.qt.core.@NonNull QRegularExpressionMatch match(java.lang.@NonNull String subject, io.qt.core.QRegularExpression.@NonNull MatchType matchType, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
+        return match(subject, 0, matchType, new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
+    }
+
+    /**
+     * <p>Overloaded function for {@link #match(java.lang.String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)}.</p>
+     */
+    @QtUninvokable
+    public final io.qt.core.@NonNull QRegularExpressionMatch match(java.lang.@NonNull String subject, io.qt.core.QRegularExpression.@NonNull MatchType matchType, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
+        return match(subject, 0, matchType, matchOptions);
+    }
+
+    /**
+     * <p>Overloaded function for {@link #match(java.lang.String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)}.</p>
+     */
+    @QtUninvokable
+    public final io.qt.core.@NonNull QRegularExpressionMatch match(java.lang.@NonNull String subject, io.qt.core.QRegularExpression.@NonNull MatchType matchType) {
+        return match(subject, 0, matchType, new io.qt.core.QRegularExpression.MatchOptions(0));
+    }
+
+    /**
+     * <p>Overloaded function for {@link #match(java.lang.String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)}.</p>
+     */
+    @QtUninvokable
+    public final io.qt.core.@NonNull QRegularExpressionMatch match(java.lang.@NonNull String subject, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
+        return match(subject, 0, io.qt.core.QRegularExpression.MatchType.NormalMatch, new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
+    }
+
+    /**
+     * <p>Overloaded function for {@link #match(java.lang.String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)}.</p>
+     */
+    @QtUninvokable
+    public final io.qt.core.@NonNull QRegularExpressionMatch match(java.lang.@NonNull String subject, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
+        return match(subject, 0, io.qt.core.QRegularExpression.MatchType.NormalMatch, matchOptions);
+    }
+}// class
+
+class QRegularExpression_6__{
+    /**
+     * <p>Overloaded function for {@link #fromWildcard(java.lang.String, io.qt.core.Qt.CaseSensitivity, io.qt.core.QRegularExpression.WildcardConversionOptions)}.</p>
+     */
+    public static io.qt.core.@NonNull QRegularExpression fromWildcard(java.lang.@NonNull String pattern, io.qt.core.QRegularExpression.@NonNull WildcardConversionOption @NonNull... options) {
+        return fromWildcard(pattern, io.qt.core.Qt.CaseSensitivity.CaseInsensitive, new io.qt.core.QRegularExpression.WildcardConversionOptions(options));
+    }
+
+    /**
+     * <p>Overloaded function for {@link #fromWildcard(java.lang.String, io.qt.core.Qt.CaseSensitivity, io.qt.core.QRegularExpression.WildcardConversionOptions)}.</p>
+     */
+    public static io.qt.core.@NonNull QRegularExpression fromWildcard(java.lang.@NonNull String pattern, io.qt.core.QRegularExpression.@NonNull WildcardConversionOptions options) {
+        return fromWildcard(pattern, io.qt.core.Qt.CaseSensitivity.CaseInsensitive, options);
+    }
+
+    /**
+     * <p>Overloaded function for {@link #globalMatch(java.lang.String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)}.</p>
+     */
+    @QtUninvokable
+    public final io.qt.core.@NonNull QRegularExpressionMatchIterator globalMatch(java.lang.@NonNull String subject, long offset, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
+        return globalMatch(subject, offset, io.qt.core.QRegularExpression.MatchType.NormalMatch, new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
+    }
+
+    /**
+     * <p>Overloaded function for {@link #globalMatch(java.lang.String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)}.</p>
+     */
+    @QtUninvokable
+    public final io.qt.core.@NonNull QRegularExpressionMatchIterator globalMatch(java.lang.@NonNull String subject, long offset, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
+        return globalMatch(subject, offset, io.qt.core.QRegularExpression.MatchType.NormalMatch, matchOptions);
+    }
+
+    /**
+     * <p>Overloaded function for {@link #match(java.lang.String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)}.</p>
+     */
+    @QtUninvokable
+    public final io.qt.core.@NonNull QRegularExpressionMatch match(java.lang.@NonNull String subject, long offset, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
+        return match(subject, offset, io.qt.core.QRegularExpression.MatchType.NormalMatch, new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
+    }
+
+    /**
+     * <p>Overloaded function for {@link #match(java.lang.String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)}.</p>
+     */
+    @QtUninvokable
+    public final io.qt.core.@NonNull QRegularExpressionMatch match(java.lang.@NonNull String subject, long offset, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
+        return match(subject, offset, io.qt.core.QRegularExpression.MatchType.NormalMatch, matchOptions);
+    }
+
+    /**
+     * <p>Overloaded function for {@link #globalMatch(java.lang.String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)}.</p>
+     */
+    @QtUninvokable
+    public final io.qt.core.@NonNull QRegularExpressionMatchIterator globalMatch(java.lang.@NonNull String subject, io.qt.core.QRegularExpression.@NonNull MatchType matchType, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
+        return globalMatch(subject, 0, matchType, new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
+    }
+
+    /**
+     * <p>Overloaded function for {@link #globalMatch(java.lang.String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)}.</p>
+     */
+    @QtUninvokable
+    public final io.qt.core.@NonNull QRegularExpressionMatchIterator globalMatch(java.lang.@NonNull String subject, io.qt.core.QRegularExpression.@NonNull MatchType matchType, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
+        return globalMatch(subject, 0, matchType, matchOptions);
+    }
+
+    /**
+     * <p>Overloaded function for {@link #globalMatch(java.lang.String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)}.</p>
+     */
+    @QtUninvokable
+    public final io.qt.core.@NonNull QRegularExpressionMatchIterator globalMatch(java.lang.@NonNull String subject, io.qt.core.QRegularExpression.@NonNull MatchType matchType) {
+        return globalMatch(subject, 0, matchType, new io.qt.core.QRegularExpression.MatchOptions(0));
+    }
+
+    /**
+     * <p>Overloaded function for {@link #globalMatch(java.lang.String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)}.</p>
+     */
+    @QtUninvokable
+    public final io.qt.core.@NonNull QRegularExpressionMatchIterator globalMatch(java.lang.@NonNull String subject, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
+        return globalMatch(subject, 0, io.qt.core.QRegularExpression.MatchType.NormalMatch, new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
+    }
+
+    /**
+     * <p>Overloaded function for {@link #globalMatch(java.lang.String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)}.</p>
+     */
+    @QtUninvokable
+    public final io.qt.core.@NonNull QRegularExpressionMatchIterator globalMatch(java.lang.@NonNull String subject, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
+        return globalMatch(subject, 0, io.qt.core.QRegularExpression.MatchType.NormalMatch, matchOptions);
+    }
+
+    /**
+     * <p>Overloaded function for {@link #match(java.lang.String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)}.</p>
+     */
+    @QtUninvokable
+    public final io.qt.core.@NonNull QRegularExpressionMatch match(java.lang.@NonNull String subject, io.qt.core.QRegularExpression.@NonNull MatchType matchType, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
+        return match(subject, 0, matchType, new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
+    }
+
+    /**
+     * <p>Overloaded function for {@link #match(java.lang.String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)}.</p>
+     */
+    @QtUninvokable
+    public final io.qt.core.@NonNull QRegularExpressionMatch match(java.lang.@NonNull String subject, io.qt.core.QRegularExpression.@NonNull MatchType matchType, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
+        return match(subject, 0, matchType, matchOptions);
+    }
+
+    /**
+     * <p>Overloaded function for {@link #match(java.lang.String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)}.</p>
+     */
+    @QtUninvokable
+    public final io.qt.core.@NonNull QRegularExpressionMatch match(java.lang.@NonNull String subject, io.qt.core.QRegularExpression.@NonNull MatchType matchType) {
+        return match(subject, 0, matchType, new io.qt.core.QRegularExpression.MatchOptions(0));
+    }
+
+    /**
+     * <p>Overloaded function for {@link #match(java.lang.String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)}.</p>
+     */
+    @QtUninvokable
+    public final io.qt.core.@NonNull QRegularExpressionMatch match(java.lang.@NonNull String subject, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
+        return match(subject, 0, io.qt.core.QRegularExpression.MatchType.NormalMatch, new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
+    }
+
+    /**
+     * <p>Overloaded function for {@link #match(java.lang.String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)}.</p>
+     */
+    @QtUninvokable
+    public final io.qt.core.@NonNull QRegularExpressionMatch match(java.lang.@NonNull String subject, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
+        return match(subject, 0, io.qt.core.QRegularExpression.MatchType.NormalMatch, matchOptions);
+    }
+}// class
+
+class QRegularExpression___{
+}// class
+
 class QAbstractFileEngineHandler___{
     /**
      * Factory interface for file engine creation
@@ -18199,45 +20763,38 @@ class QAbstractFileEngineHandler___{
     }
 
     /**
-     * Creates a file engine handler for file names starting with {@code prefix}
+     * Creates a file engine handler for file names tested with case-sensitive string comparison against argument {@code string}
      * @param factory the file engine factory
-     * @param prefix file name prefix
+     * @param stringComparisonType string comparison type
+     * @param string string the file name is tested against
      * @return a new installed file engine handler
-     * @see String#startsWith(String)
      */
     @QtUninvokable
-    public static QAbstractFileEngineHandler fromStartsWith(@StrictNonNull FileEngineFactory factory, @NonNull String prefix) {
-        java.util.Objects.requireNonNull(prefix, "Argument 'prefix': null not expected.");
-        java.util.Objects.requireNonNull(factory, "Argument 'factory': null not expected.");
-        if(prefix.isEmpty())
-                throw new IllegalArgumentException("Argument 'prefix': empty String not expected.");
-        return fromStartsWith(prefix, factory);
+    public static QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, QtUtilities.@StrictNonNull StringComparison stringComparisonType, @NonNull String string) {
+        return fromFileNameTest(factory, stringComparisonType, io.qt.core.Qt.CaseSensitivity.CaseSensitive, string);
     }
-    @QtUninvokable
-    private static native QAbstractFileEngineHandler fromStartsWith(String prefix, FileEngineFactory factory);
 
     /**
-     * Creates a file engine handler for file names ending with {@code suffix}
+     * Creates a file engine handler for file names tested with string comparison against argument {@code string}
      * @param factory the file engine factory
-     * @param suffix file name suffix
+     * @param stringComparisonType string comparison type
+     * @param caseSensitivity case sensitivity
+     * @param string string the file name is tested against
      * @return a new installed file engine handler
-     * @see String#endsWith(String)
      */
     @QtUninvokable
-    public static QAbstractFileEngineHandler fromEndsWith(@StrictNonNull FileEngineFactory factory, @NonNull String suffix) {
-        java.util.Objects.requireNonNull(suffix, "Argument 'suffix': null not expected.");
+    public static QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, QtUtilities.@StrictNonNull StringComparison stringComparisonType, io.qt.core.Qt.@StrictNonNull CaseSensitivity caseSensitivity, @NonNull String string) {
+        java.util.Objects.requireNonNull(string, "Argument 'string': null not expected.");
         java.util.Objects.requireNonNull(factory, "Argument 'factory': null not expected.");
-        if(suffix.isEmpty())
-                throw new IllegalArgumentException("Argument 'suffix': empty String not expected.");
-        return fromEndsWith(suffix, factory);
+        return fromFileNameTestString(factory, stringComparisonType.value(), caseSensitivity.value(), string);
     }
     @QtUninvokable
-    private static native QAbstractFileEngineHandler fromEndsWith(String suffix, FileEngineFactory factory);
+    private static native QAbstractFileEngineHandler fromFileNameTestString(FileEngineFactory factory, int stringComparisonType, int caseSensitivity, String string);
 
     /**
      * Creates a file engine handler for file names having match with {@code regexp}
      * @param factory the file engine factory
-     * @param regexp file name regexp
+     * @param regexp file name regular expression
      * @param matchType the match type
      * @param matchOptions options for the match
      * @return a new installed file engine handler
@@ -18245,39 +20802,39 @@ class QAbstractFileEngineHandler___{
      * @see io.qt.core.QRegularExpressionMatch#hasMatch()
      */
     @QtUninvokable
-    public static QAbstractFileEngineHandler fromMatch(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchType matchType, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
-        return fromMatch(factory, regexp, 0, matchType, matchOptions);
+    public static QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchType matchType, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
+        return fromFileNameTest(factory, regexp, 0, matchType, matchOptions);
     }
     /**
      * Creates a file engine handler for file names having match with {@code regexp}
      * @param factory the file engine factory
-     * @param regexp file name regexp
+     * @param regexp file name regular expression
      * @param matchOptions options for the match
      * @return a new installed file engine handler
      * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
      * @see io.qt.core.QRegularExpressionMatch#hasMatch()
      */
     @QtUninvokable
-    public static QAbstractFileEngineHandler fromMatch(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
-        return fromMatch(factory, regexp, 0, io.qt.core.QRegularExpression.MatchType.NormalMatch, matchOptions);
+    public static QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
+        return fromFileNameTest(factory, regexp, 0, io.qt.core.QRegularExpression.MatchType.NormalMatch, matchOptions);
     }
     /**
      * Creates a file engine handler for file names having match with {@code regexp}
      * @param factory the file engine factory
-     * @param regexp file name regexp
+     * @param regexp file name regular expression
      * @param matchType the match type
      * @return a new installed file engine handler
      * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
      * @see io.qt.core.QRegularExpressionMatch#hasMatch()
      */
     @QtUninvokable
-    public static QAbstractFileEngineHandler fromMatch(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchType matchType) {
-        return fromMatch(factory, regexp, 0, matchType, io.qt.core.QRegularExpression.MatchOption.NoMatchOption.asFlags());
+    public static QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchType matchType) {
+        return fromFileNameTest(factory, regexp, 0, matchType, io.qt.core.QRegularExpression.MatchOption.NoMatchOption.asFlags());
     }
     /**
      * Creates a file engine handler for file names having match with {@code regexp}
      * @param factory the file engine factory
-     * @param regexp file name regexp
+     * @param regexp file name regular expression
      * @param matchType the match type
      * @param matchOptions options for the match
      * @return a new installed file engine handler
@@ -18285,66 +20842,51 @@ class QAbstractFileEngineHandler___{
      * @see io.qt.core.QRegularExpressionMatch#hasMatch()
      */
     @QtUninvokable
-    public static QAbstractFileEngineHandler fromMatch(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchType matchType, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
-        return fromMatch(factory, regexp, 0, matchType, new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
+    public static QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchType matchType, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
+        return fromFileNameTest(factory, regexp, 0, matchType, new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
     }
     /**
      * Creates a file engine handler for file names having match with {@code regexp}
      * @param factory the file engine factory
-     * @param regexp file name regexp
+     * @param regexp file name regular expression
      * @param matchOptions options for the match
      * @return a new installed file engine handler
      * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
      * @see io.qt.core.QRegularExpressionMatch#hasMatch()
      */
     @QtUninvokable
-    public static QAbstractFileEngineHandler fromMatch(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
-        return fromMatch(factory, regexp, 0, io.qt.core.QRegularExpression.MatchType.NormalMatch, new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
+    public static QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
+        return fromFileNameTest(factory, regexp, 0, io.qt.core.QRegularExpression.MatchType.NormalMatch, new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
     }
     /**
      * Creates a file engine handler for file names having match with {@code regexp}
      * @param factory the file engine factory
-     * @param regexp file name regexp
+     * @param regexp file name regular expression
      * @return a new installed file engine handler
      * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
      * @see io.qt.core.QRegularExpressionMatch#hasMatch()
      */
     @QtUninvokable
-    public static QAbstractFileEngineHandler fromMatch(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp) {
-        return fromMatch(factory, regexp, 0, io.qt.core.QRegularExpression.MatchType.NormalMatch, io.qt.core.QRegularExpression.MatchOption.NoMatchOption.asFlags());
+    public static QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp) {
+        return fromFileNameTest(factory, regexp, 0, io.qt.core.QRegularExpression.MatchType.NormalMatch, io.qt.core.QRegularExpression.MatchOption.NoMatchOption.asFlags());
     }
     /**
      * Creates a file engine handler for file names having match with {@code regexp}
      * @param factory the file engine factory
-     * @param regexp file name regexp
+     * @param regexp file name regular expression
      * @param offset the offset of the match
      * @return a new installed file engine handler
      * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
      * @see io.qt.core.QRegularExpressionMatch#hasMatch()
      */
     @QtUninvokable
-    public static QAbstractFileEngineHandler fromMatch(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, long offset) {
-        return fromMatch(factory, regexp, offset, io.qt.core.QRegularExpression.MatchType.NormalMatch, io.qt.core.QRegularExpression.MatchOption.NoMatchOption.asFlags());
+    public static QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, long offset) {
+        return fromFileNameTest(factory, regexp, offset, io.qt.core.QRegularExpression.MatchType.NormalMatch, io.qt.core.QRegularExpression.MatchOption.NoMatchOption.asFlags());
     }
     /**
      * Creates a file engine handler for file names having match with {@code regexp}
      * @param factory the file engine factory
-     * @param regexp file name regexp
-     * @param offset the offset of the match
-     * @param matchType the match type
-     * @param matchOptions options for the match
-     * @return a new installed file engine handler
-     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
-     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
-     */
-    @QtUninvokable
-    public static QAbstractFileEngineHandler fromMatch(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, long offset, io.qt.core.QRegularExpression.@NonNull MatchType matchType, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
-        return fromMatch(factory, regexp, offset, matchType, new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
-    }
-    /**
-     * Creates a file engine handler for file names having match with {@code regexp}
-     * @param factory the file engine factory
-     * @param regexp file name regexp
+     * @param regexp file name regular expression
      * @param offset the offset of the match
      * @param matchType the match type
      * @param matchOptions options for the match
@@ -18353,13 +20895,55 @@ class QAbstractFileEngineHandler___{
      * @see io.qt.core.QRegularExpressionMatch#hasMatch()
      */
     @QtUninvokable
-    public static QAbstractFileEngineHandler fromMatch(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, long offset, io.qt.core.QRegularExpression.@NonNull MatchType matchType) {
-        return fromMatch(factory, regexp, offset, matchType, io.qt.core.QRegularExpression.MatchOption.NoMatchOption.asFlags());
+    public static QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, long offset, io.qt.core.QRegularExpression.@NonNull MatchType matchType, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
+        return fromFileNameTest(factory, regexp, offset, matchType, new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
     }
     /**
      * Creates a file engine handler for file names having match with {@code regexp}
      * @param factory the file engine factory
-     * @param regexp file name regexp
+     * @param regexp file name regular expression
+     * @param offset the offset of the match
+     * @param matchType the match type
+     * @return a new installed file engine handler
+     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    @QtUninvokable
+    public static QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, long offset, io.qt.core.QRegularExpression.@NonNull MatchType matchType) {
+        return fromFileNameTest(factory, regexp, offset, matchType, io.qt.core.QRegularExpression.MatchOption.NoMatchOption.asFlags());
+    }
+    /**
+     * Creates a file engine handler for file names having match with {@code regexp}
+     * @param factory the file engine factory
+     * @param regexp file name regular expression
+     * @param offset the offset of the match
+     * @param matchOptions options for the match
+     * @return a new installed file engine handler
+     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    @QtUninvokable
+    public static QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, long offset, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
+        return fromFileNameTest(factory, regexp, offset, io.qt.core.QRegularExpression.MatchType.NormalMatch, new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
+    }
+    /**
+     * Creates a file engine handler for file names having match with {@code regexp}
+     * @param factory the file engine factory
+     * @param regexp file name regular expression
+     * @param offset the offset of the match
+     * @param matchOptions options for the match
+     * @return a new installed file engine handler
+     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    @QtUninvokable
+    public static QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, long offset, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
+        return fromFileNameTest(factory, regexp, offset, io.qt.core.QRegularExpression.MatchType.NormalMatch, matchOptions);
+    }
+    /**
+     * Creates a file engine handler for file names having match with {@code regexp}
+     * @param factory the file engine factory
+     * @param regexp file name regular expression
      * @param offset the offset of the match
      * @param matchType the match type
      * @param matchOptions options for the match
@@ -18368,45 +20952,15 @@ class QAbstractFileEngineHandler___{
      * @see io.qt.core.QRegularExpressionMatch#hasMatch()
      */
     @QtUninvokable
-    public static QAbstractFileEngineHandler fromMatch(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, long offset, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
-        return fromMatch(factory, regexp, offset, io.qt.core.QRegularExpression.MatchType.NormalMatch, new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
-    }
-    /**
-     * Creates a file engine handler for file names having match with {@code regexp}
-     * @param factory the file engine factory
-     * @param regexp file name regexp
-     * @param offset the offset of the match
-     * @param matchType the match type
-     * @param matchOptions options for the match
-     * @return a new installed file engine handler
-     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
-     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
-     */
-    @QtUninvokable
-    public static QAbstractFileEngineHandler fromMatch(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, long offset, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
-        return fromMatch(factory, regexp, offset, io.qt.core.QRegularExpression.MatchType.NormalMatch, matchOptions);
-    }
-    /**
-     * Creates a file engine handler for file names having match with {@code regexp}
-     * @param factory the file engine factory
-     * @param regexp file name regexp
-     * @param offset the offset of the match
-     * @param matchType the match type
-     * @param matchOptions options for the match
-     * @return a new installed file engine handler
-     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
-     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
-     */
-    @QtUninvokable
-    public static QAbstractFileEngineHandler fromMatch(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, long offset, io.qt.core.QRegularExpression.@NonNull MatchType matchType, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
+    public static QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, long offset, io.qt.core.QRegularExpression.@NonNull MatchType matchType, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
         java.util.Objects.requireNonNull(regexp, "Argument 'regexp': null not expected.");
         java.util.Objects.requireNonNull(factory, "Argument 'factory': null not expected.");
         if(!regexp.isValid())
                 throw new IllegalArgumentException("Argument 'regexp' invalid");
         if(offset<0)
                 throw new IllegalArgumentException("Argument 'offset' < 0");
-        return fromMatch(factory, QtJambi_LibraryUtilities.internal.checkedNativeId(regexp), offset, matchType==null ? 0 : matchType.value(), matchOptions==null ? 0 : matchOptions.value());
+        return fromFileNameTestRegexp(factory, QtJambi_LibraryUtilities.internal.checkedNativeId(regexp), offset, matchType==null ? 0 : matchType.value(), matchOptions==null ? 0 : matchOptions.value());
     }
     @QtUninvokable
-    private static native QAbstractFileEngineHandler fromMatch(FileEngineFactory factory, long regexp, long offset, int matchType, int matchOptions);
+    private static native QAbstractFileEngineHandler fromFileNameTestRegexp(FileEngineFactory factory, long regexp, long offset, int matchType, int matchOptions);
 }// class

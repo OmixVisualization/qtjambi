@@ -2007,15 +2007,22 @@ public class TestConnections extends ApplicationInitializer
             changeSignalResult = null;
         }
         QGraphicsScene scene = new QGraphicsScene();
-        scene.changed.connect(this::receiveChangedSignal);
+        QMetaObject.Connection connection = scene.changed.connect(this::receiveChangedSignal);
+        assertTrue("unable to connect QGraphicsScene::changed to receiveChangedSignal", connection.isConnected());
 
         scene.addEllipse(new QRectF(0, 0, 10, 10));
 
-        QApplication.processEvents();
+        for (int i = 0; i < 50; i++) {
+        	QApplication.processEvents();
+        	synchronized(TestConnections.class) {
+        		if(changeSignalReceived)
+        			return;
+        	}
+		}
 
         synchronized(TestConnections.class) {
             // MacOSX fails this test Sun/Oracle JDK 1.6.0u29 without wrapping variable access inside synchronized block
-        	assertTrue(changeSignalReceived);
+        	assertTrue("signal has not been received", changeSignalReceived);
             assertTrue(changeSignalResult instanceof List);
         }
     }

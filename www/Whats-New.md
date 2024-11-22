@@ -1,10 +1,35 @@
-# What's new in QtJambi 6.8.0
+# What's new in QtJambi 6.8.1
+
+## Bugfixes
+
+Solved issue:
+* [Issue 211](../../../issues/211): Building QtJambi 6.8.0 from sources fails on Kubuntu 24.10
+* Fixed: Crashes in QML due to forwarded Java exceptions
+* Fixed: Crash on macOS when using application-wide event filter and QtWebEngine
+
+## New Feature
+
+* New JVM option `io.qt.no-exception-forwarding-from-meta-calls` to avoid `QMetaObject` calls (like method invocation and property access) forwarding exceptions to the Qt caller in any case (it is avoided by default in case of Qml-related QObjects).
+* `QtUtilities::setNoExceptionForwardingFromMetaCallsEnabled(boolean)` enable/disable avoiding exception forwarding from meta calls.
+* New JVM option `io.qt.no-exception-forwarding-from-virtual-calls` to avoid virtual calls (i.e. Java overrides) forwarding exceptions to the Qt caller in any case.
+* `QtUtilities::setNoExceptionForwardingFromVirtualCallsEnabled(boolean)` enable/disable avoiding exception forwarding from virtual calls.
+* New JVM option `io.qt.enable-signal-emit-thread-check` to activate thread checks on signal emits. If a signal is emitted from a foreign thread a warning is given. Install custom handler with `QtUtilities.installSignalEmitThreadCheckHandler` to change this behavior.
+* `QtUtilities::setSignalEmitThreadCheckEnabled(boolean)` enable/disable thread checks at signal emit.
+* `QtUtilities::installSignalEmitThreadCheckHandler(BiConsumer<QObject,AbstractSignal>)` Install a handler for signal emit thread checks to be is executed every time an event is emitted from a foreign thread.
+* `QObject::connect`, `Signal::connect`, `QTimer::singleShot` as well as `QMetaObject::invokeMethod` now accept class method handles, e.g. `QMetaObject::invokeMethod(widget, QWidget::setVisible, true);`
+* Performance improvements on `QMetaObject::invokeMethod`.
+* QtJambi is now shipped with native binaries for Linux arm64 (6.8 and higher).
+* Added API method: `QRandomGenerator::bounded`
+
+# History
+
+## What's new in QtJambi 6.8.0
 
 QtJambi 6.8.0 is equivalent to QtJambi 6.7.3.
 
-# What's new in QtJambi 6.7.3
+## What's new in QtJambi 6.7.3
 
-## Bugfixes
+### Bugfixes
 
 Solved issue:
 * [Issue 203](../../../issues/203): qtjambi-native-linux-x64 5.15 crash on ubuntu 24.04
@@ -14,7 +39,7 @@ Solved issue:
 * Fixed: Crash during JVM shutdown on macOS
 * Fixed: Java-adopted Thread object for native QThread remaining alife after thread end
 
-## New Feature
+### New Feature
 
 * New JVM option `io.qt.enable-event-logs` to activate logging of all handled events with their receivers.
 * `QtUtilities::setDanglingPointerCheckEnabled(boolean)` enable/disable dangling pointer checks at runtime
@@ -26,8 +51,6 @@ Solved issue:
 * Signals now able to treat single shot connections
 
 QtJambi 6.7.3 is not binary compatible to Qt 6.7.0. Please use Qt 6.7.1 or higher.
-
-# History
 
 ## What's new in QtJambi 6.7.2
 

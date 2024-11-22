@@ -609,6 +609,7 @@ TypeSystem{
                 index: 1
                 noImplicitCalls: true
             }
+            since: [6,5]
         }
         ModifyFunction{
             signature: "parseSatellitesInUseFromNmea(QByteArrayView,QList<int>&)"
@@ -616,6 +617,7 @@ TypeSystem{
                 index: 1
                 noImplicitCalls: true
             }
+            since: [6,5]
         }
         since: [6, 2]
     }

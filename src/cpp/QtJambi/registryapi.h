@@ -33,7 +33,7 @@
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #include <QtCore/qnativeinterface.h>
 #endif
-#include "utils.h"
+#include "global.h"
 #include "typetests.h"
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -43,6 +43,10 @@ QT_WARNING_DISABLE_DEPRECATED
 
 class QtJambiScope;
 class AbstractContainerAccess;
+enum class jValueType;
+class QtJambiScope;
+
+namespace RegistryAPI{
 
 class QtJambiTypeInfo
 {
@@ -66,86 +70,56 @@ public:
     uint isStatic : 1;
 #endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 };
-struct QTJAMBI_EXPORT SignalMetaInfo
+struct SignalMetaInfo
 {
-    typedef int(*SignalMethodIndexProvider)();
-    SignalMetaInfo();
-    SignalMetaInfo(const SignalMetaInfo& other);
-    SignalMetaInfo(SignalMetaInfo&& other);
-    SignalMetaInfo& operator=(const SignalMetaInfo& other);
-    SignalMetaInfo& operator=(SignalMetaInfo&& other);
-    SignalMetaInfo(const char * _signal_name,
-                            const char * _signal_signature,
-                            const int _signal_argumentcount,
-                            SignalMethodIndexProvider _signal_method_index_provider);
-    const char * signal_name;
-    const char * signal_signature;
-    int signal_argumentcount;
-    SignalMethodIndexProvider signal_method_index_provider;
+    typedef int(*SignalMethodIndexProviderFn)();
+    const char * signal_name = nullptr;
+    const char * signal_signature = nullptr;
+    int signal_argumentcount = 0;
+    SignalMethodIndexProviderFn signal_method_index_provider = nullptr;
 };
 
-struct QTJAMBI_EXPORT FunctionInfo{
+struct FunctionInfo{
     enum Flags : quint8{
         None = 0,
         Abstract = 0x01,
         Private = 0x02,
     };
-    FunctionInfo();
-    FunctionInfo(const FunctionInfo& other);
-    FunctionInfo(FunctionInfo&& other);
-    FunctionInfo(const char *_name, const char *_signature, Flags _flags = None);
-    FunctionInfo& operator=(const FunctionInfo& other);
-    FunctionInfo& operator=(FunctionInfo&& other);
-    const char * name;
-    const char * signature;
-    Flags flags;
+    const char * name = nullptr;
+    const char * signature = nullptr;
+    Flags flags = None;
 };
 
-struct QTJAMBI_EXPORT ConstructorInfo{
-    typedef void (*Constructor)(void*, JNIEnv*, jobject, jvalue*, bool, bool, bool);
-    ConstructorInfo();
-    ConstructorInfo(const ConstructorInfo& other);
-    ConstructorInfo(Constructor _constructorFunction, const char *_signature);
-    ConstructorInfo(ConstructorInfo&& other);
-    ConstructorInfo& operator=(const ConstructorInfo& other);
-    ConstructorInfo& operator=(ConstructorInfo&& other);
-    Constructor constructorFunction;
-    const char *signature;
+struct ConstructorInfo{
+    typedef void (*ConstructorFn)(void*, JNIEnv*, jobject, jvalue*, bool, bool, bool);
+    ConstructorFn constructorFunction = nullptr;
+    const char *signature = nullptr;
 };
 
-class QtJambiScope;
-
-struct QTJAMBI_EXPORT ParameterInfo{
-    typedef bool(*QtToJavaConverterFunction)(JNIEnv* env, QtJambiScope* scope, const void* in, jvalue& out, bool forceBoxedType);
-    typedef bool(*JavaToQtConverterFunction)(JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType valueType);
+struct ParameterInfo{
+    typedef bool(*QtToJavaConverterFn)(JNIEnv* env, QtJambiScope* scope, const void* in, jvalue& out, bool forceBoxedType);
+    typedef bool(*JavaToQtConverterFn)(JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType valueType);
     int metaTypeId = 0;
     const char* javaClass = nullptr;
-    QtToJavaConverterFunction qtToJavaConverterFunction = nullptr;
-    JavaToQtConverterFunction javaToQtConverterFunction = nullptr;
-    ParameterInfo();
-    ParameterInfo(const ParameterInfo& other);
-    ParameterInfo& operator=(const ParameterInfo& other);
-    ParameterInfo(ParameterInfo&& other);
-    ParameterInfo& operator=(ParameterInfo&& other);
-    ParameterInfo(int _metaTypeId);
-    ParameterInfo(int _metaTypeId, const char* _javaClass, QtToJavaConverterFunction _qtToJavaConverterFunction, JavaToQtConverterFunction _javaToQtConverterFunction);
+    QtToJavaConverterFn qtToJavaConverterFunction = nullptr;
+    JavaToQtConverterFn javaToQtConverterFunction = nullptr;
 };
 
-typedef bool (*ParameterInfoProvider)(const QMetaMethod& method, QList<ParameterInfo>& infos);
+typedef bool (*ParameterInfoProviderFn)(const QMetaMethod &method, QList<ParameterInfo> &infos);
 
-typedef void(*Destructor)(void*);
+typedef void (*DestructorFn)(void *);
 
-typedef const char* (*QMetaMethodRenamer)(int);
+typedef const char *(*QMetaMethodRenamerFn)(int);
 
-typedef hash_type(*QHashFunctionPtr)(const void*,hash_type);
+typedef hash_type (*qHashFn)(const void *, hash_type);
 
-namespace RegistryAPI{
-QTJAMBI_EXPORT void registerHashFunction(const std::type_info& typeId, QHashFunctionPtr hashFunction);
+QTJAMBI_EXPORT void registerHashFunction(const std::type_info& typeId, qHashFn hashFunction);
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 QTJAMBI_EXPORT bool registerComparator(const QtPrivate::AbstractComparatorFunction *f, int type);
 QTJAMBI_EXPORT bool registerDebugStreamOperator(const QtPrivate::AbstractDebugStreamFunction *f, int typeId);
 #endif
-}
+
+} // namespace RegistryAPI
 
 namespace QtJambiPrivate {
 
@@ -314,13 +288,13 @@ void registerOperators(){
 }
 
 QTJAMBI_EXPORT void registerCustomMetaObject(const std::type_info& typeId, const QMetaObject& superTypeMetaObject);
-QTJAMBI_EXPORT void registerMetaObject(const std::type_info& typeId, const QMetaObject& originalMetaObject, bool isValueOwner, QMetaMethodRenamer methodRenamer = nullptr);
+QTJAMBI_EXPORT void registerMetaObject(const std::type_info& typeId, const QMetaObject& originalMetaObject, bool isValueOwner, QMetaMethodRenamerFn methodRenamer = nullptr);
 QTJAMBI_EXPORT void registerMetaObject(const std::type_info& typeId, const QMetaObject& originalMetaObject, bool isValueOwner,
                                        std::initializer_list<SignalMetaInfo> signalMetaInfos,
-                                       ParameterInfoProvider parameterTypeInfoProvider,
-                                       QMetaMethodRenamer methodRenamer = nullptr);
+                                       ParameterInfoProviderFn parameterTypeInfoProvider,
+                                       QMetaMethodRenamerFn methodRenamer = nullptr);
 QTJAMBI_EXPORT void registerFunctionInfos(const std::type_info& typeId, std::initializer_list<FunctionInfo> virtualFunctions);
-QTJAMBI_EXPORT void registerConstructorInfos(const std::type_info& typeId, uint returnScopes, Destructor destructor, std::initializer_list<ConstructorInfo> constructors);
+QTJAMBI_EXPORT void registerConstructorInfos(const std::type_info& typeId, uint returnScopes, DestructorFn destructor, std::initializer_list<ConstructorInfo> constructors);
 QTJAMBI_EXPORT void registerMediaControlInfo(const std::type_info& typeId, const char *media_control_iid);
 QTJAMBI_EXPORT void registerMetaTypeID(const std::type_info& typeId, int qtMetaType);
 
@@ -973,7 +947,7 @@ const std::type_info& registerInterfaceValueTypeInfo(const char *qt_name, const 
 template<typename T,typename Tshell>
 const std::type_info& registerFunctionalTypeInfo(const char *qt_name, const char *java_name, bool needsReturnScope,
                                                  PtrDeleterFunction deleter,
-                                                 Destructor destructor, std::initializer_list<ConstructorInfo> constructors,
+                                                 DestructorFn destructor, std::initializer_list<ConstructorInfo> constructors,
                                                  std::initializer_list<FunctionInfo> virtualFunctions)
 {
     const std::type_info& id = typeid(T);

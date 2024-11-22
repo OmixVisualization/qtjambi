@@ -122,9 +122,11 @@ QTJAMBI_EXPORT QReadWriteLock* objectDataLock();
 
 QTJAMBI_EXPORT QIODevice* newDirectAddressDevice(JNIEnv* env, jobject buffer, QObject *parent = nullptr);
 
-QTJAMBI_EXPORT jobject invokeMetaMethodOnGadget(JNIEnv * env, jobject _metaMethod, jobject object, jobjectArray argClassTypeArray, jobjectArray args);
+QTJAMBI_EXPORT jobject invokeMetaMethodOnGadget(JNIEnv * env, QtJambiNativeID _metaMethod, jobject object, jobjectArray args);
 
-QTJAMBI_EXPORT jobject invokeMetaMethod(JNIEnv * env, jobject _metaMethod, jobject _qobject, jobjectArray argClassTypeArray, jint connection, jobjectArray args);
+QTJAMBI_EXPORT jobject invokeMetaMethod(JNIEnv * env, QtJambiNativeID _metaMethod, QtJambiNativeID _qobject, jint connection, jobjectArray args);
+
+QTJAMBI_EXPORT jobject invokeMetaMethod(JNIEnv * env, jlong metaObjectPointer, jint index, QtJambiNativeID qobject_id, jint connection, jobjectArray args);
 
 QTJAMBI_EXPORT jobject convertMetaMethodToReflected(JNIEnv * env, jobject _this);
 
@@ -224,6 +226,8 @@ QTJAMBI_EXPORT void initializeQSet(JNIEnv *env, jobject object, jclass elementTy
 QTJAMBI_EXPORT void initializeQLinkedList(JNIEnv *env, jobject object, jclass elementType, QtJambiNativeID elementMetaType, jobject other);
 
 QTJAMBI_EXPORT void initializeQVector(JNIEnv *env, jobject object, jclass elementType, QtJambiNativeID elementMetaType, jobject other);
+#else
+QTJAMBI_EXPORT void registerQProperty(JNIEnv *env, QtJambiNativeID __object_nativeId, QtJambiNativeID property);
 #endif
 
 QTJAMBI_EXPORT void initializeQHash(JNIEnv *env, jobject object, jclass keyType, QtJambiNativeID keyMetaType, jclass valueType, QtJambiNativeID valueMetaType, jobject other);

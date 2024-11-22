@@ -46,7 +46,7 @@ struct SuperTypeInfo{
                     bool _hasShell,
                     size_t _offset,
                     const QVector<ResolvedConstructorInfo>& _constructorInfos,
-                    Destructor _destructor,
+                    RegistryAPI::DestructorFn _destructor,
                     PtrOwnerFunction _ownerFunction,
                     const std::type_info& typeId,
                   char const* _iid);
@@ -65,7 +65,7 @@ struct SuperTypeInfo{
     bool hasShell() const;
     size_t offset() const;
     const QVector<ResolvedConstructorInfo>& constructorInfos() const;
-    Destructor destructor() const;
+    RegistryAPI::DestructorFn destructor() const;
     PtrOwnerFunction ownerFunction() const;
 private:
     char const* m_qtName;
@@ -75,7 +75,7 @@ private:
     bool m_hasShell;
     size_t m_offset;
     QVector<ResolvedConstructorInfo> m_constructorInfos;
-    Destructor m_destructor;
+    RegistryAPI::DestructorFn m_destructor;
     PtrOwnerFunction m_ownerFunction;
     std::type_info const* m_typeId;
     char const* m_iid;
@@ -91,6 +91,8 @@ public:
     ~SuperTypeInfos();
     SuperTypeInfos& operator=(const SuperTypeInfos&);
     SuperTypeInfos& operator=(SuperTypeInfos&&);
+    void assign(const SuperTypeInfos&);
+    void assign(JNIEnv *env, SuperTypeInfos&&);
     jobject interfaceInfos() const;
     static SuperTypeInfos fromClass(JNIEnv *env, jclass cls);
 private:

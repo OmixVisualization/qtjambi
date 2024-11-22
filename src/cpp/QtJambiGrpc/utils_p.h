@@ -42,23 +42,6 @@ namespace QtJambiPrivate{
 
 void deleteGrpcChannel(QAbstractGrpcChannel* pointer);
 
-template<>
-struct SmartPointerHelper<std::shared_ptr,QAbstractGrpcChannel>{
-    static void deletePointer(void* pointer,bool){
-        std::shared_ptr<QAbstractGrpcChannel>* _pointer = reinterpret_cast<std::shared_ptr<QAbstractGrpcChannel>*>(pointer);
-        delete _pointer;
-    }
-
-    static void* createPointer(void* pointer){
-        return new std::shared_ptr<QAbstractGrpcChannel>(reinterpret_cast<QAbstractGrpcChannel*>(pointer), &deleteGrpcChannel);
-    }
-
-    static void* getFromPointer(const void* pointer){
-        const std::shared_ptr<QAbstractGrpcChannel>& _pointer = *reinterpret_cast<const std::shared_ptr<QAbstractGrpcChannel>*>(pointer);
-        return &*_pointer;QSharedPointer<int> i;
-    }
-};
-
 }
 
 jobject qtjambi_QGrpcOperation_read(JNIEnv *__jni_env, const QGrpcOperation *__qt_this, jclass type, jobjectArray instantiations);

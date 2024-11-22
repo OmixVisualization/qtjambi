@@ -38,7 +38,7 @@ import io.qt.core.QMetaObject.*;
  * <p>Java wrapper for Qt class <a href="https://doc.qt.io/qt/qweakpointer.html">QPointer</a>.
  * <code>QPointer</code> stores a strong reference to a Qt object and supplies <code>null</code> when resource has been disposed or deleted.</p>
  */
-public final class QPointer<O extends QtObjectInterface> {
+public final class QPointer<O extends QtObjectInterface> implements SmartPointer<O> {
 	
 	public QPointer(O object) {
 		super();

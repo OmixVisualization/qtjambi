@@ -37,6 +37,13 @@ QT -= core gui
 
 SOURCES  = main.cpp
 
+win32-arm64-msvc* | win32-msvc* {
+    CONFIG += embed_manifest_dll force_embed_manifest
+}
+
+OTHER_FILES = icon.rc
+win32:RC_FILE = icon.rc
+
 DESTDIR = ../bin
 
 contains(QT_CONFIG, release):contains(QT_CONFIG, debug) {
@@ -111,3 +118,4 @@ mac:{
         QMAKE_RPATHDIR = $ORIGIN/../lib
     }
 }
+

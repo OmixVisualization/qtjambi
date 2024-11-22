@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/io/qtjambi/generator">
+        <file>icon.ico</file>
         <file alias="pp-qt-configuration">parser/rpp/pp-qt-configuration</file>
     </qresource>
     <qresource prefix="/io/qtjambi/generator/typesystem">

@@ -51,23 +51,27 @@ import io.qt.widgets.QApplication;
 public class TestInitializationWebEngineQuick extends UnitTestInitializer {
     @Test
     public void initialize() {
-    	Assert.assertTrue(io.qt.QtUtilities.initializePackage("io.qt.webengine.quick"));
-        QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts);
-        io.qt.webengine.quick.QtWebEngineQuick.initialize();
-    	QGuiApplication.initialize(new String[0]);
-    	QLogging.qInstallLoggingMessageHandler(QtMsgType.QtWarningMsg);
-    	assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
-    	assumeTrue("global share context not available.", QOpenGLContext.globalShareContext()!=null);
-    	QWebEngineProfile.defaultProfile().settings().setAttribute(QWebEngineSettings.WebAttribute.PluginsEnabled, true);
-        QWebEngineProfile.defaultProfile().settings().setAttribute(QWebEngineSettings.WebAttribute.DnsPrefetchEnabled, true);
-        QWebEngineProfile.defaultProfile().setPersistentCookiesPolicy(QWebEngineProfile.PersistentCookiesPolicy.AllowPersistentCookies);
-        QQmlApplicationEngine engine = new QQmlApplicationEngine();
-    	engine.loadData(new QByteArray("import QtWebEngine\nWebEngineView{\n"
-    			+ "url: \"http://info.cern.ch/\"\n"
-    			+ "}"));
-        QList<QObject> rootObjects = engine.rootObjects();
-        Assert.assertTrue(rootObjects.get(0)!=null);
-    	QTimer.singleShot(2000, QApplication::quit);
-    	QApplication.exec();
+    	{
+	    	Assert.assertTrue(io.qt.QtUtilities.initializePackage("io.qt.webengine.quick"));
+	        QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts);
+	        io.qt.webengine.quick.QtWebEngineQuick.initialize();
+	    	QGuiApplication.initialize(new String[0]);
+	    	QGuiApplication.setWindowIcon(new QIcon(":io/qt/autotests/icon.png"));
+	    	QLogging.qInstallLoggingMessageHandler(QtMsgType.QtWarningMsg);
+	    	assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
+	    	assumeTrue("global share context not available.", QOpenGLContext.globalShareContext()!=null);
+	    	QWebEngineProfile.defaultProfile().settings().setAttribute(QWebEngineSettings.WebAttribute.PluginsEnabled, true);
+	        QWebEngineProfile.defaultProfile().settings().setAttribute(QWebEngineSettings.WebAttribute.DnsPrefetchEnabled, true);
+	        QWebEngineProfile.defaultProfile().setPersistentCookiesPolicy(QWebEngineProfile.PersistentCookiesPolicy.AllowPersistentCookies);
+	        QQmlApplicationEngine engine = new QQmlApplicationEngine();
+	    	engine.loadData(new QByteArray("import QtWebEngine\nWebEngineView{\n"
+	    			+ "url: \"http://info.cern.ch/\"\n"
+	    			+ "}"));
+	        QList<QObject> rootObjects = engine.rootObjects();
+	        Assert.assertTrue(rootObjects.get(0)!=null);
+	        QTimer.singleShot(500, QGuiApplication.instance(), QGuiApplication::quit);
+	    	QGuiApplication.exec();
+    	}
+    	QGuiApplication.shutdown();
     }
 }

@@ -32,10 +32,13 @@ package io.qt.autotests;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.autotests.generated.General;
+import io.qt.core.*;
+import io.qt.gui.*;
 import io.qt.multimedia.*;
 
 public class TestMultimediaCloneableQt6 extends ApplicationInitializer {
@@ -43,6 +46,22 @@ public class TestMultimediaCloneableQt6 extends ApplicationInitializer {
     @BeforeClass
     public static void testInitialize() throws Exception {
         ApplicationInitializer.testInitializeWithGui();
+    }
+    
+    @AfterClass
+    public static void testDispose() throws Exception {
+    	if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.MacOS) 
+    			&& QLibraryInfo.version().majorVersion()==6 
+    			&& QLibraryInfo.version().minorVersion()==5) {
+	    	QWindow window = new QWindow();
+	    	window.show();
+	    	QTimer.singleShot(200, QGuiApplication.instance(), QGuiApplication::quit);
+	    	QGuiApplication.exec();
+	    	window.close();
+	    	window.disposeLater();
+	    	window = null;
+    	}
+    	ApplicationInitializer.testDispose();
     }
     
 	@Test

@@ -36,6 +36,8 @@ import java.net.URL;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import io.qt.QtObject;
+import io.qt.QtObjectInterface;
 import io.qt.QtSignalEmitterInterface;
 import io.qt.core.QMetaMethod;
 import io.qt.core.QMetaObject;
@@ -89,7 +91,7 @@ public abstract class CoreUtility {
     }
     
     protected static void emitNativeSignal(QObject sender, int methodIndex, long metaObjectId, Object args[]) {
-    	SignalUtility.emitNativeSignal(NativeUtility.checkedNativeId(sender), methodIndex, metaObjectId, 0, args);
+    	SignalUtility.emitNativeSignal(null, NativeUtility.checkedNativeId(sender), methodIndex, metaObjectId, 0, args);
     }
     
     protected static boolean disconnectAll(QtSignalEmitterInterface sender, Object receiver) {
@@ -124,12 +126,44 @@ public abstract class CoreUtility {
     	return ReflectionUtility.functionFromMethod(method);
     }
     
+    protected static void invokeMethod(QObject context, Runnable runnable, boolean blocking) {
+    	SignalUtility.invokeMethod(NativeUtility.checkedNativeId(context), runnable, blocking);
+    }
+	
+    protected static void registerConDestroyedObject(QtObjectInterface dependentObject, QtObjectInterface owner) {
+    	NativeUtility.registerDependentObject(dependentObject, owner);
+	}
+	
+    protected static void unregisterConDestroyedObject(QtObjectInterface dependentObject, QtObjectInterface owner) {
+    	NativeUtility.unregisterDependentObject(dependentObject, owner);
+	}
+	
+    protected static void registerConDestroyedObject(QtObjectInterface dependentObject, QtObject owner) {
+    	NativeUtility.registerDependentObject(dependentObject, owner);
+	}
+	
+    protected static void unregisterConDestroyedObject(QtObjectInterface dependentObject, QtObject owner) {
+    	NativeUtility.unregisterDependentObject(dependentObject, owner);
+	}
+	
+    protected static void registerConDestroyedObject(QtObject dependentObject, QtObjectInterface owner) {
+    	NativeUtility.registerDependentObject(dependentObject, owner);
+	}
+	
+    protected static void unregisterConDestroyedObject(QtObject dependentObject, QtObjectInterface owner) {
+    	NativeUtility.unregisterDependentObject(dependentObject, owner);
+	}
+	
+    protected static void registerConDestroyedObject(QtObject dependentObject, QtObject owner) {
+    	NativeUtility.registerDependentObject(dependentObject, owner);
+	}
+	
+    protected static void unregisterConDestroyedObject(QtObject dependentObject, QtObject owner) {
+    	NativeUtility.unregisterDependentObject(dependentObject, owner);
+	}
+    
     @SuppressWarnings("deprecation")
 	protected static URL createURL(String url) throws MalformedURLException {
     	return new URL(url);
-    }
-    
-    protected static void invokeMethod(QObject context, Runnable runnable, boolean blocking) {
-    	SignalUtility.invokeMethod(NativeUtility.checkedNativeId(context), runnable, blocking);
     }
 }

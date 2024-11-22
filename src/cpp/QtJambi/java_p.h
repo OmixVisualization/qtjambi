@@ -152,7 +152,8 @@ namespace Java{
 
         QTJAMBI_REPOSITORY_DECLARE_EMPTY_CLASS(QMetaObject$Connection)
 
-        QTJAMBI_REPOSITORY_DECLARE_CLASS(QMetaMethod,)
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QMetaMethod,
+                                         QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(toSignal))
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QMetaObject,
                       QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
@@ -189,6 +190,10 @@ namespace Java{
                                          )
         QTJAMBI_REPOSITORY_DECLARE_CLASS(AbstractContainer,
                                          QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(__rcContainer)
+                                         )
+
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(SmartPointer,
+                                         QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(get)
                                          )
     }
 
@@ -275,6 +280,10 @@ namespace Java{
             QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getKey)
             QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getValue)
         )
+
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(Reference,
+                                         QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(get)
+                                         )
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(NavigableMap,)
 
@@ -374,7 +383,6 @@ namespace Java{
                                              QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(ofEpochSecond))
         }
     }
-
     namespace QtJambi
     {
         QTJAMBI_REPOSITORY_DECLARE_CLASS(NativeUtility,
@@ -385,8 +393,32 @@ namespace Java{
                                      QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(findAssociation)
                                      QTJAMBI_REPOSITORY_DECLARE_STATIC_LONG_METHOD(nativeId)
                                      QTJAMBI_REPOSITORY_DECLARE_STATIC_LONG_METHOD(nativeIdInterface)
+                                     QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(pushGlobalReference)
+                                     QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(releaseGlobalReference)
+                                     QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(getGlobalReference)
+                                     QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(pushWeakGlobalReference)
+                                     QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(releaseWeakGlobalReference)
+                                     QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(getWeakGlobalReference)
+                                     QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(findInterfaceLink)
+                                     QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(findAndAssignInterfaceLink)
                                  )
-        QTJAMBI_REPOSITORY_DECLARE_CLASS(NativeUtility$Object,)
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(NativeUtility$NativeLink,
+                                     QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(initialize)
+                                     QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(detach)
+                                     QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(reset)
+                                     QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(assignNativeId)
+                                     QTJAMBI_REPOSITORY_DECLARE_LONG_METHOD(nativeId)
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(get)
+                                     QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(takeOwnership)
+                                     QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(releaseOwnership)
+                                     QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(getForID)
+                                     QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(resetForID)
+                                     QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(detachForID)
+                                     QTJAMBI_REPOSITORY_DECLARE_STATIC_BOOLEAN_METHOD(takeOwnershipForID)
+                                     QTJAMBI_REPOSITORY_DECLARE_STATIC_BOOLEAN_METHOD(releaseOwnershipForID))
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(NativeUtility$Object,
+                                         QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(nativeLink)
+                                         QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(assignNativeLink))
         QTJAMBI_REPOSITORY_DECLARE_CLASS(MetaTypeUtility,
                                      QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(debugObject)
                                      QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(writeSerializableJavaObject)
@@ -837,5 +869,7 @@ namespace Java{
 struct DefaultJniEnvironment : JniEnvironment{
     DefaultJniEnvironment(int capacity = 0);
 };
+
+bool noExceptionForwarding();
 
 #endif // JAVA_P_H

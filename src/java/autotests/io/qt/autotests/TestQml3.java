@@ -33,16 +33,29 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.NonNull;
+import io.qt.Nullable;
 import io.qt.QtInvokable;
 import io.qt.QtPropertyReader;
 import io.qt.core.QAbstractListModel;
+import io.qt.core.QAbstractTableModel;
+import io.qt.core.QEventLoop;
+import io.qt.core.QList;
+import io.qt.core.QLogging;
 import io.qt.core.QMetaMethod;
 import io.qt.core.QMetaObject;
 import io.qt.core.QMetaProperty;
 import io.qt.core.QModelIndex;
 import io.qt.core.QObject;
+import io.qt.core.QRandomGenerator;
+import io.qt.core.QTimer;
+import io.qt.core.Qt;
+import io.qt.core.Qt.Orientation;
 import io.qt.qml.QQmlComponent;
 import io.qt.qml.QQmlEngine;
+import io.qt.qml.QtQml;
+import io.qt.quick.QQuickItem;
+import io.qt.quick.QQuickWindow;
+import io.qt.widgets.QApplication;
 
 public class TestQml3 extends ApplicationInitializer{
 	
@@ -174,6 +187,257 @@ public class TestQml3 extends ApplicationInitializer{
 		PropertyAndMethodProvider prov = new PropertyAndMethodProvider2();
 		context.propertyAndMethodProviderChanged.emit(prov);
 		Assert.assertEquals("PropertyAndMethodProviderText2", root.property("text"));
+		engine.dispose();
+	}
+	
+	public static class ExceptionPropertyProvider extends QObject{
+		ExceptionPropertyProvider() {
+			super();
+		}
+
+		ExceptionPropertyProvider(QDeclarativeConstructor constructor) {
+			super(constructor);
+		}
+
+		ExceptionPropertyProvider(@Nullable QObject parent) {
+			super(parent);
+		}
+
+		public final Signal0 numberChanged = new Signal0();
+		public final Signal0 countChanged = new Signal0();
+		public final Signal0 throwingChanged = new Signal0();
+		private int number;
+		private int count;
+		private boolean throwing;
+
+		public int getNumber() {
+			if(throwing)
+				throw new RuntimeException("Cannot get property");
+			return number;
+		}
+
+		public void setNumber(int number) {
+			if(this.number != number) {
+				this.number = number;
+				numberChanged.emit();
+			}
+		}
+
+		public boolean isThrowing() {
+			return throwing;
+		}
+
+		public void setThrowing(boolean throwing) {
+			if(this.throwing != throwing) {
+				this.throwing = throwing;
+				throwingChanged.emit();
+			}
+		}
+		
+		public void call(String text) {
+			if(throwing)
+				throw new RuntimeException(text);
+		}
+
+		public int getCount() {
+			return count;
+		}
+
+		public void setCount(int count) {
+			if(this.count != count) {
+				if(throwing)
+					throw new RuntimeException("Cannot set property");
+				this.count = count;
+				countChanged.emit();
+			}
+		}
+	}
+	
+	public static class ExceptionProvoker extends QObject{
+		ExceptionProvoker() {
+			super();
+		}
+
+		ExceptionProvoker(QDeclarativeConstructor constructor) {
+			super(constructor);
+		}
+
+		ExceptionProvoker(@Nullable QObject parent) {
+			super(parent);
+		}
+		public final Signal1<Integer> numberChanged = new Signal1<>();
+		public final Signal1<Integer> countChanged = new Signal1<>();
+		public final Signal0 performClick = new Signal0();
+		public final void sendRandomNumber() {
+			numberChanged.emit(QRandomGenerator.global().bounded(0,99));
+		}
+		public final void sendRandomCount() {
+			countChanged.emit(QRandomGenerator.global().bounded(0, 99));
+		}
+		public final void sendClick() {
+			performClick.emit();
+		}
+	}
+	
+	@Test
+    public void testMetaCallExceptions() {
+		QLogging.qInstallMessageHandler((t,c,msg)->System.out.println(msg));
+		QQmlEngine engine = new QQmlEngine();
+		QtQml.qmlRegisterType(ExceptionPropertyProvider.class, "test", 1, 0, "ExceptionPropertyProvider");
+		QtQml.qmlRegisterType(ExceptionProvoker.class, "test", 1, 0, "ExceptionProvoker");
+		QQmlComponent component = new QQmlComponent(engine);
+		component.setData("import QtQuick 2.15\n" + 
+				"import QtQuick.Controls 2.15\n" + 
+				"import test 1.0\n" + 
+				"\n" + 
+				"ApplicationWindow {\n" + 
+				"    visible: true\n" + 
+				"    width: 400\n" + 
+				"    height: 300\n" +  
+				"\n" + 
+				"    Grid  {\n" + 
+				"        anchors.centerIn: parent\n" + 
+				"        rows: 3\n" + 
+				"        columns: 2\n" + 
+				"\n" + 
+				"            Text {\n" + 
+				"                text: \"Number: \"+prv.number\n" + 
+				"                font.pixelSize: 18\n" + 
+				"                horizontalAlignment: Text.AlignHCenter\n" + 
+				"            }\n" + 
+				"            SpinBox {\n" + 
+				"                id: numberSpinBox\n" + 
+				"                objectName: \"numberSpinBox\"\n" + 
+				"                //displayText: \"Number:\"\n" + 
+				"            }\n" + 
+				"            Text {\n" + 
+				"                text: \"Count: \"+prv.count\n" + 
+				"                font.pixelSize: 18\n" + 
+				"                horizontalAlignment: Text.AlignHCenter\n" + 
+				"            }\n" + 
+				"            SpinBox {\n" + 
+				"                id: countSpinBox\n" + 
+				"                objectName: \"countSpinBox\"\n" + 
+				"                //displayText: \"Count:\"\n" + 
+				"            }\n" + 
+				"            Button {\n" + 
+				"                id: caller\n" + 
+				"                text: \"Call throwing java method\"\n" + 
+				"                objectName: \"caller\"\n" + 
+				"                onClicked: prv.call(\"Test Exception\")\n" + 
+				"            }\n" + 
+				"            Button {\n" + 
+				"                id: enableExceptionButton\n" + 
+				"                objectName: \"checker\"\n" + 
+				"                text: \"Enable Exceptions\"\n" + 
+				"                checkable: true\n" + 
+				"            }\n" + 
+				"    }\n" + 
+				"    ExceptionPropertyProvider { id: prv; throwing: enableExceptionButton.checked; count: countSpinBox.value; number: numberSpinBox.value }\n" + 
+				"    ExceptionProvoker { id: pvk; onNumberChanged: value => {numberSpinBox.value = value;}; onCountChanged: value => {countSpinBox.value = value;}; onPerformClick: {caller.clicked();} }\n" + 
+				"}", "qrc:");
+		Assert.assertFalse(component.errorString(), component.isError());
+		QQuickWindow root = component.create(QQuickWindow.class);
+		Assert.assertTrue(root!=null);
+		ExceptionProvoker provoker = root.findChild(ExceptionProvoker.class);
+		QQuickItem caller = root.findChild(QQuickItem.class, "caller");
+		Assert.assertTrue(caller!=null);
+		QQuickItem checker = root.findChild(QQuickItem.class, "checker");
+		Assert.assertTrue(checker!=null);
+		QQuickItem numberSpinBox = root.findChild(QQuickItem.class, "numberSpinBox");
+		Assert.assertTrue(numberSpinBox!=null);
+		QQuickItem countSpinBox = root.findChild(QQuickItem.class, "countSpinBox");
+		Assert.assertTrue(countSpinBox!=null);
+		QEventLoop eventLoop = new QEventLoop();
+		root.closing.connect(eventLoop, QEventLoop::quit);
+		QTimer.singleShot(600, provoker, ExceptionProvoker::sendRandomCount);
+		QTimer.singleShot(700, provoker, ExceptionProvoker::sendRandomNumber);
+		QTimer.singleShot(1000, caller, "click()");
+		QTimer.singleShot(1100, numberSpinBox, "increase()");
+		QTimer.singleShot(1200, countSpinBox, "increase()");
+		QTimer.singleShot(1300, numberSpinBox, "increase()");
+		QTimer.singleShot(1400, countSpinBox, "increase()");
+		QTimer.singleShot(1500, numberSpinBox, "increase()");
+		QTimer.singleShot(1600, countSpinBox, "increase()");
+		QTimer.singleShot(2000, checker, "click()");
+		QTimer.singleShot(3000, caller, "click()");
+		QTimer.singleShot(4000, numberSpinBox, "increase()");
+		QTimer.singleShot(5000, countSpinBox, "increase()");
+		QTimer.singleShot(5500, provoker, ExceptionProvoker::sendClick);
+		QTimer.singleShot(6000, provoker, ExceptionProvoker::sendRandomCount);
+		QTimer.singleShot(7000, provoker, ExceptionProvoker::sendRandomNumber);
+		QTimer.singleShot(15000, eventLoop, QEventLoop::quit);
+		eventLoop.exec();
+		root.dispose();
+		engine.dispose();
+	}
+	
+	@Test
+    public void testExceptionModel() {
+		QLogging.qInstallMessageHandler((t,c,msg)->System.out.println(msg));
+		QAbstractTableModel model = new QAbstractTableModel() {
+			boolean throwing = false;
+			@Override
+			public int rowCount(QModelIndex parent) {
+				return 3;
+			}
+			
+			@Override
+			public int columnCount(QModelIndex parent) {
+				return 2;
+			}
+			
+			@Override
+			public Object data(QModelIndex index, int role) {
+				if(throwing)
+					throw new RuntimeException("Table Exception");
+				return String.format("[%1$s,%2$s]", index.row(), index.clone());
+			}
+			@SuppressWarnings("unused")
+			public void increase() {
+				throwing = true;
+				dataChanged.emit(index(0, 0), index(2, 1), QList.ofInt(Qt.ItemDataRole.DisplayRole));
+			}
+
+			@Override
+			public Object headerData(int section, @NonNull Orientation orientation, int role) {
+				if(throwing)
+					throw new RuntimeException("Table Exception");
+				return super.headerData(section, orientation, role);
+			}
+		};
+		QLogging.qInstallMessageHandler((t,c,msg)->System.out.println(msg));
+		QQmlEngine engine = new QQmlEngine();
+		engine.rootContext().setContextProperty("Model", model);
+		QQmlComponent component = new QQmlComponent(engine);
+		component.setData("import QtQuick 2.15\n"
+				+ "import QtQuick.Controls 2.15\n"
+				+ "ApplicationWindow{\n"
+				+ "    visible: true\n" 
+				+ "    width: 400\n" 
+				+ "    height: 300\n"
+				+ "    property bool active: false\n"
+				+ "    TableView{\n"
+				+ "        anchors.fill: parent\n"
+				+ "        model: Model\n"
+				+ "    delegate: Rectangle {\n" + 
+				"        implicitWidth: 100\n" + 
+				"        implicitHeight: 50\n" + 
+				"        Text {\n" + 
+				"            text: display\n" + 
+				"        }\n"
+				+ "      }\n" + 
+				"    }\n"
+				+ "}", "qrc:");
+		Assert.assertFalse(component.errorString(), component.isError());
+		QQuickWindow view = component.create(QQuickWindow.class);
+		view.show();
+		QTimer.singleShot(1000, model, ()->{QMetaObject.invokeMethod(model, "increase()");});
+		QTimer.singleShot(2000, QApplication::quit);
+		QApplication.exec();
+		view.close();
+		view.dispose();
+		component.dispose();
 		engine.dispose();
 	}
 }

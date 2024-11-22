@@ -140,7 +140,8 @@ public:
     enum Mode{
         Mandatory,
         Optional,
-        ProvideOnly
+        ProvideOnly,
+        Supressed
     };
     Q_ENUM(Mode)
     explicit RequiredLibrary(QObject *parent = nullptr):AbstractObject(parent){}

@@ -62,6 +62,21 @@ public class TestQVariantQt6 extends ApplicationInitializer {
     	nll = variant.value();
     	assertTrue(null==nll);
     }
+	
+	public static class VariantConstructor implements TestQVariant.VariantConstructor{
+		public QVariant create(io.qt.core.QMetaType type) {
+    		return new QVariant(type);
+    	}
+    	public QVariant create(io.qt.core.QMetaType type, java.lang.Object copy) {
+    		return new QVariant(type, copy);
+    	}
+    	public QVariant create(io.qt.core.QMetaType.Type type) {
+    		return new QVariant(type);
+    	}
+    	public QVariant create(io.qt.core.QMetaType.Type type, java.lang.Object copy) {
+    		return new QVariant(type, copy);
+    	}
+    }
     
     public static void main(String args[]) {
         org.junit.runner.JUnitCore.main(TestQVariantQt6.class.getName());

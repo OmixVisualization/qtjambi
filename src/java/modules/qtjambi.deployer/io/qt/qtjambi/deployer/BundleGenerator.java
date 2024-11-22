@@ -384,6 +384,9 @@ final class BundleGenerator {
 					case "linux-x64":
 						subdir = new File(foundVersionDir, "gcc_64");
 						break;
+					case "linux-arm64":
+						subdir = new File(foundVersionDir, "gcc_arm64");
+						break;
 					case "macos":
 						if(!(subdir = new File(foundVersionDir, "macos")).isDirectory()) {
 							subdir = new File(foundVersionDir, "clang_64");

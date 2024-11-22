@@ -32,7 +32,10 @@ package io.qt.autotests;
 import org.junit.Assert;
 import org.junit.Test;
 
+import io.qt.core.QTimer;
 import io.qt.graphs.widgets.Q3DSurfaceWidgetItem;
+import io.qt.gui.QGuiApplication;
+import io.qt.gui.QIcon;
 import io.qt.quick.widgets.QQuickWidget;
 import io.qt.widgets.QApplication;
 
@@ -41,14 +44,15 @@ public class TestInitializationGraphsWidgets extends UnitTestInitializer {
     public void initialize() {
     	Assert.assertTrue(io.qt.QtUtilities.initializePackage("io.qt.graphs.widgets"));
     	QApplication.initialize(new String[0]);
-    	QQuickWidget window = new QQuickWidget();
-    	Q3DSurfaceWidgetItem item = new Q3DSurfaceWidgetItem();
-    	item.setWidget(window);
-    	window.show();
-    	QApplication.processEvents();
-    	window.hide();
-    	QApplication.processEvents();
-    	window.dispose();
+    	QGuiApplication.setWindowIcon(new QIcon(":io/qt/autotests/icon.png"));
+    	{
+	    	QQuickWidget window = new QQuickWidget();
+	    	Q3DSurfaceWidgetItem item = new Q3DSurfaceWidgetItem();
+	    	item.setWidget(window);
+	    	window.show();
+	    	QTimer.singleShot(500, QApplication.instance(), QApplication::quit);
+	    	QApplication.exec();
+    	}
     	QApplication.shutdown();
     }
 }

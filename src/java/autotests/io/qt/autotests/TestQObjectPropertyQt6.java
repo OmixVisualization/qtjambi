@@ -28,8 +28,7 @@
 ****************************************************************************/
 package io.qt.autotests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -641,5 +640,25 @@ public class TestQObjectPropertyQt6 extends ApplicationInitializer {
     	sValue.set("TEST");
     	owner.sComputed.notifyProperty();
     	assertEquals(sValue.get(), sReceived[0]);
+    }
+    
+    @Test
+    public void testPropertyDeletion() {
+    	class PropertyOwner extends QObject{
+    		public final QIntProperty x = new QIntProperty();
+    	}
+    	PropertyOwner o = new PropertyOwner();
+    	o.x.dispose();
+    	assertFalse(o.x.isDisposed());
+    }
+    
+    @Test
+    public void testObjectDeletion() {
+    	class PropertyOwner extends QObject{
+    		public final QIntProperty x = new QIntProperty();
+    	}
+    	PropertyOwner o = new PropertyOwner();
+    	o.dispose();
+    	assertTrue(o.x.isDisposed());
     }
 }

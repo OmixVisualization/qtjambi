@@ -37,6 +37,8 @@ import io.qt.core.QCoreApplication;
 import io.qt.core.QResource;
 import io.qt.core.QTimer;
 import io.qt.core.Qt;
+import io.qt.gui.QGuiApplication;
+import io.qt.gui.QIcon;
 import io.qt.widgets.QApplication;
 import io.qt.widgets.QCheckBox;
 import io.qt.widgets.QHBoxLayout;
@@ -52,6 +54,7 @@ public class TestWidgetsWithoutShutdown {
 		    QResource.addClassPath(".");
 		    QCoreApplication.setApplicationName("QtJambiUnitTest");
 		    QApplication.initialize(new String[0]);
+		    QGuiApplication.setWindowIcon(new QIcon(":io/qt/autotests/icon.png"));
 		    QWidget window = new QWidget();
 			window.setWindowTitle(tr("Enter your age"));
 			QCheckBox checkbox = new QCheckBox(tr("Check &Box"));

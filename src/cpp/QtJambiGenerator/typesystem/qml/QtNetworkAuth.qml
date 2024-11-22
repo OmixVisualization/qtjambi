@@ -179,9 +179,70 @@ TypeSystem{
             }
         }
     }
-    
+
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: template baseclass 'QtPrivate::ContextTypeForFunctor::ContextType<Functor>' of '' is not known"}
     ObjectType{
         name: "QAbstractOAuth2"
+        EnumType{
+            name: "NonceMode"
+            since: 6.9
+        }
+        ModifyFunction{
+            signature: "setTokenRequestModifier<Functor,true>(const QAbstractOAuth2::ContextTypeForFunctor<Functor> *, Functor &&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QNetworkRequest&, QAbstractOAuth::Stage)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 3
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.network.auth.QAbstractOAuth2$Callback"
+                        contextParameter: 2
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertBiConsumer(%env, %in);"}
+                    }
+                }
+            }
+            since: 6.9
+        }
+        InjectCode{
+            Text{
+                content: String.raw`
+                /**
+                 * Callback for setTokenRequestModifier.
+                 */
+                public interface Callback extends java.util.function.@StrictNonNull BiConsumer<io.qt.network.@StrictNonNull QNetworkRequest, io.qt.network.auth.QAbstractOAuth.@NonNull Stage>, java.io.Serializable{
+                }
+                `
+            }
+            since: 6.9
+        }
+        InjectCode{
+            target: CodeClass.Native
+            position: Position.Beginning
+            Text{content: "auto convertBiConsumer(JNIEnv* _env, jobject _consumer){\n"+
+                          "    return [consumer = JObjectWrapper(_env, _consumer)](QNetworkRequest& request,QAbstractOAuth::Stage stage){\n"+
+                          "                    if(JniEnvironment env{200}){\n"+
+                          "                        jobject _request = qtjambi_cast<jobject>(env, &request);\n"+
+                          "                        InvalidateAfterUse inv(env, _reply);\n"+
+                          "                        Java::Runtime::BiConsumer::accept(env, consumer.object(env), _reply, qtjambi_cast<jobject>(env, stage));\n"+
+                          "                    }\n"+
+                          "                };\n"+
+                          "}"}
+            since: 6.9
+        }
     }
     
     ObjectType{

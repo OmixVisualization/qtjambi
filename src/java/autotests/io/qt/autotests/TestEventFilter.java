@@ -28,14 +28,22 @@
 ****************************************************************************/
 package io.qt.autotests;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import io.qt.QtUtilities;
 import io.qt.core.QEvent;
+import io.qt.core.QEventLoop;
 import io.qt.core.QObject;
+import io.qt.core.QRegularExpression;
 import io.qt.core.QTimer;
+import io.qt.core.Qt;
 import io.qt.gui.QGuiApplication;
-import io.qt.widgets.QApplication;
+import io.qt.gui.QWindow;
 import io.qt.widgets.QWidget;
 
 public class TestEventFilter extends ApplicationInitializer {
@@ -46,20 +54,172 @@ public class TestEventFilter extends ApplicationInitializer {
     }
     
     @Test
-    public void test() {
+    public void testEventFilter() {
     	// must not lead to crash
     	QGuiApplication.instance().sessionId();
-    	QGuiApplication.instance().installEventFilter(new QObject(QGuiApplication.instance()){
+    	QObject eventFilter = new QObject(QGuiApplication.instance()){
     		@Override
     		public boolean eventFilter(QObject obj, QEvent evt) {
+//    			System.out.println("testEventFilter(): eventFilter("+obj+", "+evt+")");
     			return false;
     		}
-    	});
-    	QWidget widget = new QWidget();
-    	widget.show();
-    	QTimer.singleShot(1000, QApplication::quit);
-    	QApplication.exec();
-    	widget.dispose();
+    	};
+    	QGuiApplication.instance().installEventFilter(eventFilter);
+    	QEventLoop eventLoop = new QEventLoop();
+    	try {
+	    	QWidget widget = new QWidget();
+	    	widget.show();
+	    	QTimer.singleShot(1000, eventLoop, QEventLoop::quit);
+	    	eventLoop.exec();
+	    	widget.dispose();
+    	}finally {
+    		QGuiApplication.instance().removeEventFilter(eventFilter);
+    	}
+    }
+    
+    @Test
+    public void testEqualObjectNameSelectiveEventFilter() {
+    	QGuiApplication.instance().sessionId();
+    	Set<QObject> filteredObjects = new HashSet<>();
+    	QObject eventFilter = QtUtilities.asSelectiveEventFilter(new QObject(QGuiApplication.instance()){
+    		@Override
+    		public boolean eventFilter(QObject obj, QEvent evt) {
+    			filteredObjects.add(obj);
+//    			System.out.println("testEqualObjectNameSelectiveEventFilter(): eventFilter("+obj+", "+evt+")");
+    			return false;
+    		}
+    	}, QtUtilities.StringComparison.Equal, "FilteredObject");
+    	QGuiApplication.instance().installEventFilter(eventFilter);
+    	QEventLoop eventLoop = new QEventLoop();
+    	try {
+	    	QWidget widget1 = new QWidget();
+	    	widget1.setObjectName("FilteredWidget1");
+	    	widget1.show();
+	    	QWidget widget2 = new QWidget();
+	    	widget2.setObjectName("FilteredWidget2");
+	    	widget2.show();
+	    	QWidget widget = new QWidget();
+	    	widget.setObjectName("FilteredObject");
+	    	widget.show();
+	    	QTimer.singleShot(1000, eventLoop, QEventLoop::quit);
+	    	eventLoop.exec();
+	    	try {
+	    		Assert.assertEquals(1, filteredObjects.size());
+	    		Assert.assertTrue(filteredObjects.contains(widget));
+	    	}finally {
+		    	widget.dispose();
+		    	widget1.dispose();
+		    	widget2.dispose();
+	    	}
+    	}finally {
+    		QGuiApplication.instance().removeEventFilter(eventFilter);
+    	}
+    }
+    
+    @Test
+    public void testStartsWithObjectNameSelectiveEventFilter() {
+    	QGuiApplication.instance().sessionId();
+    	Set<QObject> filteredObjects = new HashSet<>();
+    	QObject eventFilter = QtUtilities.asSelectiveEventFilter(new QObject(QGuiApplication.instance()){
+    		@Override
+    		public boolean eventFilter(QObject obj, QEvent evt) {
+    			filteredObjects.add(obj);
+//    			System.out.println("testStartsWithObjectNameSelectiveEventFilter(): eventFilter("+obj+", "+evt+")");
+    			return false;
+    		}
+    	}, QtUtilities.StringComparison.StartsWith, Qt.CaseSensitivity.CaseInsensitive, "filtered");
+    	QGuiApplication.instance().installEventFilter(eventFilter);
+    	QEventLoop eventLoop = new QEventLoop();
+    	try {
+	    	QWidget widget1 = new QWidget();
+	    	widget1.setObjectName("FilteredWidget1");
+	    	widget1.show();
+	    	QWidget widget2 = new QWidget();
+	    	widget2.setObjectName("FilteredWidget2");
+	    	widget2.show();
+	    	QTimer.singleShot(1000, eventLoop, QEventLoop::quit);
+	    	eventLoop.exec();
+	    	try {
+	    		Assert.assertEquals(4, filteredObjects.size());
+	    		Assert.assertTrue(filteredObjects.contains(widget1));
+	    		Assert.assertTrue(filteredObjects.contains(widget2));
+	    	}finally {
+		    	widget1.dispose();
+		    	widget2.dispose();
+	    	}
+    	}finally {
+    		QGuiApplication.instance().removeEventFilter(eventFilter);
+    	}
+    }
+    
+    @Test
+    public void testRegexpObjectNameSelectiveEventFilter() {
+    	QGuiApplication.instance().sessionId();
+    	Set<QObject> filteredObjects = new HashSet<>();
+    	QObject eventFilter = QtUtilities.asSelectiveEventFilter(new QObject(QGuiApplication.instance()){
+    		@Override
+    		public boolean eventFilter(QObject obj, QEvent evt) {
+    			filteredObjects.add(obj);
+//    			System.out.println("testStartsWithObjectNameSelectiveEventFilter(): eventFilter("+obj+", "+evt+")");
+    			return false;
+    		}
+    	}, new QRegularExpression("(Widget)[1|2]$"));
+    	QGuiApplication.instance().installEventFilter(eventFilter);
+    	QEventLoop eventLoop = new QEventLoop();
+    	try {
+	    	QWidget widget1 = new QWidget();
+	    	widget1.setObjectName("FilteredWidget1");
+	    	widget1.show();
+	    	QWidget widget2 = new QWidget();
+	    	widget2.setObjectName("FilteredWidget2");
+	    	widget2.show();
+	    	QTimer.singleShot(1000, eventLoop, QEventLoop::quit);
+	    	eventLoop.exec();
+	    	try {
+	    		Assert.assertEquals(2, filteredObjects.size());
+	    		Assert.assertTrue(filteredObjects.contains(widget1));
+	    		Assert.assertTrue(filteredObjects.contains(widget2));
+	    	}finally {
+		    	widget1.dispose();
+		    	widget2.dispose();
+	    	}
+    	}finally {
+    		QGuiApplication.instance().removeEventFilter(eventFilter);
+    	}
+    }
+    
+    @Test
+    public void testMetaObjectSelectiveEventFilter() {
+    	QGuiApplication.instance().sessionId();
+    	Set<QObject> filteredObjects = new HashSet<>();
+    	QObject eventFilter = QtUtilities.asSelectiveEventFilter(new QObject(QGuiApplication.instance()){
+    		@Override
+    		public boolean eventFilter(QObject obj, QEvent evt) {
+    			filteredObjects.add(obj);
+//    			System.out.println("testMetaObjectSelectiveEventFilter(): eventFilter("+obj+", "+evt+")");
+    			return false;
+    		}
+    	}, QWindow.staticMetaObject);
+    	QGuiApplication.instance().installEventFilter(eventFilter);
+    	QEventLoop eventLoop = new QEventLoop();
+    	try {
+	    	QWidget widget1 = new QWidget();
+	    	widget1.show();
+	    	QWidget widget2 = new QWidget();
+	    	widget2.show();
+	    	QTimer.singleShot(1000, eventLoop, QEventLoop::quit);
+	    	eventLoop.exec();
+	    	try {
+	    		Assert.assertEquals(2, filteredObjects.size());
+	    		Assert.assertTrue(filteredObjects.contains(widget1.windowHandle()));
+	    		Assert.assertTrue(filteredObjects.contains(widget2.windowHandle()));
+	    	}finally {
+		    	widget1.dispose();
+		    	widget2.dispose();
+	    	}
+    	}finally {
+    		QGuiApplication.instance().removeEventFilter(eventFilter);
+    	}
     }
     
     public static void main(String args[]) {

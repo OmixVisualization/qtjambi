@@ -177,8 +177,8 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QP
             QObject* operator()(){
                 if(m_pointer.isNull()){
                     if(JniEnvironment env{200}){
-                        if(!m_constructorHandle && m_classOrSupplier.object()){ // m_classOrSupplier is Supplier
-                            jobject classOrSupplier = env->NewLocalRef(m_classOrSupplier.object());
+                        jobject classOrSupplier;
+                        if(!m_constructorHandle && (classOrSupplier = m_classOrSupplier.object(env))){ // m_classOrSupplier is Supplier
                             m_classOrSupplier = JObjectWrapper();
                             jclass cls = jclass(Java::Runtime::Supplier::get(env, classOrSupplier));
                             if(cls){
@@ -190,7 +190,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QP
                             }
                         }
                         if(m_constructorHandle){ // m_classOrSupplier is Class
-                            jobject plugin = env->NewObject(jclass(m_classOrSupplier.object()), m_constructorHandle);
+                            jobject plugin = env->NewObject(jclass(m_classOrSupplier.object(env)), m_constructorHandle);
                             JavaException::check(env QTJAMBI_STACKTRACEINFO);
                             m_pointer = qtjambi_cast<QObject*>(env, plugin);
                             QtJambiAPI::setCppOwnership(env, plugin);

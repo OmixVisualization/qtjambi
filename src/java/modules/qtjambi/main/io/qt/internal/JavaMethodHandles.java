@@ -525,122 +525,135 @@ final class JavaMethodHandles implements ReflectionUtility.MethodInvocationHandl
 	
 	@Override
 	public SignalUtility.SlotInvoker getSlotInvoker(Method slot, MethodHandle _slotHandle){
-		if(resolvedMetaFactory!=null) {
-			do try {
-				CallSite site;
-				List<Class<?>> parameters = new ArrayList<>();
-				for(int i=0; i<_slotHandle.type().parameterCount(); ++i) {
-					parameters.add(Object.class);
-				}
-				MethodType invokeType = MethodType.methodType(void.class, parameters);
-				switch(_slotHandle.type().parameterCount()) {
-				case 1:
-					site = resolvedMetaFactory.metafactory(ReflectionUtility.privateLookup(slot.getDeclaringClass()),
-							"accept",
-			                MethodType.methodType(Consumer.class),
-			                invokeType,
-			                _slotHandle,
-			                wrap(_slotHandle.type()));
-					Consumer<Object> slot1 = (Consumer<Object>)site.getTarget().invokeExact();
-					return (instance, _arguments)->slot1.accept(instance);
-				case 2:
-					site = resolvedMetaFactory.metafactory(ReflectionUtility.privateLookup(slot.getDeclaringClass()),
-							"accept",
-			                MethodType.methodType(BiConsumer.class),
-			                invokeType,
-			                _slotHandle,
-			                wrap(_slotHandle.type()));
-					BiConsumer<Object,Object> slot2 = (BiConsumer<Object,Object>)site.getTarget().invokeExact();
-					return (instance, _arguments)->slot2.accept(instance, _arguments[0]);
-				}
-				MethodHandles.Lookup lookup;
-				lookup = ReflectionUtility.privateLookup(slot.getDeclaringClass());
-				lookupAccessClass.accessClass(lookup, QtUtilities.class);
-				switch(_slotHandle.type().parameterCount()) {
-				case 3:
-					site = resolvedMetaFactory.metafactory(lookup,
-							"accept",
-			                MethodType.methodType(QtUtilities.Consumer3.class),
-			                invokeType,
-			                _slotHandle,
-			                wrap(_slotHandle.type()));
-					QtUtilities.Consumer3<Object,Object,Object> slot3 = (QtUtilities.Consumer3<Object,Object,Object>)site.getTarget().invokeExact();
-					return (instance, _arguments)->slot3.accept(instance, _arguments[0], _arguments[1]);
-				case 4:
-					site = resolvedMetaFactory.metafactory(lookup,
-							"accept",
-			                MethodType.methodType(QtUtilities.Consumer4.class),
-			                invokeType,
-			                _slotHandle,
-			                wrap(_slotHandle.type()));
-					QtUtilities.Consumer4<Object,Object,Object,Object> slot4 = (QtUtilities.Consumer4<Object,Object,Object,Object>)site.getTarget().invokeExact();
-					return (instance, _arguments)->slot4.accept(instance, _arguments[0], _arguments[1], _arguments[2]);
-				case 5:
-					site = resolvedMetaFactory.metafactory(lookup,
-							"accept",
-			                MethodType.methodType(QtUtilities.Consumer5.class),
-			                invokeType,
-			                _slotHandle,
-			                wrap(_slotHandle.type()));
-					QtUtilities.Consumer5<Object,Object,Object,Object,Object> slot5 = (QtUtilities.Consumer5<Object,Object,Object,Object,Object>)site.getTarget().invokeExact();
-					return (instance, _arguments)->slot5.accept(instance, _arguments[0], _arguments[1], _arguments[2], _arguments[3]);
-				case 6:
-					site = resolvedMetaFactory.metafactory(lookup,
-							"accept",
-			                MethodType.methodType(QtUtilities.Consumer6.class),
-			                invokeType,
-			                _slotHandle,
-			                wrap(_slotHandle.type()));
-					QtUtilities.Consumer6<Object,Object,Object,Object,Object,Object> slot6 = (QtUtilities.Consumer6<Object,Object,Object,Object,Object,Object>)site.getTarget().invokeExact();
-					return (instance, _arguments)->slot6.accept(instance, _arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4]);
-				case 7:
-					site = resolvedMetaFactory.metafactory(lookup,
-							"accept",
-			                MethodType.methodType(QtUtilities.Consumer7.class),
-			                invokeType,
-			                _slotHandle,
-			                wrap(_slotHandle.type()));
-					QtUtilities.Consumer7<Object,Object,Object,Object,Object,Object,Object> slot7 = (QtUtilities.Consumer7<Object,Object,Object,Object,Object,Object,Object>)site.getTarget().invokeExact();
-					return (instance, _arguments)->slot7.accept(instance, _arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4], _arguments[5]);
-				case 8:
-					site = resolvedMetaFactory.metafactory(lookup,
-							"accept",
-			                MethodType.methodType(QtUtilities.Consumer8.class),
-			                invokeType,
-			                _slotHandle,
-			                wrap(_slotHandle.type()));
-					QtUtilities.Consumer8<Object,Object,Object,Object,Object,Object,Object,Object> slot8 = (QtUtilities.Consumer8<Object,Object,Object,Object,Object,Object,Object,Object>)site.getTarget().invokeExact();
-					return (instance, _arguments)->slot8.accept(instance, _arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4], _arguments[5], _arguments[6]);
-				case 9:
-					site = resolvedMetaFactory.metafactory(lookup,
-							"accept",
-			                MethodType.methodType(QtUtilities.Consumer9.class),
-			                invokeType,
-			                _slotHandle,
-			                wrap(_slotHandle.type()));
-					QtUtilities.Consumer9<Object,Object,Object,Object,Object,Object,Object,Object,Object> slot9 = (QtUtilities.Consumer9<Object,Object,Object,Object,Object,Object,Object,Object,Object>)site.getTarget().invokeExact();
-					return (instance, _arguments)->slot9.accept(instance, _arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4], _arguments[5], _arguments[6], _arguments[7]);
-				case 10:
-					site = resolvedMetaFactory.metafactory(lookup,
-							"accept",
-			                MethodType.methodType(QtUtilities.Consumer10.class),
-			                invokeType,
-			                _slotHandle,
-			                wrap(_slotHandle.type()));
-					QtUtilities.Consumer10<Object,Object,Object,Object,Object,Object,Object,Object,Object,Object> slot10 = (QtUtilities.Consumer10<Object,Object,Object,Object,Object,Object,Object,Object,Object,Object>)site.getTarget().invokeExact();
-					return (instance, _arguments)->slot10.accept(instance, _arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4], _arguments[5], _arguments[6], _arguments[7], _arguments[8]);
-				}
-			} catch (IllegalAccessException e) {
-			} catch (Throwable e) {
-				if(Boolean.getBoolean("io.qt.internal.enable-lambda-factory-log"))
-					java.util.logging.Logger.getLogger("io.qt.internal").log(java.util.logging.Level.SEVERE, "", e);
+		if(_slotHandle==null) {
+        	try {
+        		_slotHandle = ReflectionUtility.getMethodHandle(slot);
+			} catch (Exception e) {
 			}
-			while(false);
-		}
-		if(resolvedProxyFactory!=null) {
+        }
+		if(_slotHandle!=null) {
+			if(resolvedMetaFactory!=null) {
+				do try {
+					CallSite site;
+					List<Class<?>> parameters = new ArrayList<>();
+					for(int i=0; i<_slotHandle.type().parameterCount(); ++i) {
+						parameters.add(Object.class);
+					}
+					MethodType invokeType = MethodType.methodType(void.class, parameters);
+					switch(_slotHandle.type().parameterCount()) {
+					case 1:
+						site = resolvedMetaFactory.metafactory(ReflectionUtility.privateLookup(slot.getDeclaringClass()),
+								"accept",
+				                MethodType.methodType(Consumer.class),
+				                invokeType,
+				                _slotHandle,
+				                wrap(_slotHandle.type()));
+						Consumer<Object> slot1 = (Consumer<Object>)site.getTarget().invokeExact();
+						return (instance, _arguments)->slot1.accept(instance);
+					case 2:
+						site = resolvedMetaFactory.metafactory(ReflectionUtility.privateLookup(slot.getDeclaringClass()),
+								"accept",
+				                MethodType.methodType(BiConsumer.class),
+				                invokeType,
+				                _slotHandle,
+				                wrap(_slotHandle.type()));
+						BiConsumer<Object,Object> slot2 = (BiConsumer<Object,Object>)site.getTarget().invokeExact();
+						return (instance, _arguments)->slot2.accept(instance, _arguments[0]);
+					}
+					MethodHandles.Lookup lookup;
+					lookup = ReflectionUtility.privateLookup(slot.getDeclaringClass());
+					lookupAccessClass.accessClass(lookup, QtUtilities.class);
+					switch(_slotHandle.type().parameterCount()) {
+					case 3:
+						site = resolvedMetaFactory.metafactory(lookup,
+								"accept",
+				                MethodType.methodType(QtUtilities.Consumer3.class),
+				                invokeType,
+				                _slotHandle,
+				                wrap(_slotHandle.type()));
+						QtUtilities.Consumer3<Object,Object,Object> slot3 = (QtUtilities.Consumer3<Object,Object,Object>)site.getTarget().invokeExact();
+						return (instance, _arguments)->slot3.accept(instance, _arguments[0], _arguments[1]);
+					case 4:
+						site = resolvedMetaFactory.metafactory(lookup,
+								"accept",
+				                MethodType.methodType(QtUtilities.Consumer4.class),
+				                invokeType,
+				                _slotHandle,
+				                wrap(_slotHandle.type()));
+						QtUtilities.Consumer4<Object,Object,Object,Object> slot4 = (QtUtilities.Consumer4<Object,Object,Object,Object>)site.getTarget().invokeExact();
+						return (instance, _arguments)->slot4.accept(instance, _arguments[0], _arguments[1], _arguments[2]);
+					case 5:
+						site = resolvedMetaFactory.metafactory(lookup,
+								"accept",
+				                MethodType.methodType(QtUtilities.Consumer5.class),
+				                invokeType,
+				                _slotHandle,
+				                wrap(_slotHandle.type()));
+						QtUtilities.Consumer5<Object,Object,Object,Object,Object> slot5 = (QtUtilities.Consumer5<Object,Object,Object,Object,Object>)site.getTarget().invokeExact();
+						return (instance, _arguments)->slot5.accept(instance, _arguments[0], _arguments[1], _arguments[2], _arguments[3]);
+					case 6:
+						site = resolvedMetaFactory.metafactory(lookup,
+								"accept",
+				                MethodType.methodType(QtUtilities.Consumer6.class),
+				                invokeType,
+				                _slotHandle,
+				                wrap(_slotHandle.type()));
+						QtUtilities.Consumer6<Object,Object,Object,Object,Object,Object> slot6 = (QtUtilities.Consumer6<Object,Object,Object,Object,Object,Object>)site.getTarget().invokeExact();
+						return (instance, _arguments)->slot6.accept(instance, _arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4]);
+					case 7:
+						site = resolvedMetaFactory.metafactory(lookup,
+								"accept",
+				                MethodType.methodType(QtUtilities.Consumer7.class),
+				                invokeType,
+				                _slotHandle,
+				                wrap(_slotHandle.type()));
+						QtUtilities.Consumer7<Object,Object,Object,Object,Object,Object,Object> slot7 = (QtUtilities.Consumer7<Object,Object,Object,Object,Object,Object,Object>)site.getTarget().invokeExact();
+						return (instance, _arguments)->slot7.accept(instance, _arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4], _arguments[5]);
+					case 8:
+						site = resolvedMetaFactory.metafactory(lookup,
+								"accept",
+				                MethodType.methodType(QtUtilities.Consumer8.class),
+				                invokeType,
+				                _slotHandle,
+				                wrap(_slotHandle.type()));
+						QtUtilities.Consumer8<Object,Object,Object,Object,Object,Object,Object,Object> slot8 = (QtUtilities.Consumer8<Object,Object,Object,Object,Object,Object,Object,Object>)site.getTarget().invokeExact();
+						return (instance, _arguments)->slot8.accept(instance, _arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4], _arguments[5], _arguments[6]);
+					case 9:
+						site = resolvedMetaFactory.metafactory(lookup,
+								"accept",
+				                MethodType.methodType(QtUtilities.Consumer9.class),
+				                invokeType,
+				                _slotHandle,
+				                wrap(_slotHandle.type()));
+						QtUtilities.Consumer9<Object,Object,Object,Object,Object,Object,Object,Object,Object> slot9 = (QtUtilities.Consumer9<Object,Object,Object,Object,Object,Object,Object,Object,Object>)site.getTarget().invokeExact();
+						return (instance, _arguments)->slot9.accept(instance, _arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4], _arguments[5], _arguments[6], _arguments[7]);
+					case 10:
+						site = resolvedMetaFactory.metafactory(lookup,
+								"accept",
+				                MethodType.methodType(QtUtilities.Consumer10.class),
+				                invokeType,
+				                _slotHandle,
+				                wrap(_slotHandle.type()));
+						QtUtilities.Consumer10<Object,Object,Object,Object,Object,Object,Object,Object,Object,Object> slot10 = (QtUtilities.Consumer10<Object,Object,Object,Object,Object,Object,Object,Object,Object,Object>)site.getTarget().invokeExact();
+						return (instance, _arguments)->slot10.accept(instance, _arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4], _arguments[5], _arguments[6], _arguments[7], _arguments[8]);
+					}
+				} catch (IllegalAccessException e) {
+				} catch (Throwable e) {
+					if(Boolean.getBoolean("io.qt.internal.enable-lambda-factory-log"))
+						java.util.logging.Logger.getLogger("io.qt.internal").log(java.util.logging.Level.SEVERE, "", e);
+				}
+				while(false);
+			}
+			if(resolvedProxyFactory!=null) {
+				try {
+					MethodHandle slotHandle = _slotHandle.asSpreader(1, Object[].class, _slotHandle.type().parameterCount()-1);
+					return resolvedProxyFactory.asInterfaceInstance(SignalUtility.SlotInvoker.class, slotHandle);
+				} catch (Throwable e) {
+				}
+			}
 			try {
 				MethodHandle slotHandle = _slotHandle.asSpreader(1, Object[].class, _slotHandle.type().parameterCount()-1);
-				return resolvedProxyFactory.asInterfaceInstance(SignalUtility.SlotInvoker.class, slotHandle);
+				return (instance, _arguments)->slotHandle.invoke(instance, _arguments);
 			} catch (Throwable e) {
 			}
 		}
@@ -649,123 +662,136 @@ final class JavaMethodHandles implements ReflectionUtility.MethodInvocationHandl
 	
 	@Override
 	public SignalUtility.StaticSlotInvoker getStaticSlotInvoker(Method slot, MethodHandle _slotHandle){
-		if(resolvedMetaFactory!=null) {
-			do try {
-				CallSite site;
-				List<Class<?>> parameters = new ArrayList<>();
-				for(int i=0; i<_slotHandle.type().parameterCount(); ++i) {
-					parameters.add(Object.class);
-				}
-				MethodType invokeType = MethodType.methodType(void.class, parameters);
-				switch(_slotHandle.type().parameterCount()) {
-				case 0:
-					site = resolvedMetaFactory.metafactory(ReflectionUtility.privateLookup(slot.getDeclaringClass()),
-							"run",
-			                MethodType.methodType(Runnable.class),
-			                invokeType,
-			                _slotHandle,
-			                wrap(_slotHandle.type()));
-					Runnable slot0 = (Runnable)site.getTarget().invokeExact();
-					return (_arguments)->slot0.run();
-				case 1:
-					site = resolvedMetaFactory.metafactory(ReflectionUtility.privateLookup(slot.getDeclaringClass()),
-							"accept",
-			                MethodType.methodType(Consumer.class),
-			                invokeType,
-			                _slotHandle,
-			                wrap(_slotHandle.type()));
-					Consumer<Object> slot1 = (Consumer<Object>)site.getTarget().invokeExact();
-					return (_arguments)->slot1.accept(_arguments[0]);
-				case 2:
-					site = resolvedMetaFactory.metafactory(ReflectionUtility.privateLookup(slot.getDeclaringClass()),
-							"accept",
-			                MethodType.methodType(BiConsumer.class),
-			                invokeType,
-			                _slotHandle,
-			                wrap(_slotHandle.type()));
-					BiConsumer<Object,Object> slot2 = (BiConsumer<Object,Object>)site.getTarget().invokeExact();
-					return (_arguments)->slot2.accept(_arguments[0], _arguments[1]);
-				}
-				MethodHandles.Lookup lookup;
-				lookup = ReflectionUtility.privateLookup(slot.getDeclaringClass());
-				lookupAccessClass.accessClass(lookup, QtUtilities.class);
-				switch(_slotHandle.type().parameterCount()) {
-				case 3:
-					site = resolvedMetaFactory.metafactory(lookup,
-							"accept",
-			                MethodType.methodType(QtUtilities.Consumer3.class),
-			                invokeType,
-			                _slotHandle,
-			                wrap(_slotHandle.type()));
-					QtUtilities.Consumer3<Object,Object,Object> slot3 = (QtUtilities.Consumer3<Object,Object,Object>)site.getTarget().invokeExact();
-					return (_arguments)->slot3.accept(_arguments[0], _arguments[1], _arguments[2]);
-				case 4:
-					site = resolvedMetaFactory.metafactory(lookup,
-							"accept",
-			                MethodType.methodType(QtUtilities.Consumer4.class),
-			                invokeType,
-			                _slotHandle,
-			                wrap(_slotHandle.type()));
-					QtUtilities.Consumer4<Object,Object,Object,Object> slot4 = (QtUtilities.Consumer4<Object,Object,Object,Object>)site.getTarget().invokeExact();
-					return (_arguments)->slot4.accept(_arguments[0], _arguments[1], _arguments[2], _arguments[3]);
-				case 5:
-					site = resolvedMetaFactory.metafactory(lookup,
-							"accept",
-			                MethodType.methodType(QtUtilities.Consumer5.class),
-			                invokeType,
-			                _slotHandle,
-			                wrap(_slotHandle.type()));
-					QtUtilities.Consumer5<Object,Object,Object,Object,Object> slot5 = (QtUtilities.Consumer5<Object,Object,Object,Object,Object>)site.getTarget().invokeExact();
-					return (_arguments)->slot5.accept(_arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4]);
-				case 6:
-					site = resolvedMetaFactory.metafactory(lookup,
-							"accept",
-			                MethodType.methodType(QtUtilities.Consumer6.class),
-			                invokeType,
-			                _slotHandle,
-			                wrap(_slotHandle.type()));
-					QtUtilities.Consumer6<Object,Object,Object,Object,Object,Object> slot6 = (QtUtilities.Consumer6<Object,Object,Object,Object,Object,Object>)site.getTarget().invokeExact();
-					return (_arguments)->slot6.accept(_arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4], _arguments[5]);
-				case 7:
-					site = resolvedMetaFactory.metafactory(lookup,
-							"accept",
-			                MethodType.methodType(QtUtilities.Consumer7.class),
-			                invokeType,
-			                _slotHandle,
-			                wrap(_slotHandle.type()));
-					QtUtilities.Consumer7<Object,Object,Object,Object,Object,Object,Object> slot7 = (QtUtilities.Consumer7<Object,Object,Object,Object,Object,Object,Object>)site.getTarget().invokeExact();
-					return (_arguments)->slot7.accept(_arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4], _arguments[5], _arguments[6]);
-				case 8:
-					site = resolvedMetaFactory.metafactory(lookup,
-							"accept",
-			                MethodType.methodType(QtUtilities.Consumer8.class),
-			                invokeType,
-			                _slotHandle,
-			                wrap(_slotHandle.type()));
-					QtUtilities.Consumer8<Object,Object,Object,Object,Object,Object,Object,Object> slot8 = (QtUtilities.Consumer8<Object,Object,Object,Object,Object,Object,Object,Object>)site.getTarget().invokeExact();
-					return (_arguments)->slot8.accept(_arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4], _arguments[5], _arguments[6], _arguments[7]);
-				case 9:
-					site = resolvedMetaFactory.metafactory(lookup,
-							"accept",
-			                MethodType.methodType(QtUtilities.Consumer9.class),
-			                invokeType,
-			                _slotHandle,
-			                wrap(_slotHandle.type()));
-					QtUtilities.Consumer9<Object,Object,Object,Object,Object,Object,Object,Object,Object> slot9 = (QtUtilities.Consumer9<Object,Object,Object,Object,Object,Object,Object,Object,Object>)site.getTarget().invokeExact();
-					return (_arguments)->slot9.accept(_arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4], _arguments[5], _arguments[6], _arguments[7], _arguments[8]);
-				}
-			} catch (IllegalAccessException e) {
-			} catch (Throwable e) {
-				e.printStackTrace();
-			} while(true);
-		}
-		if(resolvedProxyFactory!=null) {
-			try {
-					try {
-						MethodHandle slotHandle = _slotHandle.asSpreader(0, Object[].class, _slotHandle.type().parameterCount());
-						return resolvedProxyFactory.asInterfaceInstance(SignalUtility.StaticSlotInvoker.class, slotHandle);
-					} catch (Throwable e) {
+		if(_slotHandle==null) {
+        	try {
+        		_slotHandle = ReflectionUtility.getMethodHandle(slot);
+			} catch (Exception e) {
+			}
+        }
+		if(_slotHandle!=null) {
+			if(resolvedMetaFactory!=null) {
+				do try {
+					CallSite site;
+					List<Class<?>> parameters = new ArrayList<>();
+					for(int i=0; i<_slotHandle.type().parameterCount(); ++i) {
+						parameters.add(Object.class);
 					}
+					MethodType invokeType = MethodType.methodType(void.class, parameters);
+					switch(_slotHandle.type().parameterCount()) {
+					case 0:
+						site = resolvedMetaFactory.metafactory(ReflectionUtility.privateLookup(slot.getDeclaringClass()),
+								"run",
+				                MethodType.methodType(Runnable.class),
+				                invokeType,
+				                _slotHandle,
+				                wrap(_slotHandle.type()));
+						Runnable slot0 = (Runnable)site.getTarget().invokeExact();
+						return (_arguments)->slot0.run();
+					case 1:
+						site = resolvedMetaFactory.metafactory(ReflectionUtility.privateLookup(slot.getDeclaringClass()),
+								"accept",
+				                MethodType.methodType(Consumer.class),
+				                invokeType,
+				                _slotHandle,
+				                wrap(_slotHandle.type()));
+						Consumer<Object> slot1 = (Consumer<Object>)site.getTarget().invokeExact();
+						return (_arguments)->slot1.accept(_arguments[0]);
+					case 2:
+						site = resolvedMetaFactory.metafactory(ReflectionUtility.privateLookup(slot.getDeclaringClass()),
+								"accept",
+				                MethodType.methodType(BiConsumer.class),
+				                invokeType,
+				                _slotHandle,
+				                wrap(_slotHandle.type()));
+						BiConsumer<Object,Object> slot2 = (BiConsumer<Object,Object>)site.getTarget().invokeExact();
+						return (_arguments)->slot2.accept(_arguments[0], _arguments[1]);
+					}
+					MethodHandles.Lookup lookup;
+					lookup = ReflectionUtility.privateLookup(slot.getDeclaringClass());
+					lookupAccessClass.accessClass(lookup, QtUtilities.class);
+					switch(_slotHandle.type().parameterCount()) {
+					case 3:
+						site = resolvedMetaFactory.metafactory(lookup,
+								"accept",
+				                MethodType.methodType(QtUtilities.Consumer3.class),
+				                invokeType,
+				                _slotHandle,
+				                wrap(_slotHandle.type()));
+						QtUtilities.Consumer3<Object,Object,Object> slot3 = (QtUtilities.Consumer3<Object,Object,Object>)site.getTarget().invokeExact();
+						return (_arguments)->slot3.accept(_arguments[0], _arguments[1], _arguments[2]);
+					case 4:
+						site = resolvedMetaFactory.metafactory(lookup,
+								"accept",
+				                MethodType.methodType(QtUtilities.Consumer4.class),
+				                invokeType,
+				                _slotHandle,
+				                wrap(_slotHandle.type()));
+						QtUtilities.Consumer4<Object,Object,Object,Object> slot4 = (QtUtilities.Consumer4<Object,Object,Object,Object>)site.getTarget().invokeExact();
+						return (_arguments)->slot4.accept(_arguments[0], _arguments[1], _arguments[2], _arguments[3]);
+					case 5:
+						site = resolvedMetaFactory.metafactory(lookup,
+								"accept",
+				                MethodType.methodType(QtUtilities.Consumer5.class),
+				                invokeType,
+				                _slotHandle,
+				                wrap(_slotHandle.type()));
+						QtUtilities.Consumer5<Object,Object,Object,Object,Object> slot5 = (QtUtilities.Consumer5<Object,Object,Object,Object,Object>)site.getTarget().invokeExact();
+						return (_arguments)->slot5.accept(_arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4]);
+					case 6:
+						site = resolvedMetaFactory.metafactory(lookup,
+								"accept",
+				                MethodType.methodType(QtUtilities.Consumer6.class),
+				                invokeType,
+				                _slotHandle,
+				                wrap(_slotHandle.type()));
+						QtUtilities.Consumer6<Object,Object,Object,Object,Object,Object> slot6 = (QtUtilities.Consumer6<Object,Object,Object,Object,Object,Object>)site.getTarget().invokeExact();
+						return (_arguments)->slot6.accept(_arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4], _arguments[5]);
+					case 7:
+						site = resolvedMetaFactory.metafactory(lookup,
+								"accept",
+				                MethodType.methodType(QtUtilities.Consumer7.class),
+				                invokeType,
+				                _slotHandle,
+				                wrap(_slotHandle.type()));
+						QtUtilities.Consumer7<Object,Object,Object,Object,Object,Object,Object> slot7 = (QtUtilities.Consumer7<Object,Object,Object,Object,Object,Object,Object>)site.getTarget().invokeExact();
+						return (_arguments)->slot7.accept(_arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4], _arguments[5], _arguments[6]);
+					case 8:
+						site = resolvedMetaFactory.metafactory(lookup,
+								"accept",
+				                MethodType.methodType(QtUtilities.Consumer8.class),
+				                invokeType,
+				                _slotHandle,
+				                wrap(_slotHandle.type()));
+						QtUtilities.Consumer8<Object,Object,Object,Object,Object,Object,Object,Object> slot8 = (QtUtilities.Consumer8<Object,Object,Object,Object,Object,Object,Object,Object>)site.getTarget().invokeExact();
+						return (_arguments)->slot8.accept(_arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4], _arguments[5], _arguments[6], _arguments[7]);
+					case 9:
+						site = resolvedMetaFactory.metafactory(lookup,
+								"accept",
+				                MethodType.methodType(QtUtilities.Consumer9.class),
+				                invokeType,
+				                _slotHandle,
+				                wrap(_slotHandle.type()));
+						QtUtilities.Consumer9<Object,Object,Object,Object,Object,Object,Object,Object,Object> slot9 = (QtUtilities.Consumer9<Object,Object,Object,Object,Object,Object,Object,Object,Object>)site.getTarget().invokeExact();
+						return (_arguments)->slot9.accept(_arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4], _arguments[5], _arguments[6], _arguments[7], _arguments[8]);
+					}
+				} catch (IllegalAccessException e) {
+				} catch (Throwable e) {
+					e.printStackTrace();
+				} while(true);
+			}
+			if(resolvedProxyFactory!=null) {
+				try {
+						try {
+							MethodHandle slotHandle = _slotHandle.asSpreader(0, Object[].class, _slotHandle.type().parameterCount());
+							return resolvedProxyFactory.asInterfaceInstance(SignalUtility.StaticSlotInvoker.class, slotHandle);
+						} catch (Throwable e) {
+						}
+				} catch (Throwable e) {
+				}
+			}
+			try {
+				MethodHandle slotHandle = _slotHandle.asSpreader(0, Object[].class, _slotHandle.type().parameterCount());
+				return _arguments->slotHandle.invoke(_arguments);
 			} catch (Throwable e) {
 			}
 		}
@@ -774,7 +800,25 @@ final class JavaMethodHandles implements ReflectionUtility.MethodInvocationHandl
 	
 	@Override
 	public SignalUtility.LambdaArgsSlotInvoker getSlotInvoker(Method slot, MethodHandle _slotHandle, int lambdaArgsCount){
-		if(resolvedProxyFactory!=null) {
+		if(_slotHandle==null) {
+        	try {
+        		_slotHandle = ReflectionUtility.getMethodHandle(slot);
+			} catch (Exception e) {
+			}
+        }
+		if(_slotHandle!=null) {
+			if(resolvedProxyFactory!=null) {
+				try {
+					MethodType mt = _slotHandle.type();
+					for(int i=0; i<mt.parameterCount(); ++i){
+						mt = mt.changeParameterType(i, Object.class);
+					}
+					_slotHandle = _slotHandle.asType(mt);
+					MethodHandle slotHandle = _slotHandle.asSpreader(1, Object[].class, lambdaArgsCount).asSpreader(2, Object[].class, _slotHandle.type().parameterCount() - 1 - lambdaArgsCount);
+					return resolvedProxyFactory.asInterfaceInstance(SignalUtility.LambdaArgsSlotInvoker.class, slotHandle);
+				} catch (Throwable e) {
+				}
+			}
 			try {
 				MethodType mt = _slotHandle.type();
 				for(int i=0; i<mt.parameterCount(); ++i){
@@ -782,7 +826,7 @@ final class JavaMethodHandles implements ReflectionUtility.MethodInvocationHandl
 				}
 				_slotHandle = _slotHandle.asType(mt);
 				MethodHandle slotHandle = _slotHandle.asSpreader(1, Object[].class, lambdaArgsCount).asSpreader(2, Object[].class, _slotHandle.type().parameterCount() - 1 - lambdaArgsCount);
-				return resolvedProxyFactory.asInterfaceInstance(SignalUtility.LambdaArgsSlotInvoker.class, slotHandle);
+				return (instance, args, _arguments)->slotHandle.invoke(instance, args, _arguments);
 			} catch (Throwable e) {
 			}
 		}
@@ -791,7 +835,25 @@ final class JavaMethodHandles implements ReflectionUtility.MethodInvocationHandl
 	
 	@Override
 	public SignalUtility.StaticLambdaArgsSlotInvoker getStaticSlotInvoker(Method slot, MethodHandle _slotHandle, int lambdaArgsCount){
-		if(resolvedProxyFactory!=null) {
+		if(_slotHandle==null) {
+        	try {
+        		_slotHandle = ReflectionUtility.getMethodHandle(slot);
+			} catch (Exception e) {
+			}
+        }
+		if(_slotHandle!=null) {
+			if(resolvedProxyFactory!=null) {
+				try {
+					MethodType mt = _slotHandle.type();
+					for(int i=0; i<mt.parameterCount(); ++i){
+						mt = mt.changeParameterType(i, Object.class);
+					}
+					_slotHandle = _slotHandle.asType(mt);
+					MethodHandle slotHandle = _slotHandle.asSpreader(0, Object[].class, lambdaArgsCount).asSpreader(1, Object[].class, _slotHandle.type().parameterCount() - lambdaArgsCount);
+					return resolvedProxyFactory.asInterfaceInstance(SignalUtility.StaticLambdaArgsSlotInvoker.class, slotHandle);
+				} catch (Throwable e) {
+				}
+			}
 			try {
 				MethodType mt = _slotHandle.type();
 				for(int i=0; i<mt.parameterCount(); ++i){
@@ -799,7 +861,7 @@ final class JavaMethodHandles implements ReflectionUtility.MethodInvocationHandl
 				}
 				_slotHandle = _slotHandle.asType(mt);
 				MethodHandle slotHandle = _slotHandle.asSpreader(0, Object[].class, lambdaArgsCount).asSpreader(1, Object[].class, _slotHandle.type().parameterCount() - lambdaArgsCount);
-				return resolvedProxyFactory.asInterfaceInstance(SignalUtility.StaticLambdaArgsSlotInvoker.class, slotHandle);
+				return (args, _arguments)->slotHandle.invoke(args, _arguments);
 			} catch (Throwable e) {
 			}
 		}

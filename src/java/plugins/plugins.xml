@@ -235,7 +235,7 @@
 							<jvmarg value="-Djava.library.path=${librarypath}"/>
 							<jvmarg value="-Dio.qt.deploymentdir=${outputDir}/${qtjambi.osname}/tmp"/>
 							<jvmarg value="${XstartOnFirstThread}"/>
-							<jvmarg value="-Dqtjambi.verbose-loading=true"/>
+							<!--jvmarg value="-Dqtjambi.log-level=ALL"/-->
 							<!--jvmarg value="-Xint"/>
 							<jvmarg value="-Xrs"/>
 							<jvmarg value="-Xcheck:jni"/-->

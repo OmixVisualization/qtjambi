@@ -32,6 +32,9 @@ package io.qt.autotests;
 import org.junit.Assert;
 import org.junit.Test;
 
+import io.qt.core.QTimer;
+import io.qt.gui.QGuiApplication;
+import io.qt.gui.QIcon;
 import io.qt.widgets.QApplication;
 import io.qt.widgets.svg.QSvgWidget;
 
@@ -40,12 +43,13 @@ public class TestInitializationSvgWidgets extends UnitTestInitializer {
     public void initialize() {
     	Assert.assertTrue(io.qt.QtUtilities.initializePackage("io.qt.widgets.svg"));
     	QApplication.initialize(new String[0]);
-    	QSvgWidget window = new QSvgWidget();
-    	window.show();
-    	QApplication.processEvents();
-    	window.hide();
-    	QApplication.processEvents();
-    	window.dispose();
+    	QGuiApplication.setWindowIcon(new QIcon(":io/qt/autotests/icon.png"));
+    	{
+	    	QSvgWidget window = new QSvgWidget();
+	    	window.show();
+	    	QTimer.singleShot(500, QApplication.instance(), QApplication::quit);
+	    	QApplication.exec();
+	    }
     	QApplication.shutdown();
     }
 }

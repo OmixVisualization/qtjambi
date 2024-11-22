@@ -32,7 +32,6 @@ package io.qt.core;
 import java.nio.*;
 import java.util.*;
 import io.qt.*;
-import io.qt.core.QtJambi_LibraryUtilities;
 
 /**
  * <p>Java wrapper for Qt class <code><a href="https://doc.qt.io/qt/qstack.html">QStack</a></code></p>

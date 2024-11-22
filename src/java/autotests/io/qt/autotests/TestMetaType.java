@@ -28,41 +28,19 @@
 ****************************************************************************/
 package io.qt.autotests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
-import java.io.File;
-import java.io.Serializable;
-import java.net.URL;
-import java.net.URLClassLoader;
+import java.io.*;
+import java.net.*;
+import java.util.*;
 
-import org.junit.Assume;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
-import io.qt.QtUtilities;
-import io.qt.autotests.generated.General;
-import io.qt.core.QByteArray;
-import io.qt.core.QCoreApplication;
-import io.qt.core.QDataStream;
-import io.qt.core.QDebug;
-import io.qt.core.QHash;
-import io.qt.core.QIODevice;
-import io.qt.core.QLibraryInfo;
-import io.qt.core.QMetaMethod;
-import io.qt.core.QMetaObject;
-import io.qt.core.QMetaProperty;
-import io.qt.core.QMetaType;
-import io.qt.core.QObject;
-import io.qt.core.QOperatingSystemVersion;
-import io.qt.core.QRect;
-import io.qt.core.QString;
-import io.qt.core.QVariant;
-import io.qt.core.QVersionNumber;
-import io.qt.core.Qt;
-import io.qt.gui.QWindow;
-import io.qt.widgets.QMdiSubWindow;
+import io.qt.*;
+import io.qt.autotests.generated.*;
+import io.qt.core.*;
+import io.qt.gui.*;
+import io.qt.widgets.*;
 
 public class TestMetaType extends ApplicationInitializer {
 	
@@ -306,8 +284,168 @@ public class TestMetaType extends ApplicationInitializer {
 	@Test
     public void testMetaTypeOfJavaMap() {
 		QMetaType hashType = QMetaType.fromType(QHash.class, QMetaType.fromType(ThreadGroup.class), QMetaType.fromType(String.class));
-		System.out.println(hashType);
+		assertTrue(hashType.isValid());
 		new QHash<>(ThreadGroup.class, String.class);
+	}
+	
+	@Test
+    public void testScopedPointer() {
+		QMetaType smartPointerType = QMetaType.fromType(QScopedPointer.class, QMetaType.fromType(QObject.class));
+		assertFalse(""+smartPointerType.name(), smartPointerType.isValid());
+	}
+	
+	@Test
+    public void testScopedArrayPointer() {
+		QMetaType smartPointerType = QMetaType.fromType(QScopedArrayPointer.class, QMetaType.fromType(QSize.class));
+		assertFalse(""+smartPointerType.name(), smartPointerType.isValid());
+	}
+	
+	@Test
+    public void testQPointer() {
+		QMetaType smartPointerType = QMetaType.fromType(QPointer.class, QMetaType.fromType(QObject.class));
+		assertTrue(smartPointerType.isValid());
+		assertEquals(null, smartPointerType.create());
+		QObject qobj = new QObject();
+		QVariant variant = TestQVariant.createVariant(smartPointerType, qobj);
+		assertEquals(qobj, variant.value());
+		smartPointerType = QMetaType.fromType(QPointer.class, QMetaType.fromType(QSize.class));
+		assertFalse(smartPointerType.isValid());
+		assertEquals(null, smartPointerType.create());
+		smartPointerType = QMetaType.fromType(QPointer.class, QMetaType.fromType(QGraphicsItem.class));
+		assertFalse(smartPointerType.isValid());
+		assertEquals(null, smartPointerType.create());
+	}
+	
+	@Test
+    public void testSharedPointer() {
+		QMetaType smartPointerType = QMetaType.fromType(QSharedPointer.class, QMetaType.fromType(QObject.class));
+		assertTrue(smartPointerType.isValid());
+		assertEquals(null, smartPointerType.create());
+		QObject qobj = new QObject();
+		QVariant variant = TestQVariant.createVariant(smartPointerType, qobj);
+		assertEquals(qobj, variant.value());
+		smartPointerType = QMetaType.fromType(QSharedPointer.class, QMetaType.fromType(QSize.class));
+		assertTrue(smartPointerType.isValid());
+		assertEquals(null, smartPointerType.create());
+		QSize size = new QSize(1,2);
+		variant.dispose();
+		variant = TestQVariant.createVariant(smartPointerType, size);
+		assertTrue(size==variant.value());
+		assertEquals(size, variant.value(QSize.class));
+		assertTrue(variant.convert(QSize.class));
+		assertEquals(size, variant.value());
+		assertFalse(size==variant.value());
+		variant.dispose();
+		smartPointerType = QMetaType.fromType(QSharedPointer.class, QMetaType.fromType(QGraphicsItem.class));
+		assertTrue(smartPointerType.isValid());
+		assertEquals(null, smartPointerType.create());
+		QGraphicsItem item = new QGraphicsPathItem();
+		variant.dispose();
+		variant = TestQVariant.createVariant(smartPointerType, item);
+		assertTrue(item==variant.value());
+		assertTrue(item==variant.value(QGraphicsItem.class));
+		smartPointerType = QMetaType.fromType(QSharedPointer.class, QMetaType.fromType(int.class));
+		assertTrue(smartPointerType.isValid());
+		assertEquals(null, smartPointerType.create());
+		variant.dispose();
+		variant = TestQVariant.createVariant(smartPointerType, 5);
+		assertEquals(5, variant.value());
+		smartPointerType = QMetaType.fromType(QSharedPointer.class, QMetaType.fromType(String.class));
+		assertTrue(smartPointerType.isValid());
+		assertEquals(null, smartPointerType.create());
+		variant.dispose();
+		variant = TestQVariant.createVariant(smartPointerType, "Test");
+		assertEquals("Test", ""+variant.value());
+		QString qstring = new QString("Test2");
+		variant.dispose();
+		variant = TestQVariant.createVariant(smartPointerType, qstring);
+		assertEquals(qstring, variant.value());
+		assertTrue(qstring==variant.value());
+		assertEquals(qstring, variant.value(QString.class));
+		variant.dispose();
+		smartPointerType = QMetaType.fromType(QSharedPointer.class, QMetaType.fromType(QVariant.class));
+		assertTrue(smartPointerType.isValid());
+		assertEquals(null, smartPointerType.create());
+		variant.dispose();
+		variant = TestQVariant.createVariant(smartPointerType, "Test3");
+		assertEquals(new QVariant("Test3"), variant.value());
+		variant.dispose();
+		Object javaObject = new QObject();
+		variant = TestQVariant.createVariant(smartPointerType, javaObject);
+		assertEquals(javaObject, ((QVariant)variant.value()).value());
+		variant.dispose();
+		qstring = new QString("Test4");
+		variant = TestQVariant.createVariant(smartPointerType, qstring);
+		assertEquals(qstring, ((QVariant)variant.value()).value());
+		assertFalse(qstring==((QVariant)variant.value()).value());
+		assertTrue(variant.value(QVariant.class)!=null);
+		variant.dispose();
+	}
+	
+	@Test
+    public void testWeakPointer() {
+		QMetaType smartPointerType = QMetaType.fromType(QWeakPointer.class, QMetaType.fromType(QObject.class));
+		assertTrue(smartPointerType.isValid());
+		assertEquals(null, smartPointerType.create());
+		QObject qobj = new QObject();
+		QVariant variant = TestQVariant.createVariant(smartPointerType, qobj);
+		assertEquals(qobj, variant.value());
+		smartPointerType = QMetaType.fromType(QSharedPointer.class, QMetaType.fromType(QSize.class));
+		assertTrue(smartPointerType.isValid());
+		assertEquals(null, smartPointerType.create());
+		QSize size = new QSize(1,2);
+		variant.dispose();
+		variant = TestQVariant.createVariant(smartPointerType, size);
+		assertTrue(size==variant.value());
+		assertEquals(size, variant.value(QSize.class));
+		assertTrue(variant.convert(QSize.class));
+		assertEquals(size, variant.value());
+		assertFalse(size==variant.value());
+		variant.dispose();
+		smartPointerType = QMetaType.fromType(QSharedPointer.class, QMetaType.fromType(QGraphicsItem.class));
+		assertTrue(smartPointerType.isValid());
+		assertEquals(null, smartPointerType.create());
+		QGraphicsItem item = new QGraphicsPathItem();
+		variant.dispose();
+		variant = TestQVariant.createVariant(smartPointerType, item);
+		assertTrue(item==variant.value());
+		assertTrue(item==variant.value(QGraphicsItem.class));
+		smartPointerType = QMetaType.fromType(QSharedPointer.class, QMetaType.fromType(int.class));
+		assertTrue(smartPointerType.isValid());
+		assertEquals(null, smartPointerType.create());
+		variant.dispose();
+		variant = TestQVariant.createVariant(smartPointerType, 5);
+		assertEquals(5, variant.value());
+		smartPointerType = QMetaType.fromType(QSharedPointer.class, QMetaType.fromType(String.class));
+		assertTrue(smartPointerType.isValid());
+		assertEquals(null, smartPointerType.create());
+		variant.dispose();
+		variant = TestQVariant.createVariant(smartPointerType, "Test");
+		assertEquals("Test", ""+variant.value());
+		QString qstring = new QString("Test2");
+		variant.dispose();
+		variant = TestQVariant.createVariant(smartPointerType, qstring);
+		assertEquals(qstring, variant.value());
+		assertTrue(qstring==variant.value());
+		assertEquals(qstring, variant.value(QString.class));
+		variant.dispose();
+		smartPointerType = QMetaType.fromType(QSharedPointer.class, QMetaType.fromType(QVariant.class));
+		assertTrue(smartPointerType.isValid());
+		assertEquals(null, smartPointerType.create());
+		variant.dispose();
+		variant = TestQVariant.createVariant(smartPointerType, "Test3");
+		assertEquals(new QVariant("Test3"), variant.value());
+		variant.dispose();
+		Object javaObject = new QObject();
+		variant = TestQVariant.createVariant(smartPointerType, javaObject);
+		assertEquals(javaObject, ((QVariant)variant.value()).value());
+		variant.dispose();
+		qstring = new QString("Test4");
+		variant = TestQVariant.createVariant(smartPointerType, qstring);
+		assertEquals(qstring, ((QVariant)variant.value()).value());
+		assertFalse(qstring==((QVariant)variant.value()).value());
+		assertTrue(variant.value(QVariant.class)!=null);
+		variant.dispose();
 	}
     
     public static void main(String args[]) {

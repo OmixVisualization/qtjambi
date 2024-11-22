@@ -90,12 +90,14 @@ void shutdown(JNIEnv * env, bool regular);
 void clearRegistryAtShutdown(JNIEnv * env);
 void clearVTablesAtShutdown();
 void clearTypeHandlersAtShutdown();
+void clearSmartPointersInfoAtShutdown();
 void clearMessageHandlerAtShutdown(JNIEnv * env);
 void clearSuperTypesAtShutdown(JNIEnv *env);
 void clearMetaObjectsAtShutdown(JNIEnv * env);
 void clearFunctionPointersAtShutdown();
 void clearObjectsByFunctionPointerAtShutdown(JNIEnv* env);
 void clearTypeManagerAtShutdown();
+void clearInstallSignalEmitThreadCheckHandler(JNIEnv *env);
 #if defined(QTJAMBI_GENERIC_ACCESS)
 void registerPointerContainerAccess();
 #endif //defined(QTJAMBI_GENERIC_ACCESS)
@@ -180,7 +182,15 @@ void jobjectwrapper_load(QDataStream &stream, void *_jObjectWrapper)
             JObjectWrapper *jObjectWrapper = static_cast<JObjectWrapper *>(_jObjectWrapper);
             stream >> *jObjectWrapper;
         }catch(const JavaException& exn){
-            __exnHandler.handle(env, exn, nullptr);
+            if(noExceptionForwarding()){
+                QtJambiExceptionBlocker __blocker;
+                {
+                    QtJambiExceptionHandler __handler;
+                    __handler.handle(env, exn, "operator<<(QDataStream &, const JObjectWrapper &)");
+                }
+                __blocker.release(env);
+            }else
+                __exnHandler.handle(env, exn, "operator<<(QDataStream &, const JObjectWrapper &)");
         }
     }
 }
@@ -286,6 +296,7 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(JNI_OnLoad)(JavaVM
             if(env){
                 JniLocalFrame __jniLocalFrame(env, 200);
                 enableThreadAffinity(Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.enable-thread-affinity-check")));
+                enableSignalEmitThreadCheck(Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.enable-signal-emit-thread-check")));
                 if(Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.enable-event-thread-affinity-check"))){
                     QInternal::registerCallback(QInternal::EventNotifyCallback, &threadAffineEventNotify);
                 }else{
@@ -293,6 +304,7 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(JNI_OnLoad)(JavaVM
                 }
             }else{
                 enableThreadAffinity(false);
+                enableSignalEmitThreadCheck(false);
                 QInternal::registerCallback(QInternal::EventNotifyCallback, &simpleEventNotify);
             }
 #if defined(QTJAMBI_GENERIC_ACCESS)
@@ -428,35 +440,35 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(JNI_OnLoad)(JavaVM
             QMetaType::registerConverter<JFloatArrayWrapper,jfloatArray>([](const JFloatArrayWrapper& w) -> jfloatArray {return w;});
             QMetaType::registerConverter<JObjectWrapper,JEnumWrapper>([](const JObjectWrapper& w) -> JEnumWrapper {
                 if(JniEnvironment env{200}){
-                    if(Java::Runtime::Enum::isInstanceOf(env, w.object())){
-                        return JEnumWrapper(env, w.object());
+                    if(Java::Runtime::Enum::isInstanceOf(env, w.object(env))){
+                        return JEnumWrapper(env, w.object(env));
                     }
                 }
                 return JEnumWrapper();
             });
             QMetaType::registerConverter<JObjectWrapper,JCollectionWrapper>([](const JObjectWrapper& w) -> JCollectionWrapper {
                 if(JniEnvironment env{200}){
-                    if(Java::Runtime::Collection::isInstanceOf(env, w.object())){
-                        return JCollectionWrapper(env, w.object());
+                    if(Java::Runtime::Collection::isInstanceOf(env, w.object(env))){
+                        return JCollectionWrapper(env, w.object(env));
                     }
                 }
                 return JCollectionWrapper();
             });
             QMetaType::registerConverter<JObjectWrapper,JMapWrapper>([](const JObjectWrapper& w) -> JMapWrapper {
                 if(JniEnvironment env{200}){
-                    if(Java::Runtime::Map::isInstanceOf(env, w.object())){
-                        return JMapWrapper(env, w.object());
+                    if(Java::Runtime::Map::isInstanceOf(env, w.object(env))){
+                        return JMapWrapper(env, w.object(env));
                     }
                 }
                 return JMapWrapper();
             });
             QMetaType::registerConverter<JObjectWrapper,JObjectArrayWrapper>([](const JObjectWrapper& w) -> JObjectArrayWrapper {
                 if(JniEnvironment env{200}){
-                    if(w.object()){
-                        jclass objectClass = env->GetObjectClass(w.object());
+                    if(w.object(env)){
+                        jclass objectClass = env->GetObjectClass(w.object(env));
                         if(Java::Runtime::Class::isArray(env, objectClass)
                                 && !Java::Runtime::Class::isPrimitive(env, Java::Runtime::Class::getComponentType(env, objectClass))){
-                            return JObjectArrayWrapper(env, jobjectArray(w.object()));
+                            return JObjectArrayWrapper(env, jobjectArray(w.object(env)));
                         }
                     }
                 }
@@ -464,11 +476,11 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(JNI_OnLoad)(JavaVM
             });
             QMetaType::registerConverter<JObjectWrapper,JIntArrayWrapper>([](const JObjectWrapper& w) -> JIntArrayWrapper {
                 if(JniEnvironment env{200}){
-                    if(w.object()){
-                        jclass objectClass = env->GetObjectClass(w.object());
+                    if(w.object(env)){
+                        jclass objectClass = env->GetObjectClass(w.object(env));
                         if(Java::Runtime::Class::isArray(env, objectClass)
                                 && Java::Runtime::Integer::isPrimitiveType(env, Java::Runtime::Class::getComponentType(env, objectClass))){
-                            return JIntArrayWrapper(env, jintArray(w.object()));
+                            return JIntArrayWrapper(env, jintArray(w.object(env)));
                         }
                     }
                 }
@@ -476,11 +488,11 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(JNI_OnLoad)(JavaVM
             });
             QMetaType::registerConverter<JObjectWrapper,JLongArrayWrapper>([](const JObjectWrapper& w) -> JLongArrayWrapper {
                 if(JniEnvironment env{200}){
-                    if(w.object()){
-                        jclass objectClass = env->GetObjectClass(w.object());
+                    if(w.object(env)){
+                        jclass objectClass = env->GetObjectClass(w.object(env));
                         if(Java::Runtime::Class::isArray(env, objectClass)
                                 && Java::Runtime::Long::isPrimitiveType(env, Java::Runtime::Class::getComponentType(env, objectClass))){
-                            return JLongArrayWrapper(env, jlongArray(w.object()));
+                            return JLongArrayWrapper(env, jlongArray(w.object(env)));
                         }
                     }
                 }
@@ -488,11 +500,11 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(JNI_OnLoad)(JavaVM
             });
             QMetaType::registerConverter<JObjectWrapper,JShortArrayWrapper>([](const JObjectWrapper& w) -> JShortArrayWrapper {
                 if(JniEnvironment env{200}){
-                    if(w.object()){
-                        jclass objectClass = env->GetObjectClass(w.object());
+                    if(w.object(env)){
+                        jclass objectClass = env->GetObjectClass(w.object(env));
                         if(Java::Runtime::Class::isArray(env, objectClass)
                                 && Java::Runtime::Short::isPrimitiveType(env, Java::Runtime::Class::getComponentType(env, objectClass))){
-                            return JShortArrayWrapper(env, jshortArray(w.object()));
+                            return JShortArrayWrapper(env, jshortArray(w.object(env)));
                         }
                     }
                 }
@@ -500,11 +512,11 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(JNI_OnLoad)(JavaVM
             });
             QMetaType::registerConverter<JObjectWrapper,JByteArrayWrapper>([](const JObjectWrapper& w) -> JByteArrayWrapper {
                 if(JniEnvironment env{200}){
-                    if(w.object()){
-                        jclass objectClass = env->GetObjectClass(w.object());
+                    if(w.object(env)){
+                        jclass objectClass = env->GetObjectClass(w.object(env));
                         if(Java::Runtime::Class::isArray(env, objectClass)
                                 && Java::Runtime::Byte::isPrimitiveType(env, Java::Runtime::Class::getComponentType(env, objectClass))){
-                            return JByteArrayWrapper(env, jbyteArray(w.object()));
+                            return JByteArrayWrapper(env, jbyteArray(w.object(env)));
                         }
                     }
                 }
@@ -512,11 +524,11 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(JNI_OnLoad)(JavaVM
             });
             QMetaType::registerConverter<JObjectWrapper,JBooleanArrayWrapper>([](const JObjectWrapper& w) -> JBooleanArrayWrapper {
                 if(JniEnvironment env{200}){
-                    if(w.object()){
-                        jclass objectClass = env->GetObjectClass(w.object());
+                    if(w.object(env)){
+                        jclass objectClass = env->GetObjectClass(w.object(env));
                         if(Java::Runtime::Class::isArray(env, objectClass)
                                 && Java::Runtime::Boolean::isPrimitiveType(env, Java::Runtime::Class::getComponentType(env, objectClass))){
-                            return JBooleanArrayWrapper(env, jbooleanArray(w.object()));
+                            return JBooleanArrayWrapper(env, jbooleanArray(w.object(env)));
                         }
                     }
                 }
@@ -524,11 +536,11 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(JNI_OnLoad)(JavaVM
             });
             QMetaType::registerConverter<JObjectWrapper,JCharArrayWrapper>([](const JObjectWrapper& w) -> JCharArrayWrapper {
                 if(JniEnvironment env{200}){
-                    if(w.object()){
-                        jclass objectClass = env->GetObjectClass(w.object());
+                    if(w.object(env)){
+                        jclass objectClass = env->GetObjectClass(w.object(env));
                         if(Java::Runtime::Class::isArray(env, objectClass)
                                 && Java::Runtime::Character::isPrimitiveType(env, Java::Runtime::Class::getComponentType(env, objectClass))){
-                            return JCharArrayWrapper(env, jcharArray(w.object()));
+                            return JCharArrayWrapper(env, jcharArray(w.object(env)));
                         }
                     }
                 }
@@ -536,11 +548,11 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(JNI_OnLoad)(JavaVM
             });
             QMetaType::registerConverter<JObjectWrapper,JFloatArrayWrapper>([](const JObjectWrapper& w) -> JFloatArrayWrapper {
                 if(JniEnvironment env{200}){
-                    if(w.object()){
-                        jclass objectClass = env->GetObjectClass(w.object());
+                    if(w.object(env)){
+                        jclass objectClass = env->GetObjectClass(w.object(env));
                         if(Java::Runtime::Class::isArray(env, objectClass)
                                 && Java::Runtime::Float::isPrimitiveType(env, Java::Runtime::Class::getComponentType(env, objectClass))){
-                            return JFloatArrayWrapper(env, jfloatArray(w.object()));
+                            return JFloatArrayWrapper(env, jfloatArray(w.object(env)));
                         }
                     }
                 }
@@ -548,11 +560,11 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(JNI_OnLoad)(JavaVM
             });
             QMetaType::registerConverter<JObjectWrapper,JDoubleArrayWrapper>([](const JObjectWrapper& w) -> JDoubleArrayWrapper {
                 if(JniEnvironment env{200}){
-                    if(w.object()){
-                        jclass objectClass = env->GetObjectClass(w.object());
+                    if(w.object(env)){
+                        jclass objectClass = env->GetObjectClass(w.object(env));
                         if(Java::Runtime::Class::isArray(env, objectClass)
                                 && Java::Runtime::Double::isPrimitiveType(env, Java::Runtime::Class::getComponentType(env, objectClass))){
-                            return JDoubleArrayWrapper(env, jdoubleArray(w.object()));
+                            return JDoubleArrayWrapper(env, jdoubleArray(w.object(env)));
                         }
                     }
                 }
@@ -861,6 +873,7 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(JNI_OnLoad)(JavaVM
 #ifdef Q_OS_ANDROID
                             reinitializeResettableFlags(env);
                             enableThreadAffinity(Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.enable-thread-affinity-check")));
+                            enableSignalEmitThreadCheck(Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.enable-signal-emit-thread-check")));
                             if(Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.enable-event-thread-affinity-check"))){
                                 QInternal::unregisterCallback(QInternal::EventNotifyCallback, &threadAffineEventNotify);
                                 QInternal::unregisterCallback(QInternal::EventNotifyCallback, &simpleEventNotify);
@@ -946,8 +959,10 @@ void shutdown(JNIEnv * env, bool regular)
         clearTypeHandlersAtShutdown();
         clearFunctionPointersAtShutdown();
         clearObjectsByFunctionPointerAtShutdown(env);
+        clearInstallSignalEmitThreadCheckHandler(env);
         clearTypeManagerAtShutdown();
         clear_type_entries();
+        clearSmartPointersInfoAtShutdown();
         if(env){
             try{
                 Java::QtJambi::LibraryUtility::clear(env);

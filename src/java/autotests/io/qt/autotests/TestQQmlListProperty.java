@@ -32,11 +32,15 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
 import io.qt.QtUtilities;
+import io.qt.core.QMetaObject;
 import io.qt.core.QObject;
 import io.qt.core.QUrl;
+import io.qt.core.Qt;
+import io.qt.gui.QGuiApplication;
 import io.qt.gui.QMatrix4x4;
 import io.qt.qml.QQmlComponent;
 import io.qt.qml.QQmlComponent.Status;
@@ -50,6 +54,13 @@ public class TestQQmlListProperty extends ApplicationInitializer {
 	@BeforeClass
     public static void testInitialize() throws Exception {
     	ApplicationInitializer.testInitializeWithGui();
+    }
+	
+	@AfterClass
+    public static void testDispose() throws Exception {
+		QMetaObject.invokeMethod(QGuiApplication.instance(), QGuiApplication::quit, Qt.ConnectionType.QueuedConnection);
+		QGuiApplication.exec();
+    	ApplicationInitializer.testDispose();
     }
 
 	private QQmlEngine engine;

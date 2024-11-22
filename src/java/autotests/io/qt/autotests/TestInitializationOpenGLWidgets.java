@@ -32,6 +32,9 @@ package io.qt.autotests;
 import org.junit.Assert;
 import org.junit.Test;
 
+import io.qt.core.QTimer;
+import io.qt.gui.QGuiApplication;
+import io.qt.gui.QIcon;
 import io.qt.opengl.widgets.QOpenGLWidget;
 import io.qt.widgets.QApplication;
 
@@ -40,12 +43,13 @@ public class TestInitializationOpenGLWidgets extends UnitTestInitializer {
     public void initialize() {
     	Assert.assertTrue(io.qt.QtUtilities.initializePackage("io.qt.opengl.widgets"));
     	QApplication.initialize(new String[0]);
-    	QOpenGLWidget window = new QOpenGLWidget();
-    	window.show();
-    	QApplication.processEvents();
-    	window.hide();
-    	QApplication.processEvents();
-    	window.dispose();
+    	QGuiApplication.setWindowIcon(new QIcon(":io/qt/autotests/icon.png"));
+    	{
+	    	QOpenGLWidget window = new QOpenGLWidget();
+	    	window.show();
+	    	QTimer.singleShot(500, QApplication.instance(), QApplication::quit);
+	    	QApplication.exec();
+	    }
     	QApplication.shutdown();
     }
 }

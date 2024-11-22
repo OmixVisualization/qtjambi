@@ -88,6 +88,9 @@ final class PluginGenerator {
 				super.addURL(url);
 			}
 		}
+		protected void addURL(URL url) {
+			super.addURL(url);
+		}
 	}
 	
 	static void generate(QCommandLineParser parser, String[] args, QCommandLineOption platformOption, QCommandLineOption dirOption, QCommandLineOption classPathOption, QCommandLineOption configurationOption) throws InterruptedException, IOException {
@@ -385,64 +388,66 @@ final class PluginGenerator {
 				System.setProperty("java.library.path", lp.toString());
 			}
 			
-			@SuppressWarnings("resource")
-			PluginClassLoader pluginClassLoader = new PluginClassLoader();
-			pluginClassLoader.addURLs(urls);
 			Class<?> cls;
-			try {
-				cls = pluginClassLoader.loadClass(className);
-			} catch (ClassNotFoundException | NoClassDefFoundError e) {
-				System.err.println("Loading class "+className+" failed. Trying to extend classpath.");
-				URL url = QFile.class.getResource("QFile.class");
-				if(url!=null) {
-					String path = url.toString();
-					int idx = -1;
-					File jarFile = null;
-					if(path.startsWith("jar:file:") && (idx = path.indexOf("!/")) >= 0) {
-						path = path.substring(4, idx);
-						try {
-							jarFile = new File(Main.createURL(path).toURI());
-						} catch (Exception e1) {
-							throw new Error("Unable to find class: "+className, e1);
-						}
-			    	}else {
-			    		try {
-							URLConnection connection = url.openConnection();
-							if(connection instanceof JarURLConnection) {
-								jarFile = new File(((JarURLConnection) connection).getJarFile().getName());
+			try(PluginClassLoader pluginClassLoader = new PluginClassLoader()){
+				pluginClassLoader.addURLs(urls);
+				try {
+					cls = pluginClassLoader.loadClass(className);
+					iid = DeployerUtility.getInterfaceIID(cls);
+				} catch (ClassNotFoundException | NoClassDefFoundError e) {
+					System.err.println("Loading class "+className+" failed. Trying to extend classpath.");
+					URL url = QFile.class.getResource("QFile.class");
+					if(url!=null) {
+						String path = url.toString();
+						int idx = -1;
+						File jarFile = null;
+						if(path.startsWith("jar:file:") && (idx = path.indexOf("!/")) >= 0) {
+							path = path.substring(4, idx);
+							try {
+								jarFile = new File(Main.createURL(path).toURI());
+							} catch (Exception e1) {
+								throw new Error("Unable to find class: "+className, e1);
 							}
-						} catch (Throwable e1) {
+				    	}else {
+				    		try {
+								URLConnection connection = url.openConnection();
+								if(connection instanceof JarURLConnection) {
+									jarFile = new File(((JarURLConnection) connection).getJarFile().getName());
+								}
+							} catch (Throwable e1) {
+							}
 						}
-					}
-					if(jarFile!=null) {
-						if(jarFile.getParentFile().isDirectory()) {
-							for(File other : jarFile.getParentFile().listFiles()) {
-								if(other.isFile() && other.getName().startsWith("qtjambi")
-										 && !other.getName().endsWith("javadoc.jar")
-										 && !other.getName().endsWith("sources.jar")
-										 && other.getName().endsWith(".jar")) {
-									urls.add(other.toURI().toURL());
+						if(jarFile!=null) {
+							if(jarFile.getParentFile().isDirectory()) {
+								for(File other : jarFile.getParentFile().listFiles()) {
+									if(other.isFile() && other.getName().startsWith("qtjambi")
+											 && !other.getName().endsWith("javadoc.jar")
+											 && !other.getName().endsWith("sources.jar")
+											 && other.getName().endsWith(".jar")) {
+										urls.add(other.toURI().toURL());
+									}
 								}
 							}
-						}
-						pluginClassLoader.close();
-						pluginClassLoader = new PluginClassLoader();
-						pluginClassLoader.addURLs(urls);
-						try {
-							cls = pluginClassLoader.loadClass(className);
-						} catch (Exception e1) {
-							throw new Error("Unable to find class: "+className, e1);
+							pluginClassLoader.close();
+							try(PluginClassLoader pluginClassLoader2 = new PluginClassLoader()){
+								pluginClassLoader2.addURLs(urls);
+								try {
+									cls = pluginClassLoader2.loadClass(className);
+									iid = DeployerUtility.getInterfaceIID(cls);
+								} catch (Exception e1) {
+									throw new Error("Unable to find class: "+className, e1);
+								}
+							}
+						}else {
+							System.err.println(url);
+							throw new Error("Unable to find class: "+className);
 						}
 					}else {
 						System.err.println(url);
 						throw new Error("Unable to find class: "+className);
 					}
-				}else {
-					System.err.println(url);
-					throw new Error("Unable to find class: "+className);
 				}
 			}
-			iid = DeployerUtility.getInterfaceIID(cls);
 			if(iid==null) {
 				throw new Error("Unable to detect IID from class: "+cls.getName());
 			}

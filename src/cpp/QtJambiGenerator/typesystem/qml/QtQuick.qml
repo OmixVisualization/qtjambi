@@ -1978,7 +1978,13 @@ if(%1.count()<=0)
                 }
             }
         }
+        ModifyFunction{
+            signature: "QSGGeometry(QSGGeometry)"
+            remove: RemoveFlag.All
+            until: 5
+        }
     }
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'QSGGeometry(QSGGeometry)' for function modification in 'QSGGeometry' not found.*"; until: 5}
     
     ObjectType{
         name: "QSGMaterial"
@@ -2996,6 +3002,7 @@ if(%1.count()<=0)
                 ArgumentMap{index: 1; metaName: "%1"}
                 Text{content: "%0.__rcRenderTarget = %1;"}
             }
+            since: 6.4
         }
         ModifyFunction{
             signature: "fromRhiRenderTarget(QRhiRenderTarget*)"

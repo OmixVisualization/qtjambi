@@ -169,9 +169,9 @@ CreatorFunction creatorFunction(JNIEnv * env, const QMetaObject *meta_object, jc
         if(JniEnvironment env{200}){
             QtJambiExceptionInhibitor __exnHandler;
             QTJAMBI_TRY{
-                jobject declarativeConstructor = Java::QtCore::QObject$QDeclarativeConstructor::newInstance(env, clazzWrapper.object(), jlong(placement));
+                jobject declarativeConstructor = Java::QtCore::QObject$QDeclarativeConstructor::newInstance(env, clazzWrapper.object(env), jlong(placement));
                 QTJAMBI_TRY{
-                    env->NewObject(jclass(clazzWrapper.object()), constructor, declarativeConstructor);
+                    env->NewObject(jclass(clazzWrapper.object(env)), constructor, declarativeConstructor);
                     JavaException::check(env QTJAMBI_STACKTRACEINFO );
                 }QTJAMBI_CATCH(const JavaException& exn){
                     jlong pl = Java::QtCore::QObject$QDeclarativeConstructor::placement(env, declarativeConstructor);
@@ -186,7 +186,7 @@ CreatorFunction creatorFunction(JNIEnv * env, const QMetaObject *meta_object, jc
                 }
                 jlong pl = Java::QtCore::QObject$QDeclarativeConstructor::placement(env, declarativeConstructor);
                 if(pl!=0){
-                    QString className = QtJambiAPI::getClassName(env, jclass(clazzWrapper.object()));
+                    QString className = QtJambiAPI::getClassName(env, jclass(clazzWrapper.object(env)));
                     Java::Runtime::RuntimeException::throwNew(env, QStringLiteral("Irreguar implementation of declarative constructor in class %1. Please call super constructor by submitting QDeclarativeConstructor object.").arg(className) QTJAMBI_STACKTRACEINFO );
                 }
             }QTJAMBI_CATCH(const JavaException& exn){
@@ -221,17 +221,35 @@ struct CreatorFunctionMetaData : QSharedData{
     int fhCast;
 };
 
-typedef QHash<hash_type,QExplicitlySharedDataPointer<CreatorFunctionMetaData>> MetaDataHash;
+Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, gMetaDataAccessLock, (QReadWriteLock::Recursive))
+template<typename Super>
+struct SecureContainer : Super{
+    SecureContainer(){
+    }
+    ~SecureContainer(){
+        Super container;
+        {
+            QWriteLocker locker(gMetaDataAccessLock());
+            container.swap(*this);
+        }
+    }
+};
+typedef SecureContainer<QHash<hash_type,QExplicitlySharedDataPointer<CreatorFunctionMetaData>>> MetaDataHash;
 Q_GLOBAL_STATIC(MetaDataHash, gMetaDataHash)
 
 void* creatorFunctionMetaData(JNIEnv * env, const QMetaObject *meta_object, jclass clazz, jmethodID constructor, size_t objectSize, int psCast, int vsCast, int viCast, int fhCast){
     hash_type hash = qHashMulti(0, QtJambiAPI::getJavaObjectHashCode(env, clazz), qint64(constructor), psCast, vsCast, viCast, fhCast);
-    if(gMetaDataHash->contains(hash)){
-        return (*gMetaDataHash)[hash].data();
-    }else{
-        (*gMetaDataHash)[hash] = new CreatorFunctionMetaData{QSharedData(), JavaAPI::toGlobalReference(env, clazz), meta_object, constructor, objectSize, psCast, vsCast, viCast, fhCast};
-        return (*gMetaDataHash)[hash].data();
+    {
+        QReadLocker lock(gMetaDataAccessLock());
+        if(gMetaDataHash->contains(hash))
+            return (*gMetaDataHash)[hash].data();
     }
+    CreatorFunctionMetaData* d = new CreatorFunctionMetaData{QSharedData(), JavaAPI::toGlobalReference(env, clazz), meta_object, constructor, objectSize, psCast, vsCast, viCast, fhCast};
+    {
+        QWriteLocker lock(gMetaDataAccessLock());
+        (*gMetaDataHash)[hash] = d;
+    }
+    return d;
 }
 
 void createQmlObject(void* placement,void* _metaData){
@@ -2922,7 +2940,7 @@ struct FunctionUserData : QtJambiObjectData{
         if(functionData && functionData->functions.contains(hash)){
             if(JniEnvironment env{300}){
                 jobject _object = QtJambiAPI::convertQObjectToJavaObject(env, list->object);
-                if(jobject appendFunction = functionData->functions[hash].appendFunction.object()){
+                if(jobject appendFunction = functionData->functions[hash].appendFunction.object(env)){
                     jobject _element;
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
                     if(QMetaType(functionData->functions[hash].metaType).flags() & QMetaType::PointerToQObject){
@@ -2949,7 +2967,7 @@ struct FunctionUserData : QtJambiObjectData{
         if(functionData && functionData->functions.contains(hash)){
             if(JniEnvironment env{300}){
                 jobject _object = QtJambiAPI::convertQObjectToJavaObject(env, list->object);
-                if(jobject atFunction = functionData->functions[hash].atFunction.object()){
+                if(jobject atFunction = functionData->functions[hash].atFunction.object(env)){
                     jobject result = Java::QtQml::QQmlListProperty$AtFunction::apply(env, atFunction, _object, jlong(index));
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
                     if(QMetaType(functionData->functions[hash].metaType).flags() & QMetaType::PointerToQObject){
@@ -2980,7 +2998,7 @@ struct FunctionUserData : QtJambiObjectData{
         if(functionData && functionData->functions.contains(hash)){
             if(JniEnvironment env{300}){
                 jobject _object = QtJambiAPI::convertQObjectToJavaObject(env, list->object);
-                if(jobject countFunction = functionData->functions[hash].countFunction.object()){
+                if(jobject countFunction = functionData->functions[hash].countFunction.object(env)){
                     return Java::Runtime::ToLongFunction::applyAsLong(env, countFunction, _object);
                 }
             }
@@ -2998,7 +3016,7 @@ struct FunctionUserData : QtJambiObjectData{
         if(functionData && functionData->functions.contains(hash)){
             if(JniEnvironment env{300}){
                 jobject _object = QtJambiAPI::convertQObjectToJavaObject(env, list->object);
-                if(jobject clearFunction = functionData->functions[hash].clearFunction.object()){
+                if(jobject clearFunction = functionData->functions[hash].clearFunction.object(env)){
                     Java::Runtime::Consumer::accept(env, clearFunction, _object);
                 }
             }
@@ -3021,7 +3039,7 @@ struct FunctionUserData : QtJambiObjectData{
         }
         if(JniEnvironment env{300}){
             jobject _object = QtJambiAPI::convertQObjectToJavaObject(env, list->object);
-            if(jobject replaceFunction = functionData->functions[hash].replaceFunction.object()){
+            if(jobject replaceFunction = functionData->functions[hash].replaceFunction.object(env)){
                 jobject _element;
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
                     if(QMetaType(functionData->functions[hash].metaType).flags() & QMetaType::PointerToQObject){
@@ -3047,7 +3065,7 @@ struct FunctionUserData : QtJambiObjectData{
         if(functionData && functionData->functions.contains(hash)){
             if(JniEnvironment env{300}){
                 jobject _object = QtJambiAPI::convertQObjectToJavaObject(env, list->object);
-                if(jobject removeLastFunction = functionData->functions[hash].removeLastFunction.object()){
+                if(jobject removeLastFunction = functionData->functions[hash].removeLastFunction.object(env)){
                     Java::Runtime::Consumer::accept(env, removeLastFunction, _object);
                 }
             }
@@ -3133,32 +3151,32 @@ void __qt_create_new_QQmlListProperty_functions(void* __qtjambi_ptr, JNIEnv* __j
     QQmlListProperty<void>* listProperty = new(__qtjambi_ptr) QQmlListProperty<void>();
     listProperty->object = object;
     listProperty->data = reinterpret_cast<void*>(qsizetype(hash));
-    if(functions->appendFunction.object())
+    if(functions->appendFunction.object(__jni_env))
         listProperty->append = FunctionUserData::append;
-    if(functions->atFunction.object())
+    if(functions->atFunction.object(__jni_env))
         listProperty->at = FunctionUserData::at;
-    if(functions->countFunction.object())
+    if(functions->countFunction.object(__jni_env))
         listProperty->count = FunctionUserData::count;
-    if(functions->clearFunction.object()){
+    if(functions->clearFunction.object(__jni_env)){
         listProperty->clear = FunctionUserData::clear;
-    }else if(functions->countFunction.object() && functions->removeLastFunction.object()){
+    }else if(functions->countFunction.object(__jni_env) && functions->removeLastFunction.object(__jni_env)){
         listProperty->clear = FunctionUserData::slow_clear;
     }
 #if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
-    if(functions->replaceFunction.object()){
+    if(functions->replaceFunction.object(__jni_env)){
         listProperty->replace = FunctionUserData::replace;
-    }else if(functions->appendFunction.object()
-                && functions->countFunction.object()
-                && functions->atFunction.object()
-                && (functions->clearFunction.object() || functions->removeLastFunction.object())){
+    }else if(functions->appendFunction.object(__jni_env)
+                && functions->countFunction.object(__jni_env)
+                && functions->atFunction.object(__jni_env)
+                && (functions->clearFunction.object(__jni_env) || functions->removeLastFunction.object(__jni_env))){
         listProperty->replace = FunctionUserData::slow_replace;
     }
-    if(functions->removeLastFunction.object()){
+    if(functions->removeLastFunction.object(__jni_env)){
         listProperty->removeLast = FunctionUserData::removeLast;
-    }else if(functions->appendFunction.object()
-                && functions->countFunction.object()
-                && functions->atFunction.object()
-                && functions->clearFunction.object()){
+    }else if(functions->appendFunction.object(__jni_env)
+                && functions->countFunction.object(__jni_env)
+                && functions->atFunction.object(__jni_env)
+                && functions->clearFunction.object(__jni_env)){
         listProperty->removeLast = FunctionUserData::slow_removeLast;
     }
 #endif
@@ -3279,7 +3297,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQm
             }
             if(functionData && functionData->functions.contains(hash)){
                 jobject _object = QtJambiAPI::convertQObjectToJavaObject(__jni_env, __qt_this->object);
-                if(jobject appendFunction = functionData->functions[hash].appendFunction.object()){
+                if(jobject appendFunction = functionData->functions[hash].appendFunction.object(__jni_env)){
                     Java::Runtime::BiConsumer::accept(__jni_env, appendFunction, _object, object0);
                 }
             }
@@ -3328,7 +3346,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQm
             }
             if(JniEnvironment env{300}){
                 jobject _object = QtJambiAPI::convertQObjectToJavaObject(env, __qt_this->object);
-                if(jobject replaceFunction = functionData->functions[hash].replaceFunction.object()){
+                if(jobject replaceFunction = functionData->functions[hash].replaceFunction.object(env)){
                     Java::QtQml::QQmlListProperty$ReplaceFunction::accept(env, replaceFunction, _object, index, object0);
                 }
             }
@@ -3377,7 +3395,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_
             }
             if(functionData && functionData->functions.contains(hash)){
                 jobject _object = QtJambiAPI::convertQObjectToJavaObject(__jni_env, __qt_this->object);
-                if(jobject atFunction = functionData->functions[hash].atFunction.object()){
+                if(jobject atFunction = functionData->functions[hash].atFunction.object(__jni_env)){
                     _result = Java::QtQml::QQmlListProperty$AtFunction::apply(__jni_env, atFunction, _object, index0);
                 }
             }

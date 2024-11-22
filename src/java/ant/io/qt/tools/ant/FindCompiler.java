@@ -437,7 +437,8 @@ public class FindCompiler {
      * Compiler.Mingw.
      * @return Compiler.MinGW if successful, null otherwise.
      */
-    private Compiler testForMinGW() {
+    @SuppressWarnings("unused")
+	private Compiler testForMinGW() {
         try {
             List<String> cmdAndArgs = new ArrayList<String>();
             String cmd = "gcc.exe";

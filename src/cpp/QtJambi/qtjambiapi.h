@@ -112,7 +112,7 @@ namespace QtJambiAPI{
 void QTJAMBI_EXPORT checkNullPointer(JNIEnv *env, const void* ptr, const std::type_info& typeId);
 void QTJAMBI_EXPORT checkNullPointer(JNIEnv *env, const void* ptr, const std::type_info& typeId, TypeInfoSupplier typeInfoSupplier);
 void QTJAMBI_EXPORT checkDanglingPointer(JNIEnv *env, const void* ptr, const std::type_info& typeId, TypeInfoSupplier typeInfoSupplier);
-}
+}//QtJambiAPI
 
 namespace QtJambiPrivate{
 template<typename T, bool = std::is_polymorphic<T>::value>
@@ -123,6 +123,16 @@ struct CheckPointer{
             const std::type_info* typeId = &typeid(*object);
             if(!typeId)
                 typeId = &typeid(T);
+            return typeId;
+        }catch(const std::bad_typeid&){
+            return nullptr;
+        }catch(...){
+            return nullptr;
+        }
+    };
+    static const std::type_info* trySupplyType(const T *object) {
+        try{
+            const std::type_info* typeId = &typeid(*object);
             return typeId;
         }catch(const std::bad_typeid&){
             return nullptr;
@@ -146,7 +156,7 @@ struct CheckPointer<T,false>{
     static void checkDanglingPointer(JNIEnv *, const T*){
     }
 };
-}
+}//QtJambiPrivate
 
 namespace QtJambiAPI{
 
@@ -293,18 +303,124 @@ I enumValue(JNIEnv *env, jobject object){
 
 QTJAMBI_EXPORT jstring toJavaString(JNIEnv *env, jobject object);
 
-typedef void(* SmartPointerDeleter)(void *, bool);
-typedef void*(* SmartPointerCreator)(void *);
-typedef QObject*(*SmartPointerQObjectGetter)(const void *);
-typedef void*(*SmartPointerGetter)(const void *);
+QTJAMBI_EXPORT QSharedPointer<QObject> convertJavaObjectToQSharedPointer(JNIEnv *env, jobject java_object);
 
-QTJAMBI_EXPORT const void *convertJavaObjectToNativeAsSmartPointer(JNIEnv *env, jobject java_object, SmartPointerCreator pointerCreator, SmartPointerDeleter pointerDeleter, SmartPointerGetter pointerGetter);
+QTJAMBI_EXPORT QSharedPointer<char> convertJavaObjectToQSharedPointer(JNIEnv *env,
+                                                                             const std::type_info* typeId,
+                                                                             jobject java_object);
 
-QTJAMBI_EXPORT const void *convertJavaObjectToNativeAsSmartPointer(JNIEnv *env, jobject java_object, SmartPointerCreator pointerCreator, SmartPointerDeleter pointerDeleter, SmartPointerQObjectGetter pointerGetter);
+QTJAMBI_EXPORT QWeakPointer<QObject> convertJavaObjectToQWeakPointer(JNIEnv *env, jobject java_object);
+
+QTJAMBI_EXPORT QWeakPointer<char> convertJavaObjectToQWeakPointer(JNIEnv *env,
+                                                                      const std::type_info* typeId,
+                                                                      jobject java_object);
+
+QTJAMBI_EXPORT std::shared_ptr<QObject> convertJavaObjectToSharedPtr(JNIEnv *env, jobject java_object);
+
+QTJAMBI_EXPORT std::shared_ptr<char> convertJavaObjectToSharedPtr(JNIEnv *env,
+                                                                          const std::type_info* typeId,
+                                                                          jobject java_object);
+
+QTJAMBI_EXPORT std::weak_ptr<QObject> convertJavaObjectToWeakPtr(JNIEnv *env, jobject java_object);
+
+QTJAMBI_EXPORT std::weak_ptr<char> convertJavaObjectToWeakPtr(JNIEnv *env,
+                                                                  const std::type_info* typeId,
+                                                                  jobject java_object);
+
+QTJAMBI_EXPORT jobject convertSmartPointerToJavaObject(JNIEnv *env,
+                                                       const std::type_info& typeId,
+                                                       const QSharedPointer<QObject>& smartPointer);
+QTJAMBI_EXPORT jobject convertSmartPointerToJavaObject(JNIEnv *env,
+                                                       const std::type_info& typeId,
+                                                       const QSharedPointer<char>& smartPointer);
+QTJAMBI_EXPORT jobject convertSmartPointerToJavaObject(JNIEnv *env,
+                                                       const std::type_info& typeId,
+                                                       const std::shared_ptr<QObject>& smartPointer);
+QTJAMBI_EXPORT jobject convertSmartPointerToJavaObject(JNIEnv *env,
+                                                       const std::type_info& typeId,
+                                                       const std::shared_ptr<char>& smartPointer);
 
 }//namespace QtJambiAPI
 
 namespace QtJambiPrivate{
+
+template<template<typename> class SmartPointer, typename T, bool = std::is_base_of<QObject,T>::value>
+struct JavaObjectToNativeAsSmartPointerConverter{
+};
+
+template<typename T>
+struct JavaObjectToNativeAsSmartPointerConverter<QSharedPointer,T,false>{
+    static QSharedPointer<T> convert(JNIEnv *env,
+                                     jobject java_object){
+        QSharedPointer<char> sp = QtJambiAPI::convertJavaObjectToQSharedPointer(env, &typeid(T), java_object);
+        char* _ptr = sp.get();
+        return QtSharedPointer::copyAndSetPointer(reinterpret_cast<T*>(_ptr), sp);
+    }
+    static QSharedPointer<char> convertSmartPointer(const QSharedPointer<T>& sp){
+        T* _ptr = sp.get();
+        return QtSharedPointer::copyAndSetPointer(reinterpret_cast<char*>(_ptr), sp);
+    }
+};
+
+template<typename T>
+struct JavaObjectToNativeAsSmartPointerConverter<std::shared_ptr,T,false>{
+    static std::shared_ptr<T> convert(JNIEnv *env,
+                                      jobject java_object){
+        std::shared_ptr<char> sp = QtJambiAPI::convertJavaObjectToSharedPtr(env, &typeid(T), java_object);
+        char* _ptr = sp.get();
+        return std::shared_ptr<T>(sp, reinterpret_cast<T*>(_ptr));
+    }
+    static std::shared_ptr<char> convertSmartPointer(const std::shared_ptr<T>& sp){
+        T* _ptr = sp.get();
+        return std::shared_ptr<char>(sp, reinterpret_cast<char*>(_ptr));
+    }
+};
+
+template<typename T>
+struct JavaObjectToNativeAsSmartPointerConverter<QSharedPointer,T,true>{
+    static QSharedPointer<T> convert(JNIEnv *env,
+                                     jobject java_object){
+        QSharedPointer<QObject> sp = QtJambiAPI::convertJavaObjectToQSharedPointer(env, java_object);
+        return sp.dynamicCast<T>();
+    }
+    static QSharedPointer<QObject> convertSmartPointer(const QSharedPointer<T>& sp){
+        return sp.template dynamicCast<QObject>();
+    }
+};
+
+template<typename T>
+struct JavaObjectToNativeAsSmartPointerConverter<std::shared_ptr,T,true>{
+    static std::shared_ptr<T> convert(JNIEnv *env,
+                                      jobject java_object){
+        std::shared_ptr<QObject> sp = QtJambiAPI::convertJavaObjectToSharedPtr(env, java_object);
+        return std::dynamic_pointer_cast<T>(sp);
+    }
+    static std::shared_ptr<QObject> convertSmartPointer(const std::shared_ptr<T>& sp){
+        return std::dynamic_pointer_cast<T>(sp);
+    }
+};
+
+template<>
+struct JavaObjectToNativeAsSmartPointerConverter<std::shared_ptr,QObject,true>{
+    static std::shared_ptr<QObject> convert(JNIEnv *env,
+                                            jobject java_object){
+        return QtJambiAPI::convertJavaObjectToSharedPtr(env, java_object);
+    }
+    static const std::shared_ptr<QObject>& convertSmartPointer(const std::shared_ptr<QObject>& sp){
+        return sp;
+    }
+};
+
+template<>
+struct JavaObjectToNativeAsSmartPointerConverter<QSharedPointer,QObject,true>{
+    static QSharedPointer<QObject> convert(JNIEnv *env,
+                                           jobject java_object){
+        return QtJambiAPI::convertJavaObjectToQSharedPointer(env, java_object);
+    }
+    static const QSharedPointer<QObject>& convertSmartPointer(const QSharedPointer<QObject>& sp){
+        return sp;
+    }
+};
 
 typedef const void* (*DefaultValueCreator)();
 QTJAMBI_EXPORT const void* getDefaultValue(const std::type_info& type_info, DefaultValueCreator creator);
@@ -314,40 +430,21 @@ const T& getDefaultValue(){
     return *reinterpret_cast<const T*>(getDefaultValue(typeid(T), []()->const void*{return new T();}));
 }
 
-template<template <typename> class Pointer, typename Instantiation>
-struct SmartPointerHelper{
-    static void deletePointer(void* pointer,bool){
-        Pointer<Instantiation>* _pointer = reinterpret_cast<Pointer<Instantiation>*>(pointer);
-        delete _pointer;
-    }
-
-    static void* createPointer(void* pointer){
-        return new Pointer<Instantiation>(reinterpret_cast<Instantiation*>(pointer));
-    }
-
-    static typename std::conditional<std::is_base_of<QObject, Instantiation>::value, QObject, void>::type* getFromPointer(const void* pointer){
-        const Pointer<typename std::remove_const<Instantiation>::type>& _pointer = *reinterpret_cast<const Pointer<typename std::remove_const<Instantiation>::type>*>(pointer);
-        return &*_pointer;
-    }
-};
-
 }//namespace QtJambiPrivate
 
 namespace QtJambiAPI{
 
-QTJAMBI_EXPORT jobject convertSmartPointerToJavaObject(JNIEnv *env,
-                                                       const std::type_info& typeId,
-                                                       void* ptr_shared_pointer,
-                                                       SmartPointerDeleter sharedPointerDeleter,
-                                                       SmartPointerGetter sharedPointerGetter);
+template<template<typename> class SmartPointer, typename T>
+SmartPointer<T> convertJavaObjectToSmartPointer(JNIEnv *env, jobject java_object){
+    auto out = QtJambiPrivate::JavaObjectToNativeAsSmartPointerConverter<SmartPointer,T>::convert(env, java_object);
+    return SmartPointer<T>(*reinterpret_cast<const SmartPointer<T>*>(&out));
+}
 
-template<template<typename> class Pointer, typename O>
-inline jobject convertSmartPointerToJavaObject(JNIEnv *env, const Pointer<O> & qt_shared_pointer){
+template<template<typename> class SmartPointer, typename O>
+inline jobject convertSmartPointerToJavaObject(JNIEnv *env, const SmartPointer<O> & smartPointer){
     return convertSmartPointerToJavaObject(env,
-                                typeid(O),
-                                new Pointer<O>(qt_shared_pointer),
-                                &QtJambiPrivate::SmartPointerHelper<Pointer, O>::deletePointer,
-                                &QtJambiPrivate::SmartPointerHelper<Pointer, void*>::getFromPointer);
+                typeid(O),
+                QtJambiPrivate::JavaObjectToNativeAsSmartPointerConverter<SmartPointer,O>::convertSmartPointer(smartPointer));
 }
 
 QTJAMBI_EXPORT void setQQmlListPropertyElementType(JNIEnv *env, jobject list, jobject elementType);
@@ -828,12 +925,15 @@ QTJAMBI_EXPORT jobject convertQListToJavaObject(JNIEnv *__jni_env,
                                 );
 
 QTJAMBI_EXPORT jobject convertQListToJavaObject(JNIEnv *__jni_env,
-                                     void* listPtr,
-                                     SmartPointerDeleter sharedPointerDeleter,
-                                     SmartPointerGetter sharedPointerGetter,
+                                     const QSharedPointer<char>& listPtr,
                                      ListType listType,
                                      AbstractListAccess* listAccess
                                 );
+QTJAMBI_EXPORT jobject convertQListToJavaObject(JNIEnv *__jni_env,
+                                                const std::shared_ptr<char>& listPtr,
+                                                ListType listType,
+                                                AbstractListAccess* listAccess
+                                                );
 
 QTJAMBI_EXPORT jobject convertQStringListToJavaObject(JNIEnv *__jni_env,
                                      QtJambiNativeID owner,
@@ -843,10 +943,11 @@ QTJAMBI_EXPORT jobject convertQStringListToJavaObject(JNIEnv *__jni_env,
                                 );
 
 QTJAMBI_EXPORT jobject convertQStringListToJavaObject(JNIEnv *__jni_env,
-                                     void* listPtr,
-                                     SmartPointerDeleter sharedPointerDeleter,
-                                     SmartPointerGetter sharedPointerGetter
+                                     const QSharedPointer<char>& listPtr
                                 );
+QTJAMBI_EXPORT jobject convertQStringListToJavaObject(JNIEnv *__jni_env,
+                                                      const std::shared_ptr<char>& listPtr
+                                                      );
 
 QTJAMBI_EXPORT jobject convertQSetToJavaObject(JNIEnv *__jni_env,
                                      QtJambiNativeID owner,
@@ -857,11 +958,13 @@ QTJAMBI_EXPORT jobject convertQSetToJavaObject(JNIEnv *__jni_env,
                                 );
 
 QTJAMBI_EXPORT jobject convertQSetToJavaObject(JNIEnv *__jni_env,
-                                     void* listPtr,
-                                     SmartPointerDeleter sharedPointerDeleter,
-                                     SmartPointerGetter sharedPointerGetter,
+                                     const QSharedPointer<char>& listPtr,
                                      AbstractSetAccess* setAccess
                                 );
+QTJAMBI_EXPORT jobject convertQSetToJavaObject(JNIEnv *__jni_env,
+                                               const std::shared_ptr<char>& listPtr,
+                                               AbstractSetAccess* setAccess
+                                               );
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 QTJAMBI_EXPORT jobject convertQLinkedListToJavaObject(JNIEnv *__jni_env,
@@ -873,11 +976,13 @@ QTJAMBI_EXPORT jobject convertQLinkedListToJavaObject(JNIEnv *__jni_env,
                                 );
 
 QTJAMBI_EXPORT jobject convertQLinkedListToJavaObject(JNIEnv *__jni_env,
-                                     void* listPtr,
-                                     SmartPointerDeleter sharedPointerDeleter,
-                                     SmartPointerGetter sharedPointerGetter,
+                                     const QSharedPointer<char>& listPtr,
                                      AbstractLinkedListAccess* linkedListAccess
                                 );
+QTJAMBI_EXPORT jobject convertQLinkedListToJavaObject(JNIEnv *__jni_env,
+                                                      const std::shared_ptr<char>& listPtr,
+                                                      AbstractLinkedListAccess* linkedListAccess
+                                                      );
 
 QTJAMBI_EXPORT jobject convertQVectorToJavaObject(JNIEnv *__jni_env,
                                      QtJambiNativeID owner,
@@ -889,12 +994,15 @@ QTJAMBI_EXPORT jobject convertQVectorToJavaObject(JNIEnv *__jni_env,
                                 );
 
 QTJAMBI_EXPORT jobject convertQVectorToJavaObject(JNIEnv *__jni_env,
-                                     void* listPtr,
-                                     SmartPointerDeleter sharedPointerDeleter,
-                                     SmartPointerGetter sharedPointerGetter,
+                                     const QSharedPointer<char>& listPtr,
                                      VectorType vectorType,
                                      AbstractVectorAccess* vectorAccess
                                 );
+QTJAMBI_EXPORT jobject convertQVectorToJavaObject(JNIEnv *__jni_env,
+                                                  const std::shared_ptr<char>& listPtr,
+                                                  VectorType vectorType,
+                                                  AbstractVectorAccess* vectorAccess
+                                                  );
 #endif
 
 
@@ -907,11 +1015,13 @@ QTJAMBI_EXPORT jobject convertQHashToJavaObject(JNIEnv *__jni_env,
                                 );
 
 QTJAMBI_EXPORT jobject convertQHashToJavaObject(JNIEnv *__jni_env,
-                                     void* listPtr,
-                                     SmartPointerDeleter sharedPointerDeleter,
-                                     SmartPointerGetter sharedPointerGetter,
+                                     const QSharedPointer<char>& listPtr,
                                      AbstractHashAccess* hashAccess
                                 );
+QTJAMBI_EXPORT jobject convertQHashToJavaObject(JNIEnv *__jni_env,
+                                                const std::shared_ptr<char>& listPtr,
+                                                AbstractHashAccess* hashAccess
+                                                );
 
 QTJAMBI_EXPORT jobject convertQMultiHashToJavaObject(JNIEnv *__jni_env,
                                      QtJambiNativeID owner,
@@ -922,11 +1032,13 @@ QTJAMBI_EXPORT jobject convertQMultiHashToJavaObject(JNIEnv *__jni_env,
                                 );
 
 QTJAMBI_EXPORT jobject convertQMultiHashToJavaObject(JNIEnv *__jni_env,
-                                     void* listPtr,
-                                     SmartPointerDeleter sharedPointerDeleter,
-                                     SmartPointerGetter sharedPointerGetter,
+                                     const QSharedPointer<char>& listPtr,
                                      AbstractMultiHashAccess* multiHashAccess
                                 );
+QTJAMBI_EXPORT jobject convertQMultiHashToJavaObject(JNIEnv *__jni_env,
+                                                     const std::shared_ptr<char>& listPtr,
+                                                     AbstractMultiHashAccess* multiHashAccess
+                                                     );
 
 QTJAMBI_EXPORT jobject convertQMapToJavaObject(JNIEnv *__jni_env,
                                      QtJambiNativeID owner,
@@ -937,11 +1049,14 @@ QTJAMBI_EXPORT jobject convertQMapToJavaObject(JNIEnv *__jni_env,
                                 );
 
 QTJAMBI_EXPORT jobject convertQMapToJavaObject(JNIEnv *__jni_env,
-                                     void* listPtr,
-                                     SmartPointerDeleter sharedPointerDeleter,
-                                     SmartPointerGetter sharedPointerGetter,
+                                     const QSharedPointer<char>& listPtr,
                                      AbstractMapAccess* mapAccess
                                 );
+
+QTJAMBI_EXPORT jobject convertQMapToJavaObject(JNIEnv *__jni_env,
+                                               const std::shared_ptr<char>& listPtr,
+                                               AbstractMapAccess* mapAccess
+                                               );
 
 QTJAMBI_EXPORT jobject convertQMultiMapToJavaObject(JNIEnv *__jni_env,
                                      QtJambiNativeID owner,
@@ -953,11 +1068,13 @@ QTJAMBI_EXPORT jobject convertQMultiMapToJavaObject(JNIEnv *__jni_env,
 
 
 QTJAMBI_EXPORT jobject convertQMultiMapToJavaObject(JNIEnv *__jni_env,
-                                     void* listPtr,
-                                     SmartPointerDeleter sharedPointerDeleter,
-                                     SmartPointerGetter sharedPointerGetter,
+                                     const QSharedPointer<char>& listPtr,
                                      AbstractMultiMapAccess* mapAccess
                                 );
+QTJAMBI_EXPORT jobject convertQMultiMapToJavaObject(JNIEnv *__jni_env,
+                                                    const std::shared_ptr<char>& listPtr,
+                                                    AbstractMultiMapAccess* mapAccess
+                                                    );
 
 template<class Container>
 Container createIterable(typename Container::const_iterator begin, typename Container::size_type size){

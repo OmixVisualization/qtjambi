@@ -37,7 +37,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.NonNull;
-import io.qt.QNativePointer;
 import io.qt.QNoNativeResourcesException;
 import io.qt.QtPrimitiveType;
 import io.qt.core.QAbstractListModel;
@@ -145,6 +144,35 @@ public class TestItemModel extends ApplicationInitializer {
 		} catch (QNoNativeResourcesException e) {
 			Assert.assertEquals("Dependent object has been deleted.", e.getMessage());
 		}
+    }
+    
+    @Test
+    public void testExceptionModel() {
+		QAbstractTableModel model = new QAbstractTableModel() {
+			@Override
+			public int rowCount(QModelIndex parent) {
+				return 3;
+			}
+			
+			@Override
+			public int columnCount(QModelIndex parent) {
+				return 3;
+			}
+			
+			@Override
+			public Object data(QModelIndex index, int role) {
+				if(index.column()==2)
+					throw new RuntimeException("Table Exception");
+				return String.format("[%1$s,%2$s]", index.row(), index.clone());
+			}
+		};
+		QTableView view = new QTableView();
+		view.setModel(model);
+		view.show();
+		QTimer.singleShot(5000, QApplication::quit);
+		QApplication.exec();
+		view.close();
+		view.dispose();
     }
 
     public static void main(String args[]) {

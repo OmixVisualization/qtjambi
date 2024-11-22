@@ -33,7 +33,6 @@ import java.nio.*;
 import java.util.*;
 import java.util.function.*;
 import io.qt.*;
-import io.qt.core.QtJambi_LibraryUtilities;
 
 /**
  * <p>Java wrapper for Qt class <code><a href="https://doc.qt.io/qt/qset.html">QSet</a></code></p>

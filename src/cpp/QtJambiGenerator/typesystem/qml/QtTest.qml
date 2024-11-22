@@ -40,7 +40,7 @@ TypeSystem{
         Text{content: "JObjectWrapper %in_wrapper(%env, %in);\n"+
                       "qxp::function_ref<const char*()> %out = [%in_wrapper]() -> const char* {\n"+
                       "                                            if(JniEnvironment env{200}){\n"+
-                      "                                                jstring value = jstring(Java::Runtime::Supplier::get(env, %in_wrapper.object()));\n"+
+                      "                                                jstring value = jstring(Java::Runtime::Supplier::get(env, %in_wrapper.object(env)));\n"+
                       "                                                jsize length = env->GetStringUTFLength(value);\n"+
                       "                                                char* c = new char[size_t(length)];\n"+
                       "                                                env->GetStringUTFRegion(value, 0, length, c);\n"+
@@ -433,7 +433,7 @@ TypeSystem{
                         Text{content: "JObjectWrapper functor(%env, %in);\n"+
                                       "auto %out = [functor]() -> bool {\n"+
                                       "                    if(JniEnvironment env{200}){\n"+
-                                      "                        return Java::Runtime::BooleanSupplier::getAsBoolean(env, functor.object());\n"+
+                                      "                        return Java::Runtime::BooleanSupplier::getAsBoolean(env, functor.object(env));\n"+
                                       "                    }\n"+
                                       "                    else return false;\n"+
                                       "                };"}
@@ -459,7 +459,7 @@ TypeSystem{
                         Text{content: "JObjectWrapper functor(%env, %in);\n"+
                                       "auto %out = [functor]() -> bool {\n"+
                                       "                    if(JniEnvironment env{200}){\n"+
-                                      "                        return Java::Runtime::BooleanSupplier::getAsBoolean(env, functor.object());\n"+
+                                      "                        return Java::Runtime::BooleanSupplier::getAsBoolean(env, functor.object(env));\n"+
                                       "                    }\n"+
                                       "                    else return false;\n"+
                                       "                };"}
@@ -1190,7 +1190,7 @@ TypeSystem{
                               "            slot = \"2\" + method.cppMethodSignature();\n"+
                               "        else\n"+
                               "            slot = \"1\" + method.cppMethodSignature();\n"+
-                              "    }\n"+
+                              "    }else slot = \"1\" + slot;\n"+
                               "}"}
             }
         }

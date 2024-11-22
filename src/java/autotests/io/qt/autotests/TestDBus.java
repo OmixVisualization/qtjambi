@@ -37,6 +37,7 @@ import org.junit.Test;
 
 import io.qt.core.QList;
 import io.qt.core.QMetaObject;
+import io.qt.core.QScope;
 import io.qt.dbus.QDBusConnection;
 import io.qt.dbus.QDBusInterface;
 import io.qt.dbus.QDBusMessage;
@@ -72,48 +73,58 @@ public class TestDBus extends ApplicationInitializer {
     public void testSubclassing() {
 		Assert.assertEquals(QMetaObject.forType(QDBusInterface.class), QDBusInterface.staticMetaObject);
 		Assert.assertEquals(QMetaObject.forType(DBusInterfaceSubclass1.class), QDBusInterface.staticMetaObject);
-		new DBusInterfaceSubclass1();
+		DBusInterfaceSubclass1 sc = new DBusInterfaceSubclass1();
 		try {
-			QMetaObject.forType(DBusInterfaceSubclass2.class);
-			Assert.fail("UnsupportedOperationException expected to be thrown");
-		}catch(UnsupportedOperationException e) {}
-		try {
-			new DBusInterfaceSubclass2();
-			Assert.fail("UnsupportedOperationException expected to be thrown");
-		}catch(UnsupportedOperationException e) {}
+			try {
+				QMetaObject.forType(DBusInterfaceSubclass2.class);
+				Assert.fail("UnsupportedOperationException expected to be thrown");
+			}catch(UnsupportedOperationException e) {}
+			try {
+				new DBusInterfaceSubclass2();
+				Assert.fail("UnsupportedOperationException expected to be thrown");
+			}catch(UnsupportedOperationException e) {}
+		}finally {
+			sc.dispose();
+		}
 	}
 	
     @Test
     public void test_call_QDBusPendingReply() {
-	    QDBusInterface dbus_iface = new QDBusInterface("org.freedesktop.DBus", "/org/freedesktop/DBus",
-	                              						"org.freedesktop.DBus", QDBusConnection.sessionBus());
-	    QDBusMessage msg = dbus_iface.call("ListNames");
-	    Assert.assertTrue(msg!=null);
-	    Assert.assertTrue(msg.arguments().size()>0);
-	    Assert.assertTrue(msg.errorMessage(), msg.errorMessage().isEmpty());
-	    QDBusPendingReply<List<String>> preply = QDBusPendingReply.newStringListInstance(msg);
-	    Assert.assertFalse(preply.error().message(), preply.isError());
-	    Assert.assertTrue(preply.value() instanceof QList);
+    	try(QScope scope = new QScope()){
+		    QDBusInterface dbus_iface = scope.capture(new QDBusInterface("org.freedesktop.DBus", "/org/freedesktop/DBus",
+		                              						"org.freedesktop.DBus", QDBusConnection.sessionBus()));
+		    QDBusMessage msg = scope.capture(dbus_iface.call("ListNames"));
+		    Assert.assertTrue(msg!=null);
+		    Assert.assertTrue(msg.arguments().size()>0);
+		    Assert.assertTrue(msg.errorMessage(), msg.errorMessage().isEmpty());
+		    QDBusPendingReply<List<String>> preply = scope.capture(QDBusPendingReply.newStringListInstance(msg));
+		    Assert.assertFalse(preply.error().message(), preply.isError());
+		    Assert.assertTrue(preply.value() instanceof QList);
+    	}
     }
     
     @Test
     public void test_asyncCall_QDBusPendingReply() {
-	    QDBusInterface dbus_iface = new QDBusInterface("org.freedesktop.DBus", "/org/freedesktop/DBus",
-	                              						"org.freedesktop.DBus", QDBusConnection.sessionBus());
-	    QDBusPendingCall msg = dbus_iface.asyncCall("ListNames");
-	    Assert.assertTrue(msg!=null);
-		QDBusPendingReply<List<String>> preply = QDBusPendingReply.newStringListInstance(msg);
-	    Assert.assertFalse(preply.error().message(), preply.isError());
-	    Assert.assertTrue(preply.value() instanceof QList);
+    	try(QScope scope = new QScope()){
+		    QDBusInterface dbus_iface = scope.capture(new QDBusInterface("org.freedesktop.DBus", "/org/freedesktop/DBus",
+		                              						"org.freedesktop.DBus", QDBusConnection.sessionBus()));
+		    QDBusPendingCall msg = scope.capture(dbus_iface.asyncCall("ListNames"));
+		    Assert.assertTrue(msg!=null);
+			QDBusPendingReply<List<String>> preply = scope.capture(QDBusPendingReply.newStringListInstance(msg));
+		    Assert.assertFalse(preply.error().message(), preply.isError());
+		    Assert.assertTrue(preply.value() instanceof QList);
+    	}
     }
     
     
     @Test
     public void test_QDBusReply() {
-		QDBusReply<List<String>> reply = QDBusConnection.sessionBus().connectionInterface().registeredServiceNames();
-		Assert.assertTrue(reply!=null);
-	    Assert.assertFalse(reply.error().message(), reply.error().isValid());
-	    Assert.assertTrue(reply.value() instanceof QList);
+    	try(QScope scope = new QScope()){
+			QDBusReply<List<String>> reply = scope.capture(QDBusConnection.sessionBus().connectionInterface().registeredServiceNames());
+			Assert.assertTrue(reply!=null);
+		    Assert.assertFalse(reply.error().message(), reply.error().isValid());
+		    Assert.assertTrue(reply.value() instanceof QList);
+    	}
     }
     
     public static void main(String args[]) {

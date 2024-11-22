@@ -3552,8 +3552,11 @@ void CppImplGenerator::writeShellFunction(QTextStream &s, const MetaFunction *ja
                         }
                         s << INDENT << "}" << Qt::endl;
                     }
+                    QString modelArgument;
+                    if(implementor->typeEntry()->isQAbstractItemModel())
+                        modelArgument = "this, ";
                     s << INDENT << "} QTJAMBI_CATCH(const JavaException& exn){" << Qt::endl
-                      << INDENT << "    __jni_env.handleException(exn, \"" << implementor->typeEntry()->qualifiedCppName() << "::" << java_function_signature << "\");" << Qt::endl
+                      << INDENT << "    __jni_env.handleException(exn, " << modelArgument << "\"" << implementor->typeEntry()->qualifiedCppName() << "::" << java_function_signature << "\");" << Qt::endl
                       << INDENT << "} QTJAMBI_TRY_END" << Qt::endl;
                     if(java_function->isBlockExceptions())
                         s << INDENT << "__jni_env.releaseException();" << Qt::endl;
@@ -3580,33 +3583,36 @@ void CppImplGenerator::writeShellFunction(QTextStream &s, const MetaFunction *ja
                 s << INDENT << "QTJAMBI_JAVA_METHOD_CALL(\"" << implementor->typeEntry()->qualifiedCppName() << "::"
                   << (java_function_signature.isEmpty() ? java_function->minimalSignature() : java_function_signature) << "\", this)" << Qt::endl;
 
+                QString modelInfix;
+                if(implementor->typeEntry()->isQAbstractItemModel())
+                    modelInfix = "Model";
                 if(needsScope){
                     lines = lines.replace(shellClassName(implementor)+"::__shell()->getJavaObjectLocalRef(__jni_env)", "__jni_env.getJavaObjectLocalRef()");
                     if(java_function->isNoExcept()){
                         if(java_function->isBlockExceptions()){
-                            s << INDENT << "if (JniEnvironmentScopeExceptionInhibitorAndBlocker __jni_env{" << shellClassName(implementor) << "::__shell(), " << QString::number( 100*(arguments.size()+2) ) << "}) {" << Qt::endl;
+                            s << INDENT << "if (JniEnvironmentScopeException" << modelInfix << "InhibitorAndBlocker __jni_env{" << shellClassName(implementor) << "::__shell(), " << QString::number( 100*(arguments.size()+2) ) << "}) {" << Qt::endl;
                         }else{
-                            s << INDENT << "if (JniEnvironmentScopeExceptionInhibitor __jni_env{" << shellClassName(implementor) << "::__shell(), " << QString::number( 100*(arguments.size()+2) ) << "}) {" << Qt::endl;
+                            s << INDENT << "if (JniEnvironmentScopeException" << modelInfix << "Inhibitor __jni_env{" << shellClassName(implementor) << "::__shell(), " << QString::number( 100*(arguments.size()+2) ) << "}) {" << Qt::endl;
                         }
                     }else{
                         if(java_function->isBlockExceptions()){
-                            s << INDENT << "if (JniEnvironmentScopeExceptionHandlerAndBlocker __jni_env{" << shellClassName(implementor) << "::__shell(), " << QString::number( 100*(arguments.size()+2) ) << "}) {" << Qt::endl;
+                            s << INDENT << "if (JniEnvironmentScopeException" << modelInfix << "HandlerAndBlocker __jni_env{" << shellClassName(implementor) << "::__shell(), " << QString::number( 100*(arguments.size()+2) ) << "}) {" << Qt::endl;
                         }else{
-                            s << INDENT << "if (JniEnvironmentScopeExceptionHandler __jni_env{" << shellClassName(implementor) << "::__shell(), " << QString::number( 100*(arguments.size()+2) ) << "}) {" << Qt::endl;
+                            s << INDENT << "if (JniEnvironmentScopeException" << modelInfix << "Handler __jni_env{" << shellClassName(implementor) << "::__shell(), " << QString::number( 100*(arguments.size()+2) ) << "}) {" << Qt::endl;
                         }
                     }
                 }else{
                     if(java_function->isNoExcept()){
                         if(java_function->isBlockExceptions()){
-                            s << INDENT << "if (JniEnvironmentExceptionInhibitorAndBlocker __jni_env{" << QString::number( 100*(arguments.size()+2) ) << "}) {" << Qt::endl;
+                            s << INDENT << "if (JniEnvironmentException" << modelInfix << "InhibitorAndBlocker __jni_env{" << QString::number( 100*(arguments.size()+2) ) << "}) {" << Qt::endl;
                         }else{
-                            s << INDENT << "if (JniEnvironmentExceptionInhibitor __jni_env{" << QString::number( 100*(arguments.size()+2) ) << "}) {" << Qt::endl;
+                            s << INDENT << "if (JniEnvironmentException" << modelInfix << "Inhibitor __jni_env{" << QString::number( 100*(arguments.size()+2) ) << "}) {" << Qt::endl;
                         }
                     }else{
                         if(java_function->isBlockExceptions()){
-                            s << INDENT << "if (JniEnvironmentExceptionHandlerAndBlocker __jni_env{" << QString::number( 100*(arguments.size()+2) ) << "}) {" << Qt::endl;
+                            s << INDENT << "if (JniEnvironmentException" << modelInfix << "HandlerAndBlocker __jni_env{" << QString::number( 100*(arguments.size()+2) ) << "}) {" << Qt::endl;
                         }else{
-                            s << INDENT << "if (JniEnvironmentExceptionHandler __jni_env{" << QString::number( 100*(arguments.size()+2) ) << "}) {" << Qt::endl;
+                            s << INDENT << "if (JniEnvironmentException" << modelInfix << "Handler __jni_env{" << QString::number( 100*(arguments.size()+2) ) << "}) {" << Qt::endl;
                         }
                     }
                 }
@@ -12142,7 +12148,7 @@ QString computeMangledTypeName(const MetaType *type){
 
 void CppImplGenerator::writeTypeConversion(QTextStream &s, const MetaFunction *function, MetaType *type, int index, const QString& metaTypeId, QStringList& converterFunctions, QSet<QString> &forwardDeclarations){
     if(!type){
-        s << INDENT << "infos << ParameterInfo(QMetaType::Void);" << Qt::endl;
+        s << INDENT << "infos << ParameterInfo{QMetaType::Void};" << Qt::endl;
         return;
     }
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
@@ -12150,36 +12156,36 @@ void CppImplGenerator::writeTypeConversion(QTextStream &s, const MetaFunction *f
 #else
     switch(QMetaType::type(qPrintable(type->normalizedSignature()))){
 #endif
-    case QMetaType::UChar:       s << INDENT << "infos << ParameterInfo(QMetaType::UChar);" << Qt::endl; return;
-    case QMetaType::Char:        s << INDENT << "infos << ParameterInfo(QMetaType::Char);" << Qt::endl; return;
-    case QMetaType::SChar:       s << INDENT << "infos << ParameterInfo(QMetaType::SChar);" << Qt::endl; return;
+    case QMetaType::UChar:       s << INDENT << "infos << ParameterInfo{QMetaType::UChar};" << Qt::endl; return;
+    case QMetaType::Char:        s << INDENT << "infos << ParameterInfo{QMetaType::Char};" << Qt::endl; return;
+    case QMetaType::SChar:       s << INDENT << "infos << ParameterInfo{QMetaType::SChar};" << Qt::endl; return;
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-    case QMetaType::Char32:      s << INDENT << "infos << ParameterInfo(QMetaType::Char32);" << Qt::endl; return;
+    case QMetaType::Char32:      s << INDENT << "infos << ParameterInfo{QMetaType::Char32};" << Qt::endl; return;
 #endif
-    case QMetaType::UShort:      s << INDENT << "infos << ParameterInfo(QMetaType::UShort);" << Qt::endl; return;
-    case QMetaType::Short:       s << INDENT << "infos << ParameterInfo(QMetaType::Short);" << Qt::endl; return;
-    case QMetaType::UInt:        s << INDENT << "infos << ParameterInfo(QMetaType::UInt);" << Qt::endl; return;
-    case QMetaType::Int:         s << INDENT << "infos << ParameterInfo(QMetaType::Int);" << Qt::endl; return;
-    case QMetaType::ULongLong:   s << INDENT << "infos << ParameterInfo(QMetaType::ULongLong);" << Qt::endl; return;
-    case QMetaType::LongLong:    s << INDENT << "infos << ParameterInfo(QMetaType::LongLong);" << Qt::endl; return;
-    case QMetaType::ULong:       s << INDENT << "infos << ParameterInfo(QMetaType::ULong);" << Qt::endl; return;
-    case QMetaType::Long:        s << INDENT << "infos << ParameterInfo(QMetaType::Long);" << Qt::endl; return;
+    case QMetaType::UShort:      s << INDENT << "infos << ParameterInfo{QMetaType::UShort};" << Qt::endl; return;
+    case QMetaType::Short:       s << INDENT << "infos << ParameterInfo{QMetaType::Short};" << Qt::endl; return;
+    case QMetaType::UInt:        s << INDENT << "infos << ParameterInfo{QMetaType::UInt};" << Qt::endl; return;
+    case QMetaType::Int:         s << INDENT << "infos << ParameterInfo{QMetaType::Int};" << Qt::endl; return;
+    case QMetaType::ULongLong:   s << INDENT << "infos << ParameterInfo{QMetaType::ULongLong};" << Qt::endl; return;
+    case QMetaType::LongLong:    s << INDENT << "infos << ParameterInfo{QMetaType::LongLong};" << Qt::endl; return;
+    case QMetaType::ULong:       s << INDENT << "infos << ParameterInfo{QMetaType::ULong};" << Qt::endl; return;
+    case QMetaType::Long:        s << INDENT << "infos << ParameterInfo{QMetaType::Long};" << Qt::endl; return;
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-    case QMetaType::Char16:      s << INDENT << "infos << ParameterInfo(QMetaType::Char16);" << Qt::endl; return;
+    case QMetaType::Char16:      s << INDENT << "infos << ParameterInfo{QMetaType::Char16};" << Qt::endl; return;
 #endif
-    case QMetaType::QChar:       s << INDENT << "infos << ParameterInfo(QMetaType::QChar);" << Qt::endl; return;
-    case QMetaType::Float:       s << INDENT << "infos << ParameterInfo(QMetaType::Float);" << Qt::endl; return;
-    case QMetaType::Double:      s << INDENT << "infos << ParameterInfo(QMetaType::Double);" << Qt::endl; return;
-    case QMetaType::Bool:        s << INDENT << "infos << ParameterInfo(QMetaType::Bool);" << Qt::endl; return;
-    case QMetaType::QString:     s << INDENT << "infos << ParameterInfo(QMetaType::QString);" << Qt::endl; return;
-    case QMetaType::QVariant:    s << INDENT << "infos << ParameterInfo(QMetaType::QVariant);" << Qt::endl; return;
-    case QMetaType::QByteArray:  s << INDENT << "infos << ParameterInfo(QMetaType::QByteArray);" << Qt::endl; return;
+    case QMetaType::QChar:       s << INDENT << "infos << ParameterInfo{QMetaType::QChar};" << Qt::endl; return;
+    case QMetaType::Float:       s << INDENT << "infos << ParameterInfo{QMetaType::Float};" << Qt::endl; return;
+    case QMetaType::Double:      s << INDENT << "infos << ParameterInfo{QMetaType::Double};" << Qt::endl; return;
+    case QMetaType::Bool:        s << INDENT << "infos << ParameterInfo{QMetaType::Bool};" << Qt::endl; return;
+    case QMetaType::QString:     s << INDENT << "infos << ParameterInfo{QMetaType::QString};" << Qt::endl; return;
+    case QMetaType::QVariant:    s << INDENT << "infos << ParameterInfo{QMetaType::QVariant};" << Qt::endl; return;
+    case QMetaType::QByteArray:  s << INDENT << "infos << ParameterInfo{QMetaType::QByteArray};" << Qt::endl; return;
     default: break;
     }
 
     const QString mangledTypeName = computeMangledTypeName(type);
     {
-        s << INDENT << "infos << ParameterInfo(" << Qt::endl;
+        s << INDENT << "infos << ParameterInfo{" << Qt::endl;
         {
             INDENTATION(INDENT)
             {
@@ -12654,7 +12660,7 @@ void CppImplGenerator::writeTypeConversion(QTextStream &s, const MetaFunction *f
                 }
             }
         }
-        s << ");" << Qt::endl;
+        s << "};" << Qt::endl;
     }
 }
 
@@ -12923,7 +12929,7 @@ void CppImplGenerator::writeMetaInfo(QTextStream &s, const MetaClass *cls,
                                 digits = 1;
                             INDENTATION(INDENT)
                             for (int i = 0; i < virtual_functions.size(); ++i) {
-                                s << Qt::endl << INDENT << "FunctionInfo(/* " << QStringLiteral(u"%1").arg(QString::number(i), digits) << " */ \"" << virtual_functions.at(i)->name() << "\", \""
+                                s << Qt::endl << INDENT << "FunctionInfo{/* " << QStringLiteral(u"%1").arg(QString::number(i), digits) << " */ \"" << virtual_functions.at(i)->name() << "\", \""
                                    << jni_signature(virtual_functions.at(i), JNISignatureFormat(NoModification | SlashesAndStuff))
                                    << "\"";
                                 if(virtual_functions.at(i)->wasPrivate() && virtual_functions.at(i)->isAbstract()){
@@ -12931,7 +12937,7 @@ void CppImplGenerator::writeMetaInfo(QTextStream &s, const MetaClass *cls,
                                 }else if(virtual_functions.at(i)->isAbstract()){
                                     s << ", FunctionInfo::Abstract";
                                 }
-                                s << ")";
+                                s << "}";
                                 if(i < virtual_functions.size()-1)
                                     s << ",";
                             }
@@ -12981,11 +12987,11 @@ void CppImplGenerator::writeMetaInfo(QTextStream &s, const MetaClass *cls,
                                     }else{
                                         s << " ";
                                     }
-                                    s << "ConstructorInfo(&__qt_construct_" << cls->qualifiedCppName().replace(QStringLiteral(u"::"), QStringLiteral(u"_")).replace(u'$', u'_').replace(u'>', u'_').replace(u'<', u'_') << argumentList.marshalledArguments << ", ";
+                                    s << "ConstructorInfo{&__qt_construct_" << cls->qualifiedCppName().replace(QStringLiteral(u"::"), QStringLiteral(u"_")).replace(u'$', u'_').replace(u'>', u'_').replace(u'<', u'_') << argumentList.marshalledArguments << ", ";
                                     if(argumentList.jniSignature.isEmpty())
-                                        s << "nullptr)";
+                                        s << "nullptr}";
                                     else
-                                        s << "\"" << argumentList.jniSignature << "\")";
+                                        s << "\"" << argumentList.jniSignature << "\"}";
                                 }
                                 if(!pps.isEmpty()){
                                     s << Qt::endl << "#endif // " << pps.join(QStringLiteral(u" && "));
@@ -13005,7 +13011,7 @@ void CppImplGenerator::writeMetaInfo(QTextStream &s, const MetaClass *cls,
                                 s << ",";
                             else
                                 s << " ";
-                            s << "ConstructorInfo(&__qt_construct_" << cls->qualifiedCppName().replace(QStringLiteral(u"::"), QStringLiteral(u"_")).replace(u'$', u'_').replace(u'>', u'_').replace(u'<', u'_') << "_declarative, \"Lio/qt/core/QObject$QDeclarativeConstructor;\")";
+                            s << "ConstructorInfo{&__qt_construct_" << cls->qualifiedCppName().replace(QStringLiteral(u"::"), QStringLiteral(u"_")).replace(u'$', u'_').replace(u'>', u'_').replace(u'<', u'_') << "_declarative, \"Lio/qt/core/QObject$QDeclarativeConstructor;\"}";
                             if(!pps.isEmpty()){
                                 s << Qt::endl << "#endif // " << pps.join(QStringLiteral(u" && ")) << Qt::endl;
                             }
@@ -13143,9 +13149,9 @@ void CppImplGenerator::writeMetaInfo(QTextStream &s, const MetaClass *cls,
                                             s << ",";
                                         {
                                             INDENTATION(INDENT)
-                                            s << Qt::endl << INDENT << "SignalMetaInfo(/* "
+                                            s << Qt::endl << INDENT << "SignalMetaInfo{/* "
                                                << QString("%1").arg(QString::number(signalCounter), digits) << " */ \"" << f->name() << "\", \""
-                                               << signalSignature << "\", " << arguments.size() << ", __signal_method_indexes_" << cls->qualifiedCppName().replace(QStringLiteral(u"::"), QStringLiteral(u"_")).replace(u'$', u'_').replace(u'>', u'_').replace(u'<', u'_') << "_" << signalsInTargetLang.indexOf(f) << ")";
+                                               << signalSignature << "\", " << arguments.size() << ", __signal_method_indexes_" << cls->qualifiedCppName().replace(QStringLiteral(u"::"), QStringLiteral(u"_")).replace(u'$', u'_').replace(u'>', u'_').replace(u'<', u'_') << "_" << signalsInTargetLang.indexOf(f) << "}";
                                         }
                                         signalCounter++;
                                     }
@@ -13750,10 +13756,10 @@ void CppImplGenerator::writeMetaInfo(QTextStream &s, const MetaFunctional *funct
               << INDENT << "                          " << (functional->needsReturnScope() ? "true" : "false") << "," << Qt::endl
               << INDENT << "                          &deleter_" << QString(functional->typeEntry()->name()).replace(QStringLiteral(u"::"), QStringLiteral(u"_")).replace(u'$', u'_').replace(u'>', u'_').replace(u'<', u'_') << "," << Qt::endl
               << INDENT << "                          &__qt_destruct_" << QString(functional->typeEntry()->name()).replace(QStringLiteral(u"::"), QStringLiteral(u"_")).replace(u'$', u'_').replace(u'>', u'_').replace(u'<', u'_') << "," << Qt::endl
-              << INDENT << "                          {ConstructorInfo(&__qt_construct_" << QString(functional->typeEntry()->name()).replace(QStringLiteral(u"::"), QStringLiteral(u"_")).replace(u'$', u'_').replace(u'>', u'_').replace(u'<', u'_') << ", nullptr)}," << Qt::endl
-              << INDENT << "                          {FunctionInfo(\""
+              << INDENT << "                          {ConstructorInfo{&__qt_construct_" << QString(functional->typeEntry()->name()).replace(QStringLiteral(u"::"), QStringLiteral(u"_")).replace(u'$', u'_').replace(u'>', u'_').replace(u'<', u'_') << ", nullptr}}," << Qt::endl
+              << INDENT << "                          {FunctionInfo{\""
                                                                     << (functional->typeEntry()->functionName().isEmpty() ? QString("call") : functional->typeEntry()->functionName())
-                                                                    << "\", \"" << jni_signature(functional, JNISignatureFormat(NoModification | SlashesAndStuff)) << "\", FunctionInfo::Abstract)});" << Qt::endl;
+                                                                    << "\", \"" << jni_signature(functional, JNISignatureFormat(NoModification | SlashesAndStuff)) << "\", FunctionInfo::Abstract}});" << Qt::endl;
         }
         writeCodeInjections(s, functional->typeEntry(), CodeSnip::Position1, TS::MetaInfo);
         writeCodeInjections(s, functional->typeEntry(), CodeSnip::End, TS::MetaInfo);

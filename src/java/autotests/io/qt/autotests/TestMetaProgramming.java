@@ -608,7 +608,7 @@ public class TestMetaProgramming extends ApplicationInitializer {
     		invokableMethod.invoke(b, Qt.ConnectionType.QueuedConnection, 2.0, 4f, 7);
 			Assert.fail("Expected to throw a QUnsuccessfulInvocationException.");
 		} catch (QUnsuccessfulInvocationException e) {
-			Assert.assertEquals("Unable to invoke methods with return values in queued connections.", e.getMessage());
+			Assert.assertEquals("Unable to invoke method with return value in queued connections.", e.getMessage());
 		}
 	}
 	
@@ -664,7 +664,7 @@ public class TestMetaProgramming extends ApplicationInitializer {
 	    	invokableMethod.invoke(b, Qt.ConnectionType.QueuedConnection, 2.0, 4f, 7);
 			Assert.fail("Expected to throw a QUnsuccessfulInvocationException.");
 		} catch (QUnsuccessfulInvocationException e) {
-			Assert.assertEquals("Unable to invoke methods with return values in queued connections.", e.getMessage());
+			Assert.assertEquals("Unable to invoke method with return value in queued connections.", e.getMessage());
 		}finally {
 			thread.quit();
 		}
@@ -700,7 +700,7 @@ public class TestMetaProgramming extends ApplicationInitializer {
 	    	invokableMethod.invoke(b, Qt.ConnectionType.AutoConnection, 2.0, 4f, 7);
 			Assert.fail("Expected to throw a QUnsuccessfulInvocationException.");
 		} catch (QUnsuccessfulInvocationException e) {
-			Assert.assertEquals("Unable to invoke methods with return values in queued connections (auto connection with different threads).", e.getMessage());
+			Assert.assertEquals("Unable to invoke method with return value in queued connections (auto connection with different threads).", e.getMessage());
 		}finally {
 			thread.quit();
 		}
@@ -727,7 +727,7 @@ public class TestMetaProgramming extends ApplicationInitializer {
 	    	QMetaObject.invokeMethod(b::invokableMethod3, Qt.ConnectionType.QueuedConnection, 2.0, 4f, 7);
 			Assert.fail("Expected to throw a QUnsuccessfulInvocationException.");
 		} catch (QUnsuccessfulInvocationException e) {
-			Assert.assertEquals("Unable to invoke methods with return values in queued connections.", e.getMessage());
+			Assert.assertEquals("Unable to invoke method with return value in queued connections.", e.getMessage());
 		}
 	}
 	
@@ -779,7 +779,7 @@ public class TestMetaProgramming extends ApplicationInitializer {
 			QMetaObject.invokeMethod(b::invokableMethod3, Qt.ConnectionType.QueuedConnection, 2.0, 4f, 7);
 			Assert.fail("Expected to throw a QUnsuccessfulInvocationException.");
 		} catch (QUnsuccessfulInvocationException e) {
-			Assert.assertEquals("Unable to invoke methods with return values in queued connections.", e.getMessage());
+			Assert.assertEquals("Unable to invoke method with return value in queued connections.", e.getMessage());
 		}finally {
 			thread.quit();
 		}
@@ -813,7 +813,7 @@ public class TestMetaProgramming extends ApplicationInitializer {
 			QMetaObject.invokeMethod(b::invokableMethod3, Qt.ConnectionType.AutoConnection, 2.0, 4f, 7);
 			Assert.fail("Expected to throw a QUnsuccessfulInvocationException.");
 		} catch (QUnsuccessfulInvocationException e) {
-			Assert.assertEquals("Unable to invoke methods with return values in queued connections (auto connection with different threads).", e.getMessage());
+			Assert.assertEquals("Unable to invoke method with return value in queued connections (auto connection with different threads).", e.getMessage());
 		}finally {
 			thread.quit();
 		}
@@ -877,7 +877,7 @@ public class TestMetaProgramming extends ApplicationInitializer {
 			QMetaObject.invokeMethod((d,f,i)->{ return "TEST"+i; }, Qt.ConnectionType.QueuedConnection, 2.0, 4f, 7);
 			Assert.fail("Expected to throw a QUnsuccessfulInvocationException.");
 		} catch (QUnsuccessfulInvocationException e) {
-			Assert.assertEquals("Unable to invoke methods with return values in queued connections.", e.getMessage());
+			Assert.assertEquals("Unable to invoke method with return value in queued connections.", e.getMessage());
 		}
 	}
 	

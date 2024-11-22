@@ -111,7 +111,7 @@ TypeSystem{
                                       "                    if(JniEnvironment env{200}){\n"+
                                       "                        jobject _format = QtJambiAPI::convertNativeToJavaObjectAsCopy(env, &format, Java::QtMultimedia::QAudioFormat::getClass(env));\n"+
                                       "                        jobject _buffer = qtjambi_cast<jobject>(env, buffer);\n"+
-                                      "                        Java::QtCore::QMetaObject$Slot2::invoke(env, slot.object(), _format, _buffer);\n"+
+                                      "                        Java::QtCore::QMetaObject$Slot2::invoke(env, slot.object(env), _format, _buffer);\n"+
                                       "                    }\n"+
                                       "                };"}
                     }
@@ -134,7 +134,7 @@ TypeSystem{
                         Text{content: "auto %out = [slot = JObjectWrapper(%env, %in)](const QAudioBuffer& buffer){\n"+
                                       "                    if(JniEnvironment env{200}){\n"+
                                       "                        jobject _buffer = QtJambiAPI::convertNativeToJavaObjectAsCopy(env, &buffer, Java::QtMultimedia::QAudioBuffer::getClass(env));\n"+
-                                      "                        Java::QtCore::QMetaObject$Slot1::invoke(env, slot.object(), _buffer);\n"+
+                                      "                        Java::QtCore::QMetaObject$Slot1::invoke(env, slot.object(env), _buffer);\n"+
                                       "                    }\n"+
                                       "                };"}
                     }

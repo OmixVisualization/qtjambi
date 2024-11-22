@@ -96,6 +96,8 @@ import io.qt.internal.LibraryBundle.WrongConfigurationException;
  */
 final class LibraryUtility {
 	
+	private final static Logger logger = Logger.getLogger("io.qt.internal");
+	
 	enum Architecture{
 		x86,
 		x86_64,
@@ -338,7 +340,7 @@ final class LibraryUtility {
             else
                 jniLibdirs = null;
         } catch(Throwable e) {
-            java.util.logging.Logger.getLogger("io.qt.internal").log(java.util.logging.Level.SEVERE, "", e);
+            logger.log(java.util.logging.Level.SEVERE, "", e);
         }finally {
         	ICU_VERSION = icuVersion;
             systemLibrariesList = systemLibraries!=null ? Collections.unmodifiableList(systemLibraries) : Collections.emptyList();
@@ -696,7 +698,7 @@ final class LibraryUtility {
 		        }
 		        deleteTmpDeployment = !keepDeployment;
 		        if(deleteTmpDeployment)
-		        	Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->"Requires deletion of tmp deployment directory "+jambiDeploymentDir.getAbsolutePath()+" during program termination.");
+		        	logger.log(Level.FINEST, ()->"Requires deletion of tmp deployment directory "+jambiDeploymentDir.getAbsolutePath()+" during program termination.");
 		        
 		        if(Boolean.getBoolean("io.qt.provide-headers")) {
 		        	tmpDir = new File(System.getProperty("java.io.tmpdir"));
@@ -904,7 +906,7 @@ final class LibraryUtility {
 	            try {
 					specsFound = loader.getResources("META-INF/qtjambi-deployment.xml");
 				} catch (IOException e) {
-					Logger.getLogger("io.qt.internal").log(Level.WARNING, "", e);
+					logger.log(Level.WARNING, "", e);
 				}
 	            dontSearchDeploymentSpec = specsFound.hasMoreElements();
             	Map<URL,URL> debuginfosByURL = Collections.emptyMap();
@@ -1238,7 +1240,7 @@ final class LibraryUtility {
 	                	continue;
 	                loadedNativeDeploymentUrls.add(url);
 	
-	                Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->String.format("Found %1$s", url.getFile().replace(DEPLOY_XML, "")));
+	                logger.log(Level.FINEST, ()->String.format("Found %1$s", url.getFile().replace(DEPLOY_XML, "")));
 	
 	                LibraryBundle spec = null;
 	                String protocol = url.getProtocol();
@@ -1257,24 +1259,24 @@ final class LibraryUtility {
 									String jarName = new File(jarUrl.getFile()).getName();
 									try {
 										URL debuginfoURL = debuginfosByURL.get(url);
-										Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->debuginfoURL==null ? String.format("Extracting libraries from %1$s", url.getFile().replace(DEPLOY_XML, "")) : String.format("Extracting libraries from %1$s and %2$s", url.getFile().replace(DEPLOY_XML, ""), debuginfoURL.getFile().replace(DEPLOY_XML, "")));
+										logger.log(Level.FINEST, ()->debuginfoURL==null ? String.format("Extracting libraries from %1$s", url.getFile().replace(DEPLOY_XML, "")) : String.format("Extracting libraries from %1$s and %2$s", url.getFile().replace(DEPLOY_XML, ""), debuginfoURL.getFile().replace(DEPLOY_XML, "")));
 									    spec = prepareNativeDeployment(url, debuginfoURL, jarName, null);
 									} catch (ParserConfigurationException | SAXException | ZipException e) {
-										Logger.getLogger("io.qt.internal").log(Level.WARNING, String.format("Unable to load native libraries from %1$s: %2$s", (jarName==null ? jarUrl : jarName), e.getMessage()), e);
+										logger.log(Level.WARNING, String.format("Unable to load native libraries from %1$s: %2$s", (jarName==null ? jarUrl : jarName), e.getMessage()), e);
 									} catch (IOException e) {
 									}
 								} catch (MalformedURLException e) {
-									Logger.getLogger("io.qt.internal").log(Level.WARNING, "", e);
+									logger.log(Level.WARNING, "", e);
 								}
 	                    }
 	                } else if (protocol.equals("file")) {
 	                    // No unpack since we presume we are already unpacked
 	                    try {
 	                    	URL debuginfoURL = debuginfosByURL.get(url);
-	                    	Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->debuginfoURL==null ? String.format("Extracting libraries from %1$s", url.getFile().replace(DEPLOY_XML, "")) : String.format("Extracting libraries from %1$s and %2$s", url.getFile().replace(DEPLOY_XML, ""), debuginfoURL.getFile().replace(DEPLOY_XML, "")));
+	                    	logger.log(Level.FINEST, ()->debuginfoURL==null ? String.format("Extracting libraries from %1$s", url.getFile().replace(DEPLOY_XML, "")) : String.format("Extracting libraries from %1$s and %2$s", url.getFile().replace(DEPLOY_XML, ""), debuginfoURL.getFile().replace(DEPLOY_XML, "")));
 							spec = prepareNativeDeployment(url, debuginfoURL, null, Boolean.FALSE);
 						} catch (ParserConfigurationException | SAXException | ZipException e) {
-							Logger.getLogger("io.qt.internal").log(Level.WARNING, String.format("Unable to load native libraries from %1$s: %2$s", url, e.getMessage()), e);
+							logger.log(Level.WARNING, String.format("Unable to load native libraries from %1$s: %2$s", url, e.getMessage()), e);
 						} catch (IOException e) {
 						}
 	                }
@@ -1331,10 +1333,10 @@ final class LibraryUtility {
             	isDebuginfoSubdir = false;
 	    	}
 		} catch (RuntimeException | Error e) {
-			Logger.getLogger("io.qt.internal").log(Level.WARNING, "", e);
+			logger.log(Level.WARNING, "", e);
 			throw e;
 		} catch (Throwable e) {
-			Logger.getLogger("io.qt.internal").log(Level.WARNING, "", e);
+			logger.log(Level.WARNING, "", e);
 			throw new ExceptionInInitializerError(e);
         }
     }
@@ -1418,12 +1420,12 @@ final class LibraryUtility {
                     Boolean booleanValue = Boolean.valueOf(debugString);
                     if((booleanValue != null && booleanValue.booleanValue()) || debugString.length() == 0) {
                         configuration = LibraryBundle.Configuration.Debug;
-                        java.util.logging.Logger.getLogger("io.qt.internal").log(java.util.logging.Level.WARNING, "-Dio.qt.debug=" + Boolean.TRUE + "; is set instead of =debug.");
+                        logger.log(java.util.logging.Level.WARNING, "-Dio.qt.debug=" + Boolean.TRUE + "; is set instead of =debug.");
                     }
                 }
             }
         } catch(Exception e) {
-            java.util.logging.Logger.getLogger("io.qt.internal").log(java.util.logging.Level.SEVERE, "-Dio.qt.debug=" + Boolean.FALSE + "; is assumed default", e);
+            logger.log(java.util.logging.Level.SEVERE, "-Dio.qt.debug=" + Boolean.FALSE + "; is assumed default", e);
             // only because Configuration.Release is assumed
         }
 
@@ -1490,10 +1492,10 @@ final class LibraryUtility {
         if(deleteTmpDeployment) {
         	Preferences preferences = Preferences.userNodeForPackage(LibraryUtility.class);
 	        if(jambiDeploymentDir.exists() && jambiDeploymentDir.isDirectory()) {
-	        	Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->"Deleting tmp deployment directory "+jambiDeploymentDir.getAbsolutePath()+".");
+	        	logger.log(Level.FINEST, ()->"Deleting tmp deployment directory "+jambiDeploymentDir.getAbsolutePath()+".");
 	        	clearAndDelete(jambiDeploymentDir);
 	        	if(jambiDeploymentDir.exists() && jambiDeploymentDir.isDirectory()) {
-	        		Logger.getLogger("io.qt.internal").log(Level.FINEST, "Preparing pending deletion...");
+	        		logger.log(Level.FINEST, "Preparing pending deletion...");
 	        		String dirs = preferences.get("qtjambi.previous.deployment.dir", null);
 	        		if(dirs!=null && !dirs.isEmpty()) {
 	        			preferences.put("qtjambi.previous.deployment.dir", dirs + File.pathSeparator + jambiDeploymentDir.getAbsolutePath());
@@ -1502,7 +1504,7 @@ final class LibraryUtility {
 	        		}
 	        	}
 	    	}else {
-	    		Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->"Tmp deployment directory "+jambiDeploymentDir.getAbsolutePath()+" does not exist.");
+	    		logger.log(Level.FINEST, ()->"Tmp deployment directory "+jambiDeploymentDir.getAbsolutePath()+" does not exist.");
 	    	}
         	try{
 	        	Preferences pids = preferences.node("qtjambi.pids");
@@ -1520,13 +1522,13 @@ final class LibraryUtility {
 			try {
 				l.extract();
 			}catch(Throwable t) {
-				java.util.logging.Logger.getLogger("io.qt.internal").log(java.util.logging.Level.SEVERE, "Error while extracting library", t);
+				logger.log(java.util.logging.Level.SEVERE, "Error while extracting library", t);
 			}
 			if(isQmlLoaded.get()) {
 				try {
 					l.extractQml();
 				}catch(Throwable t) {
-					java.util.logging.Logger.getLogger("io.qt.internal").log(java.util.logging.Level.SEVERE, "Error while extracting library", t);
+					logger.log(java.util.logging.Level.SEVERE, "Error while extracting library", t);
 				}
 			}
 			return true;
@@ -1608,7 +1610,7 @@ final class LibraryUtility {
     		loadUtilityLibrary("icuuc", LibraryUtility.ICU_VERSION, LibraryRequirementMode.Optional);
     		loadUtilityLibrary("icui18n", LibraryUtility.ICU_VERSION, LibraryRequirementMode.Optional);
     	} catch (Throwable e) {
-    		java.util.logging.Logger.getLogger("io.qt.internal").log(java.util.logging.Level.SEVERE, "Error while loading system library", e);
+    		logger.log(java.util.logging.Level.SEVERE, "Error while loading system library", e);
     	}
     	Availability availability = getLibraryAvailability("Qt", "Core", LIBINFIX, null, configuration, null, QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion);
     	if(!availability.isAvailable()) {
@@ -1701,15 +1703,15 @@ final class LibraryUtility {
         if(jambiSourcesDir!=null) {
         	switch (operatingSystem) {
         	case MacOS:
-				Logger.getLogger("io.qt.internal").log(Level.INFO, ()->String.format("Call debugger command: set substitute-path ../../../../../sources/ %1$s/", new File(jambiSourcesDir, "sources").getAbsolutePath()));
+				logger.log(Level.INFO, ()->String.format("Call debugger command: set substitute-path ../../../../../sources/ %1$s/", new File(jambiSourcesDir, "sources").getAbsolutePath()));
 				break;
         	case Windows:
         		if(!isMinGWBuilt) {
-        			Logger.getLogger("io.qt.internal").log(Level.INFO, ()->String.format("Call debugger command: srcpath %1$s", new File(jambiSourcesDir, "sources").getAbsolutePath()));
+        			logger.log(Level.INFO, ()->String.format("Call debugger command: srcpath %1$s", new File(jambiSourcesDir, "sources").getAbsolutePath()));
         			break;
         		}
 			default:
-				Logger.getLogger("io.qt.internal").log(Level.INFO, ()->String.format("Call debugger command: set substitute-path ../sources/ %1$s/", new File(jambiSourcesDir, "sources").getAbsolutePath()));
+				logger.log(Level.INFO, ()->String.format("Call debugger command: set substitute-path ../sources/ %1$s/", new File(jambiSourcesDir, "sources").getAbsolutePath()));
 				break;
     		}
         }
@@ -1726,8 +1728,9 @@ final class LibraryUtility {
 				dontUseQtFrameworks = Boolean.FALSE;
 			}
 		}
+    	java.io.File qtjambiLib;
         try{
-            java.io.File qtjambiLib = loadQtJambiLibrary(LibraryUtility.class, null, "QtJambi", QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion, QtJambi_LibraryUtilities.qtJambiPatch);
+            qtjambiLib = loadQtJambiLibrary(LibraryUtility.class, null, "QtJambi", QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion, QtJambi_LibraryUtilities.qtJambiPatch);
             if(LibraryUtility.operatingSystem!=OperatingSystem.Android) {
                 List<String> paths = new ArrayList<>();
                 String path;
@@ -1822,7 +1825,38 @@ final class LibraryUtility {
             LibraryUtility.analyzeUnsatisfiedLinkError(t, coreLib, false);
             throw t;
         }
+        int version;
+        try {
+        	version = qtJambiVersion();
+        } catch(UnsatisfiedLinkError t) {
+        	final List<String> qtjambiLibraryBuilds = readVersion(qtjambiLib, "QtJambi ".getBytes(StandardCharsets.US_ASCII));
+        	if(qtjambiLibraryBuilds.isEmpty()) {
+            	throw new UnsatisfiedLinkError("Cannot combine QtJambi " 
+    					+ QtJambi_LibraryUtilities.qtMajorVersion + "." 
+    					+ QtJambi_LibraryUtilities.qtMinorVersion + "." 
+    					+ QtJambi_LibraryUtilities.qtJambiPatch + " with outdated native library.");        		
+        	}else {
+        		String qtjambiLibraryBuild = qtjambiLibraryBuilds.get(0);
+            	throw new UnsatisfiedLinkError("Cannot combine QtJambi " 
+    					+ QtJambi_LibraryUtilities.qtMajorVersion + "." 
+    					+ QtJambi_LibraryUtilities.qtMinorVersion + "." 
+    					+ QtJambi_LibraryUtilities.qtJambiPatch + " with native library "+qtjambiLibraryBuild+".");        		
+        	}
+        }
+        int majorVersion = (version >> 16) & 0xff;
+        int minorVersion = (version >> 8) & 0xff;
+        int patchVersion = version & 0xff;
+        if(majorVersion!=QtJambi_LibraryUtilities.qtMajorVersion || minorVersion!=QtJambi_LibraryUtilities.qtMinorVersion || patchVersion!=QtJambi_LibraryUtilities.qtJambiPatch) {
+        	throw new UnsatisfiedLinkError("Cannot combine QtJambi " 
+					+ QtJambi_LibraryUtilities.qtMajorVersion + "." 
+					+ QtJambi_LibraryUtilities.qtMinorVersion + "." 
+					+ QtJambi_LibraryUtilities.qtJambiPatch + " with native library "
+					+ majorVersion + "." 
+					+ minorVersion + "." 
+					+ patchVersion + ".");
+        }
     }
+    private static native int qtJambiVersion();
 
     static void loadQtJambiLibrary(Class<?> callerClass, String library) {
     	LibVersion libVersion = getLibVersion(callerClass);
@@ -1966,7 +2000,7 @@ final class LibraryUtility {
 											}
 										}
 										File _debuginfoFile = debuginfoFile;
-										Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->_debuginfoFile==null ? String.format("Extracting libraries from %1$s", nativeFile.getAbsolutePath()) : String.format("Extracting libraries from %1$s and %2$s", nativeFile.getAbsolutePath(), _debuginfoFile.getAbsolutePath()));
+										logger.log(Level.FINEST, ()->_debuginfoFile==null ? String.format("Extracting libraries from %1$s", nativeFile.getAbsolutePath()) : String.format("Extracting libraries from %1$s and %2$s", nativeFile.getAbsolutePath(), _debuginfoFile.getAbsolutePath()));
 										deployment = prepareNativeDeployment(nativeFileURL, debuginfoFileURL, nativeFile.getName(), null);
 										if(deployment != null 
 												&& String.format("%1$s.%2$s.%3$s", versionArray[0], versionArray[1], versionArray[2]).equals(deployment.version())
@@ -1995,7 +2029,7 @@ final class LibraryUtility {
 				                	availability = getQtJambiLibraryAvailability(prefix, library, null, null, configuration, moduleName + infix, versionArray);
 								}
 							} catch (ParserConfigurationException | SAXException | ZipException e) {
-								Logger.getLogger("io.qt.internal").log(Level.WARNING, String.format("Unable to load native libraries from %1$s: %2$s", nativeFile.getName(), e.getMessage()), e);
+								logger.log(Level.WARNING, String.format("Unable to load native libraries from %1$s: %2$s", nativeFile.getName(), e.getMessage()), e);
 							} catch (IOException e) {
 							}
 		    			}else {
@@ -2028,7 +2062,7 @@ final class LibraryUtility {
 			return;
 		case Optional:
 			if(!availability.isAvailable()) {
-				Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->String.format("Library unavailable: %1$s", library));
+				logger.log(Level.FINEST, ()->String.format("Library unavailable: %1$s", library));
 				return;
 			}
 			break;
@@ -2046,7 +2080,7 @@ final class LibraryUtility {
 		} catch (RuntimeException | Error e) {
 			switch(libraryRequirementMode) {
 			case Optional:
-	        	Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->e.getMessage());
+	        	logger.log(Level.FINEST, ()->e.getMessage());
 				return;
 			default:
 				break;
@@ -2428,7 +2462,7 @@ final class LibraryUtility {
     	        }
     	    	if(libFile.exists()) {
     	    		File _libFile = libFile;
-    	    		Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->String.format("Loading library: '%1$s' from location: %2$s", availability.libraryRawName, _libFile.getAbsolutePath()));
+    	    		logger.log(Level.FINEST, ()->String.format("Loading library: '%1$s' from location: %2$s", availability.libraryRawName, _libFile.getAbsolutePath()));
     	            if(callerClassLoader==LibraryUtility.class.getClassLoader()
     	            		|| callerClassLoader==Object.class.getClassLoader()) {
     	            	Runtime.getRuntime().load(availability.file.getAbsolutePath());
@@ -2522,7 +2556,7 @@ final class LibraryUtility {
 					} catch (Throwable e) {
 						if(e instanceof InterruptedException)
 							throw e;
-						java.util.logging.Logger.getLogger("io.qt.internal").log(java.util.logging.Level.SEVERE, "", e);
+						logger.log(java.util.logging.Level.SEVERE, "", e);
 					}
 				}
 			} catch (InterruptedException e) {
@@ -2610,9 +2644,9 @@ final class LibraryUtility {
 	    	URL entryURL = CoreUtility.createURL(urlBase+libName);
 	        try(InputStream in = entryURL.openStream()){
 	        	File outFileDir = outFile.getParentFile();
-	        	Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->String.format(" - copying '%1$s' to %2$s", libName, outFile.getAbsolutePath()));
+	        	logger.log(Level.FINEST, ()->String.format(" - copying '%1$s' to %2$s", libName, outFile.getAbsolutePath()));
 	            if (!outFileDir.exists()) {
-	            	Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->String.format(" - creating directory: %1$s", outFileDir.getAbsolutePath()));
+	            	logger.log(Level.FINEST, ()->String.format(" - creating directory: %1$s", outFileDir.getAbsolutePath()));
 	                outFileDir.mkdirs();
 	            }
 	            Files.copy(in, outFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
@@ -2657,7 +2691,7 @@ final class LibraryUtility {
 			spec = LibraryBundle.read(deploymentSpec);
         } catch (java.util.zip.ZipException e1) {
 		} catch (SpecificationException e1) {
-			Logger.getLogger("io.qt.internal").warning(String.format("Unable to load native libraries from %1$s: %2$s", (jarName==null ? deploymentSpec : jarName), e1.getMessage()));
+			logger.warning(String.format("Unable to load native libraries from %1$s: %2$s", (jarName==null ? deploymentSpec : jarName), e1.getMessage()));
 		}
         if (spec==null)
             return null;
@@ -2673,7 +2707,7 @@ final class LibraryUtility {
 	        		debuginfoSpec = null;
 	        } catch (java.util.zip.ZipException e1) {
 			} catch (SpecificationException e1) {
-				Logger.getLogger("io.qt.internal").warning(String.format("Unable to load native libraries from %1$s: %2$s", (jarName==null ? deploymentSpec : jarName), e1.getMessage()));
+				logger.warning(String.format("Unable to load native libraries from %1$s: %2$s", (jarName==null ? deploymentSpec : jarName), e1.getMessage()));
 			}
         }
         boolean isDebug = spec.configuration()==LibraryBundle.Configuration.Debug;
@@ -2700,7 +2734,7 @@ final class LibraryUtility {
 	            if(spec.module()!=null)
 	            	dummyFile = new File(tmpDir, "."+spec.module()+".dummy");
 	            if (dummyFile.exists()) {
-	            	Logger.getLogger("io.qt.internal").log(Level.FINEST, " - cache directory exists");
+	            	logger.log(Level.FINEST, " - cache directory exists");
 	                shouldUnpack = Boolean.FALSE;
 	            } else {
 	                shouldUnpack = Boolean.TRUE;
@@ -2709,7 +2743,7 @@ final class LibraryUtility {
         }
 
         if (shouldUnpack.booleanValue()) {
-        	Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->String.format(" - prepare library extraction for %1$s...", (jarName==null ? deploymentSpec : new File(jarName).getName())));
+        	logger.log(Level.FINEST, ()->String.format(" - prepare library extraction for %1$s...", (jarName==null ? deploymentSpec : new File(jarName).getName())));
             
             LibVersion specVersion;
             try {
@@ -2746,7 +2780,7 @@ final class LibraryUtility {
                 		outFile = new File(tmpDir, pair.first.replace('/', File.separatorChar));
                 	}
 	                if(!outFile.exists()) {
-	                	Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->String.format(" - adding extractor for %1$s", pair.first));
+	                	logger.log(Level.FINEST, ()->String.format(" - adding extractor for %1$s", pair.first));
 	                	Library.ExtractionFunction extractor = getLibraryExtractor(urlBase, pair.first, outFile, Boolean.TRUE.equals(pair.second), isDebug, false, specVersion.qtMajorVersion, specVersion.qtMinorVersion, specVersion.qtJambiPatch);
 	                	if(pair.first.startsWith("qml/")) {
 	                		qmlExtractionFunctions.add(extractor);
@@ -3010,7 +3044,7 @@ final class LibraryUtility {
 	                				|| libName.startsWith("bin/Qt"+QtJambi_LibraryUtilities.qtMajorVersion), 
 	                				specVersion.qtMajorVersion, specVersion.qtMinorVersion, specVersion.qtJambiPatch);
 	                		if(library!=null) {
-	                			Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->String.format(" - adding extractor for %1$s", e.getName()));
+	                			logger.log(Level.FINEST, ()->String.format(" - adding extractor for %1$s", e.getName()));
 	                			if(libName.startsWith("qml/")) {
 	                				library.addQmlExtractionFunction(extractLibrary);
 	                			}else {
@@ -3082,19 +3116,19 @@ final class LibraryUtility {
 		                    File target = new File(tmpDir, s.getTarget().replace('/', File.separatorChar));
 		                    if(target.exists()) {
 			                    if (!outFileDir.exists()) {
-			                    	Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->String.format(" - creating directory: %1$s", outFileDir.getAbsolutePath()));
+			                    	logger.log(Level.FINEST, ()->String.format(" - creating directory: %1$s", outFileDir.getAbsolutePath()));
 			                        outFileDir.mkdirs();
 			                    }
-			                    Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->String.format(" - creating symbolic link %1$s pointing to %2$s", outFile.getAbsolutePath(), target.getAbsolutePath()));
+			                    logger.log(Level.FINEST, ()->String.format(" - creating symbolic link %1$s pointing to %2$s", outFile.getAbsolutePath(), target.getAbsolutePath()));
 		                    	Files.createSymbolicLink(outFile.toPath(), outFile.getParentFile().toPath().relativize(target.toPath()));
 		                    }else {
 		                    	Library.ExtractionFunction linker = ()->{
 	                    			if(!outFile.exists()) {
 		    		                    if (!outFileDir.exists()) {
-		    		                    	Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->String.format(" - creating directory: %1$s", outFileDir.getAbsolutePath()));
+		    		                    	logger.log(Level.FINEST, ()->String.format(" - creating directory: %1$s", outFileDir.getAbsolutePath()));
 		    		                        outFileDir.mkdirs();
 		    		                    }
-		    		                    Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->String.format(" - creating symbolic link %1$s pointing to %2$s", outFile.getAbsolutePath(), target.getAbsolutePath()));
+		    		                    logger.log(Level.FINEST, ()->String.format(" - creating symbolic link %1$s pointing to %2$s", outFile.getAbsolutePath(), target.getAbsolutePath()));
 				                    	Files.createSymbolicLink(outFile.toPath(), outFile.getParentFile().toPath().relativize(target.toPath()));
 	                    			}
 			                    	s.extractQml();
@@ -3181,10 +3215,10 @@ final class LibraryUtility {
 		                        File target = new File(tmpDir, s.getTarget().replace('/', File.separatorChar));
 		                        if(target.exists()) {
 			                        if (!outFileDir.exists()) {
-			                        	Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->String.format(" - creating directory: %1$s", outFileDir.getAbsolutePath()));
+			                        	logger.log(Level.FINEST, ()->String.format(" - creating directory: %1$s", outFileDir.getAbsolutePath()));
 			                            outFileDir.mkdirs();
 			                        }
-			                        Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->String.format(" - creating symbolic link %1$s pointing to %2$s", outFile.getAbsolutePath(), target.getAbsolutePath()));
+			                        logger.log(Level.FINEST, ()->String.format(" - creating symbolic link %1$s pointing to %2$s", outFile.getAbsolutePath(), target.getAbsolutePath()));
 		                        	Files.createSymbolicLink(outFile.toPath(), outFile.getParentFile().toPath().relativize(target.toPath()));
 		                        }else {
 		                        	Library linkedEntry = entries.get(s.getTarget());
@@ -3217,10 +3251,10 @@ final class LibraryUtility {
 			                    		Library.ExtractionFunction linker = ()->{
 			                    			if(!outFile.exists()) {
 						                        if (!outFileDir.exists()) {
-						                        	Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->String.format(" - creating directory: %1$s", outFileDir.getAbsolutePath()));
+						                        	logger.log(Level.FINEST, ()->String.format(" - creating directory: %1$s", outFileDir.getAbsolutePath()));
 						                            outFileDir.mkdirs();
 						                        }
-						                        Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->String.format(" - creating symbolic link %1$s pointing to %2$s", outFile.getAbsolutePath(), target.getAbsolutePath()));
+						                        logger.log(Level.FINEST, ()->String.format(" - creating symbolic link %1$s pointing to %2$s", outFile.getAbsolutePath(), target.getAbsolutePath()));
 						                    	Files.createSymbolicLink(outFile.toPath(), outFile.getParentFile().toPath().relativize(target.toPath()));
 			                    			}
 					                    	s.extractQml();
@@ -3239,10 +3273,10 @@ final class LibraryUtility {
 			                    			Library.ExtractionFunction linker = ()->{
 				                    			if(!outFile.exists()) {
 							                        if (!outFileDir.exists()) {
-							                        	Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->String.format(" - creating directory: %1$s", outFileDir.getAbsolutePath()));
+							                        	logger.log(Level.FINEST, ()->String.format(" - creating directory: %1$s", outFileDir.getAbsolutePath()));
 							                            outFileDir.mkdirs();
 							                        }
-							                        Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->String.format(" - creating symbolic link %1$s pointing to %2$s", outFile.getAbsolutePath(), target.getAbsolutePath()));
+							                        logger.log(Level.FINEST, ()->String.format(" - creating symbolic link %1$s pointing to %2$s", outFile.getAbsolutePath(), target.getAbsolutePath()));
 							                    	Files.createSymbolicLink(outFile.toPath(), outFile.getParentFile().toPath().relativize(target.toPath()));
 				                    			}
 						                    	s.extractQml();
@@ -3294,7 +3328,7 @@ final class LibraryUtility {
     }
 
     private static boolean loadSystemLibrary(String name) {
-    	Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->String.format(" - trying to load: %1$s", name));
+    	logger.log(Level.FINEST, ()->String.format(" - trying to load: %1$s", name));
 
         File foundFile = null;
         synchronized(loadedNativeDeploymentUrls) {
@@ -3311,7 +3345,7 @@ final class LibraryUtility {
 
         Runtime rt = Runtime.getRuntime();
         rt.load(foundFile.getAbsolutePath());
-        Logger.getLogger("io.qt.internal").log(Level.FINEST, " - ok!");
+        logger.log(Level.FINEST, " - ok!");
         return true;
     }
 
@@ -3615,34 +3649,26 @@ final class LibraryUtility {
 	    }
 	    return -1;
 	}
-
-	private static void analyzeUnsatisfiedLinkError(UnsatisfiedLinkError t, java.io.File coreLib, boolean atCoreLoad) {
-		final String architecture;
-		if(LibraryUtility.architecture==Architecture.x86) {
-			architecture = "i386-"+ByteOrder.nativeOrder().toString().toLowerCase();
-		}else {
-			architecture = LibraryUtility.architecture.name()+"-"+ByteOrder.nativeOrder().toString().toLowerCase();
-		}
+	
+	private static List<String> readVersion(java.io.File file, final byte[] prefix) {
 		final boolean canUniversalBuild = LibraryUtility.operatingSystem==OperatingSystem.MacOS
-												|| LibraryUtility.operatingSystem==OperatingSystem.IOS;
+				|| LibraryUtility.operatingSystem==OperatingSystem.IOS;
 		final List<String> qtLibraryBuilds = new ArrayList<>();
-		final List<String> qtjambiLibraryBuilds = new ArrayList<>();
 		final byte[] buildBy = "build; by".getBytes(StandardCharsets.US_ASCII);
-		final byte[] qtSpace = "Qt ".getBytes(StandardCharsets.US_ASCII);
 		try {
-			byte[] coredata = Files.readAllBytes(coreLib.toPath());
+			byte[] data = Files.readAllBytes(file.toPath());
 			int idx = 0;
 			while(true) {
-				idx = findSequence(idx, coredata, buildBy);
+				idx = findSequence(idx, data, buildBy);
 				if(idx<0)
 					break;
-				idx = reverseFindSequence(idx, coredata, qtSpace);
+				idx = reverseFindSequence(idx, data, prefix);
 				if(idx<0)
 					break;
 				ByteArrayOutputStream os = new ByteArrayOutputStream();
 				int parenCount = 0;
-				for(int i=idx; i<coredata.length; ++i){
-					byte c = coredata[i];
+				for(int i=idx; i<data.length; ++i){
+					byte c = data[i];
 					switch(c) {
 					case (byte)'(':
 						++parenCount;
@@ -3652,7 +3678,7 @@ final class LibraryUtility {
 						--parenCount;
 						os.write(c);
 						if(parenCount==0)
-							i = coredata.length;
+							i = data.length;
 						break;
 					case (byte)'<':
 					case (byte)'>':
@@ -3667,7 +3693,7 @@ final class LibraryUtility {
 						if(Character.isLetterOrDigit(c)) {
 							os.write(c);
 						}else {
-							i = coredata.length;
+							i = data.length;
 						}
 						break;
 					}
@@ -3678,65 +3704,25 @@ final class LibraryUtility {
 					if(!canUniversalBuild)
 						break;
 				}
-				idx += 5;
+				idx += prefix.length+1;
 			}
 		}catch(Throwable t2){}
+		return qtLibraryBuilds;
+	}
+
+	private static void analyzeUnsatisfiedLinkError(UnsatisfiedLinkError t, java.io.File coreLib, boolean atCoreLoad) {
+		final String architecture;
+		if(LibraryUtility.architecture==Architecture.x86) {
+			architecture = "i386-"+ByteOrder.nativeOrder().toString().toLowerCase();
+		}else {
+			architecture = LibraryUtility.architecture.name()+"-"+ByteOrder.nativeOrder().toString().toLowerCase();
+		}
+		final List<String> qtLibraryBuilds = readVersion(coreLib, "Qt ".getBytes(StandardCharsets.US_ASCII));
+		final List<String> qtjambiLibraryBuilds = new ArrayList<>();
 		if(!atCoreLoad){
 			Availability availability = getQtJambiLibraryAvailability(null, "QtJambi", null, null, configuration, null, QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion, QtJambi_LibraryUtilities.qtJambiPatch);
 			if(availability.file!=null) {
-				try {
-					byte[] jambidata = Files.readAllBytes(availability.file.toPath());
-					final byte[] qtjambiSpace = "QtJambi ".getBytes(StandardCharsets.US_ASCII);
-					int idx = 0;
-					while(true) {
-						idx = findSequence(idx, jambidata, buildBy);
-						if(idx<0)
-							break;
-						idx = reverseFindSequence(idx, jambidata, qtjambiSpace);
-						if(idx<0)
-							break;
-						ByteArrayOutputStream os = new ByteArrayOutputStream();
-						int parenCount = 0;
-						for(int i=idx; i<jambidata.length; ++i){
-							byte c = jambidata[i];
-							switch(c) {
-							case (byte)'(':
-								++parenCount;
-								os.write(c);
-								break;
-							case (byte)')':
-								--parenCount;
-								os.write(c);
-								if(parenCount==0)
-									i = jambidata.length;
-								break;
-							case (byte)'<':
-							case (byte)'>':
-							case (byte)'-':
-							case (byte)'_':
-							case (byte)' ':
-							case (byte)';':
-							case (byte)'.':
-								os.write(c);
-								break;
-							default:
-								if(Character.isLetterOrDigit(c)) {
-									os.write(c);
-								}else {
-									i = jambidata.length;
-								}
-								break;
-							}
-						}
-						String qtjambiLibraryBuild = new String(os.toByteArray(), StandardCharsets.US_ASCII);
-						if(qtjambiLibraryBuild.contains("build; by")) {
-							qtjambiLibraryBuilds.add(qtjambiLibraryBuild);
-							if(!canUniversalBuild)
-								break;
-						}
-						idx += 10;
-					}
-				}catch(Throwable t2){}
+				qtjambiLibraryBuilds.addAll(readVersion(availability.file, "QtJambi ".getBytes(StandardCharsets.US_ASCII)));
 			}
 		}else { // error when loading QtCore:
 			String qtLibraryBuild = null;

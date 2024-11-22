@@ -32,20 +32,25 @@ package io.qt.autotests;
 import org.junit.Assert;
 import org.junit.Test;
 
+import io.qt.core.QCoreApplication;
+import io.qt.core.QTimer;
 import io.qt.gui.QGuiApplication;
+import io.qt.gui.QIcon;
 import io.qt.gui.QWindow;
 
 public class TestInitializationGui extends UnitTestInitializer {
     @Test
     public void initialize() {
     	Assert.assertTrue(io.qt.QtUtilities.initializePackage("io.qt.gui"));
+    	QCoreApplication.setApplicationName("QtJambiUnitTest");
     	QGuiApplication.initialize(new String[0]);
-    	QWindow window = new QWindow();
-    	window.show();
-    	QGuiApplication.processEvents();
-    	window.hide();
-    	QGuiApplication.processEvents();
-    	window.dispose();
+    	QGuiApplication.setWindowIcon(new QIcon(":io/qt/autotests/icon.png"));
+    	{
+	    	QWindow window = new QWindow();
+	    	window.show();
+	    	QTimer.singleShot(500, QGuiApplication.instance(), QGuiApplication::quit);
+	    	QGuiApplication.exec();
+    	}
     	QGuiApplication.shutdown();
     }
 }

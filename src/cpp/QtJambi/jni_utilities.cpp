@@ -31,6 +31,7 @@
 
 #include "metainfo.h"
 #include <QtCore/QAbstractEventDispatcher>
+#include <QtCore/QRegularExpression>
 #include <QtCore/private/qcoreapplication_p.h>
 #if (defined(Q_OS_LINUX) || defined(Q_OS_MACOS) || defined(Q_OS_FREEBSD) || defined(Q_OS_NETBSD) || defined(Q_OS_OPENBSD) || defined(Q_OS_SOLARIS)) && !defined(Q_OS_ANDROID)
 #include <signal.h>
@@ -42,6 +43,9 @@
 #include "java_p.h"
 #include "utils_p.h"
 #include "qtjambilink_p.h"
+#if QT_VERSION < QT_VERSION_CHECK(6, 8, 0)
+#include "threadutils_p.h"
+#endif
 #include "qtjambi_cast.h"
 
 void shutdown(JNIEnv * env, bool regular);
@@ -53,9 +57,22 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambi_1LibraryUtilities_shutdown)
     QTJAMBI_NATIVE_METHOD_CALL("QtJambi_LibraryUtilities::shutdown()")
     try{
         bool regular = true;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+        if(auto mainThreadId = QCoreApplicationPrivate::theMainThreadId.loadRelaxed()){
+            if(mainThreadId==QThread::currentThreadId()){
+                if(QCoreApplication::instance() && !Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.no-app-deletion"))){
+                    delete QCoreApplication::instance();
+                }
+            }else if(QThread* mainThread = QCoreApplicationPrivate::theMainThread.loadRelaxed()){
+                if(mainThread->isRunning())
+                    regular = false;
+            }
+        }
+#else
         if(QThread* mainThread = QCoreApplicationPrivate::theMainThread.loadRelaxed()){
-            QThread* currentThread = QThread::currentThread();
-            if(mainThread==currentThread){
+            QThreadData* td = QThreadData::get2(mainThread);
+            QThreadUserData::theMainThreadId.storeRelaxed(nullptr);
+            if(td && td->threadId.loadRelaxed()==QThread::currentThreadId()){
                 if(QCoreApplication::instance() && !Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.no-app-deletion"))){
                     delete QCoreApplication::instance();
                 }
@@ -64,6 +81,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambi_1LibraryUtilities_shutdown)
                     regular = false;
             }
         }
+#endif
         shutdown(env, regular);
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
@@ -123,6 +141,12 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_ReferenceUtility_needsReferenceCount
         exn.raiseInJava(env);
     }
     return false;
+}
+
+extern "C" Q_DECL_EXPORT jint JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_LibraryUtility_qtJambiVersion)(JNIEnv *,jclass)
+{
+    return QT_VERSION_CHECK(QT_VERSION_MAJOR, QT_VERSION_MINOR, QTJAMBI_PATCH_VERSION);
 }
 
 extern "C" Q_DECL_EXPORT jstring JNICALL
@@ -199,7 +223,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_reinstallEventNotifyCallback)(JNI
             if(QThread::currentThread()!=mainThread){
                 Java::Runtime::IllegalStateException::throwNew(env, "Unable to reinstall event notify callback from outside the main thread." QTJAMBI_STACKTRACEINFO );
             }
-            if(QThread::currentThread()->loopLevel()>0){
+            if(mainThread->loopLevel()>0){
                 Java::Runtime::IllegalStateException::throwNew(env, "Unable to reinstall event notify callback with running application event loop." QTJAMBI_STACKTRACEINFO );
             }
         }else{
@@ -240,36 +264,285 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_threadCheck)(JNIEnv *env, jclass,
     }
 }
 
+class SelectiveEventFilter : public QObject{
+    QObject* m_eventFilter;
+    bool(&predicate)(const void*,QObject *, QEvent *);
+    void(&deleter)(void*);
+    void* data;
+    SelectiveEventFilter(QObject* _eventFilter, bool(&_predicate)(const void*,QObject *, QEvent *), void(&_deleter)(void*), void* _data)
+        : QObject(_eventFilter->parent()),
+        m_eventFilter(_eventFilter),
+        predicate(_predicate),
+        deleter(_deleter),
+        data(_data)
+    {
+        m_eventFilter->setParent(this);
+    }
+    template<typename Predicate>
+    static bool test(const void* data,QObject *watched, QEvent *event){
+        return (*reinterpret_cast<const Predicate*>(data))(watched, event);
+    }
+    template<typename Predicate>
+    static void destroy(void* data){
+        delete reinterpret_cast<Predicate*>(data);
+    }
+public:
+    template<typename Predicate>
+    SelectiveEventFilter(QObject* _eventFilter, Predicate&& predicate)
+        : SelectiveEventFilter(_eventFilter, SelectiveEventFilter::test<Predicate>,
+                               SelectiveEventFilter::destroy<Predicate>,
+                               new Predicate(std::move(predicate)))
+    {
+    }
+    ~SelectiveEventFilter(){
+        deleter(data);
+    }
+    bool eventFilter(QObject *watched, QEvent *event) final override{
+        if(predicate(data, watched, event)){
+            return m_eventFilter->eventFilter(watched, event);
+        }
+        return false;
+    }
+};
+
 extern "C" Q_DECL_EXPORT jobject JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_asSelectiveEventFilter)(JNIEnv *env, jclass, QtJambiNativeID objectId, jobject firstType, jobjectArray types)
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_asSelectiveEventFilterEventTypes)(JNIEnv *env, jclass, QtJambiNativeID objectId, jobject firstType, jobjectArray types)
 {
     try{
         QObject* eventFilter = QtJambiAPI::objectFromNativeId<QObject>(objectId);
         QtJambiAPI::checkThread(env, eventFilter);
         QSet<QEvent::Type> typeSet;
         typeSet.insert(qtjambi_cast<QEvent::Type>(env, firstType));
-        for(jsize i=0, l = env->GetArrayLength(types); i<l; ++i){
+        for(jsize i=0, l = types ? env->GetArrayLength(types) : 0; i<l; ++i){
             typeSet.insert(qtjambi_cast<QEvent::Type>(env, env->GetObjectArrayElement(types, i)));
         }
-        class SelectiveEventFilter : public QObject{
-            QObject* m_eventFilter;
-            const QSet<QEvent::Type> m_typeSet;
-        public:
-            SelectiveEventFilter(QObject* eventFilter, QSet<QEvent::Type>&& typeSet)
-                : QObject(eventFilter->parent()),
-                m_eventFilter(eventFilter),
-                m_typeSet(std::move(typeSet))
-            {
-                m_eventFilter->setParent(this);
-            }
-            bool eventFilter(QObject *watched, QEvent *event) final override{
-                if(m_typeSet.contains(event->type())){
-                    return m_eventFilter->eventFilter(watched, event);
+        eventFilter = new SelectiveEventFilter(eventFilter, [typeSet = std::move(typeSet)](QObject *, QEvent *event){
+            return typeSet.contains(event->type());
+        });
+        jobject result = qtjambi_cast<jobject>(env, eventFilter);
+        QtJambiAPI::setJavaOwnershipForTopLevelObject(env, eventFilter);
+        return result;
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+    return nullptr;
+}
+
+enum StringComparison{
+    Equal,
+    NotEqual,
+    LessThan,
+    GreaterThan,
+    LessThanOrEqual,
+    GreaterThanOrEqual,
+    Contains,
+    ContainsNot,
+    StartsWith,
+    StartsNotWith,
+    EndsWith,
+    EndsNotWith
+};
+
+extern "C" Q_DECL_EXPORT jobject JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_asSelectiveEventFilterObjectNames)(JNIEnv *env, jclass, QtJambiNativeID objectId, jint stringComparisonType, jint caseSensitivity, jstring objectName, jobjectArray objectNames)
+{
+    try{
+        QObject* eventFilter = QtJambiAPI::objectFromNativeId<QObject>(objectId);
+        QtJambiAPI::checkThread(env, eventFilter);
+        QList<QString> objectNameList;
+        objectNameList << qtjambi_cast<QString>(env, objectName);
+        for(jsize i=0, l = objectNames ? env->GetArrayLength(objectNames) : 0; i<l; ++i){
+            objectNameList << qtjambi_cast<QString>(env, env->GetObjectArrayElement(objectNames, i));
+        }
+        switch(stringComparisonType){
+        case Equal:
+            eventFilter = new SelectiveEventFilter(eventFilter, [caseSensitivity = Qt::CaseSensitivity(caseSensitivity),
+                                                                 objectNameList = std::move(objectNameList)](QObject *watched, QEvent *){
+                QString watchedObjectName = watched->objectName();
+                for(const QString& objectName : objectNameList){
+                    if(watchedObjectName.compare(objectName, caseSensitivity)==0)
+                        return true;
                 }
                 return false;
+            });
+            break;
+        case NotEqual:
+            eventFilter = new SelectiveEventFilter(eventFilter, [caseSensitivity = Qt::CaseSensitivity(caseSensitivity),
+                                                                 objectNameList = std::move(objectNameList)](QObject *watched, QEvent *){
+                QString watchedObjectName = watched->objectName();
+                for(const QString& objectName : objectNameList){
+                    if(watchedObjectName.compare(objectName, caseSensitivity)!=0)
+                        return true;
+                }
+                return false;
+            });
+            break;
+        case LessThan:
+            eventFilter = new SelectiveEventFilter(eventFilter, [caseSensitivity = Qt::CaseSensitivity(caseSensitivity),
+                                                                 objectNameList = std::move(objectNameList)](QObject *watched, QEvent *){
+                QString watchedObjectName = watched->objectName();
+                for(const QString& objectName : objectNameList){
+                    if(watchedObjectName.compare(objectName, caseSensitivity)<0)
+                        return true;
+                }
+                return false;
+            });
+            break;
+        case GreaterThan:
+            eventFilter = new SelectiveEventFilter(eventFilter, [caseSensitivity = Qt::CaseSensitivity(caseSensitivity),
+                                                                 objectNameList = std::move(objectNameList)](QObject *watched, QEvent *){
+                QString watchedObjectName = watched->objectName();
+                for(const QString& objectName : objectNameList){
+                    if(watchedObjectName.compare(objectName, caseSensitivity)>0)
+                        return true;
+                }
+                return false;
+            });
+            break;
+        case LessThanOrEqual:
+            eventFilter = new SelectiveEventFilter(eventFilter, [caseSensitivity = Qt::CaseSensitivity(caseSensitivity),
+                                                                 objectNameList = std::move(objectNameList)](QObject *watched, QEvent *){
+                QString watchedObjectName = watched->objectName();
+                for(const QString& objectName : objectNameList){
+                    if(watchedObjectName.compare(objectName, caseSensitivity)<=0)
+                        return true;
+                }
+                return false;
+            });
+            break;
+        case GreaterThanOrEqual:
+            eventFilter = new SelectiveEventFilter(eventFilter, [caseSensitivity = Qt::CaseSensitivity(caseSensitivity),
+                                                                 objectNameList = std::move(objectNameList)](QObject *watched, QEvent *){
+                QString watchedObjectName = watched->objectName();
+                for(const QString& objectName : objectNameList){
+                    if(watchedObjectName.compare(objectName, caseSensitivity)>=0)
+                        return true;
+                }
+                return false;
+            });
+            break;
+        case Contains:
+            eventFilter = new SelectiveEventFilter(eventFilter, [caseSensitivity = Qt::CaseSensitivity(caseSensitivity),
+                                                                 objectNameList = std::move(objectNameList)](QObject *watched, QEvent *){
+                QString watchedObjectName = watched->objectName();
+                for(const QString& objectName : objectNameList){
+                    if(watchedObjectName.contains(objectName, caseSensitivity))
+                        return true;
+                }
+                return false;
+            });
+            break;
+        case ContainsNot:
+            eventFilter = new SelectiveEventFilter(eventFilter, [caseSensitivity = Qt::CaseSensitivity(caseSensitivity),
+                                                                 objectNameList = std::move(objectNameList)](QObject *watched, QEvent *){
+                QString watchedObjectName = watched->objectName();
+                for(const QString& objectName : objectNameList){
+                    if(!watchedObjectName.contains(objectName, caseSensitivity))
+                        return true;
+                }
+                return false;
+            });
+            break;
+        case StartsWith:
+            eventFilter = new SelectiveEventFilter(eventFilter, [caseSensitivity = Qt::CaseSensitivity(caseSensitivity),
+                                                                 objectNameList = std::move(objectNameList)](QObject *watched, QEvent *){
+                QString watchedObjectName = watched->objectName();
+                for(const QString& objectName : objectNameList){
+                    if(watchedObjectName.startsWith(objectName, caseSensitivity))
+                        return true;
+                }
+                return false;
+            });
+            break;
+        case StartsNotWith:
+            eventFilter = new SelectiveEventFilter(eventFilter, [caseSensitivity = Qt::CaseSensitivity(caseSensitivity),
+                                                                 objectNameList = std::move(objectNameList)](QObject *watched, QEvent *){
+                QString watchedObjectName = watched->objectName();
+                for(const QString& objectName : objectNameList){
+                    if(!watchedObjectName.startsWith(objectName, caseSensitivity))
+                        return true;
+                }
+                return false;
+            });
+            break;
+        case EndsWith:
+            eventFilter = new SelectiveEventFilter(eventFilter, [caseSensitivity = Qt::CaseSensitivity(caseSensitivity),
+                                                                 objectNameList = std::move(objectNameList)](QObject *watched, QEvent *){
+                QString watchedObjectName = watched->objectName();
+                for(const QString& objectName : objectNameList){
+                    if(watchedObjectName.endsWith(objectName, caseSensitivity))
+                        return true;
+                }
+                return false;
+            });
+            break;
+        case EndsNotWith:
+            eventFilter = new SelectiveEventFilter(eventFilter, [caseSensitivity = Qt::CaseSensitivity(caseSensitivity),
+                                                                 objectNameList = std::move(objectNameList)](QObject *watched, QEvent *){
+                QString watchedObjectName = watched->objectName();
+                for(const QString& objectName : objectNameList){
+                    if(!watchedObjectName.endsWith(objectName, caseSensitivity))
+                        return true;
+                }
+                return false;
+            });
+            break;
+        default:
+            eventFilter = nullptr;
+            break;
+        }
+        jobject result = qtjambi_cast<jobject>(env, eventFilter);
+        QtJambiAPI::setJavaOwnershipForTopLevelObject(env, eventFilter);
+        return result;
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+    return nullptr;
+}
+
+extern "C" Q_DECL_EXPORT jobject JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_asSelectiveEventFilterMetaObjects)(JNIEnv *env, jclass, QtJambiNativeID objectId, jobject firstMetaObject, jobjectArray metaObjects)
+{
+    try{
+        QObject* eventFilter = QtJambiAPI::objectFromNativeId<QObject>(objectId);
+        QtJambiAPI::checkThread(env, eventFilter);
+        QList<const QMetaObject*> metaObjectList;
+        metaObjectList << &qtjambi_cast<const QMetaObject&>(env, firstMetaObject);
+        for(jsize i=0, l = metaObjects ? env->GetArrayLength(metaObjects) : 0; i<l; ++i){
+            metaObjectList << &qtjambi_cast<const QMetaObject&>(env, env->GetObjectArrayElement(metaObjects, i));
+        }
+        eventFilter = new SelectiveEventFilter(eventFilter, [metaObjectList = std::move(metaObjectList)](QObject *watched, QEvent *){
+            const QMetaObject* watchedMetaObject = watched->metaObject();
+            for(const QMetaObject* metaObject : metaObjectList){
+                if(watchedMetaObject->inherits(metaObject))
+                    return true;
             }
-        };
-        eventFilter = new SelectiveEventFilter(eventFilter, std::move(typeSet));
+            return false;
+        });
+        jobject result = qtjambi_cast<jobject>(env, eventFilter);
+        QtJambiAPI::setJavaOwnershipForTopLevelObject(env, eventFilter);
+        return result;
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+    return nullptr;
+}
+
+extern "C" Q_DECL_EXPORT jobject JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_asSelectiveEventFilterObjectNameMatches)(JNIEnv *env, jclass, QtJambiNativeID objectId, QtJambiNativeID regexpId, jlong _offset, jint _matchType, jint _matchOptions)
+{
+    try{
+        QObject* eventFilter = QtJambiAPI::objectFromNativeId<QObject>(objectId);
+        QtJambiAPI::checkThread(env, eventFilter);
+        eventFilter = new SelectiveEventFilter(eventFilter, [regexp = QtJambiAPI::valueFromNativeId<QRegularExpression>(regexpId),
+                                                             offset = qsizetype(_offset),
+                                                             matchType = QRegularExpression::MatchType(_matchType),
+                                                             matchOptions = QRegularExpression::MatchOptions(_matchOptions)](QObject *watched, QEvent *){
+            QString objectName = watched->objectName();
+            if(regexp.match(objectName, offset, matchType, matchOptions).hasMatch())
+                return true;
+            return false;
+        });
         jobject result = qtjambi_cast<jobject>(env, eventFilter);
         QtJambiAPI::setJavaOwnershipForTopLevelObject(env, eventFilter);
         return result;
@@ -413,6 +686,54 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_setThreadAffinityCheckEnabled)(JN
         const char* property = "io.qt.enable-thread-affinity-check";
         Java::Runtime::System::setProperty(env, env->NewStringUTF(property), env->NewStringUTF(enabled ? "true" : "false"));
         enableThreadAffinity(enabled);
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_setSignalEmitThreadCheckEnabled)(JNIEnv *env, jclass, jboolean enabled)
+{
+    try{
+        const char* property = "io.qt.enable-signal-emit-thread-check";
+        Java::Runtime::System::setProperty(env, env->NewStringUTF(property), env->NewStringUTF(enabled ? "true" : "false"));
+        enableSignalEmitThreadCheck(enabled);
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_setNoExceptionForwardingFromMetaCallsEnabled)(JNIEnv *env, jclass, jboolean enabled)
+{
+    try{
+        const char* property = "io.qt.no-exception-forwarding-from-meta-calls";
+        Java::Runtime::System::setProperty(env, env->NewStringUTF(property), env->NewStringUTF(enabled ? "true" : "false"));
+        reinitializeResettableFlag(env, property);
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_setNoExceptionForwardingFromVirtualCallsEnabled)(JNIEnv *env, jclass, jboolean enabled)
+{
+    try{
+        const char* property = "io.qt.no-exception-forwarding-from-virtual-calls";
+        Java::Runtime::System::setProperty(env, env->NewStringUTF(property), env->NewStringUTF(enabled ? "true" : "false"));
+        reinitializeResettableFlag(env, property);
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+}
+
+void installSignalEmitThreadCheckHandler(JNIEnv *env, jobject handler);
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_installSignalEmitThreadCheckHandler)(JNIEnv *env, jclass, jobject handler)
+{
+    try{
+        installSignalEmitThreadCheckHandler(env, handler);
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
     }

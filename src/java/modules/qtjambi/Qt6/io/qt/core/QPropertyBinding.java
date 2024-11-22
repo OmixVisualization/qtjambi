@@ -31,7 +31,6 @@ package io.qt.core;
 import java.io.Serializable;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.function.Supplier;
@@ -137,7 +136,7 @@ public final class QPropertyBinding<T> extends QUntypedPropertyBinding {
 	@NativeAccess
 	static QMetaType analyzeMetaType(Serializable functor) {
 		ClassAnalyzerUtility.LambdaInfo lamdaInfo = ClassAnalyzerUtility.lambdaInfo(functor);
-		if(lamdaInfo==null || lamdaInfo.reflectiveMethod==null) {
+		if(lamdaInfo==null || lamdaInfo.methodInfo.reflectiveMethod==null) {
 			if(functor instanceof QtUtilities.Supplier) {
 				Class<?> functorClass = QtJambi_LibraryUtilities.internal.getClass(functor);
 				for(Type iface : functorClass.getGenericInterfaces()) {
@@ -209,15 +208,14 @@ public final class QPropertyBinding<T> extends QUntypedPropertyBinding {
 			QBindable<?> bindable = (QBindable<?>)lamdaInfo.owner;
 			return bindable.valueMetaType();
 		}
-		Method method = lamdaInfo.reflectiveMethod;
 		AnnotatedElement rt = null;
 		if(ClassAnalyzerUtility.useAnnotatedType)
-			rt = method.getAnnotatedReturnType();
+			rt = lamdaInfo.methodInfo.reflectiveMethod.getAnnotatedReturnType();
 		int t = QtJambi_LibraryUtilities.internal.registerMetaType(
-				method.getReturnType(), 
-				method.getGenericReturnType(), 
+				lamdaInfo.methodInfo.reflectiveMethod.getReturnType(), 
+				lamdaInfo.methodInfo.reflectiveMethod.getGenericReturnType(), 
 				rt,
-		        method.isAnnotationPresent(QtPointerType.class),
+				lamdaInfo.methodInfo.reflectiveMethod.isAnnotationPresent(QtPointerType.class),
 		        false);
 		return new QMetaType(t);
 	}

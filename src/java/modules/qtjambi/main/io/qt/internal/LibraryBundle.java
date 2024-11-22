@@ -63,6 +63,7 @@ import io.qt.core.QPair;
  * @hidden
  */
 final class LibraryBundle {
+	private final static Logger logger = Logger.getLogger("io.qt.internal");
     private static final Map<String, Library> libraryMap = Collections.synchronizedMap(new HashMap<String, Library>());
     
     private LibraryBundle(){}
@@ -101,7 +102,7 @@ final class LibraryBundle {
     		try {
 				entry.extract();
 			} catch (Throwable e) {
-				Logger.getLogger("io.qt.internal").throwing(LibraryUtility.class.getName(), "extracting library", e);
+				logger.throwing(LibraryUtility.class.getName(), "extracting library", e);
 			}
     	}
     }
@@ -366,7 +367,7 @@ final class LibraryBundle {
 		void addExtractionFunctions(Collection<ExtractionFunction> loadFunctions) {
 			synchronized(this.extractionFunctions) {
 				if(this.extractionFunctions.isEmpty()) {
-					this.extractionFunctions.add(()->Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->String.format("extracting %1$s", name)));
+					this.extractionFunctions.add(()->logger.log(Level.FINEST, ()->String.format("extracting %1$s", name)));
 				}
 				this.extractionFunctions.addAll(loadFunctions);
 			}
@@ -375,7 +376,7 @@ final class LibraryBundle {
 		void addQmlExtractionFunctions(Collection<ExtractionFunction> loadFunctions) {
 			synchronized(this.qmlExtractionFunctions) {
 				if(this.qmlExtractionFunctions.isEmpty()) {
-					this.qmlExtractionFunctions.add(()->Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->String.format("extracting qml of %1$s", name)));
+					this.qmlExtractionFunctions.add(()->logger.log(Level.FINEST, ()->String.format("extracting qml of %1$s", name)));
 				}
 				this.qmlExtractionFunctions.addAll(loadFunctions);
 			}

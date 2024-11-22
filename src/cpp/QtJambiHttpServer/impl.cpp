@@ -225,7 +225,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_httpser
                 if(JniEnvironment env{300}){
                     jobject _resp = qtjambi_cast<jobject>(env, &resp);
                     jobject _request = qtjambi_cast<jobject>(env, &request);
-                    jobject result = Java::Runtime::BiFunction::apply(env, action.object(), _resp, _request);
+                    jobject result = Java::Runtime::BiFunction::apply(env, action.object(env), _resp, _request);
                     QHttpServerResponse* _result = qtjambi_cast<QHttpServerResponse*>(env, result);
                     InvalidateAfterUse::invalidate(env, _resp);
                     InvalidateAfterUse::invalidate(env, _request);
@@ -238,7 +238,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_httpser
             __qt_this->afterRequest([action = JObjectWrapper(__jni_env, _action)](QHttpServerResponse &&resp){
                 if(JniEnvironment env{300}){
                     jobject _resp = qtjambi_cast<jobject>(env, &resp);
-                    jobject result = Java::Runtime::Function::apply(env, action.object(), _resp);
+                    jobject result = Java::Runtime::Function::apply(env, action.object(env), _resp);
                     QHttpServerResponse* _result = qtjambi_cast<QHttpServerResponse*>(env, result);
                     InvalidateAfterUse::invalidate(env, _resp);
                     if(_result)

@@ -401,7 +401,8 @@ struct Dependency{
     enum Mode{
         Mandatory,
         Optional,
-        ProvideOnly
+        ProvideOnly,
+        Supressed
     };
 
     QString entry;

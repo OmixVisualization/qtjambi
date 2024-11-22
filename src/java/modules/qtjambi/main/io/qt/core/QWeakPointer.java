@@ -40,7 +40,7 @@ import io.qt.core.QMetaObject.*;
  * <p>Java wrapper for Qt class <a href="https://doc.qt.io/qt/qweakpointer.html">QWeakPointer</a>
  * similar to {@link java.lang.ref.WeakReference} but also supplying <code>null</code> when resource has been disposed.</p>
  */
-public final class QWeakPointer<O extends QtObjectInterface> {
+public final class QWeakPointer<O extends QtObjectInterface> implements SmartPointer<O> {
 	
 	public QWeakPointer(O object) {
 		super();

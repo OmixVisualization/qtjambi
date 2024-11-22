@@ -3614,8 +3614,8 @@ void JavaGenerator::writeMultiSignal(QTextStream &s, const MetaFunctionList& sig
                     s2 << "@QtAllowedTypeSet({" << signalParameterClasses << "})" << Qt::endl << INDENT;
                 }
             }
+            QStringList params;
             if(it.key()>0){
-                QStringList params;
                 for(int j=0; j<it.key(); j++){
                     QString letter = QString(QChar('A'+j));
                     params << letter;
@@ -3625,6 +3625,8 @@ void JavaGenerator::writeMultiSignal(QTextStream &s, const MetaFunctionList& sig
                 }
                 parameters = QString(QLatin1String("<%1>")).arg(params.join(","));
             };
+            params.prepend(QStringLiteral(u"Receiver"));
+            QString rparameters = QString(QLatin1String("<%1>")).arg(params.join(","));
 
             s << INDENT << "/**" << Qt::endl;
             if(it.key()==0){
@@ -3670,7 +3672,8 @@ void JavaGenerator::writeMultiSignal(QTextStream &s, const MetaFunctionList& sig
             QString nonNull = m_nullness ? QStringLiteral(u"@NonNull ") : QString{};
             QString snonNull = m_nullness ? QStringLiteral(u"@StrictNonNull ") : QString{};
             QString arrayNonNull = m_nullness ? QStringLiteral(" @NonNull") : QString{};
-            if(it.key()>0){
+            if(it.key()>0)
+            {
                 s << INDENT << "/**" << Qt::endl
                   << INDENT << " * Initializes a connection to the <i>slot</i>." << Qt::endl
                   << INDENT << " * " << Qt::endl
@@ -3689,6 +3692,30 @@ void JavaGenerator::writeMultiSignal(QTextStream &s, const MetaFunctionList& sig
                   << INDENT << " * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise." << Qt::endl
                   << INDENT << " */" << Qt::endl
                   << INDENT << "public final " << parameters << (parameters.isEmpty() ? "" : " ") << "boolean disconnect(io.qt.core.QMetaObject." << snonNull << "Slot" << it.key() << parameters << " slot) {" << Qt::endl
+                  << INDENT << "    return super.disconnect(slot);" << Qt::endl
+                  << INDENT << "}" << Qt::endl << Qt::endl
+                  << INDENT << "/**" << Qt::endl
+                  << INDENT << " * Initializes a connection to the <i>slot</i> of <i>receiver</i>." << Qt::endl
+                  << INDENT << " * " << Qt::endl
+                  << INDENT << " * @param <Receiver> The type of the receiver" << Qt::endl
+                  << INDENT << " * @param receiver the target receiver" << Qt::endl
+                  << INDENT << " * @param slot the slot to be connected" << Qt::endl
+                  << INDENT << " * @param connectionType type of connection" << Qt::endl
+                  << INDENT << " * @return connection if successful or <code>null</code> otherwise" << Qt::endl
+                  << INDENT << " * @throws QMisfittingSignatureException Raised if their signatures are incompatible." << Qt::endl
+                  << INDENT << " */" << Qt::endl
+                  << INDENT << "public final " << rparameters << (rparameters.isEmpty() ? "" : " ") << "io.qt.core.QMetaObject." << nonNull << "Connection connect(@StrictNonNull Receiver receiver, io.qt.core.QMetaObject." << snonNull << "Slot" << params.size() << rparameters << " slot, io.qt.core.Qt." << nonNull << "ConnectionType" << arrayNonNull << "... connectionType) throws QNoSuchSignalException{" << Qt::endl
+                  << INDENT << "    return super.connect(slot, connectionType);" << Qt::endl
+                  << INDENT << "}" << Qt::endl << Qt::endl
+                  << INDENT << "/**" << Qt::endl
+                  << INDENT << " * Removes the connection to the given <i>slot</i> of <i>receiver</i>." << Qt::endl
+                  << INDENT << " * " << Qt::endl
+                  << INDENT << " * @param <Receiver> The type of the receiver" << Qt::endl
+                  << INDENT << " * @param receiver the target receiver" << Qt::endl
+                  << INDENT << " * @param slot the slot to be disconnected" << Qt::endl
+                  << INDENT << " * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise." << Qt::endl
+                  << INDENT << " */" << Qt::endl
+                  << INDENT << "public final " << rparameters << (rparameters.isEmpty() ? "" : " ") << "boolean disconnect(@StrictNonNull Receiver receiver, io.qt.core.QMetaObject." << snonNull << "Slot" << params.size() << rparameters << " slot) {" << Qt::endl
                   << INDENT << "    return super.disconnect(slot);" << Qt::endl
                   << INDENT << "}" << Qt::endl << Qt::endl
                   << INDENT << "/**" << Qt::endl
@@ -3742,8 +3769,8 @@ void JavaGenerator::writeMultiSignal(QTextStream &s, const MetaFunctionList& sig
                         QStringList parameterClasses;
                         QStringList classes;
                         QStringList vars;
+                        QStringList params;
                         if(i>0){
-                            QStringList params;
                             for(int j=0; j<i; j++){
                                 QString letter = QString(QChar('A'+j));
                                 params << letter;
@@ -3753,6 +3780,8 @@ void JavaGenerator::writeMultiSignal(QTextStream &s, const MetaFunctionList& sig
                             }
                             parameters = QStringLiteral(u"<%1>").arg(params.join(QStringLiteral(u",")));
                         }
+                        params.prepend(QStringLiteral(u"Receiver"));
+                        QString rparameters = QString(QLatin1String("<%1>")).arg(params.join(","));
                         s << INDENT << "/**" << Qt::endl
                           << INDENT << " * Initializes a connection to the <i>slot</i>." << Qt::endl
                           << INDENT << " * " << Qt::endl
@@ -3771,6 +3800,30 @@ void JavaGenerator::writeMultiSignal(QTextStream &s, const MetaFunctionList& sig
                           << INDENT << " * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise." << Qt::endl
                           << INDENT << " */" << Qt::endl
                           << INDENT << "public final " << parameters << (parameters.isEmpty() ? "" : " ") << "boolean disconnect(io.qt.core.QMetaObject.Slot" << i << parameters << " slot) {" << Qt::endl
+                          << INDENT << "    return super.disconnect(slot);" << Qt::endl
+                          << INDENT << "}" << Qt::endl << Qt::endl
+                          << INDENT << "/**" << Qt::endl
+                          << INDENT << " * Initializes a connection to the <i>slot</i> of <i>receiver</i>." << Qt::endl
+                          << INDENT << " * " << Qt::endl
+                          << INDENT << " * @param <Receiver> The type of the receiver" << Qt::endl
+                          << INDENT << " * @param receiver the target receiver" << Qt::endl
+                          << INDENT << " * @param slot the slot to be connected" << Qt::endl
+                          << INDENT << " * @param connectionType type of connection" << Qt::endl
+                          << INDENT << " * @return connection if successful or <code>null</code> otherwise" << Qt::endl
+                          << INDENT << " * @throws QMisfittingSignatureException Raised if their signatures are incompatible." << Qt::endl
+                          << INDENT << " */" << Qt::endl
+                          << INDENT << "public final " << rparameters << (rparameters.isEmpty() ? "" : " ") << "io.qt.core.QMetaObject." << nonNull << "Connection connect(@StrictNonNull Receiver receiver, io.qt.core.QMetaObject." << snonNull << "Slot" << params.size() << rparameters << " slot, io.qt.core.Qt." << nonNull << "ConnectionType" << arrayNonNull << "... connectionType) throws QNoSuchSignalException{" << Qt::endl
+                          << INDENT << "    return super.connect(slot, connectionType);" << Qt::endl
+                          << INDENT << "}" << Qt::endl << Qt::endl
+                          << INDENT << "/**" << Qt::endl
+                          << INDENT << " * Removes the connection to the given <i>slot</i> of <i>receiver</i>." << Qt::endl
+                          << INDENT << " * " << Qt::endl
+                          << INDENT << " * @param <Receiver> The type of the receiver" << Qt::endl
+                          << INDENT << " * @param receiver the target receiver" << Qt::endl
+                          << INDENT << " * @param slot the slot to be disconnected" << Qt::endl
+                          << INDENT << " * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise." << Qt::endl
+                          << INDENT << " */" << Qt::endl
+                          << INDENT << "public final " << rparameters << (rparameters.isEmpty() ? "" : " ") << "boolean disconnect(@StrictNonNull Receiver receiver, io.qt.core.QMetaObject." << snonNull << "Slot" << params.size() << rparameters << " slot) {" << Qt::endl
                           << INDENT << "    return super.disconnect(slot);" << Qt::endl
                           << INDENT << "}" << Qt::endl << Qt::endl
                           << INDENT << "/**" << Qt::endl
@@ -4423,6 +4476,18 @@ void JavaGenerator::writeFunction(QTextStream &s, const MetaFunction *java_funct
         QString javaSignature;
         QTextStream s2(&javaSignature);
         s2 << java_function->name();
+        QList<QString> templateArguments;
+        if(!java_function->isConstructor()){
+            const QList<Parameter> addedParameterTypes = java_function->addedParameterTypes();
+            for(const Parameter& p : addedParameterTypes){
+                if(p.extends.isEmpty())
+                    templateArguments << p.name;
+                else
+                    templateArguments << p.name + " extends " + p.extends;
+            }
+        }
+        if(!templateArguments.isEmpty())
+            s2 << "<" << templateArguments.join(",") << ">";
         s2 << "(";
         writeFunctionArguments(s2, java_function, {}, -1, Option((java_function->isFinal() ? NoOption : VirtualCall) | NoNullness | SkipTemplateParameters | VarArgsAsArray | SkipName));
         s2 << ")";

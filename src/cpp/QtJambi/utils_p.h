@@ -32,7 +32,70 @@
 
 #include <QtCore/QtGlobal>
 #include <QtCore/QLoggingCategory>
+#include <QtCore/QReadWriteLock>
+#include <QtCore/QMutex>
 #include "qtjambiapi.h"
+
+struct VariantUtility{
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
+    static QVariant createVariant(QMetaType type, void *data);
+#else
+#endif
+    static QVariant createVariant(const QMetaType& type, const void *data);
+};
+
+template<typename Super, typename Lock, Lock*(*accessLock)()>
+struct SecureContainer{
+};
+
+template<typename Super, QReadWriteLock*(*accessLock)()>
+struct SecureContainer<Super,QReadWriteLock,accessLock> : Super{
+    SecureContainer(){
+    }
+    ~SecureContainer(){
+        Super container;
+        {
+            QWriteLocker locker(accessLock());
+            container.swap(*this);
+        }
+    }
+};
+
+template<typename Super, QMutex*(*accessLock)()>
+struct SecureContainer<Super,QMutex,accessLock> : Super{
+    SecureContainer(){
+        accessLock();
+    }
+    ~SecureContainer(){
+        Super container;
+        {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+            QMutexLocker locker(accessLock());
+#else
+            QMutexLocker<QMutex> locker(accessLock());
+#endif
+            container.swap(*this);
+        }
+    }
+};
+
+template<typename Super, QRecursiveMutex*(*accessLock)()>
+struct SecureContainer<Super,QRecursiveMutex,accessLock> : Super{
+    SecureContainer(){
+        accessLock();
+    }
+    ~SecureContainer(){
+        Super container;
+        {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+            QMutexLocker locker(accessLock());
+#else
+            QMutexLocker<QRecursiveMutex> locker(accessLock());
+#endif
+            container.swap(*this);
+        }
+    }
+};
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 namespace QtPrivate{
@@ -74,6 +137,7 @@ void registerSwitchTableFields(JNIEnv *env, jobject switchTableFields);
 bool simpleEventNotify(void **data);
 bool threadAffineEventNotify(void **data);
 void enableThreadAffinity(bool enabled);
+void enableSignalEmitThreadCheck(bool enabled);
 
 bool enabledDanglingPointerCheck(JNIEnv * env = nullptr);
 bool compareMetaTypes(const QMetaType& typeA, const QMetaType& typeB);
@@ -85,10 +149,6 @@ void containerDisposer(AbstractContainerAccess* _access);
 const std::type_info* tryGetTypeInfo(JNIEnv *env, TypeInfoSupplier typeInfoSupplier, const void* ptr);
 const std::type_info* checkedGetTypeInfo(TypeInfoSupplier typeInfoSupplier, const void* ptr);
 
-typedef QObject*(*SmartPointerQObjectGetter)(const void *);
-typedef std::function<void*(const void *)> SmartPointerGetterFunction;
-typedef void(*SmartPointerDeleter)(void *, bool);
-
 enum class NativeToJavaConversionMode{
     None,
     MakeCopyOfValues,
@@ -98,9 +158,13 @@ enum class NativeToJavaConversionMode{
 
 jobject internal_convertNativeToJavaObject(JNIEnv *env, const void *qt_object, const std::type_info& typeId, const char *qtName, NativeToJavaConversionMode mode, bool *ok = nullptr);
 jobject internal_convertSmartPointerToJavaObject(JNIEnv *env, const char *className,
-                            void* ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, SmartPointerGetterFunction sharedPointerGetter);
+                                                const QSharedPointer<char>& ptr_shared_pointer);
 jobject internal_convertSmartPointerToJavaInterface(JNIEnv *env, const std::type_info& interfaceType,
-                            void* ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, SmartPointerGetterFunction sharedPointerGetter);
+                                                const QSharedPointer<char>& ptr_shared_pointer);
+jobject internal_convertSmartPointerToJavaObject(JNIEnv *env, const char *className,
+                                                 const std::shared_ptr<char>& ptr_shared_pointer);
+jobject internal_convertSmartPointerToJavaInterface(JNIEnv *env, const std::type_info& interfaceType,
+                                                    const std::shared_ptr<char>& ptr_shared_pointer);
 
 class QtJambiLink;
 
@@ -214,6 +278,7 @@ private:
 };
 
 void reinitializeResettableFlag(JNIEnv * env, const char* property);
+bool avoidJNIGlobalRefs(JNIEnv * env);
 
 struct ResettableBoolFlag{
     ResettableBoolFlag(const char* property);

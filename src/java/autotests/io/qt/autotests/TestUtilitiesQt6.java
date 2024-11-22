@@ -31,19 +31,41 @@ package io.qt.autotests;
 
 import static org.junit.Assert.assertEquals;
 
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import io.qt.core.QTimer;
+import io.qt.core.QLibraryInfo;
 import io.qt.core.QObject;
+import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.Qt;
 import io.qt.gui.QAction;
+import io.qt.gui.QGuiApplication;
 import io.qt.gui.QKeySequence;
+import io.qt.gui.QWindow;
 
 public class TestUtilitiesQt6 extends ApplicationInitializer {
 	
 	@BeforeClass
     public static void testInitialize() throws Exception {
     	ApplicationInitializer.testInitializeWithGui();
+    }
+	
+	@AfterClass
+    public static void testDispose() throws Exception {
+		if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.MacOS) 
+    			&& QLibraryInfo.version().majorVersion()==6 
+    			&& QLibraryInfo.version().minorVersion()==5) {
+	    	QWindow window = new QWindow();
+	    	window.show();
+	    	QTimer.singleShot(200, QGuiApplication.instance(), QGuiApplication::quit);
+	    	QGuiApplication.exec();
+	    	window.close();
+	    	window.disposeLater();
+	    	window = null;
+    	}
+    	ApplicationInitializer.testDispose();
     }
 	
     @Test

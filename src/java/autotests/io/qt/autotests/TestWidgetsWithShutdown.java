@@ -37,11 +37,14 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.QThreadAffinityException;
+import io.qt.QtUtilities;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QResource;
 import io.qt.core.QThread;
 import io.qt.core.QTimer;
 import io.qt.core.Qt;
+import io.qt.gui.QGuiApplication;
+import io.qt.gui.QIcon;
 import io.qt.widgets.QApplication;
 import io.qt.widgets.QCheckBox;
 import io.qt.widgets.QHBoxLayout;
@@ -50,22 +53,24 @@ import io.qt.widgets.QSpinBox;
 import io.qt.widgets.QWidget;
 
 public class TestWidgetsWithShutdown extends ApplicationInitializer{
-	static {
-		System.setProperty("io.qt.enable-thread-affinity-check", "true");
-		System.setProperty("io.qt.enable-event-thread-affinity-check", "true");
+	@BeforeClass
+	public static void testInitialize() throws Exception {
+    	QtUtilities.setThreadAffinityCheckEnabled(true);
+    	QtUtilities.setEventThreadAffinityCheckEnabled(true);
 	}
 	
-	@BeforeClass
-	public static void testInitialize() throws Exception {}
-	
 	@AfterClass
-    public static void testDispose() throws Exception {}
+    public static void testDispose() throws Exception {
+    	QtUtilities.setThreadAffinityCheckEnabled(false);
+    	QtUtilities.setEventThreadAffinityCheckEnabled(false);
+	}
 	
     @Test
     public void test() {
 	    QResource.addClassPath(".");
 	    QCoreApplication.setApplicationName("QtJambiUnitTest");
 	    QApplication.initialize(new String[0]);
+	    QGuiApplication.setWindowIcon(new QIcon(":io/qt/autotests/icon.png"));
 	    {
 		    QWidget window = new QWidget();
 			window.setWindowTitle(tr("Enter your age"));

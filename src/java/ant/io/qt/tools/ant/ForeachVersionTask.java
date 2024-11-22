@@ -16,6 +16,8 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.PropertyHelper;
 import org.apache.tools.ant.Task;
 
+import io.qt.tools.ant.OSInfo.Architecture;
+
 public class ForeachVersionTask extends Task {
 
 	@Override
@@ -423,6 +425,7 @@ public class ForeachVersionTask extends Task {
 										break;
 									default:
 										if(OSInfo.crossOS().isUnixLike()){
+											qtDirs.add(new java.io.File(versionDir, "gcc_arm64"));
 											qtDirs.add(new java.io.File(versionDir, "gcc_64"));
 										}
 										break;
@@ -446,7 +449,10 @@ public class ForeachVersionTask extends Task {
 										qmake = "qmake";
 										break;
 									case Linux:
-										qtDir = new java.io.File(versionDir, "gcc_64");
+										if(OSInfo.arch()==Architecture.arm64)
+											qtDir = new java.io.File(versionDir, "gcc_arm64");
+										else
+											qtDir = new java.io.File(versionDir, "gcc_64");
 										qmake = "qmake";
 										break;
 									case Windows:

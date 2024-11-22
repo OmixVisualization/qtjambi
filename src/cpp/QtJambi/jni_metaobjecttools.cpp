@@ -36,7 +36,7 @@
 #include "qtjambi_cast.h"
 
 extern "C" Q_DECL_EXPORT jobject JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_AbstractMetaObjectUtility_getPropertyForField)
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_PropertyUtility_getPropertyForField)
     (JNIEnv *env, jclass, jobject jmetaObject, jobject reflectField)
 {
     const QMetaObject* metaObject = qtjambi_cast<const QMetaObject*>(env, jmetaObject);
@@ -57,7 +57,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_AbstractMetaObjectUtility_getPropert
 }
 
 extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_AbstractMetaObjectTools_registerPropertyField)
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_PropertyUtility_registerPropertyField)
     (JNIEnv *env, jclass, QtJambiNativeID metaPropertyId, jobject reflectField)
 {
     QMetaProperty property = QtJambiAPI::valueReferenceFromNativeId<QMetaProperty>(metaPropertyId);

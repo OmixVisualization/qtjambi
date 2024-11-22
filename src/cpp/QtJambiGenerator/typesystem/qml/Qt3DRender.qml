@@ -2502,7 +2502,7 @@ TypeSystem{
                                   "    %out = [wrapper](QByteArray rawData, int layer, int face, int mipmapLevel) -> QByteArray {\n"+
                                   "                        if(JniEnvironment env{200}){\n"+
                                   "                            jobject _rawData = qtjambi_cast<jobject>(env, rawData);\n"+
-                                  "                            jobject result = Java::Qt3DRender::QTextureImageData$DataConverter::apply(env, wrapper.object(), _rawData, layer, face, mipmapLevel);\n"+
+                                  "                            jobject result = Java::Qt3DRender::QTextureImageData$DataConverter::apply(env, wrapper.object(env), _rawData, layer, face, mipmapLevel);\n"+
                                   "                            return qtjambi_cast<QByteArray>(env, result);\n"+
                                   "                        }\n"+
                                   "                        return {};\n"+

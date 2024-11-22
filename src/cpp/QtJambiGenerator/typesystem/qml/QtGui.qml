@@ -6820,6 +6820,12 @@ const char (&%out)[5] = *reinterpret_cast<const char(*)[5]>(bufferData);
         }
     }
 
+    ValueType{
+        name: "QFontVariableAxis"
+        noMetaType: true
+        since: 6.9
+    }
+
     GlobalFunction{
         signature: "comparesEqual(const QFont::Tag&,const QFont::Tag&)"
         since: 6.7
@@ -11355,7 +11361,7 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
             }
             RejectEnumValue{
                 name: "OldFontFamily"
-                since: [6, 4]
+                since: 6
             }
         }
         ModifyFunction{

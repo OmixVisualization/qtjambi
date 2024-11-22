@@ -54,11 +54,15 @@ import io.qt.autotests.generated.MessageHandler;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QLibraryInfo;
 import io.qt.core.QLoggingCategory;
+import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QResource;
 import io.qt.core.QThread;
+import io.qt.core.QTimer;
 import io.qt.core.QtMessageHandler;
 import io.qt.core.QtMsgType;
-import io.qt.widgets.QApplication;
+import io.qt.gui.QGuiApplication;
+import io.qt.gui.QIcon;
+import io.qt.gui.QWindow;
 
 public class TestQLogging extends UnitTestInitializer {
 	
@@ -70,7 +74,8 @@ public class TestQLogging extends UnitTestInitializer {
 			java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "ApplicationInitializer.testInitialize(): begin");
 		    QResource.addClassPath(".");
 		    QCoreApplication.setApplicationName("QtJambiUnitTest");
-		    QApplication.initialize(new String[]{});
+		    QGuiApplication.initialize(new String[]{});
+		    QGuiApplication.setWindowIcon(new QIcon(":io/qt/autotests/icon.png"));
 		    java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "ApplicationInitializer.testInitialize(): done");
 	        QThread.currentThread().setObjectName("main");
 		}
@@ -79,6 +84,17 @@ public class TestQLogging extends UnitTestInitializer {
 
     @AfterClass
     public static void testDispose() throws Exception {
+    	if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.MacOS) 
+    			&& QLibraryInfo.version().majorVersion()==6 
+    			&& QLibraryInfo.version().minorVersion()==5) {
+	    	QWindow window = new QWindow();
+	    	window.show();
+	    	QTimer.singleShot(200, QGuiApplication.instance(), QGuiApplication::quit);
+	    	QGuiApplication.exec();
+	    	window.close();
+	    	window.disposeLater();
+	    	window = null;
+    	}
     	ApplicationInitializer.testDispose();
     }
     
@@ -89,12 +105,12 @@ public class TestQLogging extends UnitTestInitializer {
     		lastFile.put(messageType, context.file());
     		lastFunction.put(messageType, context.function());
     	};
+    	QtMessageHandler originalHandler = qInstallMessageHandler(handler);
         try {
-        	QtMessageHandler oldHandler = qInstallMessageHandler(handler);
-        	assertTrue(oldHandler!=handler);
-        	assertTrue("not java ownership", General.internalAccess.isJavaOwnership(oldHandler));
+        	assertTrue(originalHandler!=handler);
+        	assertTrue("not java ownership", General.internalAccess.isJavaOwnership(originalHandler));
         	assertTrue("not java ownership", General.internalAccess.isJavaOwnership(handler));
-        	oldHandler = qInstallMessageHandler(null);
+        	QtMessageHandler oldHandler = qInstallMessageHandler(null);
         	assertEquals(oldHandler, handler);
         	assertTrue("not java ownership", General.internalAccess.isJavaOwnership(handler));
         	oldHandler = qInstallMessageHandler(handler, QtMsgType.QtDebugMsg);
@@ -270,7 +286,7 @@ public class TestQLogging extends UnitTestInitializer {
 	            lastFile.clear();
 	            lastFunction.clear();
 	            
-	            qInstallExceptionMessageHandler();
+	            oldHandler = qInstallExceptionMessageHandler();
 	            try {
 					qWarning("EXN");
 					fail("Exception expected to be thrown.");
@@ -293,7 +309,7 @@ public class TestQLogging extends UnitTestInitializer {
             }
             assertEquals(newFilter, oldFilter);
         } finally {
-        	qInstallMessageHandler(null);
+        	qInstallMessageHandler(originalHandler);
         }
     }
 

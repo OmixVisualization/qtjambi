@@ -752,14 +752,6 @@ TypeSystem{
     }
     
     EnumType{
-        name: "QComboBox::InsertPolicy"
-    }
-    
-    EnumType{
-        name: "QComboBox::SizeAdjustPolicy"
-    }
-    
-    EnumType{
         name: "QCompleter::CompletionMode"
     }
     
@@ -4481,7 +4473,7 @@ try{
         ModifyFunction{
             signature: "addAction<Func1>(QString,Func1)"
             remove: RemoveFlag.All
-            until: 6.3
+            until: 6.2
         }
         ModifyFunction{
             signature: "clear()"
@@ -10998,7 +10990,7 @@ try{
                                   "                        if(JniEnvironment env{200}){\n"+
                                   "                            jstring _value1 = qtjambi_cast<jstring>(env, value1);\n"+
                                   "                            jobject _value2 = qtjambi_cast<jobject>(env, value2);\n"+
-                                  "                            Java::Runtime::BiConsumer::accept(env, wrapper.object(), _value1, _value2);\n"+
+                                  "                            Java::Runtime::BiConsumer::accept(env, wrapper.object(env), _value1, _value2);\n"+
                                   "                        }\n"+
                                   "                    };\n"+
                                   "}"}
@@ -11023,7 +11015,7 @@ try{
                                   "                        if(JniEnvironment env{200}){\n"+
                                   "                            jstring _value1 = qtjambi_cast<jstring>(env, value1);\n"+
                                   "                            jobject _value2 = qtjambi_cast<jobject>(env, value2);\n"+
-                                  "                            Java::Runtime::BiConsumer::accept(env, wrapper.object(), _value1, _value2);\n"+
+                                  "                            Java::Runtime::BiConsumer::accept(env, wrapper.object(env), _value1, _value2);\n"+
                                   "                        }\n"+
                                   "                    };\n"+
                                   "}"}
@@ -11796,12 +11788,12 @@ try{
         ModifyFunction{
             signature: "addAction<Func1>(QString,Func1)"
             remove: RemoveFlag.All
-            until: 6.3
+            until: 6.2
         }
         ModifyFunction{
             signature: "addAction<Func1>(QIcon,QString,Func1)"
             remove: RemoveFlag.All
-            until: 6.3
+            until: 6.2
         }
         ModifyFunction{
             signature: "addAction(QAction *)"
@@ -11956,6 +11948,16 @@ try{
     
     ObjectType{
         name: "QComboBox"
+        EnumType{
+            name: "InsertPolicy"
+        }
+        EnumType{
+            name: "SizeAdjustPolicy"
+        }
+        EnumType{
+            name: "LabelDrawingMode"
+            since: 6.9
+        }
         ModifyFunction{
             signature: "showPopup()"
             threadAffinity: Affinity.UI

@@ -30,12 +30,12 @@
 package io.qt.internal;
 
 import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodType;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -75,8 +75,8 @@ abstract class ReflectionUtility {
 		
 		public default SignalUtility.SlotInvoker getSlotInvoker(Method slot, MethodHandle _slotHandle){
         	try {
-				MethodHandle slotHandle = _slotHandle.asSpreader(1, Object[].class, _slotHandle.type().parameterCount()-1);
-				return (instance, _arguments)->slotHandle.invoke(instance, _arguments);
+        		slot.setAccessible(true);
+				return (instance, _arguments)->slot.invoke(instance, _arguments);
 			} catch (Throwable e) {
 			}
 			return null;
@@ -84,8 +84,8 @@ abstract class ReflectionUtility {
 		
 		public default SignalUtility.StaticSlotInvoker getStaticSlotInvoker(Method slot, MethodHandle _slotHandle){
         	try {
-				MethodHandle slotHandle = _slotHandle.asSpreader(0, Object[].class, _slotHandle.type().parameterCount());
-				return _arguments->slotHandle.invoke(_arguments);
+        		slot.setAccessible(true);
+				return _arguments->slot.invoke(null, _arguments);
 			} catch (Throwable e) {
 			}
 			return null;
@@ -93,13 +93,13 @@ abstract class ReflectionUtility {
 		
 		public default SignalUtility.LambdaArgsSlotInvoker getSlotInvoker(Method slot, MethodHandle _slotHandle, int lambdaArgsCount){
 			try {
-				MethodType mt = _slotHandle.type();
-				for(int i=0; i<mt.parameterCount(); ++i){
-					mt = mt.changeParameterType(i, Object.class);
-				}
-				_slotHandle = _slotHandle.asType(mt);
-				MethodHandle slotHandle = _slotHandle.asSpreader(1, Object[].class, lambdaArgsCount).asSpreader(2, Object[].class, _slotHandle.type().parameterCount() - 1 - lambdaArgsCount);
-				return (instance, args, _arguments)->slotHandle.invoke(instance, args, _arguments);
+				slot.setAccessible(true);
+				return (instance, args, _arguments)->{
+					int destPos = args.length;
+					args = Arrays.copyOf(args, args.length + _arguments.length);
+					System.arraycopy(_arguments, 0, args, destPos, _arguments.length);
+					slot.invoke(instance, args);
+				};
 			} catch (Throwable e) {
 			}
 			return null;
@@ -107,13 +107,13 @@ abstract class ReflectionUtility {
 		
 		public default SignalUtility.StaticLambdaArgsSlotInvoker getStaticSlotInvoker(Method slot, MethodHandle _slotHandle, int lambdaArgsCount){
 			try {
-				MethodType mt = _slotHandle.type();
-				for(int i=0; i<mt.parameterCount(); ++i){
-					mt = mt.changeParameterType(i, Object.class);
-				}
-				_slotHandle = _slotHandle.asType(mt);
-				MethodHandle slotHandle = _slotHandle.asSpreader(0, Object[].class, lambdaArgsCount).asSpreader(1, Object[].class, _slotHandle.type().parameterCount() - lambdaArgsCount);
-				return (args, _arguments)->slotHandle.invoke(args, _arguments);
+				slot.setAccessible(true);
+				return (args, _arguments)->{
+					int destPos = args.length;
+					args = Arrays.copyOf(args, args.length + _arguments.length);
+					System.arraycopy(_arguments, 0, args, destPos, _arguments.length);
+					slot.invoke(null, args);
+				};
 			} catch (Throwable e) {
 			}
 			return null;
@@ -425,43 +425,19 @@ abstract class ReflectionUtility {
 	}
 
 	static SignalUtility.SlotInvoker getSlotInvoker(Method slot, MethodHandle slotHandle){
-		if(slotHandle==null) {
-        	try {
-				slotHandle = getMethodHandle(slot);
-			} catch (Exception e) {
-			}
-        }
-		return slotHandle==null ? null : methodInvocationHandler.getSlotInvoker(slot, slotHandle);
+		return methodInvocationHandler.getSlotInvoker(slot, slotHandle);
 	}
 	
 	static SignalUtility.StaticSlotInvoker getStaticSlotInvoker(Method slot, MethodHandle slotHandle){
-		if(slotHandle==null) {
-        	try {
-				slotHandle = getMethodHandle(slot);
-			} catch (Exception e) {
-			}
-        }
-		return slotHandle==null ? null : methodInvocationHandler.getStaticSlotInvoker(slot, slotHandle);
+		return methodInvocationHandler.getStaticSlotInvoker(slot, slotHandle);
 	}
 	
 	static SignalUtility.LambdaArgsSlotInvoker getSlotInvoker(Method slot, MethodHandle slotHandle, int lambdaArgsCount){
-		if(slotHandle==null) {
-        	try {
-				slotHandle = getMethodHandle(slot);
-			} catch (Exception e) {
-			}
-        }
-		return slotHandle==null ? null : methodInvocationHandler.getSlotInvoker(slot, slotHandle, lambdaArgsCount);
+		return methodInvocationHandler.getSlotInvoker(slot, slotHandle, lambdaArgsCount);
 	}
 	
 	static SignalUtility.StaticLambdaArgsSlotInvoker getStaticSlotInvoker(Method slot, MethodHandle slotHandle, int lambdaArgsCount){
-		if(slotHandle==null) {
-        	try {
-				slotHandle = getMethodHandle(slot);
-			} catch (Exception e) {
-			}
-        }
-		return slotHandle==null ? null : methodInvocationHandler.getStaticSlotInvoker(slot, slotHandle, lambdaArgsCount);
+		return methodInvocationHandler.getStaticSlotInvoker(slot, slotHandle, lambdaArgsCount);
 	}
 	
 	static <A,B> Function<A,B> functionFromMethod(Method method){

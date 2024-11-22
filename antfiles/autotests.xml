@@ -98,6 +98,9 @@
         <condition property="less.jdk17" value="true">
 			<less arg1="${target.java.version}" arg2="17"/>
         </condition>
+        <condition property="less.jdk19" value="true">
+			<less arg1="${target.java.version}" arg2="19"/>
+        </condition>
         <condition property="less.jdk21" value="true">
 			<less arg1="${target.java.version}" arg2="21"/>
         </condition>
@@ -247,7 +250,8 @@
             <exclude name="io/qt/**/TestQuickTextureMetalQt6.java"/>
         </fileset>
 		<fileset id="qtjambi.autotest.jdkextended.classes" dir="${java.srcdir}/autotests">
-            <include name="io/qt/**/TestJDK${test.includes}.java" unless="${less.jdk17}"/>
+            <include name="io/qt/**/TestJDK17${test.includes}.java" unless="${less.jdk17}"/>
+            <include name="io/qt/**/TestJDK19${test.includes}.java" unless="${less.jdk19}"/>
         </fileset>
     </target>
     <property file="tests.properties"/>

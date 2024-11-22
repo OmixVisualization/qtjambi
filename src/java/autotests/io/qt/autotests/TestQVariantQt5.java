@@ -144,6 +144,21 @@ public class TestQVariantQt5 extends ApplicationInitializer {
     		assertEquals("UnknownValue", ((QMetaType.GenericTypeInterface)o).metaType().name().toString());
     	}
     }
+	
+	public static class VariantConstructor implements TestQVariant.VariantConstructor{
+		public QVariant create(io.qt.core.QMetaType type) {
+    		return new QVariant(type.id());
+    	}
+    	public QVariant create(io.qt.core.QMetaType type, java.lang.Object copy) {
+    		return new QVariant(type.id(), copy);
+    	}
+    	public QVariant create(io.qt.core.QMetaType.Type type) {
+    		return new QVariant(type.value());
+    	}
+    	public QVariant create(io.qt.core.QMetaType.Type type, java.lang.Object copy) {
+    		return new QVariant(type.value(), copy);
+    	}
+    }
     
     public static void main(String args[]) {
         org.junit.runner.JUnitCore.main(TestQVariantQt5.class.getName());

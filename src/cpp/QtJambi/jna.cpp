@@ -40,11 +40,14 @@
 #include "qtjambi_cast.h"
 
 Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, gPointerLock, (QReadWriteLock::Recursive))
-typedef QHash<quintptr, QList<jobject>> ObjectsByFunctionPointer;
+QReadWriteLock* pointerLock(){
+    return gPointerLock();
+}
+typedef SecureContainer<QHash<quintptr, QList<jobject>>,QReadWriteLock,&pointerLock> ObjectsByFunctionPointer;
 Q_GLOBAL_STATIC(ObjectsByFunctionPointer, gObjectsByFunctionPointer)
 
 void clearObjectsByFunctionPointerAtShutdown(JNIEnv* env){
-    ObjectsByFunctionPointer objectsByFunctionPointer;
+    QHash<quintptr, QList<jobject>> objectsByFunctionPointer;
     if(!gObjectsByFunctionPointer.isDestroyed()){
         QWriteLocker locker(gPointerLock());
         gObjectsByFunctionPointer->swap(objectsByFunctionPointer);
@@ -802,8 +805,8 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                                 ptr = link->pointer();
                                 if(!argMetaType){
                                     if(PointerToObjectLink* plink = dynamic_cast<PointerToObjectLink*>(link.get())){
-                                        argMetaType = &plink->metaType();
-                                        if(!argMetaType->isValid())
+                                        argMetaType = plink->metaType();
+                                        if(argMetaType && !argMetaType->isValid())
                                             argMetaType = nullptr;
                                     }
                                 }
@@ -1000,8 +1003,8 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                         }else{
                             if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(__jni_env, val)){
                                 if(PointerToObjectLink* plink = dynamic_cast<PointerToObjectLink*>(link.get())){
-                                    argMetaType = &plink->metaType();
-                                    if(argMetaType->isValid()){
+                                    argMetaType = plink->metaType();
+                                    if(argMetaType && argMetaType->isValid()){
                                         ptr = argMetaType->create(link->pointer());
                                         arg = LocalDataJBuffer(__jni_env, ptr, jsize(size)).take();
                                         cleaners.append(Cleanup{[ptr](){ operator delete (ptr); }});
@@ -2382,8 +2385,8 @@ jobject CoreAPI::convertFunctionPointerReturn(JNIEnv * __jni_env, jobject return
                 ptr = link->pointer();
                 if(!returnMetaType){
                     if(PointerToObjectLink* plink = dynamic_cast<PointerToObjectLink*>(link.get())){
-                        returnMetaType = &plink->metaType();
-                        if(!returnMetaType->isValid())
+                        returnMetaType = plink->metaType();
+                        if(returnMetaType && !returnMetaType->isValid())
                             returnMetaType = nullptr;
                     }
                 }
@@ -2592,8 +2595,8 @@ jobject CoreAPI::convertFunctionPointerReturn(JNIEnv * __jni_env, jobject return
     }else{
         if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(__jni_env, result)){
             if(PointerToObjectLink* plink = dynamic_cast<PointerToObjectLink*>(link.get())){
-                returnMetaType = &plink->metaType();
-                if(returnMetaType->isValid()){
+                returnMetaType = plink->metaType();
+                if(returnMetaType && returnMetaType->isValid()){
                     switch(returnMetaType->sizeOf()){
                     case sizeof(jbyte):{
                             jbyte data = 0;

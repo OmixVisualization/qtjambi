@@ -657,7 +657,7 @@ TypeSystem{
                         Text{content: "auto %out = [slot = JObjectWrapper(%env, %in)](const QScxmlEvent& event){\n"+
                                       "                    if(JniEnvironment env{200}){\n"+
                                       "                        jobject _event = qtjambi_cast<jobject>(env, event);\n"+
-                                      "                        Java::QtCore::QMetaObject$Slot1::invoke(env, slot.object(), _event);\n"+
+                                      "                        Java::QtCore::QMetaObject$Slot1::invoke(env, slot.object(env), _event);\n"+
                                       "                    }\n"+
                                       "                };"}
                     }
@@ -719,7 +719,7 @@ TypeSystem{
                         codeClass: CodeClass.Native
                         Text{content: "auto %out = [slot = JObjectWrapper(%env, %in)](const QScxmlEvent&){\n"+
                                       "                    if(JniEnvironment env{200}){\n"+
-                                      "                        Java::QtCore::QMetaObject$Slot0::invoke(env, slot.object());\n"+
+                                      "                        Java::QtCore::QMetaObject$Slot0::invoke(env, slot.object(env));\n"+
                                       "                    }\n"+
                                       "                };"}
                     }
@@ -804,7 +804,7 @@ TypeSystem{
                         codeClass: CodeClass.Native
                         Text{content: "auto %out = [slot = JObjectWrapper(%env, %in)](bool b){\n"+
                                       "                    if(JniEnvironment env{200}){\n"+
-                                      "                        Java::QtCore::QMetaObject$Slot1::invoke(env, slot.object(), Java::Runtime::Boolean::valueOf(env, b));\n"+
+                                      "                        Java::QtCore::QMetaObject$Slot1::invoke(env, slot.object(env), Java::Runtime::Boolean::valueOf(env, b));\n"+
                                       "                    }\n"+
                                       "                };"}
                     }
@@ -866,7 +866,7 @@ TypeSystem{
                         codeClass: CodeClass.Native
                         Text{content: "auto %out = [slot = JObjectWrapper(%env, %in)](bool){\n"+
                                       "                    if(JniEnvironment env{200}){\n"+
-                                      "                        Java::QtCore::QMetaObject$Slot0::invoke(env, slot.object());\n"+
+                                      "                        Java::QtCore::QMetaObject$Slot0::invoke(env, slot.object(env));\n"+
                                       "                    }\n"+
                                       "                };"}
                     }
@@ -953,7 +953,7 @@ TypeSystem{
                         Text{content: "auto %out = [slot = JObjectWrapper(%env, %in)](const QScxmlEvent& event){\n"+
                                       "                    if(JniEnvironment env{200}){\n"+
                                       "                        jobject _event = qtjambi_cast<jobject>(env, event);\n"+
-                                      "                        Java::QtCore::QMetaObject$Slot1::invoke(env, slot.object(), _event);\n"+
+                                      "                        Java::QtCore::QMetaObject$Slot1::invoke(env, slot.object(env), _event);\n"+
                                       "                    }\n"+
                                       "                };"}
                     }
@@ -1015,7 +1015,7 @@ TypeSystem{
                         codeClass: CodeClass.Native
                         Text{content: "auto %out = [slot = JObjectWrapper(%env, %in)](const QScxmlEvent&){\n"+
                                       "                    if(JniEnvironment env{200}){\n"+
-                                      "                        Java::QtCore::QMetaObject$Slot0::invoke(env, slot.object());\n"+
+                                      "                        Java::QtCore::QMetaObject$Slot0::invoke(env, slot.object(env));\n"+
                                       "                    }\n"+
                                       "                };"}
                     }
@@ -1100,7 +1100,7 @@ TypeSystem{
                         codeClass: CodeClass.Native
                         Text{content: "auto %out = [slot = JObjectWrapper(%env, %in)](bool b){\n"+
                                       "                    if(JniEnvironment env{200}){\n"+
-                                      "                        Java::QtCore::QMetaObject$Slot1::invoke(env, slot.object(), Java::Runtime::Boolean::valueOf(env, b));\n"+
+                                      "                        Java::QtCore::QMetaObject$Slot1::invoke(env, slot.object(env), Java::Runtime::Boolean::valueOf(env, b));\n"+
                                       "                    }\n"+
                                       "                };"}
                     }
@@ -1162,7 +1162,7 @@ TypeSystem{
                         codeClass: CodeClass.Native
                         Text{content: "auto %out = [slot = JObjectWrapper(%env, %in)](bool){\n"+
                                       "                    if(JniEnvironment env{200}){\n"+
-                                      "                        Java::QtCore::QMetaObject$Slot0::invoke(env, slot.object());\n"+
+                                      "                        Java::QtCore::QMetaObject$Slot0::invoke(env, slot.object(env));\n"+
                                       "                    }\n"+
                                       "                };"}
                     }
