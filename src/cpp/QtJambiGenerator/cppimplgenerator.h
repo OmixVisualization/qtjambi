@@ -251,7 +251,7 @@ class CppImplGenerator : public CppGenerator {
         QString jniReturnName(const MetaFunction *java_function) const;
         bool shouldGenerate(const MetaClass *java_class) const override;
         QString default_return_statement_qt(const MetaType *java_type, AbstractGenerator::Option options = AbstractGenerator::NoOption);
-        void setContainerBaseClasses(const QMap<TypeSystemTypeEntry *,QList<QPair<TypeInfo,bool>>>& containerBaseClasses);
+        void setContainerBaseClasses(const QMap<TypeSystemTypeEntry *,QList<QPair<TypeInfo,int>>>& containerBaseClasses);
         void writeReferenceCount(QTextStream &s, const ReferenceCount &refCount, const MetaArgument* argument, int argumentIndex, const MetaFunction *java_function, const QString &__jni_env = "__jni_env", const QString &thisName = QLatin1String("__jni_object"));
     private:
         QString callXxxMethod(const QString &name) const;

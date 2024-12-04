@@ -4,6 +4,7 @@
 
 Solved issue:
 * [Issue 211](../../../issues/211): Building QtJambi 6.8.0 from sources fails on Kubuntu 24.10
+* [Issue 214](../../../issues/214): QtJambi 6.8.1 RC1 does not build from sources against Qt 6.8.1
 * Fixed: Crashes in QML due to forwarded Java exceptions
 * Fixed: Crash on macOS when using application-wide event filter and QtWebEngine
 
@@ -18,8 +19,17 @@ Solved issue:
 * `QtUtilities::installSignalEmitThreadCheckHandler(BiConsumer<QObject,AbstractSignal>)` Install a handler for signal emit thread checks to be is executed every time an event is emitted from a foreign thread.
 * `QObject::connect`, `Signal::connect`, `QTimer::singleShot` as well as `QMetaObject::invokeMethod` now accept class method handles, e.g. `QMetaObject::invokeMethod(widget, QWidget::setVisible, true);`
 * Performance improvements on `QMetaObject::invokeMethod`.
+* More flexibility for selective event filters: class type filtering, object name filtering (string comparison or regular expression match). Moved from `QtUtilities` to `QCoreApplication`.
+* `QAbstractFileEngineHandler` can be created from file name tests (string comparison or regular expression match). This avoids Java calls for every single file operation.
 * QtJambi is now shipped with native binaries for Linux arm64 (6.8 and higher).
-* Added API method: `QRandomGenerator::bounded`
+* Added API method: `QRandomGenerator::bounded`, `QAbstractHttpServer::addWebSocketUpgradeVerifier`
+* Added API types: `QSemaphoreReleaser`, `QReadLocker`, `QWriteLocker` and `QMutexLocker` to be used in try-with-resources
+
+## Deprecated
+
+* `QtUtilities.asSelectiveEventFilter(eventFilter, eventType...)` now deprecated. Use `QCoreApplication.asSelectiveEventFilter` instead.
+
+QtJambi 6.8.1 is not binary-compatible to Qt 6.8.0.  Please use Qt 6.8.1 or higher.
 
 # History
 
@@ -50,7 +60,8 @@ Solved issue:
 * `QSpan` now available as Java type
 * Signals now able to treat single shot connections
 
-QtJambi 6.7.3 is not binary compatible to Qt 6.7.0. Please use Qt 6.7.1 or higher.
+QtJambi 6.7.3 is not binary-compatible to Qt 6.7.0. Please use Qt 6.7.1 or higher.
+QtJambi 6.8.0 is not binary-compatible to Qt 6.8.1.
 
 ## What's new in QtJambi 6.7.2
 
@@ -82,7 +93,7 @@ Solved issue:
 
 * QPropertyAlias is deprecated
 
-QtJambi 6.7.2 is not binary compatible to Qt 6.7.0. Please use Qt 6.7.1 or higher.
+QtJambi 6.7.2 is not binary-compatible to Qt 6.7.0. Please use Qt 6.7.1 or higher.
 
 ## What's new in QtJambi 6.7.1
 
@@ -111,7 +122,7 @@ Solved issue:
 * Adding `@since` information to Java Docs.
 * Extra signals of internal QObject's without API representation now support cloned signals (signals with default arguments).
 
-QtJambi 6.7.1 is not binary compatible to Qt 6.7.0. Please use Qt 6.7.1 or higher.
+QtJambi 6.7.1 is not binary-compatible to Qt 6.7.0. Please use Qt 6.7.1 or higher.
 
 ## What's new in QtJambi 6.7.0
 
@@ -185,7 +196,7 @@ Solved issues:
 
 * Improved Qt container access
 
-This version of QtJambi is source and binary compatible with its predecessor versions.
+This version of QtJambi is source and binary-compatible with its predecessor versions.
 
 ## What's new in QtJambi 6.5.3
 
@@ -220,7 +231,7 @@ Solved issues:
 * Improved java comments
 * `deployment` directory now only contains Java modules. Source bundles are located in subdirectory `sources`, docs are located in subdirectories `javadocs` and native bundles are loacted in subdirectory `native`.
 
-This version of QtJambi is source but not binary compatible ti its predecessor versions.
+This version of QtJambi is source but not binary-compatible ti its predecessor versions.
 
 ## What's new in QtJambi 6.5.1
 

@@ -498,28 +498,39 @@ bool MetaBuilder::build(FileModelItem&& dom) {
         MetaEnum *meta_enum = traverseEnum(e, nullptr, metaEnums, m_dom->flagsMap());
 
         if (meta_enum) {
-            MetaClass *global = m_globals[meta_enum->typeEntry()->targetTypeSystem()];
-            if (!global) {
-                ComplexTypeEntry *gte = new GlobalTypeEntry(GLOBAL_PACKAGE);
-                gte->setTargetTypeSystem(meta_enum->typeEntry()->targetTypeSystem());
-                gte->setTargetLangPackage(meta_enum->typeEntry()->targetTypeSystem());
-                gte->setCodeGeneration(TypeEntry::GenerateNothing);
-                global = new MetaClass();
-                global->setTypeEntry(gte);
-                *global += MetaAttributes::Final;
-                *global += MetaAttributes::Public;
-                *global += MetaAttributes::Fake;
-
-                m_meta_classes << global;
-                m_globals[meta_enum->typeEntry()->targetTypeSystem()] = global;
-                if(TypeSystemTypeEntry* ts = m_database->findTypeSystem(global->targetTypeSystem())){
-                    m_typeSystemByPackage[global->package()] = ts;
+            if(!meta_enum->typeEntry()->javaScope().isEmpty()){
+                if(MetaClass *cls = m_meta_classes.findClass(meta_enum->typeEntry()->javaScope(), MetaClassList::QualifiedCppName)){
+                    if(cls!=meta_enum->enclosingClass()){
+                        cls->addEnum(meta_enum);
+                        meta_enum->setEnclosingClass(cls);
+                    }
+                }else{
+                    m_scopeChangedEnums << meta_enum;
                 }
-            }
+            }else{
+                MetaClass *global = m_globals[meta_enum->typeEntry()->targetTypeSystem()];
+                if (!global) {
+                    ComplexTypeEntry *gte = new GlobalTypeEntry(GLOBAL_PACKAGE);
+                    gte->setTargetTypeSystem(meta_enum->typeEntry()->targetTypeSystem());
+                    gte->setTargetLangPackage(meta_enum->typeEntry()->targetTypeSystem());
+                    gte->setCodeGeneration(TypeEntry::GenerateNothing);
+                    global = new MetaClass();
+                    global->setTypeEntry(gte);
+                    *global += MetaAttributes::Final;
+                    *global += MetaAttributes::Public;
+                    *global += MetaAttributes::Fake;
 
-            global->addEnum(meta_enum);
-            meta_enum->setEnclosingClass(global);
-//            meta_enum->typeEntry()->setQualifier(globalName);
+                    m_meta_classes << global;
+                    m_globals[meta_enum->typeEntry()->targetTypeSystem()] = global;
+                    if(TypeSystemTypeEntry* ts = m_database->findTypeSystem(global->targetTypeSystem())){
+                        m_typeSystemByPackage[global->package()] = ts;
+                    }
+                }
+
+                global->addEnum(meta_enum);
+                meta_enum->setEnclosingClass(global);
+//              meta_enum->typeEntry()->setQualifier(globalName);
+            }
         }
     }
 
@@ -562,11 +573,12 @@ bool MetaBuilder::build(FileModelItem&& dom) {
 
     QList<PendingHiddenBaseType> pendingHiddenBaseTypes;
     QList<MetaClass *> pendingConstructorUsages;
+    QList<QPair<MetaClass*,MetaClass*>> pendingPrivateSuperUsages;
     for(MetaClass *cls : qAsConst(m_meta_classes)) {
         if (!cls->isInterface() && !cls->isNamespace()) {
-            setupInheritance(cls, pendingHiddenBaseTypes, pendingConstructorUsages);
+            setupInheritance(cls, pendingHiddenBaseTypes, pendingConstructorUsages, pendingPrivateSuperUsages);
         }else if(cls->isInterface()){
-            setupInheritance(cls->extractInterfaceImpl(), pendingHiddenBaseTypes, pendingConstructorUsages);
+            setupInheritance(cls->extractInterfaceImpl(), pendingHiddenBaseTypes, pendingConstructorUsages, pendingPrivateSuperUsages);
         }
     }
 
@@ -607,23 +619,46 @@ bool MetaBuilder::build(FileModelItem&& dom) {
         m_current_class = old_current_class;
     }
 
+    for(const QPair<MetaClass*,MetaClass*>& pair : qAsConst(pendingPrivateSuperUsages)){
+        for(const QString& name : pair.first->protectedUsingStatements()){
+            for(const MetaFunction* fun : pair.second->queryFunctionsByOriginalName(name)){
+                MetaFunction* newFunction = fun->copy();
+                newFunction->setImplementingClass(pair.first);
+                newFunction->setDeclaringClass(pair.first);
+                newFunction->setVisibility(MetaAttributes::Protected);
+                pair.first->addFunction(newFunction);
+            }
+        }
+        for(const QString& name : pair.first->publicUsingStatements()){
+            for(const MetaFunction* fun : pair.second->queryFunctionsByOriginalName(name)){
+                MetaFunction* newFunction = fun->copy();
+                newFunction->setImplementingClass(pair.first);
+                newFunction->setDeclaringClass(pair.first);
+                newFunction->setVisibility(MetaAttributes::Public);
+                pair.first->addFunction(newFunction);
+            }
+        }
+    }
+
     for(MetaClass *cls : qAsConst(pendingConstructorUsages)) {
-        if(cls->baseClass() && (cls->usingProtectedBaseConstructors() || cls->usingPublicBaseConstructors())){
-            for(const MetaFunction* fun : cls->baseClass()->functions()){
-                if(fun->isConstructor()){
-                    MetaFunction* constructor = fun->copy();
-                    constructor->setImplementingClass(cls);
-                    constructor->setDeclaringClass(cls);
-                    constructor->setName(cls->qualifiedCppName().split("::").last());
-                    constructor->setOriginalName(constructor->name());
-                    if(cls->usingPublicBaseConstructors()){
-                        constructor->setVisibility(MetaAttributes::Public);
-                        applyOnType(cls->typeEntry(), [](ComplexTypeEntry* c){c->setHasPublicDefaultConstructor();});
-                    }else{
-                        constructor->setVisibility(MetaAttributes::Protected);
-                        applyOnType(cls->typeEntry(), [](ComplexTypeEntry* c){c->setHasProtectedDefaultConstructor();});
+        if(cls->baseClass()){
+            if(cls->usingProtectedBaseConstructors() || cls->usingPublicBaseConstructors()){
+                for(const MetaFunction* fun : cls->baseClass()->functions()){
+                    if(fun->isConstructor()){
+                        MetaFunction* constructor = fun->copy();
+                        constructor->setImplementingClass(cls);
+                        constructor->setDeclaringClass(cls);
+                        constructor->setName(cls->qualifiedCppName().split("::").last());
+                        constructor->setOriginalName(constructor->name());
+                        if(cls->usingPublicBaseConstructors()){
+                            constructor->setVisibility(MetaAttributes::Public);
+                            applyOnType(cls->typeEntry(), [](ComplexTypeEntry* c){c->setHasPublicDefaultConstructor();});
+                        }else{
+                            constructor->setVisibility(MetaAttributes::Protected);
+                            applyOnType(cls->typeEntry(), [](ComplexTypeEntry* c){c->setHasProtectedDefaultConstructor();});
+                        }
+                        cls->addFunction(constructor);
                     }
-                    cls->addFunction(constructor);
                 }
             }
         }
@@ -3839,7 +3874,7 @@ MetaClass *MetaBuilder::traverseTypeAlias(TypeAliasModelItem typeAlias) {
             Q_ASSERT(typeAliasType->typeEntry());
             meta_class->setTypeAliasType(typeAliasType);
         }
-        meta_class->setBaseClassTypeInfo({{typeAlias->type(), true}});
+        meta_class->setBaseClassTypeInfo({QPair<TypeInfo,int>{typeAlias->type(), 1}});
     }
     *meta_class += MetaAttributes::Public;
 
@@ -3991,7 +4026,9 @@ MetaClass *MetaBuilder::traverseClass(ClassModelItem class_item, QList<PendingCl
     meta_class->setTypeEntry(type);
     meta_class->setUsingProtectedBaseConstructors(class_item->usingBaseConstructors()==CodeModel::Protected);
     meta_class->setUsingPublicBaseConstructors(class_item->usingBaseConstructors()==CodeModel::Public);
-    QList<QPair<TypeInfo,bool>> baseClasses = class_item->baseClasses();
+    meta_class->setProtectedUsingStatements(class_item->protectedUsingStatements());
+    meta_class->setPublicUsingStatements(class_item->publicUsingStatements());
+    QList<QPair<TypeInfo,int>> baseClasses = class_item->baseClasses();
     if(QT_VERSION_CHECK(m_qtVersionMajor,m_qtVersionMinor,m_qtVersionPatch) >= QT_VERSION_CHECK(6, 0, 0)){
         for(int i=0; i<baseClasses.size(); ++i){
             QString baseClassName = baseClasses[i].first.toString();
@@ -6527,7 +6564,7 @@ void MetaBuilder::fixFunctions(MetaClass * cls) {
     }
 }
 
-void MetaBuilder::setupInheritance(MetaClass *meta_class, QList<PendingHiddenBaseType>& pendingHiddenBaseTypes, QList<MetaClass *>& pendingConstructorUsages) {
+void MetaBuilder::setupInheritance(MetaClass *meta_class, QList<PendingHiddenBaseType>& pendingHiddenBaseTypes, QList<MetaClass *>& pendingConstructorUsages, QList<QPair<MetaClass*,MetaClass*>>& pendingPrivateSuperUsages) {
     Q_ASSERT(!meta_class->isInterface());
 
     if (m_setup_inheritance_done.contains(meta_class))
@@ -6535,7 +6572,7 @@ void MetaBuilder::setupInheritance(MetaClass *meta_class, QList<PendingHiddenBas
     m_setup_inheritance_done.insert(meta_class);
 
     if(meta_class->templateBaseClass() && meta_class->qualifiedCppName().endsWith(">")){
-        setupInheritance(const_cast<MetaClass *>(meta_class->templateBaseClass()), pendingHiddenBaseTypes, pendingConstructorUsages);
+        setupInheritance(const_cast<MetaClass *>(meta_class->templateBaseClass()), pendingHiddenBaseTypes, pendingConstructorUsages, pendingPrivateSuperUsages);
         TypeInfo info = analyzeTypeInfo(meta_class, meta_class->qualifiedCppName());
         pendingHiddenBaseTypes.append(PendingHiddenBaseType{meta_class, meta_class->templateBaseClass(), info});
         return;
@@ -6543,12 +6580,13 @@ void MetaBuilder::setupInheritance(MetaClass *meta_class, QList<PendingHiddenBas
 
     QList<TypeInfo> publicBaseClasses;
     QList<TypeInfo> protectedBaseClasses;
+    QList<TypeInfo> privateBaseClasses;
 
     QStringList scope = meta_class->typeEntry()->qualifiedCppName().split("::");
     scope.removeLast();
 
     if(!scope.isEmpty()){
-        for (QPair<TypeInfo,bool> pair : meta_class->baseClassTypeInfo()) {
+        for (QPair<TypeInfo,int> pair : meta_class->baseClassTypeInfo()) {
             for (auto l = scope.size(); l >= 0; --l) {
                 QStringList prefix = l > 0 ? QStringList(scope.mid(0, l)) : QStringList();
                 TypeInfo baseClass = pair.first;
@@ -6558,18 +6596,22 @@ void MetaBuilder::setupInheritance(MetaClass *meta_class, QList<PendingHiddenBas
                     break;
                 }
             }
-            if(pair.second){
+            if(pair.second==1){
                 publicBaseClasses << pair.first;
-            }else{
+            }else if(pair.second==-1){
                 protectedBaseClasses << pair.first;
+            }else{
+                privateBaseClasses << pair.first;
             }
         }
     }else{
-        for(const QPair<TypeInfo,bool>& pair : meta_class->baseClassTypeInfo()){
-            if(pair.second){
+        for(const QPair<TypeInfo,int>& pair : meta_class->baseClassTypeInfo()){
+            if(pair.second==1){
                 publicBaseClasses << pair.first;
-            }else{
+            }else if(pair.second==-1){
                 protectedBaseClasses << pair.first;
+            }else{
+                privateBaseClasses << pair.first;
             }
         }
     }
@@ -6578,7 +6620,7 @@ void MetaBuilder::setupInheritance(MetaClass *meta_class, QList<PendingHiddenBas
         const MetaType* typeAliasType = meta_class->typeAliasType();
         if(typeAliasType->typeEntry() && typeAliasType->typeEntry()->isAlias()){
             if(MetaClass *cls = m_meta_classes.findClass(typeAliasType->typeEntry()->qualifiedCppName())){
-                setupInheritance(cls, pendingHiddenBaseTypes, pendingConstructorUsages);
+                setupInheritance(cls, pendingHiddenBaseTypes, pendingConstructorUsages, pendingPrivateSuperUsages);
                 if(cls->typeAliasType()){
                     MetaType* newTypeAliasType = cls->typeAliasType()->copy();
                     if(newTypeAliasType->indirections().isEmpty()
@@ -6621,7 +6663,7 @@ void MetaBuilder::setupInheritance(MetaClass *meta_class, QList<PendingHiddenBas
                 templ = m_meta_classes.findClass(base_name);
 
             if (templ) {
-                setupInheritance(templ, pendingHiddenBaseTypes, pendingConstructorUsages);
+                setupInheritance(templ, pendingHiddenBaseTypes, pendingConstructorUsages, pendingPrivateSuperUsages);
                 pendingHiddenBaseTypes.append(PendingHiddenBaseType{meta_class, templ, publicBaseClasses.first()});
                 return;
             }
@@ -6652,10 +6694,19 @@ void MetaBuilder::setupInheritance(MetaClass *meta_class, QList<PendingHiddenBas
                 if(meta_class->typeEntry()->delegatedBaseClasses().contains(base_class_name)){
                     QString delegate = meta_class->typeEntry()->delegatedBaseClasses()[base_class_name];
                     if(delegate.isEmpty()){
-                        if(base_name.startsWith("Q")){
-                            delegate = QString("to%1").arg(base_name.mid(1));
+                        auto idx = base_name.indexOf('<');
+                        if(idx>=0){
+                            if(base_name.startsWith("Q")){
+                                delegate = QString("to%1").arg(base_name.mid(1, idx-1));
+                            }else{
+                                delegate = QString("to%1").arg(base_name.mid(0, idx));
+                            }
                         }else{
-                            delegate = QString("to%1").arg(base_name);
+                            if(base_name.startsWith("Q")){
+                                delegate = QString("to%1").arg(base_name.mid(1));
+                            }else{
+                                delegate = QString("to%1").arg(base_name);
+                            }
                         }
                     }
                     bool ok = false;
@@ -6733,6 +6784,36 @@ void MetaBuilder::setupInheritance(MetaClass *meta_class, QList<PendingHiddenBas
         }
     }
 
+    if (primary < 0 && (!meta_class->protectedUsingStatements().isEmpty() || !meta_class->publicUsingStatements().isEmpty()
+                        || meta_class->usingProtectedBaseConstructors() || meta_class->usingPublicBaseConstructors())) {
+        for (int i = 0; i < protectedBaseClasses.size(); ++i) {
+            QString base_class_name = privateBaseClasses[i].toString();
+            if (m_database->isClassRejected(strip_template_args(base_class_name)))
+                continue;
+            QString base_name = privateBaseClasses[i].qualifiedName().join("::");
+            MetaClass *base_class = m_meta_classes.findClass(base_name);
+            if (base_class) {
+                if(!meta_class->protectedUsingStatements().isEmpty() || !meta_class->publicUsingStatements().isEmpty())
+                    pendingPrivateSuperUsages.append(QPair<MetaClass*,MetaClass*>{meta_class,base_class});
+                if(meta_class->usingProtectedBaseConstructors() || meta_class->usingPublicBaseConstructors())
+                    pendingConstructorUsages.append(base_class);
+            }
+        }
+        for (int i = 0; i < privateBaseClasses.size(); ++i) {
+            QString base_class_name = privateBaseClasses[i].toString();
+            if (m_database->isClassRejected(strip_template_args(base_class_name)))
+                continue;
+            QString base_name = privateBaseClasses[i].qualifiedName().join("::");
+            MetaClass *base_class = m_meta_classes.findClass(base_name);
+            if (base_class) {
+                if(!meta_class->protectedUsingStatements().isEmpty() || !meta_class->publicUsingStatements().isEmpty())
+                    pendingPrivateSuperUsages.append(QPair<MetaClass*,MetaClass*>{meta_class,base_class});
+                if(meta_class->usingProtectedBaseConstructors() || meta_class->usingPublicBaseConstructors())
+                    pendingConstructorUsages.append(base_class);
+            }
+        }
+    }
+
     if (primary >= 0) {
         MetaClass *base_class = m_meta_classes.findClass(publicBaseClasses.at(primary).toString());
         if (!base_class) {
@@ -6743,13 +6824,14 @@ void MetaBuilder::setupInheritance(MetaClass *meta_class, QList<PendingHiddenBas
             return;
         }
         if(base_class->isInterface()){
-            setupInheritance(const_cast<MetaClass *>(base_class)->extractInterfaceImpl(), pendingHiddenBaseTypes, pendingConstructorUsages);
+            setupInheritance(const_cast<MetaClass *>(base_class)->extractInterfaceImpl(), pendingHiddenBaseTypes, pendingConstructorUsages, pendingPrivateSuperUsages);
             if(!meta_class->interfaces().contains(base_class))
                 meta_class->addInterface(base_class);
         }else{
-            setupInheritance(base_class, pendingHiddenBaseTypes, pendingConstructorUsages);
+            setupInheritance(base_class, pendingHiddenBaseTypes, pendingConstructorUsages, pendingPrivateSuperUsages);
             meta_class->setBaseClass(base_class);
-            pendingConstructorUsages.append(base_class);
+            if(meta_class->usingProtectedBaseConstructors() || meta_class->usingPublicBaseConstructors())
+                pendingConstructorUsages.append(base_class);
             if(meta_class->typeEntry()->designatedInterface()
                     && const_cast<MetaClass *>(meta_class)->extractInterface()
                     && base_class->typeEntry()->designatedInterface()
@@ -6772,7 +6854,7 @@ void MetaBuilder::setupInheritance(MetaClass *meta_class, QList<PendingHiddenBas
         if (i != primary) {
             if(MetaClass *base_class = m_meta_classes.findClass(publicBaseClasses.at(i).toString(), MetaClassList::QualifiedCppName)){
                 if(base_class->isInterface()){
-                    setupInheritance(const_cast<MetaClass *>(base_class)->extractInterfaceImpl(), pendingHiddenBaseTypes, pendingConstructorUsages);
+                    setupInheritance(const_cast<MetaClass *>(base_class)->extractInterfaceImpl(), pendingHiddenBaseTypes, pendingConstructorUsages, pendingPrivateSuperUsages);
                     if(!meta_class->interfaces().contains(base_class)){
                         meta_class->addInterface(base_class);
                     }
@@ -6795,7 +6877,7 @@ void MetaBuilder::setupInheritance(MetaClass *meta_class, QList<PendingHiddenBas
                         }
                     }
                 }else{
-                    setupInheritance(base_class, pendingHiddenBaseTypes, pendingConstructorUsages);
+                    setupInheritance(base_class, pendingHiddenBaseTypes, pendingConstructorUsages, pendingPrivateSuperUsages);
                     if(meta_class->typeEntry()->designatedInterface()
                             && const_cast<MetaClass *>(meta_class)->extractInterface()
                             && base_class->typeEntry()->designatedInterface()
@@ -8076,7 +8158,7 @@ MetaType *MetaBuilder::translateType(TypeInfo typei,
         if (!type && !isClassRejected && containing_class && resolveScope) {
             QList<TypeInfo> contexts;
             QSet<QString> visitedContexts;
-            for(const QPair<TypeInfo,bool>& p : containing_class->baseClasses())
+            for(const QPair<TypeInfo,int>& p : containing_class->baseClasses())
                 contexts.append(p.first);
             removeDuplicates(contexts);
 
@@ -8123,13 +8205,13 @@ MetaType *MetaBuilder::translateType(TypeInfo typei,
 
                     ClassModelItem item = m_dom->findClass(contexts.at(0).toString());
                     if (item) {
-                        for(const QPair<TypeInfo,bool>& p : item->baseClasses())
+                        for(const QPair<TypeInfo,int>& p : item->baseClasses())
                             contexts.append(p.first);
                     }else{
                         MetaClass* cls = m_meta_classes.findClass(contexts.at(0).toString());
                         if(cls){
-                            for(const QPair<TypeInfo,bool>& p : cls->baseClassTypeInfo()){
-                                if(p.second){
+                            for(const QPair<TypeInfo,int>& p : cls->baseClassTypeInfo()){
+                                if(p.second==1){
                                     contexts.insert(1,p.first);
                                     break;
                                 }
@@ -8150,8 +8232,8 @@ MetaType *MetaBuilder::translateType(TypeInfo typei,
         QSet<QString> visitedContexts;
         contexts.append(m_current_class->qualifiedCppName());
         QList<TypeInfo> superClasses;
-        for(const QPair<TypeInfo,bool>& p : m_current_class->baseClassTypeInfo()){
-            if(p.second){
+        for(const QPair<TypeInfo,int>& p : m_current_class->baseClassTypeInfo()){
+            if(p.second==1){
                 superClasses << p.first;
                 contexts.append(p.first.qualifiedName().join("::"));
             }
@@ -8160,8 +8242,8 @@ MetaType *MetaBuilder::translateType(TypeInfo typei,
             QList<TypeInfo> _superClasses;
             for(const TypeInfo& scl : qAsConst(superClasses)){
                 if(MetaClass* superClass = m_meta_classes.findClass(scl.toString())){
-                    for(const QPair<TypeInfo,bool>& p : superClass->baseClassTypeInfo()){
-                        if(p.second){
+                    for(const QPair<TypeInfo,int>& p : superClass->baseClassTypeInfo()){
+                        if(p.second==1){
                             _superClasses << p.first;
                             contexts.append(p.first.qualifiedName().join("::"));
                         }
@@ -8216,11 +8298,11 @@ MetaType *MetaBuilder::translateType(TypeInfo typei,
 
                 ClassModelItem item = m_dom->findClass(contexts.at(0));
                 if (item) {
-                    for(const QPair<TypeInfo,bool>& p : item->baseClasses())
+                    for(const QPair<TypeInfo,int>& p : item->baseClasses())
                         contexts += p.first.qualifiedName().join("::");
                 }else if(current_class){
-                    for(const QPair<TypeInfo,bool>& p : m_current_class->baseClassTypeInfo()){
-                        if(p.second){
+                    for(const QPair<TypeInfo,int>& p : m_current_class->baseClassTypeInfo()){
+                        if(p.second==1){
                             contexts.insert(1, p.first.qualifiedName().join("::"));
                             current_class = m_meta_classes.findClass(p.first.toString());
                             break;
@@ -8490,7 +8572,7 @@ void MetaBuilder::fixMissingIterator(){
                     if(iteratorType->containerType()==missingAlias.current_class->templateBaseClass()->typeEntry()){
                         missingAlias.meta_type->setIteratorInstantiations(missingAlias.current_class->templateBaseClassInstantiations());
                         QStringList baseClassNames;
-                        for(const QPair<TypeInfo,bool>& p : missingAlias.current_class->baseClassTypeInfo())
+                        for(const QPair<TypeInfo,int>& p : missingAlias.current_class->baseClassTypeInfo())
                             baseClassNames << p.first.toString();
                         IteratorTypeEntry* newIteratorType = iteratorType->clone(iteratorType->containerType(), baseClassNames.join("::"));
                         missingAlias.meta_type->setTypeEntry(newIteratorType);
@@ -9046,8 +9128,8 @@ bool MetaBuilder::isClass(const QString &qualified_name, const QString& classNam
     bool result = class_item && class_item->extendsClass(className);
 
     if (class_item && !result) {
-        for(const QPair<TypeInfo,bool>& p : class_item->baseClasses()){
-            if(p.second){
+        for(const QPair<TypeInfo,int>& p : class_item->baseClasses()){
+            if(p.second==1){
                 result = isClass(p.first.qualifiedName().join("::"), className);
                 if (result)
                     break;

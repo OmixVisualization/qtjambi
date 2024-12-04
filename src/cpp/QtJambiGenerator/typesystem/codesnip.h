@@ -61,6 +61,11 @@ class CodeSnipFragment {
 
         QString code() const;
         bool hasCode() const;
+        void codeReplace(const QString& variable, const QString& replace){
+            if(m_instance)
+                m_instance->addReplaceRule(variable, replace);
+            m_code = m_code.replace(variable, replace);
+        }
 };
 
 class CodeSnipAbstract {

@@ -55,6 +55,7 @@ Possible arguments are:
   - `--dir=...` target directory to place the prepared binary
   - ...additional Java runtime arguments after `-- `
 
+*Make sure you specify all `--xyz-path=...` relative to the bundle (macOS) and executable (Windows/Linux), respectively.*
 It is not possible to create executables for Android.
 
 ## Deploying on Windows
@@ -72,6 +73,8 @@ installation directory
         | MyCompanyApp.exe
     | plugins
         | ... (platforms, styles and others)
+	| qml (only when using QtQml)
+	| resources (only when using QtWebEngine)
     | lib
         | qtjambi-6.8.1.jar
         | qtjambi-native-windows-x64-6.8.1.jar
@@ -109,6 +112,9 @@ installation directory
     | MyCompanyApp
     | plugins
         | ... (platforms, styles and others)
+	| qml (only when using QtQml)
+	| resources (only when using QtWebEngine)
+	| libexec (only when using QtWebEngine)
     | lib
         | libQt6Core.so[.6.8.1]
         | libQt6Gui.so[.6.8.1]
@@ -147,11 +153,12 @@ follows:
 ``` shell
 installation directory
     | MyCompanyApp.app
-        |Contents
+        | Contents
             | MacOS
                 | MyCompanyApp
             | plugins
                 | ... (platforms, styles and others)
+            | qml (only when using QtQml)
             | Frameworks
                 | QtCore.framework
                 | QtGui.framework
@@ -176,9 +183,9 @@ java -Djava.library.path=<path to Qt libraries>
      -m qtjambi.deployer app
      --application=MyCompanyApp
      --executable=utilities/QtJambiLauncher.app
-     --class-path=../lib/my-company-app.jar:../lib/qtjambi-6.8.1.jar:../lib/qtjambi-native-macos-6.8.1.jar
-     --library-path=../Frameworks
-     --jvm-path=../jre
+     --class-path=MyCompanyApp.app/Contents/lib/my-company-app.jar:MyCompanyApp.app/Contents/lib/qtjambi-6.8.1.jar:MyCompanyApp.app/Contents/lib/qtjambi-native-macos-6.8.1.jar
+     --library-path=MyCompanyApp.app/Contents/Frameworks
+     --jvm-path=MyCompanyApp.app/Contents/jre
      --main-class=my.company.app.Main
      --dir=output directory (may be installation directory)
 ```

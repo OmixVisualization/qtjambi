@@ -50,6 +50,7 @@ QT_WARNING_DISABLE_DEPRECATED
 #include <QtJambi/JObjectWrapper>
 #include <QtJambi/FunctionPointer>
 #include "utils_p.h"
+#include "utils.h"
 #include "hashes.h"
 #include <QtCore/private/qcoreapplication_p.h>
 #include <QtCore/private/qthread_p.h>
@@ -1689,21 +1690,6 @@ public:
     }
 };
 
-enum StringComparison{
-    Equal,
-    NotEqual,
-    LessThan,
-    GreaterThan,
-    LessThanOrEqual,
-    GreaterThanOrEqual,
-    Contains,
-    ContainsNot,
-    StartsWith,
-    StartsNotWith,
-    EndsWith,
-    EndsNotWith
-};
-
 extern "C" Q_DECL_EXPORT jobject JNICALL
 QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_internal_QAbstractFileEngineHandler_fromFileNameTestString)
 (JNIEnv *env, jclass, jobject _factory, int stringComparisonType, jint caseSensitivity, jstring _strg)
@@ -1711,74 +1697,74 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_internal_QAbstractFileEngineHandler_from
     jobject result{nullptr};
     QTJAMBI_TRY{
         QAbstractFileEngineHandler* handler;
-        switch(stringComparisonType){
-        case Equal:
+        switch(StringComparison(stringComparisonType)){
+        case StringComparison::Equal:
             handler = new FileEngineHandler(env, _factory,
                                             [caseSensitivity = Qt::CaseSensitivity(caseSensitivity), strg = qtjambi_cast<QString>(env, _strg)](const QString &fileName) -> bool {
                                                 return fileName.compare(strg, caseSensitivity)==0;
                                             });
             break;
-        case NotEqual:
+        case StringComparison::NotEqual:
             handler = new FileEngineHandler(env, _factory,
                                             [caseSensitivity = Qt::CaseSensitivity(caseSensitivity), strg = qtjambi_cast<QString>(env, _strg)](const QString &fileName) -> bool {
                                                 return fileName.compare(strg, caseSensitivity)!=0;
                                             });
             break;
-        case LessThan:
+        case StringComparison::LessThan:
             handler = new FileEngineHandler(env, _factory,
                                             [caseSensitivity = Qt::CaseSensitivity(caseSensitivity), strg = qtjambi_cast<QString>(env, _strg)](const QString &fileName) -> bool {
                                                 return fileName.compare(strg, caseSensitivity)<0;
                                             });
             break;
-        case LessThanOrEqual:
+        case StringComparison::LessThanOrEqual:
             handler = new FileEngineHandler(env, _factory,
                                             [caseSensitivity = Qt::CaseSensitivity(caseSensitivity), strg = qtjambi_cast<QString>(env, _strg)](const QString &fileName) -> bool {
                                                 return fileName.compare(strg, caseSensitivity)<=0;
                                             });
             break;
-        case GreaterThan:
+        case StringComparison::GreaterThan:
             handler = new FileEngineHandler(env, _factory,
                                             [caseSensitivity = Qt::CaseSensitivity(caseSensitivity), strg = qtjambi_cast<QString>(env, _strg)](const QString &fileName) -> bool {
                                                 return fileName.compare(strg, caseSensitivity)>0;
                                             });
             break;
-        case GreaterThanOrEqual:
+        case StringComparison::GreaterThanOrEqual:
             handler = new FileEngineHandler(env, _factory,
                                             [caseSensitivity = Qt::CaseSensitivity(caseSensitivity), strg = qtjambi_cast<QString>(env, _strg)](const QString &fileName) -> bool {
                                                 return fileName.compare(strg, caseSensitivity)>=0;
                                             });
             break;
-        case Contains:
+        case StringComparison::Contains:
             handler = new FileEngineHandler(env, _factory,
                                             [caseSensitivity = Qt::CaseSensitivity(caseSensitivity), strg = qtjambi_cast<QString>(env, _strg)](const QString &fileName) -> bool {
                                                 return fileName.contains(strg, caseSensitivity);
                                             });
             break;
-        case ContainsNot:
+        case StringComparison::ContainsNot:
             handler = new FileEngineHandler(env, _factory,
                                             [caseSensitivity = Qt::CaseSensitivity(caseSensitivity), strg = qtjambi_cast<QString>(env, _strg)](const QString &fileName) -> bool {
                                                 return !fileName.contains(strg, caseSensitivity);
                                             });
             break;
-        case StartsWith:
+        case StringComparison::StartsWith:
             handler = new FileEngineHandler(env, _factory,
                                             [caseSensitivity = Qt::CaseSensitivity(caseSensitivity), strg = qtjambi_cast<QString>(env, _strg)](const QString &fileName) -> bool {
                                                 return fileName.startsWith(strg, caseSensitivity);
                                             });
             break;
-        case StartsNotWith:
+        case StringComparison::StartsNotWith:
             handler = new FileEngineHandler(env, _factory,
                                             [caseSensitivity = Qt::CaseSensitivity(caseSensitivity), strg = qtjambi_cast<QString>(env, _strg)](const QString &fileName) -> bool {
                                                 return !fileName.startsWith(strg, caseSensitivity);
                                             });
             break;
-        case EndsWith:
+        case StringComparison::EndsWith:
             handler = new FileEngineHandler(env, _factory,
                                             [caseSensitivity = Qt::CaseSensitivity(caseSensitivity), strg = qtjambi_cast<QString>(env, _strg)](const QString &fileName) -> bool {
                                                 return fileName.endsWith(strg, caseSensitivity);
                                             });
             break;
-        case EndsNotWith:
+        case StringComparison::EndsNotWith:
             handler = new FileEngineHandler(env, _factory,
                                             [caseSensitivity = Qt::CaseSensitivity(caseSensitivity), strg = qtjambi_cast<QString>(env, _strg)](const QString &fileName) -> bool {
                                                 return !fileName.endsWith(strg, caseSensitivity);
@@ -1796,13 +1782,21 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_internal_QAbstractFileEngineHandler_from
 
 extern "C" Q_DECL_EXPORT jobject JNICALL
 QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_internal_QAbstractFileEngineHandler_fromFileNameTestRegexp)
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+(JNIEnv *env, jclass, jobject _factory, QtJambiNativeID _regexp, jint _offset, jint _matchType, jint _matchOptions)
+#else
 (JNIEnv *env, jclass, jobject _factory, QtJambiNativeID _regexp, jlong _offset, jint _matchType, jint _matchOptions)
+#endif
 {
     jobject result{nullptr};
     QTJAMBI_TRY{
         QAbstractFileEngineHandler* handler = new FileEngineHandler(env, _factory,
                                                                     [regexp = QtJambiAPI::valueFromNativeId<QRegularExpression>(_regexp),
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                                                                     offset = int(_offset),
+#else
                                                                      offset = qsizetype(_offset),
+#endif
                                                                      matchType = QRegularExpression::MatchType(_matchType),
                                                                      matchOptions = QRegularExpression::MatchOptions(_matchOptions)](const QString &fileName) -> bool {
                                                                         return regexp.match(fileName, offset, matchType, matchOptions).hasMatch();
@@ -1813,6 +1807,288 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_internal_QAbstractFileEngineHandler_from
         exn.raiseInJava(env);
     }QTJAMBI_TRY_END
     return result;
+}
+
+class SelectiveEventFilter : public QObject{
+    QObject* m_eventFilter;
+    bool(&predicate)(const void*,QObject *, QEvent *);
+    void(&deleter)(void*);
+    void* data;
+    SelectiveEventFilter(QObject* _eventFilter, bool(&_predicate)(const void*,QObject *, QEvent *), void(&_deleter)(void*), void* _data)
+        : QObject(_eventFilter->parent()),
+        m_eventFilter(_eventFilter),
+        predicate(_predicate),
+        deleter(_deleter),
+        data(_data)
+    {
+        m_eventFilter->setParent(this);
+    }
+    template<typename Predicate>
+    static bool test(const void* data,QObject *watched, QEvent *event){
+        return (*reinterpret_cast<const Predicate*>(data))(watched, event);
+    }
+    template<typename Predicate>
+    static void destroy(void* data){
+        delete reinterpret_cast<Predicate*>(data);
+    }
+public:
+    template<typename Predicate>
+    SelectiveEventFilter(QObject* _eventFilter, Predicate&& predicate)
+        : SelectiveEventFilter(_eventFilter, SelectiveEventFilter::test<Predicate>,
+                               SelectiveEventFilter::destroy<Predicate>,
+                               new Predicate(std::move(predicate)))
+    {
+    }
+    ~SelectiveEventFilter(){
+        deleter(data);
+    }
+    bool eventFilter(QObject *watched, QEvent *event) final override{
+        if(predicate(data, watched, event)){
+            return m_eventFilter->eventFilter(watched, event);
+        }
+        return false;
+    }
+};
+
+extern "C" Q_DECL_EXPORT jobject JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QCoreApplication_asSelectiveEventFilterEventTypes)(JNIEnv *env, jclass, QtJambiNativeID objectId, jobject firstType, jobjectArray types)
+{
+    try{
+        QObject* eventFilter = QtJambiAPI::objectFromNativeId<QObject>(objectId);
+        QtJambiAPI::checkThread(env, eventFilter);
+        QSet<QEvent::Type> typeSet;
+        typeSet.insert(qtjambi_cast<QEvent::Type>(env, firstType));
+        for(jsize i=0, l = types ? env->GetArrayLength(types) : 0; i<l; ++i){
+            typeSet.insert(qtjambi_cast<QEvent::Type>(env, env->GetObjectArrayElement(types, i)));
+        }
+        eventFilter = new SelectiveEventFilter(eventFilter, [typeSet = std::move(typeSet)](QObject *, QEvent *event){
+            return typeSet.contains(event->type());
+        });
+        jobject result = qtjambi_cast<jobject>(env, eventFilter);
+        QtJambiAPI::setJavaOwnershipForTopLevelObject(env, eventFilter);
+        return result;
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+    return nullptr;
+}
+
+extern "C" Q_DECL_EXPORT jobject JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QCoreApplication_asSelectiveEventFilterObjectNames)(JNIEnv *env, jclass, QtJambiNativeID objectId, jint stringComparisonType, jint caseSensitivity, jstring objectName, jobjectArray objectNames)
+{
+    try{
+        QObject* eventFilter = QtJambiAPI::objectFromNativeId<QObject>(objectId);
+        QtJambiAPI::checkThread(env, eventFilter);
+        QList<QString> objectNameList;
+        objectNameList << qtjambi_cast<QString>(env, objectName);
+        for(jsize i=0, l = objectNames ? env->GetArrayLength(objectNames) : 0; i<l; ++i){
+            objectNameList << qtjambi_cast<QString>(env, env->GetObjectArrayElement(objectNames, i));
+        }
+        switch(StringComparison(stringComparisonType)){
+        case StringComparison::Equal:
+            eventFilter = new SelectiveEventFilter(eventFilter, [caseSensitivity = Qt::CaseSensitivity(caseSensitivity),
+                                                                 objectNameList = std::move(objectNameList)](QObject *watched, QEvent *){
+                QString watchedObjectName = watched->objectName();
+                for(const QString& objectName : objectNameList){
+                    if(watchedObjectName.compare(objectName, caseSensitivity)==0)
+                        return true;
+                }
+                return false;
+            });
+            break;
+        case StringComparison::NotEqual:
+            eventFilter = new SelectiveEventFilter(eventFilter, [caseSensitivity = Qt::CaseSensitivity(caseSensitivity),
+                                                                 objectNameList = std::move(objectNameList)](QObject *watched, QEvent *){
+                QString watchedObjectName = watched->objectName();
+                for(const QString& objectName : objectNameList){
+                    if(watchedObjectName.compare(objectName, caseSensitivity)!=0)
+                        return true;
+                }
+                return false;
+            });
+            break;
+        case StringComparison::LessThan:
+            eventFilter = new SelectiveEventFilter(eventFilter, [caseSensitivity = Qt::CaseSensitivity(caseSensitivity),
+                                                                 objectNameList = std::move(objectNameList)](QObject *watched, QEvent *){
+                QString watchedObjectName = watched->objectName();
+                for(const QString& objectName : objectNameList){
+                    if(watchedObjectName.compare(objectName, caseSensitivity)<0)
+                        return true;
+                }
+                return false;
+            });
+            break;
+        case StringComparison::GreaterThan:
+            eventFilter = new SelectiveEventFilter(eventFilter, [caseSensitivity = Qt::CaseSensitivity(caseSensitivity),
+                                                                 objectNameList = std::move(objectNameList)](QObject *watched, QEvent *){
+                QString watchedObjectName = watched->objectName();
+                for(const QString& objectName : objectNameList){
+                    if(watchedObjectName.compare(objectName, caseSensitivity)>0)
+                        return true;
+                }
+                return false;
+            });
+            break;
+        case StringComparison::LessThanOrEqual:
+            eventFilter = new SelectiveEventFilter(eventFilter, [caseSensitivity = Qt::CaseSensitivity(caseSensitivity),
+                                                                 objectNameList = std::move(objectNameList)](QObject *watched, QEvent *){
+                QString watchedObjectName = watched->objectName();
+                for(const QString& objectName : objectNameList){
+                    if(watchedObjectName.compare(objectName, caseSensitivity)<=0)
+                        return true;
+                }
+                return false;
+            });
+            break;
+        case StringComparison::GreaterThanOrEqual:
+            eventFilter = new SelectiveEventFilter(eventFilter, [caseSensitivity = Qt::CaseSensitivity(caseSensitivity),
+                                                                 objectNameList = std::move(objectNameList)](QObject *watched, QEvent *){
+                QString watchedObjectName = watched->objectName();
+                for(const QString& objectName : objectNameList){
+                    if(watchedObjectName.compare(objectName, caseSensitivity)>=0)
+                        return true;
+                }
+                return false;
+            });
+            break;
+        case StringComparison::Contains:
+            eventFilter = new SelectiveEventFilter(eventFilter, [caseSensitivity = Qt::CaseSensitivity(caseSensitivity),
+                                                                 objectNameList = std::move(objectNameList)](QObject *watched, QEvent *){
+                QString watchedObjectName = watched->objectName();
+                for(const QString& objectName : objectNameList){
+                    if(watchedObjectName.contains(objectName, caseSensitivity))
+                        return true;
+                }
+                return false;
+            });
+            break;
+        case StringComparison::ContainsNot:
+            eventFilter = new SelectiveEventFilter(eventFilter, [caseSensitivity = Qt::CaseSensitivity(caseSensitivity),
+                                                                 objectNameList = std::move(objectNameList)](QObject *watched, QEvent *){
+                QString watchedObjectName = watched->objectName();
+                for(const QString& objectName : objectNameList){
+                    if(!watchedObjectName.contains(objectName, caseSensitivity))
+                        return true;
+                }
+                return false;
+            });
+            break;
+        case StringComparison::StartsWith:
+            eventFilter = new SelectiveEventFilter(eventFilter, [caseSensitivity = Qt::CaseSensitivity(caseSensitivity),
+                                                                 objectNameList = std::move(objectNameList)](QObject *watched, QEvent *){
+                QString watchedObjectName = watched->objectName();
+                for(const QString& objectName : objectNameList){
+                    if(watchedObjectName.startsWith(objectName, caseSensitivity))
+                        return true;
+                }
+                return false;
+            });
+            break;
+        case StringComparison::StartsNotWith:
+            eventFilter = new SelectiveEventFilter(eventFilter, [caseSensitivity = Qt::CaseSensitivity(caseSensitivity),
+                                                                 objectNameList = std::move(objectNameList)](QObject *watched, QEvent *){
+                QString watchedObjectName = watched->objectName();
+                for(const QString& objectName : objectNameList){
+                    if(!watchedObjectName.startsWith(objectName, caseSensitivity))
+                        return true;
+                }
+                return false;
+            });
+            break;
+        case StringComparison::EndsWith:
+            eventFilter = new SelectiveEventFilter(eventFilter, [caseSensitivity = Qt::CaseSensitivity(caseSensitivity),
+                                                                 objectNameList = std::move(objectNameList)](QObject *watched, QEvent *){
+                QString watchedObjectName = watched->objectName();
+                for(const QString& objectName : objectNameList){
+                    if(watchedObjectName.endsWith(objectName, caseSensitivity))
+                        return true;
+                }
+                return false;
+            });
+            break;
+        case StringComparison::EndsNotWith:
+            eventFilter = new SelectiveEventFilter(eventFilter, [caseSensitivity = Qt::CaseSensitivity(caseSensitivity),
+                                                                 objectNameList = std::move(objectNameList)](QObject *watched, QEvent *){
+                QString watchedObjectName = watched->objectName();
+                for(const QString& objectName : objectNameList){
+                    if(!watchedObjectName.endsWith(objectName, caseSensitivity))
+                        return true;
+                }
+                return false;
+            });
+            break;
+        default:
+            eventFilter = nullptr;
+            break;
+        }
+        jobject result = qtjambi_cast<jobject>(env, eventFilter);
+        QtJambiAPI::setJavaOwnershipForTopLevelObject(env, eventFilter);
+        return result;
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+    return nullptr;
+}
+
+extern "C" Q_DECL_EXPORT jobject JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QCoreApplication_asSelectiveEventFilterMetaObjects)(JNIEnv *env, jclass, QtJambiNativeID objectId, jobject firstMetaObject, jobjectArray metaObjects)
+{
+    try{
+        QObject* eventFilter = QtJambiAPI::objectFromNativeId<QObject>(objectId);
+        QtJambiAPI::checkThread(env, eventFilter);
+        QList<const QMetaObject*> metaObjectList;
+        metaObjectList << &qtjambi_cast<const QMetaObject&>(env, firstMetaObject);
+        for(jsize i=0, l = metaObjects ? env->GetArrayLength(metaObjects) : 0; i<l; ++i){
+            metaObjectList << &qtjambi_cast<const QMetaObject&>(env, env->GetObjectArrayElement(metaObjects, i));
+        }
+        eventFilter = new SelectiveEventFilter(eventFilter, [metaObjectList = std::move(metaObjectList)](QObject *watched, QEvent *){
+            const QMetaObject* watchedMetaObject = watched->metaObject();
+            for(const QMetaObject* metaObject : metaObjectList){
+                if(watchedMetaObject->inherits(metaObject))
+                    return true;
+            }
+            return false;
+        });
+        jobject result = qtjambi_cast<jobject>(env, eventFilter);
+        QtJambiAPI::setJavaOwnershipForTopLevelObject(env, eventFilter);
+        return result;
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+    return nullptr;
+}
+
+extern "C" Q_DECL_EXPORT jobject JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QCoreApplication_asSelectiveEventFilterObjectNameMatches)
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+(JNIEnv *env, jclass, QtJambiNativeID objectId, QtJambiNativeID regexpId, jint _offset, jint _matchType, jint _matchOptions)
+#else
+(JNIEnv *env, jclass, QtJambiNativeID objectId, QtJambiNativeID regexpId, jlong _offset, jint _matchType, jint _matchOptions)
+#endif
+{
+    try{
+        QObject* eventFilter = QtJambiAPI::objectFromNativeId<QObject>(objectId);
+        QtJambiAPI::checkThread(env, eventFilter);
+        eventFilter = new SelectiveEventFilter(eventFilter, [regexp = QtJambiAPI::valueFromNativeId<QRegularExpression>(regexpId),
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                                                             offset = int(_offset),
+#else
+                                                             offset = qsizetype(_offset),
+#endif
+                                                             matchType = QRegularExpression::MatchType(_matchType),
+                                                             matchOptions = QRegularExpression::MatchOptions(_matchOptions)](QObject *watched, QEvent *){
+            QString objectName = watched->objectName();
+            if(regexp.match(objectName, offset, matchType, matchOptions).hasMatch())
+                return true;
+            return false;
+        });
+        jobject result = qtjambi_cast<jobject>(env, eventFilter);
+        QtJambiAPI::setJavaOwnershipForTopLevelObject(env, eventFilter);
+        return result;
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+    return nullptr;
 }
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 8, 0)

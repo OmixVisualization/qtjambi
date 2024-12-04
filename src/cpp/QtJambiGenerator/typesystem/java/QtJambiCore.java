@@ -12355,7 +12355,7 @@ abstract class QAbstractItemModel___ extends QAbstractItemModel {
 
 class QMutex___ extends QMutex {
     /**
-     * <p>See <code><a href="https://doc.qt.io/qt/qmutex.html#try_lock_for">QMutex::<wbr/>try_lock_for(std::chrono::duration)</a></code></p>
+     * <p>See <code><a href="@docRoot/qmutex.html#try_lock_for">QMutex::<wbr/>try_lock_for(std::chrono::duration)</a></code></p>
      */
     @QtUninvokable
     public final boolean tryLockFor(java.time.temporal.@NonNull TemporalAmount duration){
@@ -12363,7 +12363,7 @@ class QMutex___ extends QMutex {
     }
 
     /**
-     * <p>See <code><a href="https://doc.qt.io/qt/qmutex.html#try_lock_until">QMutex::<wbr/>try_lock_until(std::chrono::time_point)</a></code></p>
+     * <p>See <code><a href="@docRoot/qmutex.html#try_lock_until">QMutex::<wbr/>try_lock_until(std::chrono::time_point)</a></code></p>
      */
     @QtUninvokable
     public final boolean tryLockUntil(java.time.temporal.@NonNull Temporal timePoint){
@@ -12394,7 +12394,7 @@ class QTimer___ extends QTimer {
     }
 
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qtimer.html#callOnTimeout"><code>QTimer::callOnTimeout(Args&amp;&amp;...)</code></a></p>
+     * <p>See <a href="@docRoot/qtimer.html#callOnTimeout"><code>QTimer::callOnTimeout(Args&amp;&amp;...)</code></a></p>
      */
     public final <Receiver> QMetaObject.@NonNull Connection callOnTimeout(@StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot1<Receiver> slot, Qt.@NonNull ConnectionType @NonNull... type){
         return timeout.connect(receiver, slot, type);
@@ -12425,7 +12425,7 @@ class QChronoTimer___ extends QChronoTimer {
     }
 
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qchronotimer.html#callOnTimeout"><code>QChronoTimer::callOnTimeout(Args&amp;&amp;...)</code></a></p>
+     * <p>See <a href="@docRoot/qchronotimer.html#callOnTimeout"><code>QChronoTimer::callOnTimeout(Args&amp;&amp;...)</code></a></p>
      */
     public final <Receiver> QMetaObject.@NonNull Connection callOnTimeout(@StrictNonNull Receiver receiver, QMetaObject.@StrictNonNull Slot1<Receiver> slot, Qt.@NonNull ConnectionType @NonNull... type){
         return timeout.connect(receiver, slot, type);
@@ -12659,8 +12659,431 @@ class QCoreApplication___ extends QCoreApplication {
         }
         postRoutines.clear();
     }
+
+    /**
+     * Reduces the number of native-to-java conversions by pre-filtering the receiver objects according to the given object names (case sensitive comparison).
+     * The new event filter object is reparented to the parent of the given event filter object and takes ownership of it.
+     * @param eventFilter
+     * @param stringComparison string comparison operation
+     * @param objectName
+     * @param objectNames
+     * @return selective event filter
+     */
+    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter, io.qt.core.QString.@StrictNonNull Comparison stringComparison, @NonNull String objectName, @NonNull String @NonNull... objectNames) {
+        return asSelectiveEventFilter(eventFilter, stringComparison, Qt.CaseSensitivity.CaseSensitive, objectName, objectNames);
+    }
+
+    /**
+     * Reduces the number of native-to-java conversions by pre-filtering the receiver objects according to the given object names.
+     * The new event filter object is reparented to the parent of the given event filter object and takes ownership of it.
+     * @param eventFilter
+     * @param stringComparison string comparison operation
+     * @param caseSensitivity
+     * @param objectName
+     * @param objectNames
+     * @return selective event filter
+     */
+    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter, io.qt.core.QString.@StrictNonNull Comparison stringComparison, Qt.@StrictNonNull CaseSensitivity caseSensitivity, @NonNull String objectName, @NonNull String @NonNull... objectNames) {
+        return asSelectiveEventFilterObjectNames(QtJambi_LibraryUtilities.internal.checkedNativeId(java.util.Objects.requireNonNull(eventFilter, "Argument 'eventFilter': null not expected.")), stringComparison.value(), caseSensitivity.value(), objectName, objectNames);
+    }
+
+    /**
+     * Reduces the number of native-to-java conversions by pre-filtering the events according to the given event types.
+     * The new event filter object is reparented to the parent of the given event filter object and takes ownership of it.
+     * @param eventFilter
+     * @param eventType
+     * @param eventTypes
+     * @return selective event filter
+     */
+    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter, io.qt.core.QEvent.@NonNull Type eventType, io.qt.core.QEvent.@NonNull Type @NonNull... eventTypes) {
+        return asSelectiveEventFilterEventTypes(QtJambi_LibraryUtilities.internal.checkedNativeId(java.util.Objects.requireNonNull(eventFilter, "Argument 'eventFilter': null not expected.")), eventType, eventTypes);
+    }
+
+    /**
+     * Reduces the number of native-to-java conversions by pre-filtering the receiver objects according to the given object types.
+     * The new event filter object is reparented to the parent of the given event filter object and takes ownership of it.
+     * @param eventFilter
+     * @param metaObject
+     * @param metaObjects
+     * @return selective event filter
+     */
+    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter, io.qt.core.@StrictNonNull QMetaObject metaObject, io.qt.core.@StrictNonNull QMetaObject @NonNull... metaObjects) {
+        return asSelectiveEventFilterMetaObjects(QtJambi_LibraryUtilities.internal.checkedNativeId(java.util.Objects.requireNonNull(eventFilter, "Argument 'eventFilter': null not expected.")), metaObject, metaObjects);
+    }
+
+    private static native io.qt.core.QObject asSelectiveEventFilterEventTypes(long objectId, io.qt.core.QEvent.Type eventType, io.qt.core.QEvent.Type[] eventTypes);
+
+    private static native io.qt.core.QObject asSelectiveEventFilterObjectNames(long objectId, int stringComparisonType, int caseSensitivity, String objectName, String[] objectNames);
+
+    private static native io.qt.core.QObject asSelectiveEventFilterMetaObjects(long objectId, io.qt.core.QMetaObject firstMetaObject, io.qt.core.QMetaObject[] metaObjects);
 }// class
-    
+
+class QCoreApplication__5_ {
+    /**
+     * Reduces the number of native-to-java conversions by pre-filtering the receiver objects according to the given object name filter.
+     * The new event filter object is reparented to the parent of the given event filter object and takes ownership of it.
+     * @param eventFilter
+     * @param regexp object name regexp
+     * @param matchType the match type
+     * @return selective event filter
+     * @see io.qt.core.QRegularExpression#match(String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter, io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchType matchType) {
+        return asSelectiveEventFilter(eventFilter, regexp, 0, matchType, io.qt.core.QRegularExpression.MatchOption.NoMatchOption.asFlags());
+    }
+
+    /**
+     * Reduces the number of native-to-java conversions by pre-filtering the receiver objects according to the given object name filter.
+     * The new event filter object is reparented to the parent of the given event filter object and takes ownership of it.
+     * @param eventFilter
+     * @param regexp object name regexp
+     * @param matchType the match type
+     * @param matchOptions options for the match
+     * @return selective event filter
+     * @see io.qt.core.QRegularExpression#match(String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter, io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchType matchType, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
+        return asSelectiveEventFilter(eventFilter, regexp, 0, matchType, new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
+    }
+
+    /**
+     * Reduces the number of native-to-java conversions by pre-filtering the receiver objects according to the given object name filter.
+     * The new event filter object is reparented to the parent of the given event filter object and takes ownership of it.
+     * @param eventFilter
+     * @param regexp object name regexp
+     * @param matchOptions options for the match
+     * @return selective event filter
+     * @see io.qt.core.QRegularExpression#match(String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter, io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchType matchType, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
+        return asSelectiveEventFilter(eventFilter, regexp, 0, matchType, matchOptions);
+    }
+
+    /**
+     * Reduces the number of native-to-java conversions by pre-filtering the receiver objects according to the given object name filter.
+     * The new event filter object is reparented to the parent of the given event filter object and takes ownership of it.
+     * @param eventFilter
+     * @param regexp object name regexp
+     * @param offset the offset of the match
+     * @return selective event filter
+     * @see io.qt.core.QRegularExpression#match(String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter, io.qt.core.@NonNull QRegularExpression regexp, int offset) {
+        return asSelectiveEventFilter(eventFilter, regexp, offset, io.qt.core.QRegularExpression.MatchType.NormalMatch, io.qt.core.QRegularExpression.MatchOption.NoMatchOption.asFlags());
+    }
+
+    /**
+     * Reduces the number of native-to-java conversions by pre-filtering the receiver objects according to the given object name filter.
+     * The new event filter object is reparented to the parent of the given event filter object and takes ownership of it.
+     * @param eventFilter
+     * @param regexp object name regexp
+     * @param offset the offset of the match
+     * @param matchOptions options for the match
+     * @return selective event filter
+     * @see io.qt.core.QRegularExpression#match(String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter, io.qt.core.@NonNull QRegularExpression regexp, int offset, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
+        return asSelectiveEventFilter(eventFilter, regexp, offset, io.qt.core.QRegularExpression.MatchType.NormalMatch, new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
+    }
+
+    /**
+     * Reduces the number of native-to-java conversions by pre-filtering the receiver objects according to the given object name filter.
+     * The new event filter object is reparented to the parent of the given event filter object and takes ownership of it.
+     * @param eventFilter
+     * @param regexp object name regexp
+     * @param offset the offset of the match
+     * @param matchOptions options for the match
+     * @return selective event filter
+     * @see io.qt.core.QRegularExpression#match(String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter, io.qt.core.@NonNull QRegularExpression regexp, int offset, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
+        return asSelectiveEventFilter(eventFilter, regexp, offset, io.qt.core.QRegularExpression.MatchType.NormalMatch, matchOptions);
+    }
+
+    /**
+     * Reduces the number of native-to-java conversions by pre-filtering the receiver objects according to the given object name filter.
+     * The new event filter object is reparented to the parent of the given event filter object and takes ownership of it.
+     * @param eventFilter
+     * @param regexp object name regexp
+     * @return selective event filter
+     * @see io.qt.core.QRegularExpression#match(String)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter, io.qt.core.@NonNull QRegularExpression regexp) {
+        return asSelectiveEventFilter(eventFilter, regexp, 0, io.qt.core.QRegularExpression.MatchType.NormalMatch, io.qt.core.QRegularExpression.MatchOption.NoMatchOption.asFlags());
+    }
+
+    /**
+     * Reduces the number of native-to-java conversions by pre-filtering the receiver objects according to the given object name filter.
+     * The new event filter object is reparented to the parent of the given event filter object and takes ownership of it.
+     * @param eventFilter
+     * @param regexp object name regexp
+     * @param matchOptions options for the match
+     * @return selective event filter
+     * @see io.qt.core.QRegularExpression#match(String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter, io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
+        return asSelectiveEventFilter(eventFilter, regexp, 0, io.qt.core.QRegularExpression.MatchType.NormalMatch, new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
+    }
+
+    /**
+     * Reduces the number of native-to-java conversions by pre-filtering the receiver objects according to the given object name filter.
+     * The new event filter object is reparented to the parent of the given event filter object and takes ownership of it.
+     * @param eventFilter
+     * @param regexp object name regexp
+     * @param matchOptions options for the match
+     * @return selective event filter
+     * @see io.qt.core.QRegularExpression#match(String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter, io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
+        return asSelectiveEventFilter(eventFilter, regexp, 0, io.qt.core.QRegularExpression.MatchType.NormalMatch, matchOptions);
+    }
+
+    /**
+     * Reduces the number of native-to-java conversions by pre-filtering the receiver objects according to the given object name filter.
+     * The new event filter object is reparented to the parent of the given event filter object and takes ownership of it.
+     * @param eventFilter
+     * @param regexp object name regexp
+     * @param offset the offset of the match
+     * @param matchType the match type
+     * @param matchOptions options for the match
+     * @return selective event filter
+     * @see io.qt.core.QRegularExpression#match(String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOption...)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter, io.qt.core.@NonNull QRegularExpression regexp, int offset, io.qt.core.QRegularExpression.@NonNull MatchType matchType, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
+        return asSelectiveEventFilter(eventFilter, regexp, offset, matchType, new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
+    }
+
+    /**
+     * Reduces the number of native-to-java conversions by pre-filtering the receiver objects according to the given object name filter.
+     * The new event filter object is reparented to the parent of the given event filter object and takes ownership of it.
+     * @param eventFilter
+     * @param regexp object name regexp
+     * @param offset the offset of the match
+     * @param matchType the match type
+     * @return selective event filter
+     * @see io.qt.core.QRegularExpression#match(String, int, io.qt.core.QRegularExpression.MatchType)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter, io.qt.core.@NonNull QRegularExpression regexp, int offset, io.qt.core.QRegularExpression.@NonNull MatchType matchType) {
+        return asSelectiveEventFilter(eventFilter, regexp, offset, matchType, io.qt.core.QRegularExpression.MatchOption.NoMatchOption.asFlags());
+    }
+
+    /**
+     * Reduces the number of native-to-java conversions by pre-filtering the receiver objects according to the given object name filter.
+     * The new event filter object is reparented to the parent of the given event filter object and takes ownership of it.
+     * @param eventFilter
+     * @param regexp object name regexp
+     * @param offset the offset of the match
+     * @param matchType the match type
+     * @param matchOptions options for the match
+     * @return selective event filter
+     * @see io.qt.core.QRegularExpression#match(String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter, io.qt.core.@NonNull QRegularExpression regexp, int offset, io.qt.core.QRegularExpression.@NonNull MatchType matchType, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
+        java.util.Objects.requireNonNull(regexp, "Argument 'regexp': null not expected.");
+        if(!regexp.isValid())
+                throw new IllegalArgumentException("Argument 'regexp' invalid");
+        if(offset<0)
+                throw new IllegalArgumentException("Argument 'offset' < 0");
+        return asSelectiveEventFilterObjectNameMatches(QtJambi_LibraryUtilities.internal.checkedNativeId(java.util.Objects.requireNonNull(eventFilter, "Argument 'eventFilter': null not expected.")), QtJambi_LibraryUtilities.internal.checkedNativeId(regexp), offset, matchType==null ? 0 : matchType.value(), matchOptions==null ? 0 : matchOptions.value());
+    }
+    private static native io.qt.core.QObject asSelectiveEventFilterObjectNameMatches(long objectId, long regexp, int offset, int matchType, int matchOptions);
+}// class
+
+class QCoreApplication__6_ {
+    /**
+     * Reduces the number of native-to-java conversions by pre-filtering the receiver objects according to the given object name filter.
+     * The new event filter object is reparented to the parent of the given event filter object and takes ownership of it.
+     * @param eventFilter
+     * @param regexp object name regexp
+     * @param matchType the match type
+     * @return selective event filter
+     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter, io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchType matchType) {
+        return asSelectiveEventFilter(eventFilter, regexp, 0, matchType, io.qt.core.QRegularExpression.MatchOption.NoMatchOption.asFlags());
+    }
+
+    /**
+     * Reduces the number of native-to-java conversions by pre-filtering the receiver objects according to the given object name filter.
+     * The new event filter object is reparented to the parent of the given event filter object and takes ownership of it.
+     * @param eventFilter
+     * @param regexp object name regexp
+     * @param matchType the match type
+     * @param matchOptions options for the match
+     * @return selective event filter
+     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter, io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchType matchType, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
+        return asSelectiveEventFilter(eventFilter, regexp, 0, matchType, new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
+    }
+
+    /**
+     * Reduces the number of native-to-java conversions by pre-filtering the receiver objects according to the given object name filter.
+     * The new event filter object is reparented to the parent of the given event filter object and takes ownership of it.
+     * @param eventFilter
+     * @param regexp object name regexp
+     * @param matchOptions options for the match
+     * @return selective event filter
+     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter, io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchType matchType, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
+        return asSelectiveEventFilter(eventFilter, regexp, 0, matchType, matchOptions);
+    }
+
+    /**
+     * Reduces the number of native-to-java conversions by pre-filtering the receiver objects according to the given object name filter.
+     * The new event filter object is reparented to the parent of the given event filter object and takes ownership of it.
+     * @param eventFilter
+     * @param regexp object name regexp
+     * @param offset the offset of the match
+     * @return selective event filter
+     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter, io.qt.core.@NonNull QRegularExpression regexp, long offset) {
+        return asSelectiveEventFilter(eventFilter, regexp, offset, io.qt.core.QRegularExpression.MatchType.NormalMatch, io.qt.core.QRegularExpression.MatchOption.NoMatchOption.asFlags());
+    }
+
+    /**
+     * Reduces the number of native-to-java conversions by pre-filtering the receiver objects according to the given object name filter.
+     * The new event filter object is reparented to the parent of the given event filter object and takes ownership of it.
+     * @param eventFilter
+     * @param regexp object name regexp
+     * @param offset the offset of the match
+     * @param matchOptions options for the match
+     * @return selective event filter
+     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter, io.qt.core.@NonNull QRegularExpression regexp, long offset, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
+        return asSelectiveEventFilter(eventFilter, regexp, offset, io.qt.core.QRegularExpression.MatchType.NormalMatch, new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
+    }
+
+    /**
+     * Reduces the number of native-to-java conversions by pre-filtering the receiver objects according to the given object name filter.
+     * The new event filter object is reparented to the parent of the given event filter object and takes ownership of it.
+     * @param eventFilter
+     * @param regexp object name regexp
+     * @param offset the offset of the match
+     * @param matchOptions options for the match
+     * @return selective event filter
+     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter, io.qt.core.@NonNull QRegularExpression regexp, long offset, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
+        return asSelectiveEventFilter(eventFilter, regexp, offset, io.qt.core.QRegularExpression.MatchType.NormalMatch, matchOptions);
+    }
+
+    /**
+     * Reduces the number of native-to-java conversions by pre-filtering the receiver objects according to the given object name filter.
+     * The new event filter object is reparented to the parent of the given event filter object and takes ownership of it.
+     * @param eventFilter
+     * @param regexp object name regexp
+     * @return selective event filter
+     * @see io.qt.core.QRegularExpression#match(String)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter, io.qt.core.@NonNull QRegularExpression regexp) {
+        return asSelectiveEventFilter(eventFilter, regexp, 0, io.qt.core.QRegularExpression.MatchType.NormalMatch, io.qt.core.QRegularExpression.MatchOption.NoMatchOption.asFlags());
+    }
+
+    /**
+     * Reduces the number of native-to-java conversions by pre-filtering the receiver objects according to the given object name filter.
+     * The new event filter object is reparented to the parent of the given event filter object and takes ownership of it.
+     * @param eventFilter
+     * @param regexp object name regexp
+     * @param matchOptions options for the match
+     * @return selective event filter
+     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter, io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
+        return asSelectiveEventFilter(eventFilter, regexp, 0, io.qt.core.QRegularExpression.MatchType.NormalMatch, new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
+    }
+
+    /**
+     * Reduces the number of native-to-java conversions by pre-filtering the receiver objects according to the given object name filter.
+     * The new event filter object is reparented to the parent of the given event filter object and takes ownership of it.
+     * @param eventFilter
+     * @param regexp object name regexp
+     * @param matchOptions options for the match
+     * @return selective event filter
+     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter, io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
+        return asSelectiveEventFilter(eventFilter, regexp, 0, io.qt.core.QRegularExpression.MatchType.NormalMatch, matchOptions);
+    }
+
+    /**
+     * Reduces the number of native-to-java conversions by pre-filtering the receiver objects according to the given object name filter.
+     * The new event filter object is reparented to the parent of the given event filter object and takes ownership of it.
+     * @param eventFilter
+     * @param regexp object name regexp
+     * @param offset the offset of the match
+     * @param matchType the match type
+     * @param matchOptions options for the match
+     * @return selective event filter
+     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOption...)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter, io.qt.core.@NonNull QRegularExpression regexp, long offset, io.qt.core.QRegularExpression.@NonNull MatchType matchType, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
+        return asSelectiveEventFilter(eventFilter, regexp, offset, matchType, new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
+    }
+
+    /**
+     * Reduces the number of native-to-java conversions by pre-filtering the receiver objects according to the given object name filter.
+     * The new event filter object is reparented to the parent of the given event filter object and takes ownership of it.
+     * @param eventFilter
+     * @param regexp object name regexp
+     * @param offset the offset of the match
+     * @param matchType the match type
+     * @return selective event filter
+     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter, io.qt.core.@NonNull QRegularExpression regexp, long offset, io.qt.core.QRegularExpression.@NonNull MatchType matchType) {
+        return asSelectiveEventFilter(eventFilter, regexp, offset, matchType, io.qt.core.QRegularExpression.MatchOption.NoMatchOption.asFlags());
+    }
+
+    /**
+     * Reduces the number of native-to-java conversions by pre-filtering the receiver objects according to the given object name filter.
+     * The new event filter object is reparented to the parent of the given event filter object and takes ownership of it.
+     * @param eventFilter
+     * @param regexp object name regexp
+     * @param offset the offset of the match
+     * @param matchType the match type
+     * @param matchOptions options for the match
+     * @return selective event filter
+     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter, io.qt.core.@NonNull QRegularExpression regexp, long offset, io.qt.core.QRegularExpression.@NonNull MatchType matchType, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
+        java.util.Objects.requireNonNull(regexp, "Argument 'regexp': null not expected.");
+        if(!regexp.isValid())
+                throw new IllegalArgumentException("Argument 'regexp' invalid");
+        if(offset<0)
+                throw new IllegalArgumentException("Argument 'offset' < 0");
+        return asSelectiveEventFilterObjectNameMatches(QtJambi_LibraryUtilities.internal.checkedNativeId(java.util.Objects.requireNonNull(eventFilter, "Argument 'eventFilter': null not expected.")), QtJambi_LibraryUtilities.internal.checkedNativeId(regexp), offset, matchType==null ? 0 : matchType.value(), matchOptions==null ? 0 : matchOptions.value());
+    }
+    private static native io.qt.core.QObject asSelectiveEventFilterObjectNameMatches(long objectId, long regexp, long offset, int matchType, int matchOptions);
+}// class
+
 class QCoreApplication__62_ {
     @QtUninvokable
     public final <QNativeInterface extends QtObjectInterface> QNativeInterface nativeInterface(Class<QNativeInterface> nativeInterfaceClass) {
@@ -12678,7 +13101,7 @@ class QCoreApplication__65_ {
     }
 
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qcoreapplication.html#checkPermission"><code>QCoreApplication::checkPermission(QPermission)</code></a></p>
+     * <p>See <a href="@docRoot/qcoreapplication.html#checkPermission"><code>QCoreApplication::checkPermission(QPermission)</code></a></p>
      */
     @QtUninvokable
     public final io.qt.core.Qt.@NonNull PermissionStatus checkPermission(@StrictNonNull Class<? extends QPermission> permissionType){
@@ -12686,7 +13109,7 @@ class QCoreApplication__65_ {
     }
 
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qcoreapplication.html#requestPermission"><code>QCoreApplication::requestPermission&lt;Functor>(const QPermission, Functor functor)</code></a></p>
+     * <p>See <a href="@docRoot/qcoreapplication.html#requestPermission"><code>QCoreApplication::requestPermission&lt;Functor>(const QPermission, Functor functor)</code></a></p>
      */
     @QtUninvokable
     public final <T extends QPermission> void requestPermission(@StrictNonNull Class<T> permissionType, QMetaObject.@StrictNonNull Slot2<@NonNull T, Qt.@NonNull PermissionStatus> functor){
@@ -12700,7 +13123,7 @@ class QCoreApplication__65_ {
     }
 
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qcoreapplication.html#requestPermission"><code>QCoreApplication::requestPermission&lt;Functor>(const QPermission, Functor functor)</code></a></p>
+     * <p>See <a href="@docRoot/qcoreapplication.html#requestPermission"><code>QCoreApplication::requestPermission&lt;Functor>(const QPermission, Functor functor)</code></a></p>
      */
     @QtUninvokable
     public final void requestPermission(@StrictNonNull Class<? extends QPermission> permissionType, QMetaObject.@StrictNonNull Slot1<Qt.@NonNull PermissionStatus> functor){
@@ -12714,7 +13137,7 @@ class QCoreApplication__65_ {
     }
 
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qcoreapplication.html#requestPermission"><code>QCoreApplication::requestPermission&lt;Functor>(const QPermission, Functor functor)</code></a></p>
+     * <p>See <a href="@docRoot/qcoreapplication.html#requestPermission"><code>QCoreApplication::requestPermission&lt;Functor>(const QPermission, Functor functor)</code></a></p>
      */
     @QtUninvokable
     public final <T extends QPermission> void requestPermission(@StrictNonNull T permission, QMetaObject.@StrictNonNull Slot2<@NonNull T, Qt.@NonNull PermissionStatus> functor){
@@ -12727,7 +13150,7 @@ class QCoreApplication__65_ {
     }
 
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qcoreapplication.html#requestPermission"><code>QCoreApplication::requestPermission&lt;Functor>(const QPermission, Functor functor)</code></a></p>
+     * <p>See <a href="@docRoot/qcoreapplication.html#requestPermission"><code>QCoreApplication::requestPermission&lt;Functor>(const QPermission, Functor functor)</code></a></p>
      */
     @QtUninvokable
     public final void requestPermission(@StrictNonNull QPermission permission, QMetaObject.@StrictNonNull Slot1<Qt.@NonNull PermissionStatus> functor){
@@ -12766,6 +13189,7 @@ class QPermission___{
     /**
      * <p>See <a href="@docRoot/qpermission.html#QPermission"><code>QPermission::data&lt;T>()</code></a></p>
      */
+     @QtUninvokable
     public final Request data() {
         return data(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
@@ -12800,7 +13224,8 @@ class autoclosedelete {
      * Deletes the underlying native object.
      */
     @Override
-    public void close(){
+    @QtUninvokable
+    public final void close(){
         dispose();
     }
 }// class
@@ -12811,6 +13236,7 @@ class QDebug___ extends QDebug {
      * Appends a subsequence of the specified character sequence to this <code>QDebug</code>.
      */
     @Override
+    @QtUninvokable
     public final @NonNull QDebug append(CharSequence csq, int start, int end) {
         if(!disabled)
             append(csq==null ? "null" : csq.subSequence(start, end));
@@ -13200,6 +13626,7 @@ class QTextStream___ extends QTextStream {
     /**
      * <p>See <a href="@docRoot/qtextstream.html#string"><code>QTextStream::string() const</code></a></p>
      */
+     @QtUninvokable
     public final @Nullable CharSequence string() {
         QIODevice device = device_private();
         if(device instanceof StringDevice) {
@@ -13217,6 +13644,7 @@ class QTextStream___ extends QTextStream {
      * Appends a subsequence of the specified character sequence to this <code>QTextStream</code>.
      */
     @Override
+    @QtUninvokable
     public final @NonNull QTextStream append(CharSequence csq, int start, int end) {
         return append(csq==null ? "null" : csq.subSequence(start, end));
     }
@@ -13235,24 +13663,27 @@ class QTextStream___ extends QTextStream {
     /**
      * <p>See <a href="@docRoot/qtextstream.html#setString"><code>QTextStream::setString(QString *, QIODeviceBase::OpenMode)</code></a></p>
      */
+    @QtUninvokable
     @SuppressWarnings("hiding")
-    public <String extends @NonNull Object & Appendable & CharSequence> void setString(String string, QIODevice.@NonNull OpenModeFlag @NonNull... openMode) {
+    public final <String extends @NonNull Object & Appendable & CharSequence> void setString(String string, QIODevice.@NonNull OpenModeFlag @NonNull... openMode) {
         setString(string, new QIODevice.OpenMode(openMode));
     }
     
     /**
      * <p>See <a href="@docRoot/qtextstream.html#setString"><code>QTextStream::setString(QString *, QIODeviceBase::OpenMode)</code></a></p>
      */
+    @QtUninvokable
     @SuppressWarnings("hiding")
-    public <String extends @NonNull Object & Appendable & CharSequence> void setString(String string) {
+    public final <String extends @NonNull Object & Appendable & CharSequence> void setString(String string) {
         setString(string, new QIODevice.OpenMode(4));
     }
     
     /**
      * <p>See <a href="@docRoot/qtextstream.html#setString"><code>QTextStream::setString(QString *, QIODeviceBase::OpenMode)</code></a></p>
      */
+    @QtUninvokable
     @SuppressWarnings("hiding")
-    public <String extends @NonNull Object & Appendable & CharSequence> void setString(String string, QIODevice.@NonNull OpenMode openMode) {
+    public final <String extends @NonNull Object & Appendable & CharSequence> void setString(String string, QIODevice.@NonNull OpenMode openMode) {
         flush();
         setDevice(new StringDevice<String>(java.util.Objects.requireNonNull(string, "Argument 'string': null not expected."), openMode));
     }
@@ -13260,21 +13691,24 @@ class QTextStream___ extends QTextStream {
     /**
      * <p>See <a href="@docRoot/qtextstream.html#setString"><code>QTextStream::setString(QString *, QIODeviceBase::OpenMode)</code></a></p>
      */
-    public void setString(@NonNull String string, QIODevice.OpenModeFlag ... openMode) {
+    @QtUninvokable
+    public final void setString(@NonNull String string, QIODevice.OpenModeFlag ... openMode) {
         setString(string, new QIODevice.OpenMode(openMode));
     }
     
     /**
      * <p>See <a href="@docRoot/qtextstream.html#setString"><code>QTextStream::setString(QString *, QIODeviceBase::OpenMode)</code></a></p>
      */
-    public void setString(@NonNull String string) {
+    @QtUninvokable
+    public final void setString(@NonNull String string) {
         setString(string, new QIODevice.OpenMode(4));
     }
     
     /**
      * <p>See <a href="@docRoot/qtextstream.html#setString"><code>QTextStream::setString(QString *, QIODeviceBase::OpenMode)</code></a></p>
      */
-    public void setString(@NonNull String string, QIODevice.OpenMode openMode) {
+    @QtUninvokable
+    public final void setString(@NonNull String string, QIODevice.OpenMode openMode) {
         setString(string==null ? new StringBuilder() : new StringBuilder(string), openMode);
     }
     
@@ -13817,7 +14251,8 @@ class QBitArray___ extends QBitArray {
         }
         return res;
     }
-    
+
+    @QtUninvokable
     public static QBitArray fromBits(boolean[] data){
         QBitArray array = new QBitArray(data.length);
         for (int i = 0; i < data.length; i++) {
@@ -13855,6 +14290,7 @@ class QByteArray___ extends QByteArray {
         public boolean test(byte b);
     }
 
+    @QtUninvokable
     private static byte[] getBytes(String s) {
         if(s==null)
             return new byte[0];
@@ -13913,6 +14349,7 @@ class QByteArrayView___ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearrayview.html#fromArray"><code>QByteArrayView::fromArray&lt;Byte,Size>(const Byte(&amp;)[Size])</code></a></p>
      */
+    @QtUninvokable
     public static @NonNull QByteArrayView fromArray(byte @NonNull[] data){
         return new QByteArrayView(data);
     }
@@ -13920,6 +14357,7 @@ class QByteArrayView___ extends QByteArray {
     /**
      * <p>See <a href="@docRoot/qbytearrayview.html#fromArray"><code>QByteArrayView::fromArray&lt;Byte,Size>(const Byte(&amp;)[Size])</code></a></p>
      */
+    @QtUninvokable
     public static @NonNull QByteArrayView fromArray(byte @NonNull[] data, int offset, int length){
         return new QByteArrayView(data, offset, length);
     }
@@ -14011,6 +14449,7 @@ class QIODevice_template__ extends QIODevice {
          * @deprecated use {@link #fromBuffer(java.nio.Buffer)} instead.
          */
         @Deprecated
+        @QtUninvokable
         public static @NonNull QIODevice fromDirectBuffer(java.nio.@NonNull Buffer buffer){
             return fromBuffer(buffer);
         }
@@ -14020,6 +14459,7 @@ class QIODevice_template__ extends QIODevice {
          * @param buffer
          * @return new new QIODevice or null if no direct buffer
          */
+        @QtUninvokable
         public native static @NonNull QIODevice fromBuffer(java.nio.@NonNull Buffer buffer);
 
         /**
@@ -14031,6 +14471,7 @@ class QIODevice_template__ extends QIODevice {
          * @param device
          * @return new InputStream
          */
+        @QtUninvokable
         public static java.io.@Nullable InputStream toInputStream(@StrictNonNull QIODevice device) {
             boolean closeFinally;
             if((closeFinally = !device.isOpen()))
@@ -14075,6 +14516,7 @@ class QIODevice_template__ extends QIODevice {
          * @param device
          * @return new OutputStream
          */
+        @QtUninvokable
         public static java.io.@Nullable OutputStream toOutputStream(@StrictNonNull QIODevice device) {
             boolean closeFinally;
             if((closeFinally = !device.isOpen()))
@@ -14117,6 +14559,7 @@ class QIODevice_template__ extends QIODevice {
          * @param device
          * @return new WritableByteChannel
          */
+        @QtUninvokable
         public static java.nio.channels.@Nullable WritableByteChannel toWritableByteChannel(@StrictNonNull QIODevice device) {
             boolean closeFinally;
             if((closeFinally = !device.isOpen()))
@@ -14152,6 +14595,7 @@ class QIODevice_template__ extends QIODevice {
          * @param device
          * @return new ReadableByteChannel
          */
+        @QtUninvokable
         public static java.nio.channels.@Nullable ReadableByteChannel toReadableByteChannel(@StrictNonNull QIODevice device) {
             boolean closeFinally;
             if((closeFinally = !device.isOpen()))
@@ -14183,6 +14627,7 @@ class QIODevice_template__ extends QIODevice {
          * @param stream
          * @return new open read-only QIODevice
          */
+        @QtUninvokable
         public static @NonNull QIODevice fromInputStream(java.io.@StrictNonNull InputStream stream) {
             java.util.Objects.requireNonNull(stream);
             return new QIODevice() {
@@ -14286,6 +14731,7 @@ class QIODevice_template__ extends QIODevice {
          * @param stream
          * @return new open write-only QIODevice
          */
+        @QtUninvokable
         public static @NonNull QIODevice fromOutputStream(java.io.@StrictNonNull OutputStream stream) {
             java.util.Objects.requireNonNull(stream);
             return new QIODevice() {
@@ -14378,6 +14824,7 @@ class QIODevice_template__ extends QIODevice {
      * @param channel
      * @return new open read and/or write QIODevice
      */
+    @QtUninvokable
     public static @NonNull QIODevice fromChannel(java.nio.channels.@StrictNonNull Channel channel) {
         return new QIODevice() {
             final java.nio.channels.ReadableByteChannel rchannel;
@@ -14470,17 +14917,20 @@ class QIODevice_template__ extends QIODevice {
 
 class QCalendar___ extends QCalendar {
     public static final int Unspecified = unspecified();
+    @QtUninvokable
     private static native int unspecified();
 }// class
 
 class QAbstractFileEngine_MapExtensionReturn___ extends QAbstractFileEngine_MapExtensionReturn {
     
     private QNativePointer currentAddressNativePointer; // don't garbage collect while in use
+    @QtUninvokable
     public final void setAddress(String address) {
         currentAddressNativePointer = address != null ? QNativePointer.createCharPointer(address) : null;
         address_private(currentAddressNativePointer);
     }
 
+    @QtUninvokable
     public final String address() {
         QNativePointer np = address_private();
         return np != null ? charPointerToString(np) : null;
@@ -14490,11 +14940,13 @@ class QAbstractFileEngine_MapExtensionReturn___ extends QAbstractFileEngine_MapE
 class QAbstractFileEngine_UnMapExtensionOption___ extends QAbstractFileEngine_UnMapExtensionOption {
     
     private QNativePointer currentAddressNativePointer; // don't garbage collect while in use
+    @QtUninvokable
     public final void setAddress(String address) {
         currentAddressNativePointer = address != null ? QNativePointer.createCharPointer(address) : null;
         address_private(currentAddressNativePointer);
     }
 
+    @QtUninvokable
     public final String address() {
         QNativePointer np = address_private();
         return np != null ? charPointerToString(np) : null;
@@ -15073,6 +15525,7 @@ class QJsonDocument_5__{
     /**
      * <p>Overloaded function for {@link #fromRawData(String, QJsonDocument.DataValidation)}.</p>
      */
+    @QtUninvokable
     public static @NonNull QJsonDocument fromRawData(@NonNull String data) {
         return fromRawData(data, QJsonDocument.DataValidation.Validate);
     }
@@ -15080,6 +15533,7 @@ class QJsonDocument_5__{
     /**
      * <p>Overloaded function for {@link #fromRawData(byte[], QJsonDocument.DataValidation)}.</p>
      */
+    @QtUninvokable
     public static @NonNull QJsonDocument fromRawData(@NonNull String data, QJsonDocument.@NonNull DataValidation validation) {
         return fromRawData(data.getBytes(), validation);
     }
@@ -15087,6 +15541,7 @@ class QJsonDocument_5__{
     /**
      * <p>Overloaded function for {@link #fromRawData(byte[], QJsonDocument.DataValidation)}.</p>
      */
+    @QtUninvokable
     public static @NonNull QJsonDocument fromRawData(byte @NonNull[] data) {
         return fromRawData(data, QJsonDocument.DataValidation.Validate);
     }
@@ -15094,6 +15549,7 @@ class QJsonDocument_5__{
     /**
      * <p>Overloaded function for {@link #fromRawData(java.nio.ByteBuffer, int, QJsonDocument.DataValidation)}.</p>
      */
+    @QtUninvokable
     public static @NonNull QJsonDocument fromRawData(byte @NonNull[] data, QJsonDocument.@NonNull DataValidation validation) {
         java.nio.ByteBuffer buffer = java.nio.ByteBuffer.wrap(data);
         return fromRawData(buffer, buffer.capacity(), validation);
@@ -15140,6 +15596,7 @@ class QPropertyAnimation___ extends QPropertyAnimation {
     /**
      * <p>Overloaded function for {@link #setPropertyName(QByteArray)}.</p>
      */
+    @QtUninvokable
     public final void setPropertyName(@NonNull String propertyName)    {
         setPropertyName(new QByteArray(propertyName));
     }
@@ -15149,6 +15606,7 @@ class QPropertyAnimation___ extends QPropertyAnimation {
 class QMetaType_5__ extends QMetaType {
     private static int metaTypeIdByName(java.lang.String typeName) {return type(typeName);}
     
+    @QtUninvokable
     public static @NonNull QMetaType fromObject(@Nullable Object obj) {
         if(obj==null)
             return new QMetaType(QMetaType.Type.Nullptr);
@@ -15181,6 +15639,7 @@ class QMetaType_5__ extends QMetaType {
 class QMetaType_6__ extends QMetaType {
     private static int metaTypeIdByName(java.lang.String typeName) {return fromName(typeName).id();}
     
+    @QtUninvokable
     public static @NonNull QMetaType fromObject(@Nullable Object obj) {
         if(obj==null)
             return new QMetaType(QMetaType.Type.Nullptr);
@@ -15239,6 +15698,7 @@ class QMetaType___ extends QMetaType {
      * @param datastreamOutFn (only lambda expressions allowed)
      * @return the registered meta type
      */
+    @QtUninvokable
     public static <T> int registerDataStreamOperators(@StrictNonNull DataStreamInFn<T> datastreamInFn, @StrictNonNull DataStreamOutFn<T> datastreamOutFn) {
         java.util.Objects.requireNonNull(datastreamInFn);
         java.util.Objects.requireNonNull(datastreamOutFn);
@@ -15270,6 +15730,7 @@ class QMetaType___ extends QMetaType {
      * @param debugstreamFn (only lambda expressions allowed)
      * @return the registered meta type
      */
+    @QtUninvokable
     public static <T> int registerDebugStreamOperator(@StrictNonNull DebugStreamFn<T> debugstreamFn) {
         java.util.Objects.requireNonNull(debugstreamFn);
         int[] debugstreamTypes = QtJambi_LibraryUtilities.internal.lambdaMetaTypes(DebugStreamFn.class, debugstreamFn);
@@ -15296,6 +15757,7 @@ class QMetaType___ extends QMetaType {
      * @param converterFn (only lambda expressions allowed)
      * @return the registered meta type
      */
+    @QtUninvokable
     public static <T1,T2> boolean registerConverter(@StrictNonNull ConverterFn<T1,T2> converterFn) {
         java.util.Objects.requireNonNull(converterFn);
         int[] converterTypes = QtJambi_LibraryUtilities.internal.lambdaMetaTypes(ConverterFn.class, converterFn);
@@ -15346,17 +15808,21 @@ class QMetaType___ extends QMetaType {
         private final int value;
         
         @Override 
-        public int value() { 
+        @QtUninvokable
+        public int value() {
             return value; 
         }
         
         @Override 
+        @QtUninvokable
         public int ordinal() { return -1; }
         
         @Override 
+        @QtUninvokable
         public @NonNull String name() { return "unknown"; }
         
         @Override 
+        @QtUninvokable
         public @NonNull Class<? extends QtFlagEnumerator> getDeclaringClass() { return GenericFlag.class; }
     }
     
@@ -15375,25 +15841,30 @@ class QMetaType___ extends QMetaType {
         private final int type;
         
         @Override
+        @QtUninvokable
         public final @NonNull QMetaType metaType() {
             return new QMetaType(type);
         }
         
+        @QtUninvokable
         public @NonNull GenericFlag @NonNull[] flags(){
             return new GenericFlag[]{new GenericFlag(value())};
         }
     
         @Override
+        @QtUninvokable
         public @NonNull GenericFlags clone() {
             return new GenericFlags(type, value());
         }
     
         @Override
+        @QtUninvokable
         public @NonNull GenericFlags combined(@StrictNonNull GenericFlag flag) {
             return clone().setFlag(flag, true);
         }
 
         @Override
+        @QtUninvokable
         public @NonNull GenericFlags cleared(@StrictNonNull GenericFlag flag) {
             return clone().setFlag(flag, false);
         }
@@ -15403,6 +15874,7 @@ class QMetaType___ extends QMetaType {
          * @param e enum entry
          * @return this
          */
+        @QtUninvokable
         public final @NonNull GenericFlags setFlag(@Nullable GenericFlag e){
             return setFlag(e, true);
         }
@@ -15413,6 +15885,7 @@ class QMetaType___ extends QMetaType {
          * @param on set (true) or clear (false)
          * @return this
          */
+        @QtUninvokable
         public final @NonNull GenericFlags setFlag(@Nullable GenericFlag e, boolean on){
             if(e!=null){
                 if (on) {
@@ -15425,6 +15898,7 @@ class QMetaType___ extends QMetaType {
         }
 
         @Override
+        @QtUninvokable
         public int compareTo(@StrictNonNull QFlags<?> o) {
                 return Integer.compare(value(), o.value());
         }
@@ -15448,23 +15922,28 @@ class QMetaType___ extends QMetaType {
     
         
         @Override
+        @QtUninvokable
         public final @NonNull QMetaType metaType() {
             return new QMetaType(type);
         }
     
         @Override
+        @QtUninvokable
         public final int ordinal() {
             return index;
         }
     
         @Override
+        @QtUninvokable
         public final @NonNull String name() {
             return name==null ? "unknown" : name;
         }
         
+        @QtUninvokable
         abstract String valueString();
     
         @Override
+        @QtUninvokable
         public @NonNull String toString() {
             if(name==null) {
                 return String.format("%1$s(%2$s)", typeName(type), valueString());
@@ -15474,6 +15953,7 @@ class QMetaType___ extends QMetaType {
         }
 
         @Override
+        @QtUninvokable
         public int hashCode() {
             final int prime = 31;
             int result = 1;
@@ -15483,6 +15963,7 @@ class QMetaType___ extends QMetaType {
         }
 
         @Override
+        @QtUninvokable
         public boolean equals(@Nullable Object obj) {
             if (this == obj)
                 return true;
@@ -15515,20 +15996,24 @@ class QMetaType___ extends QMetaType {
         private final int value;
         
         @Override
+        @QtUninvokable
         public int value() {
             return value;
         }
     
         @Override
+        @QtUninvokable
         public @NonNull Class<? extends QtEnumerator> getDeclaringClass() {
             return GenericEnumerator.class;
         }
     
+        @QtUninvokable
         String valueString() {
             return Integer.toString(value);
         }
 
         @Override
+        @QtUninvokable
         public int hashCode() {
             final int prime = 31;
             int result = super.hashCode();
@@ -15537,6 +16022,7 @@ class QMetaType___ extends QMetaType {
         }
 
         @Override
+        @QtUninvokable
         public boolean equals(@Nullable Object obj) {
             if (this == obj)
                 return true;
@@ -15564,20 +16050,24 @@ class QMetaType___ extends QMetaType {
         private final byte value;
         
         @Override
+        @QtUninvokable
         public byte value() {
             return value;
         }
     
         @Override
+        @QtUninvokable
         public @NonNull Class<? extends QtByteEnumerator> getDeclaringClass() {
             return GenericByteEnumerator.class;
         }
     
+        @QtUninvokable
         String valueString() {
             return Byte.toString(value);
         }
 
         @Override
+        @QtUninvokable
         public int hashCode() {
             final int prime = 31;
             int result = super.hashCode();
@@ -15586,6 +16076,7 @@ class QMetaType___ extends QMetaType {
         }
 
         @Override
+        @QtUninvokable
         public boolean equals(@Nullable Object obj) {
             if (this == obj)
                 return true;
@@ -15613,20 +16104,24 @@ class QMetaType___ extends QMetaType {
         private final short value;
         
         @Override
+        @QtUninvokable
         public short value() {
             return value;
         }
     
         @Override
+        @QtUninvokable
         public @NonNull Class<? extends QtShortEnumerator> getDeclaringClass() {
             return GenericShortEnumerator.class;
         }
     
+        @QtUninvokable
         String valueString() {
             return Short.toString(value);
         }
 
         @Override
+        @QtUninvokable
         public int hashCode() {
             final int prime = 31;
             int result = super.hashCode();
@@ -15635,6 +16130,7 @@ class QMetaType___ extends QMetaType {
         }
 
         @Override
+        @QtUninvokable
         public boolean equals(@Nullable Object obj) {
             if (this == obj)
                 return true;
@@ -15662,20 +16158,24 @@ class QMetaType___ extends QMetaType {
         private final long value;
         
         @Override
+        @QtUninvokable
         public long value() {
             return value;
         }
     
         @Override
+        @QtUninvokable
         public @NonNull Class<? extends QtLongEnumerator> getDeclaringClass() {
             return GenericLongEnumerator.class;
         }
     
+        @QtUninvokable
         String valueString() {
             return Long.toString(value);
         }
 
         @Override
+        @QtUninvokable
         public int hashCode() {
             final int prime = 31;
             int result = super.hashCode();
@@ -15684,6 +16184,7 @@ class QMetaType___ extends QMetaType {
         }
 
         @Override
+        @QtUninvokable
         public boolean equals(@Nullable Object obj) {
             if (this == obj)
                 return true;
@@ -15705,10 +16206,13 @@ class QMetaType___ extends QMetaType {
         @NativeAccess
         private GenericValue(QPrivateConstructor p) { super(p); }
         
+        @QtUninvokable
         private static native GenericValue clone(long nativeId, int type);
+        @QtUninvokable
         private static native java.nio.ByteBuffer buffer(long nativeId, int type);
         
         @Override
+        @QtUninvokable
         public @NonNull GenericValue clone() {
             return clone(QtJambi_LibraryUtilities.internal.nativeId(this), type);
         }
@@ -15716,11 +16220,13 @@ class QMetaType___ extends QMetaType {
         @NativeAccess
         private final int type = QMetaType.Type.UnknownType.value();
         
+        @Override
         @QtUninvokable
         public @NonNull QMetaType metaType() {
             return new QMetaType(type);
         }
         
+        @QtUninvokable
         public java.nio.@NonNull ByteBuffer buffer(){
             return buffer(QtJambi_LibraryUtilities.internal.nativeId(this), type);
         }
@@ -15735,6 +16241,7 @@ class QMetaType___ extends QMetaType {
         @NativeAccess
         private final int type = QMetaType.Type.UnknownType.value();
         
+        @Override
         @QtUninvokable
         public @NonNull QMetaType metaType() {
             return new QMetaType(type);
@@ -15750,6 +16257,7 @@ class QMetaType___ extends QMetaType {
         @NativeAccess
         private final int type = QMetaType.Type.UnknownType.value();
         
+        @Override
         @QtUninvokable
         public @NonNull QMetaType metaType() {
             return new QMetaType(type);
@@ -15757,6 +16265,7 @@ class QMetaType___ extends QMetaType {
     }
     
     @SuppressWarnings("unchecked")
+    @QtUninvokable
     static <T> T cast(Class<T> javaType, Object object) {
         if (object != null && javaType != null) {
             if (javaType.isPrimitive()) {
@@ -15998,7 +16507,7 @@ class QVariant_5__ {
 class QVariant_6__ {
     
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qvariant.html#QVariant-1"><code>QVariant::QVariant(QMetaType,const void*)</code></a></p>
+     * <p>See <a href="@docRoot/qvariant.html#QVariant-1"><code>QVariant::QVariant(QMetaType,const void*)</code></a></p>
      */
     public QVariant(QMetaType.@NonNull Type type, java.lang.@Nullable Object copy){
         this(new QMetaType(type), copy);
@@ -17942,7 +18451,7 @@ class QMetaEnum___{
      * <p>See <a href="@docRoot/qmetaenum.html#keysToValue"><code>QMetaEnum::keysToValue(const char *) const</code></a></p>
      */
     @QtUninvokable
-    public @Nullable Integer keysToValue(String... keys) {
+    public final @Nullable Integer keysToValue(String... keys) {
         return keysToValue(new QStringList(keys).join('|'));
     }
     
@@ -17950,7 +18459,7 @@ class QMetaEnum___{
      * <p>See <a href="@docRoot/qmetaenum.html#keysToValue"><code>QMetaEnum::keysToValue(const char *) const</code></a></p>
      */
     @QtUninvokable
-    public @Nullable Integer keysToValue(java.util.@StrictNonNull Collection<@NonNull String> keys) {
+    public final @Nullable Integer keysToValue(java.util.@StrictNonNull Collection<@NonNull String> keys) {
         return keysToValue((keys instanceof QStringList ? (QStringList)keys : new QStringList(keys)).join('|'));
     }
 
@@ -17958,7 +18467,7 @@ class QMetaEnum___{
      * Returns all enum entries of this enum type.
      */
     @QtUninvokable
-    public io.qt.@NonNull QtAbstractEnumerator @Nullable[] entries() {
+    public final io.qt.@NonNull QtAbstractEnumerator @Nullable[] entries() {
         return enclosingMetaObject().enumEntries(this);
     }
     
@@ -17966,7 +18475,7 @@ class QMetaEnum___{
      * Returns the enum entry of the given value.
      */
     @QtUninvokable
-    public io.qt.@Nullable QtAbstractEnumerator entry(int index) {
+    public final io.qt.@Nullable QtAbstractEnumerator entry(int index) {
         return enclosingMetaObject().enumEntry(this, index);
     }
     
@@ -17974,7 +18483,7 @@ class QMetaEnum___{
      * Returns the enum entry of the given name.
      */
     @QtUninvokable
-    public io.qt.@Nullable QtAbstractEnumerator entry(String name) {
+    public final io.qt.@Nullable QtAbstractEnumerator entry(String name) {
         return enclosingMetaObject().enumEntry(this, name);
     }
     
@@ -17982,7 +18491,7 @@ class QMetaEnum___{
      * Returns the java class of this enum type.
      */
     @QtUninvokable
-    public @Nullable Class<?> type() {
+    public final @Nullable Class<?> type() {
         return enclosingMetaObject().enumType(this);
     }
     
@@ -18015,7 +18524,7 @@ class QMetaEnum___{
      * Returns flags for the given value.
      */
     @QtUninvokable
-    public io.qt.@Nullable QFlags<?> flags(int value) {
+    public final io.qt.@Nullable QFlags<?> flags(int value) {
         Class<?> enumType = type();
         if(QtFlagEnumerator.class.isAssignableFrom(enumType)) {
             Class<?> flagsType = flagsType(enumType);
@@ -18031,7 +18540,7 @@ class QMetaEnum___{
      * Returns flags for the given enum names.
      */
     @QtUninvokable
-    public io.qt.@Nullable QFlags<?> flags(String... names) {
+    public final io.qt.@Nullable QFlags<?> flags(String... names) {
         @SuppressWarnings("unchecked")
         QFlags<QtFlagEnumerator> flags = (QFlags<QtFlagEnumerator>)flags(0);
         if(flags!=null){
@@ -18054,7 +18563,7 @@ class QMetaEnum___{
      * Returns the enum entry of the given value.
      */
     @QtUninvokable
-    public io.qt.@Nullable QtAbstractEnumerator resolve(int value) {
+    public final io.qt.@Nullable QtAbstractEnumerator resolve(int value) {
         Class<?> type = type();
         if(type.isEnum()) {
             byte bitSize = 4;
@@ -18125,6 +18634,7 @@ class QFactoryLoader_63_{
 
 class QFactoryLoader__{
 
+    @QtUninvokable
     public static void registerFactory(Class<? extends QtObjectInterface> factoryClass){
         Method createMethod = null;
         for(Method method : factoryClass.getDeclaredMethods()) {
@@ -18141,7 +18651,8 @@ class QFactoryLoader__{
         QPluginLoader.qRegisterPluginInterface(factoryClass);
     }
     
-    public <P extends QtObjectInterface, R> R loadPlugin(QMetaObject.Method2<P, String, R> create, String key) {
+    @QtUninvokable
+    public final <P extends QtObjectInterface, R> R loadPlugin(QMetaObject.Method2<P, String, R> create, String key) {
         int index = indexOf(key);
         if (index != -1) {
             QJsonValue iidValue = getIID(index);
@@ -18176,7 +18687,8 @@ class QFactoryLoader__{
         return null;
     }
     
-    public <P extends QtObjectInterface, A, R> R loadPlugin(QMetaObject.Method3<P, String, A, R> create, String key, A a) {
+    @QtUninvokable
+    public final <P extends QtObjectInterface, A, R> R loadPlugin(QMetaObject.Method3<P, String, A, R> create, String key, A a) {
         int index = indexOf(key);
         if (index != -1) {
             QJsonValue iidValue = getIID(index);
@@ -18211,7 +18723,8 @@ class QFactoryLoader__{
         return null;
     }
     
-    public <P extends QtObjectInterface, A, B, R> R loadPlugin(QMetaObject.Method4<P, String, A, B, R> create, String key, A a, B b) {
+    @QtUninvokable
+    public final <P extends QtObjectInterface, A, B, R> R loadPlugin(QMetaObject.Method4<P, String, A, B, R> create, String key, A a, B b) {
         int index = indexOf(key);
         if (index != -1) {
             QJsonValue iidValue = getIID(index);
@@ -18246,7 +18759,8 @@ class QFactoryLoader__{
         return null;
     }
     
-    public <P extends QtObjectInterface, A, B, C, R> R loadPlugin(QMetaObject.Method5<P, String, A, B, C, R> create, String key, A a, B b, C c) {
+    @QtUninvokable
+    public final <P extends QtObjectInterface, A, B, C, R> R loadPlugin(QMetaObject.Method5<P, String, A, B, C, R> create, String key, A a, B b, C c) {
         int index = indexOf(key);
         if (index != -1) {
             QJsonValue iidValue = getIID(index);
@@ -18281,7 +18795,8 @@ class QFactoryLoader__{
         return null;
     }
     
-    public <P extends QtObjectInterface, A, B, C, D, R> R loadPlugin(QMetaObject.Method6<P, String, A, B, C, D, R> create, String key, A a, B b, C c, D d) {
+    @QtUninvokable
+    public final <P extends QtObjectInterface, A, B, C, D, R> R loadPlugin(QMetaObject.Method6<P, String, A, B, C, D, R> create, String key, A a, B b, C c, D d) {
         int index = indexOf(key);
         if (index != -1) {
             QJsonValue iidValue = getIID(index);
@@ -18316,7 +18831,8 @@ class QFactoryLoader__{
         return null;
     }
     
-    public <P extends QtObjectInterface, A, B, C, D, E, R> R loadPlugin(QMetaObject.Method7<P, String, A, B, C, D, E, R> create, String key, A a, B b, C c, D d, E e) {
+    @QtUninvokable
+    public final <P extends QtObjectInterface, A, B, C, D, E, R> R loadPlugin(QMetaObject.Method7<P, String, A, B, C, D, E, R> create, String key, A a, B b, C c, D d, E e) {
         int index = indexOf(key);
         if (index != -1) {
             QJsonValue iidValue = getIID(index);
@@ -18351,7 +18867,8 @@ class QFactoryLoader__{
         return null;
     }
     
-    public <P extends QtObjectInterface, A, B, C, D, E, F, R> R loadPlugin(QMetaObject.Method8<P, String, A, B, C, D, E, F, R> create, String key, A a, B b, C c, D d, E e, F f) {
+    @QtUninvokable
+    public final <P extends QtObjectInterface, A, B, C, D, E, F, R> R loadPlugin(QMetaObject.Method8<P, String, A, B, C, D, E, F, R> create, String key, A a, B b, C c, D d, E e, F f) {
         int index = indexOf(key);
         if (index != -1) {
             QJsonValue iidValue = getIID(index);
@@ -18386,7 +18903,8 @@ class QFactoryLoader__{
         return null;
     }
     
-    public <P extends QtObjectInterface, A, B, C, D, E, F, G, R> R loadPlugin(QMetaObject.Method9<P, String, A, B, C, D, E, F, G, R> create, String key, A a, B b, C c, D d, E e, F f, G g) {
+    @QtUninvokable
+    public final <P extends QtObjectInterface, A, B, C, D, E, F, G, R> R loadPlugin(QMetaObject.Method9<P, String, A, B, C, D, E, F, G, R> create, String key, A a, B b, C c, D d, E e, F f, G g) {
         int index = indexOf(key);
         if (index != -1) {
             QJsonValue iidValue = getIID(index);
@@ -18421,7 +18939,8 @@ class QFactoryLoader__{
         return null;
     }
     
-    public <P extends QtObjectInterface, R> R loadPlugin(QMetaObject.Method1<P, R> create, String key) {
+    @QtUninvokable
+    public final <P extends QtObjectInterface, R> R loadPlugin(QMetaObject.Method1<P, R> create, String key) {
         int index = indexOf(key);
         if (index != -1) {
             QJsonValue iidValue = getIID(index);
@@ -18454,7 +18973,8 @@ class QFactoryLoader__{
         return null;
     }
     
-    public <P extends QtObjectInterface, A, R> R loadPlugin(QMetaObject.Method2<P, A, R> create, String key, A a) {
+    @QtUninvokable
+    public final <P extends QtObjectInterface, A, R> R loadPlugin(QMetaObject.Method2<P, A, R> create, String key, A a) {
         int index = indexOf(key);
         if (index != -1) {
             QJsonValue iidValue = getIID(index);
@@ -18489,7 +19009,8 @@ class QFactoryLoader__{
         return null;
     }
     
-    public <P extends QtObjectInterface, A, B, R> R loadPlugin(QMetaObject.Method3<P, A, B, R> create, String key, A a, B b) {
+    @QtUninvokable
+    public final <P extends QtObjectInterface, A, B, R> R loadPlugin(QMetaObject.Method3<P, A, B, R> create, String key, A a, B b) {
         int index = indexOf(key);
         if (index != -1) {
             QJsonValue iidValue = getIID(index);
@@ -18524,7 +19045,8 @@ class QFactoryLoader__{
         return null;
     }
     
-    public <P extends QtObjectInterface, A, B, C, R> R loadPlugin(QMetaObject.Method4<P, A, B, C, R> create, String key, A a, B b, C c) {
+    @QtUninvokable
+    public final <P extends QtObjectInterface, A, B, C, R> R loadPlugin(QMetaObject.Method4<P, A, B, C, R> create, String key, A a, B b, C c) {
         int index = indexOf(key);
         if (index != -1) {
             QJsonValue iidValue = getIID(index);
@@ -18559,7 +19081,8 @@ class QFactoryLoader__{
         return null;
     }
     
-    public <P extends QtObjectInterface, A, B, C, D, R> R loadPlugin(QMetaObject.Method5<P, A, B, C, D, R> create, String key, A a, B b, C c, D d) {
+    @QtUninvokable
+    public final <P extends QtObjectInterface, A, B, C, D, R> R loadPlugin(QMetaObject.Method5<P, A, B, C, D, R> create, String key, A a, B b, C c, D d) {
         int index = indexOf(key);
         if (index != -1) {
             QJsonValue iidValue = getIID(index);
@@ -18594,7 +19117,8 @@ class QFactoryLoader__{
         return null;
     }
     
-    public <P extends QtObjectInterface, A, B, C, D, E, R> R loadPlugin(QMetaObject.Method6<P, A, B, C, D, E, R> create, String key, A a, B b, C c, D d, E e) {
+    @QtUninvokable
+    public final <P extends QtObjectInterface, A, B, C, D, E, R> R loadPlugin(QMetaObject.Method6<P, A, B, C, D, E, R> create, String key, A a, B b, C c, D d, E e) {
         int index = indexOf(key);
         if (index != -1) {
             QJsonValue iidValue = getIID(index);
@@ -18629,7 +19153,8 @@ class QFactoryLoader__{
         return null;
     }
     
-    public <P extends QtObjectInterface, A, B, C, D, E, F, R> R loadPlugin(QMetaObject.Method7<P, A, B, C, D, E, F, R> create, String key, A a, B b, C c, D d, E e, F f) {
+    @QtUninvokable
+    public final <P extends QtObjectInterface, A, B, C, D, E, F, R> R loadPlugin(QMetaObject.Method7<P, A, B, C, D, E, F, R> create, String key, A a, B b, C c, D d, E e, F f) {
         int index = indexOf(key);
         if (index != -1) {
             QJsonValue iidValue = getIID(index);
@@ -18664,7 +19189,8 @@ class QFactoryLoader__{
         return null;
     }
     
-    public <P extends QtObjectInterface, A, B, C, D, E, F, G, R> R loadPlugin(QMetaObject.Method8<P, A, B, C, D, E, F, G, R> create, String key, A a, B b, C c, D d, E e, F f, G g) {
+    @QtUninvokable
+    public final <P extends QtObjectInterface, A, B, C, D, E, F, G, R> R loadPlugin(QMetaObject.Method8<P, A, B, C, D, E, F, G, R> create, String key, A a, B b, C c, D d, E e, F f, G g) {
         int index = indexOf(key);
         if (index != -1) {
             QJsonValue iidValue = getIID(index);
@@ -18699,7 +19225,8 @@ class QFactoryLoader__{
         return null;
     }
     
-    public <P extends QtObjectInterface, A, B, C, D, E, F, G, H, R> R loadPlugin(QMetaObject.Method9<P, A, B, C, D, E, F, G, H, R> create, String key, A a, B b, C c, D d, E e, F f, G g, H h) {
+    @QtUninvokable
+    public final <P extends QtObjectInterface, A, B, C, D, E, F, G, H, R> R loadPlugin(QMetaObject.Method9<P, A, B, C, D, E, F, G, H, R> create, String key, A a, B b, C c, D d, E e, F f, G g, H h) {
         int index = indexOf(key);
         if (index != -1) {
             QJsonValue iidValue = getIID(index);
@@ -18734,11 +19261,13 @@ class QFactoryLoader__{
         return null;
     }
     
-    public QObject loadPlugin(String key, Object... args){
+    @QtUninvokable
+    public final QObject loadPlugin(String key, Object... args){
         return loadPlugin(QObject.class, key, args);
     }
     
-    public <P extends QtObjectInterface> P loadPlugin(Class<P> pluginClass, String key, Object... args){
+    @QtUninvokable
+    public final <P extends QtObjectInterface> P loadPlugin(Class<P> pluginClass, String key, Object... args){
         int index = indexOf(key);
         if (index != -1) {
             QJsonValue iidValue = getIID(index);
@@ -18902,7 +19431,7 @@ class QPluginLoader_java__{
     public static native void qRegisterPluginInterface(Class<? extends QtObjectInterface> iface);
 
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qpluginloader.html#instance"><code>QPluginLoader::instance()</code></a></p>
+     * <p>See <a href="@docRoot/qpluginloader.html#instance"><code>QPluginLoader::instance()</code></a></p>
      */
     @QtUninvokable
     public final <T extends QObject> T instance(Class<T> type){
@@ -18924,14 +19453,14 @@ class QPluginLoader_java__{
     private static final PluginClassLoader pluginClassLoader = new PluginClassLoader();
 
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qpluginloader.html#qRegisterStaticPluginFunction"><code>qRegisterStaticPluginFunction(QStaticPlugin)</code></a></p>
+     * <p>See <a href="@docRoot/qpluginloader.html#qRegisterStaticPluginFunction"><code>qRegisterStaticPluginFunction(QStaticPlugin)</code></a></p>
      */
     public static void qRegisterStaticPluginFunction(QObject instance){
         qRegisterStaticPluginFunction(instance, (QJsonObject)null);
     }
 
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qpluginloader.html#qRegisterStaticPluginFunction"><code>qRegisterStaticPluginFunction(QStaticPlugin)</code></a></p>
+     * <p>See <a href="@docRoot/qpluginloader.html#qRegisterStaticPluginFunction"><code>qRegisterStaticPluginFunction(QStaticPlugin)</code></a></p>
      */
     public static void qRegisterStaticPluginFunction(QObject instance, QJsonObject metaData) {
         if (metaData == null) {
@@ -18941,28 +19470,28 @@ class QPluginLoader_java__{
     }
 
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qpluginloader.html#qRegisterStaticPluginFunction"><code>qRegisterStaticPluginFunction(QStaticPlugin)</code></a></p>
+     * <p>See <a href="@docRoot/qpluginloader.html#qRegisterStaticPluginFunction"><code>qRegisterStaticPluginFunction(QStaticPlugin)</code></a></p>
      */
     public static void qRegisterStaticPluginFunction(QObject instance, java.util.Map<String, Object> metaData){
         qRegisterStaticPluginFunction(instance, QJsonObject.fromVariantHash(metaData));
     }
 
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qpluginloader.html#qRegisterStaticPluginFunction"><code>qRegisterStaticPluginFunction(QStaticPlugin)</code></a></p>
+     * <p>See <a href="@docRoot/qpluginloader.html#qRegisterStaticPluginFunction"><code>qRegisterStaticPluginFunction(QStaticPlugin)</code></a></p>
      */
     public static void qRegisterStaticPluginFunction(Class<? extends QObject> pluginClass){
         qRegisterStaticPluginFunction(pluginClass, (QJsonObject)null);
     }
 
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qpluginloader.html#qRegisterStaticPluginFunction"><code>qRegisterStaticPluginFunction(QStaticPlugin)</code></a></p>
+     * <p>See <a href="@docRoot/qpluginloader.html#qRegisterStaticPluginFunction"><code>qRegisterStaticPluginFunction(QStaticPlugin)</code></a></p>
      */
     public static void qRegisterStaticPluginFunction(Class<? extends QObject> pluginClass, java.util.Map<String, Object> metaData){
         qRegisterStaticPluginFunction(pluginClass, QJsonObject.fromVariantHash(metaData));
     }
 
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qpluginloader.html#qRegisterStaticPluginFunction"><code>qRegisterStaticPluginFunction(QStaticPlugin)</code></a></p>
+     * <p>See <a href="@docRoot/qpluginloader.html#qRegisterStaticPluginFunction"><code>qRegisterStaticPluginFunction(QStaticPlugin)</code></a></p>
      */
     public static void qRegisterStaticPluginFunction(Class<? extends QObject> pluginClass, QJsonObject metaData) {
         try {
@@ -19396,6 +19925,7 @@ class QThread___{
     /**
      * @see Thread#getThreadGroup()
      */
+    @QtUninvokable
     public final @Nullable ThreadGroup getThreadGroup() {
         Thread javaThread = getJavaThreadReference();
         if(javaThread!=null) {
@@ -19409,7 +19939,8 @@ class QThread___{
     /**
      * @see Thread#setName(String)
      */
-    public void setName(@Nullable String name) {
+    @QtUninvokable
+    public final void setName(@Nullable String name) {
         Thread javaThread = getJavaThreadReference();
         if(!isRunning() && javaThread==null)
             __qt_setName(name);
@@ -19420,6 +19951,7 @@ class QThread___{
     /**
      * @see Thread#getName()
      */
+    @QtUninvokable
     public final @Nullable String getName() {
         Thread javaThread = getJavaThreadReference();
         if(javaThread!=null) {
@@ -19433,6 +19965,7 @@ class QThread___{
     /**
      * @see Thread#setDaemon(boolean)
      */
+    @QtUninvokable
     public void setDaemon(boolean daemon) {
         Thread javaThread = getJavaThreadReference();
         if(!isRunning() && javaThread==null)
@@ -19444,6 +19977,7 @@ class QThread___{
     /**
      * @see Thread#isDaemon()
      */
+    @QtUninvokable
     public final boolean isDaemon() {
         Thread javaThread = getJavaThreadReference();
         if(javaThread!=null) {
@@ -19457,7 +19991,8 @@ class QThread___{
     /**
      * @see Thread#setUncaughtExceptionHandler(java.lang.Thread.UncaughtExceptionHandler)
      */
-    public void setUncaughtExceptionHandler(Thread.@Nullable UncaughtExceptionHandler handler) {
+    @QtUninvokable
+    public final void setUncaughtExceptionHandler(Thread.@Nullable UncaughtExceptionHandler handler) {
         Thread javaThread = getJavaThreadReference();
         if(javaThread!=null) {
             javaThread.setUncaughtExceptionHandler(handler);
@@ -19471,6 +20006,7 @@ class QThread___{
     /**
      * @see Thread#getUncaughtExceptionHandler()
      */
+    @QtUninvokable
     public final Thread.@Nullable UncaughtExceptionHandler getUncaughtExceptionHandler() {
         Thread javaThread = getJavaThreadReference();
         if(javaThread!=null) {
@@ -19485,7 +20021,8 @@ class QThread___{
      * Sets the class loader of this thread
      * @see Thread#setContextClassLoader(ClassLoader)
      */
-    public void setContextClassLoader(@Nullable ClassLoader cl) {
+    @QtUninvokable
+    public final void setContextClassLoader(@Nullable ClassLoader cl) {
         Thread javaThread = getJavaThreadReference();
         if(javaThread!=null) {
             javaThread.setContextClassLoader(cl);
@@ -19500,6 +20037,7 @@ class QThread___{
      * Returns the class loader of this thread
      * @see Thread#getContextClassLoader()
      */
+    @QtUninvokable
     public final @Nullable ClassLoader getContextClassLoader() {
         Thread javaThread = getJavaThreadReference();
         if(javaThread!=null) {
@@ -19526,6 +20064,7 @@ class QThread___{
     /**
      * Returns the {@link Thread} instance representing this {@link QThread}.
      */
+    @QtUninvokable
     public final @Nullable Thread javaThread() {
         Thread javaThread = getJavaThreadReference();
         if(javaThread==null){
@@ -19535,13 +20074,16 @@ class QThread___{
         return javaThread;
     }
     
+    @QtUninvokable
     private native Thread findJavaThread();
+    @QtUninvokable
     public static native @Nullable QThread thread(@NonNull Thread thread);
     
     /**
      * Returns true if thread is running.
      * @see Thread#isAlive()
      */
+    @QtUninvokable
     public final boolean isAlive() {
         return isRunning();
     }
@@ -19550,6 +20092,7 @@ class QThread___{
      * Returns true if interruption is requested.
      * @see Thread#isInterrupted()
      */
+    @QtUninvokable
     public final boolean isInterrupted() {
         Thread javaThread = getJavaThreadReference();
         if(javaThread!=null && javaThread.isInterrupted())
@@ -19561,6 +20104,7 @@ class QThread___{
      * Checks if current thread has been interrupted and clear interruption state.
      * @see Thread#interrupted()
      */
+    @QtUninvokable
     public static boolean interrupted() {
         return Thread.interrupted();
     }
@@ -19569,6 +20113,7 @@ class QThread___{
     * Interrupts the current thread.
      * @see Thread#interrupt()
      */
+    @QtUninvokable
     public final void interrupt() {
         requestInterruption();
     }
@@ -19576,13 +20121,14 @@ class QThread___{
 
 class QSharedMemory_java__{
     
-    private static class CleanTask implements Runnable{
+    private final static class CleanTask implements Runnable{
         private CleanTask(QSharedMemory sharedMemory) {
             super();
             this.sharedMemory = sharedMemory;
         }
         
         @Override
+        @QtUninvokable
         public void run() {
             if(!isClosed) {
                 isClosed = true;
@@ -19603,7 +20149,7 @@ class QSharedMemory_java__{
      * Close this after accessing data. It is recommended to use this in resource try block.
      * @see QSharedMemory#access()
      */
-    public static class DataAccess implements AutoCloseable{
+    public final static class DataAccess implements AutoCloseable{
         
         private final QSharedMemory sharedMemory;
         private final io.qt.InternalAccess.Cleanable cleanable;
@@ -19617,6 +20163,7 @@ class QSharedMemory_java__{
          * Unlocks QSharedMemory
          */
         @Override
+        @QtUninvokable
         public void close(){
             cleanable.clean();
         }
@@ -19868,7 +20415,7 @@ class QFunctionPointer__{
      */
     @QtDeclaredFinal
     @QtUninvokable
-    public void invoke(Object... arguments) throws QUnsuccessfulInvocationException {
+    public final void invoke(Object... arguments) throws QUnsuccessfulInvocationException {
         invoke_native(this, void.class, arguments);
     }
     
@@ -19879,7 +20426,7 @@ class QFunctionPointer__{
      */
     @QtDeclaredFinal
     @QtUninvokable
-    public <R> R invoke(@NonNull Class<R> returnType, Object... arguments) throws QUnsuccessfulInvocationException {
+    public final <R> R invoke(@NonNull Class<R> returnType, Object... arguments) throws QUnsuccessfulInvocationException {
         return invoke_native(this, returnType, arguments);
     }
     
@@ -19895,7 +20442,7 @@ class QFunctionPointer__{
      * @param arguments argument values or wrapped as QGenericArgument
      */
     @QtUninvokable
-    public <R> R invoke(@NonNull QGenericReturnType<R> returnType, Object... arguments) throws QUnsuccessfulInvocationException {
+    public final <R> R invoke(@NonNull QGenericReturnType<R> returnType, Object... arguments) throws QUnsuccessfulInvocationException {
         if(arguments==null) {
             return invoke_native(this, returnType, null);
         }else {
@@ -19909,7 +20456,7 @@ class QFunctionPointer__{
      * @return converted function pointer
      */
     @QtUninvokable
-    public <T extends QtObjectInterface> T cast(@NonNull Class<T> functionalInterface) {
+    public final <T extends QtObjectInterface> T cast(@NonNull Class<T> functionalInterface) {
         return cast(this, functionalInterface);
     }
     
@@ -19943,6 +20490,7 @@ class QResource__{
     /**
      * Adds <code>path</code> to the set of classpaths in which QtJambi should search for resources.
      */
+    @QtUninvokable
     public static void addClassPath(String path) {
         CoreUtility.addClassPath(path);
     }
@@ -19951,10 +20499,12 @@ class QResource__{
      * Removes <code>path</code> from the set of classpaths in which QtJambi searches
      * for resources.
      */
+    @QtUninvokable
     public static void removeClassPath(String path) {
         CoreUtility.removeClassPath(path);
     }
 
+    @QtUninvokable
     static void addClassPath(java.net.URL url) {
         CoreUtility.addClassPath(url);
     }
@@ -19965,6 +20515,7 @@ class QDataStream_5__{
     /**
      * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1"><code>QDataStream::operator&lt;&lt;</code></a></p>
      */
+    @QtUninvokable
     public final <T> @NonNull QDataStream append(T object){
         int metaType = QMetaType.fromObject(object).id();
         if(!QMetaType.save(this, metaType, object)){
@@ -19978,6 +20529,7 @@ class QDataStream_5__{
      * <p>See <a href="@docRoot/qdatastream.html#operator-gt-gt-1"><code>QDataStream::operator&gt;&gt;</code></a></p>
      */
     @SuppressWarnings("unchecked")
+    @QtUninvokable
     public final <T> T readObject(Class<T> cl, @NonNull QMetaType @NonNull...instantiations){
         int metaType = QMetaType.fromType(cl, instantiations).id();
         java.util.Optional<Object> optional = QMetaType.load(this, metaType);
@@ -19993,6 +20545,7 @@ class QDataStream_6__{
     /**
      * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1"><code>QDataStream::operator&lt;&lt;</code></a></p>
      */
+    @QtUninvokable
     public final <T> @NonNull QDataStream append(T object){
         QMetaType metaType = QMetaType.fromObject(object);
         if(!metaType.save(this, object)){
@@ -20006,6 +20559,7 @@ class QDataStream_6__{
      * <p>See <a href="@docRoot/qdatastream.html#operator-gt-gt-1"><code>QDataStream::operator&gt;&gt;</code></a></p>
      */
     @SuppressWarnings("unchecked")
+    @QtUninvokable
     public final <T> T readObject(Class<T> cl, @NonNull QMetaType @NonNull...instantiations){
         QMetaType metaType = QMetaType.fromType(cl, instantiations);
         java.util.Optional<Object> optional = metaType.load(this);
@@ -20222,6 +20776,7 @@ class QtGlobal_5_ {
     /**
      * <p>See <a href="@docRoot/qhash.html#qHash-28"><code>qHash(T,0)</code></a></p>
      */
+    @QtUninvokable
     public static <T> int qHash(T object) throws UnsupportedOperationException {
         return qHash(object, 0);
     }
@@ -20229,6 +20784,7 @@ class QtGlobal_5_ {
     /**
      * <p>See <a href="@docRoot/qhash.html#qHash-28"><code>qHash(T,int)</code></a></p>
      */
+    @QtUninvokable
     public static native <T> int qHash(T object, int seed) throws UnsupportedOperationException;
 }// class
 
@@ -20236,6 +20792,7 @@ class QtGlobal_6_ {
     /**
      * <p>See <a href="@docRoot/qhash.html#qHash-28"><code>qHash(T,0)</code></a></p>
      */
+    @QtUninvokable
     public static <T> long qHash(T object) throws UnsupportedOperationException {
         return qHash(object, 0);
     }
@@ -20243,18 +20800,21 @@ class QtGlobal_6_ {
     /**
      * <p>See <a href="@docRoot/qhash.html#qHash-28"><code>qHash(T,long)</code></a></p>
      */
+    @QtUninvokable
     public static native <T> long qHash(T object, long seed) throws UnsupportedOperationException;
 
     /**
      * <p>See <a href="@docRoot/qhash.html#qHashMulti"><code>qHashMulti(long,T...)</code></a></p>
      */
+    @QtUninvokable
     public static native long qHashMulti(long seed, Object... objects) throws UnsupportedOperationException;
 
     /**
      * <p>See <a href="@docRoot/qhash.html#qHashMultiCommutative"><code>qHashMultiCommutative(long,T...)</code></a></p>
      */
+    @QtUninvokable
     public static native long qHashMultiCommutative(long seed, Object... objects) throws UnsupportedOperationException;
-    }// class
+}// class
 
 class QDeadlineTimer__ {
     /**
@@ -20266,7 +20826,7 @@ class QDeadlineTimer__ {
     }
 
     /**
-     * <p>See <code><a href="https://doc.qt.io/qt/qdeadlinetimer.html#QDeadlineTimer-5">QDeadlineTimer::<wbr/>QDeadlineTimer(std::chrono::duration, Qt::TimerType)</a></code></p>
+     * <p>See <code><a href="@docRoot/qdeadlinetimer.html#QDeadlineTimer-5">QDeadlineTimer::<wbr/>QDeadlineTimer(std::chrono::duration, Qt::TimerType)</a></code></p>
      */
     public QDeadlineTimer(java.time.temporal.@NonNull TemporalAmount remaining, io.qt.core.Qt.@NonNull TimerType type){
         this(ForeverConstant.Forever, type);
@@ -20289,7 +20849,7 @@ class QDeadlineTimer__ {
     }
 
     /**
-     * <p>See <code><a href="https://doc.qt.io/qt/qdeadlinetimer.html#QDeadlineTimer-4">QDeadlineTimer::<wbr/>QDeadlineTimer(std::chrono::time_point, Qt::TimerType)</a></code></p>
+     * <p>See <code><a href="@docRoot/qdeadlinetimer.html#QDeadlineTimer-4">QDeadlineTimer::<wbr/>QDeadlineTimer(std::chrono::time_point, Qt::TimerType)</a></code></p>
      */
     public QDeadlineTimer(java.time.temporal.@NonNull Temporal timePoint, io.qt.core.Qt.@NonNull TimerType type){
         this(ForeverConstant.Forever, type);
@@ -20308,14 +20868,16 @@ class QDeadlineTimer__ {
      * <p>Overloaded method for {@link #setRemainingTime(java.time.temporal.TemporalAmount, io.qt.core.Qt.TimerType)}
      *  with <code>type = io.qt.core.Qt.TimerType.CoarseTimer</code>.</p>
      */
-    public void setRemainingTime(java.time.temporal.@NonNull TemporalAmount remaining) {
+    @QtUninvokable
+    public final void setRemainingTime(java.time.temporal.@NonNull TemporalAmount remaining) {
         setRemainingTime(remaining, io.qt.core.Qt.TimerType.CoarseTimer);
     }
 
     /**
-     * <p>See <code><a href="https://doc.qt.io/qt/qdeadlinetimer.html#setRemainingTime-2">QDeadlineTimer::<wbr/>setRemainingTime(std::chrono::duration, Qt::TimerType)</a></code></p>
+     * <p>See <code><a href="@docRoot/qdeadlinetimer.html#setRemainingTime-2">QDeadlineTimer::<wbr/>setRemainingTime(std::chrono::duration, Qt::TimerType)</a></code></p>
      */
-    public void setRemainingTime(java.time.temporal.@NonNull TemporalAmount remaining, io.qt.core.Qt.@NonNull TimerType type){
+    @QtUninvokable
+    public final void setRemainingTime(java.time.temporal.@NonNull TemporalAmount remaining, io.qt.core.Qt.@NonNull TimerType type){
         java.time.Duration duration;
         if(remaining instanceof java.time.Duration)
             duration = (java.time.Duration)remaining;
@@ -20332,14 +20894,16 @@ class QDeadlineTimer__ {
      * <p>Overloaded method for {@link #setDeadline(java.time.temporal.Temporal, io.qt.core.Qt.TimerType)}
      *  with <code>type = io.qt.core.Qt.TimerType.CoarseTimer</code>.</p>
      */
-    public void setDeadline(java.time.temporal.@NonNull Temporal timePoint) {
+    @QtUninvokable
+    public final void setDeadline(java.time.temporal.@NonNull Temporal timePoint) {
         setDeadline(timePoint, io.qt.core.Qt.TimerType.CoarseTimer);
     }
 
     /**
-     * <p>See <code><a href="https://doc.qt.io/qt/qdeadlinetimer.html#setDeadline-2">QDeadlineTimer::<wbr/>setDeadline(std::chrono::time_point, Qt::TimerType)</a></code></p>
+     * <p>See <code><a href="@docRoot/qdeadlinetimer.html#setDeadline-2">QDeadlineTimer::<wbr/>setDeadline(std::chrono::time_point, Qt::TimerType)</a></code></p>
      */
-    public void setDeadline(java.time.temporal.@NonNull Temporal timePoint, io.qt.core.Qt.@NonNull TimerType type){
+    @QtUninvokable
+    public final void setDeadline(java.time.temporal.@NonNull Temporal timePoint, io.qt.core.Qt.@NonNull TimerType type){
         java.time.Instant instant;
         if(timePoint instanceof java.time.Instant) {
             instant = (java.time.Instant)timePoint;
@@ -20354,7 +20918,7 @@ class QDeadlineTimer__ {
     }
 
     /**
-     * <p>See <code><a href="https://doc.qt.io/qt/qdeadlinetimer.html#operator-eq">QDeadlineTimer::<wbr/>operator=(std::chrono::time_point)</a></code></p>
+     * <p>See <code><a href="@docRoot/qdeadlinetimer.html#operator-eq">QDeadlineTimer::<wbr/>operator=(std::chrono::time_point)</a></code></p>
      */
     @QtUninvokable
     public final void assign(java.time.temporal.@NonNull Temporal timePoint){
@@ -20362,7 +20926,7 @@ class QDeadlineTimer__ {
     }
 
     /**
-     * <p>See <code><a href="https://doc.qt.io/qt/qdeadlinetimer.html#operator-eq-1">QDeadlineTimer::<wbr/>operator=(std::chrono::duration)</a></code></p>
+     * <p>See <code><a href="@docRoot/qdeadlinetimer.html#operator-eq-1">QDeadlineTimer::<wbr/>operator=(std::chrono::duration)</a></code></p>
      */
     @QtUninvokable
     public final void assign(java.time.temporal.@NonNull TemporalAmount remaining){
@@ -20410,9 +20974,9 @@ class QDeadlineTimer__ {
 
 class QJsonArray___{
     /**
-     * <p>Overloaded constructor for <code><a href="https://doc.qt.io/qt/qjsonarray.html#QJsonArray-1">QJsonArray::<wbr/>QJsonArray(std::initializer_list&lt;QJsonValue&gt;)</a></code></p>
+     * <p>Overloaded constructor for <code><a href="@docRoot/qjsonarray.html#QJsonArray-1">QJsonArray::<wbr/>QJsonArray(std::initializer_list&lt;QJsonValue&gt;)</a></code></p>
      */
-    public QJsonArray(@Nullable Object@NonNull  ... args){
+    public QJsonArray(@Nullable Object @NonNull... args){
         super((QPrivateConstructor)null);
         QJsonValue[] vargs = new QJsonValue[args.length];
         for (int i = 0; i < vargs.length; i++) {
@@ -20444,9 +21008,9 @@ class QJsonArray___{
 
 class QCborArray___{
     /**
-     * <p>Overloaded constructor for <code><a href="https://doc.qt.io/qt/qcborarray.html#QCborArray-2">QCborArray::<wbr/>QCborArray(std::initializer_list&lt;QCborValue&gt;)</a></code></p>
+     * <p>Overloaded constructor for <code><a href="@docRoot/qcborarray.html#QCborArray-2">QCborArray::<wbr/>QCborArray(std::initializer_list&lt;QCborValue&gt;)</a></code></p>
      */
-    public QCborArray(@Nullable Object@NonNull  ... args){
+    public QCborArray(@Nullable Object @NonNull... args){
         super((QPrivateConstructor)null);
         QCborValue[] vargs = new QCborValue[args.length];
         for (int i = 0; i < vargs.length; i++) {
@@ -20763,185 +21327,349 @@ class QAbstractFileEngineHandler___{
     }
 
     /**
-     * Creates a file engine handler for file names tested with case-sensitive string comparison against argument {@code string}
+     * Creates a file engine handler for file names tested with case-sensitive string comparison against argument {@code string}.
+     * The returned handler object is owned by native library and is ignored by garbage collection.
+     * By calling {@code dispose()}, this file engine handler is uninstalled.
      * @param factory the file engine factory
-     * @param stringComparisonType string comparison type
+     * @param stringComparison string comparison operation
      * @param string string the file name is tested against
      * @return a new installed file engine handler
      */
     @QtUninvokable
-    public static QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, QtUtilities.@StrictNonNull StringComparison stringComparisonType, @NonNull String string) {
-        return fromFileNameTest(factory, stringComparisonType, io.qt.core.Qt.CaseSensitivity.CaseSensitive, string);
+    public static @NonNull QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.QString.@StrictNonNull Comparison stringComparison, @NonNull String string) {
+        return fromFileNameTest(factory, stringComparison, io.qt.core.Qt.CaseSensitivity.CaseSensitive, string);
     }
 
     /**
-     * Creates a file engine handler for file names tested with string comparison against argument {@code string}
+     * Creates a file engine handler for file names tested with string comparison against argument {@code string}.
+     * The returned handler object is owned by native library and is ignored by garbage collection.
+     * By calling {@code dispose()}, this file engine handler is uninstalled.
      * @param factory the file engine factory
-     * @param stringComparisonType string comparison type
+     * @param stringComparison string comparison operation
      * @param caseSensitivity case sensitivity
      * @param string string the file name is tested against
      * @return a new installed file engine handler
      */
     @QtUninvokable
-    public static QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, QtUtilities.@StrictNonNull StringComparison stringComparisonType, io.qt.core.Qt.@StrictNonNull CaseSensitivity caseSensitivity, @NonNull String string) {
+    public static @NonNull QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.QString.@StrictNonNull Comparison stringComparison, io.qt.core.Qt.@StrictNonNull CaseSensitivity caseSensitivity, @NonNull String string) {
         java.util.Objects.requireNonNull(string, "Argument 'string': null not expected.");
         java.util.Objects.requireNonNull(factory, "Argument 'factory': null not expected.");
-        return fromFileNameTestString(factory, stringComparisonType.value(), caseSensitivity.value(), string);
+        return fromFileNameTestString(factory, stringComparison.value(), caseSensitivity.value(), string);
     }
     @QtUninvokable
-    private static native QAbstractFileEngineHandler fromFileNameTestString(FileEngineFactory factory, int stringComparisonType, int caseSensitivity, String string);
+    private static native QAbstractFileEngineHandler fromFileNameTestString(FileEngineFactory factory, int stringComparison, int caseSensitivity, String string);
+}// class
 
+class QAbstractFileEngineHandler_5__{
     /**
-     * Creates a file engine handler for file names having match with {@code regexp}
+     * Creates a file engine handler for file names having match with {@code regexp}.
+     * The returned handler object is owned by native library and is ignored by garbage collection.
+     * By calling {@code dispose()}, this file engine handler is uninstalled.
      * @param factory the file engine factory
      * @param regexp file name regular expression
      * @param matchType the match type
      * @param matchOptions options for the match
      * @return a new installed file engine handler
-     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpression#match(String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
      * @see io.qt.core.QRegularExpressionMatch#hasMatch()
      */
     @QtUninvokable
-    public static QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchType matchType, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
+    public static @NonNull QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchType matchType, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
         return fromFileNameTest(factory, regexp, 0, matchType, matchOptions);
     }
     /**
-     * Creates a file engine handler for file names having match with {@code regexp}
+     * Creates a file engine handler for file names having match with {@code regexp}.
+     * The returned handler object is owned by native library and is ignored by garbage collection.
+     * By calling {@code dispose()}, this file engine handler is uninstalled.
      * @param factory the file engine factory
      * @param regexp file name regular expression
      * @param matchOptions options for the match
      * @return a new installed file engine handler
-     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpression#match(String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
      * @see io.qt.core.QRegularExpressionMatch#hasMatch()
      */
     @QtUninvokable
-    public static QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
+    public static @NonNull QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
         return fromFileNameTest(factory, regexp, 0, io.qt.core.QRegularExpression.MatchType.NormalMatch, matchOptions);
     }
     /**
-     * Creates a file engine handler for file names having match with {@code regexp}
+     * Creates a file engine handler for file names having match with {@code regexp}.
+     * The returned handler object is owned by native library and is ignored by garbage collection.
+     * By calling {@code dispose()}, this file engine handler is uninstalled.
      * @param factory the file engine factory
      * @param regexp file name regular expression
      * @param matchType the match type
      * @return a new installed file engine handler
-     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpression#match(String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
      * @see io.qt.core.QRegularExpressionMatch#hasMatch()
      */
     @QtUninvokable
-    public static QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchType matchType) {
+    public static @NonNull QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchType matchType) {
         return fromFileNameTest(factory, regexp, 0, matchType, io.qt.core.QRegularExpression.MatchOption.NoMatchOption.asFlags());
     }
     /**
-     * Creates a file engine handler for file names having match with {@code regexp}
+     * Creates a file engine handler for file names having match with {@code regexp}.
+     * The returned handler object is owned by native library and is ignored by garbage collection.
+     * By calling {@code dispose()}, this file engine handler is uninstalled.
      * @param factory the file engine factory
      * @param regexp file name regular expression
      * @param matchType the match type
      * @param matchOptions options for the match
      * @return a new installed file engine handler
-     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpression#match(String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
      * @see io.qt.core.QRegularExpressionMatch#hasMatch()
      */
     @QtUninvokable
-    public static QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchType matchType, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
+    public static @NonNull QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchType matchType, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
         return fromFileNameTest(factory, regexp, 0, matchType, new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
     }
     /**
-     * Creates a file engine handler for file names having match with {@code regexp}
+     * Creates a file engine handler for file names having match with {@code regexp}.
+     * The returned handler object is owned by native library and is ignored by garbage collection.
+     * By calling {@code dispose()}, this file engine handler is uninstalled.
      * @param factory the file engine factory
      * @param regexp file name regular expression
      * @param matchOptions options for the match
      * @return a new installed file engine handler
-     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpression#match(String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
      * @see io.qt.core.QRegularExpressionMatch#hasMatch()
      */
     @QtUninvokable
-    public static QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
+    public static @NonNull QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
         return fromFileNameTest(factory, regexp, 0, io.qt.core.QRegularExpression.MatchType.NormalMatch, new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
     }
     /**
-     * Creates a file engine handler for file names having match with {@code regexp}
+     * Creates a file engine handler for file names having match with {@code regexp}.
+     * The returned handler object is owned by native library and is ignored by garbage collection.
+     * By calling {@code dispose()}, this file engine handler is uninstalled.
      * @param factory the file engine factory
      * @param regexp file name regular expression
      * @return a new installed file engine handler
-     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpression#match(String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
      * @see io.qt.core.QRegularExpressionMatch#hasMatch()
      */
     @QtUninvokable
-    public static QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp) {
+    public static @NonNull QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp) {
         return fromFileNameTest(factory, regexp, 0, io.qt.core.QRegularExpression.MatchType.NormalMatch, io.qt.core.QRegularExpression.MatchOption.NoMatchOption.asFlags());
     }
     /**
-     * Creates a file engine handler for file names having match with {@code regexp}
+     * Creates a file engine handler for file names having match with {@code regexp}.
+     * The returned handler object is owned by native library and is ignored by garbage collection.
+     * By calling {@code dispose()}, this file engine handler is uninstalled.
      * @param factory the file engine factory
      * @param regexp file name regular expression
      * @param offset the offset of the match
      * @return a new installed file engine handler
-     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpression#match(String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
      * @see io.qt.core.QRegularExpressionMatch#hasMatch()
      */
     @QtUninvokable
-    public static QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, long offset) {
+    public static @NonNull QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, int offset) {
         return fromFileNameTest(factory, regexp, offset, io.qt.core.QRegularExpression.MatchType.NormalMatch, io.qt.core.QRegularExpression.MatchOption.NoMatchOption.asFlags());
     }
     /**
-     * Creates a file engine handler for file names having match with {@code regexp}
+     * Creates a file engine handler for file names having match with {@code regexp}.
+     * The returned handler object is owned by native library and is ignored by garbage collection.
+     * By calling {@code dispose()}, this file engine handler is uninstalled.
      * @param factory the file engine factory
      * @param regexp file name regular expression
      * @param offset the offset of the match
      * @param matchType the match type
      * @param matchOptions options for the match
      * @return a new installed file engine handler
-     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpression#match(String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
      * @see io.qt.core.QRegularExpressionMatch#hasMatch()
      */
     @QtUninvokable
-    public static QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, long offset, io.qt.core.QRegularExpression.@NonNull MatchType matchType, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
+    public static @NonNull QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, int offset, io.qt.core.QRegularExpression.@NonNull MatchType matchType, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
         return fromFileNameTest(factory, regexp, offset, matchType, new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
     }
     /**
-     * Creates a file engine handler for file names having match with {@code regexp}
+     * Creates a file engine handler for file names having match with {@code regexp}.
+     * The returned handler object is owned by native library and is ignored by garbage collection.
+     * By calling {@code dispose()}, this file engine handler is uninstalled.
      * @param factory the file engine factory
      * @param regexp file name regular expression
      * @param offset the offset of the match
      * @param matchType the match type
      * @return a new installed file engine handler
-     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpression#match(String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
      * @see io.qt.core.QRegularExpressionMatch#hasMatch()
      */
     @QtUninvokable
-    public static QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, long offset, io.qt.core.QRegularExpression.@NonNull MatchType matchType) {
+    public static @NonNull QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, int offset, io.qt.core.QRegularExpression.@NonNull MatchType matchType) {
         return fromFileNameTest(factory, regexp, offset, matchType, io.qt.core.QRegularExpression.MatchOption.NoMatchOption.asFlags());
     }
     /**
-     * Creates a file engine handler for file names having match with {@code regexp}
+     * Creates a file engine handler for file names having match with {@code regexp}.
+     * The returned handler object is owned by native library and is ignored by garbage collection.
+     * By calling {@code dispose()}, this file engine handler is uninstalled.
      * @param factory the file engine factory
      * @param regexp file name regular expression
      * @param offset the offset of the match
      * @param matchOptions options for the match
      * @return a new installed file engine handler
-     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpression#match(String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
      * @see io.qt.core.QRegularExpressionMatch#hasMatch()
      */
     @QtUninvokable
-    public static QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, long offset, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
+    public static @NonNull QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, int offset, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
         return fromFileNameTest(factory, regexp, offset, io.qt.core.QRegularExpression.MatchType.NormalMatch, new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
     }
     /**
-     * Creates a file engine handler for file names having match with {@code regexp}
+     * Creates a file engine handler for file names having match with {@code regexp}.
+     * The returned handler object is owned by native library and is ignored by garbage collection.
+     * By calling {@code dispose()}, this file engine handler is uninstalled.
      * @param factory the file engine factory
      * @param regexp file name regular expression
      * @param offset the offset of the match
+     * @param matchOptions options for the match
+     * @return a new installed file engine handler
+     * @see io.qt.core.QRegularExpression#match(String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    @QtUninvokable
+    public static @NonNull QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, int offset, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
+        return fromFileNameTest(factory, regexp, offset, io.qt.core.QRegularExpression.MatchType.NormalMatch, matchOptions);
+    }
+    /**
+     * Creates a file engine handler for file names having match with {@code regexp}.
+     * The returned handler object is owned by native library and is ignored by garbage collection.
+     * By calling {@code dispose()}, this file engine handler is uninstalled.
+     * @param factory the file engine factory
+     * @param regexp file name regular expression
+     * @param offset the offset of the match
+     * @param matchType the match type
+     * @param matchOptions options for the match
+     * @return a new installed file engine handler
+     * @see io.qt.core.QRegularExpression#match(String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    @QtUninvokable
+    public static @NonNull QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, int offset, io.qt.core.QRegularExpression.@NonNull MatchType matchType, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
+        java.util.Objects.requireNonNull(regexp, "Argument 'regexp': null not expected.");
+        java.util.Objects.requireNonNull(factory, "Argument 'factory': null not expected.");
+        if(!regexp.isValid())
+                throw new IllegalArgumentException("Argument 'regexp' invalid");
+        if(offset<0)
+                throw new IllegalArgumentException("Argument 'offset' < 0");
+        return fromFileNameTestRegexp(factory, QtJambi_LibraryUtilities.internal.checkedNativeId(regexp), offset, matchType==null ? 0 : matchType.value(), matchOptions==null ? 0 : matchOptions.value());
+    }
+    @QtUninvokable
+    private static native QAbstractFileEngineHandler fromFileNameTestRegexp(FileEngineFactory factory, long regexp, int offset, int matchType, int matchOptions);
+}// class
+
+class QAbstractFileEngineHandler_6__{
+    /**
+     * Creates a file engine handler for file names having match with {@code regexp}.
+     * The returned handler object is owned by native library and is ignored by garbage collection.
+     * By calling {@code dispose()}, this file engine handler is uninstalled.
+     * @param factory the file engine factory
+     * @param regexp file name regular expression
+     * @param matchType the match type
      * @param matchOptions options for the match
      * @return a new installed file engine handler
      * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
      * @see io.qt.core.QRegularExpressionMatch#hasMatch()
      */
     @QtUninvokable
-    public static QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, long offset, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
-        return fromFileNameTest(factory, regexp, offset, io.qt.core.QRegularExpression.MatchType.NormalMatch, matchOptions);
+    public static @NonNull QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchType matchType, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
+        return fromFileNameTest(factory, regexp, 0, matchType, matchOptions);
     }
     /**
-     * Creates a file engine handler for file names having match with {@code regexp}
+     * Creates a file engine handler for file names having match with {@code regexp}.
+     * The returned handler object is owned by native library and is ignored by garbage collection.
+     * By calling {@code dispose()}, this file engine handler is uninstalled.
+     * @param factory the file engine factory
+     * @param regexp file name regular expression
+     * @param matchOptions options for the match
+     * @return a new installed file engine handler
+     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    @QtUninvokable
+    public static @NonNull QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
+        return fromFileNameTest(factory, regexp, 0, io.qt.core.QRegularExpression.MatchType.NormalMatch, matchOptions);
+    }
+    /**
+     * Creates a file engine handler for file names having match with {@code regexp}.
+     * The returned handler object is owned by native library and is ignored by garbage collection.
+     * By calling {@code dispose()}, this file engine handler is uninstalled.
+     * @param factory the file engine factory
+     * @param regexp file name regular expression
+     * @param matchType the match type
+     * @return a new installed file engine handler
+     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    @QtUninvokable
+    public static @NonNull QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchType matchType) {
+        return fromFileNameTest(factory, regexp, 0, matchType, io.qt.core.QRegularExpression.MatchOption.NoMatchOption.asFlags());
+    }
+    /**
+     * Creates a file engine handler for file names having match with {@code regexp}.
+     * The returned handler object is owned by native library and is ignored by garbage collection.
+     * By calling {@code dispose()}, this file engine handler is uninstalled.
+     * @param factory the file engine factory
+     * @param regexp file name regular expression
+     * @param matchType the match type
+     * @param matchOptions options for the match
+     * @return a new installed file engine handler
+     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    @QtUninvokable
+    public static @NonNull QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchType matchType, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
+        return fromFileNameTest(factory, regexp, 0, matchType, new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
+    }
+    /**
+     * Creates a file engine handler for file names having match with {@code regexp}.
+     * The returned handler object is owned by native library and is ignored by garbage collection.
+     * By calling {@code dispose()}, this file engine handler is uninstalled.
+     * @param factory the file engine factory
+     * @param regexp file name regular expression
+     * @param matchOptions options for the match
+     * @return a new installed file engine handler
+     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    @QtUninvokable
+    public static @NonNull QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
+        return fromFileNameTest(factory, regexp, 0, io.qt.core.QRegularExpression.MatchType.NormalMatch, new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
+    }
+    /**
+     * Creates a file engine handler for file names having match with {@code regexp}.
+     * The returned handler object is owned by native library and is ignored by garbage collection.
+     * By calling {@code dispose()}, this file engine handler is uninstalled.
+     * @param factory the file engine factory
+     * @param regexp file name regular expression
+     * @return a new installed file engine handler
+     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    @QtUninvokable
+    public static @NonNull QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp) {
+        return fromFileNameTest(factory, regexp, 0, io.qt.core.QRegularExpression.MatchType.NormalMatch, io.qt.core.QRegularExpression.MatchOption.NoMatchOption.asFlags());
+    }
+    /**
+     * Creates a file engine handler for file names having match with {@code regexp}.
+     * The returned handler object is owned by native library and is ignored by garbage collection.
+     * By calling {@code dispose()}, this file engine handler is uninstalled.
+     * @param factory the file engine factory
+     * @param regexp file name regular expression
+     * @param offset the offset of the match
+     * @return a new installed file engine handler
+     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    @QtUninvokable
+    public static @NonNull QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, long offset) {
+        return fromFileNameTest(factory, regexp, offset, io.qt.core.QRegularExpression.MatchType.NormalMatch, io.qt.core.QRegularExpression.MatchOption.NoMatchOption.asFlags());
+    }
+    /**
+     * Creates a file engine handler for file names having match with {@code regexp}.
+     * The returned handler object is owned by native library and is ignored by garbage collection.
+     * By calling {@code dispose()}, this file engine handler is uninstalled.
      * @param factory the file engine factory
      * @param regexp file name regular expression
      * @param offset the offset of the match
@@ -20952,7 +21680,72 @@ class QAbstractFileEngineHandler___{
      * @see io.qt.core.QRegularExpressionMatch#hasMatch()
      */
     @QtUninvokable
-    public static QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, long offset, io.qt.core.QRegularExpression.@NonNull MatchType matchType, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
+    public static @NonNull QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, long offset, io.qt.core.QRegularExpression.@NonNull MatchType matchType, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
+        return fromFileNameTest(factory, regexp, offset, matchType, new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
+    }
+    /**
+     * Creates a file engine handler for file names having match with {@code regexp}.
+     * The returned handler object is owned by native library and is ignored by garbage collection.
+     * By calling {@code dispose()}, this file engine handler is uninstalled.
+     * @param factory the file engine factory
+     * @param regexp file name regular expression
+     * @param offset the offset of the match
+     * @param matchType the match type
+     * @return a new installed file engine handler
+     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    @QtUninvokable
+    public static @NonNull QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, long offset, io.qt.core.QRegularExpression.@NonNull MatchType matchType) {
+        return fromFileNameTest(factory, regexp, offset, matchType, io.qt.core.QRegularExpression.MatchOption.NoMatchOption.asFlags());
+    }
+    /**
+     * Creates a file engine handler for file names having match with {@code regexp}.
+     * The returned handler object is owned by native library and is ignored by garbage collection.
+     * By calling {@code dispose()}, this file engine handler is uninstalled.
+     * @param factory the file engine factory
+     * @param regexp file name regular expression
+     * @param offset the offset of the match
+     * @param matchOptions options for the match
+     * @return a new installed file engine handler
+     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    @QtUninvokable
+    public static @NonNull QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, long offset, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
+        return fromFileNameTest(factory, regexp, offset, io.qt.core.QRegularExpression.MatchType.NormalMatch, new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
+    }
+    /**
+     * Creates a file engine handler for file names having match with {@code regexp}.
+     * The returned handler object is owned by native library and is ignored by garbage collection.
+     * By calling {@code dispose()}, this file engine handler is uninstalled.
+     * @param factory the file engine factory
+     * @param regexp file name regular expression
+     * @param offset the offset of the match
+     * @param matchOptions options for the match
+     * @return a new installed file engine handler
+     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    @QtUninvokable
+    public static @NonNull QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, long offset, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
+        return fromFileNameTest(factory, regexp, offset, io.qt.core.QRegularExpression.MatchType.NormalMatch, matchOptions);
+    }
+    /**
+     * Creates a file engine handler for file names having match with {@code regexp}.
+     * The returned handler object is owned by native library and is ignored by garbage collection.
+     * By calling {@code dispose()}, this file engine handler is uninstalled.
+     * @param factory the file engine factory
+     * @param regexp file name regular expression
+     * @param offset the offset of the match
+     * @param matchType the match type
+     * @param matchOptions options for the match
+     * @return a new installed file engine handler
+     * @see io.qt.core.QRegularExpression#match(String, long, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)
+     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
+     */
+    @QtUninvokable
+    public static @NonNull QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory, io.qt.core.@NonNull QRegularExpression regexp, long offset, io.qt.core.QRegularExpression.@NonNull MatchType matchType, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
         java.util.Objects.requireNonNull(regexp, "Argument 'regexp': null not expected.");
         java.util.Objects.requireNonNull(factory, "Argument 'factory': null not expected.");
         if(!regexp.isValid())
@@ -20963,4 +21756,100 @@ class QAbstractFileEngineHandler___{
     }
     @QtUninvokable
     private static native QAbstractFileEngineHandler fromFileNameTestRegexp(FileEngineFactory factory, long regexp, long offset, int matchType, int matchOptions);
+}// class
+
+class QMutexLocker___{
+
+    @QtPropertyMember(enabled=false)
+    private AbstractMutex __rcMutex;
+}// class
+
+class QMutexLocker_6__{
+
+    @QtUninvokable
+    @NativeAccess
+    private boolean isRecursive(){
+        return __rcMutex instanceof QRecursiveMutex;
+    }
+
+    /**
+     * <p>See <code><a href="@docRoot/qmutexlocker.html#QMutexLocker-1">QMutexLocker&lt;QMutex&gt;::<wbr/>QMutexLocker(QRecursiveMutex*)</a></code></p>
+     * @since This function was introduced in Qt 6.4.
+     * @param mutex
+     */
+    public QMutexLocker(io.qt.core.@Nullable QRecursiveMutex mutex){
+        super((QPrivateConstructor)null);
+        __rcMutex = mutex;
+        initialize_native(this, mutex);
+    }
+
+    private native static void initialize_native(QMutexLocker instance, io.qt.core.QRecursiveMutex mutex);
+}// class
+
+class QMutexLocker_cpp__{
+namespace Java{
+namespace QtCore{
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QMutexLocker,
+                                     QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(isRecursive))
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QMutexLocker,
+        QTJAMBI_REPOSITORY_DEFINE_METHOD(isRecursive,()Z)
+    )
+}
+}
+void deleter_QMutexLocker_QRecursiveMutex_(void *ptr, bool isShell)
+{
+    QTJAMBI_NATIVE_METHOD_CALL("qtjambi_deleter for QMutexLocker<QRecursiveMutex>")
+    QMutexLocker<QRecursiveMutex> *_ptr = reinterpret_cast<QMutexLocker<QRecursiveMutex> *>(ptr);
+    if(!isShell){
+        QtJambiAPI::registerNonShellDeletion(ptr);
+    }
+    delete _ptr;
+}
+
+// emitting (writeConstructors)
+// new QMutexLocker(Mutex*)
+void __qt_construct_QMutexLocker_QRecursiveMutex__QRecursiveMutex_ptr(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, bool, bool, bool __qtjambi_is_generic)
+{
+    QTJAMBI_NATIVE_METHOD_CALL("construct QMutexLocker(QRecursiveMutex*)")
+    jobject mutex0 = __java_arguments[0].l;
+    QRecursiveMutex* __qt_mutex0 = qtjambi_cast<QRecursiveMutex*>(__jni_env, mutex0);
+    QMutexLocker<QRecursiveMutex> *__qt_this = new(__qtjambi_ptr) QMutexLocker<QRecursiveMutex>(__qt_mutex0);
+    Q_UNUSED(__qt_this)
+    Q_UNUSED(__qtjambi_is_generic)
+    Q_UNUSED(__jni_object)
+}
+
+// destruct QMutexLocker<QMutex>
+void __qt_destruct_QMutexLocker_QRecursiveMutex_(void* ptr)
+{
+    QTJAMBI_NATIVE_METHOD_CALL("destruct QMutexLocker<QRecursiveMutex>")
+    reinterpret_cast<QMutexLocker<QRecursiveMutex>*>(ptr)->~QMutexLocker<QRecursiveMutex>();
+}
+
+// QMutexLocker<QRecursiveMutex>::QMutexLocker(QRecursiveMutex*)
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMutexLocker_initialize_1native__Lio_qt_core_QMutexLocker_2Lio_qt_core_QRecursiveMutex_2)
+(JNIEnv *__jni_env,
+ jclass __jni_class,
+ jobject __jni_object,
+ jobject mutex0)
+{
+    QTJAMBI_NATIVE_METHOD_CALL("QMutexLocker<QRecursiveMutex>::QMutexLocker(Mutex*)")
+    QTJAMBI_TRY {
+        jvalue arguments;
+        arguments.l = mutex0;
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QMutexLocker_QRecursiveMutex__QRecursiveMutex_ptr, sizeof(QMutexLocker<QRecursiveMutex>), typeid(QMutexLocker<QRecursiveMutex>), 0, false, &deleter_QMutexLocker_QRecursiveMutex_, &arguments);
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+
+}
+
+}// class
+
+class QMutexLocker_metainfo__{
+    const std::type_info& typeId2 = registerObjectTypeInfo<QMutexLocker<QRecursiveMutex>>("QMutexLocker<QRecursiveMutex>", "io/qt/core/QMutexLocker");
+    registerDeleter(typeId2, &deleter_QMutexLocker_QRecursiveMutex_);
+    registerConstructorInfos(typeId2, 0, &__qt_destruct_QMutexLocker_QRecursiveMutex_, {
+        ConstructorInfo{&__qt_construct_QMutexLocker_QRecursiveMutex__QRecursiveMutex_ptr, "Lio/qt/core/QRecursiveMutex;"}
+    });
 }// class

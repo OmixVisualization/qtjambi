@@ -1156,7 +1156,7 @@ void Binder::visitClassSpecifier(ClassSpecifierAST *node) {
     if(node->deprecationComment)
         thisClass->setDeclDeprecatedComment(node->deprecationComment->toString(tokenStream()));
 
-    QList<QPair<TypeInfo,bool>> baseClasses = class_cc.baseClasses();
+    QList<QPair<TypeInfo,int>> baseClasses = class_cc.baseClasses();
     for (int i = 0; i < baseClasses.size(); ++i) {
         baseClasses[i].first.setQualifiedName(qualifyType(baseClasses.at(i).first, scope->qualifiedName()).qualifiedName());
     }
@@ -1228,9 +1228,13 @@ void Binder::visitUsing(UsingAST *node) {
             QString baseClassName = _M_current_class->baseClasses().first().first.qualifiedName().last();
             QString methodName = qualifiedName.takeLast();
             QString className = qualifiedName.join("::");
-            if((className==baseClassName || className.startsWith(baseClassName+"<"))
-                    && methodName==baseClassName.split("::").last()){
-                _M_current_class->setUsingBaseConstructors(_M_current_access);
+            if((className==baseClassName || className.startsWith(baseClassName+"<"))){
+                if(methodName==baseClassName.split("::").last())
+                    _M_current_class->setUsingBaseConstructors(_M_current_access);
+                else if(_M_current_access==CodeModel::Protected)
+                    _M_current_class->addProtectedUsingStatement(methodName);
+                else if(_M_current_access==CodeModel::Public)
+                    _M_current_class->addPublicUsingStatement(methodName);
             }
         }
     }
@@ -1546,7 +1550,7 @@ TypeInfo Binder::qualifyType(TypeInfo type, const QStringList &context) const {
             CodeModelItem scope = model()->findItem(context, _M_model->globalNamespace()->toItem());
 
             if (ClassModelItem klass = model_dynamic_cast<ClassModelItem> (scope)) {
-                for(const QPair<TypeInfo,bool>& base : klass->baseClasses()) {
+                for(const QPair<TypeInfo,int>& base : klass->baseClasses()) {
                     QStringList ctx = context;
                     if(ctx.takeLast()!=base.first.qualifiedName().join("::")){
                         ctx.append(base.first.qualifiedName().join("::"));

@@ -350,9 +350,9 @@ class _ClassModelItem: public _ScopeModelItem {
         static ClassModelItem create(CodeModelPtr model);
 
     public:
-        const QList<QPair<TypeInfo,bool>>& baseClasses() const;
+        const QList<QPair<TypeInfo,int>>& baseClasses() const;
 
-        void setBaseClasses(const QList<QPair<TypeInfo,bool>> &baseClasses);
+        void setBaseClasses(const QList<QPair<TypeInfo,int>> &baseClasses);
 
         const TemplateParameterList& templateParameters() const;
         void setTemplateParameters(const TemplateParameterList &templateParameters);
@@ -379,6 +379,10 @@ class _ClassModelItem: public _ScopeModelItem {
 
         void setUsingBaseConstructors(CodeModel::AccessPolicy usingBaseConstructors){_M_usingBaseConstructors = usingBaseConstructors;}
         CodeModel::AccessPolicy usingBaseConstructors() const {return _M_usingBaseConstructors;}
+        void addProtectedUsingStatement(const QString& usingStatement) { _M_protectedUsingStatements << usingStatement; }
+        const QStringList& protectedUsingStatements() const{ return _M_protectedUsingStatements; }
+        void addPublicUsingStatement(const QString& usingStatement) { _M_publicUsingStatements << usingStatement; }
+        const QStringList& publicUsingStatements() const{ return _M_publicUsingStatements; }
         bool isDeclFinal() const;
         void setDeclFinal(bool declFinal);
         bool isDeclDeprecated() const;
@@ -399,7 +403,7 @@ class _ClassModelItem: public _ScopeModelItem {
     private:
         bool m_has_Q_GADGET;
         bool m_has_Q_OBJECT;
-        QList<QPair<TypeInfo,bool>> _M_baseClasses;
+        QList<QPair<TypeInfo,int>> _M_baseClasses;
         TemplateParameterList _M_templateParameters;
         QList<TypeInfo> _M_templateInstantiations;
         CodeModel::ClassType _M_classType;
@@ -411,6 +415,8 @@ class _ClassModelItem: public _ScopeModelItem {
         QString _M_declDeprecatedComment;
         CodeModel::AccessPolicy _M_accessPolicy;
         CodeModel::AccessPolicy _M_usingBaseConstructors;
+        QStringList _M_protectedUsingStatements;
+        QStringList _M_publicUsingStatements;
 
     private:
         _ClassModelItem(const _ClassModelItem &other);

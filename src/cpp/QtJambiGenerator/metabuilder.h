@@ -125,7 +125,7 @@ class MetaBuilder {
         };
 
         MetaClass *traverseClass(ClassModelItem item, QList<PendingClass>& pendingClasses, QList<PendingFunctional>& pendingFunctionals);
-        void setupInheritance(MetaClass *meta_class, QList<PendingHiddenBaseType>& pendingHiddenBaseTypes, QList<MetaClass *>& pendingConstructorUsages);
+        void setupInheritance(MetaClass *meta_class, QList<PendingHiddenBaseType>& pendingHiddenBaseTypes, QList<MetaClass *>& pendingConstructorUsages, QList<QPair<MetaClass*,MetaClass*>>& pendingPrivateSuperUsages);
         bool setupFunctionTemplateInstantiations(MetaClass *meta_class);
         MetaClass *traverseNamespace(NamespaceModelItem item, QList<PendingClass>& pendingClasses, QList<PendingFunctional>& pendingFunctionals);
         MetaEnum *traverseEnum(EnumModelItem item, MetaClass *enclosing, const QSet<QString> &metaEnums, const QMap<QString,QString>& flagByEnums);

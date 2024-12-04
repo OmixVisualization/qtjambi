@@ -127,7 +127,7 @@ struct HttpServerRouter{
     QScopedPointer<QHttpServerRouter> d_ptr;
 };
 
-#if QT_VERSION > QT_VERSION_CHECK(6, 8, 0)
+#if QT_VERSION < QT_VERSION_CHECK(6, 8, 0)
 
 extern "C" Q_DECL_EXPORT bool JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_httpserver_QHttpServerRouter_addRuleImpl)
 (JNIEnv *__jni_env,
@@ -253,7 +253,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_httpser
 }
 #else
 
-#endif //QT_VERSION > QT_VERSION_CHECK(6, 8, 0)
+#endif //QT_VERSION < QT_VERSION_CHECK(6, 8, 0)
 
 
 extern "C" Q_DECL_EXPORT bool JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_httpserver_QHttpServer_handleRequest)

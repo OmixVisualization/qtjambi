@@ -28,6 +28,8 @@
 ****************************************************************************/
 package io.qt.autotests;
 
+import static io.qt.core.QCoreApplication.asSelectiveEventFilter;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -35,15 +37,19 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import io.qt.QtUtilities;
+import io.qt.Nullable;
+import io.qt.core.QCoreApplication;
 import io.qt.core.QEvent;
 import io.qt.core.QEventLoop;
 import io.qt.core.QObject;
 import io.qt.core.QRegularExpression;
+import io.qt.core.QString;
 import io.qt.core.QTimer;
 import io.qt.core.Qt;
 import io.qt.gui.QGuiApplication;
 import io.qt.gui.QWindow;
+import io.qt.widgets.QApplication;
+import io.qt.widgets.QDialog;
 import io.qt.widgets.QWidget;
 
 public class TestEventFilter extends ApplicationInitializer {
@@ -78,17 +84,42 @@ public class TestEventFilter extends ApplicationInitializer {
     }
     
     @Test
+    public void testEventTypeSelectiveEventFilter() {
+    	class EventFilter extends QObject{
+    		Set<QEvent.Type> events = new HashSet<>();
+			@Override
+			public boolean eventFilter(@Nullable QObject watched, @Nullable QEvent event) {
+				events.add(event.type());
+				return false;
+			}
+    	}
+    	EventFilter filter = new EventFilter();
+    	QApplication.instance().installEventFilter(filter);
+    	QDialog dialog = new QDialog();
+    	QTimer.singleShot(1000, dialog::accept);
+    	dialog.exec();
+    	Assert.assertTrue(filter.events.size()>1);
+    	QApplication.instance().removeEventFilter(filter);
+    	filter.events.clear();
+    	QApplication.instance().installEventFilter(asSelectiveEventFilter(filter, QEvent.Type.ChildAdded, QEvent.Type.Timer));
+    	dialog = new QDialog();
+    	QTimer.singleShot(5000, dialog::accept);
+    	dialog.exec();
+    	Assert.assertTrue(filter.events.size()==2);
+    }
+    
+    @Test
     public void testEqualObjectNameSelectiveEventFilter() {
     	QGuiApplication.instance().sessionId();
     	Set<QObject> filteredObjects = new HashSet<>();
-    	QObject eventFilter = QtUtilities.asSelectiveEventFilter(new QObject(QGuiApplication.instance()){
+    	QObject eventFilter = QCoreApplication.asSelectiveEventFilter(new QObject(QGuiApplication.instance()){
     		@Override
     		public boolean eventFilter(QObject obj, QEvent evt) {
     			filteredObjects.add(obj);
 //    			System.out.println("testEqualObjectNameSelectiveEventFilter(): eventFilter("+obj+", "+evt+")");
     			return false;
     		}
-    	}, QtUtilities.StringComparison.Equal, "FilteredObject");
+    	}, QString.Comparison.Equal, "FilteredObject");
     	QGuiApplication.instance().installEventFilter(eventFilter);
     	QEventLoop eventLoop = new QEventLoop();
     	try {
@@ -120,14 +151,14 @@ public class TestEventFilter extends ApplicationInitializer {
     public void testStartsWithObjectNameSelectiveEventFilter() {
     	QGuiApplication.instance().sessionId();
     	Set<QObject> filteredObjects = new HashSet<>();
-    	QObject eventFilter = QtUtilities.asSelectiveEventFilter(new QObject(QGuiApplication.instance()){
+    	QObject eventFilter = QCoreApplication.asSelectiveEventFilter(new QObject(QGuiApplication.instance()){
     		@Override
     		public boolean eventFilter(QObject obj, QEvent evt) {
     			filteredObjects.add(obj);
 //    			System.out.println("testStartsWithObjectNameSelectiveEventFilter(): eventFilter("+obj+", "+evt+")");
     			return false;
     		}
-    	}, QtUtilities.StringComparison.StartsWith, Qt.CaseSensitivity.CaseInsensitive, "filtered");
+    	}, QString.Comparison.StartsWith, Qt.CaseSensitivity.CaseInsensitive, "filtered");
     	QGuiApplication.instance().installEventFilter(eventFilter);
     	QEventLoop eventLoop = new QEventLoop();
     	try {
@@ -156,7 +187,7 @@ public class TestEventFilter extends ApplicationInitializer {
     public void testRegexpObjectNameSelectiveEventFilter() {
     	QGuiApplication.instance().sessionId();
     	Set<QObject> filteredObjects = new HashSet<>();
-    	QObject eventFilter = QtUtilities.asSelectiveEventFilter(new QObject(QGuiApplication.instance()){
+    	QObject eventFilter = QCoreApplication.asSelectiveEventFilter(new QObject(QGuiApplication.instance()){
     		@Override
     		public boolean eventFilter(QObject obj, QEvent evt) {
     			filteredObjects.add(obj);
@@ -192,7 +223,7 @@ public class TestEventFilter extends ApplicationInitializer {
     public void testMetaObjectSelectiveEventFilter() {
     	QGuiApplication.instance().sessionId();
     	Set<QObject> filteredObjects = new HashSet<>();
-    	QObject eventFilter = QtUtilities.asSelectiveEventFilter(new QObject(QGuiApplication.instance()){
+    	QObject eventFilter = QCoreApplication.asSelectiveEventFilter(new QObject(QGuiApplication.instance()){
     		@Override
     		public boolean eventFilter(QObject obj, QEvent evt) {
     			filteredObjects.add(obj);

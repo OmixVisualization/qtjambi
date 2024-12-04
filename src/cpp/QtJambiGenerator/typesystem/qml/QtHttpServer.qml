@@ -200,29 +200,38 @@ TypeSystem{
             }
             since: [6,5]
         }
+        FunctionalType{
+            name: "WebSocketUpgradeVerifier"
+            using: "std::function<QHttpServerWebSocketUpgradeResponse(const QHttpServerRequest&)>"
+            generate: false
+            since: 6.8
+        }
         ModifyFunction{
-            signature: "registerWebSocketUpgradeVerifier<Functor,true>(Functor&&)"
+            signature: "addWebSocketUpgradeVerifier<Handler,true>(const QtPrivate::ContextTypeForFunctor::ContextType<Handler>*,Handler&&)"
             Instantiation{
                 Argument{
-                    type: "QVariant"
+                    type: "std::function<QHttpServerWebSocketUpgradeResponse(const QHttpServerRequest&)>"
                     isImplicit: true
                 }
                 ModifyArgument{
-                    index: 1
-                    ReplaceType{
-                        modifiedType: "java.util.function.Function<@NonNull QHttpServerRequest, @NonNull QHttpServerWebSocketUpgradeResponse>"
+                    index: 2
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.core.QMetaObject$Method1<@NonNull QHttpServerRequest, @NonNull QHttpServerWebSocketUpgradeResponse>"
+                        contextParameter: 1
                     }
                     NoNullPointer{}
                     ConversionRule{
                         codeClass: CodeClass.Native
-                        Text{content: "JObjectWrapper functor(%env, %in);\n"+
-                                      "auto %out = [functor](const QHttpServerRequest& request) -> QHttpServerWebSocketUpgradeResponse {\n"+
-                                      "                    if(JniEnvironment env{200}){\n"+
-                                      "                        jobject result = Java::Runtime::Function::apply(env, functor.object(env), qtjambi_cast<jobject>(env, request));\n"+
-                                      "                        return qtjambi_cast<QHttpServerWebSocketUpgradeResponse>(env, result);\n"+
-                                      "                    }\n"+
-                                      "                    else return QHttpServerWebSocketUpgradeResponse::deny();\n"+
-                                      "                };"}
+                        Text{content: String.raw`
+auto %out = [functor = JObjectWrapper(%env, %in)](const QHttpServerRequest& request) -> QHttpServerWebSocketUpgradeResponse {
+        if(JniEnvironment env{200}){
+            jobject result = Java::QtCore::QMetaObject$Method1::invoke(env, functor.object(env), qtjambi_cast<jobject>(env, request));
+            return qtjambi_cast<QHttpServerWebSocketUpgradeResponse>(env, result);
+        }
+        else return QHttpServerWebSocketUpgradeResponse::deny();
+    };
+                            `}
                     }
                 }
             }

@@ -77,7 +77,7 @@ QString Include::toString() const {
         return "import " + name + ";";
 }
 
-QString formattedCodeHelper(QTextStream &s, Indentor &indentor, QStringList &lines) {
+QString formattedCodeHelper(QTextStream &s, Indentor &indentor, QStringList &lines, bool isComment) {
     bool multilineComment = false;
     bool lastEmpty = true;
     QString lastLine;
@@ -113,7 +113,7 @@ QString formattedCodeHelper(QTextStream &s, Indentor &indentor, QStringList &lin
             QString tmp;
             {
                 Indentation indent(indentor);
-                tmp = formattedCodeHelper(s, indentor, lines);
+                tmp = formattedCodeHelper(s, indentor, lines, isComment);
             }
             if (!tmp.isNull()) {
                 s << indentor << tmp << Qt::endl;
@@ -122,7 +122,8 @@ QString formattedCodeHelper(QTextStream &s, Indentor &indentor, QStringList &lin
             continue;
         } else {
             s << indentor;
-            if (!lastLine.isEmpty() &&
+            if (!isComment &&
+                    !lastLine.isEmpty() &&
                     !lastLine.endsWith(";") &&
                     !line.startsWith("@") &&
                     !line.startsWith("//") &&
@@ -141,7 +142,7 @@ QString formattedCodeHelper(QTextStream &s, Indentor &indentor, QStringList &lin
 QTextStream &CodeSnip::formattedCode(QTextStream &s, Indentor &indentor) const {
     QStringList lst(code().split("\n"));
     while (!lst.isEmpty()) {
-        QString tmp = formattedCodeHelper(s, indentor, lst);
+        QString tmp = formattedCodeHelper(s, indentor, lst, position==Comment || position==CommentIntro);
         if (!tmp.isNull()) {
             s << indentor << tmp << Qt::endl;
         }

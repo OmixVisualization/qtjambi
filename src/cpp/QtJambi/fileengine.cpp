@@ -923,7 +923,6 @@ public:
 #if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
     QStringList entryList(QDirListing::IteratorFlags filters, const QStringList& filterNames) const override;
     IteratorPtr beginEntryList(const QString &path, QDirListing::IteratorFlags filters, const QStringList& nameFilters) override;
-    IteratorPtr beginEntryList(const QString &path, QDir::Filters filters, const QStringList& nameFilters) override;
 #else
     IteratorPtr beginEntryList(QDir::Filters filters, const QStringList& nameFilters) override;
 #endif
@@ -945,7 +944,6 @@ private:
 class QClassPathEngineIterator final : public QAbstractFileEngineIterator{
 public:
 #if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
-    QClassPathEngineIterator(const QString &path, const QStringList& entries, QDir::Filters filters, const QStringList &nameFilters);
     QClassPathEngineIterator(const QString &path, const QStringList& entries, QDirListing::IteratorFlags filters, const QStringList &nameFilters);
     bool advance() override;
 #else
@@ -963,17 +961,6 @@ public:
 };
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
-QClassPathEngineIterator::QClassPathEngineIterator(const QString &path, const QStringList& entries, QDir::Filters filters, const QStringList &nameFilters)
-    : QAbstractFileEngineIterator(
-#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
-        path,
-#endif
-        filters, nameFilters),
-    m_iterator(entries),
-    m_current(m_iterator.hasNext() ? m_iterator.peekNext() : QString())
-{
-}
-
 QClassPathEngineIterator::QClassPathEngineIterator(const QString &path, const QStringList& entries, QDirListing::IteratorFlags filters, const QStringList &nameFilters)
     : QAbstractFileEngineIterator(
 #if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
@@ -1459,20 +1446,6 @@ qint64 QClassPathEngine::write(const char *data, qint64 maxlen) {
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
 QClassPathEngine::IteratorPtr QClassPathEngine::beginEntryList(const QString &path, QDirListing::IteratorFlags filters, const QStringList& nameFilters){
-    QList<QAbstractFileEngine*> engines;
-    {
-        QMutexLocker locker(&m_mutex);
-        engines = m_engines;
-    }
-    QStringList entries(m_resourceEntries);
-    for (QAbstractFileEngine* engine : engines){
-        entries << engine->entryList(filters, nameFilters);
-    }
-    entries.removeDuplicates();
-    return QClassPathEngine::IteratorPtr(new QClassPathEngineIterator(path, entries, filters, nameFilters));
-}
-
-QClassPathEngine::IteratorPtr QClassPathEngine::beginEntryList(const QString &path, QDir::Filters filters, const QStringList& nameFilters){
     QList<QAbstractFileEngine*> engines;
     {
         QMutexLocker locker(&m_mutex);

@@ -77,6 +77,7 @@
 #include <QtCore/QSettings>
 #undef Q_OS_WIN
 #include <QtJambiCore/hashes.h>
+#include <QtJambiCore/utils.h>
 
 // opengl:
 #define GL_TEXTURE_2D                     0x0DE1

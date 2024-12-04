@@ -241,6 +241,10 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QCoreApplication,
     QTJAMBI_REPOSITORY_DEFINE_STATIC_FIELD(__qt_isInitializing,Z)
 )
 
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QMetaObject$Method10,
+  QTJAMBI_REPOSITORY_DEFINE_METHOD(invoke,(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;)
+)
+
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QMetaObject$Method9,
   QTJAMBI_REPOSITORY_DEFINE_METHOD(invoke,(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;)
 )
@@ -279,6 +283,10 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QMetaObject$Method1,
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QMetaObject$Method0,
   QTJAMBI_REPOSITORY_DEFINE_METHOD(invoke,()Ljava/lang/Object;)
+)
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QMetaObject$Slot10,
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(invoke,(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QMetaObject$Slot9,

@@ -283,12 +283,12 @@ void writeOutClass(QXmlStreamWriter &s, const ClassModelItem &item) {
     s.writeStartElement("class");
     s.writeAttribute("name", qualified_name);
 
-    QList<QPair<TypeInfo,bool>> bases = item.constData()->baseClasses();
+    QList<QPair<TypeInfo,int>> bases = item.constData()->baseClasses();
     s.writeStartElement("inherits");
-    for(const QPair<TypeInfo,bool> &c : bases) {
+    for(const QPair<TypeInfo,int> &c : bases) {
         s.writeStartElement("class");
         s.writeAttribute("name", c.first.toString());
-        s.writeAttribute("access", c.second ? "public" : "protected");
+        s.writeAttribute("access", c.second==1 ? "public" : (c.second==-1 ? "protected" : "private"));
         s.writeEndElement();
     }
     s.writeEndElement();

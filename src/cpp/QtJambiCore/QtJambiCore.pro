@@ -33,6 +33,7 @@ include(../QtJambi/configure.pri)
 
 HEADERS += \
     hashes.h \
+    utils.h \
     utils_p.h
 
 SOURCES +=\

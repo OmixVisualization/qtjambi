@@ -1151,8 +1151,8 @@ class MetaClass : public MetaAttributes {
         bool hasProtectedFieldAccessors() const;
 
         // only valid during metajavabuilder's run
-        const QList<QPair<TypeInfo,bool>>& baseClassTypeInfo() const { return m_base_class_typeinfo; }
-        void setBaseClassTypeInfo(const QList<QPair<TypeInfo,bool>> &names) { m_base_class_typeinfo = names; }
+        const QList<QPair<TypeInfo,int>>& baseClassTypeInfo() const { return m_base_class_typeinfo; }
+        void setBaseClassTypeInfo(const QList<QPair<TypeInfo,int>> &names) { m_base_class_typeinfo = names; }
 
         MetaClass *primaryInterfaceImplementor() const { return m_primary_interface_implementor; }
         void setPrimaryInterfaceImplementor(MetaClass *cl) { m_primary_interface_implementor = cl; }
@@ -1265,6 +1265,10 @@ class MetaClass : public MetaAttributes {
         bool hasQmlListProperty() const;
         MetaFunction* publicCopyConstructor() const;
         uint returnScopeRequired() const;
+        void setProtectedUsingStatements(const QStringList& usingStatements) { m_protectedUsingStatements = usingStatements; }
+        const QStringList& protectedUsingStatements() const{ return m_protectedUsingStatements; }
+        void setPublicUsingStatements(const QStringList& usingStatements) { m_publicUsingStatements = usingStatements; }
+        const QStringList& publicUsingStatements() const{ return m_publicUsingStatements; }
 
     private:
         QSet<QString> getAllUnimplmentablePureVirtualFunctions() const;
@@ -1332,13 +1336,15 @@ class MetaClass : public MetaAttributes {
         MetaFunctionList m_beginFunctions;
         MetaFunctionList m_endFunctions;
 
-        QList<QPair<TypeInfo,bool>> m_base_class_typeinfo;
+        QList<QPair<TypeInfo,int>> m_base_class_typeinfo;
         QList<TypeEntry *> m_template_args;
         ComplexTypeEntry *m_type_entry;
         const MetaFunction* m_qDebug_stream_function;
         QString m_deprecatedComment;
         QString m_qHashScope;
         uint m_returnScopeRequired = 0;
+        QStringList m_protectedUsingStatements;
+        QStringList m_publicUsingStatements;
 };
 
 class QPropertySpec {

@@ -1072,7 +1072,7 @@ QList<AbstractObject*> QmlTypeSystemReaderPrivate::parseChildrenOfComplexType(co
             parseTemplate(childElement);
         }else if(TemplateArguments* childElement = qobject_cast<TemplateArguments*>(item)){
             if(!entry->isTemplate())
-                TypesystemException::raise(QStringLiteral(u"Unexpected element Instantiation as child of non-template"));
+                TypesystemException::raise(QStringLiteral(u"Unexpected element TemplateArguments as child of non-template"));
             parseTemplateArguments(childElement, entry);
         }else if(ModifyFunction* childElement = qobject_cast<ModifyFunction*>(item)){
             parseModifyFunction(childElement, entry);
@@ -1104,18 +1104,64 @@ QList<AbstractObject*> QmlTypeSystemReaderPrivate::parseChildrenOfComplexType(co
             if (checkQtVersion(childElement)){
                 QString name = childElement->getTemplate();
                 if(TemplateTypeEntry* templateEntry = m_database->findTemplateType(name)){
-                    entry->addCodeSnips(templateEntry->codeSnips());
-                    entry->addFunctionModifications(templateEntry->functionModifications());
+                    for(const CodeSnip& snip : templateEntry->codeSnips()){
+                        CodeSnip _snip = snip;
+                        for(TS::CodeSnipFragment* fragm : _snip.codeList){
+                            fragm->codeReplace("${typename}", entry->qualifiedCppName());
+                        }
+                        entry->addCodeSnip(_snip);
+                        if(entry->designatedInterface())
+                            entry->designatedInterface()->addCodeSnip(_snip);
+                    }
+                    for(const FunctionModification& mod : templateEntry->functionModifications()){
+                        if(mod.signature.contains("${")){
+                            FunctionModification _mod = mod;
+                            _mod.signature = _mod.signature.replace("${typename}", entry->qualifiedCppName());
+                            if(!_mod.signature.contains("(*)") && !_mod.signature.contains("(&)") && !_mod.signature.contains("${"))
+                                _mod.signature = QString::fromLatin1(QMetaObject::normalizedSignature(qPrintable(_mod.signature)));
+                            entry->addFunctionModification(_mod);
+                            if(entry->designatedInterface())
+                                entry->designatedInterface()->addFunctionModification(_mod);
+                        }else{
+                            entry->addFunctionModification(mod);
+                            if(entry->designatedInterface())
+                                entry->designatedInterface()->addFunctionModification(mod);
+                        }
+                    }
                     entry->addFieldModifications(templateEntry->fieldModifications());
                     for(const TS::Include& incl : templateEntry->extraIncludes()){
                         entry->addExtraInclude(incl);
                     }
                     if(entry->designatedInterface()){
-                        entry->designatedInterface()->addCodeSnips(templateEntry->codeSnips());
-                        entry->designatedInterface()->addFunctionModifications(templateEntry->functionModifications());
                         entry->designatedInterface()->addFieldModifications(templateEntry->fieldModifications());
                         for(const TS::Include& incl : templateEntry->extraIncludes()){
                             entry->designatedInterface()->addExtraInclude(incl);
+                        }
+                    }
+                    if(!templateEntry->implements().isEmpty()){
+                        QStringList interfaces;
+                        if(!entry->implements().isEmpty())
+                            interfaces << entry->implements().split(QStringLiteral(u","));
+                        interfaces << templateEntry->implements().split(QStringLiteral(u","));
+                        for(QString& ifc : interfaces){
+                            ifc = ifc.trimmed();
+                        }
+                        interfaces.removeDuplicates();
+                        interfaces.removeAll(QString());
+                        interfaces.removeAll(QStringLiteral(u""));
+                        entry->setImplements(interfaces.join(QStringLiteral(u", ")));
+                        if(entry->designatedInterface()){
+                            interfaces.clear();
+                            if(!entry->designatedInterface()->implements().isEmpty())
+                                interfaces << entry->designatedInterface()->implements().split(QStringLiteral(u","));
+                            interfaces << templateEntry->implements().split(QStringLiteral(u","));
+                            for(QString& ifc : interfaces){
+                                ifc = ifc.trimmed();
+                            }
+                            interfaces.removeDuplicates();
+                            interfaces.removeAll(QString());
+                            interfaces.removeAll(QStringLiteral(u""));
+                            entry->designatedInterface()->setImplements(interfaces.join(QStringLiteral(u", ")));
                         }
                     }
                 }else{
@@ -1299,7 +1345,7 @@ void QmlTypeSystemReaderPrivate::parseTemplateType(const QString& nameSpace, Tem
                     parseTemplate(childElement);
                 }else if(TemplateArguments* childElement = qobject_cast<TemplateArguments*>(item)){
                     if(!entry->isTemplate())
-                        TypesystemException::raise(QStringLiteral(u"Unexpected element Instantiation as child of non-template"));
+                        TypesystemException::raise(QStringLiteral(u"Unexpected element TemplateArguments as child of non-template"));
                     parseTemplateArguments(childElement, entry.get());
                 }else if(ModifyFunction* childElement = qobject_cast<ModifyFunction*>(item)){
                     parseModifyFunction(childElement, entry.get());
@@ -2028,7 +2074,7 @@ void QmlTypeSystemReaderPrivate::parseModifyFunction(ModifyFunction* element, Ty
             QString rename = element->getRename();
             FunctionModification mod;
             mod.removal = TS::NoLanguage;
-            if(!signature.contains("(*)") && !signature.contains("(&)"))
+            if(!signature.contains("(*)") && !signature.contains("(&)") && !signature.contains("${"))
                 mod.signature = QString::fromLatin1(QMetaObject::normalizedSignature(qPrintable(signature)));
             else
                 mod.signature = signature;

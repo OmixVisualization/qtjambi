@@ -1568,10 +1568,13 @@ TypeSystem{
             target: CodeClass.Native
             position: Position.Beginning
             Text{content: String.raw`
+#if QT_VERSION == QT_VERSION_CHECK(6,8,0)
 template<> QExplicitlySharedDataPointer<QGraphsLinePrivate>::~QExplicitlySharedDataPointer() {
     Q_ASSERT(!d);
 }
+#endif
 `}
+            until: 6.8
         }
         since: 6.8
     }

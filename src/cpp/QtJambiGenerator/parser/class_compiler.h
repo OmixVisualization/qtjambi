@@ -64,7 +64,7 @@ class ClassCompiler: protected DefaultVisitor {
         ~ClassCompiler() override;
         const QString& name() const;
         const QList<TypeInfo>& templateArgumentTypes() const;
-        const QList<QPair<TypeInfo,bool>>& baseClasses() const;
+        const QList<QPair<TypeInfo,int>>& baseClasses() const;
         void run(ClassSpecifierAST *node);
     protected:
         void visitBaseSpecifier(BaseSpecifierAST *node) override;
@@ -74,7 +74,7 @@ class ClassCompiler: protected DefaultVisitor {
         TokenStream *_M_token_stream;
         QString _M_name;
         QList<TypeInfo> _M_templateArgumentTypes;
-        QList<QPair<TypeInfo,bool>> _M_base_classes;
+        QList<QPair<TypeInfo,int>> _M_base_classes;
         NameCompiler name_cc;
         TypeCompiler type_cc;
 };

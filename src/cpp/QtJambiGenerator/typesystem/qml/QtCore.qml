@@ -909,10 +909,6 @@ public final %ITERATOR_TYPE iterator() {
     }
 
     Rejection{
-        className: "QSemaphoreReleaser"
-    }
-
-    Rejection{
         className: "QKeyValueIterator"
     }
 
@@ -1988,10 +1984,6 @@ public final %ITERATOR_TYPE iterator() {
     }
 
     Rejection{
-        className: "QMutexLocker"
-    }
-
-    Rejection{
         className: "QNoImplicitBoolCast"
     }
 
@@ -2005,10 +1997,6 @@ public final %ITERATOR_TYPE iterator() {
 
     Rejection{
         className: "QPointer"
-    }
-
-    Rejection{
-        className: "QReadLocker"
     }
 
     Rejection{
@@ -2108,10 +2096,6 @@ public final %ITERATOR_TYPE iterator() {
 
     Rejection{
         className: "QVectorTypedData"
-    }
-
-    Rejection{
-        className: "QWriteLocker"
     }
 
     Rejection{
@@ -7731,6 +7715,44 @@ public static final int MaxUtcOffsetSecs = +14 * 3600;`}
 
     ObjectType{
         name: "QEventLoopLocker"
+        implementing: "java.lang.AutoCloseable"
+        InjectCode{
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class autoclosedelete"
+                quoteBeforeLine: "}// class"
+            }
+        }
+        ModifyFunction{
+            signature: "QEventLoopLocker(QEventLoop*)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcWatched"
+                    action: ReferenceCount.Set
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "QEventLoopLocker(QThread*)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcWatched"
+                    action: ReferenceCount.Set
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "swap(QEventLoopLocker&)"
+            InjectCode{
+                position: Position.End
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: "Object __rcWatched = this.__rcWatched;\n"+
+                              "this.__rcWatched = %1.__rcWatched;\n"+
+                              "%1.__rcWatched = __rcWatched;"}
+            }
+        }
     }
 
     ObjectType{
@@ -15344,14 +15366,27 @@ try{
 
     ObjectType{
         name: "QSignalBlocker"
-        implementing: "AutoCloseable"
         ModifyFunction{
             signature: "QSignalBlocker(QObject&)"
             remove: RemoveFlag.All
         }
+        ModifyFunction{
+            signature: "QSignalBlocker(QObject*)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcSender"
+                    action: ReferenceCount.Set
+                }
+            }
+        }
+        implementing: "java.lang.AutoCloseable"
         InjectCode{
-            target: CodeClass.Java
-            Text{content: "public void close(){dispose();}"}
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class autoclosedelete"
+                quoteBeforeLine: "}// class"
+            }
         }
     }
 
@@ -15628,6 +15663,22 @@ try{
             ImportFile{
                 name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
                 quoteAfterLine: "class QCoreApplication___"
+                quoteBeforeLine: "}// class"
+            }
+        }
+        InjectCode{
+            until: 5
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class QCoreApplication__5_"
+                quoteBeforeLine: "}// class"
+            }
+        }
+        InjectCode{
+            since: 6
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class QCoreApplication__6_"
                 quoteBeforeLine: "}// class"
             }
         }
@@ -17962,12 +18013,11 @@ if(%1!=null){
         }
     }
 
-    EnumType{
-        name: "QLockFile::LockError"
-    }
-
     ObjectType{
         name: "QLockFile"
+        EnumType{
+            name: "LockError"
+        }
         ExtraIncludes{
             Include{
                 fileName: "utils_p.h"
@@ -18136,6 +18186,11 @@ if(%1!=null){
             remove: RemoveFlag.All
             until: 5
         }
+        ModifyFunction{
+            signature: "QAbstractFileEngineIterator(const QString&, QDir::Filters, const QStringList&)"
+            remove: RemoveFlag.All
+            since: 6.8
+        }
         InjectCode{
             InsertTemplate{
                 name: "core.self_iterator"
@@ -18150,10 +18205,23 @@ if(%1!=null){
 
     ObjectType{
         name: "QAbstractFileEngineHandler"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.CommentIntro
+            Text{
+                content: String.raw`
+<p>Java wrapper for Qt class <code>QAbstractFileEngineHandler</code></p>
+<p>The handler object is immediately installed during creation. Every instance is owned by native library and is ignored by garbage collection.</p>
+<p>By calling <code>dispose()</code>, this file engine handler is uninstalled.</p>
+                `
+            }
+        }
         packageName: "io.qt.core.internal"
         ModifyFunction{
             signature: "QAbstractFileEngineHandler()"
             InjectCode{
+                target: CodeClass.Java
+                position: Position.End
                 Text{content: "QtJambi_LibraryUtilities.internal.setCppOwnership(this);"}
             }
         }
@@ -18171,6 +18239,24 @@ if(%1!=null){
                 }
             }
             until: 6.7 // unique_ptr as of 6.8
+        }
+        InjectCode{
+            target: CodeClass.Java
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class QAbstractFileEngineHandler_5__"
+                quoteBeforeLine: "}// class"
+            }
+            until: 5
+        }
+        InjectCode{
+            target: CodeClass.Java
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class QAbstractFileEngineHandler_6__"
+                quoteBeforeLine: "}// class"
+            }
+            since: 6
         }
         InjectCode{
             target: CodeClass.Java
@@ -18262,20 +18348,14 @@ if(%1!=null){
                     ownership: Ownership.Java
                 }
             }
+            until: 6.7 // since 6.8 unique_ptr
         }
         ModifyFunction{
-            signature: "beginEntryList(QDir::Filters,const QStringList)"
-            ModifyArgument{
-                index: "return"
-                DefineOwnership{
-                    codeClass: CodeClass.Shell
-                    ownership: Ownership.Cpp
-                }
-                DefineOwnership{
-                    codeClass: CodeClass.Native
-                    ownership: Ownership.Java
-                }
-            }
+            signature: "beginEntryList(const QString&, QDir::Filters, const QStringList&)"
+            remove: RemoveFlag.All
+            since: "6.8.0"
+            until: "6.8.0"
+            // this method is legacy in 6.8.0 and removed in 6.8.1
         }
         ModifyFunction{
             signature: "endEntryList()"
@@ -18290,6 +18370,7 @@ if(%1!=null){
                     ownership: Ownership.Java
                 }
             }
+            until: 6.7 // since 6.8 unique_ptr
         }
         ExtraIncludes{
             Include{
@@ -18410,6 +18491,13 @@ if(%1!=null){
         }
         Rejection{
             functionName: "supportsExtension"
+        }
+        ModifyFunction{
+            signature: "beginEntryList(const QString&, QDir::Filters, const QStringList&)"
+            remove: RemoveFlag.All
+            since: "6.8.0"
+            until: "6.8.0"
+            // this method is legacy in 6.8.0 and removed in 6.8.1
         }
     }
 
@@ -18841,6 +18929,9 @@ if(%1!=null){
 
     ObjectType{
         name: "QLibrary"
+        EnumType{
+            name: "LoadHint"
+        }
     }
 
     ValueType{
@@ -18965,6 +19056,10 @@ if(%1!=null){
             Include{
                 fileName: "QtJambi/JObjectWrapper"
                 location: Include.Global
+            }
+            Include{
+                fileName: "utils.h"
+                location: Include.Local
             }
         }
 
@@ -20747,7 +20842,24 @@ if(%1!=null){
         signature: "operator+(QString,const char*)"
         remove: RemoveFlag.All
     }
-
+    EnumType{
+        name: "StringComparison"
+        javaScope: "QString"
+        Rename{
+            to: "Comparison"
+        }
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.CommentIntro
+            Text{content: String.raw`
+Enum entries for string comparison.
+@see io.qt.core.QString#compare(CharSequence, io.qt.core.Qt.CaseSensitivity)
+@see io.qt.core.QString#contains(CharSequence, io.qt.core.Qt.CaseSensitivity)
+@see io.qt.core.QString#startsWith(CharSequence, io.qt.core.Qt.CaseSensitivity)
+@see io.qt.core.QString#endsWith(CharSequence, io.qt.core.Qt.CaseSensitivity)
+`}
+        }
+    }
 
     ObjectType{
         name: "QtJambiStringList"
@@ -20758,10 +20870,6 @@ if(%1!=null){
         name: "QtJambiItemSelection"
         extendType: "QItemSelection"
         since: 6
-    }
-
-    EnumType{
-        name: "QLibrary::LoadHint"
     }
 
     ObjectType{
@@ -22849,6 +22957,7 @@ else
 
     ObjectType{
         name: "QBasicMutex"
+        defaultSuperClass: "AbstractMutex"
         noMetaType: true
         Rejection{
             functionName: "try_lock"
@@ -22891,11 +23000,15 @@ else
 
     ObjectType{
         name: "QRecursiveMutex"
+        defaultSuperClass: "AbstractMutex"
         noMetaType: true
     }
 
     ObjectType{
         name: "QMutex"
+        EnumType{
+            name: "RecursionMode"
+        }
         noMetaType: true
         Rejection{
             functionName: "try_lock_for"
@@ -22921,9 +23034,205 @@ else
         }
     }
 
+    TemplateType{
+        name: "MutexLockerTemplate"
+        Implements{ interfaces: "java.lang.AutoCloseable" }
+        InjectCode{
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class autoclosedelete"
+                quoteBeforeLine: "}// class"
+            }
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class QMutexLocker___"
+                quoteBeforeLine: "}// class"
+            }
+        }
+        ModifyFunction{
+            signature: "QMutexLocker(QBasicMutex*)"
+            InjectCode{
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: String.raw`__rcMutex = %1;`}
+            }
+        }
+        ModifyFunction{
+            signature: "swap(${typename}&)"
+            InjectCode{
+                position: Position.End
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: String.raw`
+AbstractMutex rcMutex = this.__rcMutex;
+this.__rcMutex = %1.__rcMutex;
+%1.__rcMutex = rcMutex;`}
+            }
+        }
+    }
+
+    ObjectType{
+        name: "QMutexLocker"
+        Import{
+            template: "MutexLockerTemplate"
+        }
+        ModifyFunction{
+            signature: "QMutexLocker(QRecursiveMutex*)"
+            InjectCode{
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: String.raw`__rcMutex = %1;`}
+            }
+        }
+        ModifyFunction{
+            signature: "mutex()const"
+            AddTypeParameter{
+                name: "T"
+                extending: "@Nullable AbstractMutex"
+            }
+            ModifyArgument{
+                index: 0
+                replaceType: "T"
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{
+                        content: "%out = %in && %in->isRecursive() ? qtjambi_cast<jobject>(%env, reinterpret_cast<QRecursiveMutex*>(%in)) : qtjambi_cast<jobject>(%env, %in);"
+                    }
+                }
+            }
+        }
+        until: 5
+    }
+
+    ObjectType{
+        name: "QMutexLocker"
+        template: true
+        TemplateArguments{
+            arguments: ["QBasicMutex"]
+        }
+        since: 6
+    }
+
+    ObjectType{
+        name: "QMutexLocker<QBasicMutex>"
+        Import{
+            template: "MutexLockerTemplate"
+        }
+        InjectCode{
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class QMutexLocker_6__"
+                quoteBeforeLine: "}// class"
+            }
+        }
+        InjectCode{
+            target: CodeClass.Native
+            position: Position.Beginning
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class QMutexLocker_cpp__"
+                quoteBeforeLine: "}// class"
+            }
+        }
+        InjectCode{
+            target: CodeClass.MetaInfo
+            position: Position.End
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class QMutexLocker_metainfo__"
+                quoteBeforeLine: "}// class"
+            }
+        }
+        ModifyFunction{
+            signature: "mutex()const"
+            AddTypeParameter{
+                name: "T"
+                extending: "@Nullable AbstractMutex"
+            }
+            ModifyArgument{
+                index: 0
+                replaceType: "T"
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{
+                        content: "%out = Java::QtCore::QMutexLocker::isRecursive(%env, __this) ? qtjambi_cast<jobject>(%env, reinterpret_cast<QRecursiveMutex*>(%in)) : qtjambi_cast<jobject>(%env, %in);"
+                    }
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "relock()"
+            InjectCode{
+                target: CodeClass.Native
+                Text{content: String.raw`
+                    if(Java::QtCore::QMutexLocker::isRecursive(%env, __this)){
+                        QtJambiAPI::objectFromNativeId<QMutexLocker<QRecursiveMutex>>(__this_nativeId)->relock();
+                        return;
+                    }`}
+            }
+        }
+        ModifyFunction{
+            signature: "unlock()"
+            InjectCode{
+                target: CodeClass.Native
+                Text{content: String.raw`
+                    if(Java::QtCore::QMutexLocker::isRecursive(%env, __this)){
+                        QtJambiAPI::objectFromNativeId<QMutexLocker<QRecursiveMutex>>(__this_nativeId)->unlock();
+                        return;
+                    }`}
+            }
+        }
+        since: 6
+    }
+
     ObjectType{
         name: "QSemaphore"
     }
+
+    ObjectType{
+        name: "QSemaphoreReleaser"
+        noMetaType: true
+        implementing: "java.lang.AutoCloseable"
+        ModifyFunction{
+            signature: "QSemaphoreReleaser(QSemaphoreReleaser)"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "QSemaphoreReleaser(QSemaphore&,int)"
+            ModifyArgument{
+                index: 1
+                ReplaceType{
+                    modifiedType: "io.qt.core.@Nullable QSemaphore"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{
+                        content: "QSemaphore* %out = QtJambiAPI::convertJavaObjectToNative<QSemaphore>(%env, %in);"
+                    }
+                }
+                ReferenceCount{
+                    variableName: "__rcSemaphore"
+                    action: ReferenceCount.Set
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "swap(QSemaphoreReleaser&)"
+            InjectCode{
+                position: Position.End
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: String.raw`
+Object __rcSemaphore = this.__rcSemaphore;
+this.__rcSemaphore = %1.__rcSemaphore;
+%1.__rcSemaphore = __rcSemaphore;`}
+            }
+        }
+        InjectCode{
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class autoclosedelete"
+                quoteBeforeLine: "}// class"
+            }
+        }
+    }
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'QSemaphoreReleaser(QSemaphoreReleaser)'*"}
 
     ObjectType{
         name: "QSystemSemaphore"
@@ -22952,8 +23261,48 @@ else
         }
     }
 
-    EnumType{
-        name: "QMutex::RecursionMode"
+    ObjectType{
+        name: "QReadLocker"
+        implementing: "java.lang.AutoCloseable"
+        InjectCode{
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class autoclosedelete"
+                quoteBeforeLine: "}// class"
+            }
+        }
+        ModifyFunction{
+            signature: "QReadLocker(QReadWriteLock*)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcReadWriteLock"
+                    action: ReferenceCount.Set
+                }
+            }
+        }
+    }
+
+    ObjectType{
+        name: "QWriteLocker"
+        implementing: "java.lang.AutoCloseable"
+        InjectCode{
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class autoclosedelete"
+                quoteBeforeLine: "}// class"
+            }
+        }
+        ModifyFunction{
+            signature: "QWriteLocker(QReadWriteLock*)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcReadWriteLock"
+                    action: ReferenceCount.Set
+                }
+            }
+        }
     }
 
     ObjectType{
@@ -26051,7 +26400,6 @@ static FilterResetter resetter(%0);
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature '*::iterator(*::iterator)' for function modification in '*::iterator' not found. Possible candidates: *"}
     SuppressedWarning{text: "WARNING(Preprocessor) :: qtjambi_masterinclude.h:*  <*/*>: No such file or directory"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Final class 'QAbstractAnimation' set to non-final, as it is extended by other classes"}
-    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'beginEntryList*' for function modification in 'QAbstractFileEngine' not found. Possible candidates:*"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type '*QCborMap::Iterator*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type '*QCborArray::iterator*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type '*QCborArray::Iterator*'"}

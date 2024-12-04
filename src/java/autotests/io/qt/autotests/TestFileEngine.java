@@ -55,6 +55,7 @@ import io.qt.core.QLocale;
 import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QRegularExpression;
 import io.qt.core.QResource;
+import io.qt.core.QString;
 import io.qt.core.QStringList;
 import io.qt.core.Qt;
 import io.qt.core.internal.QAbstractFileEngineHandler;
@@ -533,7 +534,7 @@ public class TestFileEngine extends ApplicationInitializer {
 		QAbstractFileEngineHandler handler = QAbstractFileEngineHandler.fromFileNameTest(file->{
 				used[0] = true;
 				return new QFSFileEngine(file.substring(15));
-			}, QtUtilities.StringComparison.StartsWith, "FileEngineTest:");
+			}, QString.Comparison.StartsWith, "FileEngineTest:");
 		assertTrue("handler is null", handler!=null);
 		try {
 			fileInfo = new QFileInfo("FileEngineTest:"+currentPath);
@@ -555,7 +556,7 @@ public class TestFileEngine extends ApplicationInitializer {
 		QAbstractFileEngineHandler handler = QAbstractFileEngineHandler.fromFileNameTest(file->{
 				used[0] = true;
 				return new QFSFileEngine(file.substring(0, file.length() - 16));
-			}, QtUtilities.StringComparison.EndsWith, Qt.CaseSensitivity.CaseInsensitive, "::fileenginetest");
+			}, QString.Comparison.EndsWith, Qt.CaseSensitivity.CaseInsensitive, "::fileenginetest");
 		assertTrue("handler is null", handler!=null);
 		try {
 			fileInfo = new QFileInfo(currentPath+"::FileEngineTest");

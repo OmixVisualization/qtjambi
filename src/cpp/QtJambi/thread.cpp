@@ -726,8 +726,10 @@ EventDispatcherCheck::~EventDispatcherCheck(){
                 }
                 m_data->m_finalActions.clear();
                 if(data && !data->purgeOnExit()){
-                    QWriteLocker locker(QtJambiLinkUserData::lock());
-                    QTJAMBI_SET_OBJECTUSERDATA(QThreadUserData, m_data->m_thread, nullptr);
+                    {
+                        QWriteLocker locker(QtJambiLinkUserData::lock());
+                        QTJAMBI_SET_OBJECTUSERDATA(QThreadUserData, m_data->m_thread, nullptr);
+                    }
                     delete data;
                 }
                 delete m_data;

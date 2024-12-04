@@ -59,7 +59,7 @@ ClassCompiler::~ClassCompiler() {}
 
 const QString& ClassCompiler::name() const { return _M_name; }
 const QList<TypeInfo>& ClassCompiler::templateArgumentTypes() const { return _M_templateArgumentTypes; }
-const QList<QPair<TypeInfo,bool>>& ClassCompiler::baseClasses() const { return _M_base_classes; }
+const QList<QPair<TypeInfo,int>>& ClassCompiler::baseClasses() const { return _M_base_classes; }
 
 void ClassCompiler::run(ClassSpecifierAST *node){
     m_isClass = _M_token_stream->kind(node->class_key)==Token_class;
@@ -80,16 +80,21 @@ void ClassCompiler::visitBaseSpecifier(BaseSpecifierAST *node) {
         info.setArguments(name_cc.templateArgumentTypes());
         if(node->access_specifier>0){
             switch(_M_token_stream->kind(node->access_specifier)){
+            case Token_private:
+                _M_base_classes.append({info, 0});
+                break;
             case Token_protected:
-                _M_base_classes.append({info, false});
+                _M_base_classes.append({info, -1});
                 break;
             case Token_public:
-                _M_base_classes.append({info, true});
+                _M_base_classes.append({info, 1});
                 break;
             default:break;
             }
         }else if(!m_isClass){
-            _M_base_classes.append({info, true});
+            _M_base_classes.append({info, 1});
+        }else{
+            _M_base_classes.append({info, 0});
         }
     }
 }

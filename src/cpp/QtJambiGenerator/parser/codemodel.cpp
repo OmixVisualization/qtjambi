@@ -466,11 +466,11 @@ void _CodeModelItem::setEndPosition(int line, int column) {
 }
 
 // ---------------------------------------------------------------------------
-const QList<QPair<TypeInfo,bool>>& _ClassModelItem::baseClasses() const {
+const QList<QPair<TypeInfo,int>>& _ClassModelItem::baseClasses() const {
     return _M_baseClasses;
 }
 
-void _ClassModelItem::setBaseClasses(const QList<QPair<TypeInfo,bool>> &baseClasses) {
+void _ClassModelItem::setBaseClasses(const QList<QPair<TypeInfo,int>> &baseClasses) {
     _M_baseClasses = baseClasses;
 }
 
@@ -496,7 +496,7 @@ void _ClassModelItem::setTemplateParameters(const TemplateParameterList &templat
 
 bool _ClassModelItem::extendsClass(const QString &name) const {
     for (int i = 0; i < _M_baseClasses.size(); ++i) {
-        if(_M_baseClasses[i].first.qualifiedName().join("::")==name)
+        if(_M_baseClasses[i].first.qualifiedName().join("::")==name && _M_baseClasses[i].second!=0)
             return true;
     }
     return false;

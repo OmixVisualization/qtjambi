@@ -158,7 +158,7 @@ TypeSystem{
             since: 6.6
             Text{content: String.raw`
 /**
- * <p>See <code><a href="https://doc.qt.io/qt/qtexttospeech.html#findVoices">QTextToSpeech::<wbr/>findVoices&lt;Args...&gt;(Args...)</a></code></p>
+ * <p>See <code><a href="@docRoot/qtexttospeech.html#findVoices">QTextToSpeech::<wbr/>findVoices&lt;Args...&gt;(Args...)</a></code></p>
  */
 public io.qt.core.QList<QVoice> findVoices(){
     io.qt.core.QList<QVoice> voices = allVoices(null);
@@ -166,7 +166,7 @@ public io.qt.core.QList<QVoice> findVoices(){
 }
 
 /**
- * <p>See <code><a href="https://doc.qt.io/qt/qtexttospeech.html#findVoices">QTextToSpeech::<wbr/>findVoices&lt;Args...&gt;(Args...)</a></code></p>
+ * <p>See <code><a href="@docRoot/qtexttospeech.html#findVoices">QTextToSpeech::<wbr/>findVoices&lt;Args...&gt;(Args...)</a></code></p>
  */
 public io.qt.core.QList<QVoice> findVoices(java.lang.@NonNull String name){
     io.qt.core.QList<QVoice> voices = allVoices(new io.qt.core.QLocale(name));
@@ -174,7 +174,7 @@ public io.qt.core.QList<QVoice> findVoices(java.lang.@NonNull String name){
 }
 
 /**
- * <p>See <code><a href="https://doc.qt.io/qt/qtexttospeech.html#findVoices">QTextToSpeech::<wbr/>findVoices&lt;Args...&gt;(Args...)</a></code></p>
+ * <p>See <code><a href="@docRoot/qtexttospeech.html#findVoices">QTextToSpeech::<wbr/>findVoices&lt;Args...&gt;(Args...)</a></code></p>
  */
 public io.qt.core.QList<QVoice> findVoices(io.qt.core.@NonNull QLocale locale){
     io.qt.core.QList<QVoice> voices = allVoices(locale);
@@ -182,7 +182,7 @@ public io.qt.core.QList<QVoice> findVoices(io.qt.core.@NonNull QLocale locale){
 }
 
 /**
- * <p>See <code><a href="https://doc.qt.io/qt/qtexttospeech.html#findVoices">QTextToSpeech::<wbr/>findVoices&lt;Args...&gt;(Args...)</a></code></p>
+ * <p>See <code><a href="@docRoot/qtexttospeech.html#findVoices">QTextToSpeech::<wbr/>findVoices&lt;Args...&gt;(Args...)</a></code></p>
  */
 public io.qt.core.QList<QVoice> findVoices(io.qt.core.QLocale.@NonNull Language language){
     io.qt.core.QList<QVoice> voices = allVoices(new io.qt.core.QLocale(language));
@@ -190,7 +190,7 @@ public io.qt.core.QList<QVoice> findVoices(io.qt.core.QLocale.@NonNull Language 
 }
 
 /**
- * <p>See <code><a href="https://doc.qt.io/qt/qtexttospeech.html#findVoices">QTextToSpeech::<wbr/>findVoices&lt;Args...&gt;(Args...)</a></code></p>
+ * <p>See <code><a href="@docRoot/qtexttospeech.html#findVoices">QTextToSpeech::<wbr/>findVoices&lt;Args...&gt;(Args...)</a></code></p>
  */
 public io.qt.core.QList<QVoice> findVoices(io.qt.core.QLocale.@NonNull Language language, io.qt.core.QLocale.@NonNull Country territory){
     io.qt.core.QList<QVoice> voices = allVoices(new io.qt.core.QLocale(language, territory));
@@ -198,7 +198,7 @@ public io.qt.core.QList<QVoice> findVoices(io.qt.core.QLocale.@NonNull Language 
 }
 
 /**
- * <p>See <code><a href="https://doc.qt.io/qt/qtexttospeech.html#findVoices">QTextToSpeech::<wbr/>findVoices&lt;Args...&gt;(Args...)</a></code></p>
+ * <p>See <code><a href="@docRoot/qtexttospeech.html#findVoices">QTextToSpeech::<wbr/>findVoices&lt;Args...&gt;(Args...)</a></code></p>
  */
 public io.qt.core.QList<QVoice> findVoices(io.qt.core.QLocale.@NonNull Language language, io.qt.core.QLocale.@NonNull Script script){
     io.qt.core.QList<QVoice> voices = allVoices(new io.qt.core.QLocale(language, script));
@@ -206,7 +206,7 @@ public io.qt.core.QList<QVoice> findVoices(io.qt.core.QLocale.@NonNull Language 
 }
 
 /**
- * <p>See <code><a href="https://doc.qt.io/qt/qtexttospeech.html#findVoices">QTextToSpeech::<wbr/>findVoices&lt;Args...&gt;(Args...)</a></code></p>
+ * <p>See <code><a href="@docRoot/qtexttospeech.html#findVoices">QTextToSpeech::<wbr/>findVoices&lt;Args...&gt;(Args...)</a></code></p>
  */
 public io.qt.core.QList<QVoice> findVoices(io.qt.core.QLocale.@NonNull Language language, io.qt.core.QLocale.@NonNull Script script, io.qt.core.QLocale.@NonNull Country territory){
     io.qt.core.QList<QVoice> voices = allVoices(new io.qt.core.QLocale(language, script, territory));
