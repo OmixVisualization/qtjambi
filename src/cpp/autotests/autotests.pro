@@ -1,3 +1,34 @@
+###################################################################################################
+##
+## Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+##
+## This file is part of Qt Jambi.
+##
+## $BEGIN_LICENSE$
+##
+## GNU Lesser General Public License Usage
+## This file may be used under the terms of the GNU Lesser
+## General Public License version 2.1 as published by the Free Software
+## Foundation and appearing in the file LICENSE.LGPL included in the
+## packaging of this file.  Please review the following information to
+## ensure the GNU Lesser General Public License version 2.1 requirements
+## will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+##
+## GNU General Public License Usage
+## Alternatively, this file may be used under the terms of the GNU
+## General Public License version 3.0 as published by the Free Software
+## Foundation and appearing in the file LICENSE.GPL included in the
+## packaging of this file.  Please review the following information to
+## ensure the GNU General Public License version 3.0 requirements will be
+## met: http://www.gnu.org/copyleft/gpl.html.
+##
+## $END_LICENSE$
+##
+## This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+## WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+##
+###################################################################################################
+
 QTJAMBI_LIB_PATH = ../../qtjambi/lib
 DESTDIR = ../lib
 DLLDESTDIR = ../bin
@@ -52,6 +83,7 @@ SOURCES += \
     injectedcode.cpp \
     interfaces.cpp \
     performancetests.cpp \
+    polymorphictype.cpp \
     smartpointertest.cpp \
     testdialog.cpp \
     memorymanagement.cpp \
@@ -64,8 +96,6 @@ SOURCES += \
     variants.cpp \
     debugtools.cpp
 win32-arm64-msvc* | win32-msvc*: {
-    PRECOMPILED_HEADER = global.h
-    CONFIG += precompile_header
     QMAKE_CXXFLAGS += /bigobj
 }
 
@@ -74,6 +104,10 @@ win32-g++* {
     CONFIG(debug, debug|release) {
         QMAKE_CXXFLAGS += -O3
     }
+}
+
+macx:{
+    OBJECTIVE_SOURCES += mac_util.mm
 }
 
 CONFIG += warn_on

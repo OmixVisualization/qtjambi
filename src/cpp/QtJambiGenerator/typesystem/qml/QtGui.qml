@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -2006,7 +2006,7 @@ TypeSystem{
                                   "                                    pointer = nullptr;\n"+
                                   "                                },\n"+
                                   "                                [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                    return LocalDataJBuffer(env, ptr, INT_MAX).take();\n"+
+                                  "                                    return DataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                }\n"+
                                   "                            );\n"+
                                   "if(%out.size()==0){\n"+
@@ -2094,7 +2094,7 @@ TypeSystem{
                                   "                                    pointer = nullptr;\n"+
                                   "                                },\n"+
                                   "                                [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                    return LocalDataJBuffer(env, ptr, INT_MAX).take();\n"+
+                                  "                                    return DataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                }\n"+
                                   "                            );\n"+
                                   "if(%out.size()==0){\n"+
@@ -2128,19 +2128,20 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),\n"+
-                                  "                                          [&%scope](const void* & pointer,JNIEnv *env, jobject o){\n"+
-                                  "                                              JBufferData* bufferData = new JBufferData(env, o);\n"+
-                                  "                                              %scope.addDeletion(bufferData);\n"+
-                                  "                                              pointer = bufferData->data<void>();\n"+
-                                  "                                          },\n"+
-                                  "                                          [](JNIEnv * env, const void* const& ptr) -> jobject {\n"+
-                                  "                                              return LocalDataJBuffer(env, ptr, INT_MAX).take();\n"+
-                                  "                                          }\n"+
-                                  "                                      );\n"+
-                                  "if(%out.size()==0){\n"+
-                                  "    JavaException::raiseIllegalArgumentException(%env, \"Array length is 0.\" QTJAMBI_STACKTRACEINFO );\n"+
-                                  "}"}
+                    Text{content: String.raw`
+JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
+                                    [&%scope](const void* & pointer,JNIEnv *env, jobject o){
+                                        PersistentJBufferData* bufferData = new PersistentJBufferData(env, o);
+                                        %scope.addDeletion(bufferData);
+                                        pointer = bufferData->data<void>();
+                                    },
+                                    [](JNIEnv * env, const void* const& ptr) -> jobject {
+                                        return DataJBuffer(env, ptr, INT_MAX).take();
+                                    }
+                                );
+if(%out.size()==0)
+    JavaException::raiseIllegalArgumentException(%env, "Array length is 0." QTJAMBI_STACKTRACEINFO );
+`}
                 }
             }
         }
@@ -2169,16 +2170,17 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),\n"+
-                                  "                                          [&%scope](const void* & pointer,JNIEnv *env, jobject o){\n"+
-                                  "                                              JBufferData* bufferData = new JBufferData(env, o);\n"+
-                                  "                                              %scope.addDeletion(bufferData);\n"+
-                                  "                                              pointer = bufferData->data<void>();\n"+
-                                  "                                          },\n"+
-                                  "                                          [](JNIEnv * env, const void* const& ptr) -> jobject {\n"+
-                                  "                                              return LocalDataJBuffer(env, ptr, INT_MAX).take();\n"+
-                                  "                                          }\n"+
-                                  "                                      );"}
+                    Text{content: String.raw`
+JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
+                                    [&%scope](const void* & pointer,JNIEnv *env, jobject o){
+                                        PersistentJBufferData* bufferData = new PersistentJBufferData(env, o);
+                                        %scope.addDeletion(bufferData);
+                                        pointer = bufferData->data<void>();
+                                    },
+                                    [](JNIEnv * env, const void* const& ptr) -> jobject {
+                                        return DataJBuffer(env, ptr, INT_MAX).take();
+                                    }
+                                );`}
                 }
             }
         }
@@ -2212,13 +2214,13 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVector<QSharedPointer<J2CStringBuffer>> %inVec;\n"+
+                    Text{content: "QVector<QSharedPointer<PersistentJ2CStringBuffer>> %inVec;\n"+
                                   "const char** %out = nullptr;\n"+
                                   "QScopedArrayPointer<const char*> %outPtr(%out = new const char*[quint32(__qt_%2)]);\n"+
                                   "for(jsize i=0; i<__qt_%2; ++i){\n"+
-                                  "    J2CStringBuffer* b = new J2CStringBuffer(%env, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));\n"+
+                                  "    PersistentJ2CStringBuffer* b = new PersistentJ2CStringBuffer(%env, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));\n"+
                                   "    %out[i] = *b;\n"+
-                                  "    %inVec << QSharedPointer<J2CStringBuffer>(b);\n"+
+                                  "    %inVec << QSharedPointer<PersistentJ2CStringBuffer>(b);\n"+
                                   "}"}
                 }
             }
@@ -2254,7 +2256,7 @@ TypeSystem{
                                   "                                    pointer = nullptr;\n"+
                                   "                                },\n"+
                                   "                                [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                    return LocalDataJBuffer(env, ptr, INT_MAX).take();\n"+
+                                  "                                    return DataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                }\n"+
                                   "                            );\n"+
                                   "if(%out.size()==0){\n"+
@@ -2281,7 +2283,7 @@ TypeSystem{
                                   "                                    pointer = nullptr;\n"+
                                   "                                },\n"+
                                   "                                [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                    return LocalDataJBuffer(env, ptr, INT_MAX).take();\n"+
+                                  "                                    return DataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                }\n"+
                                   "                            );\n"+
                                   "if(%out.size()==0){\n"+
@@ -2320,7 +2322,7 @@ TypeSystem{
                                   "                                    pointer = nullptr;\n"+
                                   "                                },\n"+
                                   "                                [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                    return LocalDataJBuffer(env, ptr, INT_MAX).take();\n"+
+                                  "                                    return DataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                }\n"+
                                   "                            );"}
                 }
@@ -2344,7 +2346,7 @@ TypeSystem{
                                   "                                    pointer = nullptr;\n"+
                                   "                                },\n"+
                                   "                                [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                    return LocalDataJBuffer(env, ptr, INT_MAX).take();\n"+
+                                  "                                    return DataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                }\n"+
                                   "                            );\n"+
                                   "if(%out.size()==0){\n"+
@@ -2383,7 +2385,7 @@ TypeSystem{
                                   "                                    pointer = nullptr;\n"+
                                   "                                },\n"+
                                   "                                [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                    return LocalDataJBuffer(env, ptr, INT_MAX).take();\n"+
+                                  "                                    return DataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                }\n"+
                                   "                            );"}
                 }
@@ -2418,13 +2420,13 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVector<QSharedPointer<J2CStringBuffer>> %inVec;\n"+
+                    Text{content: "QVector<QSharedPointer<PersistentJ2CStringBuffer>> %inVec;\n"+
                                   "const GLchar** %out = nullptr;\n"+
                                   "QScopedArrayPointer<const GLchar*> %outPtr(%out = new const GLchar*[quint32(__qt_%2)]);\n"+
                                   "for(jsize i=0; i<__qt_%2; ++i){\n"+
-                                  "    J2CStringBuffer* b = new J2CStringBuffer(%env, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));\n"+
+                                  "    PersistentJ2CStringBuffer* b = new PersistentJ2CStringBuffer(%env, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));\n"+
                                   "    %out[i] = *b;\n"+
-                                  "    %inVec << QSharedPointer<J2CStringBuffer>(b);\n"+
+                                  "    %inVec << QSharedPointer<PersistentJ2CStringBuffer>(b);\n"+
                                   "}"}
                 }
             }
@@ -2544,13 +2546,13 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVector<QSharedPointer<J2CStringBuffer>> %inVec;\n"+
+                    Text{content: "QVector<QSharedPointer<PersistentJ2CStringBuffer>> %inVec;\n"+
                                   "const char** %out = nullptr;\n"+
                                   "QScopedArrayPointer<const char*> %outPtr(%out = new const char*[quint32(__qt_%2)]);\n"+
                                   "for(jsize i=0; i<__qt_%2; ++i){\n"+
-                                  "    J2CStringBuffer* b = new J2CStringBuffer(%env, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));\n"+
+                                  "    PersistentJ2CStringBuffer* b = new PersistentJ2CStringBuffer(%env, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));\n"+
                                   "    %out[i] = *b;\n"+
-                                  "    %inVec << QSharedPointer<J2CStringBuffer>(b);\n"+
+                                  "    %inVec << QSharedPointer<PersistentJ2CStringBuffer>(b);\n"+
                                   "}"}
                 }
             }
@@ -2631,16 +2633,17 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),\n"+
-                                  "                                [&%scope](const void* & pointer,JNIEnv *env, jobject o){\n"+
-                                  "                                    JBufferData* bufferData = new JBufferData(env, o);\n"+
-                                  "                                    %scope.addDeletion(bufferData);\n"+
-                                  "                                    pointer = bufferData->data<void>();\n"+
-                                  "                                },\n"+
-                                  "                                [](JNIEnv * env, const void* const& ptr) -> jobject {\n"+
-                                  "                                    return LocalDataJBuffer(env, ptr, INT_MAX).take();\n"+
-                                  "                                }\n"+
-                                  "                            );"}
+                    Text{content: String.raw`
+JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
+                                    [&%scope](const void* & pointer,JNIEnv *env, jobject o){
+                                        PersistentJBufferData* bufferData = new PersistentJBufferData(env, o);
+                                        %scope.addDeletion(bufferData);
+                                        pointer = bufferData->data<void>();
+                                    },
+                                    [](JNIEnv * env, const void* const& ptr) -> jobject {
+                                        return DataJBuffer(env, ptr, INT_MAX).take();
+                                    }
+                                );`}
                 }
             }
             ModifyArgument{
@@ -2676,16 +2679,17 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),\n"+
-                                  "                                [&%scope](const void* & pointer,JNIEnv *env, jobject o){\n"+
-                                  "                                    JBufferData* bufferData = new JBufferData(env, o);\n"+
-                                  "                                    %scope.addDeletion(bufferData);\n"+
-                                  "                                    pointer = bufferData->data<void>();\n"+
-                                  "                                },\n"+
-                                  "                                [](JNIEnv * env, const void* const& ptr) -> jobject {\n"+
-                                  "                                    return LocalDataJBuffer(env, ptr, INT_MAX).take();\n"+
-                                  "                                }\n"+
-                                  "                            );"}
+                    Text{content: String.raw`
+JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
+                                    [&%scope](const void* & pointer,JNIEnv *env, jobject o){
+                                        PersistentJBufferData* bufferData = new PersistentJBufferData(env, o);
+                                        %scope.addDeletion(bufferData);
+                                        pointer = bufferData->data<void>();
+                                    },
+                                    [](JNIEnv * env, const void* const& ptr) -> jobject {
+                                        return DataJBuffer(env, ptr, INT_MAX).take();
+                                    }
+                                );`}
                 }
             }
             ModifyArgument{
@@ -2750,13 +2754,13 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVector<QSharedPointer<J2CStringBuffer>> %inVec;\n"+
+                    Text{content: "QVector<QSharedPointer<PersistentJ2CStringBuffer>> %inVec;\n"+
                                   "const char** %out = nullptr;\n"+
                                   "QScopedArrayPointer<const char*> %outPtr(%out = new const char*[quint32(__qt_%2)]);\n"+
                                   "for(jsize i=0; i<__qt_%2; ++i){\n"+
-                                  "    J2CStringBuffer* b = new J2CStringBuffer(%env, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));\n"+
+                                  "    PersistentJ2CStringBuffer* b = new PersistentJ2CStringBuffer(%env, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));\n"+
                                   "    %out[i] = *b;\n"+
-                                  "    %inVec << QSharedPointer<J2CStringBuffer>(b);\n"+
+                                  "    %inVec << QSharedPointer<PersistentJ2CStringBuffer>(b);\n"+
                                   "}"}
                 }
             }
@@ -3098,7 +3102,7 @@ TypeSystem{
                                   "                                    pointer = nullptr;\n"+
                                   "                                },\n"+
                                   "                                [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                    return LocalDataJBuffer(env, ptr, INT_MAX).take();\n"+
+                                  "                                    return DataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                }\n"+
                                   "                            );"}
                 }
@@ -3317,21 +3321,21 @@ TypeSystem{
     
     RequiredLibrary{
         name: "libGLESv2"
-        mode: RequiredLibrary.Optional
+        mode: RequiredLibrary.ProvideOnly
         platforms: ["windows"]
         until: 5
     }
     
     RequiredLibrary{
         name: "libEGL"
-        mode: RequiredLibrary.Optional
+        mode: RequiredLibrary.ProvideOnly
         platforms: ["windows"]
         until: 5
     }
     
     RequiredLibrary{
         name: "QtANGLE"
-        mode: RequiredLibrary.Optional
+        mode: RequiredLibrary.ProvideOnly
         platforms: ["windows"]
         until: [5, 14]
     }
@@ -6806,7 +6810,7 @@ TypeSystem{
                         ConversionRule{
                             codeClass: CodeClass.Native
                             Text{content: String.raw`
-J2CStringBuffer buffer = J2CStringBuffer(%env, %in);
+J2CStringBuffer buffer(%env, %in);
 if(buffer.length()!=4)
     JavaException::raiseIllegalArgumentException(%env, "The tag name must be exactly 4 characters long!" QTJAMBI_STACKTRACEINFO);
 const char* bufferData = buffer;
@@ -7102,7 +7106,7 @@ const char (&%out)[5] = *reinterpret_cast<const char(*)[5]>(bufferData);
         name: "QGuiApplication"
         Rejection{
             functionName: "nativeInterface"
-            since: [6, 2]
+            since: 6
         }
         ExtraIncludes{
             Include{
@@ -7216,7 +7220,7 @@ const char (&%out)[5] = *reinterpret_cast<const char(*)[5]>(bufferData);
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "std::unique_ptr<ApplicationData> applicationData(new ApplicationData(%env, jobjectArray(%in)));\n"+
+                    Text{content: "std::unique_ptr<ApplicationData> applicationData(ApplicationData::initialize<QGuiApplication>(%env, %in));\n"+
                                   "char** %out = applicationData->chars();\n"+
                                   "int& __qt_%1 = applicationData->size();"}
                 }
@@ -7443,7 +7447,7 @@ case QIconEngine::AvailableSizesHook:
 #endif
 case QIconEngine::IsNullHook:
     {
-        BoolPointerArray* pointer = new BoolPointerArray(%env, reinterpret_cast<bool*>(%in), 1);
+        PersistentBoolPointerArray* pointer = new PersistentBoolPointerArray(%env, reinterpret_cast<bool*>(%in), 1);
         %scope.addDeletion(pointer);
         %out = pointer->array();
     }
@@ -7481,7 +7485,7 @@ case QIconEngine::AvailableSizesHook:
 #endif
 case QIconEngine::IsNullHook:
     if(JBooleanArrayPointer::isValidArray(__jni_env, data1)){
-        JBooleanArrayPointer* pointer = new JBooleanArrayPointer(%env, jbooleanArray(%in));
+        PersistentJBooleanArrayPointer* pointer = new PersistentJBooleanArrayPointer(%env, jbooleanArray(%in));
         %scope.addDeletion(pointer);
         %out = pointer->pointer();
     }
@@ -7634,13 +7638,13 @@ default:
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "jsize length = %env->GetArrayLength(jarray(%in));\n"+
-                                  "QVector<QSharedPointer<J2CStringBuffer>> %inVec;\n"+
+                                  "QVector<QSharedPointer<PersistentJ2CStringBuffer>> %inVec;\n"+
                                   "const char** %out = nullptr;\n"+
                                   "QScopedArrayPointer<const char*> %outPtr(%out = new const char*[quint32(length)]);\n"+
                                   "for(jsize i=0; i<length; ++i){\n"+
-                                  "    J2CStringBuffer* b = new J2CStringBuffer(%env, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));\n"+
+                                  "    PersistentJ2CStringBuffer* b = new PersistentJ2CStringBuffer(%env, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));\n"+
                                   "    %out[i] = *b;\n"+
-                                  "    %inVec << QSharedPointer<J2CStringBuffer>(b);\n"+
+                                  "    %inVec << QSharedPointer<PersistentJ2CStringBuffer>(b);\n"+
                                   "}"}
                 }
             }
@@ -7666,13 +7670,13 @@ default:
                 InhibitImplicitCall{type: "java.nio.@NonNull ByteBuffer"}
                 InhibitImplicitCall{type: "io.qt.core.@NonNull QByteArray"}
             }
-            since: 6
+            since: 6.2
         }
         ModifyFunction{
             signature: "fromData(QByteArray,const char*)"
             ModifyArgument{
                 index: 1
-                InhibitImplicitCall{type: "byte @NonNull[]"}
+                InhibitImplicitCall{type: "byte @NonNull[]"; since: 6.2}
             }
             since: 6
         }
@@ -7692,13 +7696,13 @@ default:
                 InhibitImplicitCall{type: "java.nio.@NonNull ByteBuffer"}
                 InhibitImplicitCall{type: "io.qt.core.@NonNull QByteArray"}
             }
-            since: 6
+            since: 6.2
         }
         ModifyFunction{
             signature: "loadFromData(QByteArray,const char*)"
             ModifyArgument{
                 index: 1
-                InhibitImplicitCall{type: "byte @NonNull[]"}
+                InhibitImplicitCall{type: "byte @NonNull[]"; since: 6.2}
             }
             since: 6
         }
@@ -9505,6 +9509,29 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
     ObjectType{
         name: "QPainterPathStroker"
     }
+
+    ObjectType{
+        name: "QPainterStateGuard"
+        implementing: "java.lang.AutoCloseable"
+        InjectCode{
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class autoclosedelete"
+                quoteBeforeLine: "}// class"
+            }
+        }
+        ModifyFunction{
+            signature: "QPainterStateGuard(QPainter *, QPainterStateGuard::InitialState)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcPainter"
+                    action: ReferenceCount.Set
+                }
+            }
+        }
+        since: 6.9
+    }
     
     ObjectType{
         name: "QPainter"
@@ -10401,13 +10428,13 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "jsize length = %env->GetArrayLength(jarray(%in));\n"+
-                                  "QVector<QSharedPointer<J2CStringBuffer>> %inVec;\n"+
+                                  "QVector<QSharedPointer<PersistentJ2CStringBuffer>> %inVec;\n"+
                                   "const char** %out = nullptr;\n"+
                                   "QScopedArrayPointer<const char*> %outPtr(%out = new const char*[quint32(length)]);\n"+
                                   "for(jsize i=0; i<length; ++i){\n"+
-                                  "    J2CStringBuffer* b = new J2CStringBuffer(%env, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));\n"+
+                                  "    PersistentJ2CStringBuffer* b = new PersistentJ2CStringBuffer(%env, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));\n"+
                                   "    %out[i] = *b;\n"+
-                                  "    %inVec << QSharedPointer<J2CStringBuffer>(b);\n"+
+                                  "    %inVec << QSharedPointer<PersistentJ2CStringBuffer>(b);\n"+
                                   "}"}
                 }
             }
@@ -10793,7 +10820,7 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
             target: CodeClass.Native
             since: [6, 2]
             Text{content: "// QScreen::resolveInterface(const char * name, int revision) const\n"+
-                          "extern \"C\" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QScreen_nativeInterface)\n"+
+                          "extern \"C\" Q_DECL_EXPORT jobject JNICALL Java_io_qt_gui_QScreen_nativeInterface\n"+
                           "(JNIEnv *__jni_env,\n"+
                           " jobject __this,\n"+
                           " QtJambiNativeID __this_nativeId,\n"+
@@ -13193,6 +13220,10 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
             name: "TransformModel"
             since: 6.8
         }
+        ValueType{
+            name: "PrimaryPoints"
+            since: 6.9
+        }
         since: [5, 14]
     }
     
@@ -14640,7 +14671,7 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
                                   "                                    pointer = nullptr;\n"+
                                   "                                },\n"+
                                   "                                [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                    return LocalDataJBuffer(env, ptr, INT_MAX).take();\n"+
+                                  "                                    return DataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                }\n"+
                                   "                            );"}
                 }
@@ -14767,13 +14798,13 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVector<QSharedPointer<J2CStringBuffer>> %inVec;\n"+
+                    Text{content: "QVector<QSharedPointer<PersistentJ2CStringBuffer>> %inVec;\n"+
                                   "const char** %out = nullptr;\n"+
                                   "QScopedArrayPointer<const char*> %outPtr(%out = new const char*[quint32(__qt_%2)]);\n"+
                                   "for(jsize i=0; i<__qt_%2; ++i){\n"+
-                                  "    J2CStringBuffer* b = new J2CStringBuffer(%env, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));\n"+
+                                  "    PersistentJ2CStringBuffer* b = new PersistentJ2CStringBuffer(%env, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));\n"+
                                   "    %out[i] = *b;\n"+
-                                  "    %inVec << QSharedPointer<J2CStringBuffer>(b);\n"+
+                                  "    %inVec << QSharedPointer<PersistentJ2CStringBuffer>(b);\n"+
                                   "}"}
                 }
             }
@@ -14873,7 +14904,7 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
                                   "                                    pointer = nullptr;\n"+
                                   "                                },\n"+
                                   "                                [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                    return LocalDataJBuffer(env, ptr, INT_MAX).take();\n"+
+                                  "                                    return DataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                }\n"+
                                   "                            );\n"+
                                   "if(%out.size()==0){\n"+
@@ -14896,7 +14927,7 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
                                   "                                    pointer = nullptr;\n"+
                                   "                                },\n"+
                                   "                                [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                    return LocalDataJBuffer(env, ptr, INT_MAX).take();\n"+
+                                  "                                    return DataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                }\n"+
                                   "                            );"}
                 }
@@ -15194,13 +15225,13 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVector<QSharedPointer<J2CStringBuffer>> %inVec;\n"+
+                    Text{content: "QVector<QSharedPointer<PersistentJ2CStringBuffer>> %inVec;\n"+
                                   "const GLchar** %out = nullptr;\n"+
                                   "QScopedArrayPointer<const GLchar*> %outPtr(%out = new const GLchar*[quint32(__qt_%2)]);\n"+
                                   "for(jsize i=0; i<__qt_%2; ++i){\n"+
-                                  "    J2CStringBuffer* b = new J2CStringBuffer(%env, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));\n"+
+                                  "    PersistentJ2CStringBuffer* b = new PersistentJ2CStringBuffer(%env, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));\n"+
                                   "    %out[i] = *b;\n"+
-                                  "    %inVec << QSharedPointer<J2CStringBuffer>(b);\n"+
+                                  "    %inVec << QSharedPointer<PersistentJ2CStringBuffer>(b);\n"+
                                   "}"}
                 }
             }
@@ -15214,13 +15245,13 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVector<QSharedPointer<J2CStringBuffer>> %inVec;\n"+
+                    Text{content: "QVector<QSharedPointer<PersistentJ2CStringBuffer>> %inVec;\n"+
                                   "const char** %out = nullptr;\n"+
                                   "QScopedArrayPointer<const char*> %outPtr(%out = new const char*[quint32(__qt_%2)]);\n"+
                                   "for(jsize i=0; i<__qt_%2; ++i){\n"+
-                                  "    J2CStringBuffer* b = new J2CStringBuffer(%env, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));\n"+
+                                  "    PersistentJ2CStringBuffer* b = new PersistentJ2CStringBuffer(%env, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));\n"+
                                   "    %out[i] = *b;\n"+
-                                  "    %inVec << QSharedPointer<J2CStringBuffer>(b);\n"+
+                                  "    %inVec << QSharedPointer<PersistentJ2CStringBuffer>(b);\n"+
                                   "}"}
                 }
             }
@@ -15468,7 +15499,7 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
                                   "                                    pointer = nullptr;\n"+
                                   "                                },\n"+
                                   "                                [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                    return LocalDataJBuffer(env, ptr, INT_MAX).take();\n"+
+                                  "                                    return DataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                }\n"+
                                   "                            );"}
                 }
@@ -16252,13 +16283,13 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVector<QSharedPointer<J2CStringBuffer>> %inVec;\n"+
+                    Text{content: "QVector<QSharedPointer<PersistentJ2CStringBuffer>> %inVec;\n"+
                                   "const char** %out = nullptr;\n"+
                                   "QScopedArrayPointer<const char*> %outPtr(%out = new const char*[quint32(__qt_%2)]);\n"+
                                   "for(jsize i=0; i<__qt_%2; ++i){\n"+
-                                  "    J2CStringBuffer* b = new J2CStringBuffer(%env, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));\n"+
+                                  "    PersistentJ2CStringBuffer* b = new PersistentJ2CStringBuffer(%env, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));\n"+
                                   "    %out[i] = *b;\n"+
-                                  "    %inVec << QSharedPointer<J2CStringBuffer>(b);\n"+
+                                  "    %inVec << QSharedPointer<PersistentJ2CStringBuffer>(b);\n"+
                                   "}"}
                 }
             }
@@ -17063,7 +17094,7 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
                                   "                                    pointer = nullptr;\n"+
                                   "                                },\n"+
                                   "                                [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                    return LocalDataJBuffer(env, ptr, INT_MAX).take();\n"+
+                                  "                                    return DataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                }\n"+
                                   "                            );"}
                 }
@@ -17203,13 +17234,13 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVector<QSharedPointer<J2CStringBuffer>> %inVec;\n"+
+                    Text{content: "QVector<QSharedPointer<PersistentJ2CStringBuffer>> %inVec;\n"+
                                   "const char** %out = nullptr;\n"+
                                   "QScopedArrayPointer<const char*> %outPtr(%out = new const char*[quint32(__qt_%2)]);\n"+
                                   "for(jsize i=0; i<__qt_%2; ++i){\n"+
-                                  "    J2CStringBuffer* b = new J2CStringBuffer(%env, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));\n"+
+                                  "    PersistentJ2CStringBuffer* b = new PersistentJ2CStringBuffer(%env, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));\n"+
                                   "    %out[i] = *b;\n"+
-                                  "    %inVec << QSharedPointer<J2CStringBuffer>(b);\n"+
+                                  "    %inVec << QSharedPointer<PersistentJ2CStringBuffer>(b);\n"+
                                   "}"}
                 }
             }
@@ -18905,17 +18936,17 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
 
     NativePointerType{
         name: "MTLTexture"
-        since: [6, 2]
+        since: 6
     }
 
     NativePointerType{
         name: "MTLDevice"
-        since: [6, 2]
+        since: 6
     }
 
     NativePointerType{
         name: "MTLCommandQueue"
-        since: [6, 2]
+        since: 6
     }
 
     NativePointerType{
@@ -18932,13 +18963,13 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
         TemplateArguments{
             arguments: ["MTLTexture"]
         }
-        since: [6, 2]
+        since: 6
     }
 
     ObjectType{
         name: "id<MTLTexture>"
         generate: false
-        since: [6, 2]
+        since: 6
     }
     
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: unsupported default value '0., 0., 1000000000., 1000000000.' of argument in function 'update', class 'QAbstractTextDocumentLayout'"}

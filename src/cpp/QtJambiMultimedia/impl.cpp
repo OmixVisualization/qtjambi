@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -60,9 +60,7 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/multimedia,QAbstractVideoBuffer$MapResult,
 }
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-extern "C" Q_DECL_EXPORT jlong JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_multimedia_QAudioFrame_getPositionToIndex)
-    (JNIEnv *env, jclass, jint config)
-{
+extern "C" JNIEXPORT jlong JNICALL Java_io_qt_multimedia_QAudioFrame_getPositionToIndex(JNIEnv *env, jclass, jint config){
     switch(config){
     case QAudioFormat::ChannelConfigUnknown: return jlong(&QAudioFrame<QAudioFormat::ChannelConfigUnknown, QAudioFormat::Int32>::positionToIndex);
     case QAudioFormat::ChannelConfigMono: return jlong(&QAudioFrame<QAudioFormat::ChannelConfigMono, QAudioFormat::Int32>::positionToIndex);
@@ -81,9 +79,7 @@ extern "C" Q_DECL_EXPORT jlong JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_multim
     return 0;
 }
 
-extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_multimedia_QAudioFrame_positionToIndex)
-    (JNIEnv *, jclass, jint pos, jlong positionToIndexFunction)
-{
+extern "C" JNIEXPORT jint JNICALL Java_io_qt_multimedia_QAudioFrame_positionToIndex(JNIEnv *, jclass, jint pos, jlong positionToIndexFunction){
     typedef int(*PositionToIndex)(QAudioFormat::AudioChannelPosition pos);
     return reinterpret_cast<PositionToIndex>(positionToIndexFunction)(QAudioFormat::AudioChannelPosition(pos));
 }

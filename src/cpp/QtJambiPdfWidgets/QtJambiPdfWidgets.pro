@@ -1,6 +1,6 @@
 ###################################################################################################
 ##
-## Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+## Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 ##
 ## This file is part of Qt Jambi.
 ##
@@ -32,3 +32,4 @@
 include(../QtJambi/configure.pri)
 
 QT = core pdfwidgets
+CONFIG+=no_private_qt_headers_warning

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -44,7 +44,7 @@ void addColumn(const char* name, int id){
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 #include <QtGui/QTouchDevice>
 
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_test_QTest_touchEvent__Lio_qt_widgets_QWidget_2Lio_qt_gui_QTouchDevice_2Z)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_test_QTest_touchEvent__Lio_qt_widgets_QWidget_2Lio_qt_gui_QTouchDevice_2Z
 (JNIEnv *env,
  jclass,
  jobject window0,
@@ -72,7 +72,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_test
     return _result;
 }
 
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_test_QTest_touchEvent__Lio_qt_gui_QWindow_2Lio_qt_gui_QTouchDevice_2Z)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_test_QTest_touchEvent__Lio_qt_gui_QWindow_2Lio_qt_gui_QTouchDevice_2Z
 (JNIEnv *env,
  jclass,
  jobject window0,
@@ -102,7 +102,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_test
 #else
 #include <QtGui/QPointingDevice>
 
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_test_QTest_touchEvent)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_test_QTest_touchEvent
 (JNIEnv *env,
  jclass,
  jobject window0,

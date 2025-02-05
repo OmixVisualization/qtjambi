@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -45,6 +45,7 @@ import io.qt.QtFlagEnumerator;
 import io.qt.QtInvokable;
 import io.qt.QtPropertyReader;
 import io.qt.QtPropertyWriter;
+import io.qt.StrictNonNull;
 import io.qt.autotests.generated.SignalsAndSlots;
 import io.qt.core.QAbstractItemModel;
 import io.qt.core.QCoreApplication;
@@ -102,22 +103,35 @@ public class TestMetaObject extends ApplicationInitializer {
 			}
         }
 
-		static class FlipModeSquads extends io.qt.QFlags<FlipModeSquad> {
+		static class FlipModeSquads extends io.qt.QFlags<FlipModeSquad> implements Comparable<FlipModeSquads> {
 			private static final long serialVersionUID = 886661346884528047L;
 			public FlipModeSquads(FlipModeSquad ... args) { super(args); }
-            public FlipModeSquads(int value) { setValue(value); }
+            public FlipModeSquads(int value) { super(value); }
 			@Override
 			public FlipModeSquads clone() {
-				return new FlipModeSquads(value());
+				return new FlipModeSquads(intValue());
 			}
 			@Override
 			public FlipModeSquads combined(FlipModeSquad flag) {
-				return new FlipModeSquads(value() | flag.value());
+				return new FlipModeSquads(intValue() | flag.value());
 			}
 			@Override
 			public FlipModeSquad[] flags() {
 				return flags(FlipModeSquad.values());
 			}
+
+	        @Override
+	        public final int compareTo(@StrictNonNull FlipModeSquads other){
+	            return Integer.compare(value(), other.value());
+	        }
+
+	        public final int value(){
+	            return intValue();
+	        }
+
+	        public final void setValue(int value){
+	            setIntValue(value);
+	        }
         }
     }
 

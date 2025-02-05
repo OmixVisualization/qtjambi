@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -106,7 +106,7 @@ size_t getShellSize(const std::type_info& typeId);
 EntryTypes getEntryType(const std::type_info& typeId);
 const std::type_info* getEnumForFlag(const std::type_info& flag);
 const std::type_info* getFlagForEnum(const std::type_info& enumerator);
-const QVector<const RegistryAPI::FunctionInfo>* virtualFunctions(const std::type_info& typeId);
+QVector<RegistryAPI::FunctionInfo> virtualFunctions(const std::type_info& typeId);
 bool isInterface(const char*qt_interface);
 bool hasCustomMetaObject(const std::type_info& typeId, const QMetaObject** superTypeMetaObject = nullptr);
 const QMetaObject* superTypeForCustomMetaObject(const std::type_info& typeId);

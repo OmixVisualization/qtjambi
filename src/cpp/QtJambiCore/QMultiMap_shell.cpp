@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -38,7 +38,7 @@ QT_WARNING_DISABLE_DEPRECATED
 #include "utils_p.h"
 #include <QtJambi/qtjambi_cast.h>
 
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap_initialize)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QMultiMap_initialize
 (JNIEnv * env, jobject _this, jclass keyType, QtJambiNativeID keyMetaType, jclass valueType, QtJambiNativeID valueMetaType, jobject other)
 {
     QTJAMBI_TRY{
@@ -49,7 +49,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QM
     }QTJAMBI_TRY_END
 }
 
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap_keyMetaType)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QMultiMap_keyMetaType
 (JNIEnv * env, jobject, QtJambiNativeID __this_nativeId)
 {
     jobject result{nullptr};
@@ -65,7 +65,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
     return result;
 }
 
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap_valueMetaType)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QMultiMap_valueMetaType
 (JNIEnv * env, jobject, QtJambiNativeID __this_nativeId)
 {
     jobject result{nullptr};
@@ -83,7 +83,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 
 // emitting  (functionsInTargetLang writeFinalFunction)
 // QMultiMap<Key, T>::begin()
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap_begin__J)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QMultiMap_begin__J
 (JNIEnv *__jni_env,
  jobject _this,
  QtJambiNativeID __this_nativeId)
@@ -103,7 +103,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // QMultiMap<Key, T>::end()
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap_end__J)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QMultiMap_end__J
 (JNIEnv *__jni_env,
  jobject _this,
  QtJambiNativeID __this_nativeId)
@@ -123,7 +123,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // QMultiMap<Key, T>::constBegin() const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap_constBegin__J)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QMultiMap_constBegin__J
 (JNIEnv *__jni_env,
  jobject _this,
  QtJambiNativeID __this_nativeId)
@@ -143,7 +143,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // QMultiMap<Key, T>::end() const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap_constEnd__J)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QMultiMap_constEnd__J
 (JNIEnv *__jni_env,
  jobject _this,
  QtJambiNativeID __this_nativeId)
@@ -163,7 +163,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // QMultiMap<Key, T>::clear()
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap_clear__J)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QMultiMap_clear__J
 (JNIEnv *__jni_env,
  jobject _this,
  QtJambiNativeID __this_nativeId)
@@ -181,7 +181,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QM
 }
 
 // QMultiMap<Key, T>::contains(const Key & k) const
-extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap_contains__JLjava_lang_Object_2)
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_QMultiMap_contains__JLjava_lang_Object_2
 (JNIEnv *__jni_env,
  jobject,
  QtJambiNativeID __this_nativeId,
@@ -202,7 +202,7 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_cor
 }
 
 // QMultiMap<Key, T>::count(const Key & k) const
-extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap_count__JLjava_lang_Object_2)
+extern "C" JNIEXPORT jint JNICALL Java_io_qt_core_QMultiMap_count__JLjava_lang_Object_2
 (JNIEnv *__jni_env,
  jobject,
  QtJambiNativeID __this_nativeId,
@@ -223,7 +223,7 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QM
 }
 
 // QMultiMap<Key, T>::find(const Key & k) const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap_find__JLjava_lang_Object_2)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QMultiMap_find__JLjava_lang_Object_2
 (JNIEnv *__jni_env,
  jobject _this,
  QtJambiNativeID __this_nativeId,
@@ -244,7 +244,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // QMultiMap<Key, T>::first() const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap_first__J)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QMultiMap_first__J
 (JNIEnv *__jni_env,
  jobject,
  QtJambiNativeID __this_nativeId)
@@ -264,7 +264,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // QMultiMap<Key, T>::firstKey() const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap_firstKey__J)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QMultiMap_firstKey__J
 (JNIEnv *__jni_env,
  jobject,
  QtJambiNativeID __this_nativeId)
@@ -284,7 +284,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // QMultiMap<Key, T>::insert(const K & k, const T & t)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap_insert__JLjava_lang_Object_2Ljava_lang_Object_2)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QMultiMap_insert__JLjava_lang_Object_2Ljava_lang_Object_2
 (JNIEnv *__jni_env,
  jobject _this,
  QtJambiNativeID __this_nativeId,
@@ -304,7 +304,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QM
 }
 
 // QMultiMap<Key, T>::key(const V & value, const K & defaultKey) const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap_key__JLjava_lang_Object_2Ljava_lang_Object_2)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QMultiMap_key__JLjava_lang_Object_2Ljava_lang_Object_2
 (JNIEnv *__jni_env,
  jobject,
  QtJambiNativeID __this_nativeId,
@@ -326,7 +326,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // QMultiMap<Key, T>::keys(const T & value) const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap_keysForValue__JLjava_lang_Object_2)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QMultiMap_keysForValue__JLjava_lang_Object_2
 (JNIEnv *__jni_env,
  jobject _this,
  QtJambiNativeID __this_nativeId,
@@ -347,7 +347,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // QMultiMap<Key, T>::keys() const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap_keys__J)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QMultiMap_keys__J
 (JNIEnv *__jni_env,
  jobject _this,
  QtJambiNativeID __this_nativeId)
@@ -367,7 +367,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // QMultiMap<Key, T>::last() const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap_last__J)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QMultiMap_last__J
 (JNIEnv *__jni_env,
  jobject,
  QtJambiNativeID __this_nativeId)
@@ -387,7 +387,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // QMultiMap<Key, T>::lastKey() const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap_lastKey__J)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QMultiMap_lastKey__J
 (JNIEnv *__jni_env,
  jobject,
  QtJambiNativeID __this_nativeId)
@@ -407,7 +407,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // QMultiMap<Key, T>::lowerBound(const Key & k) const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap_lowerBound__JLjava_lang_Object_2)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QMultiMap_lowerBound__JLjava_lang_Object_2
 (JNIEnv *__jni_env,
  jobject _this,
  QtJambiNativeID __this_nativeId,
@@ -428,7 +428,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // QMultiMap<Key, T>::upperBound(const Key & k) const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap_upperBound__JLjava_lang_Object_2)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QMultiMap_upperBound__JLjava_lang_Object_2
 (JNIEnv *__jni_env,
  jobject _this,
  QtJambiNativeID __this_nativeId,
@@ -449,7 +449,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // QMultiMap<Key, T>::operator==(const QMap & l) const
-extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap_operator_1equal__JLjava_util_Map_2)
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_QMultiMap_operator_1equal__JLjava_util_Map_2
 (JNIEnv *__jni_env,
  jobject,
  QtJambiNativeID __this_nativeId,
@@ -470,7 +470,7 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_cor
 }
 
 // QMultiMap<Key, T>::remove(const T & t)
-extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap_remove__JLjava_lang_Object_2)
+extern "C" JNIEXPORT jint JNICALL Java_io_qt_core_QMultiMap_remove__JLjava_lang_Object_2
 (JNIEnv *__jni_env,
  jobject _this,
  QtJambiNativeID __this_nativeId,
@@ -491,7 +491,7 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QM
 }
 
 // QMultiMap<Key, T>::size() const
-extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap_size__J)
+extern "C" JNIEXPORT jint JNICALL Java_io_qt_core_QMultiMap_size__J
 (JNIEnv *__jni_env,
  jobject,
  QtJambiNativeID __this_nativeId)
@@ -511,7 +511,7 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QM
 }
 
 // QMultiMap<Key, T>::take(const T & t)
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap_take__JLjava_lang_Object_2)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QMultiMap_take__JLjava_lang_Object_2
 (JNIEnv *__jni_env,
  jobject _this,
  QtJambiNativeID __this_nativeId,
@@ -532,7 +532,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // QMultiMap<Key, T>::value(const Key &key, const T &defaultValue) const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap_value__JLjava_lang_Object_2Ljava_lang_Object_2)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QMultiMap_value__JLjava_lang_Object_2Ljava_lang_Object_2
 (JNIEnv *__jni_env,
  jobject,
  QtJambiNativeID __this_nativeId,
@@ -554,7 +554,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // QMultiMap<Key, T>::values() const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap_values__J)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QMultiMap_values__J
 (JNIEnv *__jni_env,
  jobject _this,
  QtJambiNativeID __this_nativeId)
@@ -574,7 +574,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // QMultiMap<Key, T>::uniqueKeys() const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap_uniqueKeys__J)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QMultiMap_uniqueKeys__J
 (JNIEnv *__jni_env,
  jobject _this,
  QtJambiNativeID __this_nativeId)
@@ -594,7 +594,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // QMultiMap<Key, T>::unite(const T & t)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap_unite__JLjava_lang_Object_2)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QMultiMap_unite__JLjava_lang_Object_2
 (JNIEnv *__jni_env,
  jobject _this,
  QtJambiNativeID __this_nativeId,
@@ -613,7 +613,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QM
 }
 
 // QMultiMap<Key, T>::values(const Key &key) const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap_valuesKey__JLjava_lang_Object_2)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QMultiMap_valuesKey__JLjava_lang_Object_2
 (JNIEnv *__jni_env,
  jobject _this,
  QtJambiNativeID __this_nativeId,
@@ -634,7 +634,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // QMultiMap<Key, T>::contains(const Key & k, const T & value) const
-extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap_contains__JLjava_lang_Object_2Ljava_lang_Object_2)
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_QMultiMap_contains__JLjava_lang_Object_2Ljava_lang_Object_2
 (JNIEnv *__jni_env,
  jobject,
  QtJambiNativeID __this_nativeId,
@@ -656,7 +656,7 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_cor
 }
 
 // QMultiMap<Key, T>::count(const Key & k, const T & value) const
-extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap_count__JLjava_lang_Object_2Ljava_lang_Object_2)
+extern "C" JNIEXPORT jint JNICALL Java_io_qt_core_QMultiMap_count__JLjava_lang_Object_2Ljava_lang_Object_2
 (JNIEnv *__jni_env,
  jobject,
  QtJambiNativeID __this_nativeId,
@@ -678,7 +678,7 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QM
 }
 
 // QMultiMap<Key, T>::find(const Key & k, const T & value) const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap_find__JLjava_lang_Object_2Ljava_lang_Object_2)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QMultiMap_find__JLjava_lang_Object_2Ljava_lang_Object_2
 (JNIEnv *__jni_env,
  jobject _this,
  QtJambiNativeID __this_nativeId,
@@ -700,7 +700,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // QMultiMap<Key, T>::remove(const Key & k, const T & value)
-extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap_remove__JLjava_lang_Object_2Ljava_lang_Object_2)
+extern "C" JNIEXPORT jint JNICALL Java_io_qt_core_QMultiMap_remove__JLjava_lang_Object_2Ljava_lang_Object_2
 (JNIEnv *__jni_env,
  jobject _this,
  QtJambiNativeID __this_nativeId,
@@ -722,7 +722,7 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QM
 }
 
 // QMultiMap<Key, T>::replace(const Key & k, const T & value)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap_replace__JLjava_lang_Object_2Ljava_lang_Object_2)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QMultiMap_replace__JLjava_lang_Object_2Ljava_lang_Object_2
 (JNIEnv *__jni_env,
  jobject _this,
  QtJambiNativeID __this_nativeId,
@@ -741,7 +741,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QM
     }QTJAMBI_TRY_END
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap_writeTo)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QMultiMap_writeTo
 (JNIEnv *__jni_env,
  jobject,
  QtJambiNativeID __this_nativeId,
@@ -775,7 +775,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QM
     }QTJAMBI_TRY_END
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap_readFrom)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QMultiMap_readFrom
 (JNIEnv *__jni_env,
  jobject,
  QtJambiNativeID __this_nativeId,
@@ -809,7 +809,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QM
     }QTJAMBI_TRY_END
 }
 
-extern "C" Q_DECL_EXPORT jstring JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap_toString)
+extern "C" JNIEXPORT jstring JNICALL Java_io_qt_core_QMultiMap_toString
 (JNIEnv *__jni_env,
  jobject,
  QtJambiNativeID __this_nativeId)
@@ -847,7 +847,7 @@ extern "C" Q_DECL_EXPORT jstring JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
     return result;
 }
 
-extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap_hashCode)
+extern "C" JNIEXPORT jint JNICALL Java_io_qt_core_QMultiMap_hashCode
 (JNIEnv *__jni_env,
  jobject,
  QtJambiNativeID __this_nativeId)
@@ -878,7 +878,7 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QM
 }
 
 // QMultiMap<Key,T>::operator=(QMultiMap<Key,T>)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap_assign)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QMultiMap_assign
     (JNIEnv *__jni_env,
      jobject _this,
      QtJambiNativeID __this_nativeId,
@@ -904,7 +904,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QM
 }
 
 // QMultiMap<Key,T>::swap(QMultiMap<Key,T>&)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap_swap)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QMultiMap_swap
     (JNIEnv *__jni_env,
      jobject _this,
      QtJambiNativeID __this_nativeId,
@@ -929,7 +929,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QM
     }QTJAMBI_TRY_END
 }
 
-extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap_isSharedWith__JJ)
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_QMultiMap_isSharedWith__JJ
     (JNIEnv *__jni_env,
      jobject,
      QtJambiNativeID __this_nativeId,
@@ -951,7 +951,7 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_cor
     return false;
 }
 
-extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap_isDetached__J)
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_QMultiMap_isDetached__J
     (JNIEnv *__jni_env,
      jobject,
      QtJambiNativeID __this_nativeId)
@@ -969,7 +969,7 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_cor
         return false;
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap_detach__J)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QMultiMap_detach__J
     (JNIEnv *__jni_env,
      jobject _this,
      QtJambiNativeID __this_nativeId)

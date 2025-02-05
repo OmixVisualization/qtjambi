@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -48,6 +48,12 @@
 #undef Q_STATIC_ASSERT_X
 
 #include <QtCore/qcompilerdetection.h>
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 9, 0)
+#define __GLIBCXX__
+#include <QtCore/qcompare.h>
+#undef __GLIBCXX__
+#endif
 
 #define seed_seq initializer_list<uint>const
 
@@ -143,8 +149,10 @@ typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,
 #       	ifndef Q_OS_MACOS
 #               define Q_FORWARD_DECLARE_OBJC_CLASS(X)
 #       		define Q_OS_MACOS
+#               define Q_OS_APPLE
 #       		include <QtGui/rhi/qrhi_platform.h>
 #       		undef Q_OS_MACOS
+#               undef Q_OS_APPLE
 #			else
 #       		include <QtGui/rhi/qrhi_platform.h>
 #			endif
@@ -152,8 +160,10 @@ typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,
 #       elif !defined(Q_OS_MACOS)
 #           define Q_FORWARD_DECLARE_OBJC_CLASS(X)
 #       	define Q_OS_MACOS
+#       	define Q_OS_APPLE
 #       	include <QtGui/rhi/qrhi_platform.h>
 #       	undef Q_OS_MACOS
+#       	undef Q_OS_APPLE
 #		else
 #       	include <QtGui/rhi/qrhi_platform.h>
 #		endif
@@ -227,9 +237,11 @@ typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,
 #       	define Q_OS_WIN
 #       	ifndef Q_OS_MACOS
 #       		define Q_OS_MACOS
+#       		define Q_OS_APPLE
 #       		include <QtQuick/QQuickRenderTarget>
 #       		include <QtQuick/QQuickGraphicsDevice>
 #       		undef Q_OS_MACOS
+#       		undef Q_OS_APPLE
 #			else
 #       		include <QtQuick/QQuickRenderTarget>
 #       		include <QtQuick/QQuickGraphicsDevice>
@@ -237,9 +249,11 @@ typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,
 #       	undef Q_OS_WIN
 #       elif !defined(Q_OS_MACOS)
 #       	define Q_OS_MACOS
+#       	define Q_OS_APPLE
 #       		include <QtQuick/QQuickRenderTarget>
 #       		include <QtQuick/QQuickGraphicsDevice>
 #       	undef Q_OS_MACOS
+#       	undef Q_OS_APPLE
 #		else
 #       	include <QtQuick/QQuickRenderTarget>
 #       	include <QtQuick/QQuickGraphicsDevice>
@@ -560,6 +574,10 @@ typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,
 #include <QtJambiBluetooth/hashes.h>
 #endif
 
+#if !defined(QTJAMBI_NO_INSIGHTETRACKER)
+#include <QtInsightTracker/QtInsightTracker>
+#endif
+
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 
 #ifndef QTJAMBI_NO_OPENGLWIDGETS
@@ -574,20 +592,17 @@ typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,
 #include <QtPdfWidgets/QtPdfWidgets>
 #endif
 
-#ifndef QTJAMBI_NO_HTTPSERVER
+#if !defined(QTJAMBI_NO_HTTPSERVER) && QT_VERSION >= QT_VERSION_CHECK(6, 4, 0)
 #define QT_WEBSOCKETS_LIB
 #include <QtHttpServer/QtHttpServer>
 #include <QtJambiHttpServer/hashes.h>
 #endif
 
-#ifndef QTJAMBI_NO_SPATIALAUDIO
+#if !defined(QTJAMBI_NO_SPATIALAUDIO) && QT_VERSION >= QT_VERSION_CHECK(6, 4, 0)
 #include <QtSpatialAudio/QtSpatialAudio>
 #endif
 
-#ifndef QTJAMBI_NO_INSIGHTETRACKER
-#include <QtInsightTracker/QtInsightTracker>
-#endif
-
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
 #ifndef QTJAMBI_NO_GRPC
 #include <QtGrpc/QtGrpc>
 #endif
@@ -595,6 +610,7 @@ typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,
 #ifndef QTJAMBI_NO_PROTOBUF
 #include <QtProtobuf/QtProtobuf>
 #endif
+#endif //QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
 
 #ifndef QTJAMBI_NO_OPENGL
 
@@ -648,18 +664,23 @@ typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,
 #undef Q_OS_WEBOS
 #define Q_OS_WIN
 #define Q_OS_MACOS
+#define Q_OS_APPLE
 #define Q_CLANG_QDOC
 #define Q_OS_WEBOS
 #define __OBJC__
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 1, 0)
 #undef QCOREAPPLICATION_PLATFORM_H
 #include <QtCore/qcoreapplication_platform.h>
+#endif //QT_VERSION >= QT_VERSION_CHECK(6, 1, 0)
 
 #ifndef QTJAMBI_NO_GUI
 #undef QGUIAPPLICATION_P_H
 #include <QtGui/private/qguiapplication_p.h>
 #undef QGUIAPPLICATION_PLATFORM_H
+#if QT_VERSION >= QT_VERSION_CHECK(6, 1, 0)
 #include <QtGui/qguiapplication_platform.h>
+#endif //QT_VERSION >= QT_VERSION_CHECK(6, 1, 0)
 #include <QtGui/qoffscreensurface_platform.h>
 
 #undef QOPENGLCONTEXT_PLATFORM_H

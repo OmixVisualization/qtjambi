@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -330,10 +330,18 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
             continue;
         writeInclude(s, inc, included);
     }
+    if(java_class->isQWindow()
+        || java_class->isQWidget()
+        || java_class->isQAction()
+        || (java_class->typeEntry()->isThreadAffine() && java_class->typeEntry()->threadAffinity()==QLatin1String("pixmap"))){
+        writeInclude(s, Include(Include::IncludePath, QStringLiteral(u"QtJambi/GuiAPI")), included);
+    }
     if(java_class->hasPaintMethod())
         writeInclude(s, Include(Include::IncludePath, QStringLiteral(u"QtJambi/AboutToPaint")), included);
     if(java_class->typeEntry()->isQAbstractItemModel())
         writeInclude(s, Include(Include::IncludePath, QStringLiteral(u"QtJambi/ModelAPI")), included);
+    if(java_class->typeEntry()->isQThread())
+        writeInclude(s, Include(Include::IncludePath, QStringLiteral(u"QtJambi/ThreadAPI")), included);
 
     writeInclude(s, Include(Include::IncludePath, QStringLiteral(u"QtJambi/RegistryAPI")), included);
     s << Qt::endl;

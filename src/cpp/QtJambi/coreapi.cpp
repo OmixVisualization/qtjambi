@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -41,6 +41,76 @@
 
 #define EXCLUDE_GT_END(strg) strg //.endsWith(">") ? strg+" " : strg
 
+// enum helpers...
+
+template<typename INT>
+jobject convertEnumToJavaObject(JNIEnv *env, INT qt_enum, jclass cl, const QString& className, jobject (*resolveEnum)(JNIEnv *, jint, jclass, INT, jstring))
+{
+    Q_ASSERT(cl);
+
+    jobject obj;
+    QString sig;
+    switch ( sizeof(INT) ) {
+    case 1:  sig = QLatin1String("(B)L%1;"); break;
+    case 2:  sig = QLatin1String("(S)L%1;"); break;
+    case 8:  sig = QLatin1String("(J)L%1;"); break;
+    default: sig = QLatin1String("(I)L%1;"); break;
+    }
+    jmethodID method = JavaAPI::resolveMethod(env, "resolve", qPrintable(sig.arg(className)), cl, true);
+    if(method){
+        if(env->ExceptionCheck()){
+            env->ExceptionDescribe();
+            env->ExceptionClear();
+        }
+        obj = env->CallStaticObjectMethod(cl, method, qt_enum);
+        JavaException::check(env QTJAMBI_STACKTRACEINFO );
+    }else{
+        jint hashCode = Java::Runtime::Object::hashCode(env,cl);
+        obj = resolveEnum(env, hashCode, cl, qt_enum, nullptr);
+    }
+    return obj;
+}
+
+jobject CoreAPI::convertEnumToJavaObject(JNIEnv *env, qint32 qt_enum, jclass cls)
+{
+    return convertEnumToJavaObject<jint>(env, jint(qt_enum), cls, QtJambiAPI::getClassName(env, cls).replace(QLatin1Char('.'), QLatin1Char('/')), &resolveIntEnum);
+}
+
+jobject CoreAPI::convertEnumToJavaObject(JNIEnv *env, qint16 qt_enum, jclass cls)
+{
+    return convertEnumToJavaObject<jshort>(env, jshort(qt_enum), cls, QtJambiAPI::getClassName(env, cls).replace(QLatin1Char('.'), QLatin1Char('/')), &resolveShortEnum);
+}
+
+jobject CoreAPI::convertEnumToJavaObject(JNIEnv *env, qint8 qt_enum, jclass cls)
+{
+    return convertEnumToJavaObject<jbyte>(env, jbyte(qt_enum), cls, QtJambiAPI::getClassName(env, cls).replace(QLatin1Char('.'), QLatin1Char('/')), &resolveByteEnum);
+}
+
+jobject CoreAPI::convertEnumToJavaObject(JNIEnv *env, qint64 qt_enum, jclass cls)
+{
+    return convertEnumToJavaObject<jlong>(env, jlong(qt_enum), cls, QtJambiAPI::getClassName(env, cls).replace(QLatin1Char('.'), QLatin1Char('/')), &resolveLongEnum);
+}
+
+jobject CoreAPI::convertEnumToJavaObject(JNIEnv *env, quint32 qt_enum, jclass cls)
+{
+    return convertEnumToJavaObject<jint>(env, jint(qt_enum), cls, QtJambiAPI::getClassName(env, cls).replace(QLatin1Char('.'), QLatin1Char('/')), &resolveIntEnum);
+}
+
+jobject CoreAPI::convertEnumToJavaObject(JNIEnv *env, quint16 qt_enum, jclass cls)
+{
+    return convertEnumToJavaObject<jshort>(env, jshort(qt_enum), cls, QtJambiAPI::getClassName(env, cls).replace(QLatin1Char('.'), QLatin1Char('/')), &resolveShortEnum);
+}
+
+jobject CoreAPI::convertEnumToJavaObject(JNIEnv *env, quint8 qt_enum, jclass cls)
+{
+    return convertEnumToJavaObject<jbyte>(env, jbyte(qt_enum), cls, QtJambiAPI::getClassName(env, cls).replace(QLatin1Char('.'), QLatin1Char('/')), &resolveByteEnum);
+}
+
+jobject CoreAPI::convertEnumToJavaObject(JNIEnv *env, quint64 qt_enum, jclass cls)
+{
+    return convertEnumToJavaObject<jlong>(env, jlong(qt_enum), cls, QtJambiAPI::getClassName(env, cls).replace(QLatin1Char('.'), QLatin1Char('/')), &resolveLongEnum);
+}
+
 QString CoreAPI::externalTypeTame(JNIEnv *env, const QString& internalName){
     return QtJambiTypeManager::getExternalTypeName(env, internalName);
 }
@@ -79,7 +149,7 @@ jobject CoreAPI::convertReflectedMethodToMeta(JNIEnv * env, jlong metaObjectPoin
     return nullptr;
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+#if QT_VERSION >= QT_VERSION_CHECK(6,5,0)
 struct MethodArgs{
     QVector<void*> parameters;
     QVector<const char*> typeNames;
@@ -122,10 +192,10 @@ jobject invokeMetaMethodImpl(JNIEnv * env, const QMetaMethod& method,
         }
         QtJambiScope scope(_qobject);
         bool ok = false;
-        const QList<ParameterTypeInfo>& parameterTypeInfos = QtJambiMetaObject::methodParameterInfo(env, method);
+        const QVector<ParameterTypeInfo> parameterTypeInfos = QtJambiMetaObject::methodParameterInfo(env, method);
         int argsCount = env->GetArrayLength(args);
         const int parameterCount = method.parameterCount();
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+#if QT_VERSION < QT_VERSION_CHECK(6,5,0)
         if(parameterCount==argsCount && argsCount<11){
             QGenericArgument val[10];
 #else
@@ -141,7 +211,7 @@ jobject invokeMetaMethodImpl(JNIEnv * env, const QMetaMethod& method,
                 const ParameterTypeInfo& parameterTypeInfo = parameterTypeInfos[i+1];
                 ok = parameterTypeInfo.convertExternalToInternal(env, &scope, jval, qtPtr, jValueType::l);
                 if(ok){
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+#if QT_VERSION < QT_VERSION_CHECK(6,5,0)
                     val[i] = QGenericArgument(parameterTypes[i].constData(), qtPtr);
 #else
                     methodArgs.typeNames[i+1] = parameterTypes[i];
@@ -153,11 +223,18 @@ jobject invokeMetaMethodImpl(JNIEnv * env, const QMetaMethod& method,
             }
             if(ok){
                 void* resultPtr = nullptr;
+#if QT_VERSION < QT_VERSION_CHECK(6,5,0)
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
                 if(method.returnType()!=QMetaType::Void){
                     resultPtr = QMetaType::create(method.returnType());
                     scope.addDeletion(method.returnType(), resultPtr);
                 }
+#else
+                if(method.returnMetaType().id()!=QMetaType::Void){
+                    resultPtr = method.returnMetaType().create();
+                    scope.addDeletion(method.returnMetaType(), resultPtr);
+                }
+#endif
                 ok = method.invoke(object,
                                    Qt::ConnectionType(connection),
                                    QGenericReturnArgument(method.typeName(), resultPtr),
@@ -231,7 +308,7 @@ jobject CoreAPI::getMetaMethodParameterClassTypes(JNIEnv * env, jobject _this){
     const QMetaMethod *__qt_this = QtJambiAPI::convertJavaObjectToNative<QMetaMethod>(env, _this);
     jobject result = QtJambiAPI::newJavaArrayList(env, __qt_this->parameterCount());
     if(__qt_this && __qt_this->isValid()){
-        const QList<ParameterTypeInfo>& parameterTypeInfos = QtJambiMetaObject::methodParameterInfo(env, *__qt_this);
+        const QVector<ParameterTypeInfo> parameterTypeInfos = QtJambiMetaObject::methodParameterInfo(env, *__qt_this);
         for(int i=1; i<parameterTypeInfos.size(); ++i){
             QtJambiAPI::addToJavaCollection(env, result, parameterTypeInfos[i].javaClass());
         }
@@ -244,7 +321,7 @@ jobject CoreAPI::getMetaMethodReturnClassType(JNIEnv * env, jobject _this){
     if(__qt_this && __qt_this->isValid()){
         if(__qt_this->methodType()==QMetaMethod::Constructor)
             return nullptr;
-        const QList<ParameterTypeInfo>& parameterTypeInfos = QtJambiMetaObject::methodParameterInfo(env, *__qt_this);
+        const QVector<ParameterTypeInfo> parameterTypeInfos = QtJambiMetaObject::methodParameterInfo(env, *__qt_this);
         if(parameterTypeInfos.size()>0){
             return parameterTypeInfos[0].javaClass();
         }
@@ -299,10 +376,10 @@ jobject CoreAPI::invokeMetaMethodOnGadget(JNIEnv * env, QtJambiNativeID _metaMet
         }
         if(ptr){
             bool ok = false;
-            const QList<ParameterTypeInfo>& parameterTypeInfos = QtJambiMetaObject::methodParameterInfo(env, method);
+            const QVector<ParameterTypeInfo> parameterTypeInfos = QtJambiMetaObject::methodParameterInfo(env, method);
             int argsCount = env->GetArrayLength(args);
             const int parameterCount = method.parameterCount();
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+#if QT_VERSION < QT_VERSION_CHECK(6,5,0)
             if(parameterCount==argsCount && argsCount<11){
                 QGenericArgument val[10];
 #else
@@ -318,7 +395,7 @@ jobject CoreAPI::invokeMetaMethodOnGadget(JNIEnv * env, QtJambiNativeID _metaMet
                     const ParameterTypeInfo& parameterTypeInfo = parameterTypeInfos[i+1];
                     ok = parameterTypeInfo.convertExternalToInternal(env, &scope, jval, qtPtr, jValueType::l);
                     if(ok){
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+#if QT_VERSION < QT_VERSION_CHECK(6,5,0)
                         val[i] = QGenericArgument(parameterTypes[i].constData(), qtPtr);
 #else
                         methodArgs.typeNames[i+1] = parameterTypes[i];
@@ -330,11 +407,18 @@ jobject CoreAPI::invokeMetaMethodOnGadget(JNIEnv * env, QtJambiNativeID _metaMet
                 }
                 if(ok){
                     void* resultPtr = nullptr;
+#if QT_VERSION < QT_VERSION_CHECK(6,5,0)
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
                     if(method.returnType()!=QMetaType::Void){
                         resultPtr = QMetaType::create(method.returnType());
                         scope.addDeletion(method.returnType(), resultPtr);
                     }
+#else
+                    if(method.returnMetaType().id()!=QMetaType::Void){
+                        resultPtr = method.returnMetaType().create();
+                        scope.addDeletion(method.returnMetaType(), resultPtr);
+                    }
+#endif
                     ok = method.invokeOnGadget(ptr,
                                                QGenericReturnArgument(method.typeName(), resultPtr),
                                                val[0],
@@ -725,7 +809,7 @@ jobject CoreAPI::newInstanceForMetaObject(JNIEnv *env, QtJambiNativeID construct
     const QMetaMethod& constructor = QtJambiAPI::objectReferenceFromNativeId<QMetaMethod>(env, constructorId);
     QtJambiScope scope(nullptr);
     if(constructor.isValid()){
-        const QList<ParameterTypeInfo>& parameterTypeInfos = QtJambiMetaObject::methodParameterInfo(env, constructor);
+        const QVector<ParameterTypeInfo> parameterTypeInfos = QtJambiMetaObject::methodParameterInfo(env, constructor);
         int argsCount = env->GetArrayLength(args);
         const int parameterCount = constructor.parameterCount();
         if(parameterCount==argsCount && argsCount<10){
@@ -1066,15 +1150,12 @@ int registerSmartPointerMetaType(const QByteArray& typeName,
 #if defined(ALLOW_SCOPED_POINTER_METATYPE)
 #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
 Q_GLOBAL_STATIC(QReadWriteLock, gSmartPointersLock)
-QReadWriteLock* smartPointersLock(){
-    return gSmartPointersLock();
-}
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-typedef SecureContainer<QHash<int,int>,QReadWriteLock,&smartPointersLock> ElementMetaTypesOfSmartPointersHash;
-typedef SecureContainer<QHash<int,PtrDeleterFunction>,QReadWriteLock,&smartPointersLock> ElementDeletersOfSmartPointersHash;
+typedef SecureContainer<QHash<int,int>,gSmartPointersLock> ElementMetaTypesOfSmartPointersHash;
+typedef SecureContainer<QHash<int,PtrDeleterFunction>,gSmartPointersLock> ElementDeletersOfSmartPointersHash;
 #else
-typedef SecureContainer<QHash<const QtPrivate::QMetaTypeInterface *,const QtPrivate::QMetaTypeInterface *>,QReadWriteLock,&smartPointersLock> ElementMetaTypesOfSmartPointersHash;
-typedef SecureContainer<QHash<const QtPrivate::QMetaTypeInterface *,PtrDeleterFunction>,QReadWriteLock,&smartPointersLock> ElementDeletersOfSmartPointersHash;
+typedef SecureContainer<QHash<const QtPrivate::QMetaTypeInterface *,const QtPrivate::QMetaTypeInterface *>,gSmartPointersLock> ElementMetaTypesOfSmartPointersHash;
+typedef SecureContainer<QHash<const QtPrivate::QMetaTypeInterface *,PtrDeleterFunction>,gSmartPointersLock> ElementDeletersOfSmartPointersHash;
 #endif
 Q_GLOBAL_STATIC(ElementMetaTypesOfSmartPointersHash, gElementMetaTypesOfSmartPointers)
 Q_GLOBAL_STATIC(ElementDeletersOfSmartPointersHash, gElementDeletersOfSmartPointers)
@@ -1183,7 +1264,7 @@ int registerMetaType(JNIEnv* env,
 #endif
                                                            QMetaType::NeedsConstruction
                                                                | QMetaType::NeedsDestruction
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION < QT_VERSION_CHECK(6, 5, 0)
                                                                | QMetaType::MovableType
 #else
                                                                | QMetaType::RelocatableType
@@ -1361,7 +1442,7 @@ int registerMetaType(JNIEnv* env,
 #endif
                                                            QMetaType::NeedsConstruction
                                                                | QMetaType::NeedsDestruction
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION < QT_VERSION_CHECK(6, 5, 0)
                                                                | QMetaType::MovableType
 #else
                                                                | QMetaType::RelocatableType
@@ -1573,7 +1654,7 @@ int registerMetaType(JNIEnv* env,
 #endif
                                                            QMetaType::NeedsConstruction
                                                                | QMetaType::NeedsDestruction
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION < QT_VERSION_CHECK(6, 5, 0)
                                                                | QMetaType::MovableType
 #else
                                                                | QMetaType::RelocatableType
@@ -1922,7 +2003,7 @@ int registerMetaType(JNIEnv* env,
 #endif
                                                        QMetaType::NeedsConstruction
                                                            | QMetaType::NeedsDestruction
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION < QT_VERSION_CHECK(6, 5, 0)
                                                            | QMetaType::MovableType
 #else
                                                            | QMetaType::RelocatableType
@@ -2278,7 +2359,7 @@ int registerMetaType(JNIEnv* env,
 #endif
                                                        QMetaType::NeedsConstruction
                                                            | QMetaType::NeedsDestruction
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION < QT_VERSION_CHECK(6, 5, 0)
                                                            | QMetaType::MovableType
 #else
                                                            | QMetaType::RelocatableType
@@ -2842,7 +2923,7 @@ int registerMetaType(JNIEnv* env,
 #endif
                                                        QMetaType::NeedsConstruction
                                                            | QMetaType::NeedsDestruction
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION < QT_VERSION_CHECK(6, 5, 0)
                                                            | QMetaType::MovableType
 #else
                                                            | QMetaType::RelocatableType
@@ -3196,7 +3277,7 @@ int registerMetaType(JNIEnv* env,
 #endif
                                                        QMetaType::NeedsConstruction
                                                            | QMetaType::NeedsDestruction
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION < QT_VERSION_CHECK(6, 5, 0)
                                                            | QMetaType::MovableType
 #else
                                                            | QMetaType::RelocatableType
@@ -3676,7 +3757,7 @@ int CoreAPI::registerMetaType(JNIEnv *env, jclass containerType, jobjectArray in
     if(registeredId!=QMetaType::UnknownType)
         return registeredId;
     try{
-        const JObjectArrayWrapper _instantiations(env, instantiations);
+        JConstObjectArrayPointer<jobject> _instantiations(env, instantiations);
         QStringList names;
         AbstractContainerAccess* containerAccess = nullptr;
         switch(_instantiations.length()){
@@ -3764,7 +3845,7 @@ int CoreAPI::registerMetaType(JNIEnv *env, jclass containerType, jobjectArray in
                 {
                     return registerMetaType(env, containerType, false, false);
                 }else{
-                    const QMetaType& metaType1 = qtjambi_cast<const QMetaType&>(env, _instantiations[0].object(env));
+                    const QMetaType& metaType1 = qtjambi_cast<const QMetaType&>(env, _instantiations[0]);
                     PtrDeleterFunction deleter_function = nullptr;
                     const std::type_info* typeId = nullptr;
                     bool isPointer = AbstractContainerAccess::isPointerType(metaType1);
@@ -3822,7 +3903,7 @@ int CoreAPI::registerMetaType(JNIEnv *env, jclass containerType, jobjectArray in
                                             names.first());
                 }
             }
-            const QMetaType& metaType1 = qtjambi_cast<const QMetaType&>(env, _instantiations[0].object(env));
+            const QMetaType& metaType1 = qtjambi_cast<const QMetaType&>(env, _instantiations[0]);
             QString elementType = QLatin1String(metaType1.name());
             for(QString& name : names){
                 if(name.contains(QLatin1String("%1")))
@@ -3931,8 +4012,8 @@ int CoreAPI::registerMetaType(JNIEnv *env, jclass containerType, jobjectArray in
         }
         case 2: {
             QTJAMBI_JNI_LOCAL_FRAME(env, 64);
-            const QMetaType& metaType1 = qtjambi_cast<const QMetaType&>(env, _instantiations[0].object(env));
-            const QMetaType& metaType2 = qtjambi_cast<const QMetaType&>(env, _instantiations[1].object(env));
+            const QMetaType& metaType1 = qtjambi_cast<const QMetaType&>(env, _instantiations[0]);
+            const QMetaType& metaType2 = qtjambi_cast<const QMetaType&>(env, _instantiations[1]);
             AssociativeContainerType type;
             if(templateName.startsWith(QStringLiteral("QMultiMap<"))){
                 type = AssociativeContainerType::QMultiMap;

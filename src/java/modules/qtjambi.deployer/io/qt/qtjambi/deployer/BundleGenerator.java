@@ -50,13 +50,8 @@ import io.qt.core.QPair;
 import io.qt.core.QProcess;
 import io.qt.core.QStringList;
 import io.qt.core.QVersionNumber;
-import io.qt.internal.DeployerUtility;
 
 final class BundleGenerator {
-	
-	static <K,V> Function<? super K, ArrayList<V>> getArrayListFactory(){
-		return key->new ArrayList<>();
-	}
 	
 	private static Map<String,Set<String>> pluginsByModules;
 	private static Map<String,Set<String>> pluginsByModules(String osArchName){
@@ -685,7 +680,7 @@ final class BundleGenerator {
 									name = targetModule;
 									prepend = false;
 								}
-								List<File> list = libraries.computeIfAbsent(name, getArrayListFactory());
+								List<File> list = libraries.computeIfAbsent(name, Utility.arrayListFactory());
 								if(prepend)
 									list.add(0, new File(binDir, lib));
 								else
@@ -694,10 +689,10 @@ final class BundleGenerator {
 								if(debugLib.exists())
 									list.add(debugLib);
 							}else if(lib.equals("libGLESv2.dll") || lib.equals("libEGL.dll")) {
-								List<File> list = libraries.computeIfAbsent("gui", getArrayListFactory());
+								List<File> list = libraries.computeIfAbsent("gui", Utility.arrayListFactory());
 								list.add(new File(binDir, lib));
 							}else if(lib.equals("libstdc++-6.dll") || lib.equals("libwinpthread-1.dll") || lib.equals("libgcc_s_seh-1.dll")) { // mingw
-								List<File> list = libraries.computeIfAbsent("core", getArrayListFactory());
+								List<File> list = libraries.computeIfAbsent("core", Utility.arrayListFactory());
 								list.add(new File(binDir, lib));
 							}
 						}
@@ -732,7 +727,7 @@ final class BundleGenerator {
 									name = targetModule;
 									prepend = false;
 								}
-								List<File> list = libraries.computeIfAbsent(name, getArrayListFactory());
+								List<File> list = libraries.computeIfAbsent(name, Utility.arrayListFactory());
 								if(prepend)
 									list.add(0, new File(binDir, lib));
 								else
@@ -741,7 +736,7 @@ final class BundleGenerator {
 								String libNoSuffix = lib.substring(0, lib.length()-5);
 								if(new File(binDir, libNoSuffix+"dd.dll").exists())
 									continue;
-								List<File> list = libraries.computeIfAbsent("gui", getArrayListFactory());
+								List<File> list = libraries.computeIfAbsent("gui", Utility.arrayListFactory());
 								list.add(new File(binDir, lib));
 							}
 						}
@@ -779,7 +774,7 @@ final class BundleGenerator {
 								name = targetModule;
 								prepend = false;
 							}
-							List<File> list = libraries.computeIfAbsent(name, getArrayListFactory());
+							List<File> list = libraries.computeIfAbsent(name, Utility.arrayListFactory());
 							if(prepend)
 								list.add(0, new File(binDir, lib));
 							else
@@ -788,10 +783,10 @@ final class BundleGenerator {
 							String libNoSuffix = lib.substring(0, lib.length()-5);
 							if(new File(binDir, libNoSuffix+".dll").exists())
 								continue;
-							List<File> list = libraries.computeIfAbsent("gui", getArrayListFactory());
+							List<File> list = libraries.computeIfAbsent("gui", Utility.arrayListFactory());
 							list.add(new File(binDir, lib));
 						}else if(lib.equals("libstdc++-6.dll") || lib.equals("libwinpthread-1.dll") || lib.equals("libgcc_s_seh-1.dll")) { // mingw
-							List<File> list = libraries.computeIfAbsent("core", getArrayListFactory());
+							List<File> list = libraries.computeIfAbsent("core", Utility.arrayListFactory());
 							list.add(new File(binDir, lib));
 						}
 					}
@@ -844,7 +839,7 @@ final class BundleGenerator {
 							name = targetModule;
 							prepend = false;
 						}
-						List<File> list = libraries.computeIfAbsent(name, getArrayListFactory());
+						List<File> list = libraries.computeIfAbsent(name, Utility.arrayListFactory());
 						if(prepend)
 							list.add(0, new File(libDir, lib));
 						else
@@ -881,7 +876,7 @@ final class BundleGenerator {
 							name = targetModule;
 							prepend = false;
 						}
-						List<File> list = libraries.computeIfAbsent(name, getArrayListFactory());
+						List<File> list = libraries.computeIfAbsent(name, Utility.arrayListFactory());
 						if(prepend)
 							list.add(0, new File(libDir, lib));
 						else
@@ -901,7 +896,7 @@ final class BundleGenerator {
 							if(Files.isSymbolicLink(link)) {
 								File libFile = link.toRealPath().toFile();
 								if(libFile.getName().startsWith(prefix) && !libFile.getName().endsWith(suffix)) {
-									List<File> list = libraries.computeIfAbsent(name, getArrayListFactory());
+									List<File> list = libraries.computeIfAbsent(name, Utility.arrayListFactory());
 									if(prepend)
 										list.add(0, libFile);
 									else
@@ -911,7 +906,7 @@ final class BundleGenerator {
 						} catch (IOException e) {
 						}
 					}else if(lib.startsWith(prefix2) && lib.contains(".so.") && !Files.isSymbolicLink(new File(libDir, lib).toPath())) {
-						libraries.computeIfAbsent("core", getArrayListFactory()).add(new File(libDir, lib));
+						libraries.computeIfAbsent("core", Utility.arrayListFactory()).add(new File(libDir, lib));
 					}
 				}
 				for(File pluginDir : pluginsDir.listFiles()) {
@@ -942,7 +937,7 @@ final class BundleGenerator {
 							name = targetModule;
 							prepend = false;
 						}
-						List<File> list = libraries.computeIfAbsent(name, getArrayListFactory());
+						List<File> list = libraries.computeIfAbsent(name, Utility.arrayListFactory());
 						if(prepend)
 							list.add(0, lib);
 						else
@@ -1992,5 +1987,32 @@ final class BundleGenerator {
 				}
 			}
 		}
+	}
+}
+
+final class Utility extends io.qt.internal.NativeUtility{
+	protected static <K,V> Function<K, ArrayList<V>> arrayListFactory(){
+		return io.qt.internal.NativeUtility.arrayListFactory();
+	}
+}
+
+final class DeployerUtility extends io.qt.internal.DeployerUtility{
+	protected static Map<String,QPair<Long,Long>> getRegisteredTypeSizesAndAlignments(){
+		return io.qt.internal.DeployerUtility.getRegisteredTypeSizesAndAlignments();
+	}
+	protected static String getInterfaceIID(Class<?> cls) {
+		return io.qt.internal.DeployerUtility.getInterfaceIID(cls);
+	}
+	protected static String qtLibraryPath() {
+		return io.qt.internal.DeployerUtility.qtLibraryPath();
+	}
+	protected static String qtJambiLibraryPath() {
+		return io.qt.internal.DeployerUtility.qtJambiLibraryPath();
+	}
+	protected static String osArchName() {
+		return io.qt.internal.DeployerUtility.osArchName();
+	}
+	protected static boolean isMinGWBuilt() {
+		return io.qt.internal.DeployerUtility.isMinGWBuilt();
 	}
 }

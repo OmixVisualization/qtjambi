@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -36,7 +36,7 @@ package io.qt;
 public class QLibraryNotFoundError extends LinkageError {
 	private static final long serialVersionUID = -7108832113606951792L;
 
-	public QLibraryNotFoundError(String msg) {
+	public QLibraryNotFoundError(@NonNull String msg) {
 	     super(msg);
 	 }
 }

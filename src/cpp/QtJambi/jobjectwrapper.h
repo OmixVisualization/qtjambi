@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -70,6 +70,18 @@ public:
 
     bool operator==(jobject obj) const;
 
+    inline bool operator==(std::nullptr_t) const { return isNull(); }
+
+    inline bool operator!=(const JObjectWrapper &other) const { return !operator==(other); }
+
+    inline bool operator!=(jobject obj) const { return !operator==(obj); }
+
+    inline bool operator!=(std::nullptr_t) const { return !isNull(); }
+
+    inline bool operator!() const { return isNull(); }
+
+    inline operator bool () const { return !isNull(); }
+
     bool operator<(const JObjectWrapper &other) const;
 
     bool operator<(jobject obj) const;
@@ -94,9 +106,26 @@ public:
 
     jobject object(JNIEnv *env) const;
 
+    template<typename T>
+    T typedObject(JNIEnv *env) const {
+        return static_cast<T>(object(env));
+    }
+
     operator jobject() const;
 
+    bool isNull() const;
+
+    template<typename T>
+    operator T() const{
+        if constexpr(std::is_same<T,bool>::value)
+            return !isNull();
+        else
+            return static_cast<T>(operator jobject());
+    }
+
     void clear(JNIEnv *env);
+
+    bool isInstanceOf(JNIEnv *env, jclass cls) const;
 private:
     JObjectWrapper(JNIEnv *env, jobject obj, bool globalRefs, const std::type_info& typeId);
     void assign(JNIEnv* env, const JObjectWrapper& wrapper, const std::type_info& typeId);
@@ -135,6 +164,30 @@ private:
     friend class RCMultiMap;
 };
 Q_DECLARE_METATYPE(JObjectWrapper)
+
+inline bool operator&&(bool a, const JObjectWrapper& b){
+    return a && !b.isNull();
+}
+
+inline bool operator||(bool a, const JObjectWrapper& b){
+    return a || !b.isNull();
+}
+
+inline bool operator&&(const JObjectWrapper& a, const JObjectWrapper& b){
+    return !a.isNull() && !b.isNull();
+}
+
+inline bool operator||(const JObjectWrapper& a, const JObjectWrapper& b){
+    return !a.isNull() || !b.isNull();
+}
+
+inline bool operator&&(const JObjectWrapper& a, bool b){
+    return !a.isNull() && b;
+}
+
+inline bool operator||(const JObjectWrapper& a, bool b){
+    return !a.isNull() || b;
+}
 
 class QTJAMBI_EXPORT JEnumWrapper: public JObjectWrapper
 {

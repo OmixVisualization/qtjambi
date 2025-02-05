@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -62,6 +62,7 @@ import io.qt.QtPropertyResetter;
 import io.qt.QtPropertyWriter;
 import io.qt.QtSignalEmitterInterface;
 import io.qt.QtUninvokable;
+import io.qt.autotests.generated.General;
 import io.qt.autotests.generated.SignalsAndSlots;
 import io.qt.core.QByteArray;
 import io.qt.core.QCoreApplication;
@@ -84,7 +85,6 @@ import io.qt.core.Qt;
 import io.qt.gui.QClipboard;
 import io.qt.gui.QDesktopServices;
 import io.qt.gui.QGuiApplication;
-import io.qt.internal.ClassAnalyzerUtility;
 import io.qt.internal.TestUtility;
 import io.qt.widgets.QApplication;
 import io.qt.widgets.QGraphicsScene;
@@ -94,7 +94,7 @@ import io.qt.widgets.QWidget;
 
 public class TestConnections extends ApplicationInitializer
 {
-	static boolean hasSerializableLambdas = ClassAnalyzerUtility.serializeLambdaExpression((QMetaObject.Slot0)ApplicationInitializer::testInitializeWithWidgets) != null;
+	static boolean hasSerializableLambdas = General.internalAccess.serializeLambdaExpression((QMetaObject.Slot0)ApplicationInitializer::testInitializeWithWidgets) != null;
 	
 	@BeforeClass
     public static void testInitialize() throws Exception {

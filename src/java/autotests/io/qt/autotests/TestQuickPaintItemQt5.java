@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -106,6 +106,7 @@ public class TestQuickPaintItemQt5 extends ApplicationInitializer {
 		    component.show();
 		    QTimer.singleShot(20000, loop::quit);
 		    loop.exec();
+		    test.isDisposed();
 		    timer.timeout.disconnect();
 		    component.close();
 		    timer.stop();

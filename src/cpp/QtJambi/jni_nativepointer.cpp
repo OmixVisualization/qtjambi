@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -89,64 +89,55 @@ size_t getShellSizeForClass(JNIEnv *env, jclass object_class)
     return result;
 }
 
-extern "C" Q_DECL_EXPORT jboolean JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_readBoolean)
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_QNativePointer_readBoolean
   (JNIEnv *, jclass, jlong ptr, jlong pos)
 {
     return (reinterpret_cast<bool *>(ptr))[pos];
 }
 
-extern "C" Q_DECL_EXPORT jbyte JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_readByte)
+extern "C" JNIEXPORT jbyte JNICALL Java_io_qt_QNativePointer_readByte
   (JNIEnv *, jclass, jlong ptr, jlong pos)
 {
     return (reinterpret_cast<qint8 *>(ptr))[pos];
 }
 
-extern "C" Q_DECL_EXPORT jchar JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_readChar)
+extern "C" JNIEXPORT jchar JNICALL Java_io_qt_QNativePointer_readChar
   (JNIEnv *, jclass, jlong ptr, jlong pos)
 {
     return (reinterpret_cast<quint16 *>(ptr))[pos];
 }
 
-extern "C" Q_DECL_EXPORT jshort JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_readShort)
+extern "C" JNIEXPORT jshort JNICALL Java_io_qt_QNativePointer_readShort
   (JNIEnv *, jclass, jlong ptr, jlong pos)
 {
     return (reinterpret_cast<qint16 *>(ptr))[pos];
 }
 
-extern "C" Q_DECL_EXPORT jint JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_readInt)
+extern "C" JNIEXPORT jint JNICALL Java_io_qt_QNativePointer_readInt
   (JNIEnv *, jclass, jlong ptr, jlong pos)
 {
     return (reinterpret_cast<qint32 *>(ptr))[pos];
 }
 
-extern "C" Q_DECL_EXPORT jlong JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_readLong)
+extern "C" JNIEXPORT jlong JNICALL Java_io_qt_QNativePointer_readLong
   (JNIEnv *, jclass, jlong ptr, jlong pos)
 {
     return (reinterpret_cast<qint64 *>(ptr))[pos];
 }
 
-extern "C" Q_DECL_EXPORT jfloat JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_readFloat)
+extern "C" JNIEXPORT jfloat JNICALL Java_io_qt_QNativePointer_readFloat
   (JNIEnv *, jclass, jlong ptr, jlong pos)
 {
     return (reinterpret_cast<float *>(ptr))[pos];
 }
 
-extern "C" Q_DECL_EXPORT jdouble JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_readDouble)
+extern "C" JNIEXPORT jdouble JNICALL Java_io_qt_QNativePointer_readDouble
   (JNIEnv *, jclass, jlong ptr, jlong pos)
 {
     return (reinterpret_cast<double *>(ptr))[pos];
 }
 
-extern "C" Q_DECL_EXPORT jlong JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_readPointer)
+extern "C" JNIEXPORT jlong JNICALL Java_io_qt_QNativePointer_readPointer
   (JNIEnv *, jclass, jlong ptr, jlong pos)
 {
     return reinterpret_cast<jlong>((reinterpret_cast<void **>(ptr))[pos]);
@@ -154,8 +145,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_readPointer)
 
 bool isValueType(JNIEnv * __jni_env, jclass valueType, int* metaTypeId = nullptr);
 
-extern "C" Q_DECL_EXPORT jobject JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_readObject)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_QNativePointer_readObject
   (JNIEnv * __jni_env, jclass, jlong ptr, jclass valueType, jlong pos, jboolean readOnly, jint type, jlong size)
 {
     try{
@@ -183,8 +173,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_readObject)
     return nullptr;
 }
 
-extern "C" Q_DECL_EXPORT jobject JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_fromArray)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_QNativePointer_fromArray
   (JNIEnv * env, jclass, jclass valueType, jobjectArray array)
 {
     try{
@@ -225,104 +214,91 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_fromArray)
     return nullptr;
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_copyFromB)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_QNativePointer_copyFromB
   (JNIEnv * env, jclass, jlong ptr, jbyteArray array)
 {
     if(jsize size = env->GetArrayLength(array))
         env->GetByteArrayRegion(array, 0, size, reinterpret_cast<jbyte*>(ptr));
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_copyFromS)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_QNativePointer_copyFromS
   (JNIEnv * env, jclass, jlong ptr, jshortArray array)
 {
     if(jsize size = env->GetArrayLength(array))
         env->GetShortArrayRegion(array, 0, size, reinterpret_cast<jshort*>(ptr));
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_copyFromI)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_QNativePointer_copyFromI
   (JNIEnv * env, jclass, jlong ptr, jintArray array)
 {
     if(jsize size = env->GetArrayLength(array))
         env->GetIntArrayRegion(array, 0, size, reinterpret_cast<jint*>(ptr));
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_copyFromL)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_QNativePointer_copyFromL
   (JNIEnv * env, jclass, jlong ptr, jlongArray array)
 {
     if(jsize size = env->GetArrayLength(array))
         env->GetLongArrayRegion(array, 0, size, reinterpret_cast<jlong*>(ptr));
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_copyFromF)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_QNativePointer_copyFromF
   (JNIEnv * env, jclass, jlong ptr, jfloatArray array)
 {
     if(jsize size = env->GetArrayLength(array))
         env->GetFloatArrayRegion(array, 0, size, reinterpret_cast<jfloat*>(ptr));
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_copyFromD)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_QNativePointer_copyFromD
   (JNIEnv * env, jclass, jlong ptr, jdoubleArray array)
 {
     if(jsize size = env->GetArrayLength(array))
         env->GetDoubleArrayRegion(array, 0, size, reinterpret_cast<jdouble*>(ptr));
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_copyBackB)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_QNativePointer_copyBackB
   (JNIEnv * env, jclass, jlong ptr, jbyteArray array)
 {
     if(jsize size = env->GetArrayLength(array))
         env->SetByteArrayRegion(array, 0, size, reinterpret_cast<const jbyte*>(ptr));
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_copyBackS)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_QNativePointer_copyBackS
   (JNIEnv * env, jclass, jlong ptr, jshortArray array)
 {
     if(jsize size = env->GetArrayLength(array))
         env->SetShortArrayRegion(array, 0, size, reinterpret_cast<const jshort*>(ptr));
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_copyBackI)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_QNativePointer_copyBackI
   (JNIEnv * env, jclass, jlong ptr, jintArray array)
 {
     if(jsize size = env->GetArrayLength(array))
         env->SetIntArrayRegion(array, 0, size, reinterpret_cast<const jint*>(ptr));
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_copyBackL)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_QNativePointer_copyBackL
   (JNIEnv * env, jclass, jlong ptr, jlongArray array)
 {
     if(jsize size = env->GetArrayLength(array))
         env->SetLongArrayRegion(array, 0, size, reinterpret_cast<const jlong*>(ptr));
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_copyBackF)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_QNativePointer_copyBackF
   (JNIEnv * env, jclass, jlong ptr, jfloatArray array)
 {
     if(jsize size = env->GetArrayLength(array))
         env->SetFloatArrayRegion(array, 0, size, reinterpret_cast<const jfloat*>(ptr));
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_copyBackD)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_QNativePointer_copyBackD
   (JNIEnv * env, jclass, jlong ptr, jdoubleArray array)
 {
     if(jsize size = env->GetArrayLength(array))
         env->SetDoubleArrayRegion(array, 0, size, reinterpret_cast<const jdouble*>(ptr));
 }
 
-extern "C" Q_DECL_EXPORT jobject JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_fromObject)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_QNativePointer_fromObject
   (JNIEnv * __jni_env, jclass, jobject object)
 {
     try{
@@ -336,16 +312,15 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_fromObject)
     return nullptr;
 }
 
-extern "C" Q_DECL_EXPORT jobject JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_toByteBuffer)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_QNativePointer_toByteBuffer
   (JNIEnv * env, jclass, jlong ptr, jlong capacity, jboolean readOnly)
 {
 	jobject buffer{nullptr};
     try{
         if(readOnly){
-            buffer = LocalDataJBuffer(env, reinterpret_cast<const void*>(ptr), capacity).take();
+            buffer = DataJBuffer(env, reinterpret_cast<const void*>(ptr), capacity).take();
         }else{
-            buffer = LocalDataJBuffer(env, reinterpret_cast<void*>(ptr), capacity).take();
+            buffer = DataJBuffer(env, reinterpret_cast<void*>(ptr), capacity).take();
         }
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
@@ -353,13 +328,12 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_toByteBuffer)
     return buffer;
 }
 
-extern "C" Q_DECL_EXPORT jobject JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_fromBuffer)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_QNativePointer_fromBuffer
   (JNIEnv * env, jclass, jobject buffer)
 {
     try{
         if(Java::Runtime::Buffer::isReadOnly(env, buffer)){
-            JBufferConstData* d = new JBufferConstData(env, buffer);
+            PersistentJBufferConstData* d = new PersistentJBufferConstData(env, buffer);
             if(d->isDirect()){
                 jlong ptr = jlong(d->take());
                 delete d;
@@ -368,7 +342,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_fromBuffer)
                 return Java::QtJambi::QNativePointer::newInstance2(env, buffer, jlong(d->data()), jlong(d));
             }
         }else{
-            JBufferData* d = new JBufferData(env, buffer);
+            PersistentJBufferData* d = new PersistentJBufferData(env, buffer);
             if(d->isDirect()){
                 jlong ptr = jlong(d->take());
                 delete d;
@@ -383,93 +357,81 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_fromBuffer)
     return nullptr;
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_deleteBufferAccess)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_QNativePointer_deleteBufferAccess
     (JNIEnv *, jclass, jlong ptr, jboolean isReadonly)
 {
     if(isReadonly){
-        delete reinterpret_cast<JBufferConstData*>(ptr);
+        delete reinterpret_cast<PersistentJBufferConstData*>(ptr);
     }else{
-        delete reinterpret_cast<JBufferData*>(ptr);
+        delete reinterpret_cast<PersistentJBufferData*>(ptr);
     }
 }
 
-extern "C" Q_DECL_EXPORT jstring JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_readString)
+extern "C" JNIEXPORT jstring JNICALL Java_io_qt_QNativePointer_readString
   (JNIEnv *env, jclass, jlong ptr, jlong pos)
 {
     try{
-        return qtjambi_cast<jstring>(env, reinterpret_cast<QString *>(ptr)[pos]);
+        return qtjambi_cast<jstring>(env, reinterpret_cast<const QString *>(ptr)[pos]);
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
     }
     return nullptr;
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_writeBoolean)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_QNativePointer_writeBoolean
   (JNIEnv *, jclass, jlong ptr, jlong pos, jboolean value)
 {
     ((reinterpret_cast<bool *>(ptr))[pos]) = value;
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_writeByte)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_QNativePointer_writeByte
   (JNIEnv *, jclass, jlong ptr, jlong pos, jbyte value)
 {
     (((reinterpret_cast<qint8 *>(ptr)))[pos]) = value;
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_writeChar)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_QNativePointer_writeChar
   (JNIEnv *, jclass, jlong ptr, jlong pos, jchar value)
 {
     (((reinterpret_cast<quint16 *>(ptr)))[pos]) = value;
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_writeShort)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_QNativePointer_writeShort
   (JNIEnv *, jclass, jlong ptr, jlong pos, jshort value)
 {
     (((reinterpret_cast<qint16 *>(ptr)))[pos]) = value;
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_writeInt)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_QNativePointer_writeInt
   (JNIEnv *, jclass, jlong ptr, jlong pos, jint value)
 {
     (((reinterpret_cast<qint32 *>(ptr)))[pos]) = value;
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_writeLong)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_QNativePointer_writeLong
   (JNIEnv *, jclass, jlong ptr, jlong pos, jlong value)
 {
     (((reinterpret_cast<qint64 *>(ptr)))[pos]) = value;
 }
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_writeFloat)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_QNativePointer_writeFloat
   (JNIEnv *, jclass, jlong ptr, jlong pos, jfloat value)
 {
     (((reinterpret_cast<float *>(ptr)))[pos]) = value;
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_writeDouble)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_QNativePointer_writeDouble
   (JNIEnv *, jclass, jlong ptr, jlong pos, jdouble value)
 {
     (((reinterpret_cast<double *>(ptr)))[pos]) = value;
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_writePointer)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_QNativePointer_writePointer
   (JNIEnv *, jclass, jlong ptr, jlong pos, jlong value)
 {
     (reinterpret_cast<void **>(ptr))[pos] = reinterpret_cast<void *>(value);
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_writeObject)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_QNativePointer_writeObject
   (JNIEnv * __jni_env, jclass, jlong buf, jlong _knownSize, jclass valueType, jlong pos, jobject value)
 {
     try{
@@ -502,8 +464,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_writeObject)
     }
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_writeString)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_QNativePointer_writeString
   (JNIEnv *env, jclass, jlong ptr, jlong pos, jstring value)
 {
     try{
@@ -513,8 +474,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_writeString)
     }
 }
 
-extern "C" Q_DECL_EXPORT jlong JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_createPointer)
+extern "C" JNIEXPORT jlong JNICALL Java_io_qt_QNativePointer_createPointer
   (JNIEnv *, jclass, jint type, jlong _size, jint indirections)
 {
     size_t size = size_t(_size);
@@ -555,8 +515,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_createPointer)
     return 0;
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_deletePointer)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_QNativePointer_deletePointer
   (JNIEnv *, jclass, jlong ptr, jint type, jint deleteMode)
 {
     if (deleteMode == 0) { // free()
@@ -661,13 +620,13 @@ qint64 DirectAddressIODevice::writeData(const char *data, qint64 len)
     return -1;
 }
 
-extern "C" Q_DECL_EXPORT jlong JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_pointerSize)
+extern "C" JNIEXPORT jlong JNICALL Java_io_qt_QNativePointer_pointerSize
     (JNIEnv *,jobject)
 {
     return jlong(sizeof(void*));
 }
 
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_ioDevice)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_QNativePointer_ioDevice
 (JNIEnv *env,
  jobject buffer, jint indirections, jlong byteSize, jlong pointer, jboolean readOnly)
 {
@@ -695,19 +654,19 @@ protected:
     qint64 writeData(const char *data, qint64 len);
 private:
     const bool m_readOnly;
-    JBufferConstData* d;
+    PersistentJBufferConstData* d;
 };
 
 BufferIODevice::BufferIODevice(JNIEnv* env, jobject object, QObject *parent)
     : QIODevice(parent),
     m_readOnly(object && Java::Runtime::Buffer::isReadOnly(env, object)),
-    d(m_readOnly ? new JBufferConstData(env, object) : new JBufferData(env, object)) {}
+    d(m_readOnly ? new PersistentJBufferConstData(env, object) : new PersistentJBufferData(env, object)) {}
 
 BufferIODevice::~BufferIODevice(){
     if(m_readOnly){
         delete d;
     }else{
-        delete reinterpret_cast<JBufferData*>(d);
+        delete reinterpret_cast<PersistentJBufferData*>(d);
     }
     d = nullptr;
 }
@@ -738,7 +697,7 @@ qint64 BufferIODevice::writeData(const char *data, qint64 len)
     if((openMode() & QIODevice::WriteOnly)){
         qint64 _len = qMin(len, d->limit()-pos());
         if(_len>0)
-            memcpy(reinterpret_cast<JBufferData*>(d)->data<char>()+pos(), data, size_t(_len));
+            memcpy(reinterpret_cast<PersistentJBufferData*>(d)->data<char>()+pos(), data, size_t(_len));
         return qint64(_len);
     }
     return -1;

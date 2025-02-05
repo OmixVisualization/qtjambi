@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -368,11 +368,14 @@ QFileInfo rpp::pp::handle_include(bool skip_current_path, QString filename, int 
             "stdbool.h",
             "climits",
             "QtCore/qjnitypes.h",
-            "cassert"
+            "cassert",
+            "unordered_map",
+            "unordered_set"
         };
         if((verbose & DEBUGLOG_INCLUDE_ERRORS) != 0) {
             QString current_file(env.current_file.absoluteFilePath());
             if(!current_file.contains("private/")
+                && !current_file.contains("rhi/")
                 && !current_file.endsWith("_p.h")
                 && !ignoredFiles.contains(filename)){
                 QString message = QString("No such file or directory: %1%2%3")

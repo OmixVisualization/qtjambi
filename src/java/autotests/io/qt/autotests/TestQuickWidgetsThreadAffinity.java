@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -66,7 +66,7 @@ public class TestQuickWidgetsThreadAffinity extends ApplicationInitializer{
 		QEventLoop loop = new QEventLoop();
 		QThread thread = QThread.create(()->{
 			try{
-				widget.setSource(QUrl.fromLocalFile(":io/qt/autotests/qml/RectangleMethodAndSignal.qml"));
+				widget.setSource("qrc:io/qt/autotests/qml/RectangleMethodAndSignal.qml");
 				fail("QThreadAffinityException expected to be thrown.");
 			}catch(QThreadAffinityException e) {}
 		});

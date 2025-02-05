@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -39,13 +39,16 @@ TypeSystem{
         name: "web.comsumer.function"
         Text{content: "std::function<void(%TYPE)> %out;\n"+
                       "if(%in){\n"+
-                      "    JObjectWrapper wrapper(%env, %in);\n"+
-                      "    %out = [wrapper](%TYPE value){\n"+
-                      "                        if(JniEnvironment env{200}){\n"+
+                      "    %out = [wrapper = JObjectWrapper(%env, %in)](%TYPE value){\n"+
+                      "                    if(JniEnvironment env{200}){\n"+
+                      "                        QTJAMBI_TRY{\n"+
                       "                            jobject _value = qtjambi_cast<jobject>(env, value);\n"+
                       "                            Java::Runtime::Consumer::accept(env, wrapper.object(env), _value);\n"+
-                      "                        }\n"+
-                      "                    };\n"+
+                      "                        }QTJAMBI_CATCH(const JavaException& exn){\n"+
+                      "                            exn.report(env);\n"+
+                      "                        }QTJAMBI_TRY_END\n"+
+                      "                    }\n"+
+                      "                };\n"+
                       "}"}
     }
     
@@ -53,13 +56,16 @@ TypeSystem{
         name: "web.comsumer.QWebEngineCallback"
         Text{content: "QWebEngineCallback<%TYPE> %out;\n"+
                       "if(%in){\n"+
-                      "    JObjectWrapper wrapper(%env, %in);\n"+
-                      "    %out = [wrapper](%TYPE value){\n"+
-                      "                        if(JniEnvironment env{200}){\n"+
+                      "    %out = [wrapper = JObjectWrapper(%env, %in)](%TYPE value){\n"+
+                      "                    if(JniEnvironment env{200}){\n"+
+                      "                        QTJAMBI_TRY{\n"+
                       "                            jobject _value = qtjambi_cast<jobject>(env, value);\n"+
                       "                            Java::Runtime::Consumer::accept(env, wrapper.object(env), _value);\n"+
-                      "                        }\n"+
-                      "                    };\n"+
+                      "                        }QTJAMBI_CATCH(const JavaException& exn){\n"+
+                      "                            exn.report(env);\n"+
+                      "                        }QTJAMBI_TRY_END\n"+
+                      "                    }\n"+
+                      "                };\n"+
                       "}"}
     }
     
@@ -675,14 +681,17 @@ TypeSystem{
                     codeClass: CodeClass.Native
                     Text{content: "std::function<void(std::unique_ptr<QWebEngineNotification>)> %out;\n"+
                                   "if(%in){\n"+
-                                  "    JObjectWrapper wrapper(%env, %in);\n"+
-                                  "    %out = [wrapper](std::unique_ptr<QWebEngineNotification> value){\n"+
-                                  "                        if(JniEnvironment env{200}){\n"+
+                                  "    %out = [wrapper = JObjectWrapper(%env, %in)](std::unique_ptr<QWebEngineNotification> value){\n"+
+                                  "                    if(JniEnvironment env{200}){\n"+
+                                  "                        QTJAMBI_TRY{\n"+
                                   "                            QtJambiScope __qtjambi_scope;\n"+
                                   "                            jobject _value = qtjambi_cast<jobject>(env, __qtjambi_scope, value);\n"+
                                   "                            Java::Runtime::Consumer::accept(env, wrapper.object(env), _value);\n"+
-                                  "                        }\n"+
-                                  "                    };\n"+
+                                  "                        }QTJAMBI_CATCH(const JavaException& exn){\n"+
+                                  "                            exn.report(env);\n"+
+                                  "                        }QTJAMBI_TRY_END\n"+
+                                  "                    }\n"+
+                                  "                };\n"+
                                   "}"}
                 }
             }

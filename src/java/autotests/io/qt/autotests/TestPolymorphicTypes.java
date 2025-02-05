@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -437,7 +437,7 @@ public class TestPolymorphicTypes extends ApplicationInitializer {
 					QWidget widget) {
 				option[0] = _option;
 				super.drawComplexControl(control, _option, painter, widget);
-				QApplication.quit();
+				QApplication.postEvent(QApplication.instance(), new QEvent(QEvent.Type.Quit));
 			}
     	};
     	QSlider slider = new QSlider();
@@ -445,7 +445,18 @@ public class TestPolymorphicTypes extends ApplicationInitializer {
     	slider.show();
     	QApplication.exec();
     	slider.hide();
+    	slider.dispose();
     	assertTrue("Type unexpected: " + (option[0]==null ? "null" : General.internalAccess.getClass(option[0]).getName()), option[0] instanceof QStyleOptionSlider);
+    }
+    
+    @Before
+    public void setUp() {
+//    	System.out.println("Start test "+testClassName()+"."+testMethodName());
+    }
+    
+    @After
+    public void tearDown() {
+//    	System.out.println("Test "+testClassName()+"."+testMethodName()+" finished!");
     }
 
     public static void main(String args[]) {

@@ -40,6 +40,7 @@ public class TestReferenceCountingQMap extends ApplicationInitializer {
 			}
 	        Assert.assertEquals(0, counter.get());
 	        General.internalAccess.registerCleaner(container, counter::incrementAndGet);
+	        container.isDisposed();
 	        container = null;
 	    }
         for (int i = 0; i < 50 && counter.get()<101; i++) {
@@ -74,6 +75,7 @@ public class TestReferenceCountingQMap extends ApplicationInitializer {
 			}
 	        Assert.assertEquals(0, counter.get());
 	        General.internalAccess.registerCleaner(container, counter::incrementAndGet);
+	        container.isDisposed();
 	        container = null;
     	}
         for (int i = 0; i < 50 && counter.get()<101; i++) {
@@ -175,6 +177,7 @@ public class TestReferenceCountingQMap extends ApplicationInitializer {
             QCoreApplication.processEvents();
 		}
         Assert.assertEquals(COUNT, counter.get());
+        container.isDisposed();
         container = null;
     	for (int i = 0; i < 50 && counter.get()<COUNT+1; i++) {
             ApplicationInitializer.runGC();
@@ -219,6 +222,7 @@ public class TestReferenceCountingQMap extends ApplicationInitializer {
             QCoreApplication.processEvents();
 		}
         Assert.assertEquals(COUNT, counter.get());
+        container.isDisposed();
         container = null;
     	for (int i = 0; i < 50 && counter.get()<COUNT+1; i++) {
             ApplicationInitializer.runGC();

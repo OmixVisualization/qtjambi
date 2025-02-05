@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -355,7 +355,7 @@ QString jni_function_signature(QString package,
         s += "QT_DEPRECATED ";
 
     if (options & CppImplGenerator::JNIExport)
-        s += "Q_DECL_EXPORT ";
+        s += "JNIEXPORT ";
 
     if (options & CppImplGenerator::ReturnType) {
         s += return_type;
@@ -363,7 +363,7 @@ QString jni_function_signature(QString package,
     }
 
     if (options & CppImplGenerator::JNIExport)
-        s += "JNICALL QTJAMBI_FUNCTION_PREFIX(";
+        s += "JNICALL ";
 
     s += "Java_";
     s += package.replace("_", "_1").replace(".", "_");
@@ -372,9 +372,6 @@ QString jni_function_signature(QString package,
     s += '_';
     s += QString(function_name).replace("_", "_1").replace("$", "_00024");
     s += mangled_arguments;
-
-    if (options & CppImplGenerator::JNIExport)
-        s += ")";
 
     return s;
 }
@@ -722,7 +719,7 @@ void CppImplGenerator::write(QTextStream &s, const MetaFunctional *java_function
                         if(isMessageHandler){
                             s << INDENT << "throwable.addSuppressed(env, exn);" << Qt::endl;
                         }else{
-                            s << INDENT << "env.handleException(exn, \"" << java_functional->typeEntry()->qualifiedCppName() << "\");" << Qt::endl;
+                            s << INDENT << "env.handleException(exn, this, \"" << java_functional->typeEntry()->qualifiedCppName() << "\");" << Qt::endl;
                         }
                     }
                     s << INDENT << "} QTJAMBI_TRY_END" << Qt::endl;
@@ -748,6 +745,26 @@ void CppImplGenerator::write(QTextStream &s, const MetaFunctional *java_function
                     }
                 }
                 s << lines;
+                if(isMessageHandler){
+                    s << INDENT << "}else{" << Qt::endl
+                      << INDENT << "    switch(" << java_functional->arguments().first()->argumentName() << "){" << Qt::endl
+                      << INDENT << "    case QtMsgType::QtCriticalMsg:" << Qt::endl
+                      << INDENT << "        printf(\"CRITICAL: %s\\n\", qPrintable(" << java_functional->arguments().last()->argumentName() << "));" << Qt::endl
+                      << INDENT << "        break;" << Qt::endl
+                      << INDENT << "    case QtMsgType::QtDebugMsg:" << Qt::endl
+                      << INDENT << "        printf(\"DEBUG: %s\\n\", qPrintable(" << java_functional->arguments().last()->argumentName() << "));" << Qt::endl
+                      << INDENT << "        break;" << Qt::endl
+                      << INDENT << "    case QtMsgType::QtInfoMsg:" << Qt::endl
+                      << INDENT << "        printf(\"INFO: %s\\n\", qPrintable(" << java_functional->arguments().last()->argumentName() << "));" << Qt::endl
+                      << INDENT << "        break;" << Qt::endl
+                      << INDENT << "    case QtMsgType::QtWarningMsg:" << Qt::endl
+                      << INDENT << "        printf(\"WARNING: %s\\n\", qPrintable(" << java_functional->arguments().last()->argumentName() << "));" << Qt::endl
+                      << INDENT << "        break;" << Qt::endl
+                      << INDENT << "    case QtMsgType::QtFatalMsg:" << Qt::endl
+                      << INDENT << "        printf(\"FATAL: %s\\n\", qPrintable(" << java_functional->arguments().last()->argumentName() << "));" << Qt::endl
+                      << INDENT << "        break;" << Qt::endl
+                      << INDENT << "    }" << Qt::endl;
+                }
                 s << INDENT << "}" << Qt::endl;
             }
             s << INDENT << "}" << Qt::endl;
@@ -1293,6 +1310,12 @@ void CppImplGenerator::write(QTextStream &s, const MetaClass *java_class, int) {
             writeInclude(s, Include(Include::IncludePath, "QtJambi/CoreAPI"), included);
         }
         writeExtraIncludes(s, java_class, included);
+        if(java_class->isQWindow()
+            || java_class->isQWidget()
+            || java_class->isQAction()
+            || (java_class->typeEntry()->isThreadAffine() && java_class->typeEntry()->threadAffinity()==QLatin1String("pixmap"))){
+            writeInclude(s, Include(Include::IncludePath, QStringLiteral(u"QtJambi/GuiAPI")), included);
+        }
         if(java_class->hasPaintMethod())
             writeInclude(s, Include(Include::IncludePath, "QtJambi/AboutToPaint"), included);
 //        if(java_class->hasQmlListProperty())
@@ -1593,6 +1616,8 @@ void CppImplGenerator::write(QTextStream &s, const MetaClass *java_class, int) {
           << "        ";
         if(java_class->typeEntry()->isQAbstractItemModel()){
             s << "QtJambiModelShell";
+        }else if(java_class->typeEntry()->isQThread()){
+            s << "QtJambiThreadShell";
         }else{
             s << "QtJambiShell";
         }
@@ -3552,11 +3577,8 @@ void CppImplGenerator::writeShellFunction(QTextStream &s, const MetaFunction *ja
                         }
                         s << INDENT << "}" << Qt::endl;
                     }
-                    QString modelArgument;
-                    if(implementor->typeEntry()->isQAbstractItemModel())
-                        modelArgument = "this, ";
                     s << INDENT << "} QTJAMBI_CATCH(const JavaException& exn){" << Qt::endl
-                      << INDENT << "    __jni_env.handleException(exn, " << modelArgument << "\"" << implementor->typeEntry()->qualifiedCppName() << "::" << java_function_signature << "\");" << Qt::endl
+                      << INDENT << "    __jni_env.handleException(exn, this, \"" << implementor->typeEntry()->qualifiedCppName() << "::" << java_function_signature << "\");" << Qt::endl
                       << INDENT << "} QTJAMBI_TRY_END" << Qt::endl;
                     if(java_function->isBlockExceptions())
                         s << INDENT << "__jni_env.releaseException();" << Qt::endl;
@@ -3583,36 +3605,33 @@ void CppImplGenerator::writeShellFunction(QTextStream &s, const MetaFunction *ja
                 s << INDENT << "QTJAMBI_JAVA_METHOD_CALL(\"" << implementor->typeEntry()->qualifiedCppName() << "::"
                   << (java_function_signature.isEmpty() ? java_function->minimalSignature() : java_function_signature) << "\", this)" << Qt::endl;
 
-                QString modelInfix;
-                if(implementor->typeEntry()->isQAbstractItemModel())
-                    modelInfix = "Model";
                 if(needsScope){
                     lines = lines.replace(shellClassName(implementor)+"::__shell()->getJavaObjectLocalRef(__jni_env)", "__jni_env.getJavaObjectLocalRef()");
                     if(java_function->isNoExcept()){
                         if(java_function->isBlockExceptions()){
-                            s << INDENT << "if (JniEnvironmentScopeException" << modelInfix << "InhibitorAndBlocker __jni_env{" << shellClassName(implementor) << "::__shell(), " << QString::number( 100*(arguments.size()+2) ) << "}) {" << Qt::endl;
+                            s << INDENT << "if (JniEnvironmentScopeExceptionInhibitorAndBlocker __jni_env{" << shellClassName(implementor) << "::__shell(), " << QString::number( 100*(arguments.size()+2) ) << "}) {" << Qt::endl;
                         }else{
-                            s << INDENT << "if (JniEnvironmentScopeException" << modelInfix << "Inhibitor __jni_env{" << shellClassName(implementor) << "::__shell(), " << QString::number( 100*(arguments.size()+2) ) << "}) {" << Qt::endl;
+                            s << INDENT << "if (JniEnvironmentScopeExceptionInhibitor __jni_env{" << shellClassName(implementor) << "::__shell(), " << QString::number( 100*(arguments.size()+2) ) << "}) {" << Qt::endl;
                         }
                     }else{
                         if(java_function->isBlockExceptions()){
-                            s << INDENT << "if (JniEnvironmentScopeException" << modelInfix << "HandlerAndBlocker __jni_env{" << shellClassName(implementor) << "::__shell(), " << QString::number( 100*(arguments.size()+2) ) << "}) {" << Qt::endl;
+                            s << INDENT << "if (JniEnvironmentScopeExceptionHandlerAndBlocker __jni_env{" << shellClassName(implementor) << "::__shell(), " << QString::number( 100*(arguments.size()+2) ) << "}) {" << Qt::endl;
                         }else{
-                            s << INDENT << "if (JniEnvironmentScopeException" << modelInfix << "Handler __jni_env{" << shellClassName(implementor) << "::__shell(), " << QString::number( 100*(arguments.size()+2) ) << "}) {" << Qt::endl;
+                            s << INDENT << "if (JniEnvironmentScopeExceptionHandler __jni_env{" << shellClassName(implementor) << "::__shell(), " << QString::number( 100*(arguments.size()+2) ) << "}) {" << Qt::endl;
                         }
                     }
                 }else{
                     if(java_function->isNoExcept()){
                         if(java_function->isBlockExceptions()){
-                            s << INDENT << "if (JniEnvironmentException" << modelInfix << "InhibitorAndBlocker __jni_env{" << QString::number( 100*(arguments.size()+2) ) << "}) {" << Qt::endl;
+                            s << INDENT << "if (JniEnvironmentExceptionInhibitorAndBlocker __jni_env{" << QString::number( 100*(arguments.size()+2) ) << "}) {" << Qt::endl;
                         }else{
-                            s << INDENT << "if (JniEnvironmentException" << modelInfix << "Inhibitor __jni_env{" << QString::number( 100*(arguments.size()+2) ) << "}) {" << Qt::endl;
+                            s << INDENT << "if (JniEnvironmentExceptionInhibitor __jni_env{" << QString::number( 100*(arguments.size()+2) ) << "}) {" << Qt::endl;
                         }
                     }else{
                         if(java_function->isBlockExceptions()){
-                            s << INDENT << "if (JniEnvironmentException" << modelInfix << "HandlerAndBlocker __jni_env{" << QString::number( 100*(arguments.size()+2) ) << "}) {" << Qt::endl;
+                            s << INDENT << "if (JniEnvironmentExceptionHandlerAndBlocker __jni_env{" << QString::number( 100*(arguments.size()+2) ) << "}) {" << Qt::endl;
                         }else{
-                            s << INDENT << "if (JniEnvironmentException" << modelInfix << "Handler __jni_env{" << QString::number( 100*(arguments.size()+2) ) << "}) {" << Qt::endl;
+                            s << INDENT << "if (JniEnvironmentExceptionHandler __jni_env{" << QString::number( 100*(arguments.size()+2) ) << "}) {" << Qt::endl;
                         }
                     }
                 }
@@ -4460,7 +4479,7 @@ void CppImplGenerator::writeFinalFunctionSetup(QTextStream &s, const MetaFunctio
     bool hasDonePixmapCheck = false;
     bool hasDoneUICheck = false;
     if(java_function->isUIThreadAffine()){
-        s << INDENT << "QtJambiAPI::checkThreadUI(__jni_env, typeid(" << cls->fullQualifiedCppName() << "));" << Qt::endl;
+        s << INDENT << "QtJambiAPI::checkMainThread(__jni_env, typeid(" << cls->fullQualifiedCppName() << "));" << Qt::endl;
         hasDoneUICheck = true;
     }else if(java_function->isPixmapThreadAffine()){
         s << INDENT << "QtJambiAPI::checkThreadQPixmap(__jni_env, typeid(" << cls->fullQualifiedCppName() << "));" << Qt::endl;
@@ -4472,7 +4491,7 @@ void CppImplGenerator::writeFinalFunctionSetup(QTextStream &s, const MetaFunctio
             const ComplexTypeEntry *entry = cls->typeEntry();
             const QString& ownerCode = entry->threadAffinity();
             if(ownerCode==QStringLiteral(u"main") || ownerCode==QStringLiteral(u"ui")){
-                s << INDENT << "QtJambiAPI::checkThreadUI(__jni_env, typeid(" << cls->fullQualifiedCppName() << "));" << Qt::endl;
+                s << INDENT << "QtJambiAPI::checkMainThread(__jni_env, typeid(" << cls->fullQualifiedCppName() << "));" << Qt::endl;
                 hasDoneUICheck = true;
             }else if(ownerCode==QLatin1String("pixmap")){
                 s << INDENT << "QtJambiAPI::checkThreadQPixmap(__jni_env, typeid(" << cls->fullQualifiedCppName() << "));" << Qt::endl;
@@ -4482,7 +4501,7 @@ void CppImplGenerator::writeFinalFunctionSetup(QTextStream &s, const MetaFunctio
                 if(ownerCode.isEmpty())
                     ownerCode = (entry = java_function->declaringClass()->typeEntry())->threadAffinity();
                 if(ownerCode==QStringLiteral(u"main") || ownerCode==QStringLiteral(u"ui")){
-                    s << INDENT << "QtJambiAPI::checkThreadUI(__jni_env, typeid(" << cls->fullQualifiedCppName() << "));" << Qt::endl;
+                    s << INDENT << "QtJambiAPI::checkMainThread(__jni_env, typeid(" << cls->fullQualifiedCppName() << "));" << Qt::endl;
                     hasDoneUICheck = true;
                 }else if(ownerCode==QLatin1String("pixmap")){
                     s << INDENT << "QtJambiAPI::checkThreadQPixmap(__jni_env, typeid(" << cls->fullQualifiedCppName() << "));" << Qt::endl;
@@ -4562,7 +4581,7 @@ void CppImplGenerator::writeFinalFunctionSetup(QTextStream &s, const MetaFunctio
                                 if(argumentThreadAffinity==ThreadAffinity::Pixmap){
                                     s << INDENT << "    QtJambiAPI::checkThreadOnArgumentQPixmap(__jni_env, \"" << argument->argumentName() << "\", typeid(" << argumentType->instantiations()[0]->typeEntry()->qualifiedCppName() << "));" << Qt::endl;
                                 }else if(argumentThreadAffinity==ThreadAffinity::UI){
-                                    s << INDENT << "    QtJambiAPI::checkThreadOnArgumentUI(__jni_env, \"" << argument->argumentName() << "\", typeid(" << argumentType->instantiations()[0]->typeEntry()->qualifiedCppName() << "));" << Qt::endl;
+                                    s << INDENT << "    QtJambiAPI::checkMainThreadOnArgument(__jni_env, \"" << argument->argumentName() << "\", typeid(" << argumentType->instantiations()[0]->typeEntry()->qualifiedCppName() << "));" << Qt::endl;
                                 }else if(argumentType->instantiations()[0]->isQObject()){
                                     s << INDENT << "    QtJambiAPI::checkThreadOnArgument(__jni_env, \"" << argument->argumentName() << "\", __elm);" << Qt::endl;
                                 }else if(const ComplexTypeEntry* ownedType = getOwnedType(m_classes.findClass(argumentType->instantiations()[0]->typeEntry()->qualifiedCppName()))){
@@ -4622,7 +4641,7 @@ void CppImplGenerator::writeFinalFunctionSetup(QTextStream &s, const MetaFunctio
                             }
                         }else if(argumentThreadAffinity==ThreadAffinity::UI){
                             if(!hasDoneUICheck){
-                                s << INDENT << "QtJambiAPI::checkThreadOnArgumentUI(__jni_env, \"" << argument->argumentName() << "\", typeid(" << argumentType->typeEntry()->qualifiedCppName() << "));" << Qt::endl;
+                                s << INDENT << "QtJambiAPI::checkMainThreadOnArgument(__jni_env, \"" << argument->argumentName() << "\", typeid(" << argumentType->typeEntry()->qualifiedCppName() << "));" << Qt::endl;
                                 hasDoneUICheck = true;
                             }
                         }else if(argumentType->isQObject()){
@@ -5217,7 +5236,7 @@ void CppImplGenerator::writeConstructor(QTextStream &s, const MetaFunction *java
                                         if(argumentThreadAffinity==ThreadAffinity::Pixmap){
                                             s << INDENT << "    QtJambiAPI::checkThreadOnArgumentQPixmap(__jni_env, \"" << argument->argumentName() << "\", typeid(" << argumentType->instantiations()[0]->typeEntry()->qualifiedCppName() << "));" << Qt::endl;
                                         }else if(argumentThreadAffinity==ThreadAffinity::UI){
-                                            s << INDENT << "    QtJambiAPI::checkThreadOnArgumentUI(__jni_env, \"" << argument->argumentName() << "\", typeid(" << argumentType->instantiations()[0]->typeEntry()->qualifiedCppName() << "));" << Qt::endl;
+                                            s << INDENT << "    QtJambiAPI::checkMainThreadOnArgument(__jni_env, \"" << argument->argumentName() << "\", typeid(" << argumentType->instantiations()[0]->typeEntry()->qualifiedCppName() << "));" << Qt::endl;
                                         }else if(argumentType->instantiations()[0]->isQObject()){
                                             s << INDENT << "    QtJambiAPI::checkThreadOnArgument(__jni_env, \"" << argument->argumentName() << "\", __elm);" << Qt::endl;
                                         }else if(const ComplexTypeEntry* ownedType = getOwnedType(m_classes.findClass(argumentType->instantiations()[0]->typeEntry()->qualifiedCppName()))){
@@ -5277,7 +5296,7 @@ void CppImplGenerator::writeConstructor(QTextStream &s, const MetaFunction *java
                                     }
                                 }else if(argumentThreadAffinity==ThreadAffinity::UI){
                                     if(!hasDoneUICheck){
-                                        s << INDENT << "QtJambiAPI::checkThreadOnArgumentUI(__jni_env, \"" << argument->argumentName() << "\", typeid(" << argumentType->typeEntry()->qualifiedCppName() << "));" << Qt::endl;
+                                        s << INDENT << "QtJambiAPI::checkMainThreadOnArgument(__jni_env, \"" << argument->argumentName() << "\", typeid(" << argumentType->typeEntry()->qualifiedCppName() << "));" << Qt::endl;
                                         hasDoneUICheck = true;
                                     }
                                 }else if(argumentType->isQObject()){
@@ -5393,9 +5412,7 @@ void CppImplGenerator::writeConstructor(QTextStream &s, const MetaFunction *java
         }
         if(!hasDoneConstructorCheck){
             if(cls->isQObject()){
-                if(cls->isQCoreApplication()){
-                    s << INDENT << "QtJambiAPI::checkThreadConstructingApplication(__jni_env, typeid(" << cls->qualifiedCppName() << "));" << Qt::endl;
-                }else if(cls->isQWidget() || cls->isQWindow() || cls->isQAction()){
+                if(cls->isQWidget() || cls->isQWindow() || cls->isQAction()){
                     bool hasParent = false;
                     for(const MetaArgument *argument : arguments) {
                         if(argument
@@ -5414,7 +5431,7 @@ void CppImplGenerator::writeConstructor(QTextStream &s, const MetaFunction *java
                     }
                 }
             }else if(java_function->isUIThreadAffine()){
-                s << INDENT << "QtJambiAPI::checkThreadConstructingUI(__jni_env, typeid(" << cls->qualifiedCppName() << "));" << Qt::endl;
+                s << INDENT << "QtJambiAPI::checkMainThreadConstructing(__jni_env, typeid(" << cls->qualifiedCppName() << "));" << Qt::endl;
             }else if(java_function->isPixmapThreadAffine()){
                 s << INDENT << "QtJambiAPI::checkThreadConstructingQPixmap(__jni_env, typeid(" << cls->qualifiedCppName() << "));" << Qt::endl;
             }
@@ -5940,6 +5957,8 @@ void CppImplGenerator::writeFinalConstructor(QTextStream &s, const MetaFunction 
             s << "        ";
             if(java_class->typeEntry()->isQAbstractItemModel()){
                 s << "QtJambiModelShell";
+            }else if(java_class->typeEntry()->isQThread()){
+                s << "QtJambiThreadShell";
             }else{
                 s << "QtJambiShell";
             }
@@ -5959,7 +5978,7 @@ void CppImplGenerator::writeFinalConstructor(QTextStream &s, const MetaFunction 
                 const ComplexTypeEntry *entry = cls->typeEntry();
                 const QString& ownerCode = entry->threadAffinity();
                 if(ownerCode==QLatin1String("main") || ownerCode==QLatin1String("ui")){
-                    ownerFunction = QLatin1String("&RegistryAPI::mainThreadOwner");
+                    ownerFunction = QLatin1String("&QtJambiAPI::mainThreadOwner");
                 }else if(ownerCode==QLatin1String("pixmap")){
                     ownerFunction = QLatin1String("&QtJambiAPI::getPixmapOwner");
                 }else{
@@ -7723,7 +7742,7 @@ bool CppImplGenerator::writeConversionRule(QTextStream &s,
                     }else{
                         s << INDENT << "if(!" << qtjambi_scope << ")" << Qt::endl
                           << INDENT << "    return false;" << Qt::endl
-                          << INDENT << "J2CStringBuffer* " << out_name << "_buffer = new J2CStringBuffer(" << __jni_env << ", jstring(" << in_name << "));" << Qt::endl
+                          << INDENT << "PersistentJ2CStringBuffer* " << out_name << "_buffer = new PersistentJ2CStringBuffer(" << __jni_env << ", jstring(" << in_name << "));" << Qt::endl
                           << INDENT << qtjambi_scope << "->addFinally([" << out_name << "_buffer](){ delete " << out_name << "_buffer; });" << Qt::endl
                           << INDENT;
                         if(qt_name==out_name){
@@ -7834,7 +7853,7 @@ bool CppImplGenerator::writeConversionRule(QTextStream &s,
                     if(out_name.isEmpty()){
                         out_name = java_name;
                     }
-                    s << INDENT << "LocalDataJBuffer " << out_name << "_buffer(" << __jni_env << ", " << in_name << ", ";
+                    s << INDENT << "DataJBuffer " << out_name << "_buffer(" << __jni_env << ", " << in_name << ", ";
                     if(argumentTypeArrayLength){
                         s << argumentTypeArrayLength->indexedName();
                     }else if(argumentTypeArrayMinLength>0){
@@ -12414,12 +12433,12 @@ void CppImplGenerator::writeTypeConversion(QTextStream &s, const MetaFunction *f
                                 //isCustomized = true;
                                 if (type->isContainer()){
                                     if(static_cast<const ContainerTypeEntry *>(type->typeEntry())->type()==ContainerTypeEntry::std_array){
-                                        s << INDENT << "scope->addDeletion(new InvalidateArrayAfterUse(env, out.l));" << Qt::endl;
+                                        s << INDENT << "scope->addArrayInvalidation(env, out.l);" << Qt::endl;
                                     }else{
-                                        s << INDENT << "scope->addDeletion(new InvalidateContainerAfterUse(env, out.l));" << Qt::endl;
+                                        s << INDENT << "scope->addContainerInvalidation(env, out.l);" << Qt::endl;
                                     }
                                 }else if (type->isArray()){
-                                    s << INDENT << "scope->addDeletion(new InvalidateArrayAfterUse(env, out.l));" << Qt::endl;
+                                    s << INDENT << "scope->addArrayInvalidation(env, out.l);" << Qt::endl;
                                 }else{
                                     s << INDENT << "scope->addObjectInvalidation(env, out.l);" << Qt::endl;
                                 }
@@ -12903,7 +12922,7 @@ void CppImplGenerator::writeMetaInfo(QTextStream &s, const MetaClass *cls,
                     const ComplexTypeEntry *entry = cls->typeEntry();
                     const QString& ownerCode = entry->threadAffinity();
                     if(ownerCode==QStringLiteral(u"main") || ownerCode==QStringLiteral(u"ui")){
-                        s << INDENT << "registerOwnerFunction(typeId, &RegistryAPI::mainThreadOwner);" << Qt::endl;
+                        s << INDENT << "registerOwnerFunction(typeId, &QtJambiAPI::mainThreadOwner);" << Qt::endl;
                     }else if(ownerCode==QLatin1String("pixmap")){
                         s << INDENT << "registerOwnerFunction(typeId, &QtJambiAPI::getPixmapOwner);" << Qt::endl;
                     }else{
@@ -12911,8 +12930,6 @@ void CppImplGenerator::writeMetaInfo(QTextStream &s, const MetaClass *cls,
                     }
                     usedTypeID = true;
                 }
-
-                s << "// BEGIN: function table" << Qt::endl;
 
                 if(!cls->isInterface()){
                     MetaFunctionList virtual_functions = cls->implementableFunctions();
@@ -13019,8 +13036,6 @@ void CppImplGenerator::writeMetaInfo(QTextStream &s, const MetaClass *cls,
                         s << Qt::endl << INDENT << "});" << Qt::endl;
                     }
                 }
-
-                s << "// END: function table" << Qt::endl << Qt::endl;
 
                 if(entry->isQObject() || cls->has_Q_GADGET()){
                     QString renamedMethods;
@@ -13268,10 +13283,8 @@ void CppImplGenerator::writeMetaInfo(QTextStream &s, const MetaClass *cls,
                         usedTypeID = true;
                         s << INDENT << "registerCustomMetaObject(typeId, " << qtName << "::staticMetaObject);" << Qt::endl;
                     }
-                    s << "// END: signal table" << Qt::endl << Qt::endl;
                 }
 
-                s << "// BEGIN: type registration" << Qt::endl;
                 if (hasDeleter(cls)){
                     usedTypeID = true;
                     s << INDENT << "registerDeleter(typeId, &deleter_" << entry->qualifiedCppName().replace(QStringLiteral(u"::"), QStringLiteral(u"_")).replace(u'$', u'_').replace(u'>', u'_').replace(u'<', u'_') << ");" << Qt::endl;
@@ -13393,10 +13406,6 @@ void CppImplGenerator::writeMetaInfo(QTextStream &s, const MetaClass *cls,
                         }
                     }
                 }
-
-                s << "// END: type registration" << Qt::endl << Qt::endl;
-
-                s << "// BEGIN: polymorphic ids" << Qt::endl;
                 if(cls->isQObject()){
                     if(!cls->has_Q_OBJECT()){
                         MetaClass *baseClass = cls->baseClass();
@@ -13577,7 +13586,6 @@ void CppImplGenerator::writeMetaInfo(QTextStream &s, const MetaClass *cls,
                         }
                     }
                 }
-                s << "// END: polymorphic ids" << Qt::endl << Qt::endl;
 
                 {
                     const MetaClass *parent = cls;
@@ -13602,7 +13610,6 @@ void CppImplGenerator::writeMetaInfo(QTextStream &s, const MetaClass *cls,
                 s << Qt::endl;
             }
 
-            s << Qt::endl << "// BEGIN: enums and flags" << Qt::endl;
             for(MetaEnum *cpp_enum : cls->enums()){
                 writeMetaInfo(s, cpp_enum);
             }
@@ -13616,7 +13623,6 @@ void CppImplGenerator::writeMetaInfo(QTextStream &s, const MetaClass *cls,
                     }
                 }
             }
-            s << "// END: enums and flags" << Qt::endl;
             writeCodeInjections(s, cls->typeEntry(), CodeSnip::End, TS::MetaInfo);
             if(!cls->typeEntry()->ppCondition().isEmpty()){
                 if(cls->typeEntry()->isNativeInterface()){

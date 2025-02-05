@@ -120,7 +120,7 @@ Find unit test results in directory `TestResults`.
 After building QtJambi for the running operation system you can additionally cross-compile QtJambi for other platforms.
 For instance if you want to build for Linux arm:
 
-`> ant -Dqmake=/opt/Qt/6.8.1/arm-gnueabi/bin/qmake library.native`
+`> ant -Dqmake=/opt/Qt/6.8.2/arm-gnueabi/bin/qmake library.native`
 
 Just specify the third-platform cross-compiled qmake with `-Dqmake=path`.
 
@@ -145,7 +145,7 @@ to your project:
   <version>$VERSION</version>
 </dependency>
 ```
-(exchange `$VERSION` either by `6.5.10` or `6.8.1`).
+(exchange `$VERSION` either by `6.8.2` or any other published version).
 
 Otherwise, download QtJambi JAR file from [Maven Central Repository](https://search.maven.org/artifact/io.qtjambi/qtjambi/).
 
@@ -165,7 +165,7 @@ public class Test {
 Compile the file:
 
 ``` powershell
-javac -cp qtjambi-6.8.1.jar Test.java
+javac -cp qtjambi-6.8.2.jar Test.java
 ```
 
 ### Execute Example
@@ -184,15 +184,15 @@ By default, on Windows Qt libraries are located in `bin` directory and on Linux 
 
 The example program can be executed this way on Windows:
 ``` powershell
-java -cp qtjambi-6.8.1.jar;. -Djava.library.path=C:\Qt\6.8.1\msvc2022_64\bin Test
+java -cp qtjambi-6.8.2.jar;. -Djava.library.path=C:\Qt\6.8.2\msvc2022_64\bin Test
 ```
 On Linux it looks this way:
 ``` bash
-java -cp qtjambi-6.8.1.jar:. -Djava.library.path=<path to>/Qt/6.8.1/gcc_64/lib Test
+java -cp qtjambi-6.8.2.jar:. -Djava.library.path=<path to>/Qt/6.8.2/gcc_64/lib Test
 ```
 On macOS you additionally need to use the start parameter `-XstartOnFirstThread`:
 ``` bash
-java -cp qtjambi-6.8.1.jar:. -Djava.library.path=<path to>/Qt/6.8.1/macos/lib -XstartOnFirstThread Test
+java -cp qtjambi-6.8.2.jar:. -Djava.library.path=<path to>/Qt/6.8.2/macos/lib -XstartOnFirstThread Test
 ```
 
 On Linux of your distribution provides Qt (of correct version) as system library you don't need to specify library path at all.
@@ -212,7 +212,7 @@ Instead of starting your program with a java command as shown above you can depl
             GNU LESSER GENERAL PUBLIC LICENSE
 
  QtJambi is Copyright (C) 1992-2009 Nokia. All rights reserved.
-            Copyright (C) 2009-2024 Dr. Peter Droste, 
+            Copyright (C) 2009-2025 Dr. Peter Droste, 
                                     Omix Visualization GmbH & Co. KG. 
                                     All rights reserved.
 
@@ -224,7 +224,7 @@ Instead of starting your program with a java command as shown above you can depl
             GNU GENERAL PUBLIC LICENSE
 
  QtJambi is Copyright (C) 1992-2009 Nokia. All rights reserved.
-            Copyright (C) 2009-2024 Dr. Peter Droste, 
+            Copyright (C) 2009-2025 Dr. Peter Droste, 
                                     Omix Visualization GmbH & Co. KG. 
                                     All rights reserved.
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -35,7 +35,7 @@ package io.qt;
 public class QSignalInvocationException extends RuntimeException {
     private static final long serialVersionUID = 1L;
 
-    public QSignalInvocationException(String message, Throwable t) {
+    public QSignalInvocationException(@NonNull String message, @Nullable Throwable t) {
         super(message, t);
     }
 

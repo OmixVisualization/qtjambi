@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -34,6 +34,7 @@ import io.qt.QtObjectInterface;
 import io.qt.core.QMetaMethod;
 import io.qt.core.QMetaObject;
 import io.qt.internal.NativeUtility.NativeLink;
+import io.qt.internal.QtMocConstants.*;
 
 /**
  * @hidden
@@ -59,6 +60,15 @@ public abstract class TestUtility {
 
 	public static boolean isSharedPointer(QtObjectInterface object) {
 		return isSharedPointer(NativeUtility.checkedNativeId(object));
+	}
+	
+	public static boolean canRequiredProperty;
+	static{
+		boolean _canRequired = false;
+		try{
+	        _canRequired = PropertyFlags.valueOf("Required")!=null;
+	    }catch(Throwable t){}
+		canRequiredProperty = _canRequired;
 	}
     
     public static native boolean hasDeleteLaterEvents();

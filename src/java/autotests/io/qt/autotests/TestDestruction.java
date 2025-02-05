@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -262,7 +262,7 @@ public class TestDestruction extends ApplicationInitializer {
 
         assertEquals("disposed count", 0, counter.disposedCount());
         assertEquals("destroyed count", 0, counter.destroyedCount());
-
+        dontBeDeleted.dispose();
         // CHECKME: Can we undo that hold and test for release?
     }
 
@@ -291,6 +291,7 @@ public class TestDestruction extends ApplicationInitializer {
 
         assertEquals("disposed count", 1, counter.disposedCount());
         assertEquals("destroyed count", 1, counter.destroyedCount());
+        dontBeDeleted.dispose();
     }
 
     // method exists to ensure object reference created here is discarded for GC
@@ -318,6 +319,7 @@ public class TestDestruction extends ApplicationInitializer {
 
         assertEquals("disposed count", 1, counter.disposedCount());
         assertEquals("destroyed count", 1, counter.destroyedCount());
+        dontBeDeleted.dispose();
     }
 
     // method exists to ensure object reference created here is discarded for GC
@@ -408,7 +410,7 @@ public class TestDestruction extends ApplicationInitializer {
 
         assertEquals("disposed count", 0, counter.disposedCount());
         assertEquals("destroyed count", 0, counter.destroyedCount());
-
+        dontBeDeleted.dispose();
         // FIXME: Undo what we did above and ensure it does actually go then
     }
 

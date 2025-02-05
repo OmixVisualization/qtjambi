@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -136,8 +136,9 @@ public class TestReferenceCountingQWidget extends ApplicationInitializer{
             General.internalAccess.registerCleaner(w, counter::incrementAndGet);
 	        w = null;
 		}
-        for (int i = 0; i < 50 && counter.get()<COUNT+1; i++) {
+        for (int i = 0; i < 60 && counter.get()<COUNT+1; i++) {
             ApplicationInitializer.runGC();
+            Thread.yield();
             synchronized(getClass()) {
             	Thread.sleep(25);
             }

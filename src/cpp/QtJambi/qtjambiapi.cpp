@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -565,8 +565,12 @@ void QtJambiAPI::registerNonShellDeletion(void* ptr)
 {
     for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(ptr)){
         if(link && !link->isQObject() && !link->isShell()){
-            if(JniEnvironment env = link->noThreadInitializationOnPurge() ? JniEnvironment{300} : DefaultJniEnvironment{300}){
-                link->invalidate(env);
+            if(JniEnvironment env = link->isQThread() ? JniEnvironment{300} : DefaultJniEnvironment{300}){
+                QTJAMBI_TRY{
+                    link->invalidate(env);
+                }QTJAMBI_CATCH(const JavaException& exn){
+                    exn.report(env);
+                }QTJAMBI_TRY_END
             }else{
                 link->invalidate(nullptr);
             }
@@ -1363,7 +1367,7 @@ bool QtJambiAPI::enumValue(JNIEnv *env, jobject java_object, void* ptr, size_t s
         if(Java::Runtime::Number::isInstanceOf(env, java_object)){
             *reinterpret_cast<qint8*>(ptr) = QtJambiAPI::fromJavaByteObject(env, java_object);
         }else if(Java::QtJambi::QFlags::isInstanceOf(env, java_object)){
-            *reinterpret_cast<qint8*>(ptr) = qint8(Java::QtJambi::QFlags::value(env, java_object));
+            *reinterpret_cast<qint8*>(ptr) = qint8(Java::QtJambi::QFlags::intValue(env, java_object));
         }else if(Java::QtJambi::QtEnumerator::isInstanceOf(env, java_object)){
             *reinterpret_cast<qint8*>(ptr) = qint8(Java::QtJambi::QtEnumerator::value(env,java_object));
         }else if(Java::QtJambi::QtByteEnumerator::isInstanceOf(env, java_object)){
@@ -1383,7 +1387,7 @@ bool QtJambiAPI::enumValue(JNIEnv *env, jobject java_object, void* ptr, size_t s
         if(Java::Runtime::Number::isInstanceOf(env, java_object)){
             *reinterpret_cast<qint16*>(ptr) = QtJambiAPI::fromJavaByteObject(env, java_object);
         }else if(Java::QtJambi::QFlags::isInstanceOf(env, java_object)){
-            *reinterpret_cast<qint16*>(ptr) = qint16(Java::QtJambi::QFlags::value(env, java_object));
+            *reinterpret_cast<qint16*>(ptr) = qint16(Java::QtJambi::QFlags::intValue(env, java_object));
         }else if(Java::QtJambi::QtEnumerator::isInstanceOf(env, java_object)){
             *reinterpret_cast<qint16*>(ptr) = qint16(Java::QtJambi::QtEnumerator::value(env,java_object));
         }else if(Java::QtJambi::QtByteEnumerator::isInstanceOf(env, java_object)){
@@ -1403,7 +1407,7 @@ bool QtJambiAPI::enumValue(JNIEnv *env, jobject java_object, void* ptr, size_t s
         if(Java::Runtime::Number::isInstanceOf(env, java_object)){
             *reinterpret_cast<qint32*>(ptr) = QtJambiAPI::fromJavaByteObject(env, java_object);
         }else if(Java::QtJambi::QFlags::isInstanceOf(env, java_object)){
-            *reinterpret_cast<qint32*>(ptr) = qint32(Java::QtJambi::QFlags::value(env, java_object));
+            *reinterpret_cast<qint32*>(ptr) = qint32(Java::QtJambi::QFlags::intValue(env, java_object));
         }else if(Java::QtJambi::QtEnumerator::isInstanceOf(env, java_object)){
             *reinterpret_cast<qint32*>(ptr) = qint32(Java::QtJambi::QtEnumerator::value(env,java_object));
         }else if(Java::QtJambi::QtByteEnumerator::isInstanceOf(env, java_object)){
@@ -1422,8 +1426,12 @@ bool QtJambiAPI::enumValue(JNIEnv *env, jobject java_object, void* ptr, size_t s
     case sizeof(qint64):
         if(Java::Runtime::Number::isInstanceOf(env, java_object)){
             *reinterpret_cast<qint64*>(ptr) = QtJambiAPI::fromJavaByteObject(env, java_object);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 9, 0)
+        }else if(Java::QtJambi::QLongFlags::isInstanceOf(env, java_object)){
+            *reinterpret_cast<qint64*>(ptr) = qint64(Java::QtJambi::QLongFlags::longValue(env, java_object));
+#endif
         }else if(Java::QtJambi::QFlags::isInstanceOf(env, java_object)){
-            *reinterpret_cast<qint64*>(ptr) = qint64(Java::QtJambi::QFlags::value(env, java_object));
+            *reinterpret_cast<qint64*>(ptr) = qint64(Java::QtJambi::QFlags::intValue(env, java_object));
         }else if(Java::QtJambi::QtEnumerator::isInstanceOf(env, java_object)){
             *reinterpret_cast<qint64*>(ptr) = qint64(Java::QtJambi::QtEnumerator::value(env,java_object));
         }else if(Java::QtJambi::QtByteEnumerator::isInstanceOf(env, java_object)){

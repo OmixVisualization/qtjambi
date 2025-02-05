@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -29,6 +29,7 @@
 ****************************************************************************/
 package io.qt.internal;
 
+import java.io.Serializable;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -161,6 +162,18 @@ public abstract class CoreUtility {
     protected static void unregisterConDestroyedObject(QtObject dependentObject, QtObject owner) {
     	NativeUtility.unregisterDependentObject(dependentObject, owner);
 	}
+    
+    protected static LambdaInfo lambdaInfo(Serializable slotObject) {
+    	return ClassAnalyzerUtility.lambdaInfo(slotObject);
+    }
+    
+    protected static LambdaInfo lambdaInfo(Serializable slotObject, Object owner) {
+    	return ClassAnalyzerUtility.lambdaInfo(slotObject, owner);
+    }
+    
+    protected static LambdaInfo lambdaInfo(Serializable slotObject, QObject qobject) {
+    	return ClassAnalyzerUtility.lambdaInfo(slotObject, qobject);
+    }
     
     @SuppressWarnings("deprecation")
 	protected static URL createURL(String url) throws MalformedURLException {

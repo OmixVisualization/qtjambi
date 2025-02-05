@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -234,13 +234,18 @@ TypeSystem{
             remove: RemoveFlag.JavaAndNative
             InjectCode{
                 target: CodeClass.Shell
-                Text{content: "if(JniEnvironment %env{200}) {\n"+
-                              "    if(jobject %this = __shell()->getJavaObjectLocalRef(%env)){\n"+
-                              "        return qintptr(QtJambiAPI::getJavaObjectHashCode(%env, %env->GetObjectClass(%this)));\n"+
-                              "    }else{\n"+
-                              "        __shell()->warnForMethod(\"Qt3DCore::QAbstractFunctor::id() const\");\n"+
-                              "    }\n"+
-                              "}"}
+                Text{content: String.raw`
+if(JniEnvironmentExceptionHandler %env{200}) {
+    QTJAMBI_TRY {
+        if(jobject %this = __shell()->getJavaObjectLocalRef(%env)){
+            return qintptr(QtJambiAPI::getJavaObjectHashCode(%env, %env->GetObjectClass(%this)));
+        }else{
+            __shell()->warnForMethod("Qt3DCore::QAbstractFunctor::id() const");
+        }
+    } QTJAMBI_CATCH(const JavaException& exn){
+        %env.handleException(exn, this, "Qt3DCore::QAbstractFunctor::id() const");
+    } QTJAMBI_TRY_END
+}`}
             }
         }
         since: 6

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -29,7 +29,6 @@
 ****************************************************************************/
 package io.qt.internal;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collections;
@@ -55,49 +54,116 @@ import io.qt.QtShortFlagEnumerator;
 /**
  * @hidden
  */
-public final class EnumUtility {
+final class EnumUtility {
 	static {
 		QtJambi_LibraryUtilities.initialize();
 	}
 
 	private EnumUtility() {throw new RuntimeException();}
 	
-	private static final Map<Class<? extends QtAbstractFlagEnumerator>, Object> flagsConstructorsByEnumType;
+	private static class FlagsConstructors{
+		Supplier<QFlags<?>> defaultConstructor;
+		Function<Integer,QFlags<?>> intConstructor;
+		Function<Long,QFlags<?>> longConstructor;
+		SignalUtility.SlotInvoker setIntValue;
+		SignalUtility.SlotInvoker setLongValue;
+	}
+	private static final boolean hasLongFlags = NativeUtility.majorVersion()>=7 
+			|| (NativeUtility.majorVersion()==6 && NativeUtility.minorVersion()>=9);
+	private static final Map<Class<? extends QtAbstractFlagEnumerator>, FlagsConstructors> flagsConstructorsByEnumType;
 	private static final Map<Class<? extends QtAbstractFlagEnumerator>, QtAbstractFlagEnumerator[]> flagsConstants;
+	private static final Class<?> longFlagsClass;
 	static {
+		Class<?> longFlags = null;
+		if(hasLongFlags) {
+			try {
+				longFlags = Class.forName("io.qt.QLongFlags");
+			} catch (Throwable e) {
+			}
+		}
+		longFlagsClass = longFlags;
 		flagsConstructorsByEnumType = Collections.synchronizedMap(new HashMap<>());
 		flagsConstants = Collections.synchronizedMap(new HashMap<>());
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static QFlags<?> asFlags(QtAbstractFlagEnumerator flag, Function<Integer, QFlags<?>> constructor) {
-		Object flagsConstructor = flagsConstructorsByEnumType.computeIfAbsent(AccessUtility.instance.getClass(flag), cls -> {
+	static QFlags<?> asFlags(QtAbstractFlagEnumerator flag) {
+		@SuppressWarnings("rawtypes")
+		FlagsConstructors flagsConstructor = flagsConstructorsByEnumType.computeIfAbsent(AccessUtility.instance.getClass(flag), cls -> {
+			FlagsConstructors flagsConstructors = new FlagsConstructors();
 			Class<?> declClass = cls.getDeclaringClass();
+			Class<?> flagClass = null;
 			if (declClass != null) {
-				for (Class<?> flagClass : declClass.getDeclaredClasses()) {
-					if (flagClass.getSuperclass() == QFlags.class) {
-						if (flagClass.getGenericSuperclass() instanceof ParameterizedType) {
-							ParameterizedType p = (ParameterizedType) flagClass.getGenericSuperclass();
+				Class<?> flagsSuperClass;
+				if(hasLongFlags && QtLongFlagEnumerator.class.isAssignableFrom(cls))
+					flagsSuperClass = longFlagsClass;
+				else
+					flagsSuperClass = QFlags.class;
+				for (Class<?> _flagClass : declClass.getDeclaredClasses()) {
+					if (_flagClass.getSuperclass() == flagsSuperClass) {
+						if (_flagClass.getGenericSuperclass() instanceof ParameterizedType) {
+							ParameterizedType p = (ParameterizedType) _flagClass.getGenericSuperclass();
 							Type[] args = p.getActualTypeArguments();
 							if (args.length == 1 && args[0] == cls) {
-								Constructor<?> constr = null;
+								flagClass = _flagClass;
+							}
+						}
+					}
+					if(flagClass!=null)
+						break;
+				}
+				if(flagClass==null) {
+					for(Class<?> _flagClass : flagsSuperClass.getDeclaredClasses()) {
+						if(flagsSuperClass.isAssignableFrom(_flagClass)) {
+							flagClass = _flagClass;
+							break;
+						}
+					}
+				}
+				if(flagClass!=null) {
+					if(hasLongFlags && QtLongFlagEnumerator.class.isAssignableFrom(cls)) {
+						try {
+							flagsConstructors.longConstructor = (Function)ReflectionUtility.getFactory1(flagClass.getDeclaredConstructor(long.class));
+						} catch (Throwable e) {
+						}
+					}
+					if(flagsConstructors.longConstructor==null) try {
+						flagsConstructors.intConstructor = (Function)ReflectionUtility.getFactory1(flagClass.getDeclaredConstructor(int.class));
+					} catch (Throwable e) {
+					}
+					if(flagsConstructors.longConstructor==null && flagsConstructors.intConstructor==null){
+						try {
+							flagsConstructors.defaultConstructor = (Supplier)ReflectionUtility.getFactory0(flagClass.getConstructor());
+						} catch (Throwable e) {
+						}
+						if(flagsConstructors.defaultConstructor==null) {
+							try {
+								flagsConstructors.defaultConstructor = (Supplier)ReflectionUtility.getFactory0(flagClass.getDeclaredConstructor());
+							} catch (Throwable e) {
+							}
+						}
+						if(flagsConstructors.defaultConstructor!=null) {
+							if(hasLongFlags && QtLongFlagEnumerator.class.isAssignableFrom(cls)) {
 								try {
-									constr = flagClass.getDeclaredConstructor(int.class);
+									flagsConstructors.setLongValue = ReflectionUtility.getSlotInvoker(flagClass.getDeclaredMethod("setValue", long.class), null);
 								} catch (Throwable e) {
 								}
-								if(constr==null) try {
-									constr = flagClass.getDeclaredConstructor();
+								if(flagsConstructors.setLongValue==null) {
+									try {
+										flagsConstructors.setLongValue = ReflectionUtility.getSlotInvoker(flagsSuperClass.getDeclaredMethod("setLongValue", long.class), null);
+									} catch (Throwable e) {
+									}
+								}
+							}
+							if(flagsConstructors.setLongValue==null) {
+								try {
+									flagsConstructors.setIntValue = ReflectionUtility.getSlotInvoker(flagClass.getDeclaredMethod("setValue", int.class), null);
 								} catch (Throwable e) {
 								}
-								if(constr==null) try {
-									constr = flagClass.getConstructor();
-								} catch (Throwable e) {
-								}
-								if(constr!=null) {
-									if(constr.getParameterCount()==0) {
-										return ReflectionUtility.getFactory0(constr);
-									}else {
-										return ReflectionUtility.getFactory1(constr);
+								if(flagsConstructors.setIntValue==null) {
+									try {
+										flagsConstructors.setIntValue = ReflectionUtility.getSlotInvoker(flagsSuperClass.getDeclaredMethod("setIntValue", int.class), null);
+									} catch (Throwable e) {
 									}
 								}
 							}
@@ -105,37 +171,110 @@ public final class EnumUtility {
 					}
 				}
 			}
-			return null;
+			return flagsConstructors;
 		});
-		int value = 0;
-		if (flag instanceof QtFlagEnumerator) {
-			value |= ((QtFlagEnumerator) flag).value();
-		} else if (flag instanceof QtByteFlagEnumerator) {
-			value |= ((QtByteFlagEnumerator) flag).value();
-		} else if (flag instanceof QtShortFlagEnumerator) {
-			value |= ((QtShortFlagEnumerator) flag).value();
-		} else if (flag instanceof QtLongFlagEnumerator) {
-			value |= ((QtLongFlagEnumerator) flag).value();
-		}
-		if (flagsConstructor != null) {
-			if (flagsConstructor instanceof Function) {
+		if(hasLongFlags && flagsConstructor.longConstructor!=null) {
+			if (flag instanceof QtLongFlagEnumerator) {
 				try {
-					return ((Function<Integer,QFlags<?>>)flagsConstructor).apply(value);
+					return flagsConstructor.longConstructor.apply(((QtLongFlagEnumerator) flag).value());
 				} catch (Throwable e) {
 				}
-			} else if (flagsConstructor instanceof Supplier) {
+			}else if (flag instanceof QtFlagEnumerator) {
 				try {
-					QFlags<?> flags = ((Supplier<QFlags<?>>) flagsConstructor).get();
-					flags.setValue(flags.value() | value);
-					return flags;
+					return flagsConstructor.longConstructor.apply((long)((QtFlagEnumerator) flag).value());
+				} catch (Throwable e) {
+				}
+			}else if (flag instanceof QtByteFlagEnumerator) {
+				try {
+					return flagsConstructor.longConstructor.apply((long)((QtByteFlagEnumerator) flag).value());
+				} catch (Throwable e) {
+				}
+			}else if (flag instanceof QtShortFlagEnumerator) {
+				try {
+					return flagsConstructor.longConstructor.apply((long)((QtShortFlagEnumerator) flag).value());
 				} catch (Throwable e) {
 				}
 			}
+			return null;
+		}else if(flagsConstructor.intConstructor!=null) {
+			if (flag instanceof QtFlagEnumerator) {
+				try {
+					return flagsConstructor.intConstructor.apply(((QtFlagEnumerator) flag).value());
+				} catch (Throwable e) {
+				}
+			}else if (flag instanceof QtLongFlagEnumerator) {
+				try {
+					return flagsConstructor.intConstructor.apply((int)((QtLongFlagEnumerator) flag).value());
+				} catch (Throwable e) {
+				}
+			}else if (flag instanceof QtByteFlagEnumerator) {
+				try {
+					return flagsConstructor.intConstructor.apply((int)((QtByteFlagEnumerator) flag).value());
+				} catch (Throwable e) {
+				}
+			}else if (flag instanceof QtShortFlagEnumerator) {
+				try {
+					return flagsConstructor.intConstructor.apply((int)((QtShortFlagEnumerator) flag).value());
+				} catch (Throwable e) {
+				}
+			}
+			return null;
+		}else if(flagsConstructor.defaultConstructor!=null) {
+			try {
+				QFlags<?> flags = flagsConstructor.defaultConstructor.get();
+				if(hasLongFlags && flagsConstructor.setLongValue!=null) {
+					if (flag instanceof QtLongFlagEnumerator) {
+						try {
+							flagsConstructor.setLongValue.invokeArguments(flags, ((QtLongFlagEnumerator) flag).value());
+						} catch (Throwable e) {
+						}
+					}else if (flag instanceof QtFlagEnumerator) {
+						try {
+							flagsConstructor.setLongValue.invokeArguments(flags, (long)((QtFlagEnumerator) flag).value());
+						} catch (Throwable e) {
+						}
+					}else if (flag instanceof QtByteFlagEnumerator) {
+						try {
+							flagsConstructor.setLongValue.invokeArguments(flags, (long)((QtByteFlagEnumerator) flag).value());
+						} catch (Throwable e) {
+						}
+					}else if (flag instanceof QtShortFlagEnumerator) {
+						try {
+							flagsConstructor.setLongValue.invokeArguments(flags, (long)((QtShortFlagEnumerator) flag).value());
+						} catch (Throwable e) {
+						}
+					}
+				}else if(flagsConstructor.setIntValue!=null) {
+					if (flag instanceof QtFlagEnumerator) {
+						try {
+							flagsConstructor.setIntValue.invokeArguments(flags, ((QtFlagEnumerator) flag).value());
+						} catch (Throwable e) {
+						}
+					}else if (flag instanceof QtLongFlagEnumerator) {
+						try {
+							flagsConstructor.setIntValue.invokeArguments(flags, (int)((QtLongFlagEnumerator) flag).value());
+						} catch (Throwable e) {
+						}
+					}else if (flag instanceof QtByteFlagEnumerator) {
+						try {
+							flagsConstructor.setIntValue.invokeArguments(flags, (int)((QtByteFlagEnumerator) flag).value());
+						} catch (Throwable e) {
+						}
+					}else if (flag instanceof QtShortFlagEnumerator) {
+						try {
+							flagsConstructor.setIntValue.invokeArguments(flags, (int)((QtShortFlagEnumerator) flag).value());
+						} catch (Throwable e) {
+						}
+					}
+				}
+				return flags;
+			} catch (Throwable e) {
+			}
 		}
-		return constructor.apply(value);
+		return null;
 	}
 	
-	public static boolean isSmallEnum(QtAbstractFlagEnumerator enm) {
+	static boolean isSmallEnum(QtAbstractFlagEnumerator enm) {
 		try {
 			QtAbstractFlagEnumerator[] values;
 			Class<? extends QtAbstractFlagEnumerator> cls = AccessUtility.instance.getClass(enm);
@@ -153,7 +292,7 @@ public final class EnumUtility {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <T extends QtAbstractFlagEnumerator> T[] flagConstants(QFlags<T> flags) {
+	static <T extends QtAbstractFlagEnumerator> T[] flagConstants(QFlags<T> flags) {
 		if (flags.getClass().getGenericSuperclass() instanceof ParameterizedType) {
 			ParameterizedType superType = (ParameterizedType) flags.getClass().getGenericSuperclass();
 			if (superType.getRawType() == QFlags.class) {

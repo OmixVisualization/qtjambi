@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -29,6 +29,8 @@
 ****************************************************************************/
 package io.qt.internal;
 
+import java.io.Serializable;
+import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -51,6 +53,8 @@ import java.util.function.Supplier;
 
 import io.qt.InternalAccess;
 import io.qt.NativeAccess;
+import io.qt.QFlags;
+import io.qt.QtAbstractFlagEnumerator;
 import io.qt.QtByteEnumerator;
 import io.qt.QtEnumerator;
 import io.qt.QtLongEnumerator;
@@ -66,7 +70,7 @@ import io.qt.core.QObject;
  * @hidden
  */
 class AccessUtility implements io.qt.InternalAccess{
-
+	
 	private AccessUtility(){}
 	
 	@NativeAccess
@@ -222,6 +226,11 @@ class AccessUtility implements io.qt.InternalAccess{
 	@Override
 	public long checkedNativeId(QtObjectInterface object) {
 		return NativeUtility.checkedNativeId(object);
+	}
+	
+	@Override
+	public Object findAssociation(Object object) {
+		return NativeUtility.findAssociation(object);
 	}
 	
 	static class NativeIdInfo implements InternalAccess.NativeIdInfo{
@@ -589,5 +598,30 @@ class AccessUtility implements io.qt.InternalAccess{
 	@Override
 	public <C extends QtObject & Iterable<Double>> DoubleBuffer mutableDataD(C list) {
 		return NativeUtility.mutableDataD(list);
+	}
+
+	@Override
+	public <T extends QtAbstractFlagEnumerator> T[] flagConstants(QFlags<T> flags) {
+		return EnumUtility.flagConstants(flags);
+	}
+
+	@Override
+	public QFlags<?> asFlags(QtAbstractFlagEnumerator flag) {
+		return EnumUtility.asFlags(flag);
+	}
+
+	@Override
+	public boolean isSmallEnum(QtAbstractFlagEnumerator enm) {
+		return EnumUtility.isSmallEnum(enm);
+	}
+	
+	@Override
+	public SerializedLambda serializeLambdaExpression(Serializable slotObject) {
+		return ClassAnalyzerUtility.serializeLambdaExpression(slotObject);
+	}
+
+	@Override
+	public boolean useAnnotatedType() {
+		return ClassAnalyzerUtility.useAnnotatedType;
 	}
 }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -91,9 +91,7 @@ ErrorDummyQuickItem::~ErrorDummyQuickItem(){
     }
 }
 
-extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_quick_QSGSimpleMaterialShader_isOpenGL)
-(JNIEnv *, jclass)
-{
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_quick_QSGSimpleMaterialShader_isOpenGL(JNIEnv *, jclass){
 #if QT_CONFIG(opengl)
     return true;
 #else
@@ -111,10 +109,7 @@ void initialize_meta_info_registerParserStatusCaster(){
 }
 
 // QSGGeometry::vertexData() const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_quick_QSGGeometry_vertexData__)
-(JNIEnv *__jni_env,
- jobject _this)
-{
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_quick_QSGGeometry_vertexData__(JNIEnv *__jni_env, jobject _this){
     jobject _result{nullptr};
     QTJAMBI_TRY{
         QSGGeometry *__qt_this = QtJambiAPI::convertJavaObjectToNative<QSGGeometry>(__jni_env, _this);
@@ -157,7 +152,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_quic
     return _result;
 }
 
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_quick_QSGGeometry_getColoredPoint2D)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_quick_QSGGeometry_getColoredPoint2D
 (JNIEnv *__jni_env,
  jclass,
  jlong pointer,
@@ -174,7 +169,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_quic
     return _result;
 }
 
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_quick_QSGGeometry_getTexturedPoint2D)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_quick_QSGGeometry_getTexturedPoint2D
 (JNIEnv *__jni_env,
  jclass,
  jlong pointer,
@@ -191,7 +186,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_quic
     return _result;
 }
 
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_quick_QSGGeometry_getPoint2D)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_quick_QSGGeometry_getPoint2D
 (JNIEnv *__jni_env,
  jclass,
  jlong pointer,
@@ -208,7 +203,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_quic
     return _result;
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_quick_QSGGeometry_setColoredPoint2D)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_quick_QSGGeometry_setColoredPoint2D
 (JNIEnv *__jni_env,
  jclass,
  jlong pointer,
@@ -224,7 +219,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_quick_Q
     }QTJAMBI_TRY_END
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_quick_QSGGeometry_setTexturedPoint2D)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_quick_QSGGeometry_setTexturedPoint2D
 (JNIEnv *__jni_env,
  jclass,
  jlong pointer,
@@ -240,7 +235,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_quick_Q
     }QTJAMBI_TRY_END
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_quick_QSGGeometry_setPoint2D)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_quick_QSGGeometry_setPoint2D
 (JNIEnv *__jni_env,
  jclass,
  jlong pointer,
@@ -272,7 +267,7 @@ QSGTexture * qtjambi_QSGVulkanTexture_fromNative(JNIEnv *, jlong image, jint lay
     return QNativeInterface::QSGVulkanTexture::fromNative(CastHelper<VkImage>::cast(image), VkImageLayout(layout), window, size, options);
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 QQuickRenderTarget qtjambi_QQuickRenderTarget_fromVulkanImage(JNIEnv *, jlong image, jint layout, const QSize& pixelSize, int sampleCount){
     return QQuickRenderTarget::fromVulkanImage(CastHelper<VkImage>::cast(image), VkImageLayout(layout), pixelSize, sampleCount);
 }

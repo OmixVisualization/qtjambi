@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -48,15 +48,19 @@ public class QThreadAffinityException extends RuntimeException {
      * @param currentThread The thread from which the access was made.
      */
 	@NativeAccess
-    public QThreadAffinityException(String message, QObject object, QThread expectedThread, QThread currentThread) {
+    public QThreadAffinityException(@NonNull String message, @Nullable QObject object, @Nullable QThread expectedThread, @Nullable QThread currentThread) {
         super(message);
         this.object = object;
         this.expectedThread = expectedThread;
         this.currentThread = currentThread;
     }
 	
+    /**
+     * Creates a new QThreadAffinityException with the given message.
+     * @param message Describes the affinity exception.
+     */
 	@NativeAccess
-    private QThreadAffinityException(String message) {
+	public QThreadAffinityException(@NonNull String message) {
         super(message);
         this.object = null;
         this.expectedThread = null;
@@ -120,7 +124,7 @@ public class QThreadAffinityException extends RuntimeException {
      * @return The object that was accessed
      */
     @QtPropertyReader
-	public QObject object() {
+	public @Nullable QObject object() {
 		return object;
 	}
 
@@ -128,7 +132,7 @@ public class QThreadAffinityException extends RuntimeException {
      * @return The thread from which the access was made
      */
     @QtPropertyReader
-	public QThread currentThread() {
+	public @Nullable QThread currentThread() {
 		return currentThread;
 	}
 
@@ -136,7 +140,7 @@ public class QThreadAffinityException extends RuntimeException {
      * @return The expected thread
      */
     @QtPropertyReader
-	public QThread expectedThread() {
+	public @Nullable QThread expectedThread() {
 		return expectedThread;
 	}
 }

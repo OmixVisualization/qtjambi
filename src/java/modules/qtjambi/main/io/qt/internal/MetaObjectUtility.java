@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -32,68 +32,18 @@ package io.qt.internal;
 
 import static io.qt.internal.EnumUtility.*;
 import static io.qt.internal.MetaTypeUtility.*;
+import static io.qt.internal.NativeUtility.arrayListFactory;
 import static io.qt.internal.PropertyUtility.*;
 
-import java.lang.reflect.AccessibleObject;
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Member;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Parameter;
-import java.lang.reflect.Type;
-import java.util.AbstractList;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.logging.Logger;
+import java.lang.reflect.*;
+import java.util.*;
+import java.util.function.*;
+import java.util.logging.*;
 
-import io.qt.NativeAccess;
-import io.qt.QFlags;
-import io.qt.QPropertyDeclarationException;
-import io.qt.QSignalDeclarationException;
-import io.qt.QSignalInitializationException;
-import io.qt.QtAsGadget;
-import io.qt.QtByteEnumerator;
-import io.qt.QtClassInfo;
-import io.qt.QtEnumerator;
-import io.qt.QtInvokable;
-import io.qt.QtLongEnumerator;
-import io.qt.QtMetaType;
-import io.qt.QtPointerType;
-import io.qt.QtPropertyConstant;
-import io.qt.QtPropertyDesignable;
-import io.qt.QtPropertyMember;
-import io.qt.QtPropertyNotify;
-import io.qt.QtPropertyReader;
-import io.qt.QtPropertyRequired;
-import io.qt.QtPropertyResetter;
-import io.qt.QtPropertyScriptable;
-import io.qt.QtPropertyStored;
-import io.qt.QtPropertyUser;
-import io.qt.QtPropertyWriter;
-import io.qt.QtReferenceType;
-import io.qt.QtShortEnumerator;
-import io.qt.QtUninvokable;
-import io.qt.QtUnlistedEnum;
-import io.qt.core.QDeclarableSignals;
-import io.qt.core.QMetaObject;
-import io.qt.core.QMetaType;
-import io.qt.core.QObject;
-import io.qt.core.QPair;
-import io.qt.core.QStaticMemberSignals;
-import io.qt.internal.SignalUtility.SignalParameterType;
+import io.qt.*;
+import io.qt.core.*;
+import io.qt.internal.SignalUtility.*;
+import io.qt.internal.QtMocConstants.*;
 
 
 /**
@@ -107,10 +57,6 @@ final class MetaObjectUtility{
     private MetaObjectUtility() { throw new RuntimeException();}
     
     private final static boolean isQt6 = QtJambi_LibraryUtilities.qtMajorVersion>5;
-    
-    static <K,V> Function<? super K, ArrayList<V>> arrayListFactory(){
-		return key->new ArrayList<>();
-	}
     
     private final static Supplier<List<String>> intDescriptionListFactory = 
     		Boolean.getBoolean("io.qt.enable-metaobject-logs") 
@@ -1314,18 +1260,18 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                     	MetaObjectData.SignalInfo signalInfo = metaObjectData.signalInfos.get(i);
                         if(!signalIndexes.containsKey(signalInfo.field))
                         	signalIndexes.put(signalInfo.field, i);
-                        MethodAttributes flags = MethodFlags.MethodSignal.asFlags();
+                        int flags = MethodFlags.MethodSignal.value();
                         if (Modifier.isPrivate(signalInfo.field.getModifiers()))
-                            flags.set(MethodFlags.AccessPrivate);
+                            flags |= MethodFlags.AccessPrivate.value();
                         else if (Modifier.isPublic(signalInfo.field.getModifiers()))
-                            flags.set(MethodFlags.AccessPublic);
+                            flags |= MethodFlags.AccessPublic.value();
                         else
-                            flags.set(MethodFlags.AccessProtected);
+                            flags |= MethodFlags.AccessProtected.value();
                         
                         if (signalInfo.field.isAnnotationPresent(QtInvokable.class))
-                            flags.set(MethodFlags.MethodScriptable);
+                            flags |= MethodFlags.MethodScriptable.value();
                         if(Boolean.TRUE.equals(signalIsClone.get(i)))
-                        	flags.set(MethodFlags.MethodCloned);
+                        	flags |= MethodFlags.MethodCloned.value();
                         int argc = signalInfo.signalTypes.size();
                         
                         // signals: name, argc, parameters, tag, flags, initial metatype offsets
@@ -1334,7 +1280,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                     	paramIndexOfMethods.put(new QPair<>(signalInfo.field, argc), metaObjectData.intData.size());
                         metaObjectData.intData.add(0);		intdataComments.add("signal["+i+"]: parameters");
                         metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex(""));		intdataComments.add("signal["+i+"]: tag");
-                        metaObjectData.intData.add(flags.value());		intdataComments.add("signal["+i+"]: flags");
+                        metaObjectData.intData.add(flags);		intdataComments.add("signal["+i+"]: flags");
                         if(isQt6) {
                             metaObjectData.intData.add(0);		intdataComments.add("signal["+i+"]: initial metatype offsets");
                         }
@@ -1345,16 +1291,16 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                     //
                     for (int i = 0; i < metaObjectData.methods.size(); i++) {
                         Method method = metaObjectData.methods.get(i);
-                        MethodAttributes flags = methodFlags.get(method).asFlags();
+                        int flags = methodFlags.get(method).value();
                         if (Modifier.isPrivate(method.getModifiers()))
-                            flags.set(MethodFlags.AccessPrivate);
+                        	flags |= MethodFlags.AccessPrivate.value();
                         else if (Modifier.isPublic(method.getModifiers()))
-                            flags.set(MethodFlags.AccessPublic);
+                        	flags |= MethodFlags.AccessPublic.value();
                         else
-                            flags.set(MethodFlags.AccessProtected);
+                        	flags |= MethodFlags.AccessProtected.value();
                         
                         if (!method.isAnnotationPresent(QtInvokable.class) || method.getAnnotation(QtInvokable.class).value())
-                            flags.set(MethodFlags.MethodScriptable);
+                        	flags |= MethodFlags.MethodScriptable.value();
                         int argc = method.getParameterTypes().length;
                         
                         // slots: name, argc, parameters, tag, flags, initial metatype offsets
@@ -1367,7 +1313,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                         intdataComments.add("slot["+i+"]: parameters");
                         metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex(""));
                         intdataComments.add("slot["+i+"]: tag");
-                        metaObjectData.intData.add(flags.value());
+                        metaObjectData.intData.add(flags);
                         intdataComments.add("slot["+i+"]: flags");
                         if(isQt6) {
                             metaObjectData.intData.add(0);		intdataComments.add("slot["+i+"]: initial metatype offsets");
@@ -1453,16 +1399,16 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                     metaObjectData.intData.set(CONSTRUCTOR_METADATA_INDEX, metaObjectData.intData.size());
                     for (int i = 0; i < metaObjectData.constructors.size(); i++) {
                         Constructor<?> constructor = metaObjectData.constructors.get(i);
-                        MethodAttributes flags = MethodFlags.MethodConstructor.asFlags();
+                        int flags = MethodFlags.MethodConstructor.value();
                         if (Modifier.isPrivate(constructor.getModifiers()))
-                            flags.set(MethodFlags.AccessPrivate);
+                        	flags |= MethodFlags.AccessPrivate.value();
                         else if (Modifier.isPublic(constructor.getModifiers()))
-                            flags.set(MethodFlags.AccessPublic);
+                        	flags |= MethodFlags.AccessPublic.value();
                         else
-                            flags.set(MethodFlags.AccessProtected);
+                        	flags |= MethodFlags.AccessProtected.value();
                         
                         if (constructor.isAnnotationPresent(QtInvokable.class) && constructor.getAnnotation(QtInvokable.class).value())
-                            flags.set(MethodFlags.MethodScriptable);
+                            flags |= MethodFlags.MethodScriptable.value();
                         int argc = constructor.getParameterTypes().length;
                         
                         // constructors: name, argc, parameters, tag, flags
@@ -1478,7 +1424,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                         paramIndexOfMethods.put(constructor, metaObjectData.intData.size());
                         metaObjectData.intData.add(0);		intdataComments.add("constructor["+i+"]: parameters");
                         metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex(""));		intdataComments.add("constructor["+i+"]: tag");
-                        metaObjectData.intData.add(flags.value());		intdataComments.add("constructor["+i+"]: flags");
+                        metaObjectData.intData.add(flags);		intdataComments.add("constructor["+i+"]: flags");
                         if(isQt6) {
                             metaObjectData.intData.add(0);		intdataComments.add("slot["+i+"]: initial metatype offsets");
                         }
@@ -1587,7 +1533,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                 int metaObjectFlags = 0;
                 
                 if(!propertyReaders.isEmpty()){
-                    if(!isQObject) {
+                    if(!isQObject && PropertyAccessInStaticMetaCall!=null) {
                         metaObjectFlags |= PropertyAccessInStaticMetaCall.value();
                     }
                     metaObjectData.intData.set(PROPERTY_METADATA_INDEX, metaObjectData.intData.size());
@@ -1725,7 +1671,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                         Boolean constantVariant = propertyConstantResolvers.get(propertyName);
                         Boolean finalVariant = propertyFinalResolvers.get(propertyName);
 
-                        PropertyAttributes flags = PropertyFlags.Invalid.asFlags();
+                        int flags = PropertyFlags.Invalid.value();
                         // Type (need to special case flags and enums)
                         int metaTypeId = 0;
                         String typeName;
@@ -1779,55 +1725,58 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
             			}
                         
                         if (!isBuiltinType(typeName))
-                            flags.set(PropertyFlags.EnumOrFlag);
+                            flags |= PropertyFlags.EnumOrFlag.value();
                         if (writer!=null){
-                            flags.set(PropertyFlags.Writable);
+                            flags |= PropertyFlags.Writable.value();
                             String s = "set";
                             s += propertyName.toUpperCase().charAt(0);
                             s += propertyName.substring(1);
                             if (s.equals(writer.getName()))
-                                flags.set(PropertyFlags.StdCppSet);
+                                flags |= PropertyFlags.StdCppSet.value();
                         }else if(isMemberWritable)
-                        	flags.set(PropertyFlags.Writable);
+                        	flags |= PropertyFlags.Writable.value();
                         if (reader!=null || isMemberReadable)
-                            flags.set(PropertyFlags.Readable);
+                            flags |= PropertyFlags.Readable.value();
                         if (resetter!=null)
-                            flags.set(PropertyFlags.Resettable);
+                            flags |= PropertyFlags.Resettable.value();
                         if ((bindable!=null || isMemberBindable) && Bindable!=null)
-                            flags.set(Bindable);
+                            flags |= Bindable.value();
                         
                         if (designableVariant instanceof Boolean) {
                             if ((boolean)designableVariant)
-                                flags.set(PropertyFlags.Designable);
+                                flags |= PropertyFlags.Designable.value();
                             metaObjectData.propertyDesignableResolvers.add(null);
                         } else if (designableVariant instanceof Method) {
                             metaObjectData.propertyDesignableResolvers.add((Method) designableVariant);
-                            flags.set(ResolveDesignable);
+                            if(ResolveDesignable!=null)
+                            	flags |= ResolveDesignable.value();
                         }else {
                             metaObjectData.propertyDesignableResolvers.add(null);
                             // Designable by default
-                            flags.set(PropertyFlags.Designable);
+                            flags |= PropertyFlags.Designable.value();
                         }
                         
                         if (scriptableVariant instanceof Boolean) {
                             if ((boolean)scriptableVariant)
-                                flags.set(PropertyFlags.Scriptable);
+                                flags |= PropertyFlags.Scriptable.value();
                             metaObjectData.propertyScriptableResolvers.add(null);
                         } else if (scriptableVariant instanceof Method) {
-                            flags.set(ResolveScriptable);
+                            if(ResolveScriptable!=null)
+                            	flags |= ResolveScriptable.value();
                             metaObjectData.propertyScriptableResolvers.add((Method) scriptableVariant);
                         }else {
                             metaObjectData.propertyScriptableResolvers.add(null);
                             // Scriptable by default
-                            flags.set(PropertyFlags.Scriptable);
+                            flags |= PropertyFlags.Scriptable.value();
                         }
                         
                         if (editableVariant instanceof Boolean) {
-                            if ((boolean)editableVariant)
-                                flags.set(Editable);
+                            if ((boolean)editableVariant && Editable!=null)
+                                flags |= Editable.value();
                             metaObjectData.propertyEditableResolvers.add(null);
                         } else if (editableVariant instanceof Method) {
-                            flags.set(ResolveEditable);
+                            if(ResolveEditable!=null)
+                            	flags |= ResolveEditable.value();
                             metaObjectData.propertyEditableResolvers.add((Method) editableVariant);
                         }else {
                             metaObjectData.propertyEditableResolvers.add(null);
@@ -1835,24 +1784,25 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                         
                         if (storedVariant instanceof Boolean) {
                             if ((boolean)storedVariant)
-                                flags.set(PropertyFlags.Stored);
+                                flags |= PropertyFlags.Stored.value();
                             metaObjectData.propertyStoredResolvers.add(null);
                         } else if (storedVariant instanceof Method) {
-                                                        
-                            flags.set(ResolveStored);
+                            if(ResolveStored!=null)
+                            	flags |= ResolveStored.value();
                             metaObjectData.propertyStoredResolvers.add((Method) storedVariant);
                         }else {
                             metaObjectData.propertyStoredResolvers.add(null);
                             // Stored by default
-                            flags.set(PropertyFlags.Stored);
+                            flags |= PropertyFlags.Stored.value();
                         }
                                
                         if (userVariant instanceof Boolean) {
                             if ((boolean)userVariant)
-                                flags.set(PropertyFlags.User);
+                                flags |= PropertyFlags.User.value();
                             metaObjectData.propertyUserResolvers.add(null);
                         } else if (userVariant instanceof Method) {
-                            flags.set(ResolveUser);
+                            if(ResolveUser!=null)
+                            	flags |= ResolveUser.value();
                             metaObjectData.propertyUserResolvers.add((Method) userVariant);
                         }else {
                             metaObjectData.propertyUserResolvers.add(null);
@@ -1861,24 +1811,24 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                         if (Boolean.TRUE.equals(constantVariant)) {
                         	if(writer!=null || notify!=null)
                         		throw new QPropertyDeclarationException(String.format("Property '%1$s' in class %2$s: Must not specify @QtPropertyConstant in combination with writer and/or notifier signal.", propertyName, clazz.getTypeName()));
-                            flags.set(PropertyFlags.Constant);
+                            flags |= PropertyFlags.Constant.value();
                         }else if (writer==null 
                         		&& notify==null 
                         		&& qPropertyField==null
                         		&& (propertyMemberField==null || Modifier.isFinal(propertyMemberField.getModifiers()))) {
-                            flags.set(PropertyFlags.Constant);
+                            flags |= PropertyFlags.Constant.value();
                         }
                         
                         if (Boolean.TRUE.equals(requiredVariant) && Required!=null) {
-                            flags.set(Required);
+                            flags |= Required.value();
                         }
 
                         if (Boolean.TRUE.equals(finalVariant))
-                            flags.set(PropertyFlags.Final);
+                            flags |= PropertyFlags.Final.value();
                          
                         
                         if (notify!=null && Notify!=null)
-                            flags.set(Notify);
+                            flags |= Notify.value();
                         
                      // properties: name, type, flags
                         metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex(propertyName));
@@ -1908,7 +1858,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                         }
                         metaObjectData.propertyClassTypes.add(propertyType);
                         intdataComments.add("property["+i+"].type");
-                        metaObjectData.intData.add(flags.value());
+                        metaObjectData.intData.add(flags);
                         intdataComments.add("property["+i+"].flags");
                         Integer signalIndex = signalIndexes.get(notify);
                         if(isQt6){

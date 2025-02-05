@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -85,10 +85,7 @@ void registerPlugin(QtPluginInstanceFunction instanceFunction, const QString& cl
 }
 
 // emitting (writeExtraFunctions)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QPluginLoader_qRegisterStaticPluginFunctionInstance)
-(JNIEnv *__jni_env,
- jclass, jobject jinstance, QtJambiNativeID metaData1)
-{
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QPluginLoader_qRegisterStaticPluginFunctionInstance(JNIEnv *__jni_env, jclass, jobject jinstance, QtJambiNativeID metaData1){
     QTJAMBI_NATIVE_METHOD_CALL("qRegisterStaticPluginFunction(QStaticPlugin)")
     try{
         QObject* instance = qtjambi_cast<QObject*>(__jni_env, jinstance);
@@ -114,10 +111,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QP
     }
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QPluginLoader_qRegisterStaticPluginFunctionClass)
-(JNIEnv *__jni_env,
- jclass, jclass cls, QtJambiNativeID metaData1)
-{
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QPluginLoader_qRegisterStaticPluginFunctionClass(JNIEnv *__jni_env, jclass, jclass cls, QtJambiNativeID metaData1){
     QTJAMBI_NATIVE_METHOD_CALL("qRegisterStaticPluginFunction(QStaticPlugin)")
     try{
         QString className = QtJambiAPI::getClassName(__jni_env, cls);
@@ -130,18 +124,21 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QP
         JavaException::check(__jni_env QTJAMBI_STACKTRACEINFO);
         if(constructorHandle){
             QJsonObject json = QtJambiAPI::valueReferenceFromNativeId<QJsonObject>(metaData1);
-            QSharedPointer<QPointer<QObject>> pointer(new QPointer<QObject>());
             QtPluginInstanceFunction instanceFunction = qtjambi_function_pointer<16,QObject*()>(
-                        [cls, constructorHandle, pointer]() -> QObject*{
+                        [cls, constructorHandle, pointer = QSharedPointer<QPointer<QObject>>(new QPointer<QObject>())]() -> QObject*{
                             if(JniEnvironment env{500}){
-                                if(pointer->isNull()){
-                                    jobject plugin = env->NewObject(cls, constructorHandle);
-                                    JavaException::check(env QTJAMBI_STACKTRACEINFO);
-                                    QPointer<QObject> p(qtjambi_cast<QObject*>(env, plugin));
-                                    QtJambiAPI::setCppOwnership(env, plugin);
-                                    pointer->swap(p);
-                                }
-                                return pointer->data();
+                               QTJAMBI_TRY{
+                                    if(pointer->isNull()){
+                                        jobject plugin = env->NewObject(cls, constructorHandle);
+                                        JavaException::check(env QTJAMBI_STACKTRACEINFO);
+                                        QPointer<QObject> p(qtjambi_cast<QObject*>(env, plugin));
+                                        QtJambiAPI::setCppOwnership(env, plugin);
+                                        pointer->swap(p);
+                                    }
+                                    return pointer->data();
+                                }QTJAMBI_CATCH(const JavaException& exn){
+                                    exn.report(env);
+                                }QTJAMBI_TRY_END
                             }
                             return nullptr;
                         }
@@ -153,9 +150,14 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QP
     }
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QPluginLoader_qRegisterStaticPluginFunction)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QPluginLoader_qRegisterStaticPluginFunction
 (JNIEnv *__jni_env,
- jclass, jobject classSupplier, jstring _className, jstring jiid, QtJambiNativeID metaData1, QtJambiNativeID pluginInfo1)
+ jclass,
+ jobject classSupplier,
+ jstring _className,
+ jstring jiid,
+ QtJambiNativeID metaData1,
+ QtJambiNativeID pluginInfo1)
 {
     QTJAMBI_NATIVE_METHOD_CALL("qRegisterStaticPluginFunction(QStaticPlugin)")
     try{
@@ -177,24 +179,28 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QP
             QObject* operator()(){
                 if(m_pointer.isNull()){
                     if(JniEnvironment env{200}){
-                        jobject classOrSupplier;
-                        if(!m_constructorHandle && (classOrSupplier = m_classOrSupplier.object(env))){ // m_classOrSupplier is Supplier
-                            m_classOrSupplier = JObjectWrapper();
-                            jclass cls = jclass(Java::Runtime::Supplier::get(env, classOrSupplier));
-                            if(cls){
-                                m_constructorHandle = env->GetMethodID(cls, "<init>", "()V");
-                                JavaException::check(env QTJAMBI_STACKTRACEINFO);
-                                if(m_constructorHandle){
-                                    m_classOrSupplier = JObjectWrapper(env, cls);
+                        QTJAMBI_TRY{
+                            jobject classOrSupplier;
+                            if(!m_constructorHandle && (classOrSupplier = m_classOrSupplier.object(env))){ // m_classOrSupplier is Supplier
+                                m_classOrSupplier = JObjectWrapper();
+                                jclass cls = jclass(Java::Runtime::Supplier::get(env, classOrSupplier));
+                                if(cls){
+                                    m_constructorHandle = env->GetMethodID(cls, "<init>", "()V");
+                                    JavaException::check(env QTJAMBI_STACKTRACEINFO);
+                                    if(m_constructorHandle){
+                                        m_classOrSupplier = JObjectWrapper(env, cls);
+                                    }
                                 }
                             }
-                        }
-                        if(m_constructorHandle){ // m_classOrSupplier is Class
-                            jobject plugin = env->NewObject(jclass(m_classOrSupplier.object(env)), m_constructorHandle);
-                            JavaException::check(env QTJAMBI_STACKTRACEINFO);
-                            m_pointer = qtjambi_cast<QObject*>(env, plugin);
-                            QtJambiAPI::setCppOwnership(env, plugin);
-                        }
+                            if(m_constructorHandle){ // m_classOrSupplier is Class
+                                jobject plugin = env->NewObject(jclass(m_classOrSupplier.object(env)), m_constructorHandle);
+                                JavaException::check(env QTJAMBI_STACKTRACEINFO);
+                                m_pointer = qtjambi_cast<QObject*>(env, plugin);
+                                QtJambiAPI::setCppOwnership(env, plugin);
+                            }
+                        }QTJAMBI_CATCH(const JavaException& exn){
+                            exn.report(env);
+                        }QTJAMBI_TRY_END
                     }
                 }
                 return m_pointer.data();
@@ -209,10 +215,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QP
     }
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QPluginLoader_qRegisterPluginInterface)
-(JNIEnv *__jni_env,
- jclass, jclass cls)
-{
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QPluginLoader_qRegisterPluginInterface(JNIEnv *__jni_env, jclass, jclass cls){
     QTJAMBI_NATIVE_METHOD_CALL("qRegisterPluginInterface(Class)")
     try{
         (void)RegistryAPI::registerInterfaceID(__jni_env, cls);
@@ -221,10 +224,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QP
     }
 }
 
-extern "C" Q_DECL_EXPORT jclass JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_internal_QFactoryLoader_registeredPluginInterface)
-(JNIEnv *__jni_env,
- jclass, jstring iid)
-{
+extern "C" JNIEXPORT jclass JNICALL Java_io_qt_core_internal_QFactoryLoader_registeredPluginInterface(JNIEnv *__jni_env, jclass, jstring iid){
     QTJAMBI_NATIVE_METHOD_CALL("registeredPluginInterface(String)")
     try{
         QtJambiScope scope;

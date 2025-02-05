@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -41,7 +41,6 @@ import java.util.Objects;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.BiPredicate;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 import io.qt.NativeAccess;
@@ -2420,10 +2419,6 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
 		return set;
 	}
 	
-	private static <K,V> Function<? super K, ArrayList<V>> arrayListFactory(){
-		return key->new ArrayList<>();
-	}
-
     /**
      * Returns a copy of the portion of this map whose keys range from
      * {@code fromKey} to {@code toKey}.  If {@code fromKey} and

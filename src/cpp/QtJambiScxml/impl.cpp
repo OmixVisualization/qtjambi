@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -37,7 +37,7 @@
 #include <qscxmldatamodel.h>
 
 // QScxmlDataModel::ForeachLoopBody::run(bool * ok)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_scxml_QScxmlDataModel_00024ForeachLoopBody_run)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_scxml_QScxmlDataModel_00024ForeachLoopBody_run
 (JNIEnv *__jni_env,
  jobject,
  QtJambiNativeID __this_nativeId,

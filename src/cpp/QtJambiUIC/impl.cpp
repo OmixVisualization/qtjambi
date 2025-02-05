@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -32,10 +32,7 @@
 #include <QtJambi/RegistryAPI>
 #include <QtJambi/qtjambi_cast.h>
 
-extern "C" Q_DECL_EXPORT jstring JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_uic_java_WriteClass_getExternalTypeName)
-    (JNIEnv *env, jclass, jstring externalName)
-{
+extern "C" JNIEXPORT jstring JNICALL Java_io_qt_uic_java_WriteClass_getExternalTypeName(JNIEnv *env, jclass, jstring externalName){
     jstring result = nullptr;
     QTJAMBI_TRY{
         QString internalName = CoreAPI::externalTypeTame(env, qtjambi_cast<QString>(env, externalName));

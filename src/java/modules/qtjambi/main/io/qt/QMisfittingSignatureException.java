@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -36,7 +36,7 @@ package io.qt;
 public class QMisfittingSignatureException extends QConnectionException {
     private static final long serialVersionUID = 1L;
 
-    public QMisfittingSignatureException(String message) {
+    public QMisfittingSignatureException(@NonNull String message) {
         super(message);
     }
 }

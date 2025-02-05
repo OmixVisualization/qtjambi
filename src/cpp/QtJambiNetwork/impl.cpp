@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -49,9 +49,7 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/network,QHostAddress$HostInfo,
 }
 }
 
-extern "C" Q_DECL_EXPORT bool JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_network_QSsl_isAvailable)
-(JNIEnv *, jclass)
-{
+extern "C" JNIEXPORT bool JNICALL Java_io_qt_network_QSsl_isAvailable(JNIEnv *, jclass){
 #if defined(QT_NO_SSL)
     return false;
 #else

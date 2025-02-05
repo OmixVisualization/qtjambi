@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -190,7 +190,7 @@ QString findComparableType(const MetaClass *cls){
         typeName = comparableType.mid(0, idx);
     }
     idx = typeName.lastIndexOf(u'.');
-    QString ann = QStringLiteral(u"@StrictNonNull ");
+    QString ann = QStringLiteral(u"@NonNull ");
     if(idx>0){
         typeName = comparableType.mid(idx+1);
         package = comparableType.mid(0, idx+1);
@@ -2252,8 +2252,8 @@ void JavaGenerator::writeEnum(QTextStream &s, const MetaEnum *java_enum) {
         if (entry->flags()) {
             FlagsTypeEntry *flags_entry = entry->flags();
             s << INDENT << "/**" << Qt::endl
-              << INDENT << " * Create a QFlags of the enum entry." << Qt::endl
-              << INDENT << " * @return QFlags" << Qt::endl
+              << INDENT << " * Create a " << flags_entry->targetLangName() << " of the enum entry." << Qt::endl
+              << INDENT << " * @return " << flags_entry->targetLangName() << "" << Qt::endl
               << INDENT << " */" << Qt::endl
               << INDENT << "@Override" << Qt::endl
               << INDENT << "public @NonNull " << flags_entry->targetLangName() << " asFlags() {" << Qt::endl
@@ -2465,10 +2465,15 @@ void JavaGenerator::writeEnum(QTextStream &s, const MetaEnum *java_enum) {
                 stream >> l;
                 serialVersionUID = serialVersionUID * 31 + l;
             }
+            bool is64 = java_enum->typeEntry()->size()==64 && QT_VERSION_CHECK(m_qtVersionMajor,m_qtVersionMinor,m_qtVersionPatch)>=QT_VERSION_CHECK(6,9,0);
+            const char* valueMethod = is64 ? "longValue" : "value";
+            const char* valueType = is64 ? "long" : "int";
+            const char* valueBoxedType = is64 ? "Long" : "Integer";
+            const char* javaType = is64 ? "QLongFlags" : "QFlags";
             s << INDENT << "/**" << Qt::endl
-              << INDENT << " * {@link QFlags} type for enum {@link " << java_enum->name().replace("$",".") << "}" << Qt::endl
+              << INDENT << " * {@link " << javaType << "} type for enum {@link " << java_enum->name().replace("$",".") << "}" << Qt::endl
               << INDENT << " */" << Qt::endl
-              << INDENT << "public static final class " << flagsName << " extends QFlags<" << java_enum->name().replace("$",".") << "> implements Comparable<" << flagsName << "> {" << Qt::endl;
+              << INDENT << "public static final class " << flagsName << " extends " << javaType << "<" << java_enum->name().replace("$",".") << "> implements Comparable<" << flagsName << "> {" << Qt::endl;
             {
                 INDENTATION(INDENT)
                 s << INDENT << "private static final long serialVersionUID = 0x" << QString::number(serialVersionUID, 16) << "L;" << Qt::endl;
@@ -2477,17 +2482,24 @@ void JavaGenerator::writeEnum(QTextStream &s, const MetaEnum *java_enum) {
                   << INDENT << "    QtJambi_LibraryUtilities.initialize();" << Qt::endl
                   << INDENT << "}" << Qt::endl << Qt::endl
                   << INDENT << "/**" << Qt::endl
+                  << INDENT << " * Creates a new " << flagsName << "." << Qt::endl
+                  << INDENT << " */" << Qt::endl
+                  << INDENT << "public " << flagsName << "(){" << Qt::endl
+                  << INDENT << "    this(0);" << Qt::endl
+                  << INDENT << "}" << Qt::endl << Qt::endl
+                  << INDENT << "/**" << Qt::endl
                   << INDENT << " * Creates a new " << flagsName << " where the flags in <code>args</code> are set." << Qt::endl
                   << INDENT << " * @param args enum entries" << Qt::endl
                   << INDENT << " */" << Qt::endl
                   << INDENT << "public " << flagsName << "(@Nullable " << java_enum->name().replace("$",".") << " @NonNull... args){" << Qt::endl
-                  << INDENT << "    super(args);" << Qt::endl
+                  << INDENT << "    this(0);" << Qt::endl
+                  << INDENT << "    set(args);" << Qt::endl
                   << INDENT << "}" << Qt::endl << Qt::endl
                   << INDENT << "/**" << Qt::endl
                   << INDENT << " * Creates a new " << flagsName << " with given <code>value</code>." << Qt::endl
                   << INDENT << " * @param value" << Qt::endl
                   << INDENT << " */" << Qt::endl
-                  << INDENT << "public " << flagsName << "(int value) {" << Qt::endl
+                  << INDENT << "public " << flagsName << "(" << valueType << " value) {" << Qt::endl
                   << INDENT << "    super(value);" << Qt::endl
                   << INDENT << "}" << Qt::endl << Qt::endl
                   << INDENT << "/**" << Qt::endl
@@ -2497,7 +2509,7 @@ void JavaGenerator::writeEnum(QTextStream &s, const MetaEnum *java_enum) {
                   << INDENT << " */" << Qt::endl
                   << INDENT << "@Override" << Qt::endl
                   << INDENT << "public final @NonNull " << flagsName << " combined(@StrictNonNull " << java_enum->name().replace("$",".") << " e){" << Qt::endl
-                  << INDENT << "    return new " << flagsName << "(value() | e.value());" << Qt::endl
+                  << INDENT << "    return new " << flagsName << "(" << valueMethod << "() | e.value());" << Qt::endl
                   << INDENT << "}" << Qt::endl << Qt::endl
                   << INDENT << "/**" << Qt::endl
                   << INDENT << " * Sets the flag <code>e</code>" << Qt::endl
@@ -2517,9 +2529,9 @@ void JavaGenerator::writeEnum(QTextStream &s, const MetaEnum *java_enum) {
                   << INDENT << "@Override" << Qt::endl
                   << INDENT << "public final @NonNull " << flagsName << " setFlag(@Nullable " << java_enum->name().replace("$",".") << " e, boolean on){" << Qt::endl
                   << INDENT << "    if (on) {" << Qt::endl
-                  << INDENT << "    	setValue(value() | e.value());" << Qt::endl
+                  << INDENT << "    	setValue(" << valueMethod << "() | e.value());" << Qt::endl
                   << INDENT << "    }else {" << Qt::endl
-                  << INDENT << "    	setValue(value() & ~e.value());" << Qt::endl
+                  << INDENT << "    	setValue(" << valueMethod << "() & ~e.value());" << Qt::endl
                   << INDENT << "    }" << Qt::endl
                   << INDENT << "    return this;" << Qt::endl
                   << INDENT << "}" << Qt::endl << Qt::endl
@@ -2536,15 +2548,44 @@ void JavaGenerator::writeEnum(QTextStream &s, const MetaEnum *java_enum) {
                   << INDENT << " */" << Qt::endl
                   << INDENT << "@Override" << Qt::endl
                   << INDENT << "public final @NonNull " << flagsName << " clone(){" << Qt::endl
-                  << INDENT << "    return new " << flagsName << "(value());" << Qt::endl
+                  << INDENT << "        return new " << flagsName << "(" << valueMethod << "());" << Qt::endl
                   << INDENT << "}" << Qt::endl << Qt::endl
                   << INDENT << "/**" << Qt::endl
                   << INDENT << " * {@inheritDoc}" << Qt::endl
                   << INDENT << " */" << Qt::endl
                   << INDENT << "@Override" << Qt::endl
                   << INDENT << "public final int compareTo(@StrictNonNull " << flagsName << " other){" << Qt::endl
-                  << INDENT << "    return Integer.compare(value(), other.value());" << Qt::endl
-                  << INDENT << "}" << Qt::endl;
+                  << INDENT << "    return " << valueBoxedType << ".compare(" << valueMethod << "(), other." << valueMethod << "());" << Qt::endl
+                  << INDENT << "}" << Qt::endl << Qt::endl
+                  << INDENT << "/**" << Qt::endl
+                  << INDENT << " * Returns the value of this QFlags." << Qt::endl
+                  << INDENT << " */" << Qt::endl
+                  << INDENT << "public final " << valueType << " value(){" << Qt::endl;
+                if(is64){
+                    s << INDENT << "    return longValue();" << Qt::endl;
+                }else{
+                    s << INDENT << "    return intValue();" << Qt::endl;
+                }
+                s << INDENT << "}" << Qt::endl << Qt::endl;
+                if(is64){
+                    s << INDENT << "/**" << Qt::endl
+                      << INDENT << " * See <a href=\"https://doc.qt.io/qt/qflags.html#toInt\">QFlags::toInt() const</a>" << Qt::endl
+                      << INDENT << " */" << Qt::endl
+                      << INDENT << "public final " << valueType << " toLong(){" << Qt::endl
+                      << INDENT << "    return longValue();" << Qt::endl
+                      << INDENT << "}" << Qt::endl << Qt::endl;
+                }
+                s << INDENT << "/**" << Qt::endl
+                  << INDENT << " * Sets the value of this QFlags." << Qt::endl
+                  << INDENT << " * @param value new value" << Qt::endl
+                  << INDENT << " */" << Qt::endl
+                  << INDENT << "public final void setValue(" << valueType << " value){" << Qt::endl;
+                if(is64){
+                    s << INDENT << "    setLongValue(value);" << Qt::endl;
+                }else{
+                    s << INDENT << "    setIntValue(value);" << Qt::endl;
+                }
+                s << INDENT << "}" << Qt::endl;
                 printExtraCode(linesPos4, s, true);
                 printExtraCode(linesPos5, s, true);
             }
@@ -4300,7 +4341,7 @@ void JavaGenerator::writeReferenceCount(QTextStream &s, const ReferenceCount &re
                             && argument->type()->instantiations()[0]->isObject()){
                         s << INDENT << "for(" << translateType(argument->type()->instantiations()[0], java_function->implementingClass(), Option(BoxedPrimitive | VarArgsAsArray | NoNullness))
                           << " " << argumentName << "_element : " << argumentName << "){" << Qt::endl
-                          << INDENT << "    if(QtJambi_LibraryUtilities.internal.isJavaOwnership(" << argumentName << "_element))" << Qt::endl
+                          << INDENT << "    if(QtJambi_LibraryUtilities.internal.needsReferenceCounting(" << argumentName << "_element))" << Qt::endl
                           << INDENT << "        " << refCount.variableName << ".add(" << argumentName << "_element);" << Qt::endl
                           << INDENT << "}" << Qt::endl;
                     }else{
@@ -4312,7 +4353,7 @@ void JavaGenerator::writeReferenceCount(QTextStream &s, const ReferenceCount &re
                             && argument->type()->instantiations()[0]->isObject()){
                         s << INDENT << "for(" << translateType(argument->type()->instantiations()[0], java_function->implementingClass(), Option(BoxedPrimitive | VarArgsAsArray | NoNullness))
                           << " " << argumentName << "_element : " << argumentName << "){" << Qt::endl
-                          << INDENT << "    if(QtJambi_LibraryUtilities.internal.isJavaOwnership(" << argumentName << "_element))" << Qt::endl
+                          << INDENT << "    if(QtJambi_LibraryUtilities.internal.needsReferenceCounting(" << argumentName << "_element))" << Qt::endl
                           << INDENT << "        QtJambi_LibraryUtilities.internal.addReferenceCount(" << thisName << ", " << declareVariable << ".class, \"" << refCount.variableName << "\", " << ( refCount.threadSafe ? "true" : "false") << ", " << ( isStatic ? "true" : "false") << ", " << argumentName << "_element);" << Qt::endl
                           << INDENT << "}" << Qt::endl;
                     }else{
@@ -9696,6 +9737,11 @@ void JavaGenerator::generateFake(const MetaClass *fake_class) {
                         }
                     }
                 }
+                bool is64 = enm->typeEntry()->size()==64 && QT_VERSION_CHECK(m_qtVersionMajor,m_qtVersionMinor,m_qtVersionPatch)>=QT_VERSION_CHECK(6,9,0);
+                const char* valueMethod = is64 ? "longValue" : "value";
+                const char* valueType = is64 ? "long" : "int";
+                const char* valueBoxedType = is64 ? "Long" : "Integer";
+                const char* javaType = is64 ? "QLongFlags" : "QFlags";
                 if(!comment.trimmed().isEmpty()){
                     s << INDENT << "/**" << Qt::endl;
                     QTextStream commentStream(&comment, QIODevice::ReadOnly);
@@ -9705,27 +9751,35 @@ void JavaGenerator::generateFake(const MetaClass *fake_class) {
                     s << INDENT << " */" << Qt::endl;
                 }else{
                     s << INDENT << "/**" << Qt::endl
-                      << INDENT << " * {@link QFlags} type for enum {@link " << enm->name().replace("$",".") << "}" << Qt::endl
+                      << INDENT << " * {@link " << javaType << "} type for enum {@link " << enm->name().replace("$",".") << "}" << Qt::endl
                       << INDENT << " */" << Qt::endl;
                 }
-                s << INDENT << "public final class " << flagsName << " extends QFlags<@NonNull " << enm->name().replace("$",".") << "> implements Comparable<@NonNull " << flagsName << "> {" << Qt::endl
+
+                s << INDENT << "public final class " << flagsName << " extends " << javaType << "<@NonNull " << enm->name().replace("$",".") << "> implements Comparable<@NonNull " << flagsName << "> {" << Qt::endl
                   << INDENT << "    private static final long serialVersionUID = 0x" << QString::number(serialVersionUID, 16) << "L;" << Qt::endl;
                 printExtraCode(linesPos1, s, true);
                 s << INDENT << "    static {" << Qt::endl
                   << INDENT << "        QtJambi_LibraryUtilities.initialize();" << Qt::endl
                   << INDENT << "    }" << Qt::endl << Qt::endl
                   << INDENT << "    /**" << Qt::endl
+                  << INDENT << "     * Creates a new " << flagsName << "." << Qt::endl
+                  << INDENT << "     */" << Qt::endl
+                  << INDENT << "    public " << flagsName << "(){" << Qt::endl
+                  << INDENT << "        this(0);" << Qt::endl
+                  << INDENT << "    }" << Qt::endl << Qt::endl
+                  << INDENT << "    /**" << Qt::endl
                   << INDENT << "     * Creates a new " << flagsName << " where the flags in <code>args</code> are set." << Qt::endl
                   << INDENT << "     * @param args enum entries" << Qt::endl
                   << INDENT << "     */" << Qt::endl
                   << INDENT << "    public " << flagsName << "(@Nullable " << enm->name().replace("$",".") << " @NonNull... args){" << Qt::endl
-                  << INDENT << "        super(args);" << Qt::endl
+                  << INDENT << "        this(0);" << Qt::endl
+                  << INDENT << "        set(args);" << Qt::endl
                   << INDENT << "    }" << Qt::endl << Qt::endl
                   << INDENT << "    /**" << Qt::endl
                   << INDENT << "     * Creates a new " << flagsName << " with given <code>value</code>." << Qt::endl
                   << INDENT << "     * @param value" << Qt::endl
                   << INDENT << "     */" << Qt::endl
-                  << INDENT << "    public " << flagsName << "(int value) {" << Qt::endl
+                  << INDENT << "    public " << flagsName << "(" << valueType << " value) {" << Qt::endl
                   << INDENT << "        super(value);" << Qt::endl
                   << INDENT << "    }" << Qt::endl << Qt::endl
                   << INDENT << "    /**" << Qt::endl
@@ -9735,7 +9789,7 @@ void JavaGenerator::generateFake(const MetaClass *fake_class) {
                   << INDENT << "     */" << Qt::endl
                   << INDENT << "    @Override" << Qt::endl
                   << INDENT << "    public final @NonNull " << flagsName << " combined(@StrictNonNull " << enm->name().replace("$",".") << " e){" << Qt::endl
-                  << INDENT << "        return new " << flagsName << "(value() | e.value());" << Qt::endl
+                  << INDENT << "        return new " << flagsName << "(" << valueMethod << "() | e.value());" << Qt::endl
                   << INDENT << "    }" << Qt::endl << Qt::endl
                   << INDENT << "    /**" << Qt::endl
                   << INDENT << "     * Sets the flag <code>e</code>" << Qt::endl
@@ -9754,9 +9808,9 @@ void JavaGenerator::generateFake(const MetaClass *fake_class) {
                   << INDENT << "    public final @NonNull " << flagsName << " setFlag(@Nullable " << enm->name().replace("$",".") << " e, boolean on){" << Qt::endl
                   << INDENT << "        if (e!=null) {" << Qt::endl
                   << INDENT << "            if (on) {" << Qt::endl
-                  << INDENT << "            	setValue(value() | e.value());" << Qt::endl
+                  << INDENT << "            	setValue(" << valueMethod << "() | e.value());" << Qt::endl
                   << INDENT << "            }else {" << Qt::endl
-                  << INDENT << "        	    setValue(value() & ~e.value());" << Qt::endl
+                  << INDENT << "        	    setValue(" << valueMethod << "() & ~e.value());" << Qt::endl
                   << INDENT << "            }" << Qt::endl
                   << INDENT << "        }" << Qt::endl
                   << INDENT << "        return this;" << Qt::endl
@@ -9774,7 +9828,7 @@ void JavaGenerator::generateFake(const MetaClass *fake_class) {
                   << INDENT << "     */" << Qt::endl
                   << INDENT << "    @Override" << Qt::endl
                   << INDENT << "    public final @NonNull " << flagsName << " clone(){" << Qt::endl
-                  << INDENT << "        return new " << flagsName << "(value());" << Qt::endl
+                  << INDENT << "        return new " << flagsName << "(" << valueMethod << "());" << Qt::endl
                   << INDENT << "    }" << Qt::endl << Qt::endl
                   << INDENT << "    /**" << Qt::endl
                   << INDENT << "     * Compares this flag with the specified flag for order." << Qt::endl
@@ -9782,8 +9836,37 @@ void JavaGenerator::generateFake(const MetaClass *fake_class) {
                   << INDENT << "     */" << Qt::endl
                   << INDENT << "    @Override" << Qt::endl
                   << INDENT << "    public final int compareTo(@StrictNonNull " << flagsName << " other){" << Qt::endl
-                  << INDENT << "        return Integer.compare(value(), other.value());" << Qt::endl
-                  << INDENT << "    }" << Qt::endl;
+                  << INDENT << "        return " << valueBoxedType << ".compare(" << valueMethod << "(), other." << valueMethod << "());" << Qt::endl
+                  << INDENT << "    }" << Qt::endl
+                  << INDENT << "/**" << Qt::endl
+                  << INDENT << " * Returns the value of this QFlags." << Qt::endl
+                  << INDENT << " */" << Qt::endl
+                  << INDENT << "public final " << valueType << " value(){" << Qt::endl;
+                if(is64){
+                    s << INDENT << "    return longValue();" << Qt::endl;
+                }else{
+                    s << INDENT << "    return intValue();" << Qt::endl;
+                }
+                s << INDENT << "}" << Qt::endl << Qt::endl;
+                if(is64){
+                    s << INDENT << "/**" << Qt::endl
+                      << INDENT << " * See <a href=\"https://doc.qt.io/qt/qflags.html#toInt\">QFlags::toInt() const</a>" << Qt::endl
+                      << INDENT << " */" << Qt::endl
+                      << INDENT << "public final " << valueType << " toLong(){" << Qt::endl
+                      << INDENT << "    return longValue();" << Qt::endl
+                      << INDENT << "}" << Qt::endl << Qt::endl;
+                }
+                s << INDENT << "/**" << Qt::endl
+                  << INDENT << " * Sets the value of this QFlags." << Qt::endl
+                  << INDENT << " * @param value new value" << Qt::endl
+                  << INDENT << " */" << Qt::endl
+                  << INDENT << "public final void setValue(" << valueType << " value){" << Qt::endl;
+                if(is64){
+                    s << INDENT << "    setLongValue(value);" << Qt::endl;
+                }else{
+                    s << INDENT << "    setIntValue(value);" << Qt::endl;
+                }
+                s << INDENT << "}" << Qt::endl;
                 printExtraCode(linesPos4, s, true);
                 printExtraCode(linesPos5, s, true);
                 s << INDENT << "}" << Qt::endl

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -50,7 +50,7 @@ import io.qt.quick.QSGRendererInterface;
 import io.qt.quick.QSGTexture;
 import io.qt.quick.nativeinterface.QSGVulkanTexture;
 
-public class TestQuickTextureVulkanQt6 extends ApplicationInitializer {
+public class TestQuickTextureVulkanQt62 extends ApplicationInitializer {
 	
 	@BeforeClass
 	public static void testInitialize() throws Exception {
@@ -85,6 +85,7 @@ public class TestQuickTextureVulkanQt6 extends ApplicationInitializer {
 			window.sceneGraphInitialized.connect(loop::quit);
 		    QTimer.singleShot(20000, loop::quit);
 		    loop.exec();
+		    item.isDisposed();
 		    Assume.assumeTrue("Window is missing QVulkanInstance.", hasVulkanInstance[0]);
 			Assert.assertTrue(texture[0]!=null);
 			QSGVulkanTexture openglTexture = texture[0].nativeInterface(QSGVulkanTexture.class);

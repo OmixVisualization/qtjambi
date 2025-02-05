@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -129,7 +129,7 @@ struct HttpServerRouter{
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 8, 0)
 
-extern "C" Q_DECL_EXPORT bool JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_httpserver_QHttpServerRouter_addRuleImpl)
+extern "C" JNIEXPORT bool JNICALL Java_io_qt_httpserver_QHttpServerRouter_addRuleImpl
 (JNIEnv *__jni_env,
  jobject __this,
  QtJambiNativeID __this_nativeId,
@@ -154,7 +154,7 @@ extern "C" Q_DECL_EXPORT bool JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_httpser
     return result;
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_httpserver_QHttpServer_sendResponse)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_httpserver_QHttpServer_sendResponse
 (JNIEnv *__jni_env,
  jobject __this,
  QtJambiNativeID __this_nativeId,
@@ -183,7 +183,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_httpser
 }
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_httpserver_QHttpServer_sendResponseFuture)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_httpserver_QHttpServer_sendResponseFuture
 (JNIEnv *__jni_env,
  jobject __this,
  QtJambiNativeID __this_nativeId,
@@ -208,7 +208,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_httpser
 }
 #endif
 
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_httpserver_QHttpServer_afterRequest)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_httpserver_QHttpServer_afterRequest
 (JNIEnv *__jni_env,
  jobject __this,
  QtJambiNativeID __this_nativeId,
@@ -223,26 +223,34 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_httpser
         if(isBi){
             __qt_this->afterRequest([action = JObjectWrapper(__jni_env, _action)](QHttpServerResponse &&resp, const QHttpServerRequest &request){
                 if(JniEnvironment env{300}){
-                    jobject _resp = qtjambi_cast<jobject>(env, &resp);
-                    jobject _request = qtjambi_cast<jobject>(env, &request);
-                    jobject result = Java::Runtime::BiFunction::apply(env, action.object(env), _resp, _request);
-                    QHttpServerResponse* _result = qtjambi_cast<QHttpServerResponse*>(env, result);
-                    InvalidateAfterUse::invalidate(env, _resp);
-                    InvalidateAfterUse::invalidate(env, _request);
-                    if(_result)
-                        return std::move(*_result);
+                    QTJAMBI_TRY{
+                        jobject _resp = qtjambi_cast<jobject>(env, &resp);
+                        jobject _request = qtjambi_cast<jobject>(env, &request);
+                        jobject result = Java::Runtime::BiFunction::apply(env, action.object(env), _resp, _request);
+                        QHttpServerResponse* _result = qtjambi_cast<QHttpServerResponse*>(env, result);
+                        InvalidateAfterUse::invalidate(env, _resp);
+                        InvalidateAfterUse::invalidate(env, _request);
+                        if(_result)
+                            return std::move(*_result);
+                    }QTJAMBI_CATCH(const JavaException& exn){
+                        exn.report(env);
+                    }QTJAMBI_TRY_END
                 }
                 return std::move(resp);
             });
         }else{
             __qt_this->afterRequest([action = JObjectWrapper(__jni_env, _action)](QHttpServerResponse &&resp){
                 if(JniEnvironment env{300}){
-                    jobject _resp = qtjambi_cast<jobject>(env, &resp);
-                    jobject result = Java::Runtime::Function::apply(env, action.object(env), _resp);
-                    QHttpServerResponse* _result = qtjambi_cast<QHttpServerResponse*>(env, result);
-                    InvalidateAfterUse::invalidate(env, _resp);
-                    if(_result)
-                        return std::move(*_result);
+                    QTJAMBI_TRY{
+                        jobject _resp = qtjambi_cast<jobject>(env, &resp);
+                        jobject result = Java::Runtime::Function::apply(env, action.object(env), _resp);
+                        QHttpServerResponse* _result = qtjambi_cast<QHttpServerResponse*>(env, result);
+                        InvalidateAfterUse::invalidate(env, _resp);
+                        if(_result)
+                            return std::move(*_result);
+                    }QTJAMBI_CATCH(const JavaException& exn){
+                        exn.report(env);
+                    }QTJAMBI_TRY_END
                 }
                 return std::move(resp);
             });
@@ -256,7 +264,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_httpser
 #endif //QT_VERSION < QT_VERSION_CHECK(6, 8, 0)
 
 
-extern "C" Q_DECL_EXPORT bool JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_httpserver_QHttpServer_handleRequest)
+extern "C" JNIEXPORT bool JNICALL Java_io_qt_httpserver_QHttpServer_handleRequest
     (JNIEnv *__jni_env,
      jobject __this,
      QtJambiNativeID __this_nativeId,
@@ -283,7 +291,7 @@ extern "C" Q_DECL_EXPORT bool JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_httpser
         return result;
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_httpserver_QHttpServer_missingHandler)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_httpserver_QHttpServer_missingHandler
     (JNIEnv *__jni_env,
      jobject __this,
      QtJambiNativeID __this_nativeId,

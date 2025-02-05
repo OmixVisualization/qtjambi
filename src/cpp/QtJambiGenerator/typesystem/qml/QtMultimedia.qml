@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -466,7 +466,7 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jobject buffer = LocalDataJBuffer(%env, %in, %2).take();\n"+
+                    Text{content: "jobject buffer = DataJBuffer(%env, %in, %2).take();\n"+
                                   "QtJambiAPI::registerDependency(%env, buffer, __this_nativeId);\n"+
                                   "jobject %out = Java::QtMultimedia::QAbstractVideoBuffer$MapResult::newInstance(%env, buffer, jint(%3), false);"}
                 }
@@ -546,7 +546,7 @@ if(%in>0){
         %in = 4;
     %out = Java::QtMultimedia::QAbstractVideoBuffer$MapResult::newArray(%env, jsize(%in));
     for(int i=0; i<%in; ++i){
-        jobject buffer = LocalDataJBuffer(%env, __qt_%4[i], %2).take();
+        jobject buffer = DataJBuffer(%env, __qt_%4[i], %2).take();
         jobject element = Java::QtMultimedia::QAbstractVideoBuffer$MapResult::newInstance(%env, buffer, jint(__qt_%3[i]), false);
         %env->SetObjectArrayElement(%out, jsize(i), element);
         JavaException::check(%env QTJAMBI_STACKTRACEINFO );
@@ -629,7 +629,7 @@ if(%in>0){
         %in = 4;
     %out = Java::QtMultimedia::QAbstractVideoBuffer$MapResult::newArray(%env, jsize(%in));
     for(int i=0; i<%in; ++i){
-        jobject buffer = LocalDataJBuffer(%env, __qt_%4[i], %2).take();
+        jobject buffer = DataJBuffer(%env, __qt_%4[i], %2).take();
         jobject element = Java::QtMultimedia::QAbstractVideoBuffer$MapResult::newInstance(%env, buffer, jint(__qt_%3[i]), false);
         %env->SetObjectArrayElement(%out, jsize(i), element);
         JavaException::check(%env QTJAMBI_STACKTRACEINFO );

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -33,7 +33,7 @@
 #include <QtJambi/qtjambi_cast.h>
 #include <QtCore/private/qcoreapplication_p.h>
 
-extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_quick_test_QQuickTest_quickTestMainWithSetup)
+extern "C" JNIEXPORT jint JNICALL Java_io_qt_quick_test_QQuickTest_quickTestMainWithSetup
 (JNIEnv *env, jclass, jobjectArray args, jstring name, jstring sourceDir, QtJambiNativeID setup)
 {
     J2CStringBuffer _name(env, name);

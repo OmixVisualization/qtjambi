@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -30,8 +30,10 @@
 package io.qt;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import io.qt.QtUtilities.LibraryRequirementMode;
@@ -122,6 +124,10 @@ class Utility extends io.qt.internal.NativeUtility{
 		}
 	}
 	
+	protected static <K,V> Function<K, ArrayList<V>> arrayListFactory(){
+		return io.qt.internal.NativeUtility.arrayListFactory();
+	}
+	
 	protected static void disposeObject(QtObjectInterface object) {
 		io.qt.internal.NativeUtility.disposeObject(object);
 	}
@@ -134,7 +140,7 @@ class Utility extends io.qt.internal.NativeUtility{
 		return io.qt.internal.NativeUtility.areObjectsEquals(object, other);
 	}
 		
-	protected static void initializeNativeObject(Class<?> declaringClass, QtObjectInterface object, Map<Class<?>, List<?>> arguments) {
+	protected static void initializeNativeObject(Class<?> declaringClass, QtObjectInterface object, Map<Class<?>, List<Map.Entry<Class<?>,java.lang.Object>>> arguments) {
 		io.qt.internal.NativeUtility.initializeNativeObject(declaringClass, object, arguments);
 	}
 	

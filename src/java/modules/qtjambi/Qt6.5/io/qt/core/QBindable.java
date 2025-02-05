@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -29,6 +29,7 @@
 package io.qt.core;
 
 import io.qt.*;
+import io.qt.internal.LambdaInfo;
 
 /**
  * <p>Java wrapper for Qt class <a href="https://doc.qt.io/qt/qbindable.html">QBindable</a></p>
@@ -394,8 +395,14 @@ public final class QBindable<T> extends QUntypedBindable {
 		return new QBindable<>(property.aliasedProperty(), property.iface);
 	}
 	
+	private static class CoreUtility extends io.qt.internal.CoreUtility{
+        protected static LambdaInfo lambdaInfo(java.io.Serializable slotObject) {
+            return io.qt.internal.CoreUtility.lambdaInfo(slotObject);
+        }
+    }
+	
 	public static <T> @NonNull QBindable<T> fromProperty(QtUtilities.Supplier<T> propertyGetter){
-		io.qt.internal.ClassAnalyzerUtility.LambdaInfo info = io.qt.internal.ClassAnalyzerUtility.lambdaInfo(propertyGetter);
+		io.qt.internal.LambdaInfo info = CoreUtility.lambdaInfo(propertyGetter);
 		if(info!=null && info.qobject!=null && info.methodInfo.reflectiveMethod!=null && !info.methodInfo.reflectiveMethod.isSynthetic()) {
 			QtPropertyReader pr = info.methodInfo.reflectiveMethod.getAnnotation(QtPropertyReader.class);
 			if(pr!=null) {

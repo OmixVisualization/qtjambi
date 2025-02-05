@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -30,7 +30,7 @@
 #if !defined(QTJAMBI_REGISTRYAPI_H) && !defined(QTJAMBI_GENERATOR_RUNNING)
 #define QTJAMBI_REGISTRYAPI_H
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
 #include <QtCore/qnativeinterface.h>
 #endif
 #include "global.h"
@@ -395,7 +395,11 @@ int registerMetaTypeNoMetaObject(const char *typeName,
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
                               QtPrivate::BuiltinMetaType<T>::value,
 #endif
+#if QT_VERSION < QT_VERSION_CHECK(6, 9, 0)
                               QMetaType::TypeFlags(QtPrivate::QMetaTypeTypeFlags<T>::Flags),
+#else
+                              QMetaType::TypeFlags(QtPrivate::QMetaTypeForType<T>::flags()),
+#endif
                               nullptr, [](int id){
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                                             QtJambiPrivate::MetaTypeStreamOperatorsHelper<T>::registerStreamOperators(id);
@@ -522,7 +526,11 @@ int registerMetaType(const char *typeName,
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
                               QtPrivate::BuiltinMetaType<T>::value,
 #endif
+#if QT_VERSION < QT_VERSION_CHECK(6, 9, 0)
                               QMetaType::TypeFlags(QtPrivate::QMetaTypeTypeFlags<T>::Flags),
+#else
+                              QMetaType::TypeFlags(QtPrivate::QMetaTypeForType<T>::flags()),
+#endif
                               QtPrivate::MetaObjectForType<T>::value(),
                               [](int id){
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -703,7 +711,11 @@ int registerMetaType(const QByteArray& typeName,
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
                               QtPrivate::BuiltinMetaType<T>::value,
 #endif
+#if QT_VERSION < QT_VERSION_CHECK(6, 9, 0)
                               QMetaType::TypeFlags(QtPrivate::QMetaTypeTypeFlags<T>::Flags),
+#else
+                              QMetaType::TypeFlags(QtPrivate::QMetaTypeForType<T>::flags()),
+#endif
                               QtPrivate::MetaObjectForType<T>::value(),
                               [](int id){
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -769,7 +781,11 @@ int registerMetaType(const QByteArray& typeName,
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
                             QtPrivate::BuiltinMetaType<T>::value,
 #endif
+#if QT_VERSION < QT_VERSION_CHECK(6, 9, 0)
                             QMetaType::TypeFlags(QtPrivate::QMetaTypeTypeFlags<T>::Flags),
+#else
+                            QMetaType::TypeFlags(QtPrivate::QMetaTypeForType<T>::flags()),
+#endif
                             QtPrivate::MetaObjectForType<T>::value(),
                             [](int id){
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -857,8 +873,6 @@ QTJAMBI_EXPORT jclass classByMediaControlIID(JNIEnv *env, const char* iid);
 
 QTJAMBI_EXPORT void registerDeleter(const std::type_info& typeId, PtrDeleterFunction deleter);
 QTJAMBI_EXPORT void registerOwnerFunction(const std::type_info& typeId, PtrOwnerFunction ownerFunction);
-
-QTJAMBI_EXPORT const QObject* mainThreadOwner(const void *);
 
 QTJAMBI_EXPORT void registerPolymorphyHandler(const std::type_info& typeId, const std::type_info& targetTypeId, PolymorphyHandler handler);
 
@@ -1205,7 +1219,7 @@ const std::type_info& registerUnspecificTypeInfo(const char *qt_name, const char
     return id;
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
 QTJAMBI_EXPORT void registerNativeInterface(const char* className, QPair<const char*, int>&& nameAndRevision);
 template<typename T>
 void registerNativeInterface(const char* className){

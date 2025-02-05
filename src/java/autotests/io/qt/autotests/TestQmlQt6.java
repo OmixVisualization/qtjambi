@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -64,7 +64,6 @@ import io.qt.core.QVariant;
 import io.qt.core.QVersionNumber;
 import io.qt.gui.QVector4D;
 import io.qt.qml.QJSEngine;
-import io.qt.qml.QJSManagedValue;
 import io.qt.qml.QJSValue;
 import io.qt.qml.QQmlComponent;
 import io.qt.qml.QQmlEngine;
@@ -284,9 +283,9 @@ public class TestQmlQt6 extends ApplicationInitializer{
 			this.d = other.d;
 			this.s = other.s;
 		}
-		private int i;
-		private double d;
-		private String s = "";
+		int i;
+		double d;
+		String s = "";
 		
 		@QtPropertyReader(name="self")
 		public CustomValueType self() {
@@ -390,9 +389,9 @@ public class TestQmlQt6 extends ApplicationInitializer{
 			this.d = other.d;
 			this.s = other.s;
 		}
-		private int i;
+		int i;
 		public double d;
-		private String s = "";
+		String s = "";
 		
 		@QtPropertyReader
 		public AutoGadgetValueType self() {
@@ -469,14 +468,14 @@ public class TestQmlQt6 extends ApplicationInitializer{
 	    public final Signal0 someEnumChanged = new Signal0();
 	    public final Signal0 customValueTypeChanged = new Signal0();
 	    
-	    private QVector4D vector = new QVector4D();
-	    private SomeEnum someEnum = SomeEnum.A;
-	    private CustomValueType customValueType = new CustomValueType();
-	    private CustomGadgetType customGadgetType = new CustomGadgetType();
-	    private AutoGadgetValueType autoGadgetValueType = new AutoGadgetValueType();
-	    private AutoGadgetType autoGadgetType = new AutoGadgetType();
-	    private boolean isNull;
-	    private java.lang.Throwable throwable;
+	    QVector4D vector = new QVector4D();
+	    SomeEnum someEnum = SomeEnum.A;
+	    CustomValueType customValueType = new CustomValueType();
+	    CustomGadgetType customGadgetType = new CustomGadgetType();
+	    AutoGadgetValueType autoGadgetValueType = new AutoGadgetValueType();
+	    AutoGadgetType autoGadgetType = new AutoGadgetType();
+	    boolean isNull;
+	    java.lang.Throwable throwable;
 	    
 	    public CustomGadgetType supplyNullCustomGadgetType() {
 	    	return null;
@@ -589,28 +588,6 @@ public class TestQmlQt6 extends ApplicationInitializer{
 			}
 		});
 		
-		QJSValue jsv = engine.newArray(3);
-		jsv.setProperty(0, 5);
-		jsv.setProperty(1, 5.6);
-		jsv.setProperty(2, "CREATE_TEST");
-		CustomValueType v = engine.fromManagedValue(new QJSManagedValue(jsv, engine), CustomValueType.class);
-		Assert.assertEquals(5, v.i);
-		Assert.assertEquals(5.6, v.d, 0.0001);
-		Assert.assertEquals("CREATE_TEST", v.s);
-		
-		jsv = engine.newObject();
-		jsv.setProperty("i", 25);
-		jsv.setProperty("d", 25.6);
-		jsv.setProperty("s", "CREATE_TEST2");
-		v = engine.fromManagedValue(new QJSManagedValue(jsv, engine), CustomValueType.class);
-		Assert.assertEquals(25, v.i);
-		Assert.assertEquals(25.6, v.d, 0.0001);
-		Assert.assertEquals("CREATE_TEST2", v.s);
-		v = QVariant.fromValue(jsv).value(CustomValueType.class);
-		Assert.assertEquals(25, v.i);
-		Assert.assertEquals(25.6, v.d, 0.0001);
-		Assert.assertEquals("CREATE_TEST2", v.s);
-		
 		QQmlComponent component = new QQmlComponent(engine);
 		component.setData(data, (QUrl)null);
 		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
@@ -695,28 +672,6 @@ public class TestQmlQt6 extends ApplicationInitializer{
 				System.out.println(warning);//.messageType()+" "+warning.line()+" "+warning.description());
 			}
 		});
-		
-		QJSValue jsv = engine.newArray(3);
-		jsv.setProperty(0, 5);
-		jsv.setProperty(1, 5.6);
-		jsv.setProperty(2, "CREATE_TEST");
-		AutoGadgetValueType v = engine.fromManagedValue(new QJSManagedValue(jsv, engine), AutoGadgetValueType.class);
-		Assert.assertEquals(5, v.i);
-		Assert.assertEquals(5.6, v.d, 0.0001);
-		Assert.assertEquals("CREATE_TEST", v.s);
-		
-		jsv = engine.newObject();
-		jsv.setProperty("i", 25);
-		jsv.setProperty("d", 25.6);
-		jsv.setProperty("s", "CREATE_TEST2");
-		v = engine.fromManagedValue(new QJSManagedValue(jsv, engine), AutoGadgetValueType.class);
-		Assert.assertEquals(25, v.i);
-		Assert.assertEquals(25.6, v.d, 0.0001);
-		Assert.assertEquals("CREATE_TEST2", v.s);
-		v = QVariant.fromValue(jsv).value(AutoGadgetValueType.class);
-		Assert.assertEquals(25, v.i);
-		Assert.assertEquals(25.6, v.d, 0.0001);
-		Assert.assertEquals("CREATE_TEST2", v.s);
 		
 		QQmlComponent component = new QQmlComponent(engine);
 		component.setData(data, (QUrl)null);

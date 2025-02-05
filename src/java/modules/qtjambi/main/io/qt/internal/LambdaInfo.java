@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -21,42 +21,32 @@
 ** ensure the GNU General Public License version 3.0 requirements will be
 ** met: http://www.gnu.org/copyleft/gpl.html.
 ** $END_LICENSE$
+
 **
 ** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************/
-package io.qt.autotests;
+package io.qt.internal;
 
-import static org.junit.Assert.*;
+import java.util.List;
 
-import org.junit.Test;
+import io.qt.core.QObject;
 
-import io.qt.core.QByteArray;
-import io.qt.core.QString;
-
-public class TestFunctionalQt6 extends ApplicationInitializer{
-	
-//	@BeforeClass
-//	public static void testInitialize() throws Exception {
-//		testInitializeWithWidgets();
-//    }
-	
-	@Test
-    public void testQStringPredicate() {
-		QString value = new QString("ABCDEFEDCBA");
-		value.removeIf(c->c=='E');
-		assertEquals(new QString("ABCDFDCBA"), value);
+/**
+ * @hidden
+ */
+public final class LambdaInfo {
+	public LambdaInfo(MethodInfo methodInfo, Object owner, QObject qobject, List<Object> lambdaArgs) {
+		super();
+		this.methodInfo = methodInfo;
+		this.owner = owner;
+		this.qobject = qobject;
+		this.lambdaArgs = lambdaArgs;
 	}
-	
-	@Test
-    public void testQByteArrayPredicate() {
-		QByteArray value = new QByteArray("ABCDEFEDCBA");
-		value.removeIf(b->b=='E');
-		assertEquals(new QByteArray("ABCDFDCBA"), value);
-	}
-	
-	@Test
-    public void test() {
-	}
+
+	public final MethodInfo methodInfo;
+	public final Object owner;
+	public final QObject qobject;
+	public final List<Object> lambdaArgs;
 }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -62,14 +62,14 @@ QT_WARNING_DISABLE_DEPRECATED
 #include "registryutil_p.h"
 #include "qtjambilink_p.h"
 
-Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, gContainerAccessLock, (QReadWriteLock::Recursive))
+Q_GLOBAL_STATIC(QReadWriteLock, gContainerAccessLock)
 QReadWriteLock* containerAccessLock(){
     return gContainerAccessLock();
 }
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-typedef SecureContainer<QMap<int, QtMetaContainerPrivate::QMetaAssociationInterface>, QReadWriteLock, &containerAccessLock> MetaAssociationHash;
+typedef SecureContainer<QMap<int, QtMetaContainerPrivate::QMetaAssociationInterface>, gContainerAccessLock> MetaAssociationHash;
 Q_GLOBAL_STATIC(MetaAssociationHash, gMetaAssociationHash)
-typedef SecureContainer<QMap<int, QtMetaContainerPrivate::QMetaSequenceInterface>, QReadWriteLock, &containerAccessLock> MetaSequenceHash;
+typedef SecureContainer<QMap<int, QtMetaContainerPrivate::QMetaSequenceInterface>, gContainerAccessLock> MetaSequenceHash;
 Q_GLOBAL_STATIC(MetaSequenceHash, gMetaSequenceHash)
 
 QMap<int, QtMetaContainerPrivate::QMetaAssociationInterface>& metaAssociationHash(){
@@ -83,8 +83,8 @@ QMap<int, QtMetaContainerPrivate::QMetaSequenceInterface>& metaSequenceHash(){
 
 #if defined(QTJAMBI_GENERIC_ACCESS)
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, gContainerAccessLoader, ("io.qt.qtjambi.ContainerAccess", QLatin1String("/containeraccess"), Qt::CaseInsensitive))
-typedef SecureContainer<QMap<hash_type, ContainerAccessAPI::SequentialContainerAccessFactory>, QReadWriteLock, &containerAccessLock> SequentialContainerAccessFactoryHash;
-typedef SecureContainer<QMap<hash_type, ContainerAccessAPI::AssociativeContainerAccessFactory>, QReadWriteLock, &containerAccessLock> AssociativeContainerAccessFactoryHash;
+typedef SecureContainer<QMap<hash_type, ContainerAccessAPI::SequentialContainerAccessFactory>, gContainerAccessLock> SequentialContainerAccessFactoryHash;
+typedef SecureContainer<QMap<hash_type, ContainerAccessAPI::AssociativeContainerAccessFactory>, gContainerAccessLock> AssociativeContainerAccessFactoryHash;
 Q_GLOBAL_STATIC(SequentialContainerAccessFactoryHash, gSequentialContainerAccessFactoryHash)
 Q_GLOBAL_STATIC(AssociativeContainerAccessFactoryHash, gAssociativeContainerAccessFactoryHash)
 
@@ -283,6 +283,7 @@ void ContainerAccessAPI::registerAccessFactory(SequentialContainerType container
                                                      isStatic
 #endif
                                                      , SequentialContainerAccessFactory factory){
+    QWriteLocker lock(gContainerAccessLock());
     gSequentialContainerAccessFactoryHash->insert(qHash(containerType, align, size
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
                                               , isStatic
@@ -291,6 +292,7 @@ void ContainerAccessAPI::registerAccessFactory(SequentialContainerType container
 }
 
 void ContainerAccessAPI::registerAccessFactory(AssociativeContainerType containerType, size_t align1, size_t size1, size_t align2, size_t size2, AssociativeContainerAccessFactory factory){
+    QWriteLocker lock(gContainerAccessLock());
     gAssociativeContainerAccessFactoryHash->insert(qHash(containerType, align1, size1, align2, size2), factory);
 }
 

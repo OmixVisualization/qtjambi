@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -745,17 +745,26 @@ public class TestInjectedCode extends ApplicationInitializer {
         int ret = GraphicsWidgetSubclass.callInitStyleOption(gwss);
         assertEquals(444, ret);
     }
-
+    
     @Test
-    public void testQJsonDocument__fromJson() {
+    public void testQJsonDocument__fromJson_error() {
     	QJsonDocument.FromJsonResult result = QJsonDocument.fromJson(new QByteArray("asdasd"));
     	assertTrue(result!=null);
     	assertTrue(result.document!=null);
     	assertTrue(result.error!=null);
     	assertTrue(result.document.isEmpty());
-    	assertEquals(QJsonParseError.ParseError.IllegalValue, result.error.error());
-    	assertEquals(1, result.error.offset());
-    	result = QJsonDocument.fromJson(
+    	if(QLibraryInfo.version().compareTo(new QVersionNumber(6,9,0))>=0) {
+    		assertEquals(QJsonParseError.ParseError.IllegalNumber, result.error.error());
+	    	assertEquals(0, result.error.offset());
+    	}else {
+	    	assertEquals(QJsonParseError.ParseError.IllegalValue, result.error.error());
+	    	assertEquals(1, result.error.offset());
+    	}
+    }
+
+    @Test
+    public void testQJsonDocument__fromJson() {
+    	QJsonDocument.FromJsonResult result = QJsonDocument.fromJson(
     			new QJsonDocument(
 	    			new QJsonObject(new QPair<>("A", new QJsonValue("A")),
 					    			new QPair<>("B", new QJsonValue("B")),

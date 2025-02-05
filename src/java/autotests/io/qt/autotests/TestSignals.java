@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -51,6 +51,7 @@ import io.qt.QtObjectInterface;
 import io.qt.QtPrimitiveType;
 import io.qt.QtSignalEmitterInterface;
 import io.qt.QtUninvokable;
+import io.qt.autotests.generated.General;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QDeclarableSignals;
 import io.qt.core.QEvent;
@@ -64,7 +65,6 @@ import io.qt.core.QThread;
 import io.qt.core.Qt;
 import io.qt.gui.*;
 import io.qt.gui.QColor;
-import io.qt.internal.ClassAnalyzerUtility;
 import io.qt.widgets.*;
 import io.qt.widgets.QWidget;
 import io.qt.widgets.QWizard;
@@ -77,7 +77,7 @@ public class TestSignals extends ApplicationInitializer{
 	@BeforeClass
     public static void testInitialize() throws Exception {
     	ApplicationInitializer.testInitializeWithWidgets();
-    	hasSerializableLambdas = ClassAnalyzerUtility.serializeLambdaExpression((QMetaObject.Slot0)ApplicationInitializer::testInitializeWithWidgets) != null;
+    	hasSerializableLambdas = General.internalAccess.serializeLambdaExpression((QMetaObject.Slot0)ApplicationInitializer::testInitializeWithWidgets) != null;
     }
 	
 	public static class QObjectSignalOwner extends QObject{
@@ -392,7 +392,7 @@ public class TestSignals extends ApplicationInitializer{
     
     @Test
     public void testMemberSignal() {
-    	Assume.assumeTrue(ClassAnalyzerUtility.useAnnotatedType);
+    	Assume.assumeTrue(General.internalAccess.useAnnotatedType());
 		assertEquals(Arrays.asList(int.class, String.class), new MemberSignalOwner().testSignal.argumentTypes());
     }
     

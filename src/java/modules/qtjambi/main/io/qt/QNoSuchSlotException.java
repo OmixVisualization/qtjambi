@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -49,7 +49,7 @@ public class QNoSuchSlotException extends QConnectionException {
     /**
      * @hidden
      */
-    public QNoSuchSlotException(String message) {
+    public QNoSuchSlotException(@NonNull String message) {
         if (message != null)
             this.message = message;
         else
@@ -59,13 +59,13 @@ public class QNoSuchSlotException extends QConnectionException {
     /**
      * @hidden
      */
-    public QNoSuchSlotException(Object receiver, String slotSignature) {
+    public QNoSuchSlotException(@Nullable Object receiver, @NonNull String slotSignature) {
         this.receiver = receiver;
         this.slotSignature = slotSignature;
     }
 
     @Override
-    public String getMessage() {
+    public @NonNull String getMessage() {
         if (message != null)
             return message;
         if (slotSignature.equals("")) {

@@ -1,6 +1,28 @@
-# What's new in QtJambi 6.8.1
+# What's new in QtJambi 6.8.2
 
 ## Bugfixes
+
+Solved issue:
+* bugfix: QFutureInterface does not run continuations
+
+## New Feature
+* QtJambi resource system got a performance boost.
+
+## Removed Deprecated API
+
+* `QStack` no longer implements Deque due to an incompatibility with JDK 21 and higher.
+* `QtResources` - Use `QResource` instead.
+* `@QmlImportMajorVersion` - Use `@QmlImport` instead.
+* `QRemoteObjectPendingReply(Class)`
+* `QRemoteObjectPendingReply(Class,QRemoteObjectPendingCall)`
+* `QScopedPointer.cleanup(Object,Consumer)` - Use `cleanup(Consumer,Object)` instead.
+* `QtUtilities.jambiTempDir()` - Use `jambiDeploymentDir()` instead.
+
+# History
+
+## What's new in QtJambi 6.8.1
+
+### Bugfixes
 
 Solved issue:
 * [Issue 211](../../../issues/211): Building QtJambi 6.8.0 from sources fails on Kubuntu 24.10
@@ -8,7 +30,7 @@ Solved issue:
 * Fixed: Crashes in QML due to forwarded Java exceptions
 * Fixed: Crash on macOS when using application-wide event filter and QtWebEngine
 
-## New Feature
+### New Feature
 
 * New JVM option `io.qt.no-exception-forwarding-from-meta-calls` to avoid `QMetaObject` calls (like method invocation and property access) forwarding exceptions to the Qt caller in any case (it is avoided by default in case of Qml-related QObjects).
 * `QtUtilities::setNoExceptionForwardingFromMetaCallsEnabled(boolean)` enable/disable avoiding exception forwarding from meta calls.
@@ -25,13 +47,11 @@ Solved issue:
 * Added API method: `QRandomGenerator::bounded`, `QAbstractHttpServer::addWebSocketUpgradeVerifier`
 * Added API types: `QSemaphoreReleaser`, `QReadLocker`, `QWriteLocker` and `QMutexLocker` to be used in try-with-resources
 
-## Deprecated
+### Deprecated
 
 * `QtUtilities.asSelectiveEventFilter(eventFilter, eventType...)` now deprecated. Use `QCoreApplication.asSelectiveEventFilter` instead.
 
 QtJambi 6.8.1 is not binary-compatible to Qt 6.8.0.  Please use Qt 6.8.1 or higher.
-
-# History
 
 ## What's new in QtJambi 6.8.0
 

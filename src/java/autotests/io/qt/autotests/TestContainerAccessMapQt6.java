@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -39,7 +39,7 @@ import io.qt.core.QMap;
 import io.qt.core.QMultiMap;
 import io.qt.core.QPair;
 
-public class TestContainerAccessMapQt6 extends UnitTestInitializer {
+public class TestContainerAccessMapQt6 extends ApplicationInitializer {
 	
     @SuppressWarnings("unlikely-arg-type")
 	@Test

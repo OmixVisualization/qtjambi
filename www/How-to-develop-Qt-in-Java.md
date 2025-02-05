@@ -13,7 +13,7 @@ to your project:
   <version>$VERSION</version>
 </dependency>
 ```
-(exchange `$VERSION` either by `6.5.10` or `6.8.1`).
+(exchange `$VERSION` either by `6.8.2` or any other published version).
 
 Otherwise, download QtJambi JAR file from [Maven Central Repository](https://search.maven.org/artifact/io.qtjambi/qtjambi/).
 Find the [list of all available QtJambi modules](www/Modules.md).
@@ -36,7 +36,7 @@ public class Test {
 Compile the file:
 
 ``` powershell
-javac -cp qtjambi-6.8.1.jar Test.java
+javac -cp qtjambi-6.8.2.jar Test.java
 ```
 
 ## Executing Example
@@ -57,19 +57,19 @@ macOS) or the Java runtime property **java.library.path**.
 The example program can be executed this way on Windows:
 
 ``` powershell
-java -cp qtjambi-6.8.1.jar;qtjambi-native-windows-x64-6.8.1.jar;. -Djava.library.path=C:\Qt\6.8.1\msvc2022_64\bin Test
+java -cp qtjambi-6.8.2.jar;qtjambi-native-windows-x64-6.8.2.jar;. -Djava.library.path=C:\Qt\6.8.2\msvc2022_64\bin Test
 ```
 
 On Linux it looks this way:
 
 ``` bash
-java -cp qtjambi-6.8.1.jar:qtjambi-native-linux-x64-6.8.1.jar:. -Djava.library.path=<path to>/Qt/6.8.1/gcc_64/lib Test
+java -cp qtjambi-6.8.2.jar:qtjambi-native-linux-x64-6.8.2.jar:. -Djava.library.path=<path to>/Qt/6.8.2/gcc_64/lib Test
 ```
 
 On macOS you additionally need to use the start parameter -XstartOnFirstThread:
 
 ``` bash
-java -cp qtjambi-6.8.1.jar:qtjambi-native-macos-6.8.1.jar:. -Djava.library.path=<path to>/Qt/6.8.1/macos/lib -XstartOnFirstThread Test
+java -cp qtjambi-6.8.2.jar:qtjambi-native-macos-6.8.2.jar:. -Djava.library.path=<path to>/Qt/6.8.2/macos/lib -XstartOnFirstThread Test
 ```
 
 If the example fails with a `UnsatisfiedLinkError` QtJambi libraries and Qt libraries seem to be incompatible.
@@ -80,7 +80,7 @@ If the example fails with a `UnsatisfiedLinkError` QtJambi libraries and Qt libr
 QtJambi automatically detects the required native component jars if they are located next to their Java counterparts or in a subfolder `native`.
 You can simply skip `qtjambi-native-OS-VERSION.jar` in your classpath (`-cp`).
 
-If you intend to use automatic module loading (`java -p <dir>`) you strictly need to place native components in `native` subfolder next to `qtjambi-6.8.1.jar`.
+If you intend to use automatic module loading (`java -p <dir>`) you strictly need to place native components in `native` subfolder next to `qtjambi-6.8.2.jar`.
 
 Native bundles are extracted every time at program startup. By default, this is a process specific temporal directory purged after program shutdown.
 Alternatively, you can use Java system property `io.qt.deploymentdir` to let libraries to be exctacted and persist in user 
@@ -126,6 +126,7 @@ You can specify Java system properties as start argument `-Dproperty=value` or i
 * `io.qt.enable-event-logs` - Specify `true` to activate logging of all handled events with their receivers.
 * `io.qt.enable-method-logs` - Specify `true` to activate method logging. *Caution! This highly decreases performance especially in combination with `io.qt.log-messages` or custom message handlers.*
 * `io.qt.enable-cleanup-logs` - Specify `true` to log native object cleanup after GC.
+* `io.qt.enable-metaobject-logs` - Specify `true` to log metaobject analysis results.
 * `io.qt.enable-dangling-pointer-check` - Specify `true` to activate dangling pointer checks.
 * `io.qt.enable-signal-argument-check` - Specify `true` to activate signal argument checks where applicable.
 * `io.qt.enable-signal-emit-thread-check` - Specify `true` to activate thread checks on signal emits. If a signal is emitted from a foreign thread a warning is given. Install custom handler with `QtUtilities.installSignalEmitThreadCheckHandler` to change this behavior.
@@ -171,12 +172,16 @@ For development purpose it is possible to let QtJambi extract header files from 
 ### QtJambi Runtime
 
 * `io.qt.allow-nonfinal-signals` - Specify `true` to avoid exception to be thrown when detecting non-final signal declarations.
+* `io.qt.allow-nonfinal-qproperties` - Specify `true` to avoid exception to be thrown when detecting non-final QProperty declarations.
 * `io.qt.no-library-shutdown-hook` - Specify `true` to avoid library shutdown at program termination.
 * `io.qt.no-app-deletion` - Specify `true` if you combine native code with Java code and your `QCoreApplication` instance has been created elsewhere than inside Java.
 * `io.qt.no-exception-forwarding-from-meta-calls` - Specify `true` to avoid `QMetaObject` calls (like method invocation and property access) forwarding exceptions to the Qt caller in any case (it is avoided by default in case of Qml-related QObjects).
 * `io.qt.no-exception-forwarding-from-virtual-calls` - Specify `true` to avoid virtual calls (i.e. Java overrides) forwarding exceptions to the Qt caller in any case.
 * `io.qt.avoid-jni-global-references` - Specify `true` to avoid using JNI global references. Instead, QtJambi will use a Java `HashMap` to manage references. (default on Android)
 * `io.qt.use-jni-global-references` - Only on Android: Specify `true` to let QtJambi use JNI global references instead of `HashMap` to manage references.
+* `io.qt.disable-thread-purger` - Specify `true` to not starting a watcher thread for purging Java-related thread data.
+* `io.qt.no-classpath-to-resourcepath` - Specify `true` to not adding Java classpath to Qt resource path. You may neeed to do this manually by using `QResource.addClassPath`.
+* `io.qt.no-directories-to-resourcepath` - Specify `true` to not adding Java classpath directories to Qt resource path (jar files only). This has no effect on `QResource.addClassPath`.
 
 ### QML
 

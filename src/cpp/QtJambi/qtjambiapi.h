@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -551,34 +551,10 @@ jobject convertQObjectToJavaObject(JNIEnv *env, const O *qt_object)
     return convertQObjectToJavaObject(env, qt_object, typeid(O));
 }
 
-QTJAMBI_EXPORT jobject convertQFlagsToJavaObject(JNIEnv *env, int qt_flags, jclass cls);
-
 template<typename E>
 jobject convertQFlagsToJavaObject(JNIEnv *env, QFlags<E> qt_flags)
 {
     return convertNativeToJavaObjectAsCopy(env, &qt_flags, typeid(QFlags<E>));
-}
-
-QTJAMBI_EXPORT jobject convertEnumToJavaObject(JNIEnv *env, qint32 qt_enum, jclass cls);
-
-QTJAMBI_EXPORT jobject convertEnumToJavaObject(JNIEnv *env, qint8 qt_enum, jclass cls);
-
-QTJAMBI_EXPORT jobject convertEnumToJavaObject(JNIEnv *env, qint16 qt_enum, jclass cls);
-
-QTJAMBI_EXPORT jobject convertEnumToJavaObject(JNIEnv *env, qint64 qt_enum, jclass cls);
-
-QTJAMBI_EXPORT jobject convertEnumToJavaObject(JNIEnv *env, quint32 qt_enum, jclass cls);
-
-QTJAMBI_EXPORT jobject convertEnumToJavaObject(JNIEnv *env, quint8 qt_enum, jclass cls);
-
-QTJAMBI_EXPORT jobject convertEnumToJavaObject(JNIEnv *env, quint16 qt_enum, jclass cls);
-
-QTJAMBI_EXPORT jobject convertEnumToJavaObject(JNIEnv *env, quint64 qt_enum, jclass cls);
-
-template<typename E>
-jobject convertEnumToJavaObject(JNIEnv *env, E qt_enum)
-{
-    return convertNativeToJavaObjectAsCopy(env, &qt_enum, typeid(E));
 }
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
@@ -694,23 +670,21 @@ T valueFromNativeId(QtJambiNativeID nativeId){
 
 bool QTJAMBI_EXPORT isValidArray(JNIEnv *env, jobject object, const std::type_info& typeId);
 
-} //namespace QtJambiAPI
-
-namespace QtJambiPrivate{
-
-QTJAMBI_EXPORT void reportDeclarativeObjectDestruction(QObject * obj);
-
-}//namespace QtJambiPrivate
-
-namespace QtJambiAPI{
+class DeclarativeUtil{
+static QTJAMBI_EXPORT void reportDestruction(QObject * obj);
+template<typename T>
+friend class DeclarativeShellElement;
+template<typename T>
+friend class DeclarativeElement;
+};
 
 template<typename T>
-class QTJAMBI_EXPORT DeclarativeShellElement final : public T
+class DeclarativeShellElement final : public T
 {
 public:
     DeclarativeShellElement() : T() {}
     ~DeclarativeShellElement() override {
-        QtJambiPrivate::reportDeclarativeObjectDestruction(this);
+        DeclarativeUtil::reportDestruction(this);
     }
     static void operator delete(void * ptr) Q_DECL_NOTHROW{
         T::operator delete(ptr);
@@ -718,12 +692,12 @@ public:
 };
 
 template<typename T>
-class QTJAMBI_EXPORT DeclarativeElement final : public T
+class DeclarativeElement final : public T
 {
 public:
     DeclarativeElement() : T() {}
     ~DeclarativeElement() override {
-        QtJambiPrivate::reportDeclarativeObjectDestruction(this);
+        DeclarativeUtil::reportDestruction(this);
     }
 };
 
@@ -805,19 +779,17 @@ QTJAMBI_EXPORT void checkThread(JNIEnv *env, const QObject* object);
 
 QTJAMBI_EXPORT void checkThread(JNIEnv *env, const std::type_info& argumentType, const void* object);
 
-QTJAMBI_EXPORT void checkThreadUI(JNIEnv *env, const std::type_info& typeId);
-
-QTJAMBI_EXPORT void checkThreadQPixmap(JNIEnv *env, const std::type_info& typeId);
+QTJAMBI_EXPORT void checkMainThread(JNIEnv *env, const std::type_info& typeId);
 
 QTJAMBI_EXPORT void checkThreadOnArgument(JNIEnv *env, const char* argumentName, const QObject* argument);
-
-QTJAMBI_EXPORT void checkThreadOnArgumentUI(JNIEnv *env, const char* argumentName, const std::type_info& argumentType);
-
-QTJAMBI_EXPORT void checkThreadOnArgumentQPixmap(JNIEnv *env, const char* argumentName, const std::type_info& argumentType);
 
 QTJAMBI_EXPORT void checkThreadOnArgument(JNIEnv *env, const char* argumentName, const std::type_info& argumentType, const QObject* argumentOwner);
 
 QTJAMBI_EXPORT void checkThreadOnArgument(JNIEnv *env, const char* argumentName, const std::type_info& argumentType, const void* argument);
+
+QTJAMBI_EXPORT void checkMainThreadOnArgument(JNIEnv *env, const char* argumentName, const std::type_info& argumentType);
+
+QTJAMBI_EXPORT void checkMainThreadConstructing(JNIEnv *env, const std::type_info& constructedType);
 
 QTJAMBI_EXPORT void checkThreadOnParent(JNIEnv *env, const QObject* parent);
 
@@ -825,17 +797,19 @@ QTJAMBI_EXPORT void checkThreadOnParent(JNIEnv *env, const std::type_info& paren
 
 QTJAMBI_EXPORT void checkThreadOnParent(JNIEnv *env, const std::type_info& parentType, const QObject* parentOwner);
 
-QTJAMBI_EXPORT void checkThreadConstructingUI(JNIEnv *env, const std::type_info& constructedType);
+QTJAMBI_EXPORT const QObject* mainThreadOwner(const void *);
+
+QTJAMBI_EXPORT const QObject* getPixmapOwner(const void *);
+
+QTJAMBI_EXPORT void checkThreadConstructingQWindow(JNIEnv *env, const std::type_info& constructedType, const QObject* parent);
 
 QTJAMBI_EXPORT void checkThreadConstructingQPixmap(JNIEnv *env, const std::type_info& constructedType);
 
 QTJAMBI_EXPORT void checkThreadConstructingQWidget(JNIEnv *env, const std::type_info& constructedType, const QObject* parent);
 
-QTJAMBI_EXPORT void checkThreadConstructingQWindow(JNIEnv *env, const std::type_info& constructedType, const QObject* parent);
+QTJAMBI_EXPORT void checkThreadOnArgumentQPixmap(JNIEnv *env, const char* argumentName, const std::type_info& argumentType);
 
-QTJAMBI_EXPORT void checkThreadConstructingApplication(JNIEnv *env, const std::type_info& constructedType);
-
-QTJAMBI_EXPORT const QObject* getPixmapOwner(const void *);
+QTJAMBI_EXPORT void checkThreadQPixmap(JNIEnv *env, const std::type_info& typeId);
 
 typedef void(*ResultTranslator)(JNIEnv *, const QSharedPointer<QFutureInterfaceBase>&, const QSharedPointer<QFutureInterfaceBase>&, int, int);
 

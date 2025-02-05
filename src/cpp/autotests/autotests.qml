@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -41,16 +41,14 @@ TypeSystem{
     LoadTypeSystem{name: "QtXml"}
     LoadTypeSystem{name: "QtNetwork"}
     LoadTypeSystem{name: "QtSql"; optional: true}
-
-    InjectCode{
-        position: Position.Position1
-        Text{content: "initializePackage(\"io.qt.concurrent\");\n"+
-                      "initializePackage(\"io.qt.widgets\");\n"+
-                      "initializePackage(\"io.qt.network\");\n"+
-                      "initializePackage(\"io.qt.xml\");\n"+
-                      "initializePackage(\"io.qt.sql\");\n"+
-                      "initializePackage(\"io.qt.quick\");"}
-    }
+    RequiredLibrary{name: "QtCore"}
+    RequiredLibrary{name: "QtGui"}
+    RequiredLibrary{name: "QtWidgets"}
+    RequiredLibrary{name: "QtXml"}
+    RequiredLibrary{name: "QtNetwork"}
+    RequiredLibrary{name: "QtQuick"}
+    RequiredLibrary{name: "QtConcurrent"}
+    RequiredLibrary{name: "QtSql"}
     
     Rejection{
         className: "SignalsAndSlots"
@@ -369,6 +367,10 @@ constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QPoint>> = false;
                 }
             }
         }
+    }
+
+    ObjectType{
+        name: "SignalReceiver"
     }
     
     ObjectType{
@@ -723,17 +725,6 @@ constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QPoint>> = false;
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QImage"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QImage* %out = qtjambi_cast<QImage*>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
             }
         }
     }
@@ -746,27 +737,15 @@ constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QPoint>> = false;
         name: "SqlTableModelSubclass"
     }
     
-    
-    ObjectType{
-        name: "Threads"
-    }
-    
     ObjectType{
         name: "PolymorphicType"
         ModifyFunction{
             signature: "getButtonStyleOption()"
             ModifyArgument{
                 index: "return"
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QStyleOption"
-                }
-                ConversionRule{
+                DefineOwnership{
                     codeClass: CodeClass.Native
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "QStyleOption *%out = qtjambi_cast<QStyleOption *>(%env, %in);"}
+                    ownership: Ownership.Java
                 }
             }
         }
@@ -774,16 +753,9 @@ constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QPoint>> = false;
             signature: "getCustomStyleOption(int)"
             ModifyArgument{
                 index: "return"
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QStyleOption"
-                }
-                ConversionRule{
+                DefineOwnership{
                     codeClass: CodeClass.Native
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "QStyleOption *%out = qtjambi_cast<QStyleOption *>(%env, %in);"}
+                    ownership: Ownership.Java
                 }
             }
         }
@@ -791,16 +763,9 @@ constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QPoint>> = false;
             signature: "getUnmappedCustomStyleOption()"
             ModifyArgument{
                 index: "return"
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QStyleOption"
-                }
-                ConversionRule{
+                DefineOwnership{
                     codeClass: CodeClass.Native
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "QStyleOption *%out = qtjambi_cast<QStyleOption *>(%env, %in);"}
+                    ownership: Ownership.Java
                 }
             }
         }
@@ -1122,17 +1087,6 @@ constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QPoint>> = false;
             ModifyArgument{
                 index: 3
                 invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.network.QAuthenticator"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QAuthenticator* %out = qtjambi_cast<QAuthenticator*>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
             }
         }
         ModifyFunction{
@@ -1140,17 +1094,6 @@ constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QPoint>> = false;
             ModifyArgument{
                 index: 2
                 invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.network.QAuthenticator"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QAuthenticator* %out = qtjambi_cast<QAuthenticator*>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
             }
         }
     }
@@ -1217,14 +1160,6 @@ constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QPoint>> = false;
     
     ValueType{
         name: "QVector_String"
-    }
-    
-    ValueType{
-        name: "StringList"
-    }
-    
-    ValueType{
-        name: "ByteArrayList"
     }
     
     ValueType{

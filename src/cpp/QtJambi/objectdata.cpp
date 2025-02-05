@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -57,7 +57,7 @@ public:
     void swap(ObjectDataContainer& other);
     void setUserData(const std::type_info& id, QtJambiObjectData* data);
     QtJambiObjectData* userData(const std::type_info& id) const;
-    static bool useHiddenObjectData();
+    bool isEmpty() const;
 private:
     QExplicitlySharedDataPointer<ObjectDataContainerPrivate> p;
 };
@@ -82,8 +82,8 @@ ObjectDataContainerPrivate::~ObjectDataContainerPrivate(){
     {
         QWriteLocker locker(QtJambiLinkUserData::lock());
         Q_UNUSED(locker)
-        _data.resize(data.size(), nullptr);
         data.swap(_data);
+        indexes.clear();
     }
     qDeleteAll(_data);
 }
@@ -126,6 +126,16 @@ void ObjectDataContainer::swap(ObjectDataContainer& other){
     p.swap(other.p);
 }
 
+bool ObjectDataContainer::isEmpty()const{
+    if(p){
+        for(QtJambiObjectData* d : p->data){
+            if(d)
+                return false;
+        }
+    }
+    return true;
+}
+
 void ObjectDataContainer::setUserData(const std::type_info& id, QtJambiObjectData* data){
     auto idx = p->indexes.indexOf(unique_id(id));
     if(idx<0){
@@ -149,20 +159,19 @@ QtJambiObjectData* ObjectDataContainer::userData(const std::type_info& id) const
     return idx>=0 && idx<p->data.size() ? p->data.value(idx) : nullptr;
 }
 
-bool ObjectDataContainer::useHiddenObjectData(){
-    static bool result = []()->bool{
-        if(JniEnvironment env{100}){
-            try{
-                if(Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.no-hidden-objectdata"))){
-                    return false;
-                }
-            }catch(const JavaException& exn){exn.report(env);}
-        }
-        return true;
-    }();
-    return result;
-}
+}//namespace QtJambiPrivate
 
+bool useHiddenObjectData(JNIEnv *env = nullptr){
+    static bool result = [](JNIEnv *env)->bool{
+        Q_ASSERT(env);
+        try{
+            if(Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.no-hidden-objectdata"))){
+                return false;
+            }
+        }catch(const JavaException& exn){exn.report(env);}
+        return true;
+    }(env);
+    return result;
 }
 
 QtJambiObjectData::QtJambiObjectData(){}
@@ -173,7 +182,7 @@ QtJambiObjectData* QtJambiObjectData::userData(const QObject* object, const std:
     using namespace QtJambiPrivate;
     const QObjectPrivate* p = object ? QObjectPrivate::get(object) : nullptr;
     if(p && p->extraData && (!p->wasDeleted || typeid_not_equals(id, typeid(ValueOwnerUserData)))){
-        if(ObjectDataContainer::useHiddenObjectData()){
+        if(useHiddenObjectData()){
             const auto i = p->extraData->propertyNames.size();
             if(i>=0 && i<p->extraData->propertyValues.size()){
                 const QVariant& variant = p->extraData->propertyValues.at(i);
@@ -213,13 +222,17 @@ void QtJambiObjectData::setUserData(QObject* object, const std::type_info& id, Q
 #else
         p->ensureExtraData();
 #endif
-        if(ObjectDataContainer::useHiddenObjectData()){
+        if(useHiddenObjectData()){
             const auto i = p->extraData->propertyNames.size();
             if(i<p->extraData->propertyValues.size()
                     && p->extraData->propertyValues[i].metaType()==QMetaType::fromType<ObjectDataContainer>()){
-                if(ObjectDataContainer* container = reinterpret_cast<ObjectDataContainer*>(p->extraData->propertyValues[i].data()))
+                if(ObjectDataContainer* container = reinterpret_cast<ObjectDataContainer*>(p->extraData->propertyValues[i].data())){
                     container->setUserData(id, data);
-            }else{
+                    if(!data && container->isEmpty()){
+                        p->extraData->propertyValues.takeAt(i);
+                    }
+                }
+            }else if(data){
                 if(i<p->extraData->propertyValues.size()){
                     p->extraData->propertyValues.replace(i, QVariant::fromValue<ObjectDataContainer>({id, data}));
                 }else{
@@ -232,9 +245,14 @@ void QtJambiObjectData::setUserData(QObject* object, const std::type_info& id, Q
             name[sizeof(void*)] = '\0';
             const auto i = p->extraData->propertyNames.indexOf(name);
             if(i>=0 && p->extraData->propertyValues[i].metaType()==QMetaType::fromType<ObjectDataContainer>()){
-                if(ObjectDataContainer* container = reinterpret_cast<ObjectDataContainer*>(p->extraData->propertyValues[i].data()))
+                if(ObjectDataContainer* container = reinterpret_cast<ObjectDataContainer*>(p->extraData->propertyValues[i].data())){
                     container->setUserData(id, data);
-            }else{
+                    if(!data && container->isEmpty()){
+                        p->extraData->propertyNames.takeAt(i);
+                        p->extraData->propertyValues.takeAt(i);
+                    }
+                }
+            }else if(data){
                 if(i<0){
                     p->extraData->propertyNames.append(name);
                     p->extraData->propertyValues.append(QVariant::fromValue<ObjectDataContainer>({id, data}));
@@ -249,7 +267,7 @@ void QtJambiObjectData::setUserData(QObject* object, const std::type_info& id, Q
 bool QtJambiObjectData::isRejectedUserProperty(const QObject* object, const char * propertyName) {
     using namespace QtJambiPrivate;
     const QObjectPrivate* p = object ? QObjectPrivate::get(object) : nullptr;
-    if(propertyName && p && p->extraData && !ObjectDataContainer::useHiddenObjectData()){
+    if(propertyName && p && p->extraData && !useHiddenObjectData()){
         char name[sizeof(void*)+1];
         memcpy(name, &p->extraData, sizeof(void*));
         name[sizeof(void*)] = '\0';
@@ -258,11 +276,38 @@ bool QtJambiObjectData::isRejectedUserProperty(const QObject* object, const char
     return false;
 }
 
+void forceRemoveObjectData(QObject* object){
+    using namespace QtJambiPrivate;
+    QVariant variant;
+    {
+        QWriteLocker locker(QtJambiLinkUserData::lock());
+        QObjectPrivate* p = object ? QObjectPrivate::get(object) : nullptr;
+        if(p && p->extraData && !p->wasDeleted){
+            if(useHiddenObjectData()){
+                const auto i = p->extraData->propertyNames.size();
+                if(i<p->extraData->propertyValues.size()
+                    && p->extraData->propertyValues[i].metaType()==QMetaType::fromType<ObjectDataContainer>()){
+                    variant = p->extraData->propertyValues.takeAt(i);
+                }
+            }else{
+                char name[sizeof(void*)+1];
+                memcpy(name, &p->extraData, sizeof(void*));
+                name[sizeof(void*)] = '\0';
+                const auto i = p->extraData->propertyNames.indexOf(name);
+                if(i>=0 && p->extraData->propertyValues[i].metaType()==QMetaType::fromType<ObjectDataContainer>()){
+                    p->extraData->propertyNames.takeAt(i);
+                    variant = p->extraData->propertyValues.takeAt(i);
+                }
+            }
+        }
+    }
+}
+
 void onDynamicPropertyChange(QObject *object, QDynamicPropertyChangeEvent* event){
     using namespace QtJambiPrivate;
-    if(ObjectDataContainer::useHiddenObjectData() && event){
+    if(useHiddenObjectData() && event){
         QObjectPrivate* p = object ? QObjectPrivate::get(object) : nullptr;
-        if(p && p->extraData){
+        if(p && !p->wasDeleted && p->extraData){
             // check if property has been appended:
             if(!p->extraData->propertyNames.isEmpty() && p->extraData->propertyNames.last()==event->propertyName()){
                 if(p->extraData->propertyNames.size()==p->extraData->propertyValues.size()-1
@@ -272,5 +317,9 @@ void onDynamicPropertyChange(QObject *object, QDynamicPropertyChangeEvent* event
             }
         }
     }
+}
+#else
+void forceRemoveObjectData(QObject*){
+
 }
 #endif

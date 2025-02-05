@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -660,13 +660,19 @@ TypeSystem{
             remove: RemoveFlag.JavaAndNative
             InjectCode{
                 target: CodeClass.Shell
-                Text{content: "if(JniEnvironment %env{200}) {\n"+
-                              "    if(jobject %this = __shell()->getJavaObjectLocalRef(%env)){\n"+
-                              "        return qintptr(QtJambiAPI::getJavaObjectHashCode(%env, %env->GetObjectClass(%this)));\n"+
-                              "    }else{\n"+
-                              "        __shell()->warnForMethod(\"Qt3DRender::QAbstractFunctor::id() const\");\n"+
-                              "    }\n"+
-                              "}"}
+                Text{content: String.raw`
+if(JniEnvironmentExceptionHandler %env{200}) {
+    QTJAMBI_TRY {
+        if(jobject %this = __shell()->getJavaObjectLocalRef(%env)){
+            return qintptr(QtJambiAPI::getJavaObjectHashCode(%env, %env->GetObjectClass(%this)));
+        }else{
+            __shell()->warnForMethod("Qt3DRender::QAbstractFunctor::id() const");
+        }
+    } QTJAMBI_CATCH(const JavaException& exn){
+        %env.handleException(exn, this, "Qt3DRender::QAbstractFunctor::id() const");
+    } QTJAMBI_TRY_END
+}`
+                }
             }
         }
         until: 5
@@ -2496,18 +2502,23 @@ TypeSystem{
                 index: 2
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "std::function<QByteArray(const QByteArray &, int, int, int)> %out;\n"+
-                                  "if(%in){\n"+
-                                  "    JObjectWrapper wrapper(%env, %in);\n"+
-                                  "    %out = [wrapper](QByteArray rawData, int layer, int face, int mipmapLevel) -> QByteArray {\n"+
-                                  "                        if(JniEnvironment env{200}){\n"+
-                                  "                            jobject _rawData = qtjambi_cast<jobject>(env, rawData);\n"+
-                                  "                            jobject result = Java::Qt3DRender::QTextureImageData$DataConverter::apply(env, wrapper.object(env), _rawData, layer, face, mipmapLevel);\n"+
-                                  "                            return qtjambi_cast<QByteArray>(env, result);\n"+
-                                  "                        }\n"+
-                                  "                        return {};\n"+
-                                  "                    };\n"+
-                                  "}"}
+                    Text{content: String.raw`
+std::function<QByteArray(const QByteArray &, int, int, int)> %out;
+if(%in){
+    %out = [wrapper = JObjectWrapper(%env, %in)](QByteArray rawData, int layer, int face, int mipmapLevel) -> QByteArray {
+        if(JniEnvironmentExceptionHandler env{200}) {
+            QTJAMBI_TRY {
+                jobject _rawData = qtjambi_cast<jobject>(env, rawData);
+                jobject result = Java::Qt3DRender::QTextureImageData$DataConverter::apply(env, wrapper.object(env), _rawData, layer, face, mipmapLevel);
+                return qtjambi_cast<QByteArray>(env, result);
+            } QTJAMBI_CATCH(const JavaException& exn){
+                env.handleException(exn, "std::function<QByteArray(QByteArray,int,int,int)>");
+            } QTJAMBI_TRY_END
+        }
+        return {};
+    };
+}`
+                    }
                 }
             }
             since: 6

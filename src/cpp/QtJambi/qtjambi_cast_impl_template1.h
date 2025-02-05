@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -967,11 +967,19 @@ QTJAMBI_CONTAINER1_CASTER(QStack,QList,append)
 
 namespace QtPrivate{
 template<class T>
+#if QT_VERSION < QT_VERSION_CHECK(6, 9, 0)
 class Continuation<T,bool,bool>{
+#else
+class CompactContinuation<T,bool,bool>{
+#endif
 public:
     typedef decltype(std::declval<QFuture<T>>().d) FutureInterface;
     static FutureInterface &sourceFuture(const QFuture<T>& future){return future.d;}
 };
+#if QT_VERSION >= QT_VERSION_CHECK(6, 9, 0)
+template<class T,class T2,class T3>
+class Continuation : public CompactContinuation<T,T2,T3>{};
+#endif
 }
 
 namespace QtJambiPrivate {
@@ -1539,9 +1547,9 @@ struct value_range_converter_from_java_buffer{
         return nullptr;
     }
     static auto JBufferPointer(JNIEnv *env, jobject in){
-        JBufferData * data = nullptr;
+        PersistentJBufferData * data = nullptr;
         if (JBufferData::isBuffer(env, in)) {
-            data = new JBufferData(env, in);
+            data = new PersistentJBufferData(env, in);
         }
         return data;
     }
@@ -1554,9 +1562,9 @@ struct value_range_converter_from_java_buffer<has_scope, T, true>{
         return nullptr;
     }
     static auto JBufferPointer(JNIEnv *env, jobject in){
-        JBufferConstData * data = nullptr;
+        PersistentJBufferConstData * data = nullptr;
         if (JBufferConstData::isBuffer(env, in)) {
-            data = new JBufferConstData(env, in);
+            data = new PersistentJBufferConstData(env, in);
         }
         return data;
     }
@@ -1785,7 +1793,7 @@ struct value_range_converter_base<has_scope, jobjectArray, T, true>{
 
     template<typename NativeType>
     static auto NativePointerArray(JNIEnv *env, const NativeType* container, QtJambiScope* scope){
-        return new ConstObjectPointerArray<T>(env, container->begin(), jsize(container->size()),
+        return new PersistentConstObjectPointerArray<T>(env, container->begin(), jsize(container->size()),
                                               [scope](JNIEnv * env,const T& in)->jobject{
                                                   return qtjambi_scoped_cast<true,jobject,T>::cast(env, in, nullptr, scope);
                                               });
@@ -1793,9 +1801,9 @@ struct value_range_converter_base<has_scope, jobjectArray, T, true>{
 
     template<typename JniType>
     static auto JArrayPointer(JNIEnv *env, JniType in, QtJambiScope* scope){
-        JConstObjectArrayPointer<T>* data = nullptr;
+        PersistentJConstObjectArrayPointer<T>* data = nullptr;
         if (QtJambiAPI::isValidArray(env, in, qtjambi_type<T>::id())) {
-            data = new JConstObjectArrayPointer<T>(env, jobjectArray(in), [scope](T& d,JNIEnv * env, jobject obj){
+            data = new PersistentJConstObjectArrayPointer<T>(env, jobjectArray(in), [scope](T& d,JNIEnv * env, jobject obj){
                 d = qtjambi_scoped_cast<has_scope,T,jobject>::cast(env, obj, nullptr, scope);
             });
         }
@@ -1819,7 +1827,7 @@ struct value_range_converter_base<has_scope, jobjectArray, T, false>{
 
     template<typename NativeType>
     static auto NativePointerArray(JNIEnv *env, NativeType* container, QtJambiScope* scope){
-        return new ObjectPointerArray<T>(env, container->begin(), jsize(container->size()),
+        return new PersistentObjectPointerArray<T>(env, container->begin(), jsize(container->size()),
             [scope](JNIEnv * env,const T& in)->jobject{
                 return qtjambi_scoped_cast<true,jobject,const T&>::cast(env, in, nullptr, scope);
             },
@@ -1830,9 +1838,9 @@ struct value_range_converter_base<has_scope, jobjectArray, T, false>{
 
     template<typename JniType>
     static auto JArrayPointer(JNIEnv *env, JniType in, QtJambiScope* scope){
-        JObjectArrayPointer<T>* data = nullptr;
+        PersistentJObjectArrayPointer<T>* data = nullptr;
         if (QtJambiAPI::isValidArray(env, in, qtjambi_type<T>::id())) {
-            data = new JObjectArrayPointer<T>(env, jobjectArray(in), [scope](T& d,JNIEnv * env, jobject obj){
+            data = new PersistentJObjectArrayPointer<T>(env, jobjectArray(in), [scope](T& d,JNIEnv * env, jobject obj){
                     d = qtjambi_scoped_cast<has_scope,T,jobject>::cast(env, obj, nullptr, scope);
                 },
                 [scope](JNIEnv * env,const T& in)->jobject{

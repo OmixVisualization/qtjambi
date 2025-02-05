@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -144,7 +144,7 @@ public final class QNativePointer {
      *
      * @param type the type of pointer to create.
      */
-    public QNativePointer(Type type) {
+    public QNativePointer(@StrictNonNull Type type) {
         this(type, 1);
     }
 
@@ -157,7 +157,7 @@ public final class QNativePointer {
      * @param type the type of pointer to create.
      * @param size the size of the array.
      */
-    public QNativePointer(Type type, long size) {
+    public QNativePointer(@StrictNonNull Type type, long size) {
         this(type, size, 1);
     }
 
@@ -174,11 +174,11 @@ public final class QNativePointer {
      * @param size the length of the array.
      * @param indirections the number of indirections for the pointer.
      */
-    public QNativePointer(Type type, long size, int indirections) {
+    public QNativePointer(@StrictNonNull Type type, long size, int indirections) {
     	this(type, size, indirections, false);
     }
     
-    private QNativePointer(Type type, long size, int indirections, boolean isReadOnly) {
+    private QNativePointer(@StrictNonNull Type type, long size, int indirections, boolean isReadOnly) {
     	data = new Data();
     	QtJambi_LibraryUtilities.internal.registerCleaner(this, this.data::dispose);
         if (indirections < 1)
@@ -345,7 +345,7 @@ public final class QNativePointer {
      *
      * @return the values of the pointer.
      */
-    public boolean[] booleanArray() {
+    public boolean@NonNull[] booleanArray() {
         verifyAccess(Type.Boolean, 0);
     	if(this.data.m_knownSize>Integer.MAX_VALUE) {
     		throw new IndexOutOfBoundsException("The pointer's size exceeds allowed array size.");
@@ -363,7 +363,7 @@ public final class QNativePointer {
      *
      * @return the values of the pointer.
      */
-    public byte[] byteArray() {
+    public byte@NonNull[] byteArray() {
         verifyAccess(Type.Byte, 0);
     	if(this.data.m_knownSize>Integer.MAX_VALUE) {
     		throw new IndexOutOfBoundsException("The pointer's size exceeds allowed array size.");
@@ -379,7 +379,7 @@ public final class QNativePointer {
      *
      * @return the values of the pointer.
      */
-    public char[] charArray() {
+    public char@NonNull[] charArray() {
         verifyAccess(Type.Char, 0);
     	if(this.data.m_knownSize>Integer.MAX_VALUE) {
     		throw new IndexOutOfBoundsException("The pointer's size exceeds allowed array size.");
@@ -397,7 +397,7 @@ public final class QNativePointer {
      *
      * @return the values of the pointer.
      */
-    public short[] shortArray() {
+    public short@NonNull[] shortArray() {
         verifyAccess(Type.Short, 0);
     	if(this.data.m_knownSize>Integer.MAX_VALUE) {
     		throw new IndexOutOfBoundsException("The pointer's size exceeds allowed array size.");
@@ -413,7 +413,7 @@ public final class QNativePointer {
      *
      * @return the values of the pointer.
      */
-    public int[] intArray() {
+    public int@NonNull[] intArray() {
         verifyAccess(Type.Int, 0);
     	if(this.data.m_knownSize>Integer.MAX_VALUE) {
     		throw new IndexOutOfBoundsException("The pointer's size exceeds allowed array size.");
@@ -429,7 +429,7 @@ public final class QNativePointer {
      *
      * @return the values of the pointer.
      */
-    public long[] longArray() {
+    public long@NonNull[] longArray() {
         verifyAccess(Type.Long, 0);
     	if(this.data.m_knownSize>Integer.MAX_VALUE) {
     		throw new IndexOutOfBoundsException("The pointer's size exceeds allowed array size.");
@@ -445,7 +445,7 @@ public final class QNativePointer {
      *
      * @return the values of the pointer.
      */
-    public float[] floatArray() {
+    public float@NonNull[] floatArray() {
         verifyAccess(Type.Float, 0);
     	if(this.data.m_knownSize>Integer.MAX_VALUE) {
     		throw new IndexOutOfBoundsException("The pointer's size exceeds allowed array size.");
@@ -461,7 +461,7 @@ public final class QNativePointer {
      *
      * @return the values of the pointer.
      */
-    public double[] doubleArray() {
+    public double@NonNull[] doubleArray() {
         verifyAccess(Type.Double, 0);
     	if(this.data.m_knownSize>Integer.MAX_VALUE) {
     		throw new IndexOutOfBoundsException("The pointer's size exceeds allowed array size.");
@@ -479,7 +479,7 @@ public final class QNativePointer {
      * @return the value of the pointer.
      */
     @SuppressWarnings("unchecked")
-	public <T extends QtObjectInterface> T[] objectArray(Class<T> valueType) {
+	public <T extends QtObjectInterface> T@NonNull[] objectArray(Class<T> valueType) {
     	if(data.m_knownSize>1) {
     		verifyAccess(Type.Byte, 0);
     	}else {
@@ -502,7 +502,7 @@ public final class QNativePointer {
      *
      * @return the value of the pointer.
      */
-    public QNativePointer pointerValue() {
+    public @NonNull QNativePointer pointerValue() {
         return pointerAt(0);
     }
 
@@ -833,7 +833,7 @@ public final class QNativePointer {
      *
      * @param pos the array index
      */
-    public String stringAt(long pos) {
+    public @NonNull String stringAt(long pos) {
         verifyAccess(Type.String, pos);
         return readString(data.m_ptr, pos);
     }
@@ -982,7 +982,7 @@ public final class QNativePointer {
      *
      * @return the data type of the native pointer
      */
-    public Type type() {
+    public @NonNull Type type() {
         return data.m_type;
     }
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -35,10 +35,7 @@
 #include "qtjambimetaobject_p.h"
 #include "qtjambi_cast.h"
 
-extern "C" Q_DECL_EXPORT jobject JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_PropertyUtility_getPropertyForField)
-    (JNIEnv *env, jclass, jobject jmetaObject, jobject reflectField)
-{
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_PropertyUtility_getPropertyForField(JNIEnv *env, jclass, jobject jmetaObject, jobject reflectField){
     const QMetaObject* metaObject = qtjambi_cast<const QMetaObject*>(env, jmetaObject);
     if(metaObject){
         jfieldID field = env->FromReflectedField(reflectField);
@@ -56,10 +53,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_PropertyUtility_getPropertyForField)
     return nullptr;
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_PropertyUtility_registerPropertyField)
-    (JNIEnv *env, jclass, QtJambiNativeID metaPropertyId, jobject reflectField)
-{
+extern "C" JNIEXPORT void JNICALL Java_io_qt_internal_PropertyUtility_registerPropertyField(JNIEnv *env, jclass, QtJambiNativeID metaPropertyId, jobject reflectField){
     QMetaProperty property = QtJambiAPI::valueReferenceFromNativeId<QMetaProperty>(metaPropertyId);
     if(property.isValid()){
         if(const QtJambiMetaObject* dynamicMetaObject = QtJambiMetaObject::cast(property.enclosingMetaObject())){

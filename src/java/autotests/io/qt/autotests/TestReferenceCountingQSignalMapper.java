@@ -47,6 +47,7 @@ public class TestReferenceCountingQSignalMapper extends ApplicationInitializer {
 	            QCoreApplication.processEvents();
 			}
 			Assert.assertEquals(0, counter.get());
+			mapper.isDisposed();
 			mapper = null;
 		}
 		for (int i = 0; i < 50 && counter.get()<COUNT; i++) {
@@ -80,6 +81,7 @@ public class TestReferenceCountingQSignalMapper extends ApplicationInitializer {
 	            QCoreApplication.processEvents();
 			}
 			Assert.assertEquals(0, counter.get());
+			mapper.isDisposed();
 			mapper = null;
 		}
 		for (int i = 0; i < 50 && counter.get()<COUNT; i++) {
@@ -116,6 +118,7 @@ public class TestReferenceCountingQSignalMapper extends ApplicationInitializer {
 	            QCoreApplication.processEvents();
 			}
 			Assert.assertEquals(0, counter.get());
+			mapper.isDisposed();
 			mapper = null;
 		}
 		for (int i = 0; i < 50 && counter.get()<COUNT*2; i++) {

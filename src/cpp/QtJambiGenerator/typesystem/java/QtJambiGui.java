@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -254,7 +254,7 @@ class QClipboard___ extends QClipboard {
     /**
      * Result type for {@link QClipboard#text(String, Mode)}.
      */
-    @Deprecated
+    @Deprecated(forRemoval=true, since="6.8.2")
     public final static class Text {
         private Text(String text, String subtype) {
             super();
@@ -268,7 +268,7 @@ class QClipboard___ extends QClipboard {
     /**
      * @deprecated Use {@link #text(io.qt.core.QString, Mode)} instead
      */
-    @Deprecated
+    @Deprecated(forRemoval=true, since="6.8.2")
     @QtUninvokable
     public final io.qt.gui.QClipboard.@StrictNonNull Text text(java.lang.String subtype, io.qt.gui.QClipboard.@NonNull Mode mode){
         io.qt.core.QString _subType = new io.qt.core.QString(subtype);
@@ -279,7 +279,7 @@ class QClipboard___ extends QClipboard {
     /**
      * @deprecated Use {@link #text(io.qt.core.QString)} instead
      */
-    @Deprecated
+    @Deprecated(forRemoval=true, since="6.8.2")
     @QtUninvokable
     public final io.qt.gui.QClipboard.@StrictNonNull Text text(java.lang.String subtype){
         io.qt.core.QString _subType = new io.qt.core.QString(subtype);
@@ -376,7 +376,7 @@ void __qt_create_new_QImage_7(void* __qtjambi_ptr, JNIEnv* env, jobject, jvalue*
     jint width = arguments[1].i;
     jint height = arguments[2].i;
     jobject format = arguments[3].l;
-    JConstByteArrayPointer* qt_data = new JConstByteArrayPointer(env, jbyteArray(data));
+    PersistentJConstByteArrayPointer* qt_data = new PersistentJConstByteArrayPointer(env, jbyteArray(data));
     if(__qtjambi_has_overrides)
         new(__qtjambi_ptr) QImage_oshell(*qt_data, width, height, qtjambi_cast<QImage::Format>(env, format), [](void* ptr){ delete reinterpret_cast<JConstByteArrayPointer*>(ptr); }, qt_data);
     else
@@ -390,14 +390,14 @@ void __qt_create_new_QImage_8(void* __qtjambi_ptr, JNIEnv* env, jobject, jvalue*
     jint width = arguments[1].i;
     jint height = arguments[2].i;
     jobject format = arguments[3].l;
-    JBufferConstData* qt_data = new JBufferConstData(env, data);
+    PersistentJBufferConstData* qt_data = new PersistentJBufferConstData(env, data);
     if(__qtjambi_has_overrides)
         new(__qtjambi_ptr) QImage_oshell(*qt_data, width, height, qtjambi_cast<QImage::Format>(env, format), [](void* ptr){ delete reinterpret_cast<JBufferConstData*>(ptr); }, qt_data);
     else
         new(__qtjambi_ptr) QImage_shell(*qt_data, width, height, qtjambi_cast<QImage::Format>(env, format), [](void* ptr){ delete reinterpret_cast<JBufferConstData*>(ptr); }, qt_data);
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QImage_initialize_1native__Lio_qt_gui_QImage_2_3BIILio_qt_gui_QImage_00024Format_2)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_gui_QImage_initialize_1native__Lio_qt_gui_QImage_2_3BIILio_qt_gui_QImage_00024Format_2
 (JNIEnv *env, jclass __jni_class, jobject java_object, jobject data, jint width, jint height, jobject format)
 {
     QTJAMBI_NATIVE_METHOD_CALL("QImage::QImage(unsigned char * data, int width, int height, QImage::Format format, QImageCleanupFunction cleanupFunction = nullptr, void *cleanupInfo = nullptr)");
@@ -414,7 +414,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QIm
 }
 
 // QImage::QImage(unsigned char * data, int width, int height, QImage::Format format)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QImage_initialize_1native__Lio_qt_gui_QImage_2Ljava_nio_Buffer_2IILio_qt_gui_QImage_00024Format_2)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_gui_QImage_initialize_1native__Lio_qt_gui_QImage_2Ljava_nio_Buffer_2IILio_qt_gui_QImage_00024Format_2
 (JNIEnv *env, jclass __jni_class, jobject java_object, jobject data, jint width, jint height, jobject format)
 {
     QTJAMBI_NATIVE_METHOD_CALL("QImage::QImage(unsigned char * data, int width, int height, QImage::Format format, QImageCleanupFunction cleanupFunction = nullptr, void *cleanupInfo = nullptr)");

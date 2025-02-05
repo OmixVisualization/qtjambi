@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -34,7 +34,6 @@ import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import io.qt.core.QCoreApplication;
 import io.qt.core.QEventLoop;
 import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QSize;
@@ -49,24 +48,24 @@ import io.qt.quick.QQuickWindow;
 import io.qt.quick.QSGNode;
 import io.qt.quick.QSGRendererInterface;
 import io.qt.quick.QSGTexture;
-import io.qt.quick.nativeinterface.QSGD3D11Texture;
+import io.qt.quick.nativeinterface.QSGMetalTexture;
 
-public class TestQuickTextureD3DQt6 extends ApplicationInitializer {
+public class TestQuickTextureMetalQt62 extends ApplicationInitializer {
 	
 	@BeforeClass
 	public static void testInitialize() throws Exception {
-		Assume.assumeTrue(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows));
-    	QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts);
+		Assume.assumeTrue(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.MacOS, QOperatingSystemVersion.OSType.IOS));
+		Assume.assumeTrue("nativeInterface<QSGMetalTexture>() actually never works in Qt.", false);
 		ApplicationInitializer.testInitializeWithGui();
 		Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
 		io.qt.QtUtilities.loadQtLibrary("OpenGL");
 	}
 	
 	@Test
-    public void testD3DTecture() {
-		QQuickWindow.setGraphicsApi(QSGRendererInterface.GraphicsApi.Direct3D11);
+    public void testMetalTecture() {
+		QQuickWindow.setGraphicsApi(QSGRendererInterface.GraphicsApi.Metal);
 		QQuickWindow window = new QQuickWindow();
-		Assume.assumeTrue(window.surfaceType()==QSurface.SurfaceType.Direct3DSurface);
+		Assume.assumeTrue(window.surfaceType()==QSurface.SurfaceType.MetalSurface);
 		try {
 			QEventLoop loop = new QEventLoop();
 			QSGTexture[] texture = {null};
@@ -85,10 +84,11 @@ public class TestQuickTextureD3DQt6 extends ApplicationInitializer {
 			window.sceneGraphInitialized.connect(loop::quit);
 		    QTimer.singleShot(20000, loop::quit);
 		    loop.exec();
+		    item.isDisposed();
 			Assert.assertTrue(texture[0]!=null);
-			QSGD3D11Texture openglTexture = texture[0].nativeInterface(QSGD3D11Texture.class);
+			QSGMetalTexture openglTexture = texture[0].nativeInterface(QSGMetalTexture.class);
 			Assert.assertTrue(openglTexture!=null);
-			QQuickRenderTarget target = QQuickRenderTarget.fromD3D11Texture(openglTexture.nativeTexture(), new QSize(100, 100));
+			QQuickRenderTarget target = QQuickRenderTarget.fromMetalTexture(openglTexture.nativeTexture(), new QSize(100, 100));
 			Assert.assertTrue(target!=null);
 		}finally {
 		    window.close();

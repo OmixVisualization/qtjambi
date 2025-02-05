@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -245,21 +245,21 @@ class QTest__{
         QTest.qFail(message, info.declaringClass.getName()+"."+info.methodName, info.lineNumber);
         throw new AssertionError(message);
     }
-    
+
     /**
      * @deprecated Use {@link #QFETCH(String, Class, io.qt.core.QMetaType...)} instead.
      */
     @QtUninvokable
-    @Deprecated
+    @Deprecated(forRemoval=true, since="6.8.2")
     public static <T> T QFETCH(Class<T> type, String name) {
         return io.qt.core.QVariant.convert(qData(name, io.qt.core.QMetaType.fromType(type).id()), type);
     }
-    
+
     /**
      * @deprecated Use {@link #QFETCH_GLOBAL(String, Class, io.qt.core.QMetaType...)} instead.
      */
     @QtUninvokable
-    @Deprecated
+    @Deprecated(forRemoval=true, since="6.8.2")
     public static <T> T QFETCH_GLOBAL(Class<T> type, String name) {
         return io.qt.core.QVariant.convert(qGlobalData(name, io.qt.core.QMetaType.fromType(type).id()), type);
     }
@@ -497,7 +497,7 @@ class QTest__{
     /**
      * Use {@link #addColumn(String, Class, QMetaType...)} instead.
      */
-    @Deprecated
+    @Deprecated(forRemoval=true, since="6.8.2")
     @QtUninvokable
     public static void addColumn(Class<?> type, String name){
         addColumn(name, type);

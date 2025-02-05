@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -30,20 +30,19 @@
 ****************************************************************************/
 
 #include "javastrings.h"
+#include "jobjectwrapper.h"
 #include "jnienvironment.h"
 
 J2CStringBuffer::J2CStringBuffer(JNIEnv* env, jstring strg)
-    : m_strg(strg ? jstring(env->NewGlobalRef(strg)) : nullptr),
-      m_length(strg ? env->GetStringUTFLength(strg) : 0),
-      m_data(strg ? env->GetStringUTFChars(strg, nullptr) : nullptr) {
+    : m_strg(strg),
+    m_length(strg ? env->GetStringUTFLength(strg) : 0),
+    m_data(strg ? env->GetStringUTFChars(strg, nullptr) : nullptr),
+    m_env(env){
 }
 
 J2CStringBuffer::~J2CStringBuffer(){
     if(m_strg){
-        if(JniEnvironment env{100}){
-            env->ReleaseStringUTFChars(m_strg, m_data);
-            env->DeleteGlobalRef(m_strg);
-        }
+        m_env->ReleaseStringUTFChars(m_strg, m_data);
     }
 }
 
@@ -55,18 +54,54 @@ QByteArray J2CStringBuffer::toByteArray() const {
     return QByteArray(constData(), length());
 }
 
+struct J2CStringBufferPrivate{
+    JObjectWrapper m_strg;
+    const jsize m_length;
+    const char* m_data;
+};
+
+PersistentJ2CStringBuffer::PersistentJ2CStringBuffer(JNIEnv* env, jstring strg)
+    : m_data(new J2CStringBufferPrivate{JObjectWrapper(env, strg), strg ? env->GetStringUTFLength(strg) : 0, strg ? env->GetStringUTFChars(strg, nullptr) : nullptr}){
+}
+
+PersistentJ2CStringBuffer::~PersistentJ2CStringBuffer(){
+    if(Q_LIKELY(m_data)){
+        if(m_data->m_strg){
+            if(JniEnvironment env{24}){
+                env->ReleaseStringUTFChars(m_data->m_strg.typedObject<jstring>(env), m_data->m_data);
+                m_data->m_strg.clear(env);
+            }
+        }
+    }
+}
+
+void PersistentJ2CStringBuffer::clear(JNIEnv* env){
+    if(Q_LIKELY(m_data)){
+        if(m_data->m_strg){
+            env->ReleaseStringUTFChars(m_data->m_strg.typedObject<jstring>(env), m_data->m_data);
+            m_data->m_strg.clear(env);
+        }
+    }
+}
+
+const char* PersistentJ2CStringBuffer::constData() const {return m_data ? m_data->m_data : nullptr;}
+
+int PersistentJ2CStringBuffer::length() const {return m_data ? m_data->m_length : 0;}
+
+QByteArray PersistentJ2CStringBuffer::toByteArray() const {
+    return QByteArray(constData(), length());
+}
+
 JString2QChars::JString2QChars(JNIEnv* env, jstring strg)
-    : m_strg(strg ? jstring(env->NewGlobalRef(strg)) : nullptr),
-      m_length(strg ? env->GetStringLength(strg) : 0),
-      m_data(strg ? env->GetStringChars(strg, nullptr) : nullptr) {
+    : m_strg(strg),
+    m_length(strg ? env->GetStringLength(strg) : 0),
+    m_data(strg ? env->GetStringChars(strg, nullptr) : nullptr),
+    m_env(env) {
 }
 
 JString2QChars::~JString2QChars(){
     if(m_strg){
-        if(JniEnvironment env{100}){
-            env->ReleaseStringChars(m_strg, m_data);
-            env->DeleteGlobalRef(m_strg);
-        }
+        m_env->ReleaseStringChars(m_strg, m_data);
     }
 }
 
@@ -81,3 +116,42 @@ JString2QChars::operator const char16_t*() const {return reinterpret_cast<const 
 #endif
 
 int JString2QChars::length() const {return m_length;}
+
+struct JString2QCharsPrivate{
+    JObjectWrapper m_strg;
+    const jsize m_length;
+    const jchar* m_data;
+};
+
+PersistentJString2QChars::PersistentJString2QChars(JNIEnv* env, jstring strg)
+    : m_data(new JString2QCharsPrivate{JObjectWrapper(env, strg), strg ? env->GetStringLength(strg) : 0, strg ? env->GetStringChars(strg, nullptr) : nullptr})
+{
+}
+
+PersistentJString2QChars::~PersistentJString2QChars(){
+    if(m_data && m_data->m_strg){
+        if(JniEnvironment env{24}){
+            env->ReleaseStringChars(m_data->m_strg.typedObject<jstring>(env), m_data->m_data);
+            m_data->m_strg.clear(env);
+        }
+    }
+}
+
+void PersistentJString2QChars::clear(JNIEnv* env){
+    if(m_data && m_data->m_strg){
+        env->ReleaseStringChars(m_data->m_strg.typedObject<jstring>(env), m_data->m_data);
+        m_data->m_strg.clear(env);
+    }
+}
+
+QString PersistentJString2QChars::toString() const {
+    return QString(constData(), length());
+}
+
+const QChar* PersistentJString2QChars::constData() const {return m_data ? reinterpret_cast<const QChar*>(m_data->m_data) : nullptr;}
+
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+PersistentJString2QChars::operator const char16_t*() const {return m_data ? reinterpret_cast<const char16_t*>(m_data->m_data) : nullptr;}
+#endif
+
+int PersistentJString2QChars::length() const {return m_data ? m_data->m_length : 0;}

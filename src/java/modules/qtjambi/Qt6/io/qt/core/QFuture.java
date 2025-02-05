@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -29,8 +29,11 @@
 
 package io.qt.core;
 
+import static java.util.Objects.requireNonNull;
+
 import io.qt.NativeAccess;
 import io.qt.NonNull;
+import io.qt.Nullable;
 import io.qt.QNoImplementationException;
 import io.qt.StrictNonNull;
 
@@ -66,7 +69,7 @@ public final class QFuture<T>
     @NativeAccess
     QFuture(io.qt.core.QFutureInterfaceBase d, boolean internal){
         super();
-        java.util.Objects.requireNonNull(d, "Argument 'd': null not expected.");
+        requireNonNull(d, "Argument 'd': null not expected.");
         this.d = d;
     }
     
@@ -351,166 +354,486 @@ public final class QFuture<T>
     @Override
     public @NonNull QFuture<T> clone() {
         return new QFuture<T>(d.clone(), true);
+    }/**
+     * <p>Similar to <code>Runnable</code> but potentially throwing exception.</p>
+     * @see java.lang.Runnable
+     */
+    @FunctionalInterface
+    public interface Runnable {
+        /**
+         * @see java.lang.Runnable#run()
+         * @throws Throwable
+         */
+        void run() throws Throwable;
+    }
+
+    /**
+     * <p>Similar to <code>Supplier</code> but potentially throwing exception.</p>
+     * @see java.util.function.Supplier
+     */
+    @FunctionalInterface
+    public interface Supplier<T> {
+        /**
+         * @see java.util.function.Supplier#get()
+         * @throws Throwable
+         */
+        T get() throws Throwable;
+    }
+
+    /**
+     * <p>Similar to <code>Consumer</code> but potentially throwing exception.</p>
+     * @see java.util.function.Consumer
+     */
+    @FunctionalInterface
+    public interface Consumer<T> {
+        /**
+         * @see java.util.function.Consumer#accept(Object)
+         * @throws Throwable
+         */
+        void accept(T t) throws Throwable;
+    }
+
+    /**
+     * <p>Similar to <code>Function</code> but potentially throwing exception.</p>
+     * @see java.util.function.Function
+     */
+    @FunctionalInterface
+    public interface Function<T, R> {
+        /**
+         * @see java.util.function.Function#apply(Object)
+         * @throws Throwable
+         */
+        R apply(T t) throws Throwable;
+    }
+
+    /**
+     * <p>Similar to <code>Consumer</code> but potentially throwing exception.</p>
+     * @see java.util.function.Consumer
+     */
+    @FunctionalInterface
+    public interface FutureConsumer<T> {
+        /**
+         * @see java.util.function.Consumer#accept(Object)
+         * @throws Throwable
+         */
+        void accept(QFuture<T> t) throws Throwable;
+    }
+
+    /**
+     * <p>Similar to <code>Function</code> but potentially throwing exception.</p>
+     * @see java.util.function.Function
+     */
+    @FunctionalInterface
+    public interface FutureFunction<T, R> {
+        /**
+         * @see java.util.function.Function#apply(Object)
+         * @throws Throwable
+         */
+        R apply(QFuture<T> t) throws Throwable;
     }
     
     /**
      * <p>See <a href="http://doc.qt.io/qt/qfuture.html#then">QFuture::then(Function&amp;&amp;)</a></p>
      */
     @io.qt.QtUninvokable
-    public <R> @NonNull QFuture<R> then(java.util.function.Function<QFuture<T>, R> function){
-        return then(QtJambi_LibraryUtilities.internal.nativeId(d), function);
+    public <R> @NonNull QFuture<R> then(@StrictNonNull Supplier<R> function){
+        return then(QtFuture.Launch.Sync, function);
     }
+    /**
+     * <p>See <a href="http://doc.qt.io/qt/qfuture.html#then">QFuture::then(Function&amp;&amp;)</a></p>
+     */
     @io.qt.QtUninvokable
-    private native static <T,R> QFuture<R> then(long __this_nativeId, java.util.function.Function<QFuture<T>, R> function);
+    public <R> @NonNull QFuture<R> then(@StrictNonNull Function<T, R> function){
+        return then(QtFuture.Launch.Sync, function);
+    }
+    /**
+     * <p>See <a href="http://doc.qt.io/qt/qfuture.html#then">QFuture::then(Function&amp;&amp;)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public <R> @NonNull QFuture<R> then(@StrictNonNull FutureFunction<T, R> function){
+        return then(QtFuture.Launch.Sync, function);
+    }
     
     /**
      * <p>See <a href="http://doc.qt.io/qt/qfuture.html#then-1">QFuture::then(QtFuture::Launch, Function&amp;&amp;)</a></p>
      */
     @io.qt.QtUninvokable
-    public <R> @NonNull QFuture<R> then(QtFuture.Launch policy, java.util.function.Function<QFuture<T>, R> function){
-        return thenLaunch(QtJambi_LibraryUtilities.internal.nativeId(d), policy.value(), function);
+    public <R> @NonNull QFuture<R> then(QtFuture.@NonNull Launch policy, @StrictNonNull Supplier<R> function){
+        return thenLaunchSupplier(QtJambi_LibraryUtilities.internal.nativeId(d), policy.value(), function);
+    }
+    /**
+     * <p>See <a href="http://doc.qt.io/qt/qfuture.html#then-1">QFuture::then(QtFuture::Launch, Function&amp;&amp;)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public <R> @NonNull QFuture<R> then(QtFuture.@NonNull Launch policy, @StrictNonNull Function<T, R> function){
+        return thenLaunchValueFunction(QtJambi_LibraryUtilities.internal.nativeId(d), policy.value(), function);
+    }
+    /**
+     * <p>See <a href="http://doc.qt.io/qt/qfuture.html#then-1">QFuture::then(QtFuture::Launch, Function&amp;&amp;)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public <R> @NonNull QFuture<R> then(QtFuture.@NonNull Launch policy, @StrictNonNull FutureFunction<T, R> function){
+        return thenLaunchFutureFunction(QtJambi_LibraryUtilities.internal.nativeId(d), policy.value(), function);
     }
     @io.qt.QtUninvokable
-    private native static <T,R> QFuture<R> thenLaunch(long __this_nativeId, int policy, java.util.function.Function<QFuture<T>, R> function);
+    private native static <T,R> QFuture<R> thenLaunchSupplier(long __this_nativeId, int policy, Supplier<R> function);
+    @io.qt.QtUninvokable
+    private native static <T,R> QFuture<R> thenLaunchValueFunction(long __this_nativeId, int policy, Function<T, R> function);
+    @io.qt.QtUninvokable
+    private native static <T,R> QFuture<R> thenLaunchFutureFunction(long __this_nativeId, int policy, FutureFunction<T, R> function);
     
     /**
      * <p>See <a href="http://doc.qt.io/qt/qfuture.html#then-2">QFuture::then(QThreadPool*, Function&amp;&amp;)</a></p>
      */
     @io.qt.QtUninvokable
-    public <R> @NonNull QFuture<R> then(QThreadPool pool, java.util.function.Function<QFuture<T>, R> function){
-        return thenPool(QtJambi_LibraryUtilities.internal.nativeId(d), QtJambi_LibraryUtilities.internal.nativeId(pool), function);
+    public <R> @NonNull QFuture<R> then(@NonNull QThreadPool pool, @StrictNonNull Supplier<R> function){
+        return thenPoolSupplier(QtJambi_LibraryUtilities.internal.nativeId(d), QtJambi_LibraryUtilities.internal.nativeId(pool), function);
+    }
+    /**
+     * <p>See <a href="http://doc.qt.io/qt/qfuture.html#then-2">QFuture::then(QThreadPool*, Function&amp;&amp;)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public <R> @NonNull QFuture<R> then(@NonNull QThreadPool pool, @StrictNonNull Function<T, R> function){
+        return thenPoolValueFunction(QtJambi_LibraryUtilities.internal.nativeId(d), QtJambi_LibraryUtilities.internal.nativeId(pool), function);
+    }
+    /**
+     * <p>See <a href="http://doc.qt.io/qt/qfuture.html#then-2">QFuture::then(QThreadPool*, Function&amp;&amp;)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public <R> @NonNull QFuture<R> then(@NonNull QThreadPool pool, @StrictNonNull FutureFunction<T, R> function){
+        return thenPoolFutureFunction(QtJambi_LibraryUtilities.internal.nativeId(d), QtJambi_LibraryUtilities.internal.nativeId(pool), function);
     }
     @io.qt.QtUninvokable
-    private native static <T,R> QFuture<R> thenPool(long __this_nativeId, long pool, java.util.function.Function<QFuture<T>, R> function);
+    private native static <T,R> QFuture<R> thenPoolValueFunction(long __this_nativeId, long pool, Function<T, R> function);
+    @io.qt.QtUninvokable
+    private native static <T,R> QFuture<R> thenPoolSupplier(long __this_nativeId, long pool, Supplier<R> function);
+    @io.qt.QtUninvokable
+    private native static <T,R> QFuture<R> thenPoolFutureFunction(long __this_nativeId, long pool, FutureFunction<T, R> function);
     
     /**
      * <p>See <a href="http://doc.qt.io/qt/qfuture.html#then">QFuture::then(Function&amp;&amp;)</a></p>
      */
     @io.qt.QtUninvokable
-    public @NonNull QFuture<Void> then(java.util.function.Consumer<QFuture<T>> function){
-        return thenVoid(QtJambi_LibraryUtilities.internal.nativeId(d), function);
+    public @NonNull QFuture<Void> then(@StrictNonNull Runnable function){
+        return then(QtFuture.Launch.Sync, function);
     }
+    /**
+     * <p>See <a href="http://doc.qt.io/qt/qfuture.html#then">QFuture::then(Function&amp;&amp;)</a></p>
+     */
     @io.qt.QtUninvokable
-    private native static <T,R> QFuture<Void> thenVoid(long __this_nativeId, java.util.function.Consumer<QFuture<T>> function);
-    
+    public @NonNull QFuture<Void> then(@StrictNonNull Consumer<T> function){
+        return then(QtFuture.Launch.Sync, function);
+    }
+    /**
+     * <p>See <a href="http://doc.qt.io/qt/qfuture.html#then">QFuture::then(Function&amp;&amp;)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public @NonNull QFuture<Void> then(@StrictNonNull FutureConsumer<T> function){
+        return then(QtFuture.Launch.Sync, function);
+    }    
     /**
      * <p>See <a href="http://doc.qt.io/qt/qfuture.html#then-1">QFuture::then(QtFuture::Launch, Function&amp;&amp;)</a></p>
      */
     @io.qt.QtUninvokable
-    public @NonNull QFuture<Void> then(QtFuture.Launch policy, java.util.function.Consumer<QFuture<T>> function){
-        return thenLaunchVoid(QtJambi_LibraryUtilities.internal.nativeId(d), policy.value(), function);
+    public @NonNull QFuture<Void> then(QtFuture.@NonNull Launch policy, @StrictNonNull Runnable function){
+        return thenLaunchRunnable(QtJambi_LibraryUtilities.internal.nativeId(d), policy.value(), function);
+    }
+    /**
+     * <p>See <a href="http://doc.qt.io/qt/qfuture.html#then-1">QFuture::then(QtFuture::Launch, Function&amp;&amp;)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public @NonNull QFuture<Void> then(QtFuture.@NonNull Launch policy, @StrictNonNull Consumer<T> function){
+        return thenLaunchValueConsumer(QtJambi_LibraryUtilities.internal.nativeId(d), policy.value(), function);
+    }
+    /**
+     * <p>See <a href="http://doc.qt.io/qt/qfuture.html#then-1">QFuture::then(QtFuture::Launch, Function&amp;&amp;)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public @NonNull QFuture<Void> then(QtFuture.@NonNull Launch policy, @StrictNonNull FutureConsumer<T> function){
+        return thenLaunchFutureConsumer(QtJambi_LibraryUtilities.internal.nativeId(d), policy.value(), function);
     }
     @io.qt.QtUninvokable
-    private native static <T,R> QFuture<Void> thenLaunchVoid(long __this_nativeId, int policy, java.util.function.Consumer<QFuture<T>> function);
+    private native static <R> QFuture<Void> thenLaunchRunnable(long __this_nativeId, int policy, Runnable function);
+    @io.qt.QtUninvokable
+    private native static <T,R> QFuture<Void> thenLaunchValueConsumer(long __this_nativeId, int policy, Consumer<T> function);
+    @io.qt.QtUninvokable
+    private native static <T,R> QFuture<Void> thenLaunchFutureConsumer(long __this_nativeId, int policy, FutureConsumer<T> function);
     
     /**
      * <p>See <a href="http://doc.qt.io/qt/qfuture.html#then-2">QFuture::then(QThreadPool*, Function&amp;&amp;)</a></p>
      */
     @io.qt.QtUninvokable
-    public @NonNull QFuture<Void> then(QThreadPool pool, java.util.function.Consumer<QFuture<T>> function){
-        return thenPoolVoid(QtJambi_LibraryUtilities.internal.nativeId(d), QtJambi_LibraryUtilities.internal.nativeId(pool), function);
+    public @NonNull QFuture<Void> then(@NonNull QThreadPool pool, @StrictNonNull Runnable function){
+        return thenPoolRunnable(QtJambi_LibraryUtilities.internal.nativeId(d), QtJambi_LibraryUtilities.internal.nativeId(pool), function);
+    }
+    /**
+     * <p>See <a href="http://doc.qt.io/qt/qfuture.html#then-2">QFuture::then(QThreadPool*, Function&amp;&amp;)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public @NonNull QFuture<Void> then(@NonNull QThreadPool pool, @StrictNonNull Consumer<T> function){
+        return thenPoolValueConsumer(QtJambi_LibraryUtilities.internal.nativeId(d), QtJambi_LibraryUtilities.internal.nativeId(pool), function);
+    }
+    /**
+     * <p>See <a href="http://doc.qt.io/qt/qfuture.html#then-2">QFuture::then(QThreadPool*, Function&amp;&amp;)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public @NonNull QFuture<Void> then(@NonNull QThreadPool pool, @StrictNonNull FutureConsumer<T> function){
+        return thenPoolFutureConsumer(QtJambi_LibraryUtilities.internal.nativeId(d), QtJambi_LibraryUtilities.internal.nativeId(pool), function);
     }
     @io.qt.QtUninvokable
-    private native static <T,R> QFuture<Void> thenPoolVoid(long __this_nativeId, long pool, java.util.function.Consumer<QFuture<T>> function);
+    private native static <R> QFuture<Void> thenPoolRunnable(long __this_nativeId, long pool, Runnable function);
+    @io.qt.QtUninvokable
+    private native static <T,R> QFuture<Void> thenPoolValueConsumer(long __this_nativeId, long pool, Consumer<T> function);
+    @io.qt.QtUninvokable
+    private native static <T,R> QFuture<Void> thenPoolFutureConsumer(long __this_nativeId, long pool, FutureConsumer<T> function);
     
     /**
      * <p>See <a href="http://doc.qt.io/qt/qfuture.html#onFailed">QFuture::onFailed(Function&amp;&amp;)</a></p>
      */
     @io.qt.QtUninvokable
-    public @NonNull QFuture<T> onFailed(java.util.function.Function<Throwable, T> function){
-        return onFailed(QtJambi_LibraryUtilities.internal.nativeId(d), function);
+    public @NonNull QFuture<T> onFailed(@StrictNonNull Function<@NonNull Throwable, T> function){
+        return onFailedFunction(QtJambi_LibraryUtilities.internal.nativeId(d), function);
     }
-    
-    /**
-     * <p>See <a href="http://doc.qt.io/qt/qfuture.html#onCanceled">QFuture::onCanceled(Function&amp;&amp;)</a></p>
-     */
-    @io.qt.QtUninvokable
-    public @NonNull QFuture<T> onCanceled(java.util.function.Supplier<T> function){
-        return onCanceled(QtJambi_LibraryUtilities.internal.nativeId(d), function);
-    }
-    
     /**
      * <p>See <a href="http://doc.qt.io/qt/qfuture.html#onFailed">QFuture::onFailed(Function&amp;&amp;)</a></p>
      */
     @io.qt.QtUninvokable
-    public @NonNull QFuture<Void> onFailed(java.util.function.Consumer<Throwable> function){
-        return onFailed(QtJambi_LibraryUtilities.internal.nativeId(d), function);
+    public @NonNull QFuture<T> onFailed(@StrictNonNull Supplier<T> function){
+        return onFailedSupplier(QtJambi_LibraryUtilities.internal.nativeId(d), function);
+    }
+    /**
+     * <p>See <a href="http://doc.qt.io/qt/qfuture.html#onFailed">QFuture::onFailed(Function&amp;&amp;)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public <Failure extends Throwable> @NonNull QFuture<T> onFailed(@StrictNonNull Class<Failure> exceptionType, @StrictNonNull Function<@NonNull Failure, T> function){
+        return onFailedClassFunction(QtJambi_LibraryUtilities.internal.nativeId(d), requireNonNull(exceptionType, "Argument 'exceptionType': null not expected."), function);
+    }
+    /**
+     * <p>See <a href="http://doc.qt.io/qt/qfuture.html#onFailed">QFuture::onFailed(Function&amp;&amp;)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public <Failure extends Throwable> @NonNull QFuture<Void> onFailed(@StrictNonNull Class<Failure> exceptionType, @StrictNonNull Runnable function){
+        return onFailedClassRunnable(QtJambi_LibraryUtilities.internal.nativeId(d), requireNonNull(exceptionType, "Argument 'exceptionType': null not expected."), function);
+    }
+    /**
+     * <p>See <a href="http://doc.qt.io/qt/qfuture.html#onFailed">QFuture::onFailed(Function&amp;&amp;)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public <Failure extends Throwable> @NonNull QFuture<T> onFailed(@StrictNonNull Class<Failure> exceptionType, @StrictNonNull Supplier<T> function){
+        return onFailedClassSupplier(QtJambi_LibraryUtilities.internal.nativeId(d), requireNonNull(exceptionType, "Argument 'exceptionType': null not expected."), function);
+    }
+    /**
+     * <p>See <a href="http://doc.qt.io/qt/qfuture.html#onFailed">QFuture::onFailed(Function&amp;&amp;)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public <Failure extends Throwable> @NonNull QFuture<Void> onFailed(@StrictNonNull Class<Failure> exceptionType, @StrictNonNull Consumer<@NonNull Failure> function){
+        return onFailedClassConsumer(QtJambi_LibraryUtilities.internal.nativeId(d), requireNonNull(exceptionType, "Argument 'exceptionType': null not expected."), function);
+    }
+    /**
+     * <p>See <a href="http://doc.qt.io/qt/qfuture.html#onFailed">QFuture::onFailed(Function&amp;&amp;)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public @NonNull QFuture<Void> onFailed(@StrictNonNull Runnable function){
+        return onFailedRunnable(QtJambi_LibraryUtilities.internal.nativeId(d), function);
+    }
+    /**
+     * <p>See <a href="http://doc.qt.io/qt/qfuture.html#onFailed">QFuture::onFailed(Function&amp;&amp;)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public @NonNull QFuture<Void> onFailed(@StrictNonNull Consumer<@NonNull Throwable> function){
+        return onFailedConsumer(QtJambi_LibraryUtilities.internal.nativeId(d), function);
     }
     @io.qt.QtUninvokable
-    private native static <T> QFuture<T> onFailed(long __this_nativeId, Object function);
+    private native static <T> QFuture<T> onFailedFunction(long __this_nativeId, Function<Throwable, T> function);
+    @io.qt.QtUninvokable
+    private native static <T> QFuture<T> onFailedSupplier(long __this_nativeId, Supplier<T> function);
+    @io.qt.QtUninvokable
+    private native static QFuture<Void> onFailedRunnable(long __this_nativeId, Runnable function);
+    @io.qt.QtUninvokable
+    private native static QFuture<Void> onFailedConsumer(long __this_nativeId, Consumer<Throwable> function);
+    @io.qt.QtUninvokable
+    private native static <Failure extends Throwable> QFuture<Void> onFailedClassRunnable(long __this_nativeId, Class<Failure> exceptionType, Runnable function);
+    @io.qt.QtUninvokable
+    private native static <T, Failure extends Throwable> QFuture<T> onFailedClassSupplier(long __this_nativeId, Class<Failure> exceptionType, Supplier<T> function);
+    @io.qt.QtUninvokable
+    private native static <T, Failure extends Throwable> QFuture<T> onFailedClassFunction(long __this_nativeId, Class<Failure> exceptionType, Function<Failure, T> function);
+    @io.qt.QtUninvokable
+    private native static <Failure extends Throwable> QFuture<Void> onFailedClassConsumer(long __this_nativeId, Class<Failure> exceptionType, Consumer<Failure> function);
     
     /**
      * <p>See <a href="http://doc.qt.io/qt/qfuture.html#onCanceled">QFuture::onCanceled(Function&amp;&amp;)</a></p>
      */
     @io.qt.QtUninvokable
-    public @NonNull QFuture<Void> onCanceled(java.lang.Runnable function){
-        return onCanceled(QtJambi_LibraryUtilities.internal.nativeId(d), function);
+    public @NonNull QFuture<Void> onCanceled(@StrictNonNull Runnable function){
+        return onCanceledRunnable(QtJambi_LibraryUtilities.internal.nativeId(d), function);
+    }
+    /**
+     * <p>See <a href="http://doc.qt.io/qt/qfuture.html#onCanceled">QFuture::onCanceled(Function&amp;&amp;)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public @NonNull QFuture<T> onCanceled(@StrictNonNull Supplier<T> function){
+        return onCanceledSupplier(QtJambi_LibraryUtilities.internal.nativeId(d), function);
     }
     @io.qt.QtUninvokable
-    private native static <T> QFuture<T> onCanceled(long __this_nativeId, java.lang.Object function);
+    private native static <T> QFuture<T> onCanceledSupplier(long __this_nativeId, Supplier<T> function);
+    @io.qt.QtUninvokable
+    private native static <T> QFuture<T> onCanceledRunnable(long __this_nativeId, Runnable function);
 
     /**
      * <p>See <a href="http://doc.qt.io/qt/qfuture.html#then-3">QFuture::then(QObject*, Function&amp;&amp;)</a></p>
      */
     @io.qt.QtUninvokable
-    public <R> @NonNull QFuture<R> then(QObject context, java.util.function.Function<QFuture<T>, R> function){
-        return thenPool(QtJambi_LibraryUtilities.internal.nativeId(d), QtJambi_LibraryUtilities.internal.checkedNativeId(java.util.Objects.requireNonNull(context, "Argument 'context': null not expected.")), function);
+    public <R> @NonNull QFuture<R> then(@Nullable QObject context, @StrictNonNull Supplier<R> function){
+        return thenContextSupplier(QtJambi_LibraryUtilities.internal.nativeId(d), QtJambi_LibraryUtilities.internal.checkedNativeId(requireNonNull(context, "Argument 'context': null not expected.")), function);
+    }
+    /**
+     * <p>See <a href="http://doc.qt.io/qt/qfuture.html#then-3">QFuture::then(QObject*, Function&amp;&amp;)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public <R> @NonNull QFuture<R> then(@Nullable QObject context, @StrictNonNull Function<T, R> function){
+        return thenContextValueFunction(QtJambi_LibraryUtilities.internal.nativeId(d), QtJambi_LibraryUtilities.internal.checkedNativeId(requireNonNull(context, "Argument 'context': null not expected.")), function);
+    }
+    /**
+     * <p>See <a href="http://doc.qt.io/qt/qfuture.html#then-3">QFuture::then(QObject*, Function&amp;&amp;)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public <R> @NonNull QFuture<R> then(@Nullable QObject context, @StrictNonNull FutureFunction<T, R> function){
+        return thenContextFutureFunction(QtJambi_LibraryUtilities.internal.nativeId(d), QtJambi_LibraryUtilities.internal.checkedNativeId(requireNonNull(context, "Argument 'context': null not expected.")), function);
     }
     @io.qt.QtUninvokable
-    private native static <T,R> QFuture<R> thenContext(long __this_nativeId, long contextId, java.util.function.Function<QFuture<T>, R> function);
+    private native static <T,R> QFuture<R> thenContextSupplier(long __this_nativeId, long contextId, Supplier<R> function);
+    @io.qt.QtUninvokable
+    private native static <T,R> QFuture<R> thenContextValueFunction(long __this_nativeId, long contextId, Function<T, R> function);
+    @io.qt.QtUninvokable
+    private native static <T,R> QFuture<R> thenContextFutureFunction(long __this_nativeId, long contextId, FutureFunction<T, R> function);
     
     /**
      * <p>See <a href="http://doc.qt.io/qt/qfuture.html#then-3">QFuture::then(QObject*, Function&amp;&amp;)</a></p>
      */
     @io.qt.QtUninvokable
-    public @NonNull QFuture<Void> then(QObject context, java.util.function.Consumer<QFuture<T>> function){
-        return thenPoolVoid(QtJambi_LibraryUtilities.internal.nativeId(d), QtJambi_LibraryUtilities.internal.checkedNativeId(java.util.Objects.requireNonNull(context, "Argument 'context': null not expected.")), function);
+    public @NonNull QFuture<Void> then(@Nullable QObject context, @StrictNonNull Runnable function){
+        return thenContextRunnable(QtJambi_LibraryUtilities.internal.nativeId(d), QtJambi_LibraryUtilities.internal.checkedNativeId(requireNonNull(context, "Argument 'context': null not expected.")), function);
+    }
+    /**
+     * <p>See <a href="http://doc.qt.io/qt/qfuture.html#then-3">QFuture::then(QObject*, Function&amp;&amp;)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public @NonNull QFuture<Void> then(@Nullable QObject context, @StrictNonNull Consumer<T> function){
+        return thenContextValueConsumer(QtJambi_LibraryUtilities.internal.nativeId(d), QtJambi_LibraryUtilities.internal.checkedNativeId(requireNonNull(context, "Argument 'context': null not expected.")), function);
+    }
+    /**
+     * <p>See <a href="http://doc.qt.io/qt/qfuture.html#then-3">QFuture::then(QObject*, Function&amp;&amp;)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public @NonNull QFuture<Void> then(@Nullable QObject context, @StrictNonNull FutureConsumer<T> function){
+        return thenContextFutureConsumer(QtJambi_LibraryUtilities.internal.nativeId(d), QtJambi_LibraryUtilities.internal.checkedNativeId(requireNonNull(context, "Argument 'context': null not expected.")), function);
     }
     @io.qt.QtUninvokable
-    private native static <T,R> QFuture<Void> thenContextVoid(long __this_nativeId, long contextId, java.util.function.Consumer<QFuture<T>> function);
+    private native static <R> QFuture<Void> thenContextRunnable(long __this_nativeId, long contextId, Runnable function);
+    @io.qt.QtUninvokable
+    private native static <T,R> QFuture<Void> thenContextValueConsumer(long __this_nativeId, long contextId, Consumer<T> function);
+    @io.qt.QtUninvokable
+    private native static <T,R> QFuture<Void> thenContextFutureConsumer(long __this_nativeId, long contextId, FutureConsumer<T> function);
     
     /**
      * <p>See <a href="http://doc.qt.io/qt/qfuture.html#onFailed-1">QFuture::onFailed(QObject*, Function&amp;&amp;)</a></p>
      */
     @io.qt.QtUninvokable
-    public @NonNull QFuture<T> onFailed(QObject context, java.util.function.Function<Throwable, T> function){
-        return onFailedContext(QtJambi_LibraryUtilities.internal.nativeId(d), QtJambi_LibraryUtilities.internal.checkedNativeId(java.util.Objects.requireNonNull(context, "Argument 'context': null not expected.")), function);
+    public @NonNull QFuture<T> onFailed(@Nullable QObject context, @StrictNonNull Function<@NonNull Throwable, T> function){
+        return onFailedContextFunction(QtJambi_LibraryUtilities.internal.nativeId(d), QtJambi_LibraryUtilities.internal.checkedNativeId(requireNonNull(context, "Argument 'context': null not expected.")), function);
     }
-    @io.qt.QtUninvokable
-    private native static <T> QFuture<T> onFailedContext(long __this_nativeId, long contextId, Object function);
-    
-    /**
-     * <p>See <a href="http://doc.qt.io/qt/qfuture.html#onCanceled-1">QFuture::onCanceled(QObject*, Function&amp;&amp;)</a></p>
-     */
-    @io.qt.QtUninvokable
-    public @NonNull QFuture<T> onCanceled(QObject context, java.util.function.Supplier<T> function){
-        return onCanceledContext(QtJambi_LibraryUtilities.internal.nativeId(d), QtJambi_LibraryUtilities.internal.checkedNativeId(java.util.Objects.requireNonNull(context, "Argument 'context': null not expected.")), function);
-    }
-    
     /**
      * <p>See <a href="http://doc.qt.io/qt/qfuture.html#onFailed-1">QFuture::onFailed(QObject*, Function&amp;&amp;)</a></p>
      */
     @io.qt.QtUninvokable
-    public @NonNull QFuture<Void> onFailed(QObject context, java.util.function.Consumer<Throwable> function){
-        return onFailedContext(QtJambi_LibraryUtilities.internal.nativeId(d), QtJambi_LibraryUtilities.internal.checkedNativeId(java.util.Objects.requireNonNull(context, "Argument 'context': null not expected.")), function);
+    public @NonNull QFuture<T> onFailed(@Nullable QObject context, @StrictNonNull Supplier<T> function){
+        return onFailedContextSupplier(QtJambi_LibraryUtilities.internal.nativeId(d), QtJambi_LibraryUtilities.internal.checkedNativeId(requireNonNull(context, "Argument 'context': null not expected.")), function);
+    }
+    /**
+     * <p>See <a href="http://doc.qt.io/qt/qfuture.html#onFailed-1">QFuture::onFailed(QObject*, Function&amp;&amp;)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public <Failure extends Throwable> @NonNull QFuture<Void> onFailed(@Nullable QObject context, @StrictNonNull Class<Failure> exceptionType, @StrictNonNull Runnable function){
+        return onFailedContextClassRunnable(QtJambi_LibraryUtilities.internal.nativeId(d), QtJambi_LibraryUtilities.internal.checkedNativeId(requireNonNull(context, "Argument 'context': null not expected.")), requireNonNull(exceptionType, "Argument 'exceptionType': null not expected."), function);
+    }
+    /**
+     * <p>See <a href="http://doc.qt.io/qt/qfuture.html#onFailed-1">QFuture::onFailed(QObject*, Function&amp;&amp;)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public <Failure extends Throwable> @NonNull QFuture<T> onFailed(@Nullable QObject context, @StrictNonNull Class<Failure> exceptionType, @StrictNonNull Supplier<T> function){
+        return onFailedContextClassSupplier(QtJambi_LibraryUtilities.internal.nativeId(d), QtJambi_LibraryUtilities.internal.checkedNativeId(requireNonNull(context, "Argument 'context': null not expected.")), requireNonNull(exceptionType, "Argument 'exceptionType': null not expected."), function);
+    }
+    /**
+     * <p>See <a href="http://doc.qt.io/qt/qfuture.html#onFailed-1">QFuture::onFailed(QObject*, Function&amp;&amp;)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public <Failure extends Throwable> @NonNull QFuture<T> onFailed(@Nullable QObject context, @StrictNonNull Class<Failure> exceptionType, @StrictNonNull Function<@NonNull Failure, T> function){
+        return onFailedContextClassFunction(QtJambi_LibraryUtilities.internal.nativeId(d), QtJambi_LibraryUtilities.internal.checkedNativeId(requireNonNull(context, "Argument 'context': null not expected.")), requireNonNull(exceptionType, "Argument 'exceptionType': null not expected."), function);
+    }
+    /**
+     * <p>See <a href="http://doc.qt.io/qt/qfuture.html#onFailed-1">QFuture::onFailed(QObject*, Function&amp;&amp;)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public @NonNull QFuture<Void> onFailed(@Nullable QObject context, @StrictNonNull Consumer<@NonNull Throwable> function){
+        return onFailedContextConsumer(QtJambi_LibraryUtilities.internal.nativeId(d), QtJambi_LibraryUtilities.internal.checkedNativeId(requireNonNull(context, "Argument 'context': null not expected.")), function);
+    }
+    /**
+     * <p>See <a href="http://doc.qt.io/qt/qfuture.html#onFailed-1">QFuture::onFailed(QObject*, Function&amp;&amp;)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public @NonNull QFuture<Void> onFailed(@Nullable QObject context, @StrictNonNull Runnable function){
+        return onFailedContextRunnable(QtJambi_LibraryUtilities.internal.nativeId(d), QtJambi_LibraryUtilities.internal.checkedNativeId(requireNonNull(context, "Argument 'context': null not expected.")), function);
+    }
+    /**
+     * <p>See <a href="http://doc.qt.io/qt/qfuture.html#onFailed-1">QFuture::onFailed(QObject*, Function&amp;&amp;)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public <Failure extends Throwable> @NonNull QFuture<Void> onFailed(@Nullable QObject context, @StrictNonNull Class<Failure> exceptionType, @StrictNonNull Consumer<@NonNull Failure> function){
+        return onFailedContextClassConsumer(QtJambi_LibraryUtilities.internal.nativeId(d), QtJambi_LibraryUtilities.internal.checkedNativeId(requireNonNull(context, "Argument 'context': null not expected.")), requireNonNull(exceptionType, "Argument 'exceptionType': null not expected."), function);
+    }
+    @io.qt.QtUninvokable
+    private native static <T> QFuture<T> onFailedContextFunction(long __this_nativeId, long contextId, Function<Throwable, T> function);
+    @io.qt.QtUninvokable
+    private native static <T> QFuture<T> onFailedContextSupplier(long __this_nativeId, long contextId, Supplier<T> function);
+    @io.qt.QtUninvokable
+    private native static QFuture<Void> onFailedContextRunnable(long __this_nativeId, long contextId, Runnable function);
+    @io.qt.QtUninvokable
+    private native static QFuture<Void> onFailedContextConsumer(long __this_nativeId, long contextId, Consumer<Throwable> function);
+    @io.qt.QtUninvokable
+    private native static <Failure extends Throwable> QFuture<Void> onFailedContextClassRunnable(long __this_nativeId, long contextId, Class<Failure> exceptionType, Runnable function);
+    @io.qt.QtUninvokable
+    private native static <T, Failure extends Throwable> QFuture<T> onFailedContextClassSupplier(long __this_nativeId, long contextId, Class<Failure> exceptionType, Supplier<T> function);
+    @io.qt.QtUninvokable
+    private native static <T, Failure extends Throwable> QFuture<T> onFailedContextClassFunction(long __this_nativeId, long contextId, Class<Failure> exceptionType, Function<Failure, T> function);
+    @io.qt.QtUninvokable
+    private native static <Failure extends Throwable> QFuture<Void> onFailedContextClassConsumer(long __this_nativeId, long contextId, Class<Failure> exceptionType, Consumer<Failure> function);
+    
+    /**
+     * <p>See <a href="http://doc.qt.io/qt/qfuture.html#onCanceled-1">QFuture::onCanceled(QObject*, Function&amp;&amp;)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public @NonNull QFuture<T> onCanceled(@Nullable QObject context, @StrictNonNull Supplier<T> function){
+        return onCanceledContextSupplier(QtJambi_LibraryUtilities.internal.nativeId(d), QtJambi_LibraryUtilities.internal.checkedNativeId(requireNonNull(context, "Argument 'context': null not expected.")), function);
     }
     
     /**
      * <p>See <a href="http://doc.qt.io/qt/qfuture.html#onCanceled-1">QFuture::onCanceled(QObject*, Function&amp;&amp;)</a></p>
      */
     @io.qt.QtUninvokable
-    public @NonNull QFuture<Void> onCanceled(QObject context, java.lang.Runnable function){
-        return onCanceledContext(QtJambi_LibraryUtilities.internal.nativeId(d), QtJambi_LibraryUtilities.internal.checkedNativeId(java.util.Objects.requireNonNull(context, "Argument 'context': null not expected.")), function);
+    public @NonNull QFuture<Void> onCanceled(@Nullable QObject context, @StrictNonNull Runnable function){
+        return onCanceledContextRunnable(QtJambi_LibraryUtilities.internal.nativeId(d), QtJambi_LibraryUtilities.internal.checkedNativeId(requireNonNull(context, "Argument 'context': null not expected.")), function);
     }
     @io.qt.QtUninvokable
-    private native static <T> QFuture<T> onCanceledContext(long __this_nativeId, long contextId, java.lang.Object function);
+    private native static QFuture<Void> onCanceledContextRunnable(long __this_nativeId, long contextId, Runnable function);
+    @io.qt.QtUninvokable
+    private native static <T> QFuture<T> onCanceledContextSupplier(long __this_nativeId, long contextId, Supplier<T> function);
     
     /**
      * <p>See <a href="http://doc.qt.io/qt/qfuture.html#unwrap">QFuture::unwrap()</a></p>
      */
     public <U> @NonNull QFuture<U> unwrap(@StrictNonNull Class<U> flatType){
 		QFutureInterface<U> promise = new QFutureInterface<>(QFutureInterfaceBase.State.Pending);
-		this.then(nested->{
+		this.then((QFuture<T> nested)->{
 			promise.reportStarted();
 			try {
             	for(T result : nested.results()) {

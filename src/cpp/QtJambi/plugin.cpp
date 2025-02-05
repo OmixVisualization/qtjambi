@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -121,13 +121,17 @@ QObject* createPluginInstance(QueryMetadata qt_plugin_query_metadata){
             QString className = cbClassName.toString().replace("::", ".");
             QString pluginName = cbPluginName.toString();
             if(JniEnvironment env{500}){
-                jobject result = Java::QtCore::QPluginLoader::loadPluginInstance(
-                            env,
-                            qtjambi_cast<jstring>(env, libPath),
-                            qtjambi_cast<jstring>(env, className),
-                            qtjambi_cast<jstring>(env, pluginName)
-                        );
-                return qtjambi_cast<QObject*>(env, result);
+                try{
+                    jobject result = Java::QtCore::QPluginLoader::loadPluginInstance(
+                                env,
+                                qtjambi_cast<jstring>(env, libPath),
+                                qtjambi_cast<jstring>(env, className),
+                                qtjambi_cast<jstring>(env, pluginName)
+                            );
+                    return qtjambi_cast<QObject*>(env, result);
+                }catch(const JavaException& exn){
+                    exn.report(env);
+                }
             }
         }
     }

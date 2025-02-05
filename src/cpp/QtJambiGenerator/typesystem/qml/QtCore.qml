@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -54,15 +54,22 @@ TypeSystem{
     }
 
     InjectCode{
+        target: CodeClass.PackageInitializer
+        position: Position.Beginning
+        Text{content: String.raw`@QtUninvokable private static native void initializeCurrentThread();`}
+    }
+
+    InjectCode{
         target: CodeClass.Java
         position: Position.End
-        Text{content: "QLogging.initialize();\n"+
-                      "QThread.initialize();"}
+        Text{content: String.raw`
+QLogging.initialize();
+initializeCurrentThread();`}
     }
 
     InjectCode{
         packageName: "io.qt.internal"
-        target: CodeClass.Java
+        target: CodeClass.PackageInitializer
         position: Position.Beginning
         Text{content: String.raw
 `final static Properties properties = new Properties();
@@ -124,7 +131,7 @@ exports io.qt;`
              */
             @QtUninvokable
             @Override
-            @Deprecated
+            @Deprecated(forRemoval=false)
             public %TYPE clone() throws QNoImplementationException {
                 throw new QNoImplementationException();
             }
@@ -137,11 +144,14 @@ exports io.qt;`
         Text{content: String.raw
 `std::function<void(%TYPE)> %out;
 if(%in){
-    JObjectWrapper wrapper(%env, %in);
-    %out = [wrapper](%TYPE value){
+    %out = [wrapper = JObjectWrapper(%env, %in)](%TYPE value){
             if(JniEnvironment env{200}){
-                jobject _value = qtjambi_cast<jobject>(env, value);
-                Java::Runtime::Consumer::accept(env, wrapper.object(env), _value);
+                QTJAMBI_TRY{
+                    jobject _value = qtjambi_cast<jobject>(env, value);
+                    Java::Runtime::Consumer::accept(env, wrapper.object(env), _value);
+                }QTJAMBI_CATCH(const JavaException& exn){
+                    exn.report(env);
+                }QTJAMBI_TRY_END
             }
         };
 }`
@@ -153,10 +163,13 @@ if(%in){
         Text{content: String.raw
 `std::function<void()> %out;
 if(%in){
-    JObjectWrapper wrapper(%env, %in);
-    %out = [wrapper](){
+    %out = [wrapper = JObjectWrapper(%env, %in)](){
             if(JniEnvironment env{200}){
-                Java::Runtime::Runnable::run(env, wrapper.object(env));
+                QTJAMBI_TRY{
+                    Java::Runtime::Runnable::run(env, wrapper.object(env));
+                }QTJAMBI_CATCH(const JavaException& exn){
+                    exn.report(env);
+                }QTJAMBI_TRY_END
             }
         };
 }`
@@ -168,13 +181,17 @@ if(%in){
         Text{content: String.raw
 `std::function<%TYPE()> %out;
 if(%in){
-    JObjectWrapper wrapper(%env, %in);
-    %out = [wrapper]() -> %TYPE {
+    %out = [wrapper = JObjectWrapper(%env, %in)]() -> %TYPE {
+            %TYPE result{};
             if(JniEnvironment env{200}){
-                jobject value = Java::Runtime::Supplier::get(env, wrapper.object(env));
-                return qtjambi_cast<%TYPE>(env, value);
+                QTJAMBI_TRY{
+                    jobject value = Java::Runtime::Supplier::get(env, wrapper.object(env));
+                    result = qtjambi_cast<%TYPE>(env, value);
+                }QTJAMBI_CATCH(const JavaException& exn){
+                    exn.report(env);
+                }QTJAMBI_TRY_END
             }
-            return {};
+            return result;
         };
 }`
         }
@@ -512,6 +529,13 @@ public final %ITERATOR_TYPE iterator() {
 
     PrimitiveType{
         name: "quint32"
+        javaName: "int"
+        jniName: "jint"
+        preferredConversion: false
+    }
+
+    PrimitiveType{
+        name: "uint32_t"
         javaName: "int"
         jniName: "jint"
         preferredConversion: false
@@ -1069,6 +1093,10 @@ public final %ITERATOR_TYPE iterator() {
 
     Rejection{
         className: "QHash::key_iterator"
+    }
+
+    Rejection{
+        className: "QHash::TryEmplaceResult"
     }
 
     Rejection{
@@ -3003,6 +3031,10 @@ public final %ITERATOR_TYPE iterator() {
             RejectEnumValue{
                 name: "WindowCancelButtonHint"
             }
+            RejectEnumValue{
+                name: "ExpandedClientAreaHint"
+                since: 6.9
+            }
         }
 
         EnumType{
@@ -3544,6 +3576,17 @@ public final %ITERATOR_TYPE iterator() {
                     }
                 }
             }
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.End
+                Text{content: String.raw`
+@QtUninvokable
+final void notifyObservers(io.qt.core.@Nullable QUntypedPropertyData propertyDataPtr, io.qt.core.@Nullable QBindingStorage storage){
+    notifyObservers(propertyDataPtr);
+}`
+                }
+                until: 6.1
+            }
             since: 6
         }
 
@@ -3592,74 +3635,92 @@ public final %ITERATOR_TYPE iterator() {
 
     EnumType{
         name: "PropertyFlags"
-        flags: "PropertyAttributes"
-        packageName: "io.qt.internal"
-        InjectCode{
-            target: CodeClass.Java
-            position: Position.Comment
-            Text{content: "@hidden"}
-        }
+        javaScope: "QtMocConstants"
+        until: 6.8
     }
 
     EnumType{
         name: "MethodFlags"
-        flags: "MethodAttributes"
-        packageName: "io.qt.internal"
-        InjectCode{
-            target: CodeClass.Java
-            position: Position.Comment
-            Text{content: "@hidden"}
-        }
+        javaScope: "QtMocConstants"
         RejectEnumValue{
             name: "MethodMethod"
         }
         RejectEnumValue{
             name: "MethodTypeMask"
         }
+        until: 6.8
     }
 
     EnumType{
         name: "EnumFlags"
-        flags: "EnumAttributes"
-        packageName: "io.qt.internal"
-        InjectCode{
-            target: CodeClass.Java
-            position: Position.Comment
-            Text{content: "@hidden"}
-        }
+        javaScope: "QtMocConstants"
+        until: 6.8
     }
 
     EnumType{
         name: "MetaObjectFlags"
-        flags: "MetaObjectAttributes"
-        packageName: "io.qt.internal"
-        InjectCode{
-            target: CodeClass.Java
-            position: Position.Comment
-            Text{content: "@hidden"}
-        }
+        javaScope: "QtMocConstants"
         until: 5
     }
 
     EnumType{
         name: "MetaObjectFlag"
+        javaScope: "QtMocConstants"
+        since: 6
+        until: 6.8
+    }
+
+    EnumType{
+        name: "MetaDataFlags"
+        javaScope: "QtMocConstants"
+        until: 6.8
+    }
+
+    NamespaceType{
+        name: "QtMocConstants"
+        forceFriendly: true
         packageName: "io.qt.internal"
+        ExtraIncludes{
+            Include{
+                fileName: "QtCore/private/qmetaobject_p.h"
+                location: Include.Global
+            }
+            until: 6.8
+        }
         InjectCode{
             target: CodeClass.Java
             position: Position.Comment
             Text{content: "@hidden"}
         }
-        since: 6
-    }
+        EnumType{
+            name: "PropertyFlags"
+            since: 6.9
+        }
 
-    EnumType{
-        name: "MetaDataFlags"
-        flags: "MetaDataAttributes"
-        packageName: "io.qt.internal"
-        InjectCode{
-            target: CodeClass.Java
-            position: Position.Comment
-            Text{content: "@hidden"}
+        EnumType{
+            name: "MethodFlags"
+            RejectEnumValue{
+                name: "MethodMethod"
+            }
+            RejectEnumValue{
+                name: "MethodTypeMask"
+            }
+            since: 6.9
+        }
+
+        EnumType{
+            name: "EnumFlags"
+            since: 6.9
+        }
+
+        EnumType{
+            name: "MetaObjectFlag"
+            since: 6.9
+        }
+
+        EnumType{
+            name: "MetaDataFlags"
+            since: 6.9
         }
     }
 
@@ -3702,12 +3763,12 @@ public final %ITERATOR_TYPE iterator() {
         }
         InjectCode{
             target: CodeClass.Native
-            Text{content: "extern \"C\" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QSysInfo_byteOrder__)\n"+
+            Text{content: "extern \"C\" Q_DECL_EXPORT jint JNICALL Java_io_qt_core_QSysInfo_byteOrder__\n"+
                           "(JNIEnv *, jclass)\n"+
                           "{\n"+
                           "    return jint(QSysInfo::ByteOrder);\n"+
                           "}\n"+
-                          "extern \"C\" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QSysInfo_wordSize__)\n"+
+                          "extern \"C\" Q_DECL_EXPORT jint JNICALL Java_io_qt_core_QSysInfo_wordSize__\n"+
                           "(JNIEnv *, jclass)\n"+
                           "{\n"+
                           "    return jint(QSysInfo::WordSize);\n"+
@@ -4287,7 +4348,7 @@ bool operator==(const QDirListing::const_iterator &lhs, const QDirListing::const
     return lhs==QDirListing::sentinel{} && rhs==QDirListing::sentinel{};
 }
 
-extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QDirListing_isEnd)
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_QDirListing_isEnd
     (JNIEnv *__jni_env,
      jclass,
      QtJambiNativeID __this_nativeId)
@@ -4834,6 +4895,12 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_cor
                 quoteAfterLine: "class QMetaEnum___"
                 quoteBeforeLine: "}// class"
             }
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class QMetaEnum_69__"
+                quoteBeforeLine: "}// class"
+                since: 6.9
+            }
         }
         ModifyFunction{
             signature: "keyToValue(const char *, bool *)const"
@@ -5139,6 +5206,45 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
                 AddImplicitCall{type: "java.lang.@NonNull String"}
             }
             since: 6.3
+        }
+        ModifyFunction{
+            signature: "isNull(Qt::Disambiguated_t)const"
+            ModifyArgument{
+                index: 1
+                RemoveArgument{}
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "constexpr Qt::Disambiguated_t %out = Qt::Disambiguated;"}
+                }
+            }
+            since: 6.9
+            until: 6
+        }
+        ModifyFunction{
+            signature: "version(Qt::Disambiguated_t)const"
+            ModifyArgument{
+                index: 1
+                RemoveArgument{}
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "constexpr Qt::Disambiguated_t %out = Qt::Disambiguated;"}
+                }
+            }
+            since: 6.9
+            until: 6
+        }
+        ModifyFunction{
+            signature: "variant(Qt::Disambiguated_t)const"
+            ModifyArgument{
+                index: 1
+                RemoveArgument{}
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "constexpr Qt::Disambiguated_t %out = Qt::Disambiguated;"}
+                }
+            }
+            since: 6.9
+            until: 6
         }
     }
 
@@ -7295,6 +7401,13 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
 
     ValueType{
         name: "QJsonValue"
+        ExtraIncludes{
+            Include{
+                fileName: "io.qt.core.QJsonDocument.JsonFormat"
+                location: Include.Java
+            }
+            since: 6.9
+        }
         EnumType{
             name: "Type"
         }
@@ -7752,6 +7865,7 @@ public static final int MaxUtcOffsetSecs = +14 * 3600;`}
                               "this.__rcWatched = %1.__rcWatched;\n"+
                               "%1.__rcWatched = __rcWatched;"}
             }
+            since: 6.7
         }
     }
 
@@ -8309,6 +8423,11 @@ if(destinationChildV<0)
             remove: RemoveFlag.All
         }
         ModifyFunction{
+            signature: "QByteArrayView<Byte,true>(const Byte*)"
+            remove: RemoveFlag.All
+            since: 6.9
+        }
+        ModifyFunction{
             signature: "QByteArrayView<Byte,true>(const Byte*,qsizetype)"
             remove: RemoveFlag.All
         }
@@ -8338,6 +8457,7 @@ if(destinationChildV<0)
                 index: 1
                 AddImplicitCall{type: "java.lang.@NonNull String"}
             }
+            since: 6.2
         }
         ModifyFunction{
             signature: "endsWith(QByteArrayView)const"
@@ -8373,6 +8493,7 @@ if(destinationChildV<0)
                 index: 1
                 AddImplicitCall{type: "java.lang.@NonNull String"}
             }
+            since: 6.2
         }
         ModifyFunction{
             signature: "lastIndexOf(QByteArrayView,qsizetype)const"
@@ -9066,7 +9187,7 @@ if(destinationChildV<0)
                 index: 1
                 AddImplicitCall{type: "java.lang.@NonNull String"}
             }
-            since: 6
+            since: 6.2
         }
         ModifyFunction{
             signature: "lastIndexOf(QByteArrayView,qsizetype)const"
@@ -9301,6 +9422,11 @@ if(destinationChildV<0)
             signature: "operator+=(QByteArrayView)"
             remove: RemoveFlag.All
             since: 6
+        }
+        ModifyFunction{
+            signature: "operator+<>(QByteArrayView)"
+            remove: RemoveFlag.All
+            since: 6.9
         }
         ModifyFunction{// in favor of operator+
             signature: "operator+=(char)"
@@ -9777,7 +9903,7 @@ if(destinationChildV<0)
                 target: CodeClass.Native
                 position: Position.End
                 Text{content: "if(%this->size()<%this->capacity())\n"+
-                              "    DataJBuffer::setLimit(%env, __java_return_value, jsize(%this->size()));"}
+                              "    PersistentDataJBuffer::setLimit(%env, __java_return_value, jsize(%this->size()));"}
             }
         }
         ModifyFunction{
@@ -11571,6 +11697,25 @@ if(destinationChildV<0)
             signature: "write(QByteArray)"
             noImplicitArguments: true
         }
+        ModifyFunction{
+            signature: "readLineInto(QSpan<char>)"
+            // attach result object to span argument
+            ModifyArgument{
+                index: 1
+                InhibitImplicitCall{type: "io.qt.core.@StrictNonNull QByteArray"}
+            }
+            since: 6.9
+        }
+        ModifyFunction{
+            signature: "readLineInto(QSpan<uchar>)"
+            remove: RemoveFlag.All
+            since: 6.9
+        }
+        ModifyFunction{
+            signature: "readLineInto(QSpan<std::byte>)"
+            remove: RemoveFlag.All
+            since: 6.9
+        }
     }
 
     ObjectType{
@@ -11770,6 +11915,7 @@ if(destinationChildV<0)
                                       "%out.setFlag(QStringConverterBase::Flag::UsesIcu, false);"}
                     }
                 }
+                since: 6.4
             }
             since: 6
         }
@@ -11803,6 +11949,7 @@ if(destinationChildV<0)
                                   "%out.setFlag(QStringConverterBase::Flag::UsesIcu, false);"}
                 }
             }
+            since: 6.4
         }
         ModifyFunction{
             signature: "QStringConverter(const char*,QStringConverterBase::Flags)"
@@ -11814,6 +11961,7 @@ if(destinationChildV<0)
                                   "%out.setFlag(QStringConverterBase::Flag::UsesIcu, false);"}
                 }
             }
+            since: 6.4
             until: 6.7
         }
         ModifyFunction{
@@ -11872,6 +12020,7 @@ if(destinationChildV<0)
                                   "%out.setFlag(QStringConverterBase::Flag::UsesIcu, false);"}
                 }
             }
+            since: 6.4
         }
         ModifyFunction{
             signature: "QStringDecoder(const char*,QStringConverterBase::Flags)"
@@ -11883,6 +12032,7 @@ if(destinationChildV<0)
                                   "%out.setFlag(QStringConverterBase::Flag::UsesIcu, false);"}
                 }
             }
+            since: 6.4
             until: 6.7
         }
         ModifyFunction{
@@ -12008,6 +12158,7 @@ if(destinationChildV<0)
                                   "%out.setFlag(QStringConverterBase::Flag::UsesIcu, false);"}
                 }
             }
+            since: 6.4
         }
         ModifyFunction{
             signature: "QStringEncoder(const char*,QStringConverterBase::Flags)"
@@ -12019,6 +12170,7 @@ if(destinationChildV<0)
                                   "%out.setFlag(QStringConverterBase::Flag::UsesIcu, false);"}
                 }
             }
+            since: 6.4
             until: 6.7
         }
         ModifyFunction{
@@ -14035,10 +14187,13 @@ if(metaMethod!=null && metaMethod.isValid()) {
             position: Position.Beginning
             Text{content: String.raw`
 inline auto convertSlot(JNIEnv* _env, jobject _slot){
-    JObjectWrapper slot(_env, _slot);
-    return [slot](){
+    return [slot = JObjectWrapper(_env, _slot)](){
         if(JniEnvironment env{200}){
-            Java::QtCore::QMetaObject$Slot0::invoke(env, slot.object(env));
+            QTJAMBI_TRY{
+                Java::QtCore::QMetaObject$Slot0::invoke(env, slot.object(env));
+            }QTJAMBI_CATCH(const JavaException& exn){
+                exn.report(env);
+            }QTJAMBI_TRY_END
         }
     };
 }
@@ -14046,7 +14201,11 @@ inline auto convertSlot(JNIEnv* _env, jobject _slot){
 inline auto convertSlot(JNIEnv* _env, jobject _receiver, jobject _slot){
     return [slot = JObjectWrapper(_env, _slot), receiver = JObjectWrapper(_env, _receiver)](){
         if(JniEnvironment env{200}){
-            Java::QtCore::QMetaObject$Slot1::invoke(env, slot.object(env), receiver.object(env));
+            QTJAMBI_TRY{
+                Java::QtCore::QMetaObject$Slot1::invoke(env, slot.object(env), receiver.object(env));
+            }QTJAMBI_CATCH(const JavaException& exn){
+                exn.report(env);
+            }QTJAMBI_TRY_END
         }
     };
 }
@@ -14057,7 +14216,11 @@ inline auto convertSlot(JNIEnv* _env, QObject*& qobject, jobject _receiver, jobj
     }
     return [slot = JObjectWrapper(_env, _slot), receiver = JObjectWrapper(_env, _receiver)](){
         if(JniEnvironment env{200}){
-            Java::QtCore::QMetaObject$Slot1::invoke(env, slot.object(env), receiver.object(env));
+            QTJAMBI_TRY{
+                Java::QtCore::QMetaObject$Slot1::invoke(env, slot.object(env), receiver.object(env));
+            }QTJAMBI_CATCH(const JavaException& exn){
+                exn.report(env);
+            }QTJAMBI_TRY_END
         }
     };
 }
@@ -14595,7 +14758,7 @@ inline auto convertSlot(JNIEnv* _env, QObject*& qobject, jobject _receiver, jobj
             InjectCode{
                 target: CodeClass.Java
                 position: Position.End
-                Text{content: "initialize(null);"}
+                Text{content: "initializeQThread(QtJambi_LibraryUtilities.internal.nativeId(this), Thread.currentThread().getThreadGroup());"}
             }
         }
         ModifyFunction{
@@ -14620,8 +14783,13 @@ inline auto convertSlot(JNIEnv* _env, QObject*& qobject, jobject _receiver, jobj
 if(!Java::QtCore::QThread::javaThread(%env, __this) && !__qt_this->isRunning() && !__qt_this->isFinished())
     QObject::connect(__qt_this, &QThread::started,
                      __qt_this, [thisWrapper = JObjectWrapper(%env, __this)]() mutable {
-                                    if(JniEnvironment env{0})
-                                        thisWrapper.clear(env);
+                                    if(JniEnvironment env{0}){
+                                        QTJAMBI_TRY{
+                                            thisWrapper.clear(env);
+                                        }QTJAMBI_CATCH(const JavaException& exn){
+                                            exn.report(env);
+                                        }QTJAMBI_TRY_END
+                                    }
                                 }, Qt::DirectConnection);
                     `}
             }
@@ -14861,10 +15029,6 @@ try{
             }
         }
         ModifyFunction{
-            signature: "setProperty(const char *, QVariant)"
-            threadAffinity: true
-        }
-        ModifyFunction{
             signature: "thread()const"
             threadAffinity: false
         }
@@ -15028,6 +15192,7 @@ try{
         }
         ModifyFunction{
             signature: "setProperty(const char*,QVariant)"
+            threadAffinity: true
             InjectCode{
                 target: CodeClass.Native
                 position: Position.Beginning
@@ -15416,7 +15581,7 @@ try{
 
         Rejection{
             functionName: "nativeInterface"
-            since: [6, 2]
+            since: 6
         }
 
         Rejection{
@@ -15599,7 +15764,7 @@ try{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "std::unique_ptr<ApplicationData> applicationData(new ApplicationData(%env, jobjectArray(%in)));\n"+
+                    Text{content: "std::unique_ptr<ApplicationData> applicationData(ApplicationData::initialize<QCoreApplication>(%env, %in));\n"+
                                   "char** %out = applicationData->chars();\n"+
                                   "int& __qt_%1 = applicationData->size();"}
                 }
@@ -16282,6 +16447,10 @@ try{
             RejectEnumValue{
                 name: "Qt_6_8"
                 since: 6.8
+            }
+            RejectEnumValue{
+                name: "Qt_6_9"
+                since: 6.9
             }
             RejectEnumValue{
                 name: "Qt_DefaultCompiledVersion"
@@ -17334,15 +17503,23 @@ try{
             }
             ImportFile{
                 name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
-                quoteAfterLine: "class QtFuture_6_3__"
+                quoteAfterLine: "class QtFuture_6_3to5__"
                 quoteBeforeLine: "}// class"
                 since: [6, 3]
+                until: [6, 5]
             }
             ImportFile{
                 name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
                 quoteAfterLine: "class QtFuture_6_6__"
                 quoteBeforeLine: "}// class"
                 since: [6, 6]
+            }
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class QtFuture_6_6to10__"
+                quoteBeforeLine: "}// class"
+                since: [6, 6]
+                until: [6, 10]
             }
         }
         since: 6
@@ -17474,11 +17651,16 @@ if(%1!=null){
         }
         ModifyFunction{
             signature: "reportFinished()"
-            access: Modification.NonFinal
-        }
-        ModifyFunction{
-            signature: "reportFinished()"
-            access: Modification.NonFinal
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Beginning
+                Text{content: String.raw
+`if(QFutureInterface<QVariant>* fi = dynamic_cast<QFutureInterface<QVariant>*>(__qt_this))
+    fi->reportFinished();
+else if(QFutureInterface<void>* fi = dynamic_cast<QFutureInterface<void>*>(__qt_this))
+    fi->reportFinished();
+else`}
+            }
         }
         ModifyFunction{
             signature: "isPaused()const"
@@ -17675,13 +17857,12 @@ if(%1!=null){
                                   "    JObjectWrapper __wrapper_%in(%env, %in);\n"+
                                   "    %out = QRunnable::create([__wrapper_%in](){\n"+
                                   "            QTJAMBI_TRY_ANY{\n"+
-                                  "                if(JniEnvironment env{300}){\n"+
-                                  "                    QtJambiExceptionInhibitor __exnHandler;\n"+
+                                  "                if(JniEnvironmentExceptionHandler env{300}){\n"+
                                   "                    jobject object = env->NewLocalRef(__wrapper_runnable0.object(env));\n"+
                                   "                    QTJAMBI_TRY{\n"+
                                   "                        Java::Runtime::Runnable::run(env, object);\n"+
                                   "                    }QTJAMBI_CATCH(const JavaException& exn){\n"+
-                                  "                        __exnHandler.handle(env, exn, \"QRunnable::run()\");\n"+
+                                  "                        env.handleException(exn, \"QRunnable::run()\");\n"+
                                   "                    }QTJAMBI_TRY_END\n"+
                                   "                }\n"+
                                   "            }QTJAMBI_CATCH_ANY{}QTJAMBI_TRY_END\n"+
@@ -17707,13 +17888,12 @@ if(%1!=null){
                                   "    JObjectWrapper __wrapper_%in(%env, %in);\n"+
                                   "    %out = QRunnable::create([__wrapper_%in](){\n"+
                                   "            QTJAMBI_TRY_ANY{\n"+
-                                  "                if(JniEnvironment env{300}){\n"+
-                                  "                    QtJambiExceptionInhibitor __exnHandler;\n"+
+                                  "                if(JniEnvironmentExceptionHandler env{300}){\n"+
                                   "                    jobject object = env->NewLocalRef(__wrapper_runnable0.object(env));\n"+
                                   "                    QTJAMBI_TRY{\n"+
                                   "                        Java::Runtime::Runnable::run(env, object);\n"+
                                   "                    }QTJAMBI_CATCH(const JavaException& exn){\n"+
-                                  "                        __exnHandler.handle(env, exn, \"QRunnable::run()\");\n"+
+                                  "                        env.handleException(exn, \"QRunnable::run()\");\n"+
                                   "                    }QTJAMBI_TRY_END\n"+
                                   "                }\n"+
                                   "            }QTJAMBI_CATCH_ANY{}QTJAMBI_TRY_END\n"+
@@ -17742,13 +17922,12 @@ if(%1!=null){
                                   "    JObjectWrapper __wrapper_%in(%env, %in);\n"+
                                   "    %out = QRunnable::create([__wrapper_%in](){\n"+
                                   "            QTJAMBI_TRY_ANY{\n"+
-                                  "                if(JniEnvironment env{300}){\n"+
-                                  "                    QtJambiExceptionInhibitor __exnHandler;\n"+
+                                  "                if(JniEnvironmentExceptionHandler env{300}){\n"+
                                   "                    jobject object = env->NewLocalRef(__wrapper_runnable0.object(env));\n"+
                                   "                    QTJAMBI_TRY{\n"+
                                   "                        Java::Runtime::Runnable::run(env, object);\n"+
                                   "                    }QTJAMBI_CATCH(const JavaException& exn){\n"+
-                                  "                        __exnHandler.handle(env, exn, \"QRunnable::run()\");\n"+
+                                  "                        env.handleException(exn, \"QRunnable::run()\");\n"+
                                   "                    }QTJAMBI_TRY_END\n"+
                                   "                }\n"+
                                   "            }QTJAMBI_CATCH_ANY{}QTJAMBI_TRY_END\n"+
@@ -18722,36 +18901,47 @@ if(%1!=null){
             type: CustomConstructor.Default
             Text{content: "new(placement) QOperatingSystemVersion(QOperatingSystemVersion::Unknown, -1);"}
         }
-        until: "6.6.2"
+        until: "6.5.4"
     }
-
     ValueType{
-        name: "QOperatingSystemVersionBase"
-        javaName: "QOperatingSystemVersion"
+        name: "QOperatingSystemVersion"
+        generate: false
         EnumType{
             name: "OSType"
         }
-        generate: false
-        since: 6.3
-        until: "6.6.2"
+        pushUpStatics: true
+        since: "6.5.5"
+        until: 6.5
     }
-
     ValueType{
-        name: "QOperatingSystemVersionUnexported"
-        javaName: "QOperatingSystemVersion"
-        generate: false
+        name: "QOperatingSystemVersion"
+        EnumType{
+            name: "OSType"
+        }
+        defaultSuperClass: "QtObject"
+        ModifyFunction{
+            signature: "QOperatingSystemVersion(QOperatingSystemVersionBase)"
+            remove: RemoveFlag.All
+            since: 6.3
+        }
+        CustomConstructor{
+            Text{content: "if(copy){\n"+
+                          "    return new(placement) QOperatingSystemVersion(*copy);\n"+
+                          "}else{\n"+
+                          "    return new(placement) QOperatingSystemVersion(QOperatingSystemVersion::Unknown, -1);\n"+
+                          "}"}
+        }
+        CustomConstructor{
+            type: CustomConstructor.Copy
+            Text{content: "new(placement) QOperatingSystemVersion(copy->type(), copy->majorVersion(), copy->minorVersion(), copy->microVersion());"}
+        }
+        CustomConstructor{
+            type: CustomConstructor.Default
+            Text{content: "new(placement) QOperatingSystemVersion(QOperatingSystemVersion::Unknown, -1);"}
+        }
         since: 6.6
         until: "6.6.2"
     }
-
-    ValueType{
-        name: "QOperatingSystemVersionUnexported"
-        javaName: "QOperatingSystemVersion"
-        generate: false
-        pushUpStatics: true
-        since: "6.6.3"
-    }
-
     ValueType{
         name: "QOperatingSystemVersion"
         generate: false
@@ -18762,6 +18952,16 @@ if(%1!=null){
         since: "6.6.3"
     }
 
+    ValueType{
+        name: "QOperatingSystemVersionBase"
+        javaName: "QOperatingSystemVersion"
+        EnumType{
+            name: "OSType"
+        }
+        generate: false
+        since: 6.3
+        until: "6.5.4"
+    }
     ValueType{
         name: "QOperatingSystemVersionBase"
         javaName: "QOperatingSystemVersion"
@@ -18802,6 +19002,75 @@ if(%1!=null){
                 `
             }
         }
+        since: "6.5.5"
+        until: 6.5
+    }
+    ValueType{
+        name: "QOperatingSystemVersionBase"
+        javaName: "QOperatingSystemVersion"
+        EnumType{
+            name: "OSType"
+        }
+        generate: false
+        since: 6.6
+        until: "6.6.2"
+    }
+    ValueType{
+        name: "QOperatingSystemVersionBase"
+        javaName: "QOperatingSystemVersion"
+        forceFinal: true
+        generate: "no-shell"
+        EnumType{
+            name: "OSType"
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.End
+                Text{content: String.raw`
+                    /**
+                     * <p>See <code>QOperatingSystemVersionBase::<wbr/>isAnyOfType(std::initializer_list&lt;QOperatingSystemVersionBase::OSType&gt;,<wbr/>QOperatingSystemVersionBase::OSType)</code></p>
+                     */
+                    public boolean isAnyOfType(@NonNull OSType@NonNull ... types){
+                        return isAnyOfTypePrivate(types, this);
+                    }
+                    `
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "isAnyOfType(std::initializer_list<QOperatingSystemVersionBase::OSType>, QOperatingSystemVersionBase::OSType)"
+            rename: "isAnyOfTypePrivate"
+            access: Modification.Private
+        }
+        CustomConstructor{
+            type: CustomConstructor.Default
+            Text{content: "new(placement) QOperatingSystemVersionBase(QOperatingSystemVersionBase::Unknown, -1);"}
+        }
+        InjectCode{
+            target: CodeClass.MetaInfo
+            position: Position.End
+            Text{content: String.raw`
+                registerValueTypeInfo<QOperatingSystemVersion>("QOperatingSystemVersion", "io/qt/core/QOperatingSystemVersion");
+                registerMetaType<QOperatingSystemVersion>("QOperatingSystemVersion");
+                registerEnumTypeInfo<QOperatingSystemVersion::OSType>("QOperatingSystemVersion::OSType", "io/qt/core/QOperatingSystemVersion$OSType");
+                `
+            }
+        }
+        since: "6.6.3"
+    }
+
+    ValueType{
+        name: "QOperatingSystemVersionUnexported"
+        javaName: "QOperatingSystemVersion"
+        generate: false
+        since: 6.6
+        until: "6.6.2"
+    }
+
+    ValueType{
+        name: "QOperatingSystemVersionUnexported"
+        javaName: "QOperatingSystemVersion"
+        generate: false
+        pushUpStatics: true
         since: "6.6.3"
     }
 
@@ -19227,7 +19496,7 @@ if(%1!=null){
         ModifyFunction{
             signature: "lastIndexOf(QStringView,Qt::CaseSensitivity)const"
             remove: RemoveFlag.All
-            since: 6
+            since: 6.2
         }
         ModifyFunction{
             signature: "lastIndexOf(QStringView,qsizetype,Qt::CaseSensitivity)const"
@@ -19341,7 +19610,7 @@ if(%1!=null){
         ModifyFunction{
             signature: "lastIndexOf(QLatin1String,Qt::CaseSensitivity)const"
             remove: RemoveFlag.All
-            since: 6
+            since: 6.2
             until: [6, 3]
         }
         ModifyFunction{
@@ -19527,22 +19796,27 @@ if(%1!=null){
         ModifyFunction{
             signature: "arg(long,int,int,QChar)const"
             remove: RemoveFlag.All
+            until: 6.8
         }
         ModifyFunction{
             signature: "arg(ulong,int,int,QChar)const"
             remove: RemoveFlag.All
+            until: 6.8
         }
         ModifyFunction{
             signature: "arg(qulonglong,int,int,QChar)const"
             remove: RemoveFlag.All
+            until: 6.8
         }
         ModifyFunction{
             signature: "arg(uint,int,int,QChar)const"
             remove: RemoveFlag.All
+            until: 6.8
         }
         ModifyFunction{
             signature: "arg(ushort,int,int,QChar)const"
             remove: RemoveFlag.All
+            until: 6.8
         }
         ModifyFunction{
             signature: "front()"
@@ -19598,7 +19872,7 @@ if(%1!=null){
                 target: CodeClass.Native
                 position: Position.End
                 Text{content: "if(%this->size()<%this->capacity())\n"+
-                              "    DataJBuffer::setLimit(%env, __java_return_value, jsize(%this->size()));"}
+                              "    PersistentDataJBuffer::setLimit(%env, __java_return_value, jsize(%this->size()));"}
             }
         }
         ModifyFunction{
@@ -19621,6 +19895,7 @@ if(%1!=null){
             signature: "arg(QLatin1StringView,int,QChar)const"
             remove: RemoveFlag.All
             since: [6, 4]
+            until: 6.8
         }
         ModifyFunction{
             signature: "arg(QLatin1String,int,QChar)const"
@@ -19630,6 +19905,7 @@ if(%1!=null){
         ModifyFunction{
             signature: "arg(QStringView,int,QChar)const"
             remove: RemoveFlag.All
+            until: 6.8
         }
         ModifyFunction{
             signature: "setNum(long, int)"
@@ -20830,6 +21106,58 @@ if(%1!=null){
                 }
             }
         }
+        ModifyFunction{
+            signature: "arg<T,true>(T,int,int,QChar)const"
+            Instantiation{
+                Argument{
+                    type: "qint32"
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "qint64"
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "qint16"
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "qint8"
+                }
+            }
+            since: 6.9
+        }
+        ModifyFunction{
+            signature: "arg<T,true>(T,int,char,int,QChar)const"
+            Instantiation{
+                Argument{
+                    type: "double"
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "float"
+                }
+            }
+            since: 6.9
+        }
+        ModifyFunction{
+            signature: "arg<T,true>(T,int,QChar)const"
+            Instantiation{
+                Argument{
+                    type: "QStringView"
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QByteArrayView"
+                }
+            }
+            since: 6.9
+        }
         InjectCode{
             ImportFile{
                 name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
@@ -20841,6 +21169,11 @@ if(%1!=null){
     GlobalFunction{
         signature: "operator+(QString,const char*)"
         remove: RemoveFlag.All
+    }
+    GlobalFunction{
+        signature: "operator+(QString&&,const char*)"
+        remove: RemoveFlag.All
+        since: 6.9
     }
     EnumType{
         name: "StringComparison"
@@ -20945,6 +21278,14 @@ Enum entries for string comparison.
         ExtraIncludes{
             Include{
                 fileName: "io.qt.core.*"
+                location: Include.Java
+            }
+            Include{
+                fileName: "io.qt.internal.*"
+                location: Include.Java
+            }
+            Include{
+                fileName: "java.io.*"
                 location: Include.Java
             }
             Include{
@@ -21273,6 +21614,12 @@ Enum entries for string comparison.
                 quoteAfterLine: "class QMetaType_6__"
                 quoteBeforeLine: "}// class"
                 since: 6
+            }
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class QMetaType_69__"
+                quoteBeforeLine: "}// class"
+                since: 6.9
             }
         }
         ModifyFunction{
@@ -21881,6 +22228,32 @@ Enum entries for string comparison.
             }
             since: 6
         }
+        ModifyFunction{
+            signature: "isValid(Qt::Disambiguated_t)const"
+            ModifyArgument{
+                index: 1
+                RemoveArgument{}
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "constexpr Qt::Disambiguated_t %out = Qt::Disambiguated;"}
+                }
+            }
+            since: 6.9
+            until: 6
+        }
+        ModifyFunction{
+            signature: "isRegistered(Qt::Disambiguated_t)const"
+            ModifyArgument{
+                index: 1
+                RemoveArgument{}
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "constexpr Qt::Disambiguated_t %out = Qt::Disambiguated;"}
+                }
+            }
+            since: 6.9
+            until: 6
+        }
         InjectCode{
             target: CodeClass.Java
             position: Position.Equals
@@ -22417,7 +22790,7 @@ else
                                   "const void* %out = variant.data();"}
                 }
             }
-            since: 6
+            since: 6.1
         }
         ModifyFunction{
             signature: "fromValue<T>(T)"
@@ -23001,6 +23374,9 @@ else
     ObjectType{
         name: "QRecursiveMutex"
         defaultSuperClass: "AbstractMutex"
+        Rejection{
+            functionName: "try_lock"
+        }
         noMetaType: true
     }
 
@@ -23054,17 +23430,6 @@ else
             InjectCode{
                 ArgumentMap{index: 1; metaName: "%1"}
                 Text{content: String.raw`__rcMutex = %1;`}
-            }
-        }
-        ModifyFunction{
-            signature: "swap(${typename}&)"
-            InjectCode{
-                position: Position.End
-                ArgumentMap{index: 1; metaName: "%1"}
-                Text{content: String.raw`
-AbstractMutex rcMutex = this.__rcMutex;
-this.__rcMutex = %1.__rcMutex;
-%1.__rcMutex = rcMutex;`}
             }
         }
     }
@@ -23177,6 +23542,17 @@ this.__rcMutex = %1.__rcMutex;
                         QtJambiAPI::objectFromNativeId<QMutexLocker<QRecursiveMutex>>(__this_nativeId)->unlock();
                         return;
                     }`}
+            }
+        }
+        ModifyFunction{
+            signature: "swap(QMutexLocker&)"
+            InjectCode{
+                position: Position.End
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: String.raw`
+AbstractMutex rcMutex = this.__rcMutex;
+this.__rcMutex = %1.__rcMutex;
+%1.__rcMutex = rcMutex;`}
             }
         }
         since: 6
@@ -23432,9 +23808,18 @@ this.__rcSemaphore = %1.__rcSemaphore;
         InjectCode{
             ImportFile{
                 name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class QUntypedBindable_java_60_"
+                quoteBeforeLine: "}// class"
+            }
+            until: 6.1
+        }
+        InjectCode{
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
                 quoteAfterLine: "class QUntypedBindable_java_65_"
                 quoteBeforeLine: "}// class"
             }
+            since: 6.5
         }
         since: 6
     }
@@ -23531,6 +23916,17 @@ this.__rcSemaphore = %1.__rcSemaphore;
         name: "QBindingStorage"
         forceFriendly: true
         Rejection{functionName: "status"}
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.End
+            Text{content: String.raw`
+@QtUninvokable
+final void registerDependency(io.qt.core.@Nullable QUntypedPropertyData data){
+    maybeUpdateBindingAndRegister(data);
+}`
+            }
+            until: 6.1
+        }
         since: 6
     }
 
@@ -23801,6 +24197,11 @@ static FilterResetter resetter(%0);
             signature: "toString<T>(T)"
             remove: RemoveFlag.All
             since: 6.8
+        }
+        ModifyFunction{
+            signature: "toBytes<T>(T)"
+            remove: RemoveFlag.All
+            since: 6.9
         }
         InjectCode{
             ImportFile{
@@ -26545,7 +26946,10 @@ static FilterResetter resetter(%0);
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Missing instantiations for template method QDir::*<T,0>*"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Missing instantiations for template method *::assign<InputIterator,true>(InputIterator,InputIterator)"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Missing instantiations for template method *::nativeInterface<NativeInterface,TypeInfo,BaseType,true>()const"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Missing instantiations for template method *::nativeInterface<QNativeInterface>()const"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Missing instantiations for template method QRandomGenerator::fillRange<*"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Missing instantiations for template method QStringList::QStringList<InputIterator,true>(InputIterator,InputIterator)"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: template baseclass 'QtPrivate::ContextTypeForFunctor::ContextType<Functor>' of '' is not known"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: class '' inherits from unknown base class 'objc_object'"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QDebug::operator<<<Ts...,true>(const std::tuple<Ts>&)*"}
 }

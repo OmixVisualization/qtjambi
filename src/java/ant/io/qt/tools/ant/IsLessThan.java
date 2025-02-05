@@ -52,7 +52,7 @@ public final class IsLessThan implements Condition {
 
 	public boolean eval() throws BuildException {
 		if (arg1 == null || arg2 == null) {
-			throw new BuildException("both arg1 and arg2 are required in " + "less than");
+			throw new BuildException("both arg1 and arg2 are required in " + " <=");
 		}
 
 		if (trim) {

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -38,7 +38,7 @@
 
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_initialize)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QVector_initialize
 (JNIEnv * env, jobject _this, jclass elementType, QtJambiNativeID elementMetaType, jobject other)
 {
     QTJAMBI_TRY{
@@ -49,7 +49,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QV
     }QTJAMBI_TRY_END
 }
 
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_elementMetaType)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QVector_elementMetaType
 (JNIEnv * env, jobject, QtJambiNativeID __this_nativeId)
 {
     jobject result{nullptr};
@@ -68,7 +68,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 // emitting  (functionsInTargetLang writeFinalFunction)
 
 // QVector<T>::append(const QVector<T> & t)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_appendVector__JLjava_util_Collection_2)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QVector_appendVector__JLjava_util_Collection_2
 (JNIEnv *__jni_env,
  jobject _this,
  QtJambiNativeID __this_nativeId,
@@ -86,7 +86,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QV
 }
 
 // QVector<T>::append(const T & t)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_append__JLjava_lang_Object_2)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QVector_append__JLjava_lang_Object_2
     (JNIEnv *__jni_env,
      jobject _this,
      QtJambiNativeID __this_nativeId,
@@ -106,7 +106,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QV
 }
 
 // QVector<T>::takeAt(int i)
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_takeAt__JI)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QVector_takeAt__JI
     (JNIEnv *__jni_env,
      jobject _this,
      QtJambiNativeID __this_nativeId,
@@ -132,7 +132,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // QVector<T>::takeLast()
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_takeLast__J)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QVector_takeLast__J
     (JNIEnv *__jni_env,
      jobject _this,
      QtJambiNativeID __this_nativeId)
@@ -157,7 +157,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // QVector<T>::last() const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_last__J)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QVector_last__J
     (JNIEnv *__jni_env,
      jobject,
      QtJambiNativeID __this_nativeId)
@@ -181,7 +181,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // QVector<T>::at(int i) const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_at__JI)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QVector_at__JI
 (JNIEnv *__jni_env,
  jobject,
  QtJambiNativeID __this_nativeId,
@@ -206,7 +206,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // QVector<T>::begin()
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_begin__J)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QVector_begin__J
 (JNIEnv *__jni_env,
  jobject _this,
  QtJambiNativeID __this_nativeId)
@@ -224,7 +224,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // QVector<T>::end()
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_end__J)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QVector_end__J
 (JNIEnv *__jni_env,
  jobject _this,
  QtJambiNativeID __this_nativeId)
@@ -242,7 +242,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // QVector<T>::constBegin() const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_constBegin__J)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QVector_constBegin__J
 (JNIEnv *__jni_env,
  jobject _this,
  QtJambiNativeID __this_nativeId)
@@ -260,7 +260,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // QVector<T>::constEnd() const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_constEnd__J)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QVector_constEnd__J
 (JNIEnv *__jni_env,
  jobject _this,
  QtJambiNativeID __this_nativeId)
@@ -278,7 +278,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // QVector<T>::capacity() const
-extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_capacity__J)
+extern "C" JNIEXPORT jint JNICALL Java_io_qt_core_QVector_capacity__J
 (JNIEnv *__jni_env,
  jobject,
  QtJambiNativeID __this_nativeId)
@@ -296,7 +296,7 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QV
 }
 
 // QVector<T>::clear()
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_clear__J)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QVector_clear__J
 (JNIEnv *__jni_env,
  jobject _this,
  QtJambiNativeID __this_nativeId)
@@ -312,7 +312,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QV
 }
 
 // QVector<T>::contains(const T & t) const
-extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_contains__JLjava_lang_Object_2)
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_QVector_contains__JLjava_lang_Object_2
 (JNIEnv *__jni_env,
  jobject,
  QtJambiNativeID __this_nativeId,
@@ -331,7 +331,7 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_cor
 }
 
 // QVector<T>::count(const T & t) const
-extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_count__JLjava_lang_Object_2)
+extern "C" JNIEXPORT jint JNICALL Java_io_qt_core_QVector_count__JLjava_lang_Object_2
 (JNIEnv *__jni_env,
  jobject,
  QtJambiNativeID __this_nativeId,
@@ -350,7 +350,7 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QV
 }
 
 // QVector<T>::endsWith(const T & t) const
-extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_endsWith__JLjava_lang_Object_2)
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_QVector_endsWith__JLjava_lang_Object_2
 (JNIEnv *__jni_env,
  jobject,
  QtJambiNativeID __this_nativeId,
@@ -369,7 +369,7 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_cor
 }
 
 // QVector<T>::fill(const T &value, int size = ...)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_fill__JLjava_lang_Object_2I)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QVector_fill__JLjava_lang_Object_2I
 (JNIEnv *__jni_env,
  jobject _this,
  QtJambiNativeID __this_nativeId,
@@ -387,7 +387,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QV
 }
 
 // QVector<T>::indexOf(const T & t, int from) const
-extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_indexOf__JLjava_lang_Object_2I)
+extern "C" JNIEXPORT jint JNICALL Java_io_qt_core_QVector_indexOf__JLjava_lang_Object_2I
 (JNIEnv *__jni_env,
  jobject,
  QtJambiNativeID __this_nativeId,
@@ -407,7 +407,7 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QV
 }
 
 // QVector<T>::insert(int i, int count, const T & t)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_insert__JIILjava_lang_Object_2)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QVector_insert__JIILjava_lang_Object_2
 (JNIEnv *__jni_env,
  jobject _this,
  QtJambiNativeID __this_nativeId,
@@ -432,7 +432,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QV
 }
 
 // QVector<T>::lastIndexOf(const T & t, int from) const
-extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_lastIndexOf__JLjava_lang_Object_2I)
+extern "C" JNIEXPORT jint JNICALL Java_io_qt_core_QVector_lastIndexOf__JLjava_lang_Object_2I
 (JNIEnv *__jni_env,
  jobject,
  QtJambiNativeID __this_nativeId,
@@ -452,7 +452,7 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QV
 }
 
 // QVector<T>::mid(int pos, int length) const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_mid__JII)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QVector_mid__JII
 (JNIEnv *__jni_env,
  jobject _this,
  QtJambiNativeID __this_nativeId,
@@ -481,7 +481,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // QVector<T>::move(int from, int to)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_move__JII)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QVector_move__JII
 (JNIEnv *__jni_env,
  jobject _this,
  QtJambiNativeID __this_nativeId,
@@ -508,7 +508,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QV
 }
 
 // QVector<T>::operator==(const QVector & l) const
-extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_operator_1equal__JLjava_util_Collection_2)
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_QVector_operator_1equal__JLjava_util_Collection_2
 (JNIEnv *__jni_env,
  jobject,
  QtJambiNativeID __this_nativeId,
@@ -527,7 +527,7 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_cor
 }
 
 // QVector<T>::removeAll(const T & t)
-extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_removeAll__JLjava_lang_Object_2)
+extern "C" JNIEXPORT jint JNICALL Java_io_qt_core_QVector_removeAll__JLjava_lang_Object_2
 (JNIEnv *__jni_env,
  jobject _this,
  QtJambiNativeID __this_nativeId,
@@ -546,7 +546,7 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QV
 }
 
 // QVector<T>::removeOne(const T & t)
-extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_removeOne__JLjava_lang_Object_2)
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_QVector_removeOne__JLjava_lang_Object_2
     (JNIEnv *__jni_env,
      jobject _this,
      QtJambiNativeID __this_nativeId,
@@ -569,7 +569,7 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_cor
 }
 
 // QVector<T>::remove(int i, int count)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_remove__JII)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QVector_remove__JII
 (JNIEnv *__jni_env,
  jobject _this,
  QtJambiNativeID __this_nativeId,
@@ -593,7 +593,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QV
 }
 
 // QVector<T>::replace(int i, const T & t)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_replace__JILjava_lang_Object_2)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QVector_replace__JILjava_lang_Object_2
 (JNIEnv *__jni_env,
  jobject _this,
  QtJambiNativeID __this_nativeId,
@@ -617,7 +617,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QV
 }
 
 // QVector<T>::reserve(int size)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_reserve__JI)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QVector_reserve__JI
 (JNIEnv *__jni_env,
  jobject _this,
  QtJambiNativeID __this_nativeId,
@@ -634,7 +634,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QV
 }
 
 // QVector<T>::resize(int size)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_resize__JI)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QVector_resize__JI
 (JNIEnv *__jni_env,
  jobject _this,
  QtJambiNativeID __this_nativeId,
@@ -651,7 +651,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QV
 }
 
 // QVector<T>::squeeze()
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_squeeze__J)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QVector_squeeze__J
 (JNIEnv *__jni_env,
  jobject _this,
  QtJambiNativeID __this_nativeId)
@@ -667,7 +667,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QV
 }
 
 // QVector<T>::size() const
-extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_size__J)
+extern "C" JNIEXPORT jint JNICALL Java_io_qt_core_QVector_size__J
 (JNIEnv *__jni_env,
  jobject,
  QtJambiNativeID __this_nativeId)
@@ -685,7 +685,7 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QV
 }
 
 // QVector<T>::startsWith(const T & t) const
-extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_startsWith__JLjava_lang_Object_2)
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_QVector_startsWith__JLjava_lang_Object_2
 (JNIEnv *__jni_env,
  jobject,
  QtJambiNativeID __this_nativeId,
@@ -704,7 +704,7 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_cor
 }
 
 // QVector<T>::value(int i) const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_value__JI)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QVector_value__JI
 (JNIEnv *__jni_env,
  jobject,
  QtJambiNativeID __this_nativeId,
@@ -723,7 +723,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // QVector<T>::value(int i, const T & defaultValue) const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_valueDefault__JILjava_lang_Object_2)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QVector_valueDefault__JILjava_lang_Object_2
 (JNIEnv *__jni_env,
  jobject,
  QtJambiNativeID __this_nativeId,
@@ -743,7 +743,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // QVector<T>::swapItemsAt(int i, int j)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_swapItemsAt__JII)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QVector_swapItemsAt__JII
 (JNIEnv *__jni_env,
  jobject _this,
  QtJambiNativeID __this_nativeId,
@@ -769,7 +769,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QV
     }QTJAMBI_TRY_END
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_writeTo)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QVector_writeTo
 (JNIEnv *__jni_env,
  jobject,
  QtJambiNativeID __this_nativeId,
@@ -794,7 +794,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QV
     }QTJAMBI_TRY_END
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_readFrom)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QVector_readFrom
 (JNIEnv *__jni_env,
  jobject,
  QtJambiNativeID __this_nativeId,
@@ -819,7 +819,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QV
     }QTJAMBI_TRY_END
 }
 
-extern "C" Q_DECL_EXPORT jstring JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_toString)
+extern "C" JNIEXPORT jstring JNICALL Java_io_qt_core_QVector_toString
 (JNIEnv *__jni_env,
  jobject,
  QtJambiNativeID __this_nativeId)
@@ -851,7 +851,7 @@ extern "C" Q_DECL_EXPORT jstring JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
     return result;
 }
 
-extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_hashCode)
+extern "C" JNIEXPORT jint JNICALL Java_io_qt_core_QVector_hashCode
 (JNIEnv *__jni_env,
  jobject,
  QtJambiNativeID __this_nativeId)
@@ -876,7 +876,7 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QV
 }
 
 // QVector<T>::operator=(QVector<T>)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_assign)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QVector_assign
     (JNIEnv *__jni_env,
      jobject _this,
      QtJambiNativeID __this_nativeId,
@@ -900,7 +900,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QV
 }
 
 // QVector<T>::swap(QVector<T>&)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_swap)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QVector_swap
     (JNIEnv *__jni_env,
      jobject _this,
      QtJambiNativeID __this_nativeId,
@@ -923,7 +923,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QV
     }QTJAMBI_TRY_END
 }
 
-extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_isSharedWith__JJ)
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_QVector_isSharedWith__JJ
     (JNIEnv *__jni_env,
      jobject,
      QtJambiNativeID __this_nativeId,
@@ -945,7 +945,7 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_cor
     return false;
 }
 
-extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_isDetached__J)
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_QVector_isDetached__J
     (JNIEnv *__jni_env,
      jobject,
      QtJambiNativeID __this_nativeId)
@@ -963,7 +963,7 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_cor
     return false;
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_detach__J)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QVector_detach__J
     (JNIEnv *__jni_env,
      jobject _this,
      QtJambiNativeID __this_nativeId)

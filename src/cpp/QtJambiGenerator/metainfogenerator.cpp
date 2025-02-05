@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -389,8 +389,8 @@ void MetaInfoGenerator::writeCppFile() {
             }
             stream << "}" << Qt::endl << Qt::endl;
 
-            stream << INDENT << "extern \"C\" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_"
-                      << QString(package).replace("_", "_1").replace(".", "_") << "_QtJambi_1LibraryUtilities_internalAccess)(JNIEnv *env, jclass cls){" << Qt::endl
+            stream << INDENT << "extern \"C\" Q_DECL_EXPORT jobject JNICALL Java_"
+                      << QString(package).replace("_", "_1").replace(".", "_") << "_QtJambi_1LibraryUtilities_internalAccess(JNIEnv *env, jclass cls){" << Qt::endl
                       << "    jobject result{0};" << Qt::endl
                       << "    QTJAMBI_TRY{" << Qt::endl
                       << "        result = MetaInfoAPI::internalAccess(env, cls);" << Qt::endl
@@ -401,8 +401,8 @@ void MetaInfoGenerator::writeCppFile() {
                       << "}" << Qt::endl << Qt::endl;
             for(const QString& pkg : m_typeSystemByPackage.keys(package)){
                 if(pkg!="io.qt.internal"){
-                    stream << INDENT << "extern \"C\" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_"
-                              << QString(pkg).replace("_", "_1").replace(".", "_") << "_QtJambi_1LibraryUtilities_internalAccess)(JNIEnv *env, jclass cls){" << Qt::endl
+                    stream << INDENT << "extern \"C\" Q_DECL_EXPORT jobject JNICALL Java_"
+                              << QString(pkg).replace("_", "_1").replace(".", "_") << "_QtJambi_1LibraryUtilities_internalAccess(JNIEnv *env, jclass cls){" << Qt::endl
                               << "    jobject result{0};" << Qt::endl
                               << "    QTJAMBI_TRY{" << Qt::endl
                               << "        result = MetaInfoAPI::internalAccess(env, cls);" << Qt::endl
@@ -544,6 +544,7 @@ void MetaInfoGenerator::writeLibraryInitializers() {
             s << INDENT << "/**" << Qt::endl
               << INDENT << " * @hidden" << Qt::endl
               << INDENT << " */" << Qt::endl
+              << INDENT << "@ModuleVersion(major=QtJambi_LibraryUtilities.qtMajorVersion, minor=QtJambi_LibraryUtilities.qtMinorVersion, patch=QtJambi_LibraryUtilities.qtJambiPatch)" << Qt::endl
               << INDENT << "final class QtJambi_LibraryUtilities {" << Qt::endl << Qt::endl;
             {
                 INDENTATION(INDENT)
@@ -883,16 +884,18 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                             s << INDENT << "final static InternalAccess internal;" << Qt::endl << Qt::endl;
                         }
 
-                        generateInitializer(s, typeSystemEntry, {}, TS::PackageInitializer, CodeSnip::Beginning, INDENT);
-                        generateInitializer(s, typeSystemEntry, package, TS::TargetLangCode, CodeSnip::Beginning, INDENT);
+                        generateInitializer(s, typeSystemEntry, package, TS::PackageInitializer, CodeSnip::Beginning, INDENT);
                         s << Qt::endl << INDENT << "static{" << Qt::endl;
                         {
                             INDENTATION(INDENT)
+                            generateInitializer(s, typeSystemEntry, package, TS::TargetLangCode, CodeSnip::Beginning, INDENT);
                             if(package=="io.qt.internal"){
                                 s << INDENT << "Map<String,List<Dependency>> _dependencies = new TreeMap<>();" << Qt::endl;
                                 const QList<TypeSystemTypeEntry*> typeSystems = m_database->typeSystems();
                                 for(TypeSystemTypeEntry* ts : typeSystems){
-                                    if((ts->codeGeneration() & ~TypeEntry::InheritedByTypeSystem)!=TypeEntry::GenerateNothing && !m_staticLibraries.contains(ts->qtLibrary())){
+                                    if((ts->codeGeneration() & ~TypeEntry::InheritedByTypeSystem)!=TypeEntry::GenerateNothing
+                                        && !ts->qtLibrary().isEmpty()
+                                        && !m_staticLibraries.contains(ts->qtLibrary())){
                                         QString dependencyString;
                                         QSet<QString> deps{"QtCore"};
                                         {

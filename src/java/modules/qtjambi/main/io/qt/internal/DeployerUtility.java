@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -38,27 +38,27 @@ import io.qt.core.QPair;
  */
 public abstract class DeployerUtility {
 
-	private DeployerUtility() {
+	protected DeployerUtility() {
 		throw new RuntimeException();
 	}
 
-	public static native Map<String,QPair<Long,Long>> getRegisteredTypeSizesAndAlignments();
+	protected static native Map<String,QPair<Long,Long>> getRegisteredTypeSizesAndAlignments();
 	
-	public static native String getInterfaceIID(Class<?> cls);
+	protected static native String getInterfaceIID(Class<?> cls);
 
-	public static String qtLibraryPath() {
+	protected static String qtLibraryPath() {
 		return LibraryUtility.qtLibraryPath();
 	}
 	
-	public static String qtJambiLibraryPath() {
+	protected static String qtJambiLibraryPath() {
 		return LibraryUtility.qtJambiLibraryPath();
 	}
 	
-	public static String osArchName() {
+	protected static String osArchName() {
 		return LibraryUtility.osArchName();
 	}
 	
-	public static boolean isMinGWBuilt() {
+	protected static boolean isMinGWBuilt() {
 		return LibraryUtility.isMinGWBuilt();
 	}
 }

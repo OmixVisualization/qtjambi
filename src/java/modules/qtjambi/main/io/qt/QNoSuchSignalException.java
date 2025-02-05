@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -43,7 +43,7 @@ public class QNoSuchSignalException extends QConnectionException
     /**
      * @hidden
      */
-    public QNoSuchSignalException(String extraMessage)
+    public QNoSuchSignalException(@NonNull String extraMessage)
     {
         super(extraMessage.length() > 0 ? "Signal not found: " + extraMessage : "Signal not found");
     }

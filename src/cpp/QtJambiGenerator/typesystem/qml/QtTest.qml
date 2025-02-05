@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -39,15 +39,20 @@ TypeSystem{
         name: "test.stringsupplier.function"
         Text{content: "JObjectWrapper %in_wrapper(%env, %in);\n"+
                       "qxp::function_ref<const char*()> %out = [%in_wrapper]() -> const char* {\n"+
-                      "                                            if(JniEnvironment env{200}){\n"+
+                      "                                        const char* result{nullptr};\n"+
+                      "                                        if(JniEnvironment env{200}){\n"+
+                      "                                            QTJAMBI_TRY{\n"+
                       "                                                jstring value = jstring(Java::Runtime::Supplier::get(env, %in_wrapper.object(env)));\n"+
                       "                                                jsize length = env->GetStringUTFLength(value);\n"+
                       "                                                char* c = new char[size_t(length)];\n"+
                       "                                                env->GetStringUTFRegion(value, 0, length, c);\n"+
-                      "                                                return c;\n"+
-                      "                                            }\n"+
-                      "                                            return nullptr;\n"+
-                      "                                        };"}
+                      "                                                result = c;\n"+
+                      "                                            }QTJAMBI_CATCH(const JavaException& exn){\n"+
+                      "                                                exn.report(env);\n"+
+                      "                                            }QTJAMBI_TRY_END\n"+
+                      "                                        }\n"+
+                      "                                        return result;\n"+
+                      "                                    };"}
     }
     
     RequiredLibrary{
@@ -96,6 +101,7 @@ TypeSystem{
 
 
         Rejection{functionName: "compare_ptr_helper"}
+        Rejection{functionName: "compare_3way_helper"}
         Rejection{className: "ThrowOnFailEnabler"}
         Rejection{className: "ThrowOnSkipEnabler"}
         Rejection{className: "ThrowOnFailDisabler"}
@@ -433,7 +439,13 @@ TypeSystem{
                         Text{content: "JObjectWrapper functor(%env, %in);\n"+
                                       "auto %out = [functor]() -> bool {\n"+
                                       "                    if(JniEnvironment env{200}){\n"+
-                                      "                        return Java::Runtime::BooleanSupplier::getAsBoolean(env, functor.object(env));\n"+
+                                      "                        bool result{false};\n"+
+                                      "                        QTJAMBI_TRY{\n"+
+                                      "                            result = Java::Runtime::BooleanSupplier::getAsBoolean(env, functor.object(env));\n"+
+                                      "                        }QTJAMBI_CATCH(const JavaException& exn){\n"+
+                                      "                            exn.report(env);\n"+
+                                      "                        }QTJAMBI_TRY_END\n"+
+                                      "                        return result;\n"+
                                       "                    }\n"+
                                       "                    else return false;\n"+
                                       "                };"}
@@ -459,7 +471,13 @@ TypeSystem{
                         Text{content: "JObjectWrapper functor(%env, %in);\n"+
                                       "auto %out = [functor]() -> bool {\n"+
                                       "                    if(JniEnvironment env{200}){\n"+
-                                      "                        return Java::Runtime::BooleanSupplier::getAsBoolean(env, functor.object(env));\n"+
+                                      "                        bool result{false};\n"+
+                                      "                        QTJAMBI_TRY{\n"+
+                                      "                            result = Java::Runtime::BooleanSupplier::getAsBoolean(env, functor.object(env));\n"+
+                                      "                        }QTJAMBI_CATCH(const JavaException& exn){\n"+
+                                      "                            exn.report(env);\n"+
+                                      "                        }QTJAMBI_TRY_END\n"+
+                                      "                        return result;\n"+
                                       "                    }\n"+
                                       "                    else return false;\n"+
                                       "                };"}

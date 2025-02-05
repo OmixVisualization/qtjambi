@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -110,5 +110,5 @@ TypeSystem{
     LoadTypeSystem{name: "QtSpatialAudio";      generate: true; unless: "QTJAMBI_NO_SPATIALAUDIO";     since: [6, 4]}
     LoadTypeSystem{name: "QtGrpc";              generate: true; unless: "QTJAMBI_NO_GRPC";             since: [6, 5]}
     LoadTypeSystem{name: "QtProtobuf";          generate: true; unless: "QTJAMBI_NO_PROTOBUF";         since: [6, 5]}
-    LoadTypeSystem{name: "QtInsightTracker";    generate: true; unless: "QTJAMBI_NO_INSIGHTTRACKER";   since: [6, 5]}
+    LoadTypeSystem{name: "QtInsightTracker";    generate: true; unless: "QTJAMBI_NO_INSIGHTTRACKER"}
 }

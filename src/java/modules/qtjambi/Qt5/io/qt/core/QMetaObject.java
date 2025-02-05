@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -935,7 +935,7 @@ public final class QMetaObject {
     public static <R> R invokeMethod(@StrictNonNull Method0<R> method, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
-        ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
+        LambdaInfo info = CoreUtility.lambdaInfo(method);
         QObject context;
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
@@ -1026,7 +1026,7 @@ public final class QMetaObject {
     public static <A,R> R invokeMethod(@StrictNonNull Method1<A,R> method, Qt.@NonNull ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
-        ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
+        LambdaInfo info = CoreUtility.lambdaInfo(method);
         QObject context;
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
@@ -1123,7 +1123,7 @@ public final class QMetaObject {
     public static <A,B,R> R invokeMethod(@StrictNonNull Method2<A,B,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
-        ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
+        LambdaInfo info = CoreUtility.lambdaInfo(method);
         QObject context;
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
@@ -1220,7 +1220,7 @@ public final class QMetaObject {
     public static <A,B,C,R> R invokeMethod(@StrictNonNull Method3<A,B,C,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
-        ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
+        LambdaInfo info = CoreUtility.lambdaInfo(method);
         QObject context;
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
@@ -1322,7 +1322,7 @@ public final class QMetaObject {
     public static <A,B,C,D,R> R invokeMethod(@StrictNonNull Method4<A,B,C,D,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
-        ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
+        LambdaInfo info = CoreUtility.lambdaInfo(method);
         QObject context;
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
@@ -1429,7 +1429,7 @@ public final class QMetaObject {
     public static <A,B,C,D,E,R> R invokeMethod(@StrictNonNull Method5<A,B,C,D,E,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
-        ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
+        LambdaInfo info = CoreUtility.lambdaInfo(method);
         QObject context;
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
@@ -1541,7 +1541,7 @@ public final class QMetaObject {
     public static <A,B,C,D,E,F,R> R invokeMethod(@StrictNonNull Method6<A,B,C,D,E,F,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
-        ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
+        LambdaInfo info = CoreUtility.lambdaInfo(method);
         QObject context;
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
@@ -1658,7 +1658,7 @@ public final class QMetaObject {
     public static <A,B,C,D,E,F,G,R> R invokeMethod(@StrictNonNull Method7<A,B,C,D,E,F,G,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
-        ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
+        LambdaInfo info = CoreUtility.lambdaInfo(method);
         QObject context;
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
@@ -1780,7 +1780,7 @@ public final class QMetaObject {
     public static <A,B,C,D,E,F,G,H,R> R invokeMethod(@StrictNonNull Method8<A,B,C,D,E,F,G,H,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
-        ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
+        LambdaInfo info = CoreUtility.lambdaInfo(method);
         QObject context;
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
@@ -1907,7 +1907,7 @@ public final class QMetaObject {
     public static <A,B,C,D,E,F,G,H,I,R> R invokeMethod(@StrictNonNull Method9<A,B,C,D,E,F,G,H,I,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
-        ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
+        LambdaInfo info = CoreUtility.lambdaInfo(method);
         QObject context;
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
@@ -1993,7 +1993,7 @@ public final class QMetaObject {
     public static void invokeMethod(@StrictNonNull Slot0 method, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
-        ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
+        LambdaInfo info = CoreUtility.lambdaInfo(method);
         QThread thread = null;
         QObject context;
         if(info!=null && info.qobject!=null) {
@@ -2075,7 +2075,7 @@ public final class QMetaObject {
     public static <A> void invokeMethod(@StrictNonNull Slot1<A> method, Qt.@NonNull ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
-        ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
+        LambdaInfo info = CoreUtility.lambdaInfo(method);
         QThread thread = null;
         QObject context;
         if(info!=null && info.qobject!=null) {
@@ -2168,7 +2168,7 @@ public final class QMetaObject {
     public static <A,B> void invokeMethod(@StrictNonNull Slot2<A,B> method, Qt.@NonNull ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
-        ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
+        LambdaInfo info = CoreUtility.lambdaInfo(method);
         QThread thread = null;
         QObject context;
         if(info!=null && info.qobject!=null) {
@@ -2266,7 +2266,7 @@ public final class QMetaObject {
     public static <A,B,C> void invokeMethod(@StrictNonNull Slot3<A,B,C> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
-        ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
+        LambdaInfo info = CoreUtility.lambdaInfo(method);
         QThread thread = null;
         QObject context;
         if(info!=null && info.qobject!=null) {
@@ -2364,7 +2364,7 @@ public final class QMetaObject {
     public static <A,B,C,D> void invokeMethod(@StrictNonNull Slot4<A,B,C,D> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
-        ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
+        LambdaInfo info = CoreUtility.lambdaInfo(method);
         QThread thread = null;
         QObject context;
         if(info!=null && info.qobject!=null) {
@@ -2467,7 +2467,7 @@ public final class QMetaObject {
     public static <A,B,C,D,E> void invokeMethod(@StrictNonNull Slot5<A,B,C,D,E> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
-        ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
+        LambdaInfo info = CoreUtility.lambdaInfo(method);
         QThread thread = null;
         QObject context;
         if(info!=null && info.qobject!=null) {
@@ -2574,7 +2574,7 @@ public final class QMetaObject {
     public static <A,B,C,D,E,F> void invokeMethod(@StrictNonNull Slot6<A,B,C,D,E,F> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
-        ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
+        LambdaInfo info = CoreUtility.lambdaInfo(method);
         QThread thread = null;
         QObject context;
         if(info!=null && info.qobject!=null) {
@@ -2687,7 +2687,7 @@ public final class QMetaObject {
     public static <A,B,C,D,E,F,G> void invokeMethod(@StrictNonNull Slot7<A,B,C,D,E,F,G> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
-        ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
+        LambdaInfo info = CoreUtility.lambdaInfo(method);
         QThread thread = null;
         QObject context;
         if(info!=null && info.qobject!=null) {
@@ -2805,7 +2805,7 @@ public final class QMetaObject {
     public static <A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull Slot8<A,B,C,D,E,F,G,H> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
-        ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
+        LambdaInfo info = CoreUtility.lambdaInfo(method);
         QThread thread = null;
         QObject context;
         if(info!=null && info.qobject!=null) {
@@ -2928,7 +2928,7 @@ public final class QMetaObject {
     public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull Slot9<A,B,C,D,E,F,G,H,I> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
-        ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
+        LambdaInfo info = CoreUtility.lambdaInfo(method);
         QThread thread = null;
         QObject context;
         if(info!=null && info.qobject!=null) {
@@ -4078,7 +4078,7 @@ public final class QMetaObject {
     public static <Target> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot1<Target> method, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
-    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+    	LambdaInfo info = CoreUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
         QThread thread = null;
         QObject context;
         if(info!=null && info.qobject!=null && info.methodInfo.metaObject!=null) {
@@ -4164,7 +4164,7 @@ public final class QMetaObject {
     public static <Target,A> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot2<Target,A> method, Qt.@NonNull ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
-    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+    	LambdaInfo info = CoreUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
         QThread thread = null;
         QObject context;
         if(info!=null && info.qobject!=null) {
@@ -4261,7 +4261,7 @@ public final class QMetaObject {
     public static <Target,A,B> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot3<Target,A,B> method, Qt.@NonNull ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
-    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+    	LambdaInfo info = CoreUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
         QThread thread = null;
         QObject context;
         if(info!=null && info.qobject!=null) {
@@ -4363,7 +4363,7 @@ public final class QMetaObject {
     public static <Target,A,B,C> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot4<Target,A,B,C> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
-    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+    	LambdaInfo info = CoreUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
         QThread thread = null;
         QObject context;
         if(info!=null && info.qobject!=null) {
@@ -4465,7 +4465,7 @@ public final class QMetaObject {
     public static <Target,A,B,C,D> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot5<Target,A,B,C,D> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
-    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+    	LambdaInfo info = CoreUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
         QThread thread = null;
         QObject context;
         if(info!=null && info.qobject!=null) {
@@ -4572,7 +4572,7 @@ public final class QMetaObject {
     public static <Target,A,B,C,D,E> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot6<Target,A,B,C,D,E> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
-    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+    	LambdaInfo info = CoreUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
         QThread thread = null;
         QObject context;
         if(info!=null && info.qobject!=null) {
@@ -4683,7 +4683,7 @@ public final class QMetaObject {
     public static <Target,A,B,C,D,E,F> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot7<Target,A,B,C,D,E,F> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
-    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+    	LambdaInfo info = CoreUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
         QThread thread = null;
         QObject context;
         if(info!=null && info.qobject!=null) {
@@ -4800,7 +4800,7 @@ public final class QMetaObject {
     public static <Target,A,B,C,D,E,F,G> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot8<Target,A,B,C,D,E,F,G> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
-    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+    	LambdaInfo info = CoreUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
         QThread thread = null;
         QObject context;
         if(info!=null && info.qobject!=null) {
@@ -4922,7 +4922,7 @@ public final class QMetaObject {
     public static <Target,A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot9<Target,A,B,C,D,E,F,G,H> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
-    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+    	LambdaInfo info = CoreUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
         QThread thread = null;
         QObject context;
         if(info!=null && info.qobject!=null) {
@@ -5049,7 +5049,7 @@ public final class QMetaObject {
     public static <Target,A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot10<Target,A,B,C,D,E,F,G,H,I> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
-        ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+        LambdaInfo info = CoreUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
         QThread thread = null;
         QObject context;
         if(info!=null && info.qobject!=null) {
@@ -5147,7 +5147,7 @@ public final class QMetaObject {
     public static <Target,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method1<Target,R> method, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
-    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+    	LambdaInfo info = CoreUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
         QObject context;
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
@@ -5241,7 +5241,7 @@ public final class QMetaObject {
     public static <Target,A,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method2<Target,A,R> method, Qt.@NonNull ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
-    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+    	LambdaInfo info = CoreUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
         QObject context;
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
@@ -5342,7 +5342,7 @@ public final class QMetaObject {
     public static <Target,A,B,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method3<Target,A,B,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
-    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+    	LambdaInfo info = CoreUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
         QObject context;
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
@@ -5443,7 +5443,7 @@ public final class QMetaObject {
     public static <Target,A,B,C,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method4<Target,A,B,C,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
-    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+    	LambdaInfo info = CoreUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
         QObject context;
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
@@ -5549,7 +5549,7 @@ public final class QMetaObject {
     public static <Target,A,B,C,D,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method5<Target,A,B,C,D,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
-    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+    	LambdaInfo info = CoreUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
         QObject context;
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
@@ -5660,7 +5660,7 @@ public final class QMetaObject {
     public static <Target,A,B,C,D,E,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method6<Target,A,B,C,D,E,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
-    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+    	LambdaInfo info = CoreUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
         QObject context;
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
@@ -5776,7 +5776,7 @@ public final class QMetaObject {
     public static <Target,A,B,C,D,E,F,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method7<Target,A,B,C,D,E,F,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
-    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+    	LambdaInfo info = CoreUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
         QObject context;
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
@@ -5897,7 +5897,7 @@ public final class QMetaObject {
     public static <Target,A,B,C,D,E,F,G,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method8<Target,A,B,C,D,E,F,G,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
-    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+    	LambdaInfo info = CoreUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
         QObject context;
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
@@ -6023,7 +6023,7 @@ public final class QMetaObject {
     public static <Target,A,B,C,D,E,F,G,H,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method9<Target,A,B,C,D,E,F,G,H,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
-    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+    	LambdaInfo info = CoreUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
         QObject context;
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
@@ -6154,7 +6154,7 @@ public final class QMetaObject {
     public static <Target,A,B,C,D,E,F,G,H,I,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method10<Target,A,B,C,D,E,F,G,H,I,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
-    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+    	LambdaInfo info = CoreUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
         QObject context;
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
@@ -6256,7 +6256,7 @@ public final class QMetaObject {
                 }
         default:
     	}
-    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, target);
+    	LambdaInfo info = CoreUtility.lambdaInfo(method, target);
         if(info!=null && info.methodInfo.metaObject!=null) {
             if(info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()) {
                 invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, info.lambdaArgs.toArray());
@@ -6315,7 +6315,7 @@ public final class QMetaObject {
                 }
         default:
     	}
-    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, target);
+    	LambdaInfo info = CoreUtility.lambdaInfo(method, target);
         if(info!=null) {
             if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+1) {
                 if(info.lambdaArgs.isEmpty()) {
@@ -6385,7 +6385,7 @@ public final class QMetaObject {
                 }
         default:
     	}
-    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, target);
+    	LambdaInfo info = CoreUtility.lambdaInfo(method, target);
         if(info!=null) {
             if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+2) {
                 if(info.lambdaArgs.isEmpty()) {
@@ -6460,7 +6460,7 @@ public final class QMetaObject {
                 }
         default:
     	}
-    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, target);
+    	LambdaInfo info = CoreUtility.lambdaInfo(method, target);
         if(info!=null) {
             if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+3) {
                 if(info.lambdaArgs.isEmpty()) {
@@ -6540,7 +6540,7 @@ public final class QMetaObject {
                 }
         default:
     	}
-    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, target);
+    	LambdaInfo info = CoreUtility.lambdaInfo(method, target);
         if(info!=null) {
             if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+4) {
                 if(info.lambdaArgs.isEmpty()) {
@@ -6625,7 +6625,7 @@ public final class QMetaObject {
                 }
         default:
     	}
-    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, target);
+    	LambdaInfo info = CoreUtility.lambdaInfo(method, target);
         if(info!=null) {
             if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+5) {
                 if(info.lambdaArgs.isEmpty()) {
@@ -6714,7 +6714,7 @@ public final class QMetaObject {
                 }
         default:
     	}
-    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, target);
+    	LambdaInfo info = CoreUtility.lambdaInfo(method, target);
         if(info!=null) {
             if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+6) {
                 if(info.lambdaArgs.isEmpty()) {
@@ -6809,7 +6809,7 @@ public final class QMetaObject {
                 }
         default:
     	}
-    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, target);
+    	LambdaInfo info = CoreUtility.lambdaInfo(method, target);
         if(info!=null) {
             if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+7) {
                 if(info.lambdaArgs.isEmpty()) {
@@ -6909,7 +6909,7 @@ public final class QMetaObject {
                 }
         default:
     	}
-    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, target);
+    	LambdaInfo info = CoreUtility.lambdaInfo(method, target);
         if(info!=null) {
             if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+8) {
                 if(info.lambdaArgs.isEmpty()) {
@@ -7014,7 +7014,7 @@ public final class QMetaObject {
                 }
         default:
     	}
-        ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, target);
+        LambdaInfo info = CoreUtility.lambdaInfo(method, target);
         if(info!=null) {
             if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+9) {
                 if(info.lambdaArgs.isEmpty()) {
@@ -7089,7 +7089,7 @@ public final class QMetaObject {
                 }
         default:
     	}
-    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, target);
+    	LambdaInfo info = CoreUtility.lambdaInfo(method, target);
         if(info!=null) {
         	if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()) {
                 if(info.lambdaArgs.isEmpty()) {
@@ -7156,7 +7156,7 @@ public final class QMetaObject {
                 }
         default:
     	}
-    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, target);
+    	LambdaInfo info = CoreUtility.lambdaInfo(method, target);
         if(info!=null) {
         	if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+1) {
                 if(info.lambdaArgs.isEmpty()) {
@@ -7230,7 +7230,7 @@ public final class QMetaObject {
                 }
         default:
     	}
-    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, target);
+    	LambdaInfo info = CoreUtility.lambdaInfo(method, target);
         if(info!=null) {
         	if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+2) {
                 if(info.lambdaArgs.isEmpty()) {
@@ -7309,7 +7309,7 @@ public final class QMetaObject {
                 }
         default:
     	}
-    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, target);
+    	LambdaInfo info = CoreUtility.lambdaInfo(method, target);
         if(info!=null) {
         	if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+3) {
                 if(info.lambdaArgs.isEmpty()) {
@@ -7393,7 +7393,7 @@ public final class QMetaObject {
                 }
         default:
     	}
-    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, target);
+    	LambdaInfo info = CoreUtility.lambdaInfo(method, target);
         if(info!=null) {
         	if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+4) {
                 if(info.lambdaArgs.isEmpty()) {
@@ -7482,7 +7482,7 @@ public final class QMetaObject {
                 }
         default:
     	}
-    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, target);
+    	LambdaInfo info = CoreUtility.lambdaInfo(method, target);
         if(info!=null) {
         	if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+5) {
                 if(info.lambdaArgs.isEmpty()) {
@@ -7576,7 +7576,7 @@ public final class QMetaObject {
                 }
         default:
     	}
-    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, target);
+    	LambdaInfo info = CoreUtility.lambdaInfo(method, target);
         if(info!=null) {
         	if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+6) {
                 if(info.lambdaArgs.isEmpty()) {
@@ -7675,7 +7675,7 @@ public final class QMetaObject {
                 }
         default:
     	}
-    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, target);
+    	LambdaInfo info = CoreUtility.lambdaInfo(method, target);
         if(info!=null) {
         	if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+7) {
                 if(info.lambdaArgs.isEmpty()) {
@@ -7779,7 +7779,7 @@ public final class QMetaObject {
                 }
         default:
     	}
-    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, target);
+    	LambdaInfo info = CoreUtility.lambdaInfo(method, target);
         if(info!=null) {
         	if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+8) {
                 if(info.lambdaArgs.isEmpty()) {
@@ -7888,7 +7888,7 @@ public final class QMetaObject {
                 }
         default:
     	}
-    	ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method, target);
+    	LambdaInfo info = CoreUtility.lambdaInfo(method, target);
         if(info!=null) {
         	if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+9) {
                 if(info.lambdaArgs.isEmpty()) {
@@ -22856,7 +22856,7 @@ public final class QMetaObject {
 		                        				|| method[i].getParameterizedType().getTypeName().equals(argumentTypes[i])) {
 		                        			paramType = method[i].getType();
 		                        			genericParamType = method[i].getParameterizedType();
-		                        			if(ClassAnalyzerUtility.useAnnotatedType) {
+		                        			if(QtJambi_LibraryUtilities.internal.useAnnotatedType()) {
 		                        				annotatedParamType = method[i].getAnnotatedType();
 		                        			}
 		                        			break;
@@ -22876,7 +22876,7 @@ public final class QMetaObject {
 		                        				 || type.getSimpleName().equals(argumentTypes[i]))) {
 		                        			paramType = method[i].getType();
 		                        			genericParamType = method[i].getParameterizedType();
-		                        			if(ClassAnalyzerUtility.useAnnotatedType) {
+		                        			if(QtJambi_LibraryUtilities.internal.useAnnotatedType()) {
 		                        				annotatedParamType = method[i].getAnnotatedType();
 		                        			}
 		                        			break;
@@ -22975,5 +22975,17 @@ public final class QMetaObject {
 	    protected static void checkConnectionToDisposedSignal(QMetaObject.DisposedSignal signal, Object receiver, boolean slotObject) {
 	    	io.qt.internal.CoreUtility.checkConnectionToDisposedSignal(signal, receiver, slotObject);
 	    }
+	    
+	    protected static LambdaInfo lambdaInfo(java.io.Serializable slotObject) {
+            return io.qt.internal.CoreUtility.lambdaInfo(slotObject);
+        }
+
+        protected static LambdaInfo lambdaInfo(java.io.Serializable slotObject, Object owner) {
+            return io.qt.internal.CoreUtility.lambdaInfo(slotObject, owner);
+        }
+
+        protected static LambdaInfo lambdaInfo(java.io.Serializable slotObject, QObject qobject) {
+            return io.qt.internal.CoreUtility.lambdaInfo(slotObject, qobject);
+        }
 	}
 }

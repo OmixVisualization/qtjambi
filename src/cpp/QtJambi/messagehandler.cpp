@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -34,11 +34,8 @@
 
 #include "qtjambi_cast.h"
 
-Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, gMessageHandlerLock, (QReadWriteLock::Recursive))
-QReadWriteLock* messageHandlerLock(){
-    return gMessageHandlerLock();
-}
-typedef SecureContainer<QSet<QtMsgType>,QReadWriteLock,&messageHandlerLock> Messages;
+Q_GLOBAL_STATIC(QReadWriteLock, gMessageHandlerLock)
+typedef SecureContainer<QSet<QtMsgType>,gMessageHandlerLock> Messages;
 Q_GLOBAL_STATIC(Messages, gEnabledMessages)
 static bool messageHandlerInstalled = false;
 
@@ -50,8 +47,7 @@ void qtjambi_messagehandler_proxy(QtMsgType type, const QMessageLogContext & con
             if(!gEnabledMessages->contains(type))
                 return;
         }
-        if(JniEnvironment env{500}){
-            QtJambiExceptionInhibitor __exnHandler;
+        if(JniEnvironmentExceptionInhibitor env{500}){
             try{
                 jobject msgType = qtjambi_cast<jobject>(env, type);
                 jobject _context = qtjambi_cast<jobject>(env, &context);
@@ -59,7 +55,7 @@ void qtjambi_messagehandler_proxy(QtMsgType type, const QMessageLogContext & con
                 Java::QtCore::QLogging::acceptInstalled(env, msgType, _context, msg);
                 InvalidateAfterUse::invalidate(env, _context);
             }catch(const JavaException& exn){
-                __exnHandler.handle(env, exn, nullptr);
+                env.handleException(exn, nullptr);
             }
         }
     }

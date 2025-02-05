@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -542,6 +542,23 @@ inline hash_type qHash(const QColorSpace &value, hash_type seed = 0)
     seed = hash(seed, value.isValid());
     return seed;
 }
+#if QT_VERSION >= QT_VERSION_CHECK(6,9,0)
+inline hash_type qHash(const QColorSpace::PrimaryPoints &value, hash_type seed = 0)
+{
+    QtPrivate::QHashCombine hash;
+    if(value.isValid()){
+        seed = hash(seed, value.redPoint.x());
+        seed = hash(seed, value.redPoint.y());
+        seed = hash(seed, value.greenPoint.x());
+        seed = hash(seed, value.greenPoint.y());
+        seed = hash(seed, value.bluePoint.x());
+        seed = hash(seed, value.bluePoint.y());
+        seed = hash(seed, value.whitePoint.x());
+        seed = hash(seed, value.whitePoint.y());
+    }
+    return seed;
+}
+#endif
 #endif
 
 inline hash_type qHash(const QSurfaceFormat &value, hash_type seed = 0)
@@ -753,6 +770,14 @@ inline hash_type qHash(const QIconEngine::ScaledPixmapArgument &value, hash_type
     seed = hash(seed, value.pixmap);
     return seed;
 }
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 9, 0)
+
+#include <QtGui/QFontVariableAxis>
+inline hash_type qHash(const QFontVariableAxis& value, hash_type seed = 0){
+    return qHashMulti(seed, value.defaultValue(), value.maximumValue(), value.minimumValue(), value.name(), value.tag());
+}
+#endif
 
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 inline bool operator==(const QIconEngine::AvailableSizesArgument &v1, const QIconEngine::AvailableSizesArgument &v2){

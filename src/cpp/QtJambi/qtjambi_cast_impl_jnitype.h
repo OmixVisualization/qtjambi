@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -522,7 +522,7 @@ struct qtjambi_jstring_caster<has_scope, QByteArrayView, is_arithmetic, is_enum,
     static NativeType_out cast(JNIEnv *env, jstring in, const char*, QtJambiScope* scope){
         if(!scope)
             JavaException::raiseError(env, "Cannot cast to QByteArrayView without scope." QTJAMBI_STACKTRACEINFO );
-        J2CStringBuffer* buffer = new J2CStringBuffer(env, in);
+        PersistentJ2CStringBuffer* buffer = new PersistentJ2CStringBuffer(env, in);
         scope->addDeletion(buffer);
         JavaException::check(env QTJAMBI_STACKTRACEINFO );
         return buffer->toByteArrayView();
@@ -589,7 +589,7 @@ struct qtjambi_jstring_caster<true, QByteArray, is_arithmetic, is_enum, false, i
             return qtjambi_jstring_caster<false, QByteArray, is_arithmetic, is_enum, false, is_const, false, is_function, is_template>::cast(env, in, name, scope);
         QByteArray result;
         if(!env->IsSameObject(in, nullptr)){
-            J2CStringBuffer* buffer = new J2CStringBuffer(env, in);
+            PersistentJ2CStringBuffer* buffer = new PersistentJ2CStringBuffer(env, in);
             scope->addDeletion(buffer);
             JavaException::check(env QTJAMBI_STACKTRACEINFO );
             result = buffer->toByteArray();
@@ -635,7 +635,7 @@ struct qtjambi_jstring_caster<has_scope, char, is_arithmetic, is_enum, true, tru
     static const char* cast(JNIEnv *env, jstring in, const char*, QtJambiScope* scope){
         if(!scope)
             JavaException::raiseError(env, "Cannot cast to const char* without scope." QTJAMBI_STACKTRACEINFO );
-        J2CStringBuffer* buffer = new J2CStringBuffer(env, in);
+        PersistentJ2CStringBuffer* buffer = new PersistentJ2CStringBuffer(env, in);
         scope->addDeletion(buffer);
         JavaException::check(env QTJAMBI_STACKTRACEINFO );
         return buffer->data();
@@ -649,7 +649,7 @@ struct qtjambi_jstring_caster<has_scope, QChar, is_arithmetic, is_enum, true, tr
     static const QChar* cast(JNIEnv *env, jstring in, const char*, QtJambiScope* scope){
         if(!scope)
             JavaException::raiseError(env, "Cannot cast to const QChar* without scope." QTJAMBI_STACKTRACEINFO );
-        JString2QChars* buffer = new JString2QChars(env, in);
+        PersistentJString2QChars* buffer = new PersistentJString2QChars(env, in);
         scope->addDeletion(buffer);
         JavaException::check(env QTJAMBI_STACKTRACEINFO );
         return buffer->constData();
@@ -700,7 +700,7 @@ struct qtjambi_jstring_caster<true, QString, is_arithmetic, is_enum, false, is_c
             return qtjambi_jstring_caster<false, QString, is_arithmetic, is_enum, false, is_const, false, is_function, is_template>::cast(env, in, name, scope);
         QString result;
         if(!env->IsSameObject(in, nullptr)){
-            JString2QChars* buffer = new JString2QChars(env, in);
+            PersistentJString2QChars* buffer = new PersistentJString2QChars(env, in);
             scope->addDeletion(buffer);
             JavaException::check(env QTJAMBI_STACKTRACEINFO );
             result = buffer->toString();
@@ -809,7 +809,7 @@ struct qtjambi_jstring_caster<has_scope, QAnyStringView, is_arithmetic, is_enum,
     static NativeType_out cast(JNIEnv *env, jstring in, const char*, QtJambiScope* scope){
         if(!scope)
             JavaException::raiseError(env, "Cannot cast to QAnyStringView without scope." QTJAMBI_STACKTRACEINFO );
-        JString2QChars* buffer = new JString2QChars(env, in);
+        PersistentJString2QChars* buffer = new PersistentJString2QChars(env, in);
         scope->addDeletion(buffer);
         JavaException::check(env QTJAMBI_STACKTRACEINFO );
         return buffer->toAnyStringView();
@@ -845,7 +845,7 @@ struct qtjambi_jstring_caster<has_scope, QUtf8StringView, is_arithmetic, is_enum
     static NativeType_out cast(JNIEnv *env, jstring in, const char*, QtJambiScope* scope){
         if(!scope)
             JavaException::raiseError(env, "Cannot cast to QUtf8StringView without scope." QTJAMBI_STACKTRACEINFO );
-        J2CStringBuffer* buffer = new J2CStringBuffer(env, in);
+        PersistentJ2CStringBuffer* buffer = new PersistentJ2CStringBuffer(env, in);
         scope->addDeletion(buffer);
         JavaException::check(env QTJAMBI_STACKTRACEINFO );
         return buffer->toUtf8StringView();
@@ -883,7 +883,7 @@ struct qtjambi_jstring_caster<has_scope, QStringView, is_arithmetic, is_enum, fa
     static NativeType_out cast(JNIEnv *env, jstring in, const char*, QtJambiScope* scope){
         if(!scope)
             JavaException::raiseError(env, "Cannot cast to QStringView without scope." QTJAMBI_STACKTRACEINFO );
-        JString2QChars* buffer = new JString2QChars(env, in);
+        PersistentJString2QChars* buffer = new PersistentJString2QChars(env, in);
         scope->addDeletion(buffer);
         JavaException::check(env QTJAMBI_STACKTRACEINFO );
         return buffer->toStringView();
@@ -918,7 +918,7 @@ struct qtjambi_jstring_caster<has_scope, QLatin1String, is_arithmetic, is_enum, 
     static NativeType_out cast(JNIEnv *env, jstring in, const char*, QtJambiScope* scope){
         if(!scope)
             JavaException::raiseError(env, "Cannot cast to QLatin1String without scope." QTJAMBI_STACKTRACEINFO );
-        J2CStringBuffer* buffer = new J2CStringBuffer(env, in);
+        PersistentJ2CStringBuffer* buffer = new PersistentJ2CStringBuffer(env, in);
         scope->addDeletion(buffer);
         JavaException::check(env QTJAMBI_STACKTRACEINFO );
         return buffer->toLatin1String();
@@ -1034,7 +1034,7 @@ struct qtjambi_jnitype_caster<false, has_scope,
         }else if(JBufferConstData::isBuffer(env, in)){
             if(!scope)
                 JavaException::raiseError(env, "Cannot cast to QStringView without scope." QTJAMBI_STACKTRACEINFO );
-            JBufferConstData* buffer = new JBufferConstData(env, in);
+            PersistentJBufferConstData* buffer = new PersistentJBufferConstData(env, in);
             scope->addDeletion(buffer);
             return QAnyStringView(buffer->constData<QChar>(), buffer->size<QChar>());
         }else{
@@ -1112,7 +1112,7 @@ struct qtjambi_jnitype_caster<false, has_scope,
     static NativeType_out cast(JNIEnv *env, jstring in, const char*, QtJambiScope* scope){
         if(!scope)
             JavaException::raiseError(env, "Cannot cast to QUtf8StringView without scope." QTJAMBI_STACKTRACEINFO );
-        J2CStringBuffer* buffer = new J2CStringBuffer(env, in);
+        PersistentJ2CStringBuffer* buffer = new PersistentJ2CStringBuffer(env, in);
         scope->addDeletion(buffer);
         JavaException::check(env QTJAMBI_STACKTRACEINFO );
         return buffer->toUtf8StringView();
@@ -1172,7 +1172,7 @@ struct qtjambi_jnitype_caster<false, has_scope,
         }else if(JBufferConstData::isBuffer(env, in)){
             if(!scope)
                 JavaException::raiseError(env, "Cannot cast to QStringView without scope." QTJAMBI_STACKTRACEINFO );
-            JBufferConstData* buffer = new JBufferConstData(env, in);
+            PersistentJBufferConstData* buffer = new PersistentJBufferConstData(env, in);
             scope->addDeletion(buffer);
             return QStringView(buffer->constData<QChar>(), buffer->size<QChar>());
         }else{
@@ -1286,7 +1286,7 @@ struct qtjambi_jnitype_caster<false, has_scope,
 #endif
                 if(!scope)
                     JavaException::raiseError(env, is_pointer ? "Cannot cast to QString* without scope." : "Cannot cast to QString& without scope." QTJAMBI_STACKTRACEINFO );
-                JBufferConstData* buffer = new JBufferConstData(env, in);
+                PersistentJBufferConstData* buffer = new PersistentJBufferConstData(env, in);
                 scope->addDeletion(buffer);
                 QString* result = new QString(buffer->constData<QChar>(), buffer->size<QChar>());
                 return ptr2ref<is_reference || !is_pointer, QString>::value(env, result);
@@ -1362,7 +1362,7 @@ struct qtjambi_jnitype_caster<false, has_scope,
             if(!scope)
                 JavaException::raiseError(env, "Cannot cast to QLatin1String without scope." QTJAMBI_STACKTRACEINFO );
             jstring _in = QtJambiAPI::toJavaString(env, in);
-            J2CStringBuffer* buffer = new J2CStringBuffer(env, _in);
+            PersistentJ2CStringBuffer* buffer = new PersistentJ2CStringBuffer(env, _in);
             scope->addDeletion(buffer);
             JavaException::check(env QTJAMBI_STACKTRACEINFO );
             return buffer->toLatin1String();

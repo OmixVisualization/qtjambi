@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -30,9 +30,7 @@
 #ifndef QTJAMBI_COREAPI_H
 #define QTJAMBI_COREAPI_H
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-#include <QtCore/qnativeinterface.h>
-#else
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 QT_WARNING_DISABLE_GCC("-Wdeprecated-declarations")
 QT_WARNING_DISABLE_DEPRECATED
 #endif
@@ -90,10 +88,16 @@ public:
 #define QTJAMBI_SET_OBJECTUSERDATA_ID(ID, object, data) QtJambiObjectData::setUserData(object, ID, data)
 #endif
 
+class QCoreApplication;
+
 class QTJAMBI_EXPORT ApplicationData : public QtJambiObjectData
 {
 public:
-    ApplicationData(JNIEnv *env, jobjectArray array);
+    template<typename T>
+    static std::unique_ptr<ApplicationData> initialize(JNIEnv *env, jobjectArray array){
+        typedef typename std::remove_cv<typename std::remove_pointer<T>::type>::type T_;
+        return initialize(env, array, typeid(T_), std::is_same<T_, QCoreApplication>::value);
+    }
     ~ApplicationData() override;
 
     char** chars();
@@ -101,6 +105,8 @@ public:
     void update(JNIEnv *env);
     QTJAMBI_OBJECTUSERDATA_ID_DECL
 private:
+    static std::unique_ptr<ApplicationData> initialize(JNIEnv *env, jobjectArray array, const std::type_info& constructedType, bool checkMainThread = true);
+    ApplicationData(int m_size, char** m_chars);
     int m_size;
     char** m_chars;
     Q_DISABLE_COPY_MOVE(ApplicationData)
@@ -200,7 +206,7 @@ QTJAMBI_EXPORT const QHash<int,const char*>* renamedMethods(const QMetaObject* m
 
 QTJAMBI_EXPORT jclass getInterfaceByIID(JNIEnv *env, const char* iid);
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
 struct NITypeInfo{
     const char* name;
     int revision;
@@ -245,6 +251,32 @@ QTJAMBI_EXPORT const char* getInterfaceIID(JNIEnv *env, jclass javaType);
 QTJAMBI_EXPORT QList<const char*> getInterfaceIIDs(JNIEnv *env, jclass javaType);
 
 QTJAMBI_EXPORT jobject getExtraSignal(JNIEnv *env, QtJambiNativeID sender__id, QtJambiNativeID method__id);
+
+QTJAMBI_EXPORT jobject convertQFlagsToJavaObject(JNIEnv *env, jint qt_flags, jclass cls);
+
+QTJAMBI_EXPORT jobject convertQFlagsToJavaObject(JNIEnv *env, jlong qt_flags, jclass cls);
+
+QTJAMBI_EXPORT jobject convertEnumToJavaObject(JNIEnv *env, qint32 qt_enum, jclass cls);
+
+QTJAMBI_EXPORT jobject convertEnumToJavaObject(JNIEnv *env, qint8 qt_enum, jclass cls);
+
+QTJAMBI_EXPORT jobject convertEnumToJavaObject(JNIEnv *env, qint16 qt_enum, jclass cls);
+
+QTJAMBI_EXPORT jobject convertEnumToJavaObject(JNIEnv *env, qint64 qt_enum, jclass cls);
+
+QTJAMBI_EXPORT jobject convertEnumToJavaObject(JNIEnv *env, quint32 qt_enum, jclass cls);
+
+QTJAMBI_EXPORT jobject convertEnumToJavaObject(JNIEnv *env, quint8 qt_enum, jclass cls);
+
+QTJAMBI_EXPORT jobject convertEnumToJavaObject(JNIEnv *env, quint16 qt_enum, jclass cls);
+
+QTJAMBI_EXPORT jobject convertEnumToJavaObject(JNIEnv *env, quint64 qt_enum, jclass cls);
+
+template<typename E>
+jobject convertEnumToJavaObject(JNIEnv *env, E qt_enum)
+{
+    return convertNativeToJavaObjectAsCopy(env, &qt_enum, typeid(E));
+}
 
 }
 

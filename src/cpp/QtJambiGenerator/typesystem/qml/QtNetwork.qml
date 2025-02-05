@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -456,7 +456,7 @@ TypeSystem{
                     modifiedType: "int"
                 }
             }
-            since: 6
+            since: 6.2
         }
     }
     
@@ -555,7 +555,7 @@ TypeSystem{
                     modifiedType: "int"
                 }
             }
-            since: 6
+            since: 6.2
         }
     }
     
@@ -1061,11 +1061,14 @@ TypeSystem{
             position: Position.Beginning
             Text{content: String.raw`
 inline auto convertSlot(JNIEnv* _env, jobject _slot){
-    JObjectWrapper slot(_env, _slot);
-    return [slot](const QHostInfo& info){
+    return [slot = JObjectWrapper(_env, _slot)](const QHostInfo& info){
                     if(JniEnvironment env{200}){
-                        jobject _info = qtjambi_cast<jobject>(env, info);
-                        Java::QtCore::QMetaObject$Slot1::invoke(env, slot.object(env), _info);
+                        QTJAMBI_TRY{
+                            jobject _info = qtjambi_cast<jobject>(env, info);
+                            Java::QtCore::QMetaObject$Slot1::invoke(env, slot.object(env), _info);
+                        }QTJAMBI_CATCH(const JavaException& exn){
+                            exn.report(env);
+                        }QTJAMBI_TRY_END
                     }
                 };
 }
@@ -1076,8 +1079,12 @@ inline auto convertSlot(JNIEnv* _env, QObject*& qobject, jobject _receiver, jobj
     }
     return [slot = JObjectWrapper(_env, _slot), receiver = JObjectWrapper(_env, _receiver)](const QHostInfo& info){
         if(JniEnvironment env{200}){
-            jobject _info = qtjambi_cast<jobject>(env, info);
-            Java::QtCore::QMetaObject$Slot2::invoke(env, slot.object(env), receiver.object(env), _info);
+            QTJAMBI_TRY{
+                jobject _info = qtjambi_cast<jobject>(env, info);
+                Java::QtCore::QMetaObject$Slot2::invoke(env, slot.object(env), receiver.object(env), _info);
+            }QTJAMBI_CATCH(const JavaException& exn){
+                exn.report(env);
+            }QTJAMBI_TRY_END
         }
     };
 }
@@ -1085,8 +1092,12 @@ inline auto convertSlot(JNIEnv* _env, QObject*& qobject, jobject _receiver, jobj
 inline auto convertSlot(JNIEnv* _env, jobject _receiver, jobject _slot){
     return [slot = JObjectWrapper(_env, _slot), receiver = JObjectWrapper(_env, _receiver)](const QHostInfo& info){
         if(JniEnvironment env{200}){
-            jobject _info = qtjambi_cast<jobject>(env, info);
-            Java::QtCore::QMetaObject$Slot2::invoke(env, slot.object(env), receiver.object(env), _info);
+            QTJAMBI_TRY{
+                jobject _info = qtjambi_cast<jobject>(env, info);
+                Java::QtCore::QMetaObject$Slot2::invoke(env, slot.object(env), receiver.object(env), _info);
+            }QTJAMBI_CATCH(const JavaException& exn){
+                exn.report(env);
+            }QTJAMBI_TRY_END
         }
     };
 }
@@ -2166,11 +2177,14 @@ inline auto convertSlot(JNIEnv* _env, jobject _receiver, jobject _slot){
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: template baseclass 'QtPrivate::ContextTypeForFunctor::ContextType<Functor>' of '' is not known"}
     Template{
         name: "rest.comsumer.function"
-        Text{content: "JObjectWrapper wrapper(%env, %in);\n"+
-                      "auto %out = [wrapper](QRestReply* reply){\n"+
+        Text{content: "auto %out = [wrapper = JObjectWrapper(%env, %in)](QRestReply* reply){\n"+
                       "                    if(JniEnvironment env{200}){\n"+
-                      "                        jobject _reply = qtjambi_cast<jobject>(env, reply);\n"+
-                      "                        Java::Runtime::Consumer::accept(env, wrapper.object(env), _reply);\n"+
+                      "                        QTJAMBI_TRY{\n"+
+                      "                            jobject _reply = qtjambi_cast<jobject>(env, reply);\n"+
+                      "                            Java::Runtime::Consumer::accept(env, wrapper.object(env), _reply);\n"+
+                      "                        }QTJAMBI_CATCH(const JavaException& exn){\n"+
+                      "                            exn.report(env);\n"+
+                      "                        }QTJAMBI_TRY_END\n"+
                       "                    }\n"+
                       "                };"}
     }
@@ -2192,12 +2206,15 @@ inline auto convertSlot(JNIEnv* _env, jobject _receiver, jobject _slot){
             target: CodeClass.Native
             position: Position.Beginning
             Text{content: "auto convertConsumer(JNIEnv* _env, jobject _consumer){\n"+
-                          "    JObjectWrapper consumer(_env, _consumer);\n"+
-                          "    return [consumer](QRestReply& reply){\n"+
+                          "    return [consumer = JObjectWrapper(_env, _consumer)](QRestReply& reply){\n"+
                           "                    if(JniEnvironment env{200}){\n"+
-                          "                        jobject _reply = qtjambi_cast<jobject>(env, &reply);\n"+
-                          "                        InvalidateAfterUse inv(env, _reply);\n"+
-                          "                        Java::Runtime::Consumer::accept(env, consumer.object(env), _reply);\n"+
+                          "                        QTJAMBI_TRY{\n"+
+                          "                            jobject _reply = qtjambi_cast<jobject>(env, &reply);\n"+
+                          "                            InvalidateAfterUse inv(env, _reply);\n"+
+                          "                            Java::Runtime::Consumer::accept(env, consumer.object(env), _reply);\n"+
+                          "                        }QTJAMBI_CATCH(const JavaException& exn){\n"+
+                          "                            exn.report(env);\n"+
+                          "                        }QTJAMBI_TRY_END\n"+
                           "                    }\n"+
                           "                };\n"+
                           "}"}

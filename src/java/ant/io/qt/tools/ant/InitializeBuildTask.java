@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -188,6 +188,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 			_moduleInfos.put("activex", new ModuleInfo("QTJAMBI_NO_ACTIVEX", "QtAxBase", ModuleInfo.Headers.Public, true));
 			_moduleInfos.put("multimediawidgets", new ModuleInfo("QTJAMBI_NO_MULTIMEDIAWIDGETS", "QtMultimediaWidgets"));
 			_moduleInfos.put("quick3d", new ModuleInfo("QTJAMBI_NO_QUICK3D", "QtQuick3D"));
+			_moduleInfos.put("insighttracker", new ModuleInfo("QTJAMBI_NO_INSIGHTETRACKER", "QtInsightTracker"));
 			if(qtMajorVersion==5) {
 				_moduleInfos.put("winextras", new ModuleInfo("QTJAMBI_NO_WINEXTRAS", "QtWinExtras"));
 				_moduleInfos.put("macextras", new ModuleInfo("QTJAMBI_NO_MACEXTRAS", "QtMacExtras"));
@@ -208,7 +209,6 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 					_moduleInfos.put("protobuf", new ModuleInfo("QTJAMBI_NO_PROTOBUF", "QtProtobuf"));
 					skippedModules.add("grpc");
 					skippedModules.add("protobuf");
-					_moduleInfos.put("insighttracker", new ModuleInfo("QTJAMBI_NO_INSIGHTETRACKER", "QtInsightTracker"));
 				}
 				if((qtMajorVersion==6 && qtMinorVersion>=6) || qtMajorVersion>=7) {
 					_moduleInfos.put("graphs", new ModuleInfo("QTJAMBI_NO_GRAPHS", "QtGraphs"));

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -221,10 +221,18 @@ void AutoMultiHashAccess::swap(JNIEnv *, const ContainerInfo& container, const C
     MultiHashData *& map = *reinterpret_cast<MultiHashData **>(container.container);
     MultiHashData *& map2 = *reinterpret_cast<MultiHashData **>(container2.container);
     if(map && map2){
+#if QT_VERSION < QT_VERSION_CHECK(6, 2, 0)
+        qSwap(map->d, map2->d);
+#else
         qt_ptr_swap(map->d, map2->d);
+#endif
         std::swap(map->m_size, map2->m_size);
     }else{
+#if QT_VERSION < QT_VERSION_CHECK(6, 2, 0)
+        qSwap(map, map2);
+#else
         qt_ptr_swap(map, map2);
+#endif
     }
 }
 #endif

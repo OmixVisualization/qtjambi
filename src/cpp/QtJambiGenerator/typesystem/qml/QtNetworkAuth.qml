@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -180,15 +180,51 @@ TypeSystem{
         }
     }
 
+    ObjectType{
+        name: "QOAuth2DeviceAuthorizationFlow"
+        ModifyFunction{
+            signature: "QOAuth2DeviceAuthorizationFlow(QNetworkAccessManager *, QObject *)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcNetworkAccessManager"
+                    action: ReferenceCount.Set
+                }
+            }
+        }
+        since: 6.9
+    }
+
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: template baseclass 'QtPrivate::ContextTypeForFunctor::ContextType<Functor>' of '' is not known"}
     ObjectType{
         name: "QAbstractOAuth2"
+        ExtraIncludes{
+            Include{
+                fileName: "QtJambi/JavaAPI"
+                location: Include.Global
+            }
+            Include{
+                fileName: "QtJambi/JObjectWrapper"
+                location: Include.Global
+            }
+            since: 6.9
+        }
         EnumType{
             name: "NonceMode"
             since: 6.9
         }
+        TypeAliasType{
+            name: "ContextTypeForFunctor"
+        }
+
+        FunctionalType{
+            name: "Callback"
+            using: "std::function<void(QNetworkRequest&, QAbstractOAuth::Stage)>"
+            generate: false
+            since: 6.9
+        }
         ModifyFunction{
-            signature: "setTokenRequestModifier<Functor,true>(const QAbstractOAuth2::ContextTypeForFunctor<Functor> *, Functor &&)"
+            signature: "setNetworkRequestModifier<Functor,true>(const QAbstractOAuth2::ContextTypeForFunctor<Functor>*, Functor&&)"
             threadAffinity: true
             ModifyArgument{
                 index: 0
@@ -203,11 +239,11 @@ TypeSystem{
                     isImplicit: true
                 }
                 ModifyArgument{
-                    index: 3
+                    index: 2
                     NoNullPointer{}
                     AsSlot{
                         targetType: "io.qt.network.auth.QAbstractOAuth2$Callback"
-                        contextParameter: 2
+                        contextParameter: 1
                     }
                     ConversionRule{
                         codeClass: CodeClass.Native
@@ -221,7 +257,7 @@ TypeSystem{
             Text{
                 content: String.raw`
                 /**
-                 * Callback for setTokenRequestModifier.
+                 * Callback for setNetworkRequestModifier.
                  */
                 public interface Callback extends java.util.function.@StrictNonNull BiConsumer<io.qt.network.@StrictNonNull QNetworkRequest, io.qt.network.auth.QAbstractOAuth.@NonNull Stage>, java.io.Serializable{
                 }
@@ -235,9 +271,13 @@ TypeSystem{
             Text{content: "auto convertBiConsumer(JNIEnv* _env, jobject _consumer){\n"+
                           "    return [consumer = JObjectWrapper(_env, _consumer)](QNetworkRequest& request,QAbstractOAuth::Stage stage){\n"+
                           "                    if(JniEnvironment env{200}){\n"+
-                          "                        jobject _request = qtjambi_cast<jobject>(env, &request);\n"+
-                          "                        InvalidateAfterUse inv(env, _reply);\n"+
-                          "                        Java::Runtime::BiConsumer::accept(env, consumer.object(env), _reply, qtjambi_cast<jobject>(env, stage));\n"+
+                          "                        QTJAMBI_TRY{\n"+
+                          "                            jobject _request = qtjambi_cast<jobject>(env, &request);\n"+
+                          "                            InvalidateAfterUse inv(env, _request);\n"+
+                          "                            Java::Runtime::BiConsumer::accept(env, consumer.object(env), _request, qtjambi_cast<jobject>(env, stage));\n"+
+                          "                        }QTJAMBI_CATCH(const JavaException& exn){\n"+
+                          "                            exn.report(env);\n"+
+                          "                        }QTJAMBI_TRY_END\n"+
                           "                    }\n"+
                           "                };\n"+
                           "}"}

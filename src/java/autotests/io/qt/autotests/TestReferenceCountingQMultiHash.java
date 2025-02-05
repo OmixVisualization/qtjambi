@@ -436,6 +436,7 @@ public class TestReferenceCountingQMultiHash extends ApplicationInitializer {
             QCoreApplication.processEvents();
 		}
         Assert.assertEquals(COUNT, counter.get());
+        container.isDisposed();
         container = null;
     	for (int i = 0; i < 50 && counter.get()<COUNT+1; i++) {
             ApplicationInitializer.runGC();
@@ -532,9 +533,11 @@ public class TestReferenceCountingQMultiHash extends ApplicationInitializer {
             QCoreApplication.processEvents();
 		}
         Assert.assertEquals(COUNT, counter.get());
+        container.isDisposed();
         container = null;
-    	for (int i = 0; i < 50 && counter.get()<COUNT+1; i++) {
+    	for (int i = 0; i < 60 && counter.get()<COUNT+1; i++) {
             ApplicationInitializer.runGC();
+            Thread.yield();
             synchronized(ApplicationInitializer.class) {
             	Thread.sleep(25+i*10);
             }

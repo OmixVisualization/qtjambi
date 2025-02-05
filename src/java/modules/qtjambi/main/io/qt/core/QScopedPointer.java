@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -213,12 +213,6 @@ public final class QScopedPointer<O> implements AutoCloseable, SmartPointer<O> {
 		return new QScopedPointer<>(data);
 	}
 	
-    @QtUninvokable
-    @Deprecated(forRemoval=true)
-	public static <O> @NonNull QScopedPointer<O> cleanup(O data, @StrictNonNull Consumer<O> cleanup){
-		return new QScopedPointer<>(data, cleanup);
-	}
-    
     /**
      * Creates a scoped pointer for the given object performing the given operation at cleanup.
      * @param cleanup operation performed at cleanup

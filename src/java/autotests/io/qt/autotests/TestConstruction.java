@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -55,8 +55,9 @@ public class TestConstruction extends ApplicationInitializer {
         QMdiArea area = new QMdiArea() {
             @Override
             public boolean eventFilter(QObject o, QEvent e) {
-            	array[0] = o;
-            	return false;
+            	if(array[0]==null && e.type()==QEvent.Type.ChildAdded)
+            		array[0] = o;
+            	return super.eventFilter(o, e);
             }
         };
         instances.add(new WeakReference<>(area));
@@ -64,7 +65,7 @@ public class TestConstruction extends ApplicationInitializer {
         QMdiSubWindow subWindow = area.addSubWindow(new QWidget());
         // Although it seems unlikely, this may actually be false, trust me.
         try{
-        	assertFalse(array[0] instanceof QMdiSubWindow);
+        	assertFalse("object instance of QMdiSubWindow", array[0] instanceof QMdiSubWindow);
         	assertTrue(subWindow instanceof QMdiSubWindow);
         }finally {
         	area.hide();

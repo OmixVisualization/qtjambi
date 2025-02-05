@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -42,15 +42,15 @@ public class QNoImplementationException extends RuntimeException
         this(NO_IMPLEMENTATION_STRING);
     }
     
-    public QNoImplementationException(String message){
+    public QNoImplementationException(@NonNull String message){
         super(message);
     }
     
-    public QNoImplementationException(String message, Throwable throwable){
+    public QNoImplementationException(@NonNull String message, @Nullable Throwable throwable){
         super(message, throwable);
     }
 
-    public QNoImplementationException(Throwable throwable){
+    public QNoImplementationException(@Nullable Throwable throwable){
         this(NO_IMPLEMENTATION_STRING, throwable);
     }
 }

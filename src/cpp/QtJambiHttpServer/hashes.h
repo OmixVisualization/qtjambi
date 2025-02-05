@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -45,6 +45,14 @@ inline bool operator==(const QHttpServerWebSocketUpgradeResponse& value1, const 
     return value1.type()==value2.type() && value1.denyStatus()==value2.denyStatus() && value1.denyMessage()==value2.denyMessage();
 }
 
+#endif
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 9, 0)
+
+#include <QtHttpServer/QHttpServerConfiguration>
+inline hash_type qHash(const QHttpServerConfiguration& value, hash_type seed = 0){
+    return qHashMulti(seed, value.rateLimitPerSecond());
+}
 #endif
 
 #endif // QTJAMBIHTTPSERVER_HASHES_H

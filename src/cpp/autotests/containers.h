@@ -1,11 +1,42 @@
+/****************************************************************************
+**
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+**
+** This file is part of Qt Jambi.
+**
+** $BEGIN_LICENSE$
+**
+** GNU Lesser General Public License Usage
+** This file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** $END_LICENSE$
+**
+** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+**
+****************************************************************************/
+
 #ifndef CONTAINERS_H
 #define CONTAINERS_H
 
 #include <QtCore/QtGlobal>
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-uint qHash(const std::pair<const int&,const int&>&);
-uint qHash(const std::pair<const short&,const double&>&);
-uint qHash(const std::pair<const float&,const double&>&);
+uint qHash(const std::pair<const int&,const int&>& pair);
+uint qHash(const std::pair<const float&,const double&>& pair);
+uint qHash(const std::pair<const short&,const double&>& pair);
 #endif
 
 #include <QtJambiCore/hashes.h>
@@ -36,8 +67,6 @@ class QSet_int : public QSet<int> { };
 class QSet_String : public QSet<QString> { };
 class QStack_int : public QStack<int> { };
 class QStack_String : public QStack<QString> { };
-class StringList : public QStringList { };
-class ByteArrayList : public QByteArrayList { };
 class QMultiMap_int : public QMultiMap<int, int> { };
 class QMultiMap_String_int : public QMultiMap<QString, int> { };
 class QMultiMap_int_String : public QMultiMap<QString, int> { };
@@ -49,15 +78,6 @@ class QMultiHash_String : public QMultiHash<QString, QString> { };
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #define QHASHOUT uint
-inline uint qHash(const std::pair<const int&,const int&>& pair){
-    return qHash(pair, 0);
-}
-inline uint qHash(const std::pair<const float&,const double&>& pair){
-    return qHash(pair, 0);
-}
-inline uint qHash(const std::pair<const short&,const double&>& pair){
-    return qHash(pair, 0);
-}
 #else
 #define QHASHOUT size_t
 #endif

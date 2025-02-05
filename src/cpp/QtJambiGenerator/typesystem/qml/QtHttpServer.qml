@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -225,11 +225,16 @@ TypeSystem{
                         codeClass: CodeClass.Native
                         Text{content: String.raw`
 auto %out = [functor = JObjectWrapper(%env, %in)](const QHttpServerRequest& request) -> QHttpServerWebSocketUpgradeResponse {
+        QHttpServerWebSocketUpgradeResponse response = QHttpServerWebSocketUpgradeResponse::deny();
         if(JniEnvironment env{200}){
-            jobject result = Java::QtCore::QMetaObject$Method1::invoke(env, functor.object(env), qtjambi_cast<jobject>(env, request));
-            return qtjambi_cast<QHttpServerWebSocketUpgradeResponse>(env, result);
+            QTJAMBI_TRY{
+                jobject result = Java::QtCore::QMetaObject$Method1::invoke(env, functor.object(env), qtjambi_cast<jobject>(env, request));
+                response = qtjambi_cast<QHttpServerWebSocketUpgradeResponse>(env, result);
+            }QTJAMBI_CATCH(const JavaException& exn){
+                exn.report(env);
+            }QTJAMBI_TRY_END
         }
-        else return QHttpServerWebSocketUpgradeResponse::deny();
+        return response;
     };
                             `}
                     }
@@ -245,6 +250,11 @@ auto %out = [functor = JObjectWrapper(%env, %in)](const QHttpServerRequest& requ
             name: "ResponseType"
         }
         since: 6.8
+    }
+
+    ValueType{
+        name: "QHttpServerConfiguration"
+        since: 6.9
     }
 
     ValueType{
@@ -326,9 +336,13 @@ auto %out = [functor = JObjectWrapper(%env, %in)](const QHttpServerRequest& requ
                         Text{content: String.raw`
 auto %out = [slot = JObjectWrapper(%env, %in)](const QHttpServerRequest & request, QHttpServerResponder & responder){
                 if(JniEnvironment env{200}){
-                    Java::QtCore::QMetaObject$Slot2::invoke(env, slot.object(env),
-                                            qtjambi_cast<jobject>(env, request),
-                                            qtjambi_cast<jobject>(env, responder));
+                            QTJAMBI_TRY{
+                                Java::QtCore::QMetaObject$Slot2::invoke(env, slot.object(env),
+                                                    qtjambi_cast<jobject>(env, request),
+                                                    qtjambi_cast<jobject>(env, responder));
+                            }QTJAMBI_CATCH(const JavaException& exn){
+                                exn.report(env);
+                            }QTJAMBI_TRY_END
                 }
             };
                             `}
@@ -356,9 +370,13 @@ auto %out = [slot = JObjectWrapper(%env, %in)](const QHttpServerRequest & reques
                         Text{content: String.raw`
 auto %out = [slot = JObjectWrapper(%env, %in)](const QHttpServerRequest & request, QHttpServerResponse & responde){
                 if(JniEnvironment env{200}){
-                    Java::QtCore::QMetaObject$Slot2::invoke(env, slot.object(env),
-                                            qtjambi_cast<jobject>(env, request),
-                                            qtjambi_cast<jobject>(env, responde));
+                            QTJAMBI_TRY{
+                                Java::QtCore::QMetaObject$Slot2::invoke(env, slot.object(env),
+                                                    qtjambi_cast<jobject>(env, request),
+                                                    qtjambi_cast<jobject>(env, responde));
+                            }QTJAMBI_CATCH(const JavaException& exn){
+                                exn.report(env);
+                            }QTJAMBI_TRY_END
                 }
             };
                             `}
@@ -673,6 +691,8 @@ auto %out = [slot = JObjectWrapper(%env, %in)](const QHttpServerRequest & reques
             }
             since: 6.8
         }
+        Rejection{functionName: "bindCaptured"}
+        Rejection{functionName: "bindCapturedImpl"}
         FunctionalType{
             name: "RouterHandler"
             ExtraIncludes{
@@ -810,10 +830,14 @@ public:
 inline auto convertSlot(JNIEnv* _env, jobject _slot){
     return [slot = JObjectWrapper(_env, _slot)](const QRegularExpressionMatch & regexp, const QHttpServerRequest & request, QHttpServerResponder & responder){
                     if(JniEnvironment env{200}){
-                        Java::QtCore::QMetaObject$Slot3::invoke(env, slot.object(env),
-                                                qtjambi_cast<jobject>(env, regexp),
-                                                qtjambi_cast<jobject>(env, request),
-                                                qtjambi_cast<jobject>(env, responder));
+                        QTJAMBI_TRY{
+                            Java::QtCore::QMetaObject$Slot3::invoke(env, slot.object(env),
+                                        qtjambi_cast<jobject>(env, regexp),
+                                        qtjambi_cast<jobject>(env, request),
+                                        qtjambi_cast<jobject>(env, responder));
+                        }QTJAMBI_CATCH(const JavaException& exn){
+                            exn.report(env);
+                        }QTJAMBI_TRY_END
                     }
                 };
 }
@@ -823,11 +847,15 @@ inline auto convertSlot(JNIEnv* _env, QObject*& qobject, jobject _receiver, jobj
     }
     return [receiver = JObjectWrapper(_env, _receiver), slot = JObjectWrapper(_env, _slot)](const QRegularExpressionMatch & regexp, const QHttpServerRequest & request, QHttpServerResponder & responder){
                     if(JniEnvironment env{200}){
-                        Java::QtCore::QMetaObject$Slot4::invoke(env, slot.object(env),
-                                                receiver.object(env),
-                                                qtjambi_cast<jobject>(env, regexp),
-                                                qtjambi_cast<jobject>(env, request),
-                                                qtjambi_cast<jobject>(env, responder));
+                        QTJAMBI_TRY{
+                            Java::QtCore::QMetaObject$Slot4::invoke(env, slot.object(env),
+                                        receiver.object(env),
+                                        qtjambi_cast<jobject>(env, regexp),
+                                        qtjambi_cast<jobject>(env, request),
+                                        qtjambi_cast<jobject>(env, responder));
+                        }QTJAMBI_CATCH(const JavaException& exn){
+                            exn.report(env);
+                        }QTJAMBI_TRY_END
                     }
                 };
 }
@@ -908,7 +936,7 @@ void __qt_construct_QHttpServerRouterRule_cref_QString_const_QHttpServerRequest_
 }
 
 // QHttpServerRouterRule::QHttpServerRouterRule(QString,const QObject*,Handler&&)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_httpserver_QHttpServerRouterRule_initialize_1native1)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_httpserver_QHttpServerRouterRule_initialize_1native1
 (JNIEnv *__jni_env,
  jclass __jni_class,
  jobject __jni_object,
@@ -929,7 +957,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_httpser
 }
 
 // QHttpServerRouterRule::QHttpServerRouterRule(QString,const QHttpServerRequest::Methods,const QObject*,Handler&&)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_httpserver_QHttpServerRouterRule_initialize_1native2)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_httpserver_QHttpServerRouterRule_initialize_1native2
 (JNIEnv *__jni_env,
  jclass __jni_class,
  jobject __jni_object,
@@ -952,7 +980,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_httpser
 }
 
 // QHttpServerRouterRule::QHttpServerRouterRule(QString,const QHttpServerRequest::Methods,const QObject*,Handler&&)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_httpserver_QHttpServerRouterRule_initialize_1native3)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_httpserver_QHttpServerRouterRule_initialize_1native3
 (JNIEnv *__jni_env,
  jclass __jni_class,
  jobject __jni_object,
@@ -973,7 +1001,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_httpser
 }
 
 // QHttpServerRouterRule::QHttpServerRouterRule(QString,const QHttpServerRequest::Methods,const QObject*,Handler&&)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_httpserver_QHttpServerRouterRule_initialize_1native4)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_httpserver_QHttpServerRouterRule_initialize_1native4
 (JNIEnv *__jni_env,
  jclass __jni_class,
  jobject __jni_object,

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -114,9 +114,7 @@ void QFutureInterface_shell<T>::operator delete(void * ptr) noexcept {
 // emitting (writeToStringFunction)
 // emitting (writeCloneFunction)
 
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QFutureInterface_clone)
-(JNIEnv *__jni_env, jobject, QtJambiNativeID __this_nativeId)
-{
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QFutureInterface_clone(JNIEnv *__jni_env, jobject, QtJambiNativeID __this_nativeId){
     jobject result = nullptr;
     QTJAMBI_TRY{
 #if QT_CONFIG(future)
@@ -288,7 +286,7 @@ void __qt_destruct_QFutureInterface_void_(void* ptr)
 
 // emitting  (functionsInTargetLang writeFinalFunction)
 // QFutureInterface<T>::QFutureInterface(QFutureInterfaceBase::State initialState)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QFutureInterface_initialize_1native__Lio_qt_core_QFutureInterface_2Lio_qt_core_QFutureInterfaceBase_00024State_2Z)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QFutureInterface_initialize_1native__Lio_qt_core_QFutureInterface_2Lio_qt_core_QFutureInterfaceBase_00024State_2Z
 (JNIEnv *__jni_env,
  jclass __jni_class,
  jobject __jni_object,
@@ -319,7 +317,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QF
 }
 
 // QFutureInterface<T>::QFutureInterface(const QFutureInterface<T> & other)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QFutureInterface_initialize_1native__Lio_qt_core_QFutureInterface_2Lio_qt_core_QFutureInterfaceBase_2)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QFutureInterface_initialize_1native__Lio_qt_core_QFutureInterface_2Lio_qt_core_QFutureInterfaceBase_2
 (JNIEnv *__jni_env,
  jclass __jni_class,
  jobject __jni_object,
@@ -353,7 +351,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QF
 }
 
 // QFutureInterface<QVariant>::reportFinished(const T * result)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QFutureInterface_reportFinished__JLjava_lang_Object_2)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QFutureInterface_reportFinished__JLjava_lang_Object_2
 (JNIEnv *__jni_env,
  jobject,
  QtJambiNativeID __this_nativeId,
@@ -384,7 +382,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QF
 }
 
 // QFutureInterface<QVariant>::reportResult(const QVariant & result, int index)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QFutureInterface_reportResult__JLjava_lang_Object_2I)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QFutureInterface_reportResult__JLjava_lang_Object_2I
 (JNIEnv *__jni_env,
  jclass,
  QtJambiNativeID __this_nativeId,
@@ -416,7 +414,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QF
 }
 
 // QFutureInterface<QVariant>::reportResults(const QVector<QVariant> & results, int beginIndex, int count)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QFutureInterface_reportResults__JLjava_util_Collection_2II)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QFutureInterface_reportResults__JLjava_util_Collection_2II
 (JNIEnv *__jni_env,
  jobject,
  QtJambiNativeID __this_nativeId,
@@ -452,12 +450,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QF
 }
 
 // QFutureInterface<QVariant>::resultReference(int index) const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QFutureInterface_result__JI)
-(JNIEnv *__jni_env,
- jclass,
- QtJambiNativeID __this_nativeId,
- jint index0)
-{
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QFutureInterface_result__JI(JNIEnv *__jni_env, jclass, QtJambiNativeID __this_nativeId, jint index0){
     jobject result = nullptr;
     QTJAMBI_TRY{
 #if QT_CONFIG(future)
@@ -487,11 +480,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // QFutureInterface<QVariant>::results()
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QFutureInterface_results__J)
-(JNIEnv *__jni_env,
- jclass,
- QtJambiNativeID __this_nativeId)
-{
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QFutureInterface_results__J(JNIEnv *__jni_env, jclass, QtJambiNativeID __this_nativeId){
     jobject result = nullptr;
     QTJAMBI_TRY{
 #if QT_CONFIG(future)
@@ -629,7 +618,7 @@ void __qt_destruct_QFutureWatcher(void* ptr)
 #endif // QT_CONFIG(future)
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QFutureWatcher_initialize_1native__Lio_qt_core_QFutureWatcher_2Lio_qt_core_QObject_2_3J)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QFutureWatcher_initialize_1native__Lio_qt_core_QFutureWatcher_2Lio_qt_core_QObject_2_3J
 (JNIEnv *__jni_env,
  jclass __jni_class,
  jobject __jni_object,
@@ -654,7 +643,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QF
     }QTJAMBI_TRY_END
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QFutureWatcher_future)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QFutureWatcher_future
 (JNIEnv *__jni_env, jclass, QtJambiNativeID __this_nativeId, jlong _futureGetter)
 {
     jobject result = nullptr;
@@ -669,7 +658,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QFu
     return result;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QFutureWatcher_resultAt)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QFutureWatcher_resultAt
 (JNIEnv *__jni_env, jclass, QtJambiNativeID __this_nativeId, jlong _futureResult, jint index)
 {
     jobject result = nullptr;
@@ -684,7 +673,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QFu
     return result;
 }
 
-extern "C" JNIEXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QFutureWatcher_setFuture)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QFutureWatcher_setFuture
 (JNIEnv *__jni_env, jclass, QtJambiNativeID __this_nativeId, jlong _futureSetter, jobject future)
 {
     QTJAMBI_TRY{

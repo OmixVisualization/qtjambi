@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -1082,11 +1082,11 @@ struct FutureWatcherStarter : ThreadEngineStarterInterface{
     FutureWatcherStarter(JNIEnv* env, jobject collection, bool canOverwrite = true)
         : ThreadEngineStarterInterface(), watcher(new FutureWatcher<T>(env, collection, canOverwrite)), starter(nullptr) {}
     jobject startAsynchronously(JNIEnv* env) override;
-    void setStarter(QtConcurrent::ThreadEngineStarter<T>&& _starter);
+    void setStarter(const QtConcurrent::ThreadEngineStarter<T>& _starter);
     JavaSequence& sequence();
 private:
     FutureWatcher<T>* watcher;
-    QtConcurrent::ThreadEngineStarter<T> starter;
+    QScopedPointer<QtConcurrent::ThreadEngineStarter<T>> starter;
 };
 
 template<typename T>
@@ -1096,16 +1096,21 @@ JavaSequence& FutureWatcherStarter<T>::sequence(){
 }
 
 template<typename T>
-void FutureWatcherStarter<T>::setStarter(QtConcurrent::ThreadEngineStarter<T>&& _starter){
-    starter = std::move(_starter);
+void FutureWatcherStarter<T>::setStarter(const QtConcurrent::ThreadEngineStarter<T>& _starter){
+    starter.reset(new QtConcurrent::ThreadEngineStarter<T>(_starter));
 }
 
 template<typename T>
 jobject FutureWatcherStarter<T>::startAsynchronously(JNIEnv* env){
-    QFuture<T> future = starter.startAsynchronously();
-    if(watcher)
-        watcher->setFuture(future);
-    return qtjambi_cast<jobject>(env, future);
+    if(starter){
+        QFuture<T> future = starter->startAsynchronously();
+        if(watcher)
+            watcher->setFuture(future);
+        return qtjambi_cast<jobject>(env, future);
+    }else{
+        QFuture<T> future;
+        return qtjambi_cast<jobject>(env, future);
+    }
 }
 
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
@@ -1114,11 +1119,7 @@ jobject FutureWatcherStarter<T>::startAsynchronously(JNIEnv* env){
 #define THREADPOOL(_threadPool) QThreadPool *threadPool = QtJambiAPI::objectFromNativeId<QThreadPool>(_threadPool);
 #endif
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024ThreadEngineStarter_startAsynchronously)
-(JNIEnv *env,
- jclass,
- QtJambiNativeID thisId)
-{
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_00024ThreadEngineStarter_startAsynchronously(JNIEnv *env, jclass, QtJambiNativeID thisId){
     try{
         ThreadEngineStarterInterface *starter = QtJambiAPI::objectFromNativeId<ThreadEngineStarterInterface>(thisId);
         return starter->startAsynchronously(env);
@@ -1128,7 +1129,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_startMap)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_startMap
 (JNIEnv *env,
  jclass,
  QtJambiNativeID _threadPool,
@@ -1152,7 +1153,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_startMapped)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_startMapped
 (JNIEnv *env,
  jclass,
  QtJambiNativeID _threadPool,
@@ -1176,7 +1177,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_startMappedReduced)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_startMappedReduced
 (JNIEnv *env,
  jclass,
  QtJambiNativeID _threadPool,
@@ -1213,7 +1214,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_startFiltered)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_startFiltered
 (JNIEnv *env,
  jclass,
  QtJambiNativeID _threadPool,
@@ -1237,7 +1238,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_startFilteredReduced)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_startFilteredReduced
 (JNIEnv *env,
  jclass,
  QtJambiNativeID _threadPool,
@@ -1274,7 +1275,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_filter)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_filter
 (JNIEnv *env,
  jclass,
  QtJambiNativeID _threadPool,
@@ -1297,7 +1298,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runVoid0)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_runVoid0
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable)
 {
     try{
@@ -1313,7 +1314,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runVoid1)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_runVoid1
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a)
 {
     try{
@@ -1332,7 +1333,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runVoid2)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_runVoid2
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b)
 {
     try{
@@ -1353,7 +1354,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runVoid3)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_runVoid3
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c)
 {
     try{
@@ -1376,7 +1377,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runVoid4)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_runVoid4
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d)
 {
     try{
@@ -1401,7 +1402,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runVoid5)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_runVoid5
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e)
 {
     try{
@@ -1429,7 +1430,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
 }
 
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runVoid6)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_runVoid6
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f)
 {
     try{
@@ -1458,7 +1459,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runVoid7)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_runVoid7
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g)
 {
     try{
@@ -1489,7 +1490,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runVoid8)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_runVoid8
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g, jobject h)
 {
     try{
@@ -1522,7 +1523,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runVoid9)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_runVoid9
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g, jobject h, jobject i)
 {
     try{
@@ -1558,7 +1559,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
 }
 #endif
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_run0)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_run0
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaCallable)
 {
     try{
@@ -1574,7 +1575,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_run1)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_run1
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a)
 {
     try{
@@ -1593,7 +1594,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_run2)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_run2
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b)
 {
     try{
@@ -1614,7 +1615,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_run3)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_run3
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c)
 {
     try{
@@ -1637,7 +1638,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_run4)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_run4
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d)
 {
     try{
@@ -1662,7 +1663,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_run5)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_run5
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e)
 {
     try{
@@ -1691,7 +1692,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_run6)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_run6
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f)
 {
     try{
@@ -1720,7 +1721,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_run7)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_run7
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g)
 {
     try{
@@ -1751,7 +1752,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_run8)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_run8
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g, jobject h)
 {
     try{
@@ -1784,7 +1785,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_run9)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_run9
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g, jobject h, jobject i)
 {
     try{
@@ -1819,7 +1820,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runWithPromiseVoid0)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_runWithPromiseVoid0
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable)
 {
     try{
@@ -1838,7 +1839,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runWithPromiseVoid1)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_runWithPromiseVoid1
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a)
 {
     try{
@@ -1857,7 +1858,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runWithPromiseVoid2)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_runWithPromiseVoid2
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b)
 {
     try{
@@ -1878,7 +1879,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runWithPromiseVoid3)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_runWithPromiseVoid3
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c)
 {
     try{
@@ -1900,7 +1901,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runWithPromiseVoid4)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_runWithPromiseVoid4
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d)
 {
     try{
@@ -1923,7 +1924,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runWithPromiseVoid5)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_runWithPromiseVoid5
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e)
 {
     try{
@@ -1947,7 +1948,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runWithPromiseVoid6)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_runWithPromiseVoid6
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f)
 {
     try{
@@ -1974,7 +1975,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runWithPromiseVoid7)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_runWithPromiseVoid7
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g)
 {
     try{
@@ -2003,7 +2004,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runWithPromiseVoid8)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_runWithPromiseVoid8
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g, jobject h)
 {
     try{
@@ -2033,7 +2034,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runWithPromiseVoid9)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_runWithPromiseVoid9
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g, jobject h, jobject i)
 {
     try{
@@ -2064,7 +2065,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runWithPromise0)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_runWithPromise0
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable)
 {
     try{
@@ -2083,7 +2084,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runWithPromise1)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_runWithPromise1
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a)
 {
     try{
@@ -2103,7 +2104,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runWithPromise2)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_runWithPromise2
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b)
 {
     try{
@@ -2124,7 +2125,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runWithPromise3)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_runWithPromise3
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c)
 {
     try{
@@ -2147,7 +2148,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runWithPromise4)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_runWithPromise4
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d)
 {
     try{
@@ -2171,7 +2172,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runWithPromise5)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_runWithPromise5
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e)
 {
     try{
@@ -2197,7 +2198,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runWithPromise6)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_runWithPromise6
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f)
 {
     try{
@@ -2224,7 +2225,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runWithPromise7)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_runWithPromise7
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g)
 {
     try{
@@ -2253,7 +2254,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runWithPromise8)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_runWithPromise8
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g, jobject h)
 {
     try{
@@ -2283,7 +2284,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runWithPromise9)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_runWithPromise9
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g, jobject h, jobject i)
 {
     try{
@@ -2314,7 +2315,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTaskBuilderVoid0Arg0_spawn)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_00024QTaskBuilderVoid0Arg0_spawn
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable)
 {
     try{
@@ -2336,7 +2337,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTaskBuilderVoid1Arg1_spawn)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_00024QTaskBuilderVoid1Arg1_spawn
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a)
 {
     try{
@@ -2359,7 +2360,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTaskBuilderVoid2Arg2_spawn)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_00024QTaskBuilderVoid2Arg2_spawn
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b)
 {
     try{
@@ -2383,7 +2384,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTaskBuilderVoid3Arg3_spawn)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_00024QTaskBuilderVoid3Arg3_spawn
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c)
 {
     try{
@@ -2408,7 +2409,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTaskBuilderVoid4Arg4_spawn)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_00024QTaskBuilderVoid4Arg4_spawn
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d)
 {
     try{
@@ -2434,7 +2435,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTaskBuilderVoid5Arg5_spawn)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_00024QTaskBuilderVoid5Arg5_spawn
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e)
 {
     try{
@@ -2461,7 +2462,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTaskBuilderVoid6Arg6_spawn)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_00024QTaskBuilderVoid6Arg6_spawn
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f)
 {
     try{
@@ -2489,7 +2490,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTaskBuilderVoid7Arg7_spawn)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_00024QTaskBuilderVoid7Arg7_spawn
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g)
 {
     try{
@@ -2518,7 +2519,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTaskBuilderVoid8Arg8_spawn)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_00024QTaskBuilderVoid8Arg8_spawn
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g, jobject h)
 {
     try{
@@ -2548,7 +2549,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTaskBuilderVoid9Arg9_spawn)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_00024QTaskBuilderVoid9Arg9_spawn
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g, jobject h, jobject i)
 {
     try{
@@ -2579,7 +2580,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTypedTaskBuilder0Arg0_spawn)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_00024QTypedTaskBuilder0Arg0_spawn
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable)
 {
     try{
@@ -2601,7 +2602,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTypedTaskBuilder1Arg1_spawn)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_00024QTypedTaskBuilder1Arg1_spawn
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a)
 {
     try{
@@ -2624,7 +2625,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTypedTaskBuilder2Arg2_spawn)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_00024QTypedTaskBuilder2Arg2_spawn
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b)
 {
     try{
@@ -2648,7 +2649,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTypedTaskBuilder3Arg3_spawn)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_00024QTypedTaskBuilder3Arg3_spawn
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c)
 {
     try{
@@ -2673,7 +2674,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTypedTaskBuilder4Arg4_spawn)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_00024QTypedTaskBuilder4Arg4_spawn
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d)
 {
     try{
@@ -2699,7 +2700,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTypedTaskBuilder5Arg5_spawn)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_00024QTypedTaskBuilder5Arg5_spawn
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e)
 {
     try{
@@ -2726,7 +2727,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTypedTaskBuilder6Arg6_spawn)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_00024QTypedTaskBuilder6Arg6_spawn
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f)
 {
     try{
@@ -2754,7 +2755,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTypedTaskBuilder7Arg7_spawn)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_00024QTypedTaskBuilder7Arg7_spawn
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g)
 {
     try{
@@ -2783,7 +2784,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTypedTaskBuilder8Arg8_spawn)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_00024QTypedTaskBuilder8Arg8_spawn
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g, jobject h)
 {
     try{
@@ -2813,7 +2814,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTypedTaskBuilder9Arg9_spawn)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_00024QTypedTaskBuilder9Arg9_spawn
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g, jobject h, jobject i)
 {
     try{
@@ -2844,7 +2845,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QPromiseTaskBuilderVoid0Arg0_spawn)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_00024QPromiseTaskBuilderVoid0Arg0_spawn
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable)
 {
     try{
@@ -2866,7 +2867,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QPromiseTaskBuilderVoid1Arg1_spawn)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_00024QPromiseTaskBuilderVoid1Arg1_spawn
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a)
 {
     try{
@@ -2889,7 +2890,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QPromiseTaskBuilderVoid2Arg2_spawn)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_00024QPromiseTaskBuilderVoid2Arg2_spawn
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b)
 {
     try{
@@ -2913,7 +2914,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QPromiseTaskBuilderVoid3Arg3_spawn)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_00024QPromiseTaskBuilderVoid3Arg3_spawn
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c)
 {
     try{
@@ -2938,7 +2939,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QPromiseTaskBuilderVoid4Arg4_spawn)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_00024QPromiseTaskBuilderVoid4Arg4_spawn
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d)
 {
     try{
@@ -2964,7 +2965,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QPromiseTaskBuilderVoid5Arg5_spawn)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_00024QPromiseTaskBuilderVoid5Arg5_spawn
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e)
 {
     try{
@@ -2991,7 +2992,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QPromiseTaskBuilderVoid6Arg6_spawn)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_00024QPromiseTaskBuilderVoid6Arg6_spawn
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f)
 {
     try{
@@ -3019,7 +3020,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QPromiseTaskBuilderVoid7Arg7_spawn)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_00024QPromiseTaskBuilderVoid7Arg7_spawn
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g)
 {
     try{
@@ -3048,7 +3049,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QPromiseTaskBuilderVoid8Arg8_spawn)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_00024QPromiseTaskBuilderVoid8Arg8_spawn
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g, jobject h)
 {
     try{
@@ -3078,7 +3079,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QPromiseTaskBuilderVoid9Arg9_spawn)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_00024QPromiseTaskBuilderVoid9Arg9_spawn
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g, jobject h, jobject i)
 {
     try{
@@ -3109,7 +3110,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTypedPromiseTaskBuilder0Arg0_spawn)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_00024QTypedPromiseTaskBuilder0Arg0_spawn
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable)
 {
     try{
@@ -3131,7 +3132,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTypedPromiseTaskBuilder1Arg1_spawn)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_00024QTypedPromiseTaskBuilder1Arg1_spawn
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a)
 {
     try{
@@ -3154,7 +3155,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTypedPromiseTaskBuilder2Arg2_spawn)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_00024QTypedPromiseTaskBuilder2Arg2_spawn
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b)
 {
     try{
@@ -3178,7 +3179,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTypedPromiseTaskBuilder3Arg3_spawn)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_00024QTypedPromiseTaskBuilder3Arg3_spawn
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c)
 {
     try{
@@ -3203,7 +3204,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTypedPromiseTaskBuilder4Arg4_spawn)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_00024QTypedPromiseTaskBuilder4Arg4_spawn
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d)
 {
     try{
@@ -3229,7 +3230,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTypedPromiseTaskBuilder5Arg5_spawn)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_00024QTypedPromiseTaskBuilder5Arg5_spawn
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e)
 {
     try{
@@ -3256,7 +3257,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTypedPromiseTaskBuilder6Arg6_spawn)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_00024QTypedPromiseTaskBuilder6Arg6_spawn
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f)
 {
     try{
@@ -3284,7 +3285,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTypedPromiseTaskBuilder7Arg7_spawn)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_00024QTypedPromiseTaskBuilder7Arg7_spawn
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g)
 {
     try{
@@ -3313,7 +3314,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTypedPromiseTaskBuilder8Arg8_spawn)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_00024QTypedPromiseTaskBuilder8Arg8_spawn
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g, jobject h)
 {
     try{
@@ -3343,7 +3344,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurre
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_00024QTypedPromiseTaskBuilder9Arg9_spawn)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_00024QTypedPromiseTaskBuilder9Arg9_spawn
 (JNIEnv *env, jclass, jobject _threadPool, jint priority, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f, jobject g, jobject h, jobject i)
 {
     try{

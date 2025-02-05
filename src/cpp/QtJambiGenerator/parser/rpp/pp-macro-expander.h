@@ -2,7 +2,7 @@
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
 ** Copyright 2005 Roberto Raggi <roberto@kdevelop.org>
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -401,15 +401,11 @@ namespace rpp {
                         ++arg_it; // skip ')'
                         first = arg_it;
 
-#if 0 // ### enable me
-                        assert((macro->variadics && macro->formals.size() >= actuals.size())
-                               || macro->formals.size() == actuals.size());
-#endif
-
                         pp_frame frame(macro, &actuals);
                         pp_macro_expander expand_macro(env, &frame);
                         macro->hidden = true;
-                        if(expand_actual.hasUnexpandedFunctionMacro){
+                        if(expand_actual.hasUnexpandedFunctionMacro || actuals.size()>0)
+                        {
                             std::string macroDefinition;
                             expand_macro(macro->definition->begin(), macro->definition->end(), rpp::pp_output_iterator<std::string> (macroDefinition));
                             expand_macro(macroDefinition.c_str(), macroDefinition.c_str()+macroDefinition.size(), result);

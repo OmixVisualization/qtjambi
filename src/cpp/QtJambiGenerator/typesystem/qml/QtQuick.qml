@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -678,6 +678,7 @@ try{
             ModifyArgument{
                 index: 1
                 threadAffinity: true
+                noImplicitCalls: true
             }
         }
         ModifyFunction{
@@ -1939,10 +1940,10 @@ if(%1.count()<=0)
                     codeClass: CodeClass.Native
                     Text{content: "switch(__qt_this->sizeOfIndex()){\n"+
                                   "case 4:\n"+
-                                  "    %out = LocalDataJBuffer(%env, reinterpret_cast<qint32*>(%in), __qt_this->indexCount()).take();\n"+
+                                  "    %out = DataJBuffer(%env, reinterpret_cast<qint32*>(%in), __qt_this->indexCount()).take();\n"+
                                   "    break;\n"+
                                   "case 2:\n"+
-                                  "    %out = LocalDataJBuffer(%env, reinterpret_cast<qint16*>(%in), __qt_this->indexCount()).take();\n"+
+                                  "    %out = DataJBuffer(%env, reinterpret_cast<qint16*>(%in), __qt_this->indexCount()).take();\n"+
                                   "    break;\n"+
                                   "default:\n"+
                                   "    break;\n"+
@@ -2788,7 +2789,7 @@ if(%1.count()<=0)
         InjectCode{
             target: CodeClass.Native
             position: Position.Beginning
-            since: [6, 2]
+            since: 6
             Text{content: "QQuickGraphicsDevice qtjambi_QQuickGraphicsDevice_fromPhysicalDevice(JNIEnv *, jlong);\n"+
                           "QQuickGraphicsDevice qtjambi_QQuickGraphicsDevice_fromDeviceObjects(JNIEnv *, jlong, jlong, int, int);"}
         }
@@ -2809,7 +2810,7 @@ if(%1.count()<=0)
                                   "#define %out %in"}
                 }
             }
-            since: [6, 2]
+            since: 6
         }
         ModifyFunction{
             signature: "fromDeviceObjects(void*, void*, int, int)"
@@ -2841,7 +2842,7 @@ if(%1.count()<=0)
                                   "#define %out %in"}
                 }
             }
-            since: [6, 2]
+            since: 6
         }
         ModifyFunction{
             signature: "fromAdapter(quint32, qint32, int)"
@@ -2854,6 +2855,7 @@ if(%1.count()<=0)
         ModifyFunction{
             signature: "fromDeviceAndCommandQueue(MTLDevice *, MTLCommandQueue *)"
             ppCondition: "defined(Q_OS_MACOS) || defined(Q_OS_IOS)"
+            since: 6
         }
         ModifyFunction{
             signature: "fromOpenGLContext(QOpenGLContext *)"
@@ -2938,7 +2940,7 @@ if(%1.count()<=0)
         InjectCode{
             target: CodeClass.Native
             position: Position.Beginning
-            since: [6, 2]
+            since: 6
             Text{content: "QQuickRenderTarget qtjambi_QQuickRenderTarget_fromVulkanImage(JNIEnv *env, jlong image, jint layout, const QSize& pixelSize, int sampleCount);"}
         }
         InjectCode{
@@ -2981,7 +2983,7 @@ if(%1.count()<=0)
         ModifyFunction{
             signature: "fromMetalTexture(MTLTexture *, QSize, int)"
             ppCondition: "defined(Q_OS_MACOS) || defined(Q_OS_IOS)"
-            since: [6, 2]
+            since: 6
         }
         ModifyFunction{
             signature: "fromMetalTexture(MTLTexture *, unsigned int, QSize, int)"
@@ -3045,7 +3047,7 @@ if(%1.count()<=0)
                                   "#define %out %in"}
                 }
             }
-            since: [6, 2]
+            since: 6
         }
         ModifyFunction{
             signature: "fromVulkanImage(VkImage, VkImageLayout, VkFormat, QSize, int)"
@@ -3437,16 +3439,14 @@ if(%1.count()<=0)
         InjectCode{
             target: CodeClass.Native
             position: Position.Beginning
-            Text{content: "#if defined(Q_OS_MACOS)\n"+
-                          "namespace QNativeInterface {\n"+
+            Text{content: "namespace QNativeInterface {\n"+
                           "    struct QSGMetalTexture{\n"+
                           "        QT_DECLARE_NATIVE_INTERFACE(QSGMetalTexture, 1, QSGTexture)\n"+
                           "    };\n"+
                           "}\n"+
                           "\n"+
                           "void* qtjambi_QSGMetalTexture_nativeTexture(JNIEnv *env, const void* ptr);\n"+
-                          "QSGTexture * qtjambi_QSGMetalTexture_fromNative(JNIEnv *env, void* texture, QQuickWindow* window, const QSize& size, QQuickWindow::CreateTextureOptions options);\n"+
-                          "#endif // defined(Q_OS_MACOS)"}
+                          "QSGTexture * qtjambi_QSGMetalTexture_fromNative(JNIEnv *env, void* texture, QQuickWindow* window, const QSize& size, QQuickWindow::CreateTextureOptions options);\n"}
         }
         ModifyFunction{
             signature: "nativeTexture() const"
@@ -3515,25 +3515,6 @@ if(%1.count()<=0)
                 }
             }
         }
-        /*ModifyFunction{
-            signature: "fromNative(objc_object *, QQuickWindow *, QSize, QQuickWindow::CreateTextureOptions)"
-            proxyCall: "qtjambi_QSGMetalTexture_fromNative"
-            ModifyArgument{
-                index: 0
-                DefineOwnership{
-                    codeClass: CodeClass.Native
-                    ownership: Ownership.Java
-                }
-            }
-            ModifyArgument{
-                index: 1
-                replaceType: "io.qt.@Nullable QNativePointer"
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "void* %out = QtJambiAPI::convertQNativePointerToNative(%env, %in);"}
-                }
-            }
-        }*/
         ModifyFunction{
             signature: "fromNative(id<MTLTexture>, QQuickWindow *, QSize, QQuickWindow::CreateTextureOptions)"
             proxyCall: "qtjambi_QSGMetalTexture_fromNative"

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -38,6 +38,7 @@ import org.junit.Test;
 
 import io.qt.QtUtilities;
 import io.qt.autotests.generated.General;
+import io.qt.autotests.generated.SignalReceiver;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QEvent;
 import io.qt.core.QObject;
@@ -57,8 +58,8 @@ public class TestQThreadDeletion extends ApplicationInitializer {
     	AtomicBoolean qthreadDisposed = new AtomicBoolean();
 		AtomicBoolean qobjectDisposed = new AtomicBoolean();
 		AtomicBoolean qthreadCleaned = new AtomicBoolean();
-		AtomicBoolean qthreadFinished = new AtomicBoolean();
-		AtomicBoolean qthreadDestroyed = new AtomicBoolean();
+		SignalReceiver qthreadFinished = new SignalReceiver();
+		SignalReceiver qthreadDestroyed = new SignalReceiver();
 		AtomicBoolean qobjectDestroyed = new AtomicBoolean();
 		AtomicBoolean threadCleaned = new AtomicBoolean();
 		AtomicBoolean qobjectCleaned = new AtomicBoolean();
@@ -71,14 +72,10 @@ public class TestQThreadDeletion extends ApplicationInitializer {
 	    	Thread thread = new MyThread(()->{
 	    		try {
 	    			QThread qthread = QThread.currentThread();
-	    			qthread.finished.connect(()->{
-	    				qthreadFinished.set(true);
-    				});
+	    			qthread.finished.connect(qthreadFinished, "receiveSignal()", Qt.ConnectionType.DirectConnection);
 	    			splitOwnership[0] = General.internalAccess.isSplitOwnership(qthread);
 	    			QtUtilities.getSignalOnDispose(qthread).connect(()->qthreadDisposed.set(true), Qt.ConnectionType.DirectConnection);
-					qthread.destroyed.connect(()->{
-						qthreadDestroyed.set(true);
-					}, Qt.ConnectionType.DirectConnection);
+					qthread.destroyed.connect(qthreadDestroyed, "receiveSignal()", Qt.ConnectionType.DirectConnection);
 	    			General.internalAccess.registerCleaner(qthread, ()->qthreadCleaned.set(true));
 					QObject object = new QObject();
 					QtUtilities.getSignalOnDispose(object).connect(()->qobjectDisposed.set(true), Qt.ConnectionType.DirectConnection);
@@ -99,14 +96,15 @@ public class TestQThreadDeletion extends ApplicationInitializer {
 		ApplicationInitializer.runGC();
 		Thread.sleep(100);
 		for (int i = 0; i < 500; i++) {
-			if(qthreadFinished.get())
+			if(qthreadFinished.received())
     			break;
     		Thread.yield();
     		Thread.sleep(100);
     		runGC();
+    		QCoreApplication.processEvents();
     		QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
 		}
-		assertTrue("QThread is not finished", qthreadFinished.get());
+		assertTrue("QThread is not finished", qthreadFinished.received());
 		assertTrue("QThread has not split ownership", splitOwnership[0]);
     	for (int i = 0; i < 50; i++) {
     		if(qobjectCleaned.get()) {
@@ -118,6 +116,7 @@ public class TestQThreadDeletion extends ApplicationInitializer {
     		Thread.yield();
     		Thread.sleep(100);
     		runGC();
+    		QCoreApplication.processEvents();
     		QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
 		}
     	assertTrue("QObject is not cleaned", qobjectCleaned.get());
@@ -133,12 +132,13 @@ public class TestQThreadDeletion extends ApplicationInitializer {
     		Thread.yield();
     		Thread.sleep(100);
     		runGC();
+    		QCoreApplication.processEvents();
     		QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
 		}
     	assertTrue("Thread is not cleaned", threadCleaned.get());
     	assertTrue("QThread is not disposed", qthreadDisposed.get());
     	for (int i = 0; i < 50; i++) {
-    		if(qthreadDestroyed.get()) {
+    		if(qthreadDestroyed.received()) {
         		QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
         		Thread.yield();
         		Thread.sleep(100);
@@ -147,13 +147,27 @@ public class TestQThreadDeletion extends ApplicationInitializer {
     		Thread.yield();
     		Thread.sleep(100);
     		runGC();
+    		QCoreApplication.processEvents();
+    		QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+		}
+    	for (int i = 0; i < 50; i++) {
+    		if(qthreadCleaned.get()) {
+        		QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+        		Thread.yield();
+        		Thread.sleep(100);
+    			break;
+    		}
+    		Thread.yield();
+    		Thread.sleep(100);
+    		runGC();
+    		QCoreApplication.processEvents();
     		QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
 		}
     	assertTrue("QThread is not cleaned", qthreadCleaned.get());
     	if(!QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows)
     			|| !(System.getProperty("java.version", "").startsWith("1.8") 
     					|| System.getProperty("java.version", "").startsWith("8"))) {
-        	assertTrue("QThread is not destroyed", qthreadDestroyed.get());
+        	assertTrue("QThread is not destroyed", qthreadDestroyed.received());
     	}
     }
     

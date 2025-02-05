@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -66,17 +66,21 @@ public abstract class NativeUtility {
 	private static final Map<Long, java.lang.Object> globalReferences;
 	private static final Map<Long, WeakReference<java.lang.Object>> weakGlobalReferences;
 	private static final Map<Long, QMetaObject.DisposedSignal> disposedSignals;
-	private static final Thread cleanupRegistrationThread;
+	private static final Thread cleanupThread;
 	static {
 		interfaceLinks = Collections.synchronizedMap(new HashMap<>());
 		disposedSignals = Collections.synchronizedMap(new HashMap<>());
 		globalReferences = Collections.synchronizedMap(new HashMap<>());
 		weakGlobalReferences = Collections.synchronizedMap(new HashMap<>());
-		cleanupRegistrationThread = new Thread(QueuedCleaner::cleanup);
-		cleanupRegistrationThread.setName("QtJambiCleanupThread");
-		cleanupRegistrationThread.setDaemon(true);
+		cleanupThread = new Thread(QueuedCleaner::cleanup);
+		cleanupThread.setName("QtJambiCleanupThread");
+		cleanupThread.setDaemon(true);
 		QtJambi_LibraryUtilities.initialize();
-		cleanupRegistrationThread.start();
+		cleanupThread.start();
+	}
+	
+	protected NativeUtility() {
+		throw new RuntimeException();
 	}
 	
 	@NativeAccess
@@ -115,12 +119,12 @@ public abstract class NativeUtility {
 	@NativeAccess
 	@QtUninvokable
 	private static void terminateCleanupThread() throws Throwable {
-		switch (cleanupRegistrationThread.getState()) {
+		switch (cleanupThread.getState()) {
 		case TERMINATED:
 			break;
 		default:
-			cleanupRegistrationThread.interrupt();
-			cleanupRegistrationThread.join();
+			cleanupThread.interrupt();
+			cleanupThread.join();
 			break;
 		}
 	}
@@ -713,12 +717,16 @@ public abstract class NativeUtility {
 			return null;
 		}
 	}
+    
+	protected static <K,V> Function<K, ArrayList<V>> arrayListFactory(){
+		return key->new ArrayList<>();
+	}
 
-	protected static void initializeNativeObject(Class<?> declaringClass, QtObjectInterface object, Map<Class<?>, List<?>> arguments) throws IllegalArgumentException {
+	protected static void initializeNativeObject(Class<?> declaringClass, QtObjectInterface object, Map<Class<?>, List<Map.Entry<Class<?>,java.lang.Object>>> arguments) throws IllegalArgumentException {
 		initializeNativeObject(declaringClass, object, NativeUtility.findInterfaceLink(object, true, false), arguments);
 	}
 
-	private native static void initializeNativeObject(Class<?> callingClass, QtObjectInterface object, NativeLink link, Map<Class<?>, List<?>> arguments) throws IllegalArgumentException;
+	private native static void initializeNativeObject(Class<?> callingClass, QtObjectInterface object, NativeLink link, Map<Class<?>, List<Map.Entry<Class<?>,java.lang.Object>>> arguments) throws IllegalArgumentException;
 
 	static void initializeNativeObject(QtObjectInterface object, NativeLink link) throws IllegalArgumentException {
 		Class<?> cls = AccessUtility.instance.getClass(object);
@@ -920,7 +928,7 @@ public abstract class NativeUtility {
 	}
 	
 	@NativeAccess
-	private static java.lang.Object findAssociation(java.lang.Object o1) {
+	static java.lang.Object findAssociation(java.lang.Object o1) {
 		List<AssociativeReference> matchingReferences = AssociativeReference.findAll(o1);
 		return matchingReferences.isEmpty() ? null : matchingReferences.get(0).association();
 	}

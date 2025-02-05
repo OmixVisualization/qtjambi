@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -49,7 +49,7 @@ void __qt_construct_QRemoteObjectPendingCall(void* __qtjambi_ptr, JNIEnv* __jni_
 void __qt_construct_QRemoteObjectPendingCall_cref_QRemoteObjectPendingCall(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, bool, bool, bool);
 void __qt_destruct_QRemoteObjectPendingCall(void* ptr);
 
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_remoteobjects_QRemoteObjectPendingReply_initialize_1native__Lio_qt_remoteobjects_QRemoteObjectPendingReply_2)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_remoteobjects_QRemoteObjectPendingReply_initialize_1native__Lio_qt_remoteobjects_QRemoteObjectPendingReply_2
 (JNIEnv *__jni_env,
  jclass __jni_class,
  jobject __jni_object)
@@ -63,7 +63,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_remoteo
 
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_remoteobjects_QRemoteObjectPendingReply_initialize_1native__Lio_qt_remoteobjects_QRemoteObjectPendingReply_2Lio_qt_remoteobjects_QRemoteObjectPendingCall_2)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_remoteobjects_QRemoteObjectPendingReply_initialize_1native__Lio_qt_remoteobjects_QRemoteObjectPendingReply_2Lio_qt_remoteobjects_QRemoteObjectPendingCall_2
 (JNIEnv *__jni_env,
  jclass __jni_class,
  jobject __jni_object,

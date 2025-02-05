@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -40,15 +40,15 @@ import io.qt.core.QMetaMethod;
 public class QUnsuccessfulInvocationException extends RuntimeException {
     private static final long serialVersionUID = 1L;
 
-    public QUnsuccessfulInvocationException(String message) {
+    public QUnsuccessfulInvocationException(@NonNull String message) {
     	super(message);
     }
 
-	public QUnsuccessfulInvocationException(String message, Throwable cause) {
+	public QUnsuccessfulInvocationException(@NonNull String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
 
-	public QUnsuccessfulInvocationException(Throwable cause) {
+	public QUnsuccessfulInvocationException(@Nullable Throwable cause) {
 		super(cause);
 	}
 }

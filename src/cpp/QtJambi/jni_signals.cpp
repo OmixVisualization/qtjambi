@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -78,8 +78,7 @@ class ConnectionAccess{
 public: QObjectPrivate::Connection *d_ptr;
 };
 
-extern "C" Q_DECL_EXPORT jboolean JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_00024NativeConnection_isConnected)
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_internal_SignalUtility_00024NativeConnection_isConnected
     (JNIEnv *env, jclass, QtJambiNativeID nativeId)
 {
     try{
@@ -91,8 +90,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_00024NativeConnection_
     return false;
 }
 
-extern "C" Q_DECL_EXPORT jboolean JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_00024NativeConnection_equals)
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_internal_SignalUtility_00024NativeConnection_equals
     (JNIEnv *env, jclass, QtJambiNativeID nativeId, QtJambiNativeID otherNativeId)
 {
     try{
@@ -117,8 +115,7 @@ QObject* connectionSender(const QMetaObject::Connection* connection){
     return nullptr;
 }
 
-extern "C" Q_DECL_EXPORT jobject JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_00024NativeConnection_sender)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_SignalUtility_00024NativeConnection_sender
     (JNIEnv * env, jclass, QtJambiNativeID nativeId)
 {
     try{
@@ -130,8 +127,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_00024NativeConnection_
     return nullptr;
 }
 
-extern "C" Q_DECL_EXPORT jobject JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_00024NativeConnection_receiver)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_SignalUtility_00024NativeConnection_receiver
     (JNIEnv * env, jclass, QtJambiNativeID nativeId)
 {
     try{
@@ -147,8 +143,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_00024NativeConnection_
     return nullptr;
 }
 
-extern "C" Q_DECL_EXPORT jobject JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_00024NativeConnection_signal)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_SignalUtility_00024NativeConnection_signal
     (JNIEnv * env, jclass, QtJambiNativeID nativeId)
 {
     try{
@@ -167,8 +162,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_00024NativeConnection_
     return nullptr;
 }
 
-extern "C" Q_DECL_EXPORT jobject JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_00024NativeConnection_method)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_SignalUtility_00024NativeConnection_method
     (JNIEnv * env, jclass, QtJambiNativeID nativeId)
 {
     try{
@@ -189,8 +183,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_00024NativeConnection_
     return nullptr;
 }
 
-extern "C" Q_DECL_EXPORT jboolean JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_00024NativeConnection_isSlotObject)
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_internal_SignalUtility_00024NativeConnection_isSlotObject
     (JNIEnv * env, jclass, QtJambiNativeID nativeId)
 {
     try{
@@ -205,8 +198,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_00024NativeConnection_
     return false;
 }
 
-extern "C" Q_DECL_EXPORT jobject JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_00024NativeConnection_clone)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_SignalUtility_00024NativeConnection_clone
     (JNIEnv * env, jclass, QtJambiNativeID nativeId)
 {
     try{
@@ -218,8 +210,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_00024NativeConnection_
     return nullptr;
 }
 
-extern "C" Q_DECL_EXPORT jint JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_00024NativeConnection_hashCode)
+extern "C" JNIEXPORT jint JNICALL Java_io_qt_internal_SignalUtility_00024NativeConnection_hashCode
     (JNIEnv * env, jclass, QtJambiNativeID nativeId)
 {
     jint __java_return_value{0};
@@ -238,8 +229,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_00024NativeConnection_
     return __java_return_value;
 }
 
-extern "C" Q_DECL_EXPORT jstring JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_00024NativeConnection_toString)
+extern "C" JNIEXPORT jstring JNICALL Java_io_qt_internal_SignalUtility_00024NativeConnection_toString
     (JNIEnv * env, jclass, QtJambiNativeID nativeId)
 {
     jstring __java_return_value{nullptr};
@@ -260,8 +250,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_00024NativeConnection_
     return __java_return_value;
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_00024AbstractConnection_invokeOnLock)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_internal_SignalUtility_00024AbstractConnection_invokeOnLock
 (JNIEnv * env, jobject connection, QtJambiNativeID s, QtJambiNativeID r, jobjectArray args)
 {
     try{
@@ -293,8 +282,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_00024AbstractConnectio
     }
 }
 
-extern "C" Q_DECL_EXPORT jboolean JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_disconnectConnection)
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_internal_SignalUtility_disconnectConnection
     (JNIEnv *env, jclass, QtJambiNativeID connection__id)
 {
     bool result = false;
@@ -312,8 +300,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_disconnectConnection)
     return result;
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_initializeMultiSignal)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_internal_SignalUtility_initializeMultiSignal
 (JNIEnv *env, jclass, jobject multiSignal, jclass declaringClass, jobject reflectedField)
 {
     try{
@@ -330,7 +317,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_initializeMultiSignal)
                 for(int i=0; i<signalInfos.size(); i++){
                     const QtJambiMetaObject::SignalInfo& info = signalInfos.at(i);
                     env->SetObjectArrayElement(signalObjectTypes, jsize(i), info.signalClass);
-                    env->SetObjectArrayElement(signalParameterTypes, jsize(i), info.signalTypes);
+                    env->SetObjectArrayElement(signalParameterTypes, jsize(i), info.signalTypes.object(env));
                     methodIndexesPtr.pointer()[i] = info.methodIndex;
                     metaObjectsPtr.pointer()[i] = jlong(mo);
                 }
@@ -342,15 +329,11 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_initializeMultiSignal)
     }
 }
 
-extern "C" Q_DECL_EXPORT jlong JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_fromReflectedMethod)
-(JNIEnv *env, jclass, jobject method)
-{
+extern "C" JNIEXPORT jlong JNICALL Java_io_qt_internal_SignalUtility_fromReflectedMethod(JNIEnv *env, jclass, jobject method){
     return jlong(env->FromReflectedMethod(method));
 }
 
-extern "C" Q_DECL_EXPORT jobject JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_signalInfo)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_SignalUtility_signalInfo
     (JNIEnv *env, jclass, jobject containingObject, jobject _metaObject, jobject field, jobject emitMethod)
 {
     try{
@@ -391,7 +374,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_signalInfo)
                 }
             }
         }
-        return Java::QtJambi::SignalUtility$SignalInfo::newInstance(env, jlong(result.metaObject), result.methodIndex, result.signalTypes);
+        return Java::QtJambi::SignalUtility$SignalInfo::newInstance(env, jlong(result.metaObject), result.methodIndex, result.signalTypes.object(env));
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
         return nullptr;
@@ -399,8 +382,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_signalInfo)
 }
 
 
-extern "C" Q_DECL_EXPORT jlong JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_metaObjectId)
+extern "C" JNIEXPORT jlong JNICALL Java_io_qt_internal_SignalUtility_metaObjectId
 (JNIEnv *env, jclass, jobject mo){
     try{
         return mo ? Java::QtCore::QMetaObject::metaObjectPointer(env, mo) : 0;
@@ -410,8 +392,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_metaObjectId)
     }
 }
 
-extern "C" Q_DECL_EXPORT jboolean JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_isDynamic)
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_internal_SignalUtility_isDynamic
     (JNIEnv *env, jclass, jobject mo){
     try{
         jlong metaObjectId = mo ? Java::QtCore::QMetaObject::metaObjectPointer(env, mo) : 0;
@@ -422,13 +403,13 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_isDynamic)
     }
 }
 
-extern "C" Q_DECL_EXPORT bool JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_isSignalConnected)
-(JNIEnv *env,
-    jclass,
-    QtJambiNativeID senderId,
-    jint methodIndex,
-    jlong senderMetaObjectId){
+extern "C" JNIEXPORT bool JNICALL Java_io_qt_internal_SignalUtility_isSignalConnected
+    (JNIEnv *env,
+     jclass,
+     QtJambiNativeID senderId,
+     jint methodIndex,
+     jlong senderMetaObjectId)
+{
     QTJAMBI_NATIVE_METHOD_CALL("SignalUtility::isSignalConnected(...)")
     JniLocalFrame __jniLocalFrame(env, 1024);
     try{
@@ -452,13 +433,13 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_isSignalConnected)
     return false;
 }
 
-extern "C" Q_DECL_EXPORT int JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_signalReceivers)
+extern "C" JNIEXPORT int JNICALL Java_io_qt_internal_SignalUtility_signalReceivers
     (JNIEnv *env,
      jclass,
      QtJambiNativeID senderId,
      jint methodIndex,
-     jlong senderMetaObjectId){
+     jlong senderMetaObjectId)
+{
     QTJAMBI_NATIVE_METHOD_CALL("SignalUtility::receivers(...)")
     JniLocalFrame __jniLocalFrame(env, 1024);
     try{
@@ -498,22 +479,21 @@ void installSignalEmitThreadCheckHandler(JNIEnv *env, jobject handler){
 }
 
 void clearInstallSignalEmitThreadCheckHandler(JNIEnv *env){
-    if(!gSignalEmitThreadCheckHandler.isDestroyed()){
+    if(!gSignalEmitThreadCheckHandler.isDestroyed() && env){
         QWriteLocker locker(gSignalEmitThreadCheckHandlerLock());
         gSignalEmitThreadCheckHandler->clear(env);
     }
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_emitNativeSignal)
-(JNIEnv *env,
- jclass,
- jobject signalObject,
- QtJambiNativeID senderId,
- jint methodIndex,
- jlong senderMetaObjectId,
- jint defaults,
- jobjectArray args)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_internal_SignalUtility_emitNativeSignal
+    (JNIEnv *env,
+     jclass,
+     jobject signalObject,
+     QtJambiNativeID senderId,
+     jint methodIndex,
+     jlong senderMetaObjectId,
+     jint defaults,
+     jobjectArray args)
 {
     QTJAMBI_NATIVE_METHOD_CALL("SignalUtility::emitNativeSignal(...)")
     JniLocalFrame __jniLocalFrame(env, 1024);
@@ -525,7 +505,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_emitNativeSignal)
             const QMetaObject* metaObject = reinterpret_cast<const QMetaObject*>(senderMetaObjectId);
             QMetaMethod method = metaObject->method(methodIndex + defaults);
             if(method.isValid()){
-                const QList<ParameterTypeInfo>& parameterTypeInfos = QtJambiMetaObject::methodParameterInfo(env, method);
+                const QVector<ParameterTypeInfo> parameterTypeInfos = QtJambiMetaObject::methodParameterInfo(env, method);
                 QVector<void *> convertedArguments;
                 bool failed = false;
                 int size = args ? env->GetArrayLength(args) : 0;
@@ -544,7 +524,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_emitNativeSignal)
                         jobject signalEmitThreadCheckHandler;
                         {
                             QReadLocker locker(gSignalEmitThreadCheckHandlerLock());
-                            signalEmitThreadCheckHandler = env->NewLocalRef(gSignalEmitThreadCheckHandler->object(env));
+                            signalEmitThreadCheckHandler = gSignalEmitThreadCheckHandler->object(env);
                         }
                         if(signalEmitThreadCheckHandler){
                             jobject qobject = link->getJavaObjectLocalRef(env);
@@ -590,8 +570,7 @@ struct NativeSlotObject : public QtPrivate::QSlotObjectBase
     bool m_nothrow;
 };
 
-extern "C" Q_DECL_EXPORT jobject JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_connectNative)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_SignalUtility_connectNative
     (JNIEnv * env, jclass, QtJambiNativeID senderObjectId, jint signal, jlong senderMetaObjectId, QtJambiNativeID contextNativeId, jobject connection, jint argumentCount, jint connectionType)
 {
     try{
@@ -645,7 +624,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_connectNative)
     return nullptr;
 }
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+#if QT_VERSION < QT_VERSION_CHECK(6,5,0)
 struct SlotObjectBase {
     typedef void (*ImplFn)(int which, QtPrivate::QSlotObjectBase* this_, QObject *receiver, void **args, bool *ret);
     QAtomicInt m_ref;
@@ -659,8 +638,7 @@ struct SlotObjectBase {
 #define SLOT_OBJECT_CAST(A) A
 #endif
 
-extern "C" Q_DECL_EXPORT jboolean JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_disconnectNative__JIJLjava_util_function_Predicate_2)
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_internal_SignalUtility_disconnectNative__JIJLjava_util_function_Predicate_2
     (JNIEnv * env, jclass, QtJambiNativeID senderObjectId, jint signal, jlong senderMetaObjectId, jobject predicate)
 {
     QList<QMetaObject::Connection> list;
@@ -718,8 +696,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_disconnectNative__JIJL
     return result;
 }
 
-extern "C" Q_DECL_EXPORT jobject JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_connectNativeToMetaMethod)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_SignalUtility_connectNativeToMetaMethod
     (JNIEnv * env, jclass, QtJambiNativeID senderObjectId, jint signal, jlong senderMetaObjectId, QtJambiNativeID receiverObjectId, QtJambiNativeID slotId, jint connectionType)
 {
     try{
@@ -746,8 +723,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_connectNativeToMetaMet
     return nullptr;
 }
 
-extern "C" Q_DECL_EXPORT jboolean JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_disconnectNative__JIJJJ)
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_internal_SignalUtility_disconnectNative__JIJJJ
     (JNIEnv *env, jclass, QtJambiNativeID senderObjectId, jint signal, jlong senderMetaObjectId, QtJambiNativeID receiverObjectId, QtJambiNativeID slotId)
 {
     try{
@@ -766,8 +742,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_disconnectNative__JIJJ
     return false;
 }
 
-extern "C" Q_DECL_EXPORT jobject JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_signalMethod)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_SignalUtility_signalMethod
     (JNIEnv * env, jclass, jint signal, jlong senderMetaObjectId)
 {
     try{
@@ -781,8 +756,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_signalMethod)
     return nullptr;
 }
 
-extern "C" Q_DECL_EXPORT jstring JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_signalName)
+extern "C" JNIEXPORT jstring JNICALL Java_io_qt_internal_SignalUtility_signalName
     (JNIEnv * env, jclass, jint signal, jlong senderMetaObjectId)
 {
     try{
@@ -796,8 +770,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_signalName)
     return nullptr;
 }
 
-extern "C" Q_DECL_EXPORT jstring JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_signalSignature)
+extern "C" JNIEXPORT jstring JNICALL Java_io_qt_internal_SignalUtility_signalSignature
     (JNIEnv * env, jclass, jint signal, jlong senderMetaObjectId)
 {
     try{
@@ -811,8 +784,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_signalSignature)
     return nullptr;
 }
 
-extern "C" Q_DECL_EXPORT jstring JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_fullSignalSignature)
+extern "C" JNIEXPORT jstring JNICALL Java_io_qt_internal_SignalUtility_fullSignalSignature
     (JNIEnv * env, jclass, jint signal, jlong senderMetaObjectId)
 {
     try{
@@ -835,7 +807,9 @@ jobject invokeReflectiveMethod(JNIEnv *env,
                             jbyteArray _cnvTypes)
 {
     jsize len = env->GetArrayLength(_cnvTypes);
+    JavaException::check(env QTJAMBI_STACKTRACEINFO );
     jbyte *cnvTypes = env->GetByteArrayElements(_cnvTypes, nullptr);
+    JavaException::check(env QTJAMBI_STACKTRACEINFO );
     QVarLengthArray<jvalue> argsArray(len);
     Q_ASSERT(args);
     for (int i=0; i<len; ++i) {
@@ -856,6 +830,10 @@ jobject invokeReflectiveMethod(JNIEnv *env,
     }
     env->ReleaseByteArrayElements(_cnvTypes, cnvTypes, JNI_ABORT);
     jobject result = nullptr;
+    if(env->ExceptionCheck()){
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+    }
     if(isStatic){
         jclass clazz = jclass(receiver);
         switch (returnType)
@@ -896,16 +874,15 @@ jobject invokeReflectiveMethod(JNIEnv *env,
     return result;
 }
 
-extern "C" Q_DECL_EXPORT jobject JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_invokeReflectiveMethod)
-(JNIEnv *env,
- jclass,
- jobject receiver,
- jobject method,
- jboolean isStatic,
- jbyte returnType,
- jobjectArray args,
- jbyteArray cnvTypes)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_SignalUtility_invokeReflectiveMethod
+    (JNIEnv *env,
+     jclass,
+     jobject receiver,
+     jobject method,
+     jboolean isStatic,
+     jbyte returnType,
+     jobjectArray args,
+     jbyteArray cnvTypes)
 {
     try{
         Q_ASSERT(receiver != nullptr);
@@ -928,7 +905,7 @@ NativeSlotObject::NativeSlotObject(JNIEnv * env, const QSharedPointer<QtJambiLin
       m_types(
           [](JNIEnv * env, const QMetaMethod& signal, jint connectionType)->int*{
           if (connectionType == Qt::QueuedConnection || connectionType == Qt::BlockingQueuedConnection){
-              const QList<ParameterTypeInfo>& parameterTypeInfos = QtJambiMetaObject::methodParameterInfo(env, signal);
+              const QVector<ParameterTypeInfo> parameterTypeInfos = QtJambiMetaObject::methodParameterInfo(env, signal);
               if(parameterTypeInfos.size()>1){
                   int *types = new int[size_t(parameterTypeInfos.size())];
                   for (int i = 0; i < parameterTypeInfos.size(); ++i) {
@@ -970,7 +947,7 @@ NativeSlotObject::~NativeSlotObject()
 int* NativeSlotObject::types() { return m_types; }
 
 struct SlotJniEnvironment : JniEnvironment{
-    SlotJniEnvironment(bool initializeJavaThread, int capacity) : JniEnvironment(initializeJavaThread, capacity){}
+    SlotJniEnvironment(bool initializeJavaThread, int capacity) : JniEnvironment(int(initializeJavaThread ? JniEnvironmentFlag::Default : JniEnvironmentFlag::NoInitializeJavaThread), capacity){}
 };
 
 void NativeSlotObject::impl(int which, QSlotObjectBase *this_, QObject *, void **a, bool *ret){
@@ -986,7 +963,7 @@ void NativeSlotObject::impl(int which, QSlotObjectBase *this_, QObject *, void *
                     QtJambiExceptionHandler __qt_exnhandler;
                     try{
                         QtJambiLinkScope scope(link);
-                        const QList<ParameterTypeInfo>& parameterTypeInfos = QtJambiMetaObject::methodParameterInfo(env, _this->m_signal);
+                        const QVector<ParameterTypeInfo> parameterTypeInfos = QtJambiMetaObject::methodParameterInfo(env, _this->m_signal);
                         if(parameterTypeInfos.size()){
                             QVector<jvalue> converted_arguments(_this->m_argumentCount<0 ? parameterTypeInfos.size()-1 : qMin(_this->m_argumentCount, parameterTypeInfos.size()-1));
 
@@ -1013,7 +990,7 @@ void NativeSlotObject::impl(int which, QSlotObjectBase *this_, QObject *, void *
                             qCWarning(DebugAPI::internalCategory) << "SlotObject::CallSignal: Failed to convert method types for signal " << _this->m_signal.methodSignature();
                         }
                     } catch (const JavaException& exn) {
-                        if(noExceptionForwarding()){
+                        if(noExceptionForwarding(env)){
                             QtJambiExceptionBlocker __blocker;
                             {
                                 QtJambiExceptionHandler __handler;
@@ -1186,13 +1163,17 @@ namespace QtJambiAPI{
         auto types = std::make_unique<int[]>(argc + 1);
         for (int i = 0; i < argc; ++i) {
             const QArgumentType &type = argumentTypes[i];
+#if QT_VERSION < QT_VERSION_CHECK(6, 9, 0)
             if (type.type())
                 types[i] = type.type();
             else if (type.name().endsWith('*'))
                 types[i] = QMetaType::VoidStar;
             else
                 types[i] = QMetaType::fromName(type.name()).id();
-
+#else
+            if (type.metaType().isValid())
+                types[i] = type.metaType().id();
+#endif
             if (!types[i]) {
                 return nullptr;
             }

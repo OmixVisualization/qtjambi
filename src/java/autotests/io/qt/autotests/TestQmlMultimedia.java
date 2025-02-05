@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -43,7 +43,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.QtUtilities;
+import io.qt.internal.TestUtility;
+import io.qt.core.QDir;
 import io.qt.core.QObject;
+import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QResource;
 import io.qt.core.QUrl;
 import io.qt.gui.QGuiApplication;
@@ -55,11 +58,14 @@ public class TestQmlMultimedia extends ApplicationInitializer {
 	
 	@AfterClass
     public static void testDispose() throws Exception {
-		ApplicationInitializer.testDispose();
 		if(tmpFile!=null) {
+			runGC();
 			QResource.removeClassPath(tmpFile.getAbsolutePath());
-			tmpFile.delete();
+			if(!tmpFile.delete()) {
+				tmpFile.deleteOnExit();
+			}
 		}
+		ApplicationInitializer.testDispose();
 	}
 
     @BeforeClass
@@ -69,7 +75,12 @@ public class TestQmlMultimedia extends ApplicationInitializer {
         if(url.getProtocol().equals("file")) {
         	QResource.addClassPath(new java.io.File(url.toURI()).getAbsolutePath());
         }else {
-        	tmpFile = File.createTempFile("resources", ".jar");
+        	File userDir = new File(System.getProperty("user.dir", ""));
+        	if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android)) {
+    			userDir = new File(QDir.tempPath());
+    		}
+        	userDir.mkdirs();
+        	tmpFile = new File(userDir, "TestQmlMultimedia_pid" + TestUtility.processName() + ".jar");
         	try (InputStream is = url.openStream()){
         		Files.copy(is, tmpFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
         	}

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -33,6 +33,7 @@ import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import io.qt.QtUtilities;
 import io.qt.autotests.generated.General;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QEvent;
@@ -285,6 +286,7 @@ public class TestExceptions extends ApplicationInitializer {
     
     @Test
     public void testExceptionDuringEvent_threaded_handled() {
+    	QtUtilities.setNoExceptionForwardingFromVirtualCallsEnabled(false);
     	QThread thread = new QThread();
     	Throwable[] thrown = {null};
     	thread.setUncaughtExceptionHandler((Thread t, Throwable e)->{

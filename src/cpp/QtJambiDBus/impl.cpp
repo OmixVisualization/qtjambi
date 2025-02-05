@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -120,7 +120,7 @@ void __qt_destruct_QDBusReply(void* ptr)
 
 // emitting  (functionsInTargetLang writeFinalFunction)
 // QDBusReply::QDBusReply(const QDBusError & dbusError)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus_QDBusReply_initialize_1native__Lio_qt_dbus_QDBusReply_2Lio_qt_dbus_QDBusError_2)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_dbus_QDBusReply_initialize_1native__Lio_qt_dbus_QDBusReply_2Lio_qt_dbus_QDBusError_2
 (JNIEnv *__jni_env,
  jclass __jni_class,
  jobject __jni_object,
@@ -138,7 +138,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus_QD
 }
 
 // QDBusReply::QDBusReply(const QDBusMessage & reply)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus_QDBusReply_initialize_1native__Lio_qt_dbus_QDBusReply_2Lio_qt_dbus_QDBusMessage_2Lio_qt_core_QMetaType_2)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_dbus_QDBusReply_initialize_1native__Lio_qt_dbus_QDBusReply_2Lio_qt_dbus_QDBusMessage_2Lio_qt_core_QMetaType_2
 (JNIEnv *__jni_env,
  jclass __jni_class,
  jobject __jni_object,
@@ -158,7 +158,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus_QD
 }
 
 // QDBusReply::QDBusReply(const QDBusPendingCall & pcall)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus_QDBusReply_initialize_1native__Lio_qt_dbus_QDBusReply_2Lio_qt_dbus_QDBusPendingCall_2Lio_qt_core_QMetaType_2)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_dbus_QDBusReply_initialize_1native__Lio_qt_dbus_QDBusReply_2Lio_qt_dbus_QDBusPendingCall_2Lio_qt_core_QMetaType_2
 (JNIEnv *__jni_env,
  jclass __jni_class,
  jobject __jni_object,
@@ -178,10 +178,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus_QD
 }
 
 // QDBusReply::error() const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus_QDBusReply_error)
-(JNIEnv *__jni_env,
- jobject _this)
-{
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_dbus_QDBusReply_error(JNIEnv *__jni_env, jobject _this){
     jobject _result{nullptr};
     QTJAMBI_TRY{
         const QDBusReply<QVariant> *__qt_this = QtJambiAPI::convertJavaObjectToNative<QDBusReply<QVariant>>(__jni_env, _this);
@@ -196,10 +193,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus
 }
 
 // QDBusReply::isValid() const
-extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus_QDBusReply_isValid)
-(JNIEnv *__jni_env,
- jobject _this)
-{
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_dbus_QDBusReply_isValid(JNIEnv *__jni_env, jobject _this){
     jboolean _result{false};
     QTJAMBI_TRY{
         const QDBusReply<QVariant> *__qt_this = QtJambiAPI::convertJavaObjectToNative<QDBusReply<QVariant>>(__jni_env, _this);
@@ -213,11 +207,7 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbu
 }
 
 // QDBusReply::operator=(const QDBusReply<QVariant > & other)
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus_QDBusReply_set)
-(JNIEnv *__jni_env,
- jobject _this,
- jobject other0)
-{
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_dbus_QDBusReply_set(JNIEnv *__jni_env, jobject _this, jobject other0){
     jobject _result{nullptr};
     QtJambiScope __qtjambi_scope(__jni_env, _this);
     QTJAMBI_TRY{
@@ -234,10 +224,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus
 }
 
 // QDBusReply::value() const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus_QDBusReply_value)
-(JNIEnv *__jni_env,
- jobject _this)
-{
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_dbus_QDBusReply_value(JNIEnv *__jni_env, jobject _this){
     jobject _result{nullptr};
     QTJAMBI_TRY{
         const QDBusReply<QVariant> *__qt_this = QtJambiAPI::convertJavaObjectToNative<QDBusReply<QVariant>>(__jni_env, _this);
@@ -275,7 +262,7 @@ void qtjambiDBusRegisterMetaType<std::nullptr_t>(int metaType)
 #endif
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus_QDBusMetaType_registerDBusMetaType)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_dbus_QDBusMetaType_registerDBusMetaType
 (JNIEnv *__jni_env,
  jclass,
  jint metaTypeId,
@@ -347,7 +334,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus_QD
                     if(!ptr[2] || !ptr[3])
                         Java::Runtime::RuntimeException::throwNew(__jni_env, QStringLiteral("Meta type %1 does not provide data stream operators.").arg(QLatin1String(metaType.name())) QTJAMBI_STACKTRACEINFO );
                 }
-#else
+#elif QT_VERSION >= QT_VERSION_CHECK(6,1,0)
                 if(!metaType.hasRegisteredDataStreamOperators())
                     Java::Runtime::RuntimeException::throwNew(__jni_env, QStringLiteral("Meta type %1 does not provide data stream operators.").arg(QLatin1String(metaType.name())) QTJAMBI_STACKTRACEINFO );
 #endif
@@ -402,41 +389,49 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus_QD
 #endif
                 JObjectWrapper _marshallFunction(__jni_env, marshallFunction);
                 mf = qtjambi_function_pointer<16,void(QDBusArgument &, const void *)>([metaTypeId,_marshallFunction](QDBusArgument &arg, const void *t) {
-                    if(JniEnvironment env{300}){
-                        jobject _arg = qtjambi_cast<jobject>(env, &arg);
-                        QTJAMBI_INVALIDATE_AFTER_USE(env, _arg);
+                    if(JniEnvironmentExceptionHandler env{300}){
+                        QTJAMBI_TRY{
+                            jobject _arg = qtjambi_cast<jobject>(env, &arg);
+                            QTJAMBI_INVALIDATE_AFTER_USE(env, _arg);
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                        QVariant variant(metaTypeId, t);
+                            QVariant variant(metaTypeId, t);
 #else
-                        QVariant variant(QMetaType(metaTypeId), t);
+                            QVariant variant(QMetaType(metaTypeId), t);
 #endif
-                        Java::Runtime::BiConsumer::accept(env, _marshallFunction.object(env), _arg, qtjambi_cast<jobject>(env, variant));
+                            Java::Runtime::BiConsumer::accept(env, _marshallFunction.object(env), _arg, qtjambi_cast<jobject>(env, variant));
+                        }QTJAMBI_CATCH(const JavaException& exn){
+                            env.handleException(exn, "std::function<void(QDBusArgument &, const void *)>()");
+                        }QTJAMBI_TRY_END
                     }
                 }, qHash(metaTypeId));
                 JObjectWrapper _demarshallFunction(__jni_env, demarshallFunction);
                 df = qtjambi_function_pointer<16,void(const QDBusArgument &, void *)>([metaTypeId,_demarshallFunction](const QDBusArgument &arg, void *t) {
-                    if(JniEnvironment env{300}){
-                        jobject _arg = qtjambi_cast<jobject>(env, &arg);
-                        QTJAMBI_INVALIDATE_AFTER_USE(env, _arg);
-                        jobject result = Java::Runtime::Function::apply(env, _demarshallFunction.object(env), _arg);
-                        QVariant variant = qtjambi_cast<QVariant>(env, result);
+                    if(JniEnvironmentExceptionHandler env{300}){
+                        QTJAMBI_TRY{
+                            jobject _arg = qtjambi_cast<jobject>(env, &arg);
+                            QTJAMBI_INVALIDATE_AFTER_USE(env, _arg);
+                            jobject result = Java::Runtime::Function::apply(env, _demarshallFunction.object(env), _arg);
+                            QVariant variant = qtjambi_cast<QVariant>(env, result);
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                        if(variant.userType()!=metaTypeId){
-                            if(!variant.convert(metaTypeId))
+                            if(variant.userType()!=metaTypeId){
+                                if(!variant.convert(metaTypeId))
 #else
-                        QMetaType metaType(metaTypeId);
-                        if(variant.metaType()!=metaType){
-                            if(!variant.convert(metaType))
+                            QMetaType metaType(metaTypeId);
+                            if(variant.metaType()!=metaType){
+                                if(!variant.convert(metaType))
 #endif
-                                JavaException::raiseRuntimeException(env, "Unable to convert variant." QTJAMBI_STACKTRACEINFO );
-                        }
+                                    JavaException::raiseRuntimeException(env, "Unable to convert variant." QTJAMBI_STACKTRACEINFO );
+                            }
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                        QMetaType::destruct(metaTypeId, t);
-                        QMetaType::construct(metaTypeId, t, variant.constData());
+                            QMetaType::destruct(metaTypeId, t);
+                            QMetaType::construct(metaTypeId, t, variant.constData());
 #else
-                        metaType.destruct(t);
-                        metaType.construct(t, variant.constData());
+                            metaType.destruct(t);
+                            metaType.construct(t, variant.constData());
 #endif
+                        }QTJAMBI_CATCH(const JavaException& exn){
+                            env.handleException(exn, "std::function<void(const QDBusArgument &, void *)>()");
+                        }QTJAMBI_TRY_END
                     }
                 }, qHash(metaTypeId));
             }
@@ -451,11 +446,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus_QD
     }QTJAMBI_TRY_END
 }
 
-extern "C" Q_DECL_EXPORT jstring JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus_QDBusMetaType_typeToSignature)
-(JNIEnv *__jni_env,
- jclass,
- jobject _metaType)
-{
+extern "C" JNIEXPORT jstring JNICALL Java_io_qt_dbus_QDBusMetaType_typeToSignature(JNIEnv *__jni_env, jclass, jobject _metaType){
     jstring _result{nullptr};
     QTJAMBI_TRY{
         const QMetaType& metaType = qtjambi_cast<const QMetaType&>(__jni_env, _metaType);
@@ -470,11 +461,7 @@ extern "C" Q_DECL_EXPORT jstring JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus
     return _result;
 }
 
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus_QDBusMetaType_signatureToMetaType)
-(JNIEnv *__jni_env,
- jclass,
- jstring _signature)
-{
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_dbus_QDBusMetaType_signatureToMetaType(JNIEnv *__jni_env, jclass, jstring _signature){
     jobject _result{nullptr};
     QTJAMBI_TRY{
         J2CStringBuffer signature(__jni_env, _signature);
@@ -490,7 +477,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus
     return _result;
 }
 
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus_QDBusMetaType_demarshall)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_dbus_QDBusMetaType_demarshall
 (JNIEnv *__jni_env,
  jclass,
  jobject _arg,
@@ -526,7 +513,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus
     return _result;
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus_QDBusMetaType_marshall)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_dbus_QDBusMetaType_marshall
 (JNIEnv *__jni_env,
  jclass,
  jobject _arg,

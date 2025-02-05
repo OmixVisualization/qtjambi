@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -64,11 +64,7 @@ QT_WARNING_DISABLE_DEPRECATED
 #include <QtCore/private/qthread_p.h>
 #include <QtCore/private/qplugin_p.h>
 
-extern "C" Q_DECL_EXPORT jboolean JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_TestUtility_hasDeleteLaterEvents)
-(JNIEnv *,
- jclass)
-{
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_internal_TestUtility_hasDeleteLaterEvents(JNIEnv *, jclass){
 #if defined(QTJAMBI_DEBUG_TOOLS)
     return QtJambiLink::hasDeleteLaterEvents();
 #else
@@ -76,11 +72,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_TestUtility_hasDeleteLaterEvents)
 #endif
 }
 
-extern "C" Q_DECL_EXPORT jboolean JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_TestUtility_hasDebugTools)
-(JNIEnv *,
- jclass)
-{
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_internal_TestUtility_hasDebugTools(JNIEnv *, jclass){
 #if defined(QTJAMBI_DEBUG_TOOLS)
     return true;
 #else
@@ -88,11 +80,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_TestUtility_hasDebugTools)
 #endif
 }
 
-extern "C" Q_DECL_EXPORT jint JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_TestUtility_objectCount)
-(JNIEnv * env,
- jclass)
-{
+extern "C" JNIEXPORT jint JNICALL Java_io_qt_internal_TestUtility_objectCount(JNIEnv * env, jclass){
 #if defined(QTJAMBI_DEBUG_TOOLS)
     return QtJambiLink::dumpLinks(env);
 #else
@@ -101,45 +89,23 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_TestUtility_objectCount)
 #endif
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_TestUtility_flushOut)
-(JNIEnv *,
- jclass)
-{
+extern "C" JNIEXPORT void JNICALL Java_io_qt_internal_TestUtility_flushOut(JNIEnv *, jclass){
     fflush(stdout);
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_TestUtility_flushErr)
-(JNIEnv *,
- jclass)
-{
+extern "C" JNIEXPORT void JNICALL Java_io_qt_internal_TestUtility_flushErr(JNIEnv *, jclass){
     fflush(stderr);
 }
 
-extern "C" Q_DECL_EXPORT jint JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_TestUtility_objectCacheMode)
-(JNIEnv *,
- jclass)
-{
+extern "C" JNIEXPORT jint JNICALL Java_io_qt_internal_TestUtility_objectCacheMode(JNIEnv *, jclass){
     return QtJambiLink::getObjectCacheMode();
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_TestUtility_setObjectCacheMode)
-(JNIEnv *,
- jclass,
- jint object_cache_mode)
-{
+extern "C" JNIEXPORT void JNICALL Java_io_qt_internal_TestUtility_setObjectCacheMode(JNIEnv *, jclass, jint object_cache_mode){
     QtJambiLink::setObjectCacheMode(object_cache_mode);
 }
 
-extern "C" Q_DECL_EXPORT jboolean JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_TestUtility_isSharedPointer)
-(JNIEnv *__jni_env,
- jclass,
- QtJambiNativeID nativeId)
-{
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_internal_TestUtility_isSharedPointer(JNIEnv *__jni_env, jclass, QtJambiNativeID nativeId){
     try{
         QSharedPointer<QtJambiLink> link = QtJambiLink::fromNativeId(nativeId);
         return link && link->isSmartPointer();

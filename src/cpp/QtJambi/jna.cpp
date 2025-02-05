@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -39,23 +39,20 @@
 #include "qtjambilink_p.h"
 #include "qtjambi_cast.h"
 
-Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, gPointerLock, (QReadWriteLock::Recursive))
-QReadWriteLock* pointerLock(){
-    return gPointerLock();
-}
-typedef SecureContainer<QHash<quintptr, QList<jobject>>,QReadWriteLock,&pointerLock> ObjectsByFunctionPointer;
+Q_GLOBAL_STATIC(QReadWriteLock, gPointerLock)
+typedef SecureContainer<QHash<quintptr, QList<JObjectWrapper>>,gPointerLock> ObjectsByFunctionPointer;
 Q_GLOBAL_STATIC(ObjectsByFunctionPointer, gObjectsByFunctionPointer)
 
 void clearObjectsByFunctionPointerAtShutdown(JNIEnv* env){
-    QHash<quintptr, QList<jobject>> objectsByFunctionPointer;
+    QHash<quintptr, QList<JObjectWrapper>> objectsByFunctionPointer;
     if(!gObjectsByFunctionPointer.isDestroyed()){
         QWriteLocker locker(gPointerLock());
         gObjectsByFunctionPointer->swap(objectsByFunctionPointer);
     }
     if(env){
-        for(QList<jobject>& objects : objectsByFunctionPointer){
-            for(jobject o : objects){
-                env->DeleteGlobalRef(o);
+        for(QList<JObjectWrapper>& objects : objectsByFunctionPointer){
+            for(JObjectWrapper& o : objects){
+                o.clear(env);
             }
         }
     }
@@ -279,7 +276,7 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                                                                   0,
                                                                   __jni_env->NewStringUTF("UTF-8"));
                     ptr = *reinterpret_cast<QFunctionPointer*>(peer);
-                    QtJambiLink::createLinkForNativeObject(
+                    (void)QtJambiLink::createLinkForNativeObject(
                             __jni_env,
                             val,
                             new QFunctionPointer(ptr),
@@ -291,7 +288,7 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                         );
                     {
                         QWriteLocker locker(gPointerLock());
-                        (*gObjectsByFunctionPointer())[quintptr(ptr)] << __jni_env->NewGlobalRef(val);
+                        (*gObjectsByFunctionPointer())[quintptr(ptr)] << JObjectWrapper(__jni_env, val);
                     }
                     Java::QtCore::QFunctionPointerUtil$CppToJavaInvocationHandler::set_peer(__jni_env, ih, peer);
                     Java::QtCore::QFunctionPointerUtil::registerCleanup(__jni_env, val, ih);
@@ -321,7 +318,7 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                         __jni_env->ReleaseStringUTFChars(jstring(val), chars);
                         void* ptr = byteArray;
                         if(argPointerOrReference==0){
-                            arg = LocalDataJBuffer(__jni_env, ptr, jsize(sizeof(QByteArray))).take();
+                            arg = DataJBuffer(__jni_env, ptr, jsize(sizeof(QByteArray))).take();
                             cleaners.append(Cleanup{[ptr](){ operator delete (ptr); }});
                         }else{
                             arg = Java::JNA::Pointer::newInstance(__jni_env, jlong(ptr));
@@ -333,7 +330,7 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                         QStringView* strg = new QStringView(chars);
                         void* ptr = strg;
                         if(argPointerOrReference==0){
-                            arg = LocalDataJBuffer(__jni_env, ptr, jsize(sizeof(QStringView))).take();
+                            arg = DataJBuffer(__jni_env, ptr, jsize(sizeof(QStringView))).take();
                             cleaners.append(Cleanup{[ptr, val, chars, __jni_env](){ operator delete (ptr); __jni_env->ReleaseStringChars(jstring(val), chars); }});
                         }else{
                             arg = Java::JNA::Pointer::newInstance(__jni_env, jlong(ptr));
@@ -346,7 +343,7 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                     *string = qtjambi_cast<QString>(__jni_env, val);
                     void* ptr = string;
                     if(argPointerOrReference==0){
-                        arg = LocalDataJBuffer(__jni_env, ptr, jsize(sizeof(QString))).take();
+                        arg = DataJBuffer(__jni_env, ptr, jsize(sizeof(QString))).take();
                         cleaners.append(Cleanup{[ptr](){ operator delete (ptr); }});
                     }else{
                         arg = Java::JNA::Pointer::newInstance(__jni_env, jlong(ptr));
@@ -412,8 +409,12 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                         });
                     }
                 }
+#if QT_VERSION >= QT_VERSION_CHECK(6, 9, 0)
+            }else if(argPointerOrReference==0 && !isReferenceMetaType && Java::QtJambi::QLongFlags::isInstanceOf(__jni_env, val)){
+                arg = Java::Runtime::Long::valueOf(__jni_env, Java::QtJambi::QLongFlags::longValue(__jni_env, val));
+#endif
             }else if(argPointerOrReference==0 && !isReferenceMetaType && Java::QtJambi::QFlags::isInstanceOf(__jni_env, val)){
-                arg = Java::Runtime::Integer::valueOf(__jni_env, Java::QtJambi::QFlags::value(__jni_env, val));
+                arg = Java::Runtime::Integer::valueOf(__jni_env, Java::QtJambi::QFlags::intValue(__jni_env, val));
             }else if(argPointerOrReference==0 && !isReferenceMetaType && Java::QtJambi::QtEnumerator::isInstanceOf(__jni_env, val)){
                 arg = Java::Runtime::Integer::valueOf(__jni_env, Java::QtJambi::QtEnumerator::value(__jni_env, val));
             }else if(argPointerOrReference==0 && !isReferenceMetaType && Java::QtJambi::QtByteEnumerator::isInstanceOf(__jni_env, val)){
@@ -817,7 +818,7 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                                         _argMetaType.reset(argMetaType = nullptr);
                                     if(argMetaType){
                                         ptr = argMetaType->create(ptr);
-                                        arg = LocalDataJBuffer(__jni_env, ptr, jsize(size)).take();
+                                        arg = DataJBuffer(__jni_env, ptr, jsize(size)).take();
                                         cleaners.append(Cleanup{[ptr](){ operator delete (ptr); }});
                                     }else{
                                         Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassName(__jni_env, argClassType).replace(QLatin1Char('$'), QLatin1Char('.'))) QTJAMBI_STACKTRACEINFO );
@@ -854,7 +855,7 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                                         }
                                     }
                                     if(argPointerOrReference==0 && !isReferenceMetaType){
-                                        arg = LocalDataJBuffer(__jni_env, ptr, jsize(size)).take();
+                                        arg = DataJBuffer(__jni_env, ptr, jsize(size)).take();
                                         cleaners.append(Cleanup{[ptr](){ operator delete (ptr); }});
                                     }else{
                                         arg = Java::JNA::Pointer::newInstance(__jni_env, ptr);
@@ -883,7 +884,7 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                                         else
                                             ptr = operator new(size);
                                         if(QtJambiAPI::convertJavaToNative(__jni_env, *typeId, val, ptr)){
-                                            arg = LocalDataJBuffer(__jni_env, ptr, jsize(size)).take();
+                                            arg = DataJBuffer(__jni_env, ptr, jsize(size)).take();
                                             cleaners.append(Cleanup{[ptr](){ operator delete (ptr); }});
                                         }else{
                                             Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassName(__jni_env, argClassType).replace(QLatin1Char('$'), QLatin1Char('.'))) QTJAMBI_STACKTRACEINFO );
@@ -901,10 +902,19 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                                                 arg = Java::JNA::Pointer::newInstance(__jni_env, ptr);
                                                 cleaners.append(Cleanup{[argMetaType, ptr](){ argMetaType->destroy(ptr); }});
                                                 if(argPointerOrReference!=-2 || isReferenceMetaType){
+#if QT_VERSION >= QT_VERSION_CHECK(6, 9, 0)
+                                                    if(Java::QtJambi::QLongFlags::isInstanceOf(__jni_env, val)){
+                                                        successActions.append([arg, val](JNIEnv* env){
+                                                            if(jlong* flag = reinterpret_cast<jlong*>(Java::JNA::Pointer::peer(env, arg))){
+                                                                Java::QtJambi::QLongFlags::setLongValue(env, val, *flag);
+                                                            }
+                                                        });
+                                                    }else
+#endif
                                                     if(Java::QtJambi::QFlags::isInstanceOf(__jni_env, val)){
                                                         successActions.append([arg, val](JNIEnv* env){
                                                             if(int* flag = reinterpret_cast<int*>(Java::JNA::Pointer::peer(env, arg))){
-                                                                Java::QtJambi::QFlags::setValue(env, val, *flag);
+                                                                Java::QtJambi::QFlags::setIntValue(env, val, *flag);
                                                             }
                                                         });
                                                     }
@@ -963,7 +973,7 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                                     ptr = link->pointer();
                                     if(argPointerOrReference==0 && !isReferenceMetaType){
                                         ptr = argMetaType->create(ptr);
-                                        arg = LocalDataJBuffer(__jni_env, ptr, jsize(size)).take();
+                                        arg = DataJBuffer(__jni_env, ptr, jsize(size)).take();
                                         cleaners.append(Cleanup{[ptr](){ operator delete (ptr); }});
                                     }else{
                                         arg = Java::JNA::Pointer::newInstance(__jni_env, ptr);
@@ -992,7 +1002,7 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                                         }
                                     }
                                     if(argPointerOrReference==0 && !isReferenceMetaType){
-                                        arg = LocalDataJBuffer(__jni_env, ptr, jsize(size)).take();
+                                        arg = DataJBuffer(__jni_env, ptr, jsize(size)).take();
                                         cleaners.append(Cleanup{[ptr](){ operator delete (ptr); }});
                                     }else{
                                         arg = Java::JNA::Pointer::newInstance(__jni_env, ptr);
@@ -1006,7 +1016,7 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                                     argMetaType = plink->metaType();
                                     if(argMetaType && argMetaType->isValid()){
                                         ptr = argMetaType->create(link->pointer());
-                                        arg = LocalDataJBuffer(__jni_env, ptr, jsize(size)).take();
+                                        arg = DataJBuffer(__jni_env, ptr, jsize(size)).take();
                                         cleaners.append(Cleanup{[ptr](){ operator delete (ptr); }});
                                     }else{
                                         Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassName(__jni_env, argClassType).replace(QLatin1Char('$'), QLatin1Char('.'))) QTJAMBI_STACKTRACEINFO );
@@ -1162,24 +1172,24 @@ jobject CoreAPI::invokeFunctionPointer(JNIEnv * __jni_env, QFunctionPointer __qt
     }else if(!returnMetaType && Java::QtJambi::QtEnumerator::isAssignableFrom(__jni_env, returnClassType)){
         switch(length){
         case 0:
-            return QtJambiAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint32(*)()>(*__qt_this)(), returnClassType);
+            return CoreAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint32(*)()>(*__qt_this)(), returnClassType);
         case 1:
             {
                 jobject arg = __jni_env->GetObjectArrayElement(arguments, 0);
                 if(Java::Runtime::Byte::isInstanceOf(__jni_env, arg)){
-                    return QtJambiAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint32(*)(jbyte)>(*__qt_this)(qtjambi_cast<jbyte>(__jni_env, arg)), returnClassType);
+                    return CoreAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint32(*)(jbyte)>(*__qt_this)(qtjambi_cast<jbyte>(__jni_env, arg)), returnClassType);
                 }else if(Java::Runtime::Short::isInstanceOf(__jni_env, arg)){
-                    return QtJambiAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint32(*)(jshort)>(*__qt_this)(qtjambi_cast<jshort>(__jni_env, arg)), returnClassType);
+                    return CoreAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint32(*)(jshort)>(*__qt_this)(qtjambi_cast<jshort>(__jni_env, arg)), returnClassType);
                 }else if(Java::Runtime::Integer::isInstanceOf(__jni_env, arg)){
-                    return QtJambiAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint32(*)(jint)>(*__qt_this)(qtjambi_cast<jint>(__jni_env, arg)), returnClassType);
+                    return CoreAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint32(*)(jint)>(*__qt_this)(qtjambi_cast<jint>(__jni_env, arg)), returnClassType);
                 }else if(Java::Runtime::Long::isInstanceOf(__jni_env, arg)){
-                    return QtJambiAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint32(*)(jlong)>(*__qt_this)(qtjambi_cast<jlong>(__jni_env, arg)), returnClassType);
+                    return CoreAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint32(*)(jlong)>(*__qt_this)(qtjambi_cast<jlong>(__jni_env, arg)), returnClassType);
                 }else if(Java::Runtime::Double::isInstanceOf(__jni_env, arg)){
-                    return QtJambiAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint32(*)(double)>(*__qt_this)(qtjambi_cast<double>(__jni_env, arg)), returnClassType);
+                    return CoreAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint32(*)(double)>(*__qt_this)(qtjambi_cast<double>(__jni_env, arg)), returnClassType);
                 }else if(Java::Runtime::Float::isInstanceOf(__jni_env, arg)){
-                    return QtJambiAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint32(*)(float)>(*__qt_this)(qtjambi_cast<float>(__jni_env, arg)), returnClassType);
+                    return CoreAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint32(*)(float)>(*__qt_this)(qtjambi_cast<float>(__jni_env, arg)), returnClassType);
                 }else if(Java::Runtime::Boolean::isInstanceOf(__jni_env, arg)){
-                    return QtJambiAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint32(*)(bool)>(*__qt_this)(qtjambi_cast<bool>(__jni_env, arg)), returnClassType);
+                    return CoreAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint32(*)(bool)>(*__qt_this)(qtjambi_cast<bool>(__jni_env, arg)), returnClassType);
                 }else{
                     const QMetaType* metaType = qtjambi_cast<const QMetaType*>(__jni_env, Java::QtCore::QGenericArgument::metaType(__jni_env, arg));
                     if(Java::QtCore::QGenericArgument::isInstanceOf(__jni_env, arg))
@@ -1194,7 +1204,7 @@ jobject CoreAPI::invokeFunctionPointer(JNIEnv * __jni_env, QFunctionPointer __qt
 #endif
                                                                 )){
                             void*const* ptr = reinterpret_cast<void*const*>(variant.data());
-                            return QtJambiAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint32(*)(const void*)>(*__qt_this)(*ptr), returnClassType);
+                            return CoreAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint32(*)(const void*)>(*__qt_this)(*ptr), returnClassType);
                         }
                     }
                 }
@@ -1205,24 +1215,24 @@ jobject CoreAPI::invokeFunctionPointer(JNIEnv * __jni_env, QFunctionPointer __qt
     }else if(!returnMetaType && Java::QtJambi::QtByteEnumerator::isAssignableFrom(__jni_env, returnClassType)){
         switch(length){
         case 0:
-            return QtJambiAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint8(*)()>(*__qt_this)(), returnClassType);
+            return CoreAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint8(*)()>(*__qt_this)(), returnClassType);
         case 1:
             {
                 jobject arg = __jni_env->GetObjectArrayElement(arguments, 0);
                 if(Java::Runtime::Byte::isInstanceOf(__jni_env, arg)){
-                    return QtJambiAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint8(*)(jbyte)>(*__qt_this)(qtjambi_cast<jbyte>(__jni_env, arg)), returnClassType);
+                    return CoreAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint8(*)(jbyte)>(*__qt_this)(qtjambi_cast<jbyte>(__jni_env, arg)), returnClassType);
                 }else if(Java::Runtime::Short::isInstanceOf(__jni_env, arg)){
-                    return QtJambiAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint8(*)(jshort)>(*__qt_this)(qtjambi_cast<jshort>(__jni_env, arg)), returnClassType);
+                    return CoreAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint8(*)(jshort)>(*__qt_this)(qtjambi_cast<jshort>(__jni_env, arg)), returnClassType);
                 }else if(Java::Runtime::Integer::isInstanceOf(__jni_env, arg)){
-                    return QtJambiAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint8(*)(jint)>(*__qt_this)(qtjambi_cast<jint>(__jni_env, arg)), returnClassType);
+                    return CoreAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint8(*)(jint)>(*__qt_this)(qtjambi_cast<jint>(__jni_env, arg)), returnClassType);
                 }else if(Java::Runtime::Long::isInstanceOf(__jni_env, arg)){
-                    return QtJambiAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint8(*)(jlong)>(*__qt_this)(qtjambi_cast<jlong>(__jni_env, arg)), returnClassType);
+                    return CoreAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint8(*)(jlong)>(*__qt_this)(qtjambi_cast<jlong>(__jni_env, arg)), returnClassType);
                 }else if(Java::Runtime::Double::isInstanceOf(__jni_env, arg)){
-                    return QtJambiAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint8(*)(double)>(*__qt_this)(qtjambi_cast<double>(__jni_env, arg)), returnClassType);
+                    return CoreAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint8(*)(double)>(*__qt_this)(qtjambi_cast<double>(__jni_env, arg)), returnClassType);
                 }else if(Java::Runtime::Float::isInstanceOf(__jni_env, arg)){
-                    return QtJambiAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint8(*)(float)>(*__qt_this)(qtjambi_cast<float>(__jni_env, arg)), returnClassType);
+                    return CoreAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint8(*)(float)>(*__qt_this)(qtjambi_cast<float>(__jni_env, arg)), returnClassType);
                 }else if(Java::Runtime::Boolean::isInstanceOf(__jni_env, arg)){
-                    return QtJambiAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint8(*)(bool)>(*__qt_this)(qtjambi_cast<bool>(__jni_env, arg)), returnClassType);
+                    return CoreAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint8(*)(bool)>(*__qt_this)(qtjambi_cast<bool>(__jni_env, arg)), returnClassType);
                 }else{
                     const QMetaType* metaType = qtjambi_cast<const QMetaType*>(__jni_env, Java::QtCore::QGenericArgument::metaType(__jni_env, arg));
                     if(Java::QtCore::QGenericArgument::isInstanceOf(__jni_env, arg))
@@ -1237,7 +1247,7 @@ jobject CoreAPI::invokeFunctionPointer(JNIEnv * __jni_env, QFunctionPointer __qt
 #endif
                                                                 )){
                             void*const* ptr = reinterpret_cast<void*const*>(variant.data());
-                            return QtJambiAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint8(*)(const void*)>(*__qt_this)(*ptr), returnClassType);
+                            return CoreAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint8(*)(const void*)>(*__qt_this)(*ptr), returnClassType);
                         }
                     }
                 }
@@ -1248,24 +1258,24 @@ jobject CoreAPI::invokeFunctionPointer(JNIEnv * __jni_env, QFunctionPointer __qt
     }else if(!returnMetaType && Java::QtJambi::QtShortEnumerator::isAssignableFrom(__jni_env, returnClassType)){
         switch(length){
         case 0:
-            return QtJambiAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint16(*)()>(*__qt_this)(), returnClassType);
+            return CoreAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint16(*)()>(*__qt_this)(), returnClassType);
         case 1:
             {
                 jobject arg = __jni_env->GetObjectArrayElement(arguments, 0);
                 if(Java::Runtime::Byte::isInstanceOf(__jni_env, arg)){
-                    return QtJambiAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint16(*)(jbyte)>(*__qt_this)(qtjambi_cast<jbyte>(__jni_env, arg)), returnClassType);
+                    return CoreAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint16(*)(jbyte)>(*__qt_this)(qtjambi_cast<jbyte>(__jni_env, arg)), returnClassType);
                 }else if(Java::Runtime::Short::isInstanceOf(__jni_env, arg)){
-                    return QtJambiAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint16(*)(jshort)>(*__qt_this)(qtjambi_cast<jshort>(__jni_env, arg)), returnClassType);
+                    return CoreAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint16(*)(jshort)>(*__qt_this)(qtjambi_cast<jshort>(__jni_env, arg)), returnClassType);
                 }else if(Java::Runtime::Integer::isInstanceOf(__jni_env, arg)){
-                    return QtJambiAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint16(*)(jint)>(*__qt_this)(qtjambi_cast<jint>(__jni_env, arg)), returnClassType);
+                    return CoreAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint16(*)(jint)>(*__qt_this)(qtjambi_cast<jint>(__jni_env, arg)), returnClassType);
                 }else if(Java::Runtime::Long::isInstanceOf(__jni_env, arg)){
-                    return QtJambiAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint16(*)(jlong)>(*__qt_this)(qtjambi_cast<jlong>(__jni_env, arg)), returnClassType);
+                    return CoreAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint16(*)(jlong)>(*__qt_this)(qtjambi_cast<jlong>(__jni_env, arg)), returnClassType);
                 }else if(Java::Runtime::Double::isInstanceOf(__jni_env, arg)){
-                    return QtJambiAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint16(*)(double)>(*__qt_this)(qtjambi_cast<double>(__jni_env, arg)), returnClassType);
+                    return CoreAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint16(*)(double)>(*__qt_this)(qtjambi_cast<double>(__jni_env, arg)), returnClassType);
                 }else if(Java::Runtime::Float::isInstanceOf(__jni_env, arg)){
-                    return QtJambiAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint16(*)(float)>(*__qt_this)(qtjambi_cast<float>(__jni_env, arg)), returnClassType);
+                    return CoreAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint16(*)(float)>(*__qt_this)(qtjambi_cast<float>(__jni_env, arg)), returnClassType);
                 }else if(Java::Runtime::Boolean::isInstanceOf(__jni_env, arg)){
-                    return QtJambiAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint16(*)(bool)>(*__qt_this)(qtjambi_cast<bool>(__jni_env, arg)), returnClassType);
+                    return CoreAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint16(*)(bool)>(*__qt_this)(qtjambi_cast<bool>(__jni_env, arg)), returnClassType);
                 }else{
                     const QMetaType* metaType = qtjambi_cast<const QMetaType*>(__jni_env, Java::QtCore::QGenericArgument::metaType(__jni_env, arg));
                     if(Java::QtCore::QGenericArgument::isInstanceOf(__jni_env, arg))
@@ -1280,7 +1290,7 @@ jobject CoreAPI::invokeFunctionPointer(JNIEnv * __jni_env, QFunctionPointer __qt
 #endif
                                                                 )){
                             void*const* ptr = reinterpret_cast<void*const*>(variant.data());
-                            return QtJambiAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint16(*)(const void*)>(*__qt_this)(*ptr), returnClassType);
+                            return CoreAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint16(*)(const void*)>(*__qt_this)(*ptr), returnClassType);
                         }
                     }
                 }
@@ -1291,24 +1301,24 @@ jobject CoreAPI::invokeFunctionPointer(JNIEnv * __jni_env, QFunctionPointer __qt
     }else if(!returnMetaType && Java::QtJambi::QtLongEnumerator::isAssignableFrom(__jni_env, returnClassType)){
         switch(length){
         case 0:
-            return QtJambiAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint64(*)()>(*__qt_this)(), returnClassType);
+            return CoreAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint64(*)()>(*__qt_this)(), returnClassType);
         case 1:
             {
                 jobject arg = __jni_env->GetObjectArrayElement(arguments, 0);
                 if(Java::Runtime::Byte::isInstanceOf(__jni_env, arg)){
-                    return QtJambiAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint64(*)(jbyte)>(*__qt_this)(qtjambi_cast<jbyte>(__jni_env, arg)), returnClassType);
+                    return CoreAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint64(*)(jbyte)>(*__qt_this)(qtjambi_cast<jbyte>(__jni_env, arg)), returnClassType);
                 }else if(Java::Runtime::Short::isInstanceOf(__jni_env, arg)){
-                    return QtJambiAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint64(*)(jshort)>(*__qt_this)(qtjambi_cast<jshort>(__jni_env, arg)), returnClassType);
+                    return CoreAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint64(*)(jshort)>(*__qt_this)(qtjambi_cast<jshort>(__jni_env, arg)), returnClassType);
                 }else if(Java::Runtime::Integer::isInstanceOf(__jni_env, arg)){
-                    return QtJambiAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint64(*)(jint)>(*__qt_this)(qtjambi_cast<jint>(__jni_env, arg)), returnClassType);
+                    return CoreAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint64(*)(jint)>(*__qt_this)(qtjambi_cast<jint>(__jni_env, arg)), returnClassType);
                 }else if(Java::Runtime::Long::isInstanceOf(__jni_env, arg)){
-                    return QtJambiAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint64(*)(jlong)>(*__qt_this)(qtjambi_cast<jlong>(__jni_env, arg)), returnClassType);
+                    return CoreAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint64(*)(jlong)>(*__qt_this)(qtjambi_cast<jlong>(__jni_env, arg)), returnClassType);
                 }else if(Java::Runtime::Double::isInstanceOf(__jni_env, arg)){
-                    return QtJambiAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint64(*)(double)>(*__qt_this)(qtjambi_cast<double>(__jni_env, arg)), returnClassType);
+                    return CoreAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint64(*)(double)>(*__qt_this)(qtjambi_cast<double>(__jni_env, arg)), returnClassType);
                 }else if(Java::Runtime::Float::isInstanceOf(__jni_env, arg)){
-                    return QtJambiAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint64(*)(float)>(*__qt_this)(qtjambi_cast<float>(__jni_env, arg)), returnClassType);
+                    return CoreAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint64(*)(float)>(*__qt_this)(qtjambi_cast<float>(__jni_env, arg)), returnClassType);
                 }else if(Java::Runtime::Boolean::isInstanceOf(__jni_env, arg)){
-                    return QtJambiAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint64(*)(bool)>(*__qt_this)(qtjambi_cast<bool>(__jni_env, arg)), returnClassType);
+                    return CoreAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint64(*)(bool)>(*__qt_this)(qtjambi_cast<bool>(__jni_env, arg)), returnClassType);
                 }else{
                     const QMetaType* metaType = qtjambi_cast<const QMetaType*>(__jni_env, Java::QtCore::QGenericArgument::metaType(__jni_env, arg));
                     if(Java::QtCore::QGenericArgument::isInstanceOf(__jni_env, arg))
@@ -1323,7 +1333,7 @@ jobject CoreAPI::invokeFunctionPointer(JNIEnv * __jni_env, QFunctionPointer __qt
 #endif
                                                                 )){
                             void*const* ptr = reinterpret_cast<void*const*>(variant.data());
-                            return QtJambiAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint64(*)(const void*)>(*__qt_this)(*ptr), returnClassType);
+                            return CoreAPI::convertEnumToJavaObject(__jni_env, reinterpret_cast<qint64(*)(const void*)>(*__qt_this)(*ptr), returnClassType);
                         }
                     }
                 }
@@ -1918,21 +1928,22 @@ jobject CoreAPI::invokeFunctionPointer(JNIEnv * __jni_env, QFunctionPointer __qt
                 if(returnPointerOrReference==2 && returnClassType){
                     QFunctionPointer fp = reinterpret_cast<QFunctionPointer>(ptr);
                     bool resolved = false;
+                    QList<JObjectWrapper> objects;
                     {
                         QReadLocker locker(gPointerLock());
                         if(gObjectsByFunctionPointer->contains(quintptr(fp))){
-                            QList<jobject>& objects = (*gObjectsByFunctionPointer())[quintptr(fp)];
-                            for(jobject o : objects){
-                                if(__jni_env->IsInstanceOf(o, returnClassType)){
-                                    result = __jni_env->NewLocalRef(o);
-                                    resolved = true;
-                                }
-                            }
+                            objects = (*gObjectsByFunctionPointer())[quintptr(fp)];
+                        }
+                    }
+                    for(JObjectWrapper o : objects){
+                        if(o.isInstanceOf(__jni_env, returnClassType)){
+                            result = o.object(__jni_env);
+                            resolved = true;
                         }
                     }
                     if(!resolved){
                         result = Java::QtCore::QFunctionPointerUtil::createProxy(__jni_env, returnClassType);
-                        QtJambiLink::createLinkForNativeObject(
+                        (void)QtJambiLink::createLinkForNativeObject(
                                 __jni_env,
                                 result,
                                 new QFunctionPointer(fp),
@@ -1943,7 +1954,7 @@ jobject CoreAPI::invokeFunctionPointer(JNIEnv * __jni_env, QFunctionPointer __qt
                                 QtJambiLink::Ownership::Java
                             );
                         QWriteLocker locker(gPointerLock());
-                        (*gObjectsByFunctionPointer())[quintptr(fp)] << __jni_env->NewGlobalRef(result);
+                        (*gObjectsByFunctionPointer())[quintptr(fp)] << JObjectWrapper(__jni_env, result);
                     }
                 }else{
                     void* _ptr = ptr;
@@ -1963,22 +1974,22 @@ jobject CoreAPI::invokeFunctionPointer(JNIEnv * __jni_env, QFunctionPointer __qt
             }
         }else if(!returnMetaType && Java::QtJambi::QtEnumerator::isAssignableFrom(__jni_env, returnClassType)){
             if(Java::Runtime::Number::isInstanceOf(__jni_env, result)){
-                result = QtJambiAPI::convertEnumToJavaObject(__jni_env, qint32(Java::Runtime::Number::intValue(__jni_env, result)), returnClassType);
+                result = CoreAPI::convertEnumToJavaObject(__jni_env, qint32(Java::Runtime::Number::intValue(__jni_env, result)), returnClassType);
             }else
                 result = nullptr;
         }else if(!returnMetaType && Java::QtJambi::QtShortEnumerator::isAssignableFrom(__jni_env, returnClassType)){
             if(Java::Runtime::Number::isInstanceOf(__jni_env, result)){
-                result = QtJambiAPI::convertEnumToJavaObject(__jni_env, qint16(Java::Runtime::Number::shortValue(__jni_env, result)), returnClassType);
+                result = CoreAPI::convertEnumToJavaObject(__jni_env, qint16(Java::Runtime::Number::shortValue(__jni_env, result)), returnClassType);
             }else
                 result = nullptr;
         }else if(!returnMetaType && Java::QtJambi::QtByteEnumerator::isAssignableFrom(__jni_env, returnClassType)){
             if(Java::Runtime::Number::isInstanceOf(__jni_env, result)){
-                result = QtJambiAPI::convertEnumToJavaObject(__jni_env, qint8(Java::Runtime::Number::byteValue(__jni_env, result)), returnClassType);
+                result = CoreAPI::convertEnumToJavaObject(__jni_env, qint8(Java::Runtime::Number::byteValue(__jni_env, result)), returnClassType);
             }else
                 result = nullptr;
         }else if(!returnMetaType && Java::QtJambi::QtLongEnumerator::isAssignableFrom(__jni_env, returnClassType)){
             if(Java::Runtime::Number::isInstanceOf(__jni_env, result)){
-                result = QtJambiAPI::convertEnumToJavaObject(__jni_env, qint64(Java::Runtime::Number::longValue(__jni_env, result)), returnClassType);
+                result = CoreAPI::convertEnumToJavaObject(__jni_env, qint64(Java::Runtime::Number::longValue(__jni_env, result)), returnClassType);
             }else
                 result = nullptr;
         }
@@ -2236,7 +2247,7 @@ jobject CoreAPI::convertFunctionPointerReturn(JNIEnv * __jni_env, jobject return
                                                               __jni_env->NewStringUTF("UTF-8"));
                 ptr = *reinterpret_cast<QFunctionPointer*>(peer);
                 QFunctionPointer fp = reinterpret_cast<QFunctionPointer>(ptr);
-                QtJambiLink::createLinkForNativeObject(
+                (void)QtJambiLink::createLinkForNativeObject(
                         __jni_env,
                         result,
                         new QFunctionPointer(ptr),
@@ -2248,7 +2259,7 @@ jobject CoreAPI::convertFunctionPointerReturn(JNIEnv * __jni_env, jobject return
                     );
                 {
                     QWriteLocker locker(gPointerLock());
-                    (*gObjectsByFunctionPointer())[quintptr(fp)] << __jni_env->NewGlobalRef(result);
+                    (*gObjectsByFunctionPointer())[quintptr(fp)] << JObjectWrapper(__jni_env, result);
                 }
                 Java::QtCore::QFunctionPointerUtil$CppToJavaInvocationHandler::set_peer(__jni_env, ih, peer);
                 Java::QtCore::QFunctionPointerUtil::registerCleanup(__jni_env, result, ih);
@@ -3048,21 +3059,22 @@ void CoreAPI::convertFunctionPointerParameters(JNIEnv * __jni_env, jobjectArray 
                     if(argPointerOrReference==2 && argClassType){
                         QFunctionPointer fp = reinterpret_cast<QFunctionPointer>(ptr);
                         bool resolved = false;
+                        QList<JObjectWrapper> objects;
                         {
                             QReadLocker locker(gPointerLock());
                             if(gObjectsByFunctionPointer->contains(quintptr(fp))){
-                                QList<jobject>& objects = (*gObjectsByFunctionPointer())[quintptr(fp)];
-                                for(jobject o : objects){
-                                    if(__jni_env->IsInstanceOf(o, argClassType)){
-                                        convertedValue = __jni_env->NewLocalRef(o);
-                                        resolved = true;
-                                    }
-                                }
+                                objects = (*gObjectsByFunctionPointer())[quintptr(fp)];
+                            }
+                        }
+                        for(JObjectWrapper o : objects){
+                            if(o.isInstanceOf(__jni_env, argClassType)){
+                                convertedValue = o.object(__jni_env);
+                                resolved = true;
                             }
                         }
                         if(!resolved){
                             convertedValue = Java::QtCore::QFunctionPointerUtil::createProxy(__jni_env, argClassType);
-                            QtJambiLink::createLinkForNativeObject(
+                            (void)QtJambiLink::createLinkForNativeObject(
                                     __jni_env,
                                     convertedValue,
                                     new QFunctionPointer(fp),
@@ -3073,7 +3085,7 @@ void CoreAPI::convertFunctionPointerParameters(JNIEnv * __jni_env, jobjectArray 
                                     QtJambiLink::Ownership::Java
                                 );
                             QWriteLocker locker(gPointerLock());
-                            (*gObjectsByFunctionPointer())[quintptr(fp)] << __jni_env->NewGlobalRef(convertedValue);
+                            (*gObjectsByFunctionPointer())[quintptr(fp)] << JObjectWrapper(__jni_env, convertedValue);
                         }
                     }else{
                         void* _ptr = ptr;
@@ -3092,42 +3104,52 @@ void CoreAPI::convertFunctionPointerParameters(JNIEnv * __jni_env, jobjectArray 
                     }
                 }else if(Java::QtJambi::QtEnumerator::isAssignableFrom(__jni_env, argClassType)){
                     if(Java::Runtime::Number::isInstanceOf(__jni_env, oldValue)){
-                        convertedValue = QtJambiAPI::convertEnumToJavaObject(__jni_env, qint32(Java::Runtime::Number::intValue(__jni_env, oldValue)), argClassType);
+                        convertedValue = CoreAPI::convertEnumToJavaObject(__jni_env, qint32(Java::Runtime::Number::intValue(__jni_env, oldValue)), argClassType);
                     }else if(Java::JNA::Pointer::isInstanceOf(__jni_env, oldValue)){
                         qint32* ptr = reinterpret_cast<qint32*>(Java::JNA::Pointer::peer(__jni_env, oldValue));
-                        convertedValue = QtJambiAPI::convertEnumToJavaObject(__jni_env, *ptr, argClassType);
+                        convertedValue = CoreAPI::convertEnumToJavaObject(__jni_env, *ptr, argClassType);
                     }else
                         convertedValue = nullptr;
                 }else if(Java::QtJambi::QFlags::isAssignableFrom(__jni_env, argClassType)){
-                    if(Java::Runtime::Number::isInstanceOf(__jni_env, oldValue)){
-                        convertedValue = QtJambiAPI::convertQFlagsToJavaObject(__jni_env, qint32(Java::Runtime::Number::intValue(__jni_env, oldValue)), argClassType);
-                    }else if(Java::JNA::Pointer::isInstanceOf(__jni_env, oldValue)){
-                        qint32* ptr = reinterpret_cast<qint32*>(Java::JNA::Pointer::peer(__jni_env, oldValue));
-                        convertedValue = QtJambiAPI::convertQFlagsToJavaObject(__jni_env, *ptr, argClassType);
-                    }else
-                        convertedValue = nullptr;
+                    if(argMetaType->sizeOf()==sizeof(jlong)){
+                        if(Java::Runtime::Number::isInstanceOf(__jni_env, oldValue)){
+                            convertedValue = CoreAPI::convertQFlagsToJavaObject(__jni_env, Java::Runtime::Number::longValue(__jni_env, oldValue), argClassType);
+                        }else if(Java::JNA::Pointer::isInstanceOf(__jni_env, oldValue)){
+                            jlong* ptr = reinterpret_cast<jlong*>(Java::JNA::Pointer::peer(__jni_env, oldValue));
+                            convertedValue = CoreAPI::convertQFlagsToJavaObject(__jni_env, *ptr, argClassType);
+                        }else
+                            convertedValue = nullptr;
+                    }else{
+                        if(Java::Runtime::Number::isInstanceOf(__jni_env, oldValue)){
+                            convertedValue = CoreAPI::convertQFlagsToJavaObject(__jni_env, Java::Runtime::Number::intValue(__jni_env, oldValue), argClassType);
+                        }else if(Java::JNA::Pointer::isInstanceOf(__jni_env, oldValue)){
+                            jint* ptr = reinterpret_cast<jint*>(Java::JNA::Pointer::peer(__jni_env, oldValue));
+                            convertedValue = CoreAPI::convertQFlagsToJavaObject(__jni_env, *ptr, argClassType);
+                        }else
+                            convertedValue = nullptr;
+                    }
                 }else if(Java::QtJambi::QtShortEnumerator::isAssignableFrom(__jni_env, argClassType)){
                     if(Java::Runtime::Number::isInstanceOf(__jni_env, oldValue)){
-                        convertedValue = QtJambiAPI::convertEnumToJavaObject(__jni_env, qint16(Java::Runtime::Number::shortValue(__jni_env, oldValue)), argClassType);
+                        convertedValue = CoreAPI::convertEnumToJavaObject(__jni_env, qint16(Java::Runtime::Number::shortValue(__jni_env, oldValue)), argClassType);
                     }else if(Java::JNA::Pointer::isInstanceOf(__jni_env, oldValue)){
                         qint16* ptr = reinterpret_cast<qint16*>(Java::JNA::Pointer::peer(__jni_env, oldValue));
-                        convertedValue = QtJambiAPI::convertEnumToJavaObject(__jni_env, *ptr, argClassType);
+                        convertedValue = CoreAPI::convertEnumToJavaObject(__jni_env, *ptr, argClassType);
                     }else
                         convertedValue = nullptr;
                 }else if(Java::QtJambi::QtByteEnumerator::isAssignableFrom(__jni_env, argClassType)){
                     if(Java::Runtime::Number::isInstanceOf(__jni_env, oldValue)){
-                        convertedValue = QtJambiAPI::convertEnumToJavaObject(__jni_env, qint8(Java::Runtime::Number::byteValue(__jni_env, oldValue)), argClassType);
+                        convertedValue = CoreAPI::convertEnumToJavaObject(__jni_env, qint8(Java::Runtime::Number::byteValue(__jni_env, oldValue)), argClassType);
                     }else if(Java::JNA::Pointer::isInstanceOf(__jni_env, oldValue)){
                         qint8* ptr = reinterpret_cast<qint8*>(Java::JNA::Pointer::peer(__jni_env, oldValue));
-                        convertedValue = QtJambiAPI::convertEnumToJavaObject(__jni_env, *ptr, argClassType);
+                        convertedValue = CoreAPI::convertEnumToJavaObject(__jni_env, *ptr, argClassType);
                     }else
                         convertedValue = nullptr;
                 }else if(Java::QtJambi::QtLongEnumerator::isAssignableFrom(__jni_env, argClassType)){
                     if(Java::Runtime::Number::isInstanceOf(__jni_env, oldValue)){
-                        convertedValue = QtJambiAPI::convertEnumToJavaObject(__jni_env, qint64(Java::Runtime::Number::longValue(__jni_env, oldValue)), argClassType);
+                        convertedValue = CoreAPI::convertEnumToJavaObject(__jni_env, qint64(Java::Runtime::Number::longValue(__jni_env, oldValue)), argClassType);
                     }else if(Java::JNA::Pointer::isInstanceOf(__jni_env, oldValue)){
                         qint64* ptr = reinterpret_cast<qint64*>(Java::JNA::Pointer::peer(__jni_env, oldValue));
-                        convertedValue = QtJambiAPI::convertEnumToJavaObject(__jni_env, *ptr, argClassType);
+                        convertedValue = CoreAPI::convertEnumToJavaObject(__jni_env, *ptr, argClassType);
                     }else
                         convertedValue = nullptr;
                 }else if(isPrimitive && (Java::Runtime::Byte::isInstanceOf(__jni_env, oldValue)
@@ -3266,16 +3288,16 @@ jobject CoreAPI::castFunctionPointer(JNIEnv * env, jobject function, jclass func
                                             {
                                                 QReadLocker locker(gPointerLock());
                                                 if(gObjectsByFunctionPointer->contains(quintptr(ptr))){
-                                                    QList<jobject>& objects = (*gObjectsByFunctionPointer())[quintptr(ptr)];
-                                                    for(jobject o : objects){
-                                                        if(env->IsInstanceOf(o, functionalInterface))
-                                                            return env->NewLocalRef(o);
+                                                    QList<JObjectWrapper>& objects = (*gObjectsByFunctionPointer())[quintptr(ptr)];
+                                                    for(JObjectWrapper& o : objects){
+                                                        if(o.isInstanceOf(env, functionalInterface))
+                                                            return o.object(env);
                                                     }
                                                 }
                                             }
                                             jobject result = QtJambiAPI::convertNativeToJavaObjectAsCopy(env, &ptr, *targetTypeId);
                                             QWriteLocker locker(gPointerLock());
-                                            (*gObjectsByFunctionPointer())[quintptr(ptr)] << env->NewGlobalRef(result);
+                                            (*gObjectsByFunctionPointer())[quintptr(ptr)] << JObjectWrapper(env, result);
                                             return result;
                                         }else{
                                             Java::Runtime::ClassCastException::throwNew(env, QStringLiteral("Unable to convert java object of type '%1' to function pointer '%2'.").arg(QtJambiAPI::getObjectClassName(env, function).replace('$', '.'), QtJambiAPI::typeName(*sourceTypeId)) QTJAMBI_STACKTRACEINFO );
@@ -3306,14 +3328,16 @@ jobject CoreAPI::castFunctionPointer(JNIEnv * env, jobject function, jclass func
                                 if(Java::QtCore::QFunctionPointer::isSameClass(env, functionalInterface)){
                                     return qtjambi_cast<jobject>(env, ptr, "QFunctionPointer");
                                 }else{
+                                    QList<JObjectWrapper> objects;
                                     {
                                         QReadLocker locker(gPointerLock());
                                         if(gObjectsByFunctionPointer->contains(quintptr(ptr))){
-                                            QList<jobject>& objects = (*gObjectsByFunctionPointer())[quintptr(ptr)];
-                                            for(jobject o : objects){
-                                                if(env->IsInstanceOf(o, functionalInterface))
-                                                    return env->NewLocalRef(o);
-                                            }
+                                            objects = (*gObjectsByFunctionPointer())[quintptr(ptr)];
+                                        }
+                                    }
+                                    for(JObjectWrapper o : objects){
+                                        if(o.isInstanceOf(env, functionalInterface)){
+                                            return o.object(env);
                                         }
                                     }
                                     try{
@@ -3324,7 +3348,7 @@ jobject CoreAPI::castFunctionPointer(JNIEnv * env, jobject function, jclass func
                                         exn2.raise();
                                     }
                                     jobject result = Java::QtCore::QFunctionPointerUtil::createProxy(env, functionalInterface);
-                                    QtJambiLink::createLinkForNativeObject(
+                                    (void)QtJambiLink::createLinkForNativeObject(
                                             env,
                                             result,
                                             new QFunctionPointer(ptr),
@@ -3335,7 +3359,7 @@ jobject CoreAPI::castFunctionPointer(JNIEnv * env, jobject function, jclass func
                                             QtJambiLink::Ownership::Java
                                         );
                                     QWriteLocker locker(gPointerLock());
-                                    (*gObjectsByFunctionPointer())[quintptr(ptr)] << env->NewGlobalRef(result);
+                                    (*gObjectsByFunctionPointer())[quintptr(ptr)] << JObjectWrapper(env, result);
                                     return result;
                                 }
                             }else{
@@ -3360,14 +3384,16 @@ jobject CoreAPI::castFunctionPointer(JNIEnv * env, jobject function, jclass func
                         if(Java::QtCore::QFunctionPointer::isSameClass(env, functionalInterface)){
                             return qtjambi_cast<jobject>(env, *ptr, "QFunctionPointer");
                         }else{
+                            QList<JObjectWrapper> objects;
                             {
                                 QReadLocker locker(gPointerLock());
-                                if(gObjectsByFunctionPointer->contains(quintptr(*ptr))){
-                                    QList<jobject>& objects = (*gObjectsByFunctionPointer())[quintptr(*ptr)];
-                                    for(jobject o : objects){
-                                        if(env->IsInstanceOf(o, functionalInterface))
-                                            return env->NewLocalRef(o);
-                                    }
+                                if(gObjectsByFunctionPointer->contains(quintptr(ptr))){
+                                    objects = (*gObjectsByFunctionPointer())[quintptr(ptr)];
+                                }
+                            }
+                            for(JObjectWrapper o : objects){
+                                if(o.isInstanceOf(env, functionalInterface)){
+                                    return o.object(env);
                                 }
                             }
                             try{
@@ -3378,7 +3404,7 @@ jobject CoreAPI::castFunctionPointer(JNIEnv * env, jobject function, jclass func
                                 exn2.raise();
                             }
                             jobject result = Java::QtCore::QFunctionPointerUtil::createProxy(env, functionalInterface);
-                            QtJambiLink::createLinkForNativeObject(
+                            (void)QtJambiLink::createLinkForNativeObject(
                                     env,
                                     result,
                                     new QFunctionPointer(*ptr),
@@ -3389,7 +3415,7 @@ jobject CoreAPI::castFunctionPointer(JNIEnv * env, jobject function, jclass func
                                     QtJambiLink::Ownership::Java
                                 );
                             QWriteLocker locker(gPointerLock());
-                            (*gObjectsByFunctionPointer())[quintptr(*ptr)] << env->NewGlobalRef(result);
+                            (*gObjectsByFunctionPointer())[quintptr(*ptr)] << JObjectWrapper(env, result);
                             return result;
                         }
                     }

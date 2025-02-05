@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -79,7 +79,6 @@ import io.qt.core.Qt;
 import io.qt.gui.QColor;
 import io.qt.gui.QGuiApplication;
 import io.qt.gui.QStandardItemModel;
-import io.qt.internal.ClassAnalyzerUtility;
 import io.qt.widgets.QAbstractButton;
 import io.qt.widgets.QAbstractSpinBox;
 import io.qt.widgets.QApplication;
@@ -97,7 +96,7 @@ public class TestMetaProgramming extends ApplicationInitializer {
 	@BeforeClass
     public static void testInitialize() throws Exception {
     	ApplicationInitializer.testInitializeWithWidgets();
-    	hasSerializableLambdas = ClassAnalyzerUtility.serializeLambdaExpression((QMetaObject.Slot0)ApplicationInitializer::testInitializeWithWidgets) != null;
+    	hasSerializableLambdas = General.internalAccess.serializeLambdaExpression((QMetaObject.Slot0)ApplicationInitializer::testInitializeWithWidgets) != null;
     }
 	
 	@Test

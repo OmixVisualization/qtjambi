@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -34,10 +34,7 @@
 #include <qpa/qplatformintegration.h>
 #include <QtJambi/qtjambi_cast.h>
 
-extern "C" Q_DECL_EXPORT jobject JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_qpa_QPlatformIntegration_instance)
-    (JNIEnv *env, jclass)
-{
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_gui_qpa_QPlatformIntegration_instance(JNIEnv *env, jclass){
     jobject result{nullptr};
     QTJAMBI_TRY{
         result = qtjambi_cast<jobject>(env, QGuiApplicationPrivate::platformIntegration());

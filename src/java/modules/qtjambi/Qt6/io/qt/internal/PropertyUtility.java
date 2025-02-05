@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -29,43 +29,12 @@
 ****************************************************************************/
 package io.qt.internal;
 
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.AnnotatedParameterizedType;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.BiFunction;
-
-import io.qt.Nullable;
-import io.qt.QPropertyDeclarationException;
-import io.qt.QtObject;
-import io.qt.QtPointerType;
-import io.qt.QtPrimitiveType;
-import io.qt.QtPropertyBindable;
-import io.qt.QtReferenceType;
-import io.qt.core.QBindable;
-import io.qt.core.QBooleanBindable;
-import io.qt.core.QByteBindable;
-import io.qt.core.QCharBindable;
-import io.qt.core.QDoubleBindable;
-import io.qt.core.QFloatBindable;
-import io.qt.core.QIntBindable;
-import io.qt.core.QList;
-import io.qt.core.QLongBindable;
-import io.qt.core.QMetaObject;
-import io.qt.core.QMetaProperty;
-import io.qt.core.QMetaType;
-import io.qt.core.QObject;
-import io.qt.core.QShortBindable;
-import io.qt.core.QUntypedBindable;
-import io.qt.core.QUntypedPropertyData;
+import java.lang.reflect.*;
+import java.util.*;
+import java.util.function.*;
+import io.qt.*;
+import io.qt.core.*;
+import io.qt.internal.QtMocConstants.*;
 
 /**
  * @hidden

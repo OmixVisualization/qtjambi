@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -248,6 +248,7 @@ public class TestLocationInjectedCode extends ApplicationInitializer {
 			Assert.assertEquals(null, createGeocodingManagerEngine.errorString());
 			Assert.assertEquals("", createGeocodingManagerEngine.engine().managerName());
 			Assert.assertEquals("QGeoCodingManagerEngineOsm", createGeocodingManagerEngine.engine().metaObject().className());
+			servicePlugin.isDisposed();
 			++found;
 		}else {
 			errorString += pluginLoader.errorString()+" (geoservices/qtgeoservices_osm) ";

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -36,34 +36,36 @@ class QThread;
 
 namespace ThreadAPI{
 
-QTJAMBI_EXPORT jobject findJThreadForQThread(JNIEnv *env, jobject qt_thread);
-
-QTJAMBI_EXPORT jobject findQThreadForJThread(JNIEnv *env, jobject thread);
+QTJAMBI_EXPORT jobject findJThreadForQThread(JNIEnv *env, QtJambiNativeID thread_nid);
 
 QTJAMBI_EXPORT void initializeCurrentThread(JNIEnv *env);
 
-QTJAMBI_EXPORT void initializeMainThread(JNIEnv *env);
+QTJAMBI_EXPORT void initializeThread(JNIEnv *__jni_env, QtJambiNativeID thread_nid, jobject threadGroup);
 
-QTJAMBI_EXPORT void initializeThread(JNIEnv *__jni_env, jobject thread, jobject threadGroup);
+QTJAMBI_EXPORT void setDaemon(JNIEnv *__jni_env, QtJambiNativeID thread_nid, bool daemon);
 
-QTJAMBI_EXPORT void setDaemon(JNIEnv *__jni_env, jobject thread, bool daemon);
+QTJAMBI_EXPORT bool isDaemon(JNIEnv *__jni_env, QtJambiNativeID thread_nid);
 
-QTJAMBI_EXPORT bool isDaemon(QThread* thread);
+QTJAMBI_EXPORT void setName(JNIEnv *__jni_env, QtJambiNativeID thread_nid, jstring name);
 
-QTJAMBI_EXPORT void setName(JNIEnv *__jni_env, jobject thread, jstring name);
+QTJAMBI_EXPORT jstring getName(JNIEnv *__jni_env, QtJambiNativeID thread_nid);
 
-QTJAMBI_EXPORT jstring getName(JNIEnv *__jni_env, QThread* thread);
+QTJAMBI_EXPORT jobject getThreadGroup(JNIEnv *__jni_env, QtJambiNativeID thread_nid);
 
-QTJAMBI_EXPORT jobject getThreadGroup(JNIEnv *__jni_env, QThread* thread);
+QTJAMBI_EXPORT void setUncaughtExceptionHandler(JNIEnv *__jni_env, QtJambiNativeID thread_nid, jobject handler);
 
-QTJAMBI_EXPORT void setUncaughtExceptionHandler(JNIEnv *__jni_env, jobject thread, jobject handler);
+QTJAMBI_EXPORT jobject getUncaughtExceptionHandler(JNIEnv *__jni_env, QtJambiNativeID thread_nid);
 
-QTJAMBI_EXPORT jobject getUncaughtExceptionHandler(JNIEnv *__jni_env, QThread* thread);
+QTJAMBI_EXPORT void setContextClassLoader(JNIEnv *__jni_env, QtJambiNativeID thread_nid, jobject cl);
 
-QTJAMBI_EXPORT void setContextClassLoader(JNIEnv *__jni_env, jobject thread, jobject cl);
-
-QTJAMBI_EXPORT jobject getContextClassLoader(JNIEnv *__jni_env, QThread* thread);
+QTJAMBI_EXPORT jobject getContextClassLoader(JNIEnv *__jni_env, QtJambiNativeID thread_nid);
 
 }
+
+class QtJambiThreadShell{
+public:
+    typedef void (*ConstructorFunction)(void*, JNIEnv*, jobject, jvalue*, bool, bool, bool);
+    static QTJAMBI_EXPORT void initialize(JNIEnv *env, jclass callingClass, jobject object, ConstructorFunction constructorFunction, size_t size, const std::type_info& typeId, uint returnScopeRequired, const QMetaObject& originalMetaObject, bool isShell, bool hasCustomMetaObject, bool isDeclarativeCall, jvalue* arguments);
+};
 
 #endif // QTJAMBI_THREADAPI_H

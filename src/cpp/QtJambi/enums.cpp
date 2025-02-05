@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -42,13 +42,10 @@ struct SwitchTable{
     bool isSwitchTable;
 };
 
-Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, gEnumLock, (QReadWriteLock::Recursive))
-QReadWriteLock* enumLock(){
-    return gEnumLock();
-}
-typedef SecureContainer<QHash<jint,jfieldID>,QReadWriteLock,&enumLock> EnumClassValuesHash;
-typedef SecureContainer<QHash<jint,bool>,QReadWriteLock,&enumLock> EnumClassExtensibleHash;
-typedef SecureContainer<QHash<QString,QList<SwitchTable>>,QReadWriteLock,&enumLock> SwitchTableFieldHash;
+Q_GLOBAL_STATIC(QReadWriteLock, gEnumLock)
+typedef SecureContainer<QHash<jint,jfieldID>,gEnumLock> EnumClassValuesHash;
+typedef SecureContainer<QHash<jint,bool>,gEnumLock> EnumClassExtensibleHash;
+typedef SecureContainer<QHash<QString,QList<SwitchTable>>,gEnumLock> SwitchTableFieldHash;
 Q_GLOBAL_STATIC(EnumClassValuesHash, enumClassValuesFields)
 Q_GLOBAL_STATIC(EnumClassExtensibleHash, enumClassExtensible)
 Q_GLOBAL_STATIC(SwitchTableFieldHash, gSwitchTableFields)

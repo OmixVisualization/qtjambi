@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -37,12 +37,12 @@ public class QNonVirtualOverridingException extends RuntimeException
 {
     private static final long serialVersionUID = 1L;
 
-    public QNonVirtualOverridingException(String extraMessage)
+    public QNonVirtualOverridingException(@NonNull String extraMessage)
     {
-        super(extraMessage.length() > 0 ? "Non-virtual function overridden: " + extraMessage : "Non-virtual function overridden");
+        super(extraMessage!=null && extraMessage.length() > 0 ? "Non-virtual function overridden: " + extraMessage : "Non-virtual function overridden");
     }
     
-    public QNonVirtualOverridingException(String message, boolean dummy)
+    public QNonVirtualOverridingException(@NonNull String message, boolean dummy)
     {
         super(message);
     }

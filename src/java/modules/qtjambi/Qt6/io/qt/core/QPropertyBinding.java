@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -36,7 +36,7 @@ import java.lang.reflect.Type;
 import java.util.function.Supplier;
 
 import io.qt.*;
-import io.qt.internal.ClassAnalyzerUtility;
+import io.qt.internal.LambdaInfo;
 
 /**
  * <p>Java wrapper for Qt class <a href="https://doc.qt.io/qt/qpropertybinding.html">QPropertyBinding</a></p>
@@ -132,10 +132,16 @@ public final class QPropertyBinding<T> extends QUntypedPropertyBinding {
 		pendingMetaType.set(metaTypeSupplier);
 	}
 	
+	private static class CoreUtility extends io.qt.internal.CoreUtility{
+        protected static LambdaInfo lambdaInfo(java.io.Serializable slotObject) {
+            return io.qt.internal.CoreUtility.lambdaInfo(slotObject);
+        }
+    }
+	
 	@SuppressWarnings({ "removal", "deprecation" })
 	@NativeAccess
 	static QMetaType analyzeMetaType(Serializable functor) {
-		ClassAnalyzerUtility.LambdaInfo lamdaInfo = ClassAnalyzerUtility.lambdaInfo(functor);
+		LambdaInfo lamdaInfo = CoreUtility.lambdaInfo(functor);
 		if(lamdaInfo==null || lamdaInfo.methodInfo.reflectiveMethod==null) {
 			if(functor instanceof QtUtilities.Supplier) {
 				Class<?> functorClass = QtJambi_LibraryUtilities.internal.getClass(functor);
@@ -209,7 +215,7 @@ public final class QPropertyBinding<T> extends QUntypedPropertyBinding {
 			return bindable.valueMetaType();
 		}
 		AnnotatedElement rt = null;
-		if(ClassAnalyzerUtility.useAnnotatedType)
+		if(QtJambi_LibraryUtilities.internal.useAnnotatedType())
 			rt = lamdaInfo.methodInfo.reflectiveMethod.getAnnotatedReturnType();
 		int t = QtJambi_LibraryUtilities.internal.registerMetaType(
 				lamdaInfo.methodInfo.reflectiveMethod.getReturnType(), 

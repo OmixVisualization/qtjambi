@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -50,6 +50,15 @@ QT_WARNING_DISABLE_DEPRECATED
 #include <QtCore/QCborValue>
 #include <QtCore/QResource>
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) && QT_VERSION < QT_VERSION_CHECK(6, 2, 0)
+namespace QtJambiPrivate{
+template<>
+struct supports_qHash<QMap<QString,QPair<size_t,size_t>>> : std::false_type{};
+template<>
+struct supports_qHash<QList<QPair<size_t,size_t>>> : std::false_type{};
+}
+#endif
+
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 #include <QtCore/QLinkedList>
 #include <QtCore/QVector>
@@ -67,10 +76,7 @@ QT_WARNING_DISABLE_DEPRECATED
 
 #include "qtjambi_cast.h"
 
-extern "C" Q_DECL_EXPORT jobject JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_DeployerUtility_getRegisteredTypeSizesAndAlignments__)
-(JNIEnv *env, jclass)
-{
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_DeployerUtility_getRegisteredTypeSizesAndAlignments__(JNIEnv *env, jclass){
     try{
         return qtjambi_cast<jobject>(env, getRegisteredTypeSizesAndAlignments());
     }catch(const JavaException& exn){
@@ -79,10 +85,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_DeployerUtility_getRegisteredTypeSiz
     }
 }
 
-extern "C" Q_DECL_EXPORT jstring JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_DeployerUtility_getInterfaceIID)
-    (JNIEnv *env, jclass, jclass cls)
-{
+extern "C" JNIEXPORT jstring JNICALL Java_io_qt_internal_DeployerUtility_getInterfaceIID(JNIEnv *env, jclass, jclass cls){
     try{
         const char* iid = CoreAPI::getInterfaceIID(env, cls);
         return iid ? env->NewStringUTF(iid) : nullptr;

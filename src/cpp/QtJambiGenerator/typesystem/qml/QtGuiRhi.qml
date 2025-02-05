@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -768,7 +768,7 @@ if(%out_buffer.size()<array.size()*4)
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jobject %out = LocalDataJBuffer(%env, %in, this->size()).take();"}
+                    Text{content: "jobject %out = DataJBuffer(%env, %in, this->size()).take();"}
                 }
             }
             InjectCode{

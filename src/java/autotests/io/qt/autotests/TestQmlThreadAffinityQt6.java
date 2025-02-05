@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -35,15 +35,12 @@ import org.junit.Test;
 
 import io.qt.QThreadAffinityException;
 import io.qt.QtUtilities;
-import io.qt.core.QTimer;
 import io.qt.core.QLibraryInfo;
-import io.qt.core.QObject;
 import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QThread;
+import io.qt.core.QTimer;
 import io.qt.gui.QGuiApplication;
 import io.qt.gui.QWindow;
-import io.qt.qml.QJSManagedValue;
-import io.qt.qml.QJSValue;
 import io.qt.qml.QQmlEngine;
 import io.qt.qml.QtQml;
 
@@ -75,96 +72,18 @@ public class TestQmlThreadAffinityQt6 extends ApplicationInitializer{
     }
 	
 	@Test
-    public void testQJSManagedValue() throws Throwable{
+    public void testQQmlEngine() throws Throwable{
 		QtQml.qmlClearTypeRegistrations();
 		QQmlEngine engine = new QQmlEngine();
-		QObject obj = new QObject();
 		try {
-			QJSManagedValue mv = new QJSManagedValue(engine.newQObject(obj), engine);
 			Throwable[] exn = {null};
 			Runnable r = ()->{
 				try {
-					try {
-						mv.toVariant();
-						Assert.fail("QThreadAffinityException expected to be thrown");
-					} catch (QThreadAffinityException e) {
-					}
-					try {
-						mv.jsMetaInstantiate();
-						Assert.fail("QThreadAffinityException expected to be thrown");
-					} catch (QThreadAffinityException e) {
-					}
-					try {
-						mv.jsMetaType();
-						Assert.fail("QThreadAffinityException expected to be thrown");
-					} catch (QThreadAffinityException e) {
-					}
-					try {
-						mv.call();
-						Assert.fail("QThreadAffinityException expected to be thrown");
-					} catch (QThreadAffinityException e) {
-					}
-					try {
-						mv.callAsConstructor();
-						Assert.fail("QThreadAffinityException expected to be thrown");
-					} catch (QThreadAffinityException e) {
-					}
-					try {
-						mv.callWithInstance(new QJSValue());
-						Assert.fail("QThreadAffinityException expected to be thrown");
-					} catch (QThreadAffinityException e) {
-					}
-					try {
-						new QJSManagedValue(0, engine);
-						Assert.fail("QThreadAffinityException expected to be thrown");
-					} catch (QThreadAffinityException e) {
-					}
-					try {
-						engine.throwError(new QJSValue());
-						Assert.fail("QThreadAffinityException expected to be thrown");
-					} catch (QThreadAffinityException e) {
-					}
-					try {
-						engine.fromManagedValue(mv, QObject.class);
-						Assert.fail("QThreadAffinityException expected to be thrown");
-					} catch (QThreadAffinityException e) {
-					}
 					try {
 						engine.importModule("");
 						Assert.fail("QThreadAffinityException expected to be thrown");
 					} catch (QThreadAffinityException e) {
 					}
-					try {
-						engine.registerModule("", "");
-						Assert.fail("QThreadAffinityException expected to be thrown");
-					} catch (QThreadAffinityException e) {
-					}
-					try {
-						engine.toManagedValue("TEST");
-						Assert.fail("QThreadAffinityException expected to be thrown");
-					} catch (QThreadAffinityException e) {
-					}
-					try {
-						new QJSValue(mv);
-						Assert.fail("QThreadAffinityException expected to be thrown");
-					} catch (QThreadAffinityException e) {
-					}
-					try {
-						engine.clearSingletons();
-						Assert.fail("QThreadAffinityException expected to be thrown");
-					} catch (QThreadAffinityException e) {
-					}
-					try {
-						engine.catchError();
-						Assert.fail("QThreadAffinityException expected to be thrown");
-					} catch (QThreadAffinityException e) {
-					}
-					try {
-						engine.newSymbol("");
-						Assert.fail("QThreadAffinityException expected to be thrown");
-					} catch (QThreadAffinityException e) {
-					}
-					
 				}catch(Throwable e){
 					exn[0] = e;
 				}

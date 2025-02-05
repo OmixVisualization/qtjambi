@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -35,27 +35,49 @@
 #include "qtjambiapi.h"
 #include "coreapi.h"
 #include "java_p.h"
+#include "threadutils_p.h"
 #include "qtjambi_cast.h"
 
-ApplicationData::ApplicationData(JNIEnv *env, jobjectArray array)
-    : QtJambiObjectData(), m_size(int(env->GetArrayLength(array))), m_chars(m_size>0 ? new char*[size_t(m_size)] : nullptr)
-{
-    for(jsize i=0; i<m_size; ++i){
+void checkThreadConstructingApplication(JNIEnv *env, const std::type_info& constructedType);
+
+std::unique_ptr<ApplicationData> ApplicationData::initialize(JNIEnv *env, jobjectArray array, const std::type_info& constructedType, bool checkMainThread){
+#ifdef Q_OS_DARWIN
+    if (checkMainThread && !pthread_main_np()) {
+        JavaException::raiseError(env, "QtJambi does not appear to be running on the main thread and will "
+                                       "most likely be unstable and crash. "
+                                       "Please make sure to launch your 'java' command with the "
+                                       "'-XstartOnFirstThread' command line option. For instance: "
+                                       "java -XstartOnFirstThread any.vendor.MainClass" QTJAMBI_STACKTRACEINFO );
+    }
+#else
+    Q_UNUSED(checkMainThread)
+#endif
+    ThreadPrivate::initializeMainThread(env);
+    checkThreadConstructingApplication(env, constructedType);
+    int size = array ? int(env->GetArrayLength(array)) : 0;
+    char** chars = size>0 ? new char*[size_t(size)] : nullptr;
+    for(jsize i=0; i<size; ++i){
         jstring strg = jstring(env->GetObjectArrayElement(array, i));
         if(strg){
             jsize length = env->GetStringUTFLength(strg);
             if(length>=0){
-                m_chars[i] = new char[size_t(length+1)];
-                m_chars[i][length] = 0;
-                env->GetStringUTFRegion(strg, 0, length, m_chars[i]);
+                chars[i] = new char[size_t(length+1)];
+                chars[i][length] = 0;
+                env->GetStringUTFRegion(strg, 0, length, chars[i]);
             }else{
-                m_chars[i] = nullptr;
+                chars[i] = nullptr;
             }
         }else{
-            m_chars[i] = new char[1];
-            m_chars[i][0] = 0;
+            chars[i] = new char[1];
+            chars[i][0] = 0;
         }
     }
+    return std::unique_ptr<ApplicationData>(new ApplicationData(size, chars));
+}
+
+ApplicationData::ApplicationData(int size, char** chars)
+    : QtJambiObjectData(), m_size(size), m_chars(chars)
+{
 }
 
 ApplicationData::~ApplicationData(){

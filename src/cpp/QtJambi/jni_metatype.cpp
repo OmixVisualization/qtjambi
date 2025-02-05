@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -47,10 +47,7 @@ void destructHelper(void *);
 #define qtjambiMetaType QMetaType::fromType
 #endif
 
-extern "C" Q_DECL_EXPORT jint JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_MetaTypeUtility_registerRefMetaType)
-(JNIEnv *env, jclass, jint id, jboolean isPointer, jboolean isReference)
-{
+extern "C" JNIEXPORT jint JNICALL Java_io_qt_internal_MetaTypeUtility_registerRefMetaType(JNIEnv *env, jclass, jint id, jboolean isPointer, jboolean isReference){
     try{
         QMetaType metaType(id);
         if(metaType==qtjambiMetaType<JObjectWrapper>()
@@ -131,24 +128,6 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_MetaTypeUtility_registerRefMetaType)
             }
         }else if(isReference){
             return 0;
-/*            if(typeName.endsWith("*")){
-                typeName.chop(1);
-                int id = qRegisterMetaType<JObjectWrapper>("JObjectWrapper");
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                int typeId = QMetaType::registerNormalizedTypedef(typeName, id);
-                RegistryAPI::registerComparator(new QtPrivate::BuiltInEqualsComparatorFunction<JObjectWrapper>(), typeId);
-                if(const std::type_info* typeInfo = getTypeByQtName(typeName)){
-                    QByteArray name = getJavaName(*typeInfo);
-                    //jclass cls = CoreAPI::getClassForMetaType(env, metaType);
-                    QmlAPI::registerJavaClassForCustomMetaType(env, typeId, JavaAPI::resolveClass(env, name));
-                }
-                return typeId;
-#else
-                QMetaType::registerNormalizedTypedef(typeName, QMetaType(id));
-                return id;
-#endif
-            }
-            */
             if(!typeName.endsWith("&")
                 && !typeName.contains("(&)")
                 && !typeName.contains("(__cdecl&)")){
@@ -203,10 +182,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_MetaTypeUtility_registerRefMetaType)
     }
 }
 
-extern "C" Q_DECL_EXPORT jstring JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_MetaTypeUtility_internalTypeName)
-(JNIEnv *env, jclass, jstring s, jobject classLoader)
-{
+extern "C" JNIEXPORT jstring JNICALL Java_io_qt_internal_MetaTypeUtility_internalTypeName(JNIEnv *env, jclass, jstring s, jobject classLoader){
     try{
         QString signature = qtjambi_cast<QString>(env, s);
 
@@ -242,10 +218,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_MetaTypeUtility_internalTypeName)
     return nullptr;
 }
 
-extern "C" Q_DECL_EXPORT jstring JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_MetaTypeUtility_internalTypeNameByClass)
-(JNIEnv *env, jclass, jclass cls)
-{
+extern "C" JNIEXPORT jstring JNICALL Java_io_qt_internal_MetaTypeUtility_internalTypeNameByClass(JNIEnv *env, jclass, jclass cls){
     try{
         QString result = QtJambiTypeManager::getInternalTypeName(env, cls);
         return qtjambi_cast<jstring>(env, result);
@@ -255,10 +228,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_MetaTypeUtility_internalTypeNameByCl
     return nullptr;
 }
 
-extern "C" Q_DECL_EXPORT int JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_MetaTypeUtility_findMetaType)
-(JNIEnv *env, jclass, jstring name)
-{
+extern "C" JNIEXPORT int JNICALL Java_io_qt_internal_MetaTypeUtility_findMetaType(JNIEnv *env, jclass, jstring name){
     try{
         const char* _name = env->GetStringUTFChars(name, nullptr);
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -274,12 +244,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_MetaTypeUtility_findMetaType)
     }
 }
 
-extern "C" Q_DECL_EXPORT jboolean JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_MetaTypeUtility_isObjectWrapperType)
-(JNIEnv *,
- jclass,
- jint metaTypeId)
-{
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_internal_MetaTypeUtility_isObjectWrapperType(JNIEnv *, jclass, jint metaTypeId){
     return metaTypeId == registeredMetaTypeID(typeid(JObjectWrapper))
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
             || isJObjectWrappedMetaType(QMetaType(metaTypeId))
@@ -289,12 +254,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_MetaTypeUtility_isObjectWrapperType)
             || metaTypeId == registeredMetaTypeID(typeid(JIteratorWrapper));
 }
 
-extern "C" Q_DECL_EXPORT jboolean JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_MetaTypeUtility_isCustomValueType)
-(JNIEnv *,
- jclass,
- jint metaTypeId)
-{
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_internal_MetaTypeUtility_isCustomValueType(JNIEnv *, jclass, jint metaTypeId){
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     return JObjectValueWrapper::isValueType(QMetaType(metaTypeId));
 #else
@@ -303,12 +263,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_MetaTypeUtility_isCustomValueType)
 #endif
 }
 
-extern "C" Q_DECL_EXPORT jboolean JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_MetaTypeUtility_metaTypeHasDataStreamOperators)
-(JNIEnv *,
- jclass,
- jint metaTypeId)
-{
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_internal_MetaTypeUtility_metaTypeHasDataStreamOperators(JNIEnv *, jclass, jint metaTypeId){
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     QMetaType metaType(metaTypeId);
     return metaType.iface()->dataStreamIn || metaType.iface()->dataStreamOut;
@@ -318,12 +273,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_MetaTypeUtility_metaTypeHasDataStrea
 #endif
 }
 
-extern "C" Q_DECL_EXPORT jboolean JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_MetaTypeUtility_metaTypeHasDebugStreamOperator)
-(JNIEnv *,
- jclass,
- jint metaTypeId)
-{
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_internal_MetaTypeUtility_metaTypeHasDebugStreamOperator(JNIEnv *, jclass, jint metaTypeId){
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     return JObjectValueWrapper::hasCustomDebugStreamOperator(QMetaType(metaTypeId));
 #else
@@ -332,12 +282,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_MetaTypeUtility_metaTypeHasDebugStre
 #endif
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_MetaTypeUtility_registerCustomDataStreamOperators)
-(JNIEnv *,
- jclass,
- jint metaTypeId)
-{
+extern "C" JNIEXPORT void JNICALL Java_io_qt_internal_MetaTypeUtility_registerCustomDataStreamOperators(JNIEnv *, jclass, jint metaTypeId){
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     QMetaType metaType(metaTypeId);
     if(!metaType.iface()->dataStreamIn && !metaType.iface()->dataStreamOut){
@@ -349,12 +294,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_MetaTypeUtility_registerCustomDataSt
 #endif
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_MetaTypeUtility_registerCustomDebugStreamOperator)
-(JNIEnv *,
- jclass,
- jint metaTypeId)
-{
+extern "C" JNIEXPORT void JNICALL Java_io_qt_internal_MetaTypeUtility_registerCustomDebugStreamOperator(JNIEnv *, jclass, jint metaTypeId){
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     QMetaType metaType(metaTypeId);
     if(!JObjectValueWrapper::hasCustomDebugStreamOperator(metaType))
@@ -364,8 +304,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_MetaTypeUtility_registerCustomDebugS
 #endif
 }
 
-extern "C" Q_DECL_EXPORT bool JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_MetaTypeUtility_registerConverter)
+extern "C" JNIEXPORT bool JNICALL Java_io_qt_internal_MetaTypeUtility_registerConverter
 (JNIEnv *env,
  jclass,
  jint metaTypeId1,
@@ -422,10 +361,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_MetaTypeUtility_registerConverter)
     return false;
 }
 
-extern "C" Q_DECL_EXPORT jint JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_MetaTypeUtility_registerQmlListProperty)
-(JNIEnv *env, jclass, jstring type)
-{
+extern "C" JNIEXPORT jint JNICALL Java_io_qt_internal_MetaTypeUtility_registerQmlListProperty(JNIEnv *env, jclass, jstring type){
     try{
         QByteArray _type = qtjambi_cast<QByteArray>(env, type);
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)

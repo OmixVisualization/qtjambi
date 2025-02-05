@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -30,7 +30,6 @@ package io.qt.autotests;
 
 import static org.junit.Assert.*;
 
-import java.lang.reflect.Method;
 import java.util.*;
 
 import org.junit.Assume;

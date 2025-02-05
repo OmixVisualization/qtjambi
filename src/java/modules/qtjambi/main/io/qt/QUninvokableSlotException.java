@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -46,7 +46,7 @@ import io.qt.core.QObject;
 public class QUninvokableSlotException extends QNoSuchSlotException {
     private static final long serialVersionUID = 1712127589718894829L;
 
-    public QUninvokableSlotException(java.lang.reflect.Method slot) {
-        super(String.format("Slot %1$s is uninvokable.", slot));
+    public QUninvokableSlotException(java.lang.reflect.@StrictNonNull Method slot) {
+        super(String.format("Slot %1$s is uninvokable.", slot.toGenericString()));
     }
 }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -29,13 +29,11 @@
 ****************************************************************************/
 package io.qt;
 
-import java.util.ArrayList;
+import java.util.AbstractMap;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
-
-import io.qt.internal.ClassAnalyzerUtility;
 
 /**
  * <p>QtArgument is used to initialize an interface type or a set of inherited interface types with their 
@@ -71,86 +69,79 @@ public final class QtArgument {
 	 * Argument stream.
 	 */
 	public final static class Stream{
-		private final Map<Class<?>,List<Arg>> arguments;
-		private List<Arg> currentList;
+		private final Map<Class<?>,List<Map.Entry<Class<?>,Object>>> arguments = new HashMap<>();
+		private List<Map.Entry<Class<?>,Object>> currentList;
 		
 		private Stream(Class<?> type) {
-			arguments = new TreeMap<>(ClassAnalyzerUtility.COMPARATOR);
-			currentList = arguments.computeIfAbsent(type, key->new ArrayList<>());
+			beginImpl(type);
 		}
 		
 		public Stream add(Object value) {
-			currentList.add(new Arg(QtJambi_LibraryUtilities.internal.getClass(value), value, true));
+			currentList.add(newArg(QtJambi_LibraryUtilities.internal.getClass(value), value, true));
 			return this;
 		}
 		public Stream add(int value) {
-			currentList.add(new Arg(int.class, value, false));
+			currentList.add(newArg(int.class, value, false));
 			return this;
 		}
 		public Stream add(long value) {
-			currentList.add(new Arg(long.class, value, false));
+			currentList.add(newArg(long.class, value, false));
 			return this;
 		}
 		public Stream add(short value) {
-			currentList.add(new Arg(short.class, value, false));
+			currentList.add(newArg(short.class, value, false));
 			return this;
 		}
 		public Stream add(byte value) {
-			currentList.add(new Arg(byte.class, value, false));
+			currentList.add(newArg(byte.class, value, false));
 			return this;
 		}
 		public Stream add(double value) {
-			currentList.add(new Arg(double.class, value, false));
+			currentList.add(newArg(double.class, value, false));
 			return this;
 		}
 		public Stream add(float value) {
-			currentList.add(new Arg(float.class, value, false));
+			currentList.add(newArg(float.class, value, false));
 			return this;
 		}
 		public Stream add(char value) {
-			currentList.add(new Arg(char.class, value, false));
+			currentList.add(newArg(char.class, value, false));
 			return this;
 		}
 		public Stream add(boolean value) {
-			currentList.add(new Arg(boolean.class, value, false));
+			currentList.add(newArg(boolean.class, value, false));
 			return this;
 		}
 		public <T> Stream add(Class<? super T> type, T value) {
-			currentList.add(new Arg(type, value, true));
+			currentList.add(newArg(type, value, true));
 			return this;
 		}
 		public Stream begin(Class<?> type) {
 			if(arguments.containsKey(type))
 				throw new IllegalArgumentException("Type "+type+" has already been used.");
-			currentList = arguments.computeIfAbsent(type, key->new ArrayList<>());
+			beginImpl(type);
 			return this;
 		}
-		Map<Class<?>, List<?>> arguments() {
+		private void beginImpl(Class<?> type) {
+			currentList = arguments.computeIfAbsent(type, Utility.arrayListFactory());
+		}
+		Map<Class<?>, List<Map.Entry<Class<?>,Object>>> arguments() {
 			return Collections.unmodifiableMap(arguments);
 		}
-		
-		private static class Arg{
-			private Arg(Class<?> type, Object value, boolean check) {
-				if(java.util.Collection.class.isAssignableFrom(type)){
-	                type = java.util.Collection.class;
-	            }else if(java.util.Map.class.isAssignableFrom(type)){
-	                type = java.util.Map.class;
-	            }else {
-	            	Class<?> generatedSuperclass = QtJambi_LibraryUtilities.internal.findGeneratedSuperclass(type);
-	            	if(generatedSuperclass!=null)
-	            		type = generatedSuperclass;
-	            }
-				this.type = type;
-				if(check) {
-					this.value = this.type.cast(value);
-				}else {
-					this.value = value;
-				}
+		private static Map.Entry<Class<?>,Object> newArg(Class<?> type, Object value, boolean check) {
+			if(java.util.Collection.class.isAssignableFrom(type)){
+                type = java.util.Collection.class;
+            }else if(java.util.Map.class.isAssignableFrom(type)){
+                type = java.util.Map.class;
+            }else {
+            	Class<?> generatedSuperclass = QtJambi_LibraryUtilities.internal.findGeneratedSuperclass(type);
+            	if(generatedSuperclass!=null)
+            		type = generatedSuperclass;
+            }
+			if(check) {
+				value = type.cast(value);
 			}
-			@NativeAccess
-			private final Class<?> type;
-			@NativeAccess
-			private final Object value;
+			return new AbstractMap.SimpleImmutableEntry<>(type, value);
 		}
 	}
 }

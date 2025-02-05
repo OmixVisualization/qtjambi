@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -732,8 +732,11 @@ public class TestThreadAffinity extends ApplicationInitializer{
     			obj.startTimer(0);
     		}
     	};
+    	thread.setObjectName("run_affinity_breach_exceptionhandling");
     	Throwable[] occurred = {null};
-    	thread.setUncaughtExceptionHandler((t,e)->{occurred[0] = e;});
+    	thread.setUncaughtExceptionHandler((t,e)->{
+    		occurred[0] = e;
+		});
     	thread.start();
     	thread.join(2000);
     	Assert.assertTrue(occurred[0] instanceof QThreadAffinityException);

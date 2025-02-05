@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -39,7 +39,7 @@ import io.qt.core.QFile;
 import io.qt.core.QObject;
 import io.qt.gui.QImage;
 
-public class TestQtJambiInternal extends UnitTestInitializer {
+public class TestQtJambiInternal extends ApplicationInitializer {
 	
 	@BeforeClass
     public static void testInitialize() throws Exception {
@@ -48,11 +48,6 @@ public class TestQtJambiInternal extends UnitTestInitializer {
 	
 	private FetchableTestClass ftc;
 	private QImage image;
-
-	@org.junit.AfterClass
-	public static void testDispose() throws Exception {
-		ApplicationInitializer.testDispose();
-	}
 
 	@org.junit.Before
 	public void setUp() {

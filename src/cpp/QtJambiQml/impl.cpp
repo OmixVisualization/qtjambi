@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -166,8 +166,7 @@ CreatorFunction creatorFunction(JNIEnv * env, const QMetaObject *meta_object, jc
     JObjectWrapper clazzWrapper(env, clazz);
     return qtjambi_function_pointer<16,void(void*)>([clazzWrapper, meta_object, constructor, objectSize, psCast, vsCast, viCast](void* placement){
         memset(placement, 0, objectSize);
-        if(JniEnvironment env{200}){
-            QtJambiExceptionInhibitor __exnHandler;
+        if(JniEnvironmentExceptionInhibitor env{200}){
             QTJAMBI_TRY{
                 jobject declarativeConstructor = Java::QtCore::QObject$QDeclarativeConstructor::newInstance(env, clazzWrapper.object(env), jlong(placement));
                 QTJAMBI_TRY{
@@ -178,7 +177,7 @@ CreatorFunction creatorFunction(JNIEnv * env, const QMetaObject *meta_object, jc
                     if(pl==0){
                         QObject* obj = reinterpret_cast<QObject*>(placement);
                         obj->deleteLater();
-                        __exnHandler.handle(env, exn, nullptr);
+                        env.handleException(exn, nullptr);
                         return;
                     }else{
                         exn.raise();
@@ -198,7 +197,7 @@ CreatorFunction creatorFunction(JNIEnv * env, const QMetaObject *meta_object, jc
                 if(!obj)
                     obj = new (placement) ErrorDummyObject(psCast, vsCast, viCast);
                 obj->deleteLater();
-                __exnHandler.handle(env, exn, nullptr);
+                env.handleException(exn, nullptr);
             }QTJAMBI_TRY_END
         }else{
             QObject* obj = QmlAPI::createQmlErrorDummyObject(meta_object, placement, vsCast, viCast);
@@ -255,8 +254,7 @@ void* creatorFunctionMetaData(JNIEnv * env, const QMetaObject *meta_object, jcla
 void createQmlObject(void* placement,void* _metaData){
     if(CreatorFunctionMetaData* metaData = reinterpret_cast<CreatorFunctionMetaData*>(_metaData)){
         memset(placement, 0, metaData->objectSize);
-        if(JniEnvironment env{200}){
-            QtJambiExceptionInhibitor __exnHandler;
+        if(JniEnvironmentExceptionInhibitor env{200}){
             QTJAMBI_TRY{
                 jobject declarativeConstructor = Java::QtCore::QObject$QDeclarativeConstructor::newInstance(env, metaData->clazz, jlong(placement));
                 QTJAMBI_TRY{
@@ -267,7 +265,7 @@ void createQmlObject(void* placement,void* _metaData){
                     if(pl==0){
                         QObject* obj = reinterpret_cast<QObject*>(placement);
                         obj->deleteLater();
-                        __exnHandler.handle(env, exn, nullptr);
+                        env.handleException(exn, nullptr);
                         return;
                     }else{
                         exn.raise();
@@ -287,7 +285,7 @@ void createQmlObject(void* placement,void* _metaData){
                 if(!obj)
                     obj = new (placement) ErrorDummyObject(metaData->psCast, metaData->vsCast, metaData->viCast);
                 obj->deleteLater();
-                __exnHandler.handle(env, exn, nullptr);
+                env.handleException(exn, nullptr);
             }QTJAMBI_TRY_END
         }else{
             QObject* obj = QmlAPI::createQmlErrorDummyObject(metaData->meta_object, placement, metaData->vsCast, metaData->viCast);
@@ -351,8 +349,15 @@ AttachedPropertiesInfo findQmlAttachedProperties(JNIEnv * env, jclass clazz, job
         clazz = JavaAPI::toGlobalReference(env, clazz);
         QQmlAttachedPropertiesFunc function = qtjambi_function_pointer<16,QObject*(QObject*)>([clazz, qmlAttachedProperties](QObject* parent) -> QObject* {
             if(JniEnvironment env{200}){
+                if(env->ExceptionCheck()){
+                    env->ExceptionDescribe();
+                    env->ExceptionClear();
+                }
                 jobject result = env->CallStaticObjectMethod(clazz, qmlAttachedProperties, QtJambiAPI::convertQObjectToJavaObject(env, parent));
-                JavaException::check(env QTJAMBI_STACKTRACEINFO );
+                if(env->ExceptionCheck()){
+                    env->ExceptionDescribe();
+                    env->ExceptionClear();
+                }
                 return QtJambiAPI::convertJavaObjectToQObject(env, result);
             }
             return nullptr;
@@ -443,17 +448,21 @@ int registerQQmlListPropertyAsQmlMetaType(JNIEnv *env, const QString& javaName){
                                                       list->object = std::move(_copy->object);
                                                   }
                                             },
-                              /*.dtor=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<QQmlListProperty<QObject>>::dtor,
-                              /*.equals=*/ QtPrivate::QEqualityOperatorForType<QQmlListProperty<QObject>>::equals,
-                              /*.lessThan=*/ QtPrivate::QLessThanOperatorForType<QQmlListProperty<QObject>>::lessThan,
-                              /*.debugStream=*/ QtPrivate::QDebugStreamOperatorForType<QQmlListProperty<QObject>>::debugStream,
-                              /*.dataStreamOut=*/ QtPrivate::QDataStreamOperatorForType<QQmlListProperty<QObject>>::dataStreamOut,
-                              /*.dataStreamIn=*/ QtPrivate::QDataStreamOperatorForType<QQmlListProperty<QObject>>::dataStreamIn,
-                              /*.legacyRegisterOp=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<QQmlListProperty<QObject>>::legacyRegisterOp,
-                              /*.size=*/ sizeof(QQmlListProperty<QObject>),
-                              /*.alignment=*/ alignof(QQmlListProperty<QObject>),
-                              /*.typeId=*/ QMetaType::UnknownType,
-                              /*.flags=*/ QMetaType::TypeFlags(QtPrivate::QMetaTypeTypeFlags<QQmlListProperty<QObject>>::Flags),
+                                /*.dtor=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<QQmlListProperty<QObject>>::dtor,
+                                /*.equals=*/ QtPrivate::QEqualityOperatorForType<QQmlListProperty<QObject>>::equals,
+                                /*.lessThan=*/ QtPrivate::QLessThanOperatorForType<QQmlListProperty<QObject>>::lessThan,
+                                /*.debugStream=*/ QtPrivate::QDebugStreamOperatorForType<QQmlListProperty<QObject>>::debugStream,
+                                /*.dataStreamOut=*/ QtPrivate::QDataStreamOperatorForType<QQmlListProperty<QObject>>::dataStreamOut,
+                                /*.dataStreamIn=*/ QtPrivate::QDataStreamOperatorForType<QQmlListProperty<QObject>>::dataStreamIn,
+                                /*.legacyRegisterOp=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<QQmlListProperty<QObject>>::legacyRegisterOp,
+                                /*.size=*/ sizeof(QQmlListProperty<QObject>),
+                                /*.alignment=*/ alignof(QQmlListProperty<QObject>),
+                                /*.typeId=*/ QMetaType::UnknownType,
+#if QT_VERSION < QT_VERSION_CHECK(6, 9, 0)
+                                /*.flags=*/ QMetaType::TypeFlags(QtPrivate::QMetaTypeTypeFlags<QQmlListProperty<QObject>>::Flags),
+#else
+                                /*.flags=*/ QMetaType::TypeFlags(QtPrivate::QMetaTypeForType<QQmlListProperty<QObject>>::flags()),
+#endif
                               nullptr,
                               nullptr);
 #endif
@@ -499,7 +508,11 @@ int registerQObjectAsQmlMetaType(JNIEnv *env, jclass javaClass, const QString& j
                                             /*.size=*/ sizeof(QObject*),
                                             /*.alignment=*/ alignof(QObject*),
                                             /*.typeId=*/ QMetaType::UnknownType,
+#if QT_VERSION < QT_VERSION_CHECK(6, 9, 0)
                                             /*.flags=*/ QMetaType::TypeFlags(QtPrivate::QMetaTypeTypeFlags<QObject*>::Flags),
+#else
+                                            /*.flags=*/ QMetaType::TypeFlags(QtPrivate::QMetaTypeForType<QObject*>::flags()),
+#endif
                                             meta_object,
                                             nullptr);
     }else{
@@ -517,7 +530,11 @@ int registerQObjectAsQmlMetaType(JNIEnv *env, jclass javaClass, const QString& j
                                             /*.size=*/ sizeof(void*),
                                             /*.alignment=*/ alignof(void*),
                                             /*.typeId=*/ QMetaType::UnknownType,
+#if QT_VERSION < QT_VERSION_CHECK(6, 9, 0)
                                             /*.flags=*/ QMetaType::TypeFlags(QtPrivate::QMetaTypeTypeFlags<void*>::Flags),
+#else
+                                            /*.flags=*/ QMetaType::TypeFlags(QtPrivate::QMetaTypeForType<void*>::flags()),
+#endif
                                             meta_object,
                                             nullptr);
     }
@@ -598,7 +615,15 @@ CreateValueTypeFn getCreateValueType(JNIEnv *env, jclass clazz, CreateValueTypeF
                     [clazz,jsvFactory,typeId](const QJSValue & arguments) -> QVariant {
                                         if(JniEnvironment env{300}){
                                             jobject args = qtjambi_cast<jobject>(env, arguments);
+                                            if(env->ExceptionCheck()){
+                                                env->ExceptionDescribe();
+                                                env->ExceptionClear();
+                                            }
                                             jobject result = env->CallStaticObjectMethod(clazz, jsvFactory, args);
+                                            if(env->ExceptionCheck()){
+                                                env->ExceptionDescribe();
+                                                env->ExceptionClear();
+                                            }
                                             QVariant v = QtJambiAPI::convertJavaObjectToQVariant(env, result);
                                             if(typeId.isValid() && v.metaType()!=typeId)
                                                 v.convert(typeId);
@@ -682,6 +707,10 @@ QmlTypeRegistractionData registerQmlType(JNIEnv *env, jclass clazz, const char* 
                             [clazz,jsvFactory,typeId](const QJSValue & arguments) -> QVariant {
                                 if(JniEnvironment env{300}){
                                     jobject args = qtjambi_cast<jobject>(env, arguments);
+                                    if(env->ExceptionCheck()){
+                                        env->ExceptionDescribe();
+                                        env->ExceptionClear();
+                                    }
                                     jobject result = env->CallStaticObjectMethod(clazz, jsvFactory, args);
                                     if(env->ExceptionCheck()){
                                         env->ExceptionDescribe();
@@ -1998,10 +2027,14 @@ using SingletonConstructionMode = ConstructionMode;
 QQmlPrivate::SingletonConstructionMode singletonConstructionMode(JNIEnv *env, jclass type, jclass wrapperType, bool singleton, jmethodID& method){
     if(!Java::QtCore::QObject::isAssignableFrom(env, type))
         return QQmlPrivate::SingletonConstructionMode::None;
+#if QT_VERSION >= QT_VERSION_CHECK(6,1,0)
     if(!env->IsSameObject(type, wrapperType)
             && (method = JavaAPI::resolveMethod(env, "create", qPrintable(QStringLiteral("(Lio/qt/qml/QJSValue;)L%1;").arg(QtJambiAPI::getClassName(env, type).replace('.', '/'))), wrapperType, true))){
         return QQmlPrivate::SingletonConstructionMode::FactoryWrapper;
     }
+#else
+    Q_UNUSED(wrapperType)
+#endif //QT_VERSION >= QT_VERSION_CHECK(6,1,0)
     if(singleton){
         if ((method = JavaAPI::resolveMethod(env, "<init>", "()V", type, false)))
             return QQmlPrivate::SingletonConstructionMode::Constructor;
@@ -2029,15 +2062,25 @@ std::function<QObject*(QQmlEngine *, QJSEngine *)> getCreateSingletonFunction(JN
             }
             return result;
         };
+#if QT_VERSION >= QT_VERSION_CHECK(6,1,0)
     case QQmlPrivate::SingletonConstructionMode::FactoryWrapper:
         factoryType = wrapperType;
         Q_FALLTHROUGH();
+#endif //QT_VERSION >= QT_VERSION_CHECK(6,1,0)
     case QQmlPrivate::SingletonConstructionMode::Factory:
         factoryType = JavaAPI::toGlobalReference(env, factoryType);
         return [factoryType, method](QQmlEngine * qe, QJSEngine * je)->QObject*{
             QObject* result{nullptr};
             if(JniEnvironment env{300}){
+                if(env->ExceptionCheck()){
+                    env->ExceptionDescribe();
+                    env->ExceptionClear();
+                }
                 jobject o = env->CallStaticObjectMethod(factoryType, method, qtjambi_cast<jobject>(env, qe), qtjambi_cast<jobject>(env, je));
+                if(env->ExceptionCheck()){
+                    env->ExceptionDescribe();
+                    env->ExceptionClear();
+                }
                 result = qtjambi_cast<QObject*>(env, o);
                 QtJambiAPI::setCppOwnershipForTopLevelObject(env, result);
             }
@@ -2478,7 +2521,15 @@ void qtjambi_qmlRegisterTypesAndRevisions(JNIEnv *env, jobjectArray types, const
                                     [extendedClass,jsvFactory,typeId](const QJSValue & arguments) -> QVariant {
                                                         if(JniEnvironment env{300}){
                                                             jobject args = qtjambi_cast<jobject>(env, arguments);
+                                                            if(env->ExceptionCheck()){
+                                                                env->ExceptionDescribe();
+                                                                env->ExceptionClear();
+                                                            }
                                                             jobject result = env->CallStaticObjectMethod(extendedClass, jsvFactory, args);
+                                                            if(env->ExceptionCheck()){
+                                                                env->ExceptionDescribe();
+                                                                env->ExceptionClear();
+                                                            }
                                                             QVariant v = QtJambiAPI::convertJavaObjectToQVariant(env, result);
                                                             if(v.metaType()!=typeId)
                                                                 v.convert(typeId);
@@ -2561,7 +2612,7 @@ void qtjambi_qmlRegisterTypesAndRevisions(JNIEnv *env, jobjectArray types, const
     }
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_util_QmlTypes_analyzeType)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_qml_util_QmlTypes_analyzeType
 (JNIEnv *__jni_env,
  jclass,
  jstring uri0,
@@ -2580,9 +2631,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_uti
     }QTJAMBI_TRY_END
 }
 
-extern "C" Q_DECL_EXPORT jlong JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlIncubationController_00024WhileFlag_create)
-(JNIEnv *, jclass, jboolean flag)
-{
+extern "C" JNIEXPORT jlong JNICALL Java_io_qt_qml_QQmlIncubationController_00024WhileFlag_create(JNIEnv *, jclass, jboolean flag){
 #if QT_VERSION < QT_VERSION_CHECK(5,15,0)
     return jlong(new volatile bool(flag));
 #else
@@ -2590,9 +2639,7 @@ extern "C" Q_DECL_EXPORT jlong JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQ
 #endif
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlIncubationController_00024WhileFlag_destroy)
-(JNIEnv *, jclass, jlong ptr)
-{
+extern "C" JNIEXPORT void JNICALL Java_io_qt_qml_QQmlIncubationController_00024WhileFlag_destroy(JNIEnv *, jclass, jlong ptr){
 #if QT_VERSION < QT_VERSION_CHECK(5,15,0)
     if(ptr) delete reinterpret_cast<volatile bool*>(ptr);
 #else
@@ -2600,9 +2647,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQm
 #endif
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlIncubationController_00024WhileFlag_set)
-(JNIEnv *, jclass, jlong ptr, jboolean flag)
-{
+extern "C" JNIEXPORT void JNICALL Java_io_qt_qml_QQmlIncubationController_00024WhileFlag_set(JNIEnv *, jclass, jlong ptr, jboolean flag){
 #if QT_VERSION < QT_VERSION_CHECK(5,15,0)
     if(ptr) *reinterpret_cast<volatile bool*>(ptr) = flag;
 #else
@@ -2611,11 +2656,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQm
 }
 
 // QQmlEngine::singletonInstance(int)
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlEngine_singletonInstance__JI)
-(JNIEnv *__jni_env,
- jclass,
- QtJambiNativeID __this_nativeId, jint qmlTypeId)
-{
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_qml_QQmlEngine_singletonInstance__JI(JNIEnv *__jni_env, jclass, QtJambiNativeID __this_nativeId, jint qmlTypeId){
     jobject result{nullptr};
     QTJAMBI_TRY {
         QQmlEngine *__qt_this = QtJambiAPI::objectFromNativeId<QQmlEngine>(__this_nativeId);
@@ -2719,13 +2760,14 @@ jobject qtjambi_fromVariant(JNIEnv *env, QJSEngine *__qt_this, jobject type, con
 }
 #endif
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
 using ConvertV2 = bool (*)(const QJSValue &value, QMetaType metaType, void *ptr);
 template <>
 constexpr ConvertV2 qjsvalue_cast<ConvertV2>(const QJSValue &)
 {
     return &QJSEngine::convertV2;
 }
+
 // QJSEngine::fromScriptValue
 jobject qtjambi_fromScriptValue(JNIEnv *env, QJSEngine *__qt_this, jobject type, const QJSValue& value)
 {
@@ -2739,8 +2781,8 @@ jobject qtjambi_fromScriptValue(JNIEnv *env, QJSEngine *__qt_this, jobject type,
     }
 #endif
     QtJambiAPI::checkThread(env, __qt_this);
-    ConvertV2 convertV2 = qjsvalue_cast<ConvertV2>(QJSValue{});
     QVariant t(targetType, nullptr);
+    ConvertV2 convertV2 = qjsvalue_cast<ConvertV2>(QJSValue{});
     if (convertV2(value, targetType, t.data())){
         return QtJambiAPI::convertQVariantToJavaObject(env, t);
     }else{
@@ -2769,6 +2811,7 @@ jobject qtjambi_fromScriptValue(JNIEnv *env, QJSEngine *__qt_this, jobject type,
 {
     QtJambiAPI::checkThread(env, __qt_this);
     const QMetaType& targetType = qtjambi_cast<const QMetaType&>(env, type);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QVariant t(targetType.id(), nullptr);
     if (qjsvalue_cast_helper(value, targetType.id(), t.data())){
         return QtJambiAPI::convertQVariantToJavaObject(env, t);
@@ -2779,8 +2822,29 @@ jobject qtjambi_fromScriptValue(JNIEnv *env, QJSEngine *__qt_this, jobject type,
     }else{
         return QtJambiAPI::convertQVariantToJavaObject(env, QVariant(targetType.id(), nullptr));
     }
+#else
+    QVariant t(targetType, nullptr);
+    t = value.toVariant();
+    t.convert(targetType);
+    return QtJambiAPI::convertQVariantToJavaObject(env, t);
+#endif
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+using Create = QJSValue(QJSEngine::*)(int type, const void *ptr);
+template <>
+constexpr Create qjsvalue_cast<Create>(const QJSValue &)
+{
+    return &QJSEngine::create;
+}
+// QJSEngine::toScriptValue
+QJSValue qtjambi_toScriptValue(JNIEnv *env, QJSEngine *__qt_this, const QVariant& variant)
+{
+    QtJambiAPI::checkThread(env, __qt_this);
+    Create create = qjsvalue_cast<Create>(QJSValue{});
+    return (__qt_this->*create)(variant.metaType().id(), variant.data());
+}
+#else
 Q_GLOBAL_STATIC(QThreadStorage<int>, gMetaType)
 
 struct ValueContainer{};
@@ -2803,9 +2867,14 @@ QJSValue qtjambi_toScriptValue(JNIEnv *env, QJSEngine *__qt_this, const QVariant
     }
 }
 #endif
+#endif
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 1, 0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
 using ConvertManaged = bool(*)(const QJSManagedValue &value, QMetaType type, void *ptr);
+#else
+using ConvertManaged = bool(*)(const QJSManagedValue &value, int type, void *ptr);
+#endif
 template <>
 constexpr ConvertManaged qjsvalue_cast<ConvertManaged>(const QJSValue &)
 {
@@ -2826,7 +2895,11 @@ jobject qtjambi_fromManagedValue(JNIEnv *env, QJSEngine *__qt_this, jobject type
 #endif
     ConvertManaged convertManaged = qjsvalue_cast<ConvertManaged>(QJSValue{});
     QVariant t(targetType, nullptr);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
     if (convertManaged(value, targetType, t.data())){
+#else
+    if (convertManaged(value, targetType.id(), t.data())){
+#endif
         return QtJambiAPI::convertQVariantToJavaObject(env, t);
     }else{
         t = value.toVariant();
@@ -2851,7 +2924,7 @@ QJSManagedValue qtjambi_toManagedValue(JNIEnv *env, QJSEngine *__qt_this, const 
 #endif
 
 
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_util_QtJambi_1LibraryUtilities_internalAccess)(JNIEnv *env, jclass cls){
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_qml_util_QtJambi_1LibraryUtilities_internalAccess(JNIEnv *env, jclass cls){
     jobject result{0};
     QTJAMBI_TRY{
         result = MetaInfoAPI::internalAccess(env, cls);
@@ -2865,9 +2938,7 @@ void deleter_QQmlListProperty(void* ptr, bool){
     delete reinterpret_cast<QQmlListProperty<void> *>(ptr);
 }
 
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlListProperty_clone_1native)
-(JNIEnv *__jni_env, jobject _this)
-{
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_qml_QQmlListProperty_clone_1native(JNIEnv *__jni_env, jobject _this){
     jobject _result{nullptr};
     QTJAMBI_TRY{
         QQmlListProperty<void> *__qt_this = QtJambiAPI::convertJavaObjectToNative<QQmlListProperty<void> >(__jni_env, _this);
@@ -3192,10 +3263,7 @@ void __qt_destruct_QQmlListProperty(void* ptr)
 // emitting (writeSignalFunction)
 // emitting  (functionsInTargetLang writeFinalFunction)
 // QQmlListProperty::QQmlListProperty()
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlListProperty_initialize_1native_1plain)
-(JNIEnv *__jni_env,
- jclass __jni_class, jobject __jni_object)
-{
+extern "C" JNIEXPORT void JNICALL Java_io_qt_qml_QQmlListProperty_initialize_1native_1plain(JNIEnv *__jni_env, jclass __jni_class, jobject __jni_object){
     QTJAMBI_NATIVE_METHOD_CALL("QQmlListProperty::QQmlListProperty()")
     QTJAMBI_TRY{
         QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_create_new_QQmlListProperty, sizeof(QQmlListProperty<void>), typeid(QQmlListProperty<void>), 0, false, &deleter_QQmlListProperty, nullptr);
@@ -3205,7 +3273,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQm
 }
 
 // QQmlListProperty::QQmlListProperty(QObject * o, QList<QObject > & list)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlListProperty_initialize_1native_1list)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_qml_QQmlListProperty_initialize_1native_1list
 (JNIEnv *__jni_env,
  jclass __jni_class,
  jobject __jni_object,
@@ -3225,7 +3293,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQm
     }QTJAMBI_TRY_END
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlListProperty_initialize_1native_1functions)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_qml_QQmlListProperty_initialize_1native_1functions
 (JNIEnv *__jni_env,
  jclass __jni_class,
  jobject __jni_object,
@@ -3257,11 +3325,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQm
     }QTJAMBI_TRY_END
 }
 
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlListProperty_getListElementType)
-(JNIEnv *env,
- jclass,
- QtJambiNativeID listNativeId)
-{
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_qml_QQmlListProperty_getListElementType(JNIEnv *env, jclass, QtJambiNativeID listNativeId){
     jobject result{nullptr};
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(listNativeId);
@@ -3278,7 +3342,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_
 }
 
 // QQmlListProperty::append(QObject object)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlListProperty_append)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_qml_QQmlListProperty_append
 (JNIEnv *__jni_env,
  jobject _this,
  jobject object0,
@@ -3326,7 +3390,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQm
 }
 
 // QQmlListProperty::replace(long index, QObject object)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlListProperty_replace)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_qml_QQmlListProperty_replace
 (JNIEnv *__jni_env,
  jobject _this,
  jlong index,
@@ -3344,10 +3408,10 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQm
                 QReadLocker locker(CoreAPI::objectDataLock());
                 functionData = QTJAMBI_GET_OBJECTUSERDATA(FunctionUserData, __qt_this->object);
             }
-            if(JniEnvironment env{300}){
-                jobject _object = QtJambiAPI::convertQObjectToJavaObject(env, __qt_this->object);
-                if(jobject replaceFunction = functionData->functions[hash].replaceFunction.object(env)){
-                    Java::QtQml::QQmlListProperty$ReplaceFunction::accept(env, replaceFunction, _object, index, object0);
+            {
+                jobject _object = QtJambiAPI::convertQObjectToJavaObject(__jni_env, __qt_this->object);
+                if(jobject replaceFunction = functionData->functions[hash].replaceFunction.object(__jni_env)){
+                    Java::QtQml::QQmlListProperty$ReplaceFunction::accept(__jni_env, replaceFunction, _object, index, object0);
                 }
             }
         }else if(__qt_this->replace){
@@ -3375,12 +3439,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQm
 }
 
 // QQmlListProperty::at(int index)
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlListProperty_at)
-(JNIEnv *__jni_env,
- jobject _this,
- jlong index0,
- QtJambiNativeID elementType)
-{
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_qml_QQmlListProperty_at(JNIEnv *__jni_env, jobject _this, jlong index0, QtJambiNativeID elementType){
     jobject _result{nullptr};
     QTJAMBI_TRY{
         QQmlListProperty<void> *__qt_this = QtJambiAPI::convertJavaObjectToNative<QQmlListProperty<void> >(__jni_env, _this);
@@ -3419,10 +3478,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_
 }
 
 // QQmlListProperty::canAppend()
-extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlListProperty_canAppend)
-(JNIEnv * __jni_env,
- jobject _this)
-{
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_qml_QQmlListProperty_canAppend(JNIEnv * __jni_env, jobject _this){
     jboolean _result{false};
     QTJAMBI_TRY{
         QQmlListProperty<void> *__qt_this = QtJambiAPI::convertJavaObjectToNative<QQmlListProperty<void> >(__jni_env, _this);
@@ -3436,10 +3492,7 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml
 }
 
 // QQmlListProperty::canAt()
-extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlListProperty_canAt)
-(JNIEnv * __jni_env,
- jobject _this)
-{
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_qml_QQmlListProperty_canAt(JNIEnv * __jni_env, jobject _this){
     jboolean _result{false};
     QTJAMBI_TRY{
         QQmlListProperty<void> *__qt_this = QtJambiAPI::convertJavaObjectToNative<QQmlListProperty<void> >(__jni_env, _this);
@@ -3453,10 +3506,7 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml
 }
 
 // QQmlListProperty::canClear()
-extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlListProperty_canClear)
-(JNIEnv * __jni_env,
- jobject _this)
-{
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_qml_QQmlListProperty_canClear(JNIEnv * __jni_env, jobject _this){
     jboolean _result{false};
     QTJAMBI_TRY{
         QQmlListProperty<void> *__qt_this = QtJambiAPI::convertJavaObjectToNative<QQmlListProperty<void> >(__jni_env, _this);
@@ -3470,10 +3520,7 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml
 }
 
 // QQmlListProperty::canCount()
-extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlListProperty_canCount)
-(JNIEnv * __jni_env,
- jobject _this)
-{
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_qml_QQmlListProperty_canCount(JNIEnv * __jni_env, jobject _this){
     jboolean _result{false};
     QTJAMBI_TRY{
         QQmlListProperty<void> *__qt_this = QtJambiAPI::convertJavaObjectToNative<QQmlListProperty<void> >(__jni_env, _this);
@@ -3487,10 +3534,7 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml
 }
 
 // QQmlListProperty::canRemoveLast()
-extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlListProperty_canRemoveLast)
-(JNIEnv * __jni_env,
- jobject _this)
-{
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_qml_QQmlListProperty_canRemoveLast(JNIEnv * __jni_env, jobject _this){
     jboolean _result{false};
     QTJAMBI_TRY{
         QQmlListProperty<void> *__qt_this = QtJambiAPI::convertJavaObjectToNative<QQmlListProperty<void> >(__jni_env, _this);
@@ -3504,10 +3548,7 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml
 }
 
 // QQmlListProperty::canReplace()
-extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlListProperty_canReplace)
-(JNIEnv * __jni_env,
- jobject _this)
-{
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_qml_QQmlListProperty_canReplace(JNIEnv * __jni_env, jobject _this){
     jboolean _result{false};
     QTJAMBI_TRY{
         QQmlListProperty<void> *__qt_this = QtJambiAPI::convertJavaObjectToNative<QQmlListProperty<void> >(__jni_env, _this);
@@ -3521,10 +3562,7 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml
 }
 
 // QQmlListProperty::clear()
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlListProperty_clear)
-(JNIEnv * __jni_env,
- jobject _this)
-{
+extern "C" JNIEXPORT void JNICALL Java_io_qt_qml_QQmlListProperty_clear(JNIEnv * __jni_env, jobject _this){
     QTJAMBI_TRY{
         QQmlListProperty<void> *__qt_this = QtJambiAPI::convertJavaObjectToNative<QQmlListProperty<void> >(__jni_env, _this);
         QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
@@ -3537,10 +3575,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQm
 }
 
 // QQmlListProperty::removeLast()
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlListProperty_removeLast)
-(JNIEnv * __jni_env,
- jobject _this)
-{
+extern "C" JNIEXPORT void JNICALL Java_io_qt_qml_QQmlListProperty_removeLast(JNIEnv * __jni_env, jobject _this){
     QTJAMBI_TRY{
         QQmlListProperty<void> *__qt_this = QtJambiAPI::convertJavaObjectToNative<QQmlListProperty<void> >(__jni_env, _this);
         QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
@@ -3553,10 +3588,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQm
 }
 
 // QQmlListProperty::count()
-extern "C" Q_DECL_EXPORT jlong JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlListProperty_count)
-(JNIEnv * __jni_env,
- jobject _this)
-{
+extern "C" JNIEXPORT jlong JNICALL Java_io_qt_qml_QQmlListProperty_count(JNIEnv * __jni_env, jobject _this){
     jlong _result{0};
     QTJAMBI_TRY{
         QQmlListProperty<void> *__qt_this = QtJambiAPI::convertJavaObjectToNative<QQmlListProperty<void> >(__jni_env, _this);
@@ -3571,10 +3603,7 @@ extern "C" Q_DECL_EXPORT jlong JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQ
 }
 
 // QQmlListProperty::object()
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlListProperty_object)
-(JNIEnv *__jni_env,
- jobject _this)
-{
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_qml_QQmlListProperty_object(JNIEnv *__jni_env, jobject _this){
     jobject _result{nullptr};
     QTJAMBI_TRY{
         QQmlListProperty<void> *__qt_this = QtJambiAPI::convertJavaObjectToNative<QQmlListProperty<void> >(__jni_env, _this);
@@ -3593,25 +3622,28 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_
 // emitting (writeSignalInitialization)
 // emitting (writeJavaLangObjectOverrideFunctions)
 
-void initialize_meta_info_QQmlListProperty(){
-    using namespace RegistryAPI;
-    if(JniEnvironment env{300}){
-        if(Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.enabled-qml-debugging-nowarn"))
-            || Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.enable-qml-debugging-nowarn"))){
+extern "C" JNIEXPORT void JNICALL Java_io_qt_qml_QtJambi_1LibraryUtilities_initializeQmlDebugging(JNIEnv *env, jclass, jboolean enabledQmlDebuggingNowarn, jboolean enabledQmlDebugging){
+    QTJAMBI_TRY{
+        if(enabledQmlDebuggingNowarn){
 #if QT_VERSION < QT_VERSION_CHECK(6,4,0)
             QQmlDebuggingEnabler(false);
 #else
             QQmlDebuggingEnabler::enableDebugging(false);
 #endif
-        }else if(Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.enabled-qml-debugging"))
-                   || Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.enable-qml-debugging"))){
+        }else if(enabledQmlDebugging){
 #if QT_VERSION < QT_VERSION_CHECK(6,4,0)
             QQmlDebuggingEnabler(true);
 #else
             QQmlDebuggingEnabler::enableDebugging(true);
 #endif
         }
-    }
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(env);
+    }QTJAMBI_TRY_END
+}
+
+void initialize_meta_info_QQmlListProperty(){
+    using namespace RegistryAPI;
     QmlAPI::setQmlReportDestruction(&QQmlPrivate::qdeclarativeelement_destructor);
     QmlAPI::setQmlIsJavaScriptOwnership([](QObject * obj)->bool{
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)

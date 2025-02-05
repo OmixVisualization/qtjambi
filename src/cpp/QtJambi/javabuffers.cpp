@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -37,14 +37,15 @@
 jobject getBufferArray(JNIEnv *env, jobject buffer);
 
 JBufferConstData::JBufferConstData(JNIEnv *env, jobject buffer_object) :
-    m_buffer_object(buffer_object ? env->NewGlobalRef(buffer_object) : nullptr),
+    m_buffer_object(buffer_object),
     m_capacity(0),
     m_position(0),
     m_limit(0),
     m_data(nullptr),
     m_isdirect(true),
     m_readOnly(false),
-    m_is_copy(false)
+    m_is_copy(false),
+    m_env(env)
 {
     if(m_buffer_object){
         m_isdirect = Java::Runtime::Buffer::isDirect(env, m_buffer_object);
@@ -211,87 +212,87 @@ JBufferConstData::JBufferConstData(JNIEnv *env, jobject buffer_object) :
 
 const void* JBufferConstData::data() const {return m_data+m_position;}
 const void* JBufferConstData::constData() const {return m_data+m_position;}
-void JBufferConstData::commit(JNIEnv *){}
+void JBufferConstData::commit(){}
 
-void JBufferData::commit(JNIEnv *env){
+void JBufferData::commit(){
     if(m_buffer_object && !m_isdirect && m_capacity>0 && m_is_copy){
-        jobject bufferArray = getBufferArray(env, m_buffer_object);
-        if(Java::Runtime::ByteBuffer::isInstanceOf(env, m_buffer_object)){
-            if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Byte::primitiveType(env), 1))){
-                env->ReleaseByteArrayElements(jbyteArray(bufferArray), reinterpret_cast<jbyte*>(m_data), 0);
-                m_data = reinterpret_cast<char*>(env->GetByteArrayElements(jbyteArray(bufferArray), &m_is_copy));
+        jobject bufferArray = getBufferArray(m_env, m_buffer_object);
+        if(Java::Runtime::ByteBuffer::isInstanceOf(m_env, m_buffer_object)){
+            if(bufferArray && m_env->IsInstanceOf(bufferArray, getArrayClass(m_env, Java::Runtime::Byte::primitiveType(m_env), 1))){
+                m_env->ReleaseByteArrayElements(jbyteArray(bufferArray), reinterpret_cast<jbyte*>(m_data), 0);
+                m_data = reinterpret_cast<char*>(m_env->GetByteArrayElements(jbyteArray(bufferArray), &m_is_copy));
             }else{
                 jbyte* array = reinterpret_cast<jbyte*>(m_data);
                 jsize size = jsize(size_t(m_capacity) * sizeof(char) / sizeof(jbyte));
                 for(jsize i=0; i<size; ++i){
-                    Java::Runtime::ByteBuffer::put(env, m_buffer_object, i, array[i]);
+                    Java::Runtime::ByteBuffer::put(m_env, m_buffer_object, i, array[i]);
                 }
             }
-        }else if(Java::Runtime::IntBuffer::isInstanceOf(env, m_buffer_object)){
-            if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Integer::primitiveType(env), 1))){
-                env->ReleaseIntArrayElements(jintArray(bufferArray), reinterpret_cast<jint*>(m_data), 0);
-                m_data = reinterpret_cast<char*>(env->GetIntArrayElements(jintArray(bufferArray), &m_is_copy));
+        }else if(Java::Runtime::IntBuffer::isInstanceOf(m_env, m_buffer_object)){
+            if(bufferArray && m_env->IsInstanceOf(bufferArray, getArrayClass(m_env, Java::Runtime::Integer::primitiveType(m_env), 1))){
+                m_env->ReleaseIntArrayElements(jintArray(bufferArray), reinterpret_cast<jint*>(m_data), 0);
+                m_data = reinterpret_cast<char*>(m_env->GetIntArrayElements(jintArray(bufferArray), &m_is_copy));
             }else{
                 jint* array = reinterpret_cast<jint*>(m_data);
                 jsize size = jsize(size_t(m_capacity) * sizeof(char) / sizeof(jint));
                 for(jsize i=0; i<size; ++i){
-                    Java::Runtime::IntBuffer::put(env, m_buffer_object, i, array[i]);
+                    Java::Runtime::IntBuffer::put(m_env, m_buffer_object, i, array[i]);
                 }
             }
-        }else if(Java::Runtime::ShortBuffer::isInstanceOf(env, m_buffer_object)){
-            if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Short::primitiveType(env), 1))){
-                env->ReleaseShortArrayElements(jshortArray(bufferArray), reinterpret_cast<jshort*>(m_data), 0);
-                m_data = reinterpret_cast<char*>(env->GetShortArrayElements(jshortArray(bufferArray), &m_is_copy));
+        }else if(Java::Runtime::ShortBuffer::isInstanceOf(m_env, m_buffer_object)){
+            if(bufferArray && m_env->IsInstanceOf(bufferArray, getArrayClass(m_env, Java::Runtime::Short::primitiveType(m_env), 1))){
+                m_env->ReleaseShortArrayElements(jshortArray(bufferArray), reinterpret_cast<jshort*>(m_data), 0);
+                m_data = reinterpret_cast<char*>(m_env->GetShortArrayElements(jshortArray(bufferArray), &m_is_copy));
             }else{
                 jshort* array = reinterpret_cast<jshort*>(m_data);
                 jsize size = jsize(size_t(m_capacity) * sizeof(char) / sizeof(jshort));
                 for(jsize i=0; i<size; ++i){
-                    Java::Runtime::ShortBuffer::put(env, m_buffer_object, i, array[i]);
+                    Java::Runtime::ShortBuffer::put(m_env, m_buffer_object, i, array[i]);
                 }
             }
-        }else if(Java::Runtime::CharBuffer::isInstanceOf(env, m_buffer_object)){
-            if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Character::primitiveType(env), 1))){
-                env->ReleaseCharArrayElements(jcharArray(bufferArray), reinterpret_cast<jchar*>(m_data), 0);
-                m_data = reinterpret_cast<char*>(env->GetCharArrayElements(jcharArray(bufferArray), &m_is_copy));
+        }else if(Java::Runtime::CharBuffer::isInstanceOf(m_env, m_buffer_object)){
+            if(bufferArray && m_env->IsInstanceOf(bufferArray, getArrayClass(m_env, Java::Runtime::Character::primitiveType(m_env), 1))){
+                m_env->ReleaseCharArrayElements(jcharArray(bufferArray), reinterpret_cast<jchar*>(m_data), 0);
+                m_data = reinterpret_cast<char*>(m_env->GetCharArrayElements(jcharArray(bufferArray), &m_is_copy));
             }else{
                 jchar* array = reinterpret_cast<jchar*>(m_data);
                 jsize size = jsize(size_t(m_capacity) * sizeof(char) / sizeof(jchar));
                 for(jsize i=0; i<size; ++i){
-                    Java::Runtime::CharBuffer::put(env, m_buffer_object, i, array[i]);
+                    Java::Runtime::CharBuffer::put(m_env, m_buffer_object, i, array[i]);
                 }
             }
-        }else if(Java::Runtime::LongBuffer::isInstanceOf(env, m_buffer_object)){
-            if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Long::primitiveType(env), 1))){
-                env->ReleaseLongArrayElements(jlongArray(bufferArray), reinterpret_cast<jlong*>(m_data), 0);
-                m_data = reinterpret_cast<char*>(env->GetLongArrayElements(jlongArray(bufferArray), &m_is_copy));
+        }else if(Java::Runtime::LongBuffer::isInstanceOf(m_env, m_buffer_object)){
+            if(bufferArray && m_env->IsInstanceOf(bufferArray, getArrayClass(m_env, Java::Runtime::Long::primitiveType(m_env), 1))){
+                m_env->ReleaseLongArrayElements(jlongArray(bufferArray), reinterpret_cast<jlong*>(m_data), 0);
+                m_data = reinterpret_cast<char*>(m_env->GetLongArrayElements(jlongArray(bufferArray), &m_is_copy));
             }else{
                 jlong* array = reinterpret_cast<jlong*>(m_data);
                 m_data = nullptr;
                 jsize size = jsize(size_t(m_capacity) * sizeof(char) / sizeof(jlong));
                 for(jsize i=0; i<size; ++i){
-                    Java::Runtime::LongBuffer::put(env, m_buffer_object, i, array[i]);
+                    Java::Runtime::LongBuffer::put(m_env, m_buffer_object, i, array[i]);
                 }
             }
-        }else if(Java::Runtime::FloatBuffer::isInstanceOf(env, m_buffer_object)){
-            if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Float::primitiveType(env), 1))){
-                env->ReleaseFloatArrayElements(jfloatArray(bufferArray), reinterpret_cast<jfloat*>(m_data), 0);
-                m_data = reinterpret_cast<char*>(env->GetFloatArrayElements(jfloatArray(bufferArray), &m_is_copy));
+        }else if(Java::Runtime::FloatBuffer::isInstanceOf(m_env, m_buffer_object)){
+            if(bufferArray && m_env->IsInstanceOf(bufferArray, getArrayClass(m_env, Java::Runtime::Float::primitiveType(m_env), 1))){
+                m_env->ReleaseFloatArrayElements(jfloatArray(bufferArray), reinterpret_cast<jfloat*>(m_data), 0);
+                m_data = reinterpret_cast<char*>(m_env->GetFloatArrayElements(jfloatArray(bufferArray), &m_is_copy));
             }else{
                 jfloat* array = reinterpret_cast<jfloat*>(m_data);
                 jsize size = jsize(size_t(m_capacity) * sizeof(char) / sizeof(jfloat));
                 for(jsize i=0; i<size; ++i){
-                    Java::Runtime::FloatBuffer::put(env, m_buffer_object, i, double(array[i]));
+                    Java::Runtime::FloatBuffer::put(m_env, m_buffer_object, i, double(array[i]));
                 }
             }
-        }else if(Java::Runtime::DoubleBuffer::isInstanceOf(env, m_buffer_object)){
-            if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Double::primitiveType(env), 1))){
-                env->ReleaseDoubleArrayElements(jdoubleArray(bufferArray), reinterpret_cast<jdouble*>(m_data), 0);
-                m_data = reinterpret_cast<char*>(env->GetDoubleArrayElements(jdoubleArray(bufferArray), &m_is_copy));
+        }else if(Java::Runtime::DoubleBuffer::isInstanceOf(m_env, m_buffer_object)){
+            if(bufferArray && m_env->IsInstanceOf(bufferArray, getArrayClass(m_env, Java::Runtime::Double::primitiveType(m_env), 1))){
+                m_env->ReleaseDoubleArrayElements(jdoubleArray(bufferArray), reinterpret_cast<jdouble*>(m_data), 0);
+                m_data = reinterpret_cast<char*>(m_env->GetDoubleArrayElements(jdoubleArray(bufferArray), &m_is_copy));
             }else{
                 jdouble* array = reinterpret_cast<jdouble*>(m_data);
                 jsize size = jsize(size_t(m_capacity) * sizeof(char) / sizeof(jdouble));
                 for(jsize i=0; i<size; ++i){
-                    Java::Runtime::DoubleBuffer::put(env, m_buffer_object, i, array[i]);
+                    Java::Runtime::DoubleBuffer::put(m_env, m_buffer_object, i, array[i]);
                 }
             }
         }
@@ -313,51 +314,48 @@ void* JBufferConstData::take(){
 JBufferConstData::~JBufferConstData(){
     try{
         if(m_buffer_object){
-            if(DefaultJniEnvironment env{500}){
-                if(m_data && !m_isdirect && m_capacity>0){
-                    jobject bufferArray = nullptr;
-                    try{
-                        bufferArray = getBufferArray(env, m_buffer_object);
-                    }catch(const JavaException&){
-                    }
-                    if(Java::Runtime::ByteBuffer::isInstanceOf(env, m_buffer_object)){
-                        if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Byte::primitiveType(env), 1))){
-                            env->ReleaseByteArrayElements(jbyteArray(bufferArray), reinterpret_cast<jbyte*>(m_data), JNI_ABORT);
-                        }else
-                            delete[] reinterpret_cast<jbyte*>(m_data);
-                    }else if(Java::Runtime::IntBuffer::isInstanceOf(env, m_buffer_object)){
-                        if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Integer::primitiveType(env), 1))){
-                            env->ReleaseIntArrayElements(jintArray(bufferArray), reinterpret_cast<jint*>(m_data), JNI_ABORT);
-                        }else
-                            delete[] reinterpret_cast<jint*>(m_data);
-                    }else if(Java::Runtime::ShortBuffer::isInstanceOf(env, m_buffer_object)){
-                        if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Short::primitiveType(env), 1))){
-                            env->ReleaseShortArrayElements(jshortArray(bufferArray), reinterpret_cast<jshort*>(m_data), JNI_ABORT);
-                        }else
-                            delete[] reinterpret_cast<jshort*>(m_data);
-                    }else if(Java::Runtime::CharBuffer::isInstanceOf(env, m_buffer_object)){
-                        if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Character::primitiveType(env), 1))){
-                            env->ReleaseCharArrayElements(jcharArray(bufferArray), reinterpret_cast<jchar*>(m_data), JNI_ABORT);
-                        }else
-                            delete[] reinterpret_cast<jchar*>(m_data);
-                    }else if(Java::Runtime::LongBuffer::isInstanceOf(env, m_buffer_object)){
-                        if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Long::primitiveType(env), 1))){
-                            env->ReleaseLongArrayElements(jlongArray(bufferArray), reinterpret_cast<jlong*>(m_data), JNI_ABORT);
-                        }else
-                            delete[] reinterpret_cast<jlong*>(m_data);
-                    }else if(Java::Runtime::FloatBuffer::isInstanceOf(env, m_buffer_object)){
-                        if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Float::primitiveType(env), 1))){
-                            env->ReleaseFloatArrayElements(jfloatArray(bufferArray), reinterpret_cast<jfloat*>(m_data), JNI_ABORT);
-                        }else
-                            delete[] reinterpret_cast<jfloat*>(m_data);
-                    }else if(Java::Runtime::DoubleBuffer::isInstanceOf(env, m_buffer_object)){
-                        if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Double::primitiveType(env), 1))){
-                            env->ReleaseDoubleArrayElements(jdoubleArray(bufferArray), reinterpret_cast<jdouble*>(m_data), JNI_ABORT);
-                        }else
-                            delete[] reinterpret_cast<jdouble*>(m_data);
-                    }
+            if(m_data && !m_isdirect && m_capacity>0){
+                jobject bufferArray = nullptr;
+                try{
+                    bufferArray = getBufferArray(m_env, m_buffer_object);
+                }catch(const JavaException&){
                 }
-                env->DeleteGlobalRef(m_buffer_object);
+                if(Java::Runtime::ByteBuffer::isInstanceOf(m_env, m_buffer_object)){
+                    if(bufferArray && m_env->IsInstanceOf(bufferArray, getArrayClass(m_env, Java::Runtime::Byte::primitiveType(m_env), 1))){
+                        m_env->ReleaseByteArrayElements(jbyteArray(bufferArray), reinterpret_cast<jbyte*>(m_data), JNI_ABORT);
+                    }else
+                        delete[] reinterpret_cast<jbyte*>(m_data);
+                }else if(Java::Runtime::IntBuffer::isInstanceOf(m_env, m_buffer_object)){
+                    if(bufferArray && m_env->IsInstanceOf(bufferArray, getArrayClass(m_env, Java::Runtime::Integer::primitiveType(m_env), 1))){
+                        m_env->ReleaseIntArrayElements(jintArray(bufferArray), reinterpret_cast<jint*>(m_data), JNI_ABORT);
+                    }else
+                        delete[] reinterpret_cast<jint*>(m_data);
+                }else if(Java::Runtime::ShortBuffer::isInstanceOf(m_env, m_buffer_object)){
+                    if(bufferArray && m_env->IsInstanceOf(bufferArray, getArrayClass(m_env, Java::Runtime::Short::primitiveType(m_env), 1))){
+                        m_env->ReleaseShortArrayElements(jshortArray(bufferArray), reinterpret_cast<jshort*>(m_data), JNI_ABORT);
+                    }else
+                        delete[] reinterpret_cast<jshort*>(m_data);
+                }else if(Java::Runtime::CharBuffer::isInstanceOf(m_env, m_buffer_object)){
+                    if(bufferArray && m_env->IsInstanceOf(bufferArray, getArrayClass(m_env, Java::Runtime::Character::primitiveType(m_env), 1))){
+                        m_env->ReleaseCharArrayElements(jcharArray(bufferArray), reinterpret_cast<jchar*>(m_data), JNI_ABORT);
+                    }else
+                        delete[] reinterpret_cast<jchar*>(m_data);
+                }else if(Java::Runtime::LongBuffer::isInstanceOf(m_env, m_buffer_object)){
+                    if(bufferArray && m_env->IsInstanceOf(bufferArray, getArrayClass(m_env, Java::Runtime::Long::primitiveType(m_env), 1))){
+                        m_env->ReleaseLongArrayElements(jlongArray(bufferArray), reinterpret_cast<jlong*>(m_data), JNI_ABORT);
+                    }else
+                        delete[] reinterpret_cast<jlong*>(m_data);
+                }else if(Java::Runtime::FloatBuffer::isInstanceOf(m_env, m_buffer_object)){
+                    if(bufferArray && m_env->IsInstanceOf(bufferArray, getArrayClass(m_env, Java::Runtime::Float::primitiveType(m_env), 1))){
+                        m_env->ReleaseFloatArrayElements(jfloatArray(bufferArray), reinterpret_cast<jfloat*>(m_data), JNI_ABORT);
+                    }else
+                        delete[] reinterpret_cast<jfloat*>(m_data);
+                }else if(Java::Runtime::DoubleBuffer::isInstanceOf(m_env, m_buffer_object)){
+                    if(bufferArray && m_env->IsInstanceOf(bufferArray, getArrayClass(m_env, Java::Runtime::Double::primitiveType(m_env), 1))){
+                        m_env->ReleaseDoubleArrayElements(jdoubleArray(bufferArray), reinterpret_cast<jdouble*>(m_data), JNI_ABORT);
+                    }else
+                        delete[] reinterpret_cast<jdouble*>(m_data);
+                }
             }
         }
     } catch (const std::exception& e) {
@@ -404,117 +402,115 @@ JBufferData::JBufferData(JNIEnv *env, jobject buffer_object) :
 JBufferData::~JBufferData(){
     try{
         if(m_buffer_object && !m_isdirect && m_capacity>0){
-            if(DefaultJniEnvironment env{500}){
-                jobject bufferArray = nullptr;
-                try{
-                    bufferArray = getBufferArray(env, m_buffer_object);
-                }catch(const JavaException&){
+            jobject bufferArray = nullptr;
+            try{
+                bufferArray = getBufferArray(m_env, m_buffer_object);
+            }catch(const JavaException&){
+            }
+            if(Java::Runtime::ByteBuffer::isInstanceOf(m_env, m_buffer_object)){
+                if(bufferArray && m_env->IsInstanceOf(bufferArray, getArrayClass(m_env, Java::Runtime::Byte::primitiveType(m_env), 1))){
+                    m_env->ReleaseByteArrayElements(jbyteArray(bufferArray), reinterpret_cast<jbyte*>(m_data), 0);
+                    m_data = nullptr;
+                }else{
+                    jbyte* array = reinterpret_cast<jbyte*>(m_data);
+                    m_data = nullptr;
+                    if(!m_readOnly){
+                        jsize size = jsize(size_t(m_capacity) * sizeof(char) / sizeof(jbyte));
+                        for(jsize i=0; i<size; ++i){
+                            Java::Runtime::ByteBuffer::put(m_env, m_buffer_object, i, array[i]);
+                        }
+                    }
+                    delete[] array;
                 }
-                if(Java::Runtime::ByteBuffer::isInstanceOf(env, m_buffer_object)){
-                    if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Byte::primitiveType(env), 1))){
-                        env->ReleaseByteArrayElements(jbyteArray(bufferArray), reinterpret_cast<jbyte*>(m_data), 0);
-                        m_data = nullptr;
-                    }else{
-                        jbyte* array = reinterpret_cast<jbyte*>(m_data);
-                        m_data = nullptr;
-                        if(!m_readOnly){
-                                jsize size = jsize(size_t(m_capacity) * sizeof(char) / sizeof(jbyte));
-                            for(jsize i=0; i<size; ++i){
-                                Java::Runtime::ByteBuffer::put(env, m_buffer_object, i, array[i]);
-                            }
+            }else if(Java::Runtime::IntBuffer::isInstanceOf(m_env, m_buffer_object)){
+                if(bufferArray && m_env->IsInstanceOf(bufferArray, getArrayClass(m_env, Java::Runtime::Integer::primitiveType(m_env), 1))){
+                    m_env->ReleaseIntArrayElements(jintArray(bufferArray), reinterpret_cast<jint*>(m_data), 0);
+                    m_data = nullptr;
+                }else{
+                    jint* array = reinterpret_cast<jint*>(m_data);
+                    m_data = nullptr;
+                    if(!m_readOnly){
+                        jsize size = jsize(size_t(m_capacity) * sizeof(char) / sizeof(jint));
+                        for(jsize i=0; i<size; ++i){
+                            Java::Runtime::IntBuffer::put(m_env, m_buffer_object, i, array[i]);
                         }
-                        delete[] array;
                     }
-                }else if(Java::Runtime::IntBuffer::isInstanceOf(env, m_buffer_object)){
-                    if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Integer::primitiveType(env), 1))){
-                        env->ReleaseIntArrayElements(jintArray(bufferArray), reinterpret_cast<jint*>(m_data), 0);
-                        m_data = nullptr;
-                    }else{
-                        jint* array = reinterpret_cast<jint*>(m_data);
-                        m_data = nullptr;
-                        if(!m_readOnly){
-                                jsize size = jsize(size_t(m_capacity) * sizeof(char) / sizeof(jint));
-                            for(jsize i=0; i<size; ++i){
-                                Java::Runtime::IntBuffer::put(env, m_buffer_object, i, array[i]);
-                            }
+                    delete[] array;
+                }
+            }else if(Java::Runtime::ShortBuffer::isInstanceOf(m_env, m_buffer_object)){
+                if(bufferArray && m_env->IsInstanceOf(bufferArray, getArrayClass(m_env, Java::Runtime::Short::primitiveType(m_env), 1))){
+                    m_env->ReleaseShortArrayElements(jshortArray(bufferArray), reinterpret_cast<jshort*>(m_data), 0);
+                    m_data = nullptr;
+                }else{
+                    jshort* array = reinterpret_cast<jshort*>(m_data);
+                    m_data = nullptr;
+                    if(!m_readOnly){
+                        jsize size = jsize(size_t(m_capacity) * sizeof(char) / sizeof(jshort));
+                        for(jsize i=0; i<size; ++i){
+                            Java::Runtime::ShortBuffer::put(m_env, m_buffer_object, i, array[i]);
                         }
-                        delete[] array;
                     }
-                }else if(Java::Runtime::ShortBuffer::isInstanceOf(env, m_buffer_object)){
-                    if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Short::primitiveType(env), 1))){
-                        env->ReleaseShortArrayElements(jshortArray(bufferArray), reinterpret_cast<jshort*>(m_data), 0);
-                        m_data = nullptr;
-                    }else{
-                        jshort* array = reinterpret_cast<jshort*>(m_data);
-                        m_data = nullptr;
-                        if(!m_readOnly){
-                            jsize size = jsize(size_t(m_capacity) * sizeof(char) / sizeof(jshort));
-                            for(jsize i=0; i<size; ++i){
-                                Java::Runtime::ShortBuffer::put(env, m_buffer_object, i, array[i]);
-                            }
+                    delete[] array;
+                }
+            }else if(Java::Runtime::CharBuffer::isInstanceOf(m_env, m_buffer_object)){
+                if(bufferArray && m_env->IsInstanceOf(bufferArray, getArrayClass(m_env, Java::Runtime::Character::primitiveType(m_env), 1))){
+                    m_env->ReleaseCharArrayElements(jcharArray(bufferArray), reinterpret_cast<jchar*>(m_data), 0);
+                    m_data = nullptr;
+                }else{
+                    jchar* array = reinterpret_cast<jchar*>(m_data);
+                    m_data = nullptr;
+                    if(!m_readOnly){
+                        jsize size = jsize(size_t(m_capacity) * sizeof(char) / sizeof(jchar));
+                        for(jsize i=0; i<size; ++i){
+                            Java::Runtime::CharBuffer::put(m_env, m_buffer_object, i, array[i]);
                         }
-                        delete[] array;
                     }
-                }else if(Java::Runtime::CharBuffer::isInstanceOf(env, m_buffer_object)){
-                    if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Character::primitiveType(env), 1))){
-                        env->ReleaseCharArrayElements(jcharArray(bufferArray), reinterpret_cast<jchar*>(m_data), 0);
-                        m_data = nullptr;
-                    }else{
-                        jchar* array = reinterpret_cast<jchar*>(m_data);
-                        m_data = nullptr;
-                        if(!m_readOnly){
-                            jsize size = jsize(size_t(m_capacity) * sizeof(char) / sizeof(jchar));
-                            for(jsize i=0; i<size; ++i){
-                                Java::Runtime::CharBuffer::put(env, m_buffer_object, i, array[i]);
-                            }
+                    delete[] array;
+                }
+            }else if(Java::Runtime::LongBuffer::isInstanceOf(m_env, m_buffer_object)){
+                if(bufferArray && m_env->IsInstanceOf(bufferArray, getArrayClass(m_env, Java::Runtime::Long::primitiveType(m_env), 1))){
+                    m_env->ReleaseLongArrayElements(jlongArray(bufferArray), reinterpret_cast<jlong*>(m_data), 0);
+                    m_data = nullptr;
+                }else{
+                    jlong* array = reinterpret_cast<jlong*>(m_data);
+                    m_data = nullptr;
+                    if(!m_readOnly){
+                        jsize size = jsize(size_t(m_capacity) * sizeof(char) / sizeof(jlong));
+                        for(jsize i=0; i<size; ++i){
+                            Java::Runtime::LongBuffer::put(m_env, m_buffer_object, i, array[i]);
                         }
-                        delete[] array;
                     }
-                }else if(Java::Runtime::LongBuffer::isInstanceOf(env, m_buffer_object)){
-                    if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Long::primitiveType(env), 1))){
-                        env->ReleaseLongArrayElements(jlongArray(bufferArray), reinterpret_cast<jlong*>(m_data), 0);
-                        m_data = nullptr;
-                    }else{
-                        jlong* array = reinterpret_cast<jlong*>(m_data);
-                        m_data = nullptr;
-                        if(!m_readOnly){
-                            jsize size = jsize(size_t(m_capacity) * sizeof(char) / sizeof(jlong));
-                            for(jsize i=0; i<size; ++i){
-                                Java::Runtime::LongBuffer::put(env, m_buffer_object, i, array[i]);
-                            }
+                    delete[] array;
+                }
+            }else if(Java::Runtime::FloatBuffer::isInstanceOf(m_env, m_buffer_object)){
+                if(bufferArray && m_env->IsInstanceOf(bufferArray, getArrayClass(m_env, Java::Runtime::Float::primitiveType(m_env), 1))){
+                    m_env->ReleaseFloatArrayElements(jfloatArray(bufferArray), reinterpret_cast<jfloat*>(m_data), 0);
+                    m_data = nullptr;
+                }else{
+                    jfloat* array = reinterpret_cast<jfloat*>(m_data);
+                    m_data = nullptr;
+                    if(!m_readOnly){
+                        jsize size = jsize(size_t(m_capacity) * sizeof(char) / sizeof(jfloat));
+                        for(jsize i=0; i<size; ++i){
+                            Java::Runtime::FloatBuffer::put(m_env, m_buffer_object, i, double(array[i]));
                         }
-                        delete[] array;
                     }
-                }else if(Java::Runtime::FloatBuffer::isInstanceOf(env, m_buffer_object)){
-                    if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Float::primitiveType(env), 1))){
-                        env->ReleaseFloatArrayElements(jfloatArray(bufferArray), reinterpret_cast<jfloat*>(m_data), 0);
-                        m_data = nullptr;
-                    }else{
-                        jfloat* array = reinterpret_cast<jfloat*>(m_data);
-                        m_data = nullptr;
-                        if(!m_readOnly){
-                            jsize size = jsize(size_t(m_capacity) * sizeof(char) / sizeof(jfloat));
-                            for(jsize i=0; i<size; ++i){
-                                Java::Runtime::FloatBuffer::put(env, m_buffer_object, i, double(array[i]));
-                            }
+                    delete[] array;
+                }
+            }else if(Java::Runtime::DoubleBuffer::isInstanceOf(m_env, m_buffer_object)){
+                if(bufferArray && m_env->IsInstanceOf(bufferArray, getArrayClass(m_env, Java::Runtime::Double::primitiveType(m_env), 1))){
+                    m_env->ReleaseDoubleArrayElements(jdoubleArray(bufferArray), reinterpret_cast<jdouble*>(m_data), 0);
+                    m_data = nullptr;
+                }else{
+                    jdouble* array = reinterpret_cast<jdouble*>(m_data);
+                    m_data = nullptr;
+                    if(!m_readOnly){
+                        jsize size = jsize(size_t(m_capacity) * sizeof(char) / sizeof(jdouble));
+                        for(jsize i=0; i<size; ++i){
+                            Java::Runtime::DoubleBuffer::put(m_env, m_buffer_object, i, array[i]);
                         }
-                        delete[] array;
                     }
-                }else if(Java::Runtime::DoubleBuffer::isInstanceOf(env, m_buffer_object)){
-                    if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Double::primitiveType(env), 1))){
-                        env->ReleaseDoubleArrayElements(jdoubleArray(bufferArray), reinterpret_cast<jdouble*>(m_data), 0);
-                        m_data = nullptr;
-                    }else{
-                        jdouble* array = reinterpret_cast<jdouble*>(m_data);
-                        m_data = nullptr;
-                        if(!m_readOnly){
-                            jsize size = jsize(size_t(m_capacity) * sizeof(char) / sizeof(jdouble));
-                            for(jsize i=0; i<size; ++i){
-                                Java::Runtime::DoubleBuffer::put(env, m_buffer_object, i, array[i]);
-                            }
-                        }
-                        delete[] array;
-                    }
+                    delete[] array;
                 }
             }
         }
@@ -524,368 +520,948 @@ JBufferData::~JBufferData(){
     }
 }
 
+struct PersistentJBufferDataPrivate{
+    JObjectWrapper m_buffer_object;
+    qsizetype m_capacity;
+    qsizetype m_position;
+    qsizetype m_limit;
+    char* m_data;
+    bool m_isdirect;
+    bool m_readOnly;
+    jboolean m_is_copy;
+};
+
+PersistentJBufferConstData::PersistentJBufferConstData(JNIEnv *env, jobject buffer_object) :
+    m_data(new PersistentJBufferDataPrivate{JObjectWrapper(env, buffer_object), 0, 0, 0, nullptr, true, false, false})
+{
+    if(buffer_object){
+        m_data->m_isdirect = Java::Runtime::Buffer::isDirect(env, buffer_object);
+        m_data->m_limit = Java::Runtime::Internal::Buffer::limit(env, buffer_object);
+        m_data->m_position = Java::Runtime::Internal::Buffer::position(env, buffer_object);
+        m_data->m_readOnly = Java::Runtime::Buffer::isReadOnly(env, buffer_object);
+        if(m_data->m_isdirect){
+            m_data->m_capacity = env->GetDirectBufferCapacity(buffer_object);
+            m_data->m_data = reinterpret_cast<char*>(env->GetDirectBufferAddress(buffer_object));
+        }else{
+            jobject bufferArray = nullptr;
+            try{
+                bufferArray = getBufferArray(env, buffer_object);
+            }catch(const JavaException&){
+            }
+            if(Java::Runtime::ByteBuffer::isInstanceOf(env, buffer_object)){
+                if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Byte::primitiveType(env), 1))){
+                    m_data->m_capacity = env->GetArrayLength(jarray(bufferArray));
+                    if(m_data->m_capacity>0){
+                        m_data->m_data = reinterpret_cast<char*>(env->GetByteArrayElements(jbyteArray(bufferArray), &m_data->m_is_copy));
+                    }
+                }else{
+                    m_data->m_capacity = Java::Runtime::Internal::Buffer::capacity(env, buffer_object);
+                    if(m_data->m_capacity>0){
+                        jbyte* array = new jbyte[size_t(m_data->m_capacity)];
+                        for(qsizetype i=0; i<m_data->m_capacity; ++i){
+                            array[i] = Java::Runtime::ByteBuffer::get(env, buffer_object, jsize(i));
+                        }
+                        m_data->m_data = reinterpret_cast<char*>(array);
+                        m_data->m_is_copy = true;
+                    }
+                }
+            }else if(Java::Runtime::IntBuffer::isInstanceOf(env, buffer_object)){
+                if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Integer::primitiveType(env), 1))){
+                    m_data->m_capacity = env->GetArrayLength(jarray(bufferArray));
+                    if(m_data->m_capacity>0){
+                        m_data->m_data = reinterpret_cast<char*>(env->GetIntArrayElements(jintArray(bufferArray), &m_data->m_is_copy));
+                    }
+                }else{
+                    m_data->m_capacity = Java::Runtime::Internal::Buffer::capacity(env, buffer_object);
+                    if(m_data->m_capacity>0){
+                        jint* array = new jint[size_t(m_data->m_capacity)];
+                        for(qsizetype i=0; i<m_data->m_capacity; ++i){
+                            array[i] = Java::Runtime::IntBuffer::get(env, buffer_object, jsize(i));
+                        }
+                        m_data->m_data = reinterpret_cast<char*>(array);
+                        m_data->m_is_copy = true;
+                    }
+                }
+            }else if(Java::Runtime::ShortBuffer::isInstanceOf(env, buffer_object)){
+                if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Short::primitiveType(env), 1))){
+                    m_data->m_capacity = env->GetArrayLength(jarray(bufferArray));
+                    if(m_data->m_capacity>0){
+                        m_data->m_data = reinterpret_cast<char*>(env->GetShortArrayElements(jshortArray(bufferArray), &m_data->m_is_copy));
+                    }
+                }else{
+                    m_data->m_capacity = Java::Runtime::Internal::Buffer::capacity(env, buffer_object);
+                    if(m_data->m_capacity>0){
+                        jshort* array = new jshort[size_t(m_data->m_capacity)];
+                        for(qsizetype i=0; i<m_data->m_capacity; ++i){
+                            array[i] = Java::Runtime::ShortBuffer::get(env, buffer_object, jsize(i));
+                        }
+                        m_data->m_data = reinterpret_cast<char*>(array);
+                        m_data->m_is_copy = true;
+                    }
+                }
+            }else if(Java::Runtime::CharBuffer::isInstanceOf(env, buffer_object)){
+                if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Character::primitiveType(env), 1))){
+                    m_data->m_capacity = m_data->m_limit = env->GetArrayLength(jarray(bufferArray));
+                    if(m_data->m_capacity>0){
+                        m_data->m_data = reinterpret_cast<char*>(env->GetCharArrayElements(jcharArray(bufferArray), &m_data->m_is_copy));
+                    }
+                }else{
+                    m_data->m_capacity = Java::Runtime::Internal::Buffer::capacity(env, buffer_object);
+                    if(m_data->m_capacity>0){
+                        jchar* array = new jchar[size_t(m_data->m_capacity)];
+                        for(qsizetype i=0; i<m_data->m_capacity; ++i){
+                            array[i] = Java::Runtime::CharBuffer::get(env, buffer_object, jsize(i));
+                        }
+                        m_data->m_data = reinterpret_cast<char*>(array);
+                        m_data->m_is_copy = true;
+                    }
+                }
+            }else if(Java::Runtime::LongBuffer::isInstanceOf(env, buffer_object)){
+                if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Long::primitiveType(env), 1))){
+                    m_data->m_capacity = m_data->m_limit = env->GetArrayLength(jarray(bufferArray));
+                    if(m_data->m_capacity>0){
+                        m_data->m_data = reinterpret_cast<char*>(env->GetLongArrayElements(jlongArray(bufferArray), &m_data->m_is_copy));
+                    }
+                }else{
+                    m_data->m_capacity = Java::Runtime::Internal::Buffer::capacity(env, buffer_object);
+                    if(m_data->m_capacity>0){
+                        jlong* array = new jlong[size_t(m_data->m_capacity)];
+                        for(qsizetype i=0; i<m_data->m_capacity; ++i){
+                            array[i] = Java::Runtime::LongBuffer::get(env, buffer_object, jsize(i));
+                        }
+                        m_data->m_data = reinterpret_cast<char*>(array);
+                        m_data->m_is_copy = true;
+                    }
+                }
+            }else if(Java::Runtime::FloatBuffer::isInstanceOf(env, buffer_object)){
+                if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Float::primitiveType(env), 1))){
+                    m_data->m_capacity = m_data->m_limit = env->GetArrayLength(jarray(bufferArray));
+                    if(m_data->m_capacity>0){
+                        m_data->m_data = reinterpret_cast<char*>(env->GetFloatArrayElements(jfloatArray(bufferArray), &m_data->m_is_copy));
+                    }
+                }else{
+                    m_data->m_capacity = Java::Runtime::Internal::Buffer::capacity(env, buffer_object);
+                    if(m_data->m_capacity>0){
+                        jfloat* array = new jfloat[size_t(m_data->m_capacity)];
+                        for(qsizetype i=0; i<m_data->m_capacity; ++i){
+                            array[i] = Java::Runtime::FloatBuffer::get(env, buffer_object, jsize(i));
+                        }
+                        m_data->m_data = reinterpret_cast<char*>(array);
+                        m_data->m_is_copy = true;
+                    }
+                }
+            }else if(Java::Runtime::DoubleBuffer::isInstanceOf(env, buffer_object)){
+                if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Double::primitiveType(env), 1))){
+                    m_data->m_capacity = m_data->m_limit = env->GetArrayLength(jarray(bufferArray));
+                    if(m_data->m_capacity>0){
+                        m_data->m_data = reinterpret_cast<char*>(env->GetDoubleArrayElements(jdoubleArray(bufferArray), &m_data->m_is_copy));
+                    }
+                }else{
+                    m_data->m_capacity = Java::Runtime::Internal::Buffer::capacity(env, buffer_object);
+                    if(m_data->m_capacity>0){
+                        jdouble* array = new jdouble[size_t(m_data->m_capacity)];
+                        for(qsizetype i=0; i<m_data->m_capacity; ++i){
+                            array[i] = Java::Runtime::DoubleBuffer::get(env, buffer_object, jsize(i));
+                        }
+                        m_data->m_data = reinterpret_cast<char*>(array);
+                        m_data->m_is_copy = true;
+                    }
+                }
+            }
+        }
+        if(Java::Runtime::IntBuffer::isInstanceOf(env, buffer_object)){
+            m_data->m_capacity = m_data->m_capacity * sizeof(jint) / sizeof(char);
+            m_data->m_limit = m_data->m_limit * sizeof(jint) / sizeof(char);
+            m_data->m_position = m_data->m_position * sizeof(jint) / sizeof(char);
+        }else if(Java::Runtime::ShortBuffer::isInstanceOf(env, buffer_object)){
+            m_data->m_capacity = m_data->m_capacity * sizeof(jshort) / sizeof(char);
+            m_data->m_limit = m_data->m_limit * sizeof(jshort) / sizeof(char);
+            m_data->m_position = m_data->m_position * sizeof(jshort) / sizeof(char);
+        }else if(Java::Runtime::CharBuffer::isInstanceOf(env, buffer_object)){
+            m_data->m_capacity = m_data->m_capacity * sizeof(jchar) / sizeof(char);
+            m_data->m_limit = m_data->m_limit * sizeof(jchar) / sizeof(char);
+            m_data->m_position = m_data->m_position * sizeof(jchar) / sizeof(char);
+        }else if(Java::Runtime::LongBuffer::isInstanceOf(env, buffer_object)){
+            m_data->m_capacity = m_data->m_capacity * sizeof(jlong) / sizeof(char);
+            m_data->m_limit = m_data->m_limit * sizeof(jlong) / sizeof(char);
+            m_data->m_position = m_data->m_position * sizeof(jlong) / sizeof(char);
+        }else if(Java::Runtime::FloatBuffer::isInstanceOf(env, buffer_object)){
+            m_data->m_capacity = jsize(size_t(m_data->m_capacity) * sizeof(jfloat) / sizeof(char));
+            m_data->m_limit = m_data->m_limit * sizeof(jfloat) / sizeof(char);
+            m_data->m_position = m_data->m_position * sizeof(jfloat) / sizeof(char);
+        }else if(Java::Runtime::DoubleBuffer::isInstanceOf(env, buffer_object)){
+            m_data->m_capacity = m_data->m_capacity * sizeof(jdouble) / sizeof(char);
+            m_data->m_limit = m_data->m_limit * sizeof(jdouble) / sizeof(char);
+            m_data->m_position = m_data->m_position * sizeof(jdouble) / sizeof(char);
+        }
+    }
+}
+
+const void* PersistentJBufferConstData::data() const {return m_data ? m_data->m_data+m_data->m_position : nullptr;}
+const void* PersistentJBufferConstData::constData() const {return data();}
+void PersistentJBufferConstData::commit(JNIEnv *){}
+
+void PersistentJBufferData::commit(JNIEnv *env){
+    if(m_data && m_data->m_buffer_object && !m_data->m_isdirect && m_data->m_capacity>0 && m_data->m_is_copy){
+        jobject buffer_object = m_data->m_buffer_object.object(env);
+        jobject bufferArray = getBufferArray(env, buffer_object);
+        if(Java::Runtime::ByteBuffer::isInstanceOf(env, buffer_object)){
+            if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Byte::primitiveType(env), 1))){
+                env->ReleaseByteArrayElements(jbyteArray(bufferArray), reinterpret_cast<jbyte*>(m_data->m_data), 0);
+                m_data->m_data = reinterpret_cast<char*>(env->GetByteArrayElements(jbyteArray(bufferArray), &m_data->m_is_copy));
+            }else{
+                jbyte* array = reinterpret_cast<jbyte*>(m_data->m_data);
+                jsize size = jsize(size_t(m_data->m_capacity) * sizeof(char) / sizeof(jbyte));
+                for(jsize i=0; i<size; ++i){
+                    Java::Runtime::ByteBuffer::put(env, buffer_object, i, array[i]);
+                }
+            }
+        }else if(Java::Runtime::IntBuffer::isInstanceOf(env, buffer_object)){
+            if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Integer::primitiveType(env), 1))){
+                env->ReleaseIntArrayElements(jintArray(bufferArray), reinterpret_cast<jint*>(m_data->m_data), 0);
+                m_data->m_data = reinterpret_cast<char*>(env->GetIntArrayElements(jintArray(bufferArray), &m_data->m_is_copy));
+            }else{
+                jint* array = reinterpret_cast<jint*>(m_data->m_data);
+                jsize size = jsize(size_t(m_data->m_capacity) * sizeof(char) / sizeof(jint));
+                for(jsize i=0; i<size; ++i){
+                    Java::Runtime::IntBuffer::put(env, buffer_object, i, array[i]);
+                }
+            }
+        }else if(Java::Runtime::ShortBuffer::isInstanceOf(env, buffer_object)){
+            if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Short::primitiveType(env), 1))){
+                env->ReleaseShortArrayElements(jshortArray(bufferArray), reinterpret_cast<jshort*>(m_data->m_data), 0);
+                m_data->m_data = reinterpret_cast<char*>(env->GetShortArrayElements(jshortArray(bufferArray), &m_data->m_is_copy));
+            }else{
+                jshort* array = reinterpret_cast<jshort*>(m_data->m_data);
+                jsize size = jsize(size_t(m_data->m_capacity) * sizeof(char) / sizeof(jshort));
+                for(jsize i=0; i<size; ++i){
+                    Java::Runtime::ShortBuffer::put(env, buffer_object, i, array[i]);
+                }
+            }
+        }else if(Java::Runtime::CharBuffer::isInstanceOf(env, buffer_object)){
+            if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Character::primitiveType(env), 1))){
+                env->ReleaseCharArrayElements(jcharArray(bufferArray), reinterpret_cast<jchar*>(m_data->m_data), 0);
+                m_data->m_data = reinterpret_cast<char*>(env->GetCharArrayElements(jcharArray(bufferArray), &m_data->m_is_copy));
+            }else{
+                jchar* array = reinterpret_cast<jchar*>(m_data->m_data);
+                jsize size = jsize(size_t(m_data->m_capacity) * sizeof(char) / sizeof(jchar));
+                for(jsize i=0; i<size; ++i){
+                    Java::Runtime::CharBuffer::put(env, buffer_object, i, array[i]);
+                }
+            }
+        }else if(Java::Runtime::LongBuffer::isInstanceOf(env, buffer_object)){
+            if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Long::primitiveType(env), 1))){
+                env->ReleaseLongArrayElements(jlongArray(bufferArray), reinterpret_cast<jlong*>(m_data->m_data), 0);
+                m_data->m_data = reinterpret_cast<char*>(env->GetLongArrayElements(jlongArray(bufferArray), &m_data->m_is_copy));
+            }else{
+                jlong* array = reinterpret_cast<jlong*>(m_data->m_data);
+                m_data->m_data = nullptr;
+                jsize size = jsize(size_t(m_data->m_capacity) * sizeof(char) / sizeof(jlong));
+                for(jsize i=0; i<size; ++i){
+                    Java::Runtime::LongBuffer::put(env, buffer_object, i, array[i]);
+                }
+            }
+        }else if(Java::Runtime::FloatBuffer::isInstanceOf(env, buffer_object)){
+            if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Float::primitiveType(env), 1))){
+                env->ReleaseFloatArrayElements(jfloatArray(bufferArray), reinterpret_cast<jfloat*>(m_data->m_data), 0);
+                m_data->m_data = reinterpret_cast<char*>(env->GetFloatArrayElements(jfloatArray(bufferArray), &m_data->m_is_copy));
+            }else{
+                jfloat* array = reinterpret_cast<jfloat*>(m_data->m_data);
+                jsize size = jsize(size_t(m_data->m_capacity) * sizeof(char) / sizeof(jfloat));
+                for(jsize i=0; i<size; ++i){
+                    Java::Runtime::FloatBuffer::put(env, buffer_object, i, double(array[i]));
+                }
+            }
+        }else if(Java::Runtime::DoubleBuffer::isInstanceOf(env, buffer_object)){
+            if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Double::primitiveType(env), 1))){
+                env->ReleaseDoubleArrayElements(jdoubleArray(bufferArray), reinterpret_cast<jdouble*>(m_data->m_data), 0);
+                m_data->m_data = reinterpret_cast<char*>(env->GetDoubleArrayElements(jdoubleArray(bufferArray), &m_data->m_is_copy));
+            }else{
+                jdouble* array = reinterpret_cast<jdouble*>(m_data->m_data);
+                jsize size = jsize(size_t(m_data->m_capacity) * sizeof(char) / sizeof(jdouble));
+                for(jsize i=0; i<size; ++i){
+                    Java::Runtime::DoubleBuffer::put(env, buffer_object, i, array[i]);
+                }
+            }
+        }
+    }
+}
+void* PersistentJBufferData::data() {return m_data ? m_data->m_data+m_data->m_position : nullptr;}
+
+void* PersistentJBufferConstData::take(){
+    if(m_data){
+        void* result = m_data->m_data;
+        if(!m_data->m_isdirect){
+            char* array = new char[size_t(m_data->m_capacity)];
+            memcpy(array, m_data->m_data, size_t(m_data->m_capacity));
+            result = array;
+        }
+        m_data->m_data = nullptr;
+        return result;
+    }
+    return nullptr;
+}
+
+PersistentJBufferConstData::~PersistentJBufferConstData(){
+    try{
+        if(m_data && m_data->m_buffer_object){
+            if(DefaultJniEnvironment env{500}){
+                clear(env);
+            }
+        }
+    } catch (const std::exception& e) {
+        qCWarning(DebugAPI::internalCategory, "%s", e.what());
+    } catch (...) {
+    }
+}
+
+void PersistentJBufferConstData::clear(JNIEnv *env){
+    try{
+        if(m_data){
+            if(m_data->m_data && m_data->m_buffer_object && !m_data->m_isdirect && m_data->m_capacity>0){
+                jobject buffer_object = m_data->m_buffer_object.object(env);
+                jobject bufferArray = nullptr;
+                try{
+                    bufferArray = getBufferArray(env, buffer_object);
+                }catch(const JavaException&){
+                }
+                if(Java::Runtime::ByteBuffer::isInstanceOf(env, buffer_object)){
+                    if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Byte::primitiveType(env), 1))){
+                        env->ReleaseByteArrayElements(jbyteArray(bufferArray), reinterpret_cast<jbyte*>(m_data->m_data), JNI_ABORT);
+                    }else
+                        delete[] reinterpret_cast<jbyte*>(m_data->m_data);
+                }else if(Java::Runtime::IntBuffer::isInstanceOf(env, buffer_object)){
+                    if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Integer::primitiveType(env), 1))){
+                        env->ReleaseIntArrayElements(jintArray(bufferArray), reinterpret_cast<jint*>(m_data->m_data), JNI_ABORT);
+                    }else
+                        delete[] reinterpret_cast<jint*>(m_data->m_data);
+                }else if(Java::Runtime::ShortBuffer::isInstanceOf(env, buffer_object)){
+                    if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Short::primitiveType(env), 1))){
+                        env->ReleaseShortArrayElements(jshortArray(bufferArray), reinterpret_cast<jshort*>(m_data->m_data), JNI_ABORT);
+                    }else
+                        delete[] reinterpret_cast<jshort*>(m_data->m_data);
+                }else if(Java::Runtime::CharBuffer::isInstanceOf(env, buffer_object)){
+                    if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Character::primitiveType(env), 1))){
+                        env->ReleaseCharArrayElements(jcharArray(bufferArray), reinterpret_cast<jchar*>(m_data->m_data), JNI_ABORT);
+                    }else
+                        delete[] reinterpret_cast<jchar*>(m_data->m_data);
+                }else if(Java::Runtime::LongBuffer::isInstanceOf(env, buffer_object)){
+                    if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Long::primitiveType(env), 1))){
+                        env->ReleaseLongArrayElements(jlongArray(bufferArray), reinterpret_cast<jlong*>(m_data->m_data), JNI_ABORT);
+                    }else
+                        delete[] reinterpret_cast<jlong*>(m_data->m_data);
+                }else if(Java::Runtime::FloatBuffer::isInstanceOf(env, buffer_object)){
+                    if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Float::primitiveType(env), 1))){
+                        env->ReleaseFloatArrayElements(jfloatArray(bufferArray), reinterpret_cast<jfloat*>(m_data->m_data), JNI_ABORT);
+                    }else
+                        delete[] reinterpret_cast<jfloat*>(m_data->m_data);
+                }else if(Java::Runtime::DoubleBuffer::isInstanceOf(env, buffer_object)){
+                    if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Double::primitiveType(env), 1))){
+                        env->ReleaseDoubleArrayElements(jdoubleArray(bufferArray), reinterpret_cast<jdouble*>(m_data->m_data), JNI_ABORT);
+                    }else
+                        delete[] reinterpret_cast<jdouble*>(m_data->m_data);
+                }
+            }
+            m_data->m_buffer_object.clear(env);
+        }
+    } catch (const std::exception& e) {
+        qCWarning(DebugAPI::internalCategory, "%s", e.what());
+    } catch (...) {
+    }
+}
+
+qsizetype PersistentJBufferConstData::size() const{
+    return m_data ? m_data->m_limit - m_data->m_position : 0;
+}
+
+qsizetype PersistentJBufferConstData::capacity() const{
+    return m_data ? m_data->m_capacity : 0;
+}
+
+qsizetype PersistentJBufferConstData::position() const{
+    return m_data ? m_data->m_position : 0;
+}
+
+qsizetype PersistentJBufferConstData::limit() const{
+    return m_data ? m_data->m_limit : 0;
+}
+
+bool PersistentJBufferConstData::isDirect() const {return m_data ? m_data->m_isdirect : false;}
+bool PersistentJBufferConstData::isReadOnly() const {return m_data ? m_data->m_readOnly : false;}
+bool PersistentJBufferConstData::isBuffering() const { return m_data ? m_data->m_is_copy : false; }
+
+bool PersistentJBufferConstData::isBuffer(JNIEnv *env, jobject obj){
+    return Java::Runtime::Buffer::isInstanceOf(env, obj);
+}
+
+bool PersistentJBufferConstData::isReadOnlyBuffer(JNIEnv *env, jobject buffer){
+    return Java::Runtime::Buffer::isReadOnly(env, buffer);
+}
+
+PersistentJBufferData::PersistentJBufferData(JNIEnv *env, jobject buffer_object) :
+    PersistentJBufferConstData(env, buffer_object)
+{
+    if(m_data->m_readOnly)
+        JavaException::raiseIllegalArgumentException(env, "Cannot write on a read-only buffer" QTJAMBI_STACKTRACEINFO );
+}
+
+PersistentJBufferData::~PersistentJBufferData(){
+    try{
+        if(m_data && m_data->m_buffer_object && m_data->m_capacity>0){
+            if(DefaultJniEnvironment env{500}){
+                clear(env);
+            }
+        }
+    } catch (const std::exception& e) {
+        qCWarning(DebugAPI::internalCategory, "%s", e.what());
+    } catch (...) {
+    }
+}
+
+void PersistentJBufferData::clear(JNIEnv *env){
+    try{
+        if(m_data && m_data->m_buffer_object && !m_data->m_isdirect && m_data->m_capacity>0){
+            jobject buffer_object = m_data->m_buffer_object.object(env);
+            jobject bufferArray = nullptr;
+            try{
+                bufferArray = getBufferArray(env, buffer_object);
+            }catch(const JavaException&){
+            }
+            if(Java::Runtime::ByteBuffer::isInstanceOf(env, buffer_object)){
+                if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Byte::primitiveType(env), 1))){
+                    env->ReleaseByteArrayElements(jbyteArray(bufferArray), reinterpret_cast<jbyte*>(m_data->m_data), 0);
+                    m_data->m_data = nullptr;
+                }else{
+                    jbyte* array = reinterpret_cast<jbyte*>(m_data->m_data);
+                    m_data->m_data = nullptr;
+                    if(!m_data->m_readOnly){
+                        jsize size = jsize(size_t(m_data->m_capacity) * sizeof(char) / sizeof(jbyte));
+                        for(jsize i=0; i<size; ++i){
+                            Java::Runtime::ByteBuffer::put(env, buffer_object, i, array[i]);
+                        }
+                    }
+                    delete[] array;
+                }
+            }else if(Java::Runtime::IntBuffer::isInstanceOf(env, buffer_object)){
+                if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Integer::primitiveType(env), 1))){
+                    env->ReleaseIntArrayElements(jintArray(bufferArray), reinterpret_cast<jint*>(m_data->m_data), 0);
+                    m_data->m_data = nullptr;
+                }else{
+                    jint* array = reinterpret_cast<jint*>(m_data->m_data);
+                    m_data->m_data = nullptr;
+                    if(!m_data->m_readOnly){
+                        jsize size = jsize(size_t(m_data->m_capacity) * sizeof(char) / sizeof(jint));
+                        for(jsize i=0; i<size; ++i){
+                            Java::Runtime::IntBuffer::put(env, buffer_object, i, array[i]);
+                        }
+                    }
+                    delete[] array;
+                }
+            }else if(Java::Runtime::ShortBuffer::isInstanceOf(env, buffer_object)){
+                if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Short::primitiveType(env), 1))){
+                    env->ReleaseShortArrayElements(jshortArray(bufferArray), reinterpret_cast<jshort*>(m_data->m_data), 0);
+                    m_data->m_data = nullptr;
+                }else{
+                    jshort* array = reinterpret_cast<jshort*>(m_data->m_data);
+                    m_data->m_data = nullptr;
+                    if(!m_data->m_readOnly){
+                        jsize size = jsize(size_t(m_data->m_capacity) * sizeof(char) / sizeof(jshort));
+                        for(jsize i=0; i<size; ++i){
+                            Java::Runtime::ShortBuffer::put(env, buffer_object, i, array[i]);
+                        }
+                    }
+                    delete[] array;
+                }
+            }else if(Java::Runtime::CharBuffer::isInstanceOf(env, buffer_object)){
+                if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Character::primitiveType(env), 1))){
+                    env->ReleaseCharArrayElements(jcharArray(bufferArray), reinterpret_cast<jchar*>(m_data->m_data), 0);
+                    m_data->m_data = nullptr;
+                }else{
+                    jchar* array = reinterpret_cast<jchar*>(m_data->m_data);
+                    m_data->m_data = nullptr;
+                    if(!m_data->m_readOnly){
+                        jsize size = jsize(size_t(m_data->m_capacity) * sizeof(char) / sizeof(jchar));
+                        for(jsize i=0; i<size; ++i){
+                            Java::Runtime::CharBuffer::put(env, buffer_object, i, array[i]);
+                        }
+                    }
+                    delete[] array;
+                }
+            }else if(Java::Runtime::LongBuffer::isInstanceOf(env, buffer_object)){
+                if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Long::primitiveType(env), 1))){
+                    env->ReleaseLongArrayElements(jlongArray(bufferArray), reinterpret_cast<jlong*>(m_data->m_data), 0);
+                    m_data->m_data = nullptr;
+                }else{
+                    jlong* array = reinterpret_cast<jlong*>(m_data->m_data);
+                    m_data->m_data = nullptr;
+                    if(!m_data->m_readOnly){
+                        jsize size = jsize(size_t(m_data->m_capacity) * sizeof(char) / sizeof(jlong));
+                        for(jsize i=0; i<size; ++i){
+                            Java::Runtime::LongBuffer::put(env, buffer_object, i, array[i]);
+                        }
+                    }
+                    delete[] array;
+                }
+            }else if(Java::Runtime::FloatBuffer::isInstanceOf(env, buffer_object)){
+                if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Float::primitiveType(env), 1))){
+                    env->ReleaseFloatArrayElements(jfloatArray(bufferArray), reinterpret_cast<jfloat*>(m_data->m_data), 0);
+                    m_data->m_data = nullptr;
+                }else{
+                    jfloat* array = reinterpret_cast<jfloat*>(m_data->m_data);
+                    m_data->m_data = nullptr;
+                    if(!m_data->m_readOnly){
+                        jsize size = jsize(size_t(m_data->m_capacity) * sizeof(char) / sizeof(jfloat));
+                        for(jsize i=0; i<size; ++i){
+                            Java::Runtime::FloatBuffer::put(env, buffer_object, i, double(array[i]));
+                        }
+                    }
+                    delete[] array;
+                }
+            }else if(Java::Runtime::DoubleBuffer::isInstanceOf(env, buffer_object)){
+                if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Double::primitiveType(env), 1))){
+                    env->ReleaseDoubleArrayElements(jdoubleArray(bufferArray), reinterpret_cast<jdouble*>(m_data->m_data), 0);
+                    m_data->m_data = nullptr;
+                }else{
+                    jdouble* array = reinterpret_cast<jdouble*>(m_data->m_data);
+                    m_data->m_data = nullptr;
+                    if(!m_data->m_readOnly){
+                        jsize size = jsize(size_t(m_data->m_capacity) * sizeof(char) / sizeof(jdouble));
+                        for(jsize i=0; i<size; ++i){
+                            Java::Runtime::DoubleBuffer::put(env, buffer_object, i, array[i]);
+                        }
+                    }
+                    delete[] array;
+                }
+            }
+        }
+    } catch (const std::exception& e) {
+        qCWarning(DebugAPI::internalCategory, "%s", e.what());
+    } catch (...) {
+    }
+    PersistentJBufferConstData::clear(env);
+}
+
 void truncateBuffer(JNIEnv *env, jobject buffer);
 
-AbstractDataJBuffer::AbstractDataJBuffer(JNIEnv *env, void* data, qsizetype capacity) : m_buffer_object(nullptr) {
+class AbstractDataJBuffer{
+public:
+    static jobject createBuffer(JNIEnv *env, void* data, qsizetype capacity);
+    static jobject createBuffer(JNIEnv *env, const void* data, qsizetype capacity);
+    static jobject createBuffer(JNIEnv *env, char* data, qsizetype capacity);
+    static jobject createBuffer(JNIEnv *env, const char* data, qsizetype capacity);
+    static jobject createBuffer(JNIEnv *env, unsigned char* data, qsizetype capacity);
+    static jobject createBuffer(JNIEnv *env, const unsigned char* data, qsizetype capacity);
+    static jobject createBuffer(JNIEnv *env, qint16* data, qsizetype capacity);
+    static jobject createBuffer(JNIEnv *env, const qint16* data, qsizetype capacity);
+    static jobject createBuffer(JNIEnv *env, quint16* data, qsizetype capacity);
+    static jobject createBuffer(JNIEnv *env, const quint16* data, qsizetype capacity);
+    static jobject createBuffer(JNIEnv *env, qint32* data, qsizetype capacity);
+    static jobject createBuffer(JNIEnv *env, const qint32* data, qsizetype capacity);
+    static jobject createBuffer(JNIEnv *env, quint32* data, qsizetype capacity);
+    static jobject createBuffer(JNIEnv *env, const quint32* data, qsizetype capacity);
+    static jobject createBuffer(JNIEnv *env, qint64* data, qsizetype capacity);
+    static jobject createBuffer(JNIEnv *env, const qint64* data, qsizetype capacity);
+    static jobject createBuffer(JNIEnv *env, quint64* data, qsizetype capacity);
+    static jobject createBuffer(JNIEnv *env, const quint64* data, qsizetype capacity);
+    static jobject createBuffer(JNIEnv *env, float* data, qsizetype capacity);
+    static jobject createBuffer(JNIEnv *env, const float* data, qsizetype capacity);
+    static jobject createBuffer(JNIEnv *env, double* data, qsizetype capacity);
+    static jobject createBuffer(JNIEnv *env, const double* data, qsizetype capacity);
+    static jobject createBuffer(JNIEnv *env, QChar* data, qsizetype capacity);
+    static jobject createBuffer(JNIEnv *env, const QChar* data, qsizetype capacity);
+    static jobject createBuffer(JNIEnv *env, wchar_t* data, qsizetype capacity);
+    static jobject createBuffer(JNIEnv *env, const wchar_t* data, qsizetype capacity);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    static jobject createBuffer(JNIEnv *env, char16_t* data, qsizetype capacity);
+    static jobject createBuffer(JNIEnv *env, const char16_t* data, qsizetype capacity);
+    static jobject createBuffer(JNIEnv *env, char32_t* data, qsizetype capacity);
+    static jobject createBuffer(JNIEnv *env, const char32_t* data, qsizetype capacity);
+#endif
+};
+
+jobject AbstractDataJBuffer::createBuffer(JNIEnv *env, void* data, qsizetype capacity) {
+    jobject buffer_object;
     if(data){
-        m_buffer_object = env->NewDirectByteBuffer(data, jlong(capacity));
+        buffer_object = env->NewDirectByteBuffer(data, jlong(capacity));
     }else{
-        m_buffer_object = Java::Runtime::Internal::ByteBuffer::allocate(env, 0);
+        buffer_object = Java::Runtime::Internal::ByteBuffer::allocate(env, 0);
     }
-    m_buffer_object = Java::Runtime::Internal::ByteBuffer::order(env, m_buffer_object, Java::Runtime::ByteOrder::nativeOrder(env));
+    return Java::Runtime::Internal::ByteBuffer::order(env, buffer_object, Java::Runtime::ByteOrder::nativeOrder(env));
 }
 
-AbstractDataJBuffer::AbstractDataJBuffer(JNIEnv *env, const void* data, qsizetype capacity) : m_buffer_object(nullptr) {
+jobject AbstractDataJBuffer::createBuffer(JNIEnv *env, const void* data, qsizetype capacity) {
+    jobject buffer_object;
     if(data){
-        m_buffer_object = env->NewDirectByteBuffer(const_cast<void*>(data), jlong(capacity));
+        buffer_object = env->NewDirectByteBuffer(const_cast<void*>(data), jlong(capacity));
     }else{
-        m_buffer_object = Java::Runtime::Internal::ByteBuffer::allocate(env, 0);
+        buffer_object = Java::Runtime::Internal::ByteBuffer::allocate(env, 0);
     }
-    m_buffer_object = Java::Runtime::ByteBuffer::asReadOnlyBuffer(env, m_buffer_object);
-    m_buffer_object = Java::Runtime::Internal::ByteBuffer::order(env, m_buffer_object, Java::Runtime::ByteOrder::nativeOrder(env));
+    buffer_object = Java::Runtime::ByteBuffer::asReadOnlyBuffer(env, buffer_object);
+    return Java::Runtime::Internal::ByteBuffer::order(env, buffer_object, Java::Runtime::ByteOrder::nativeOrder(env));
 }
 
-AbstractDataJBuffer::AbstractDataJBuffer(JNIEnv *env, char* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, reinterpret_cast<void*>(data), capacity)
+jobject AbstractDataJBuffer::createBuffer(JNIEnv *env, char* data, qsizetype capacity)
 {
+    return createBuffer(env, reinterpret_cast<void*>(data), capacity);
 }
 
-AbstractDataJBuffer::AbstractDataJBuffer(JNIEnv *env, const char* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, reinterpret_cast<const void*>(data), capacity)
+jobject AbstractDataJBuffer::createBuffer(JNIEnv *env, const char* data, qsizetype capacity)
 {
+    return createBuffer(env, reinterpret_cast<const void*>(data), capacity);
 }
 
-AbstractDataJBuffer::AbstractDataJBuffer(JNIEnv *env, unsigned char* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, reinterpret_cast<void*>(data), capacity)
+jobject AbstractDataJBuffer::createBuffer(JNIEnv *env, unsigned char* data, qsizetype capacity)
 {
+    return createBuffer(env, reinterpret_cast<void*>(data), capacity);
 }
 
-AbstractDataJBuffer::AbstractDataJBuffer(JNIEnv *env, const unsigned char* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, reinterpret_cast<const void*>(data), capacity)
+jobject AbstractDataJBuffer::createBuffer(JNIEnv *env, const unsigned char* data, qsizetype capacity)
 {
+    return createBuffer(env, reinterpret_cast<const void*>(data), capacity);
 }
 
-AbstractDataJBuffer::AbstractDataJBuffer(JNIEnv *env, qint16* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, reinterpret_cast<void*>(data), capacity*sizeof(jshort))
+jobject AbstractDataJBuffer::createBuffer(JNIEnv *env, qint16* data, qsizetype capacity)
 {
-    if(m_buffer_object)
-        m_buffer_object = Java::Runtime::ByteBuffer::asShortBuffer(env, m_buffer_object);
+    jobject buffer_object = createBuffer(env, reinterpret_cast<void*>(data), capacity*sizeof(jshort));
+    if(buffer_object)
+        buffer_object = Java::Runtime::ByteBuffer::asShortBuffer(env, buffer_object);
+    return buffer_object;
 }
 
-AbstractDataJBuffer::AbstractDataJBuffer(JNIEnv *env, const qint16* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, reinterpret_cast<const void*>(data), capacity*sizeof(jshort))
+jobject AbstractDataJBuffer::createBuffer(JNIEnv *env, const qint16* data, qsizetype capacity)
 {
-    if(m_buffer_object)
-        m_buffer_object = Java::Runtime::ByteBuffer::asShortBuffer(env, m_buffer_object);
+    jobject buffer_object = createBuffer(env, reinterpret_cast<const void*>(data), capacity*sizeof(jshort));
+    if(buffer_object)
+        buffer_object = Java::Runtime::ByteBuffer::asShortBuffer(env, buffer_object);
+    return buffer_object;
 }
 
-AbstractDataJBuffer::AbstractDataJBuffer(JNIEnv *env, quint16* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, reinterpret_cast<void*>(data), capacity*sizeof(jshort))
+jobject AbstractDataJBuffer::createBuffer(JNIEnv *env, quint16* data, qsizetype capacity)
 {
-    if(m_buffer_object)
-        m_buffer_object = Java::Runtime::ByteBuffer::asShortBuffer(env, m_buffer_object);
+    jobject buffer_object = createBuffer(env, reinterpret_cast<void*>(data), capacity*sizeof(jshort));
+    if(buffer_object)
+        buffer_object = Java::Runtime::ByteBuffer::asShortBuffer(env, buffer_object);
+    return buffer_object;
 }
 
-AbstractDataJBuffer::AbstractDataJBuffer(JNIEnv *env, const quint16* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, reinterpret_cast<const void*>(data), capacity*sizeof(jshort))
+jobject AbstractDataJBuffer::createBuffer(JNIEnv *env, const quint16* data, qsizetype capacity)
 {
-    if(m_buffer_object)
-        m_buffer_object = Java::Runtime::ByteBuffer::asShortBuffer(env, m_buffer_object);
+    jobject buffer_object = createBuffer(env, reinterpret_cast<const void*>(data), capacity*sizeof(jshort));
+    if(buffer_object)
+        buffer_object = Java::Runtime::ByteBuffer::asShortBuffer(env, buffer_object);
+    return buffer_object;
 }
 
-AbstractDataJBuffer::AbstractDataJBuffer(JNIEnv *env, qint32* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, reinterpret_cast<void*>(data), capacity*sizeof(jint))
+jobject AbstractDataJBuffer::createBuffer(JNIEnv *env, qint32* data, qsizetype capacity)
 {
-    if(m_buffer_object)
-        m_buffer_object = Java::Runtime::ByteBuffer::asIntBuffer(env, m_buffer_object);
+    jobject buffer_object = createBuffer(env, reinterpret_cast<void*>(data), capacity*sizeof(jint));
+    if(buffer_object)
+        buffer_object = Java::Runtime::ByteBuffer::asIntBuffer(env, buffer_object);
+    return buffer_object;
 }
 
-AbstractDataJBuffer::AbstractDataJBuffer(JNIEnv *env, const qint32* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, reinterpret_cast<const void*>(data), capacity*sizeof(jint))
+jobject AbstractDataJBuffer::createBuffer(JNIEnv *env, const qint32* data, qsizetype capacity)
 {
-    if(m_buffer_object)
-        m_buffer_object = Java::Runtime::ByteBuffer::asIntBuffer(env, m_buffer_object);
+    jobject buffer_object = createBuffer(env, reinterpret_cast<const void*>(data), capacity*sizeof(jint));
+    if(buffer_object)
+        buffer_object = Java::Runtime::ByteBuffer::asIntBuffer(env, buffer_object);
+    return buffer_object;
 }
 
-AbstractDataJBuffer::AbstractDataJBuffer(JNIEnv *env, quint32* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, reinterpret_cast<void*>(data), capacity*sizeof(jint))
+jobject AbstractDataJBuffer::createBuffer(JNIEnv *env, quint32* data, qsizetype capacity)
 {
-    if(m_buffer_object)
-        m_buffer_object = Java::Runtime::ByteBuffer::asIntBuffer(env, m_buffer_object);
+    jobject buffer_object = createBuffer(env, reinterpret_cast<void*>(data), capacity*sizeof(jint));
+    if(buffer_object)
+        buffer_object = Java::Runtime::ByteBuffer::asIntBuffer(env, buffer_object);
+    return buffer_object;
 }
 
-AbstractDataJBuffer::AbstractDataJBuffer(JNIEnv *env, const quint32* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, reinterpret_cast<const void*>(data), capacity*sizeof(jint))
+jobject AbstractDataJBuffer::createBuffer(JNIEnv *env, const quint32* data, qsizetype capacity)
 {
-    if(m_buffer_object)
-        m_buffer_object = Java::Runtime::ByteBuffer::asIntBuffer(env, m_buffer_object);
+    jobject buffer_object = createBuffer(env, reinterpret_cast<const void*>(data), capacity*sizeof(jint));
+    if(buffer_object)
+        buffer_object = Java::Runtime::ByteBuffer::asIntBuffer(env, buffer_object);
+    return buffer_object;
 }
 
-AbstractDataJBuffer::AbstractDataJBuffer(JNIEnv *env, qint64* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, reinterpret_cast<void*>(data), capacity*sizeof(jlong))
+jobject AbstractDataJBuffer::createBuffer(JNIEnv *env, qint64* data, qsizetype capacity)
 {
-    if(m_buffer_object)
-        m_buffer_object = Java::Runtime::ByteBuffer::asLongBuffer(env, m_buffer_object);
+    jobject buffer_object = createBuffer(env, reinterpret_cast<void*>(data), capacity*sizeof(jlong));
+    if(buffer_object)
+        buffer_object = Java::Runtime::ByteBuffer::asLongBuffer(env, buffer_object);
+    return buffer_object;
 }
 
-AbstractDataJBuffer::AbstractDataJBuffer(JNIEnv *env, const qint64* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, reinterpret_cast<const void*>(data), capacity*sizeof(jlong))
+jobject AbstractDataJBuffer::createBuffer(JNIEnv *env, const qint64* data, qsizetype capacity)
 {
-    if(m_buffer_object)
-        m_buffer_object = Java::Runtime::ByteBuffer::asLongBuffer(env, m_buffer_object);
+    jobject buffer_object = createBuffer(env, reinterpret_cast<const void*>(data), capacity*sizeof(jlong));
+    if(buffer_object)
+        buffer_object = Java::Runtime::ByteBuffer::asLongBuffer(env, buffer_object);
+    return buffer_object;
 }
 
-AbstractDataJBuffer::AbstractDataJBuffer(JNIEnv *env, quint64* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, reinterpret_cast<void*>(data), capacity*sizeof(jlong))
+jobject AbstractDataJBuffer::createBuffer(JNIEnv *env, quint64* data, qsizetype capacity)
 {
-    if(m_buffer_object)
-        m_buffer_object = Java::Runtime::ByteBuffer::asLongBuffer(env, m_buffer_object);
+    jobject buffer_object = createBuffer(env, reinterpret_cast<void*>(data), capacity*sizeof(jlong));
+    if(buffer_object)
+        buffer_object = Java::Runtime::ByteBuffer::asLongBuffer(env, buffer_object);
+    return buffer_object;
 }
 
-AbstractDataJBuffer::AbstractDataJBuffer(JNIEnv *env, const quint64* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, reinterpret_cast<const void*>(data), capacity*sizeof(jlong))
+jobject AbstractDataJBuffer::createBuffer(JNIEnv *env, const quint64* data, qsizetype capacity)
 {
-    if(m_buffer_object)
-        m_buffer_object = Java::Runtime::ByteBuffer::asLongBuffer(env, m_buffer_object);
+    jobject buffer_object = createBuffer(env, reinterpret_cast<const void*>(data), capacity*sizeof(jlong));
+    if(buffer_object)
+        buffer_object = Java::Runtime::ByteBuffer::asLongBuffer(env, buffer_object);
+    return buffer_object;
 }
 
-AbstractDataJBuffer::AbstractDataJBuffer(JNIEnv *env, float* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, reinterpret_cast<void*>(data), capacity*sizeof(jfloat))
+jobject AbstractDataJBuffer::createBuffer(JNIEnv *env, float* data, qsizetype capacity)
 {
-    if(m_buffer_object)
-        m_buffer_object = Java::Runtime::ByteBuffer::asFloatBuffer(env, m_buffer_object);
+    jobject buffer_object = createBuffer(env, reinterpret_cast<void*>(data), capacity*sizeof(jfloat));
+    if(buffer_object)
+        buffer_object = Java::Runtime::ByteBuffer::asFloatBuffer(env, buffer_object);
+    return buffer_object;
 }
 
-AbstractDataJBuffer::AbstractDataJBuffer(JNIEnv *env, const float* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, reinterpret_cast<const void*>(data), capacity*sizeof(jfloat))
+jobject AbstractDataJBuffer::createBuffer(JNIEnv *env, const float* data, qsizetype capacity)
 {
-    if(m_buffer_object)
-        m_buffer_object = Java::Runtime::ByteBuffer::asFloatBuffer(env, m_buffer_object);
+    jobject buffer_object = createBuffer(env, reinterpret_cast<const void*>(data), capacity*sizeof(jfloat));
+    if(buffer_object)
+        buffer_object = Java::Runtime::ByteBuffer::asFloatBuffer(env, buffer_object);
+    return buffer_object;
 }
 
-AbstractDataJBuffer::AbstractDataJBuffer(JNIEnv *env, double* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, reinterpret_cast<void*>(data), capacity*sizeof(jdouble))
+jobject AbstractDataJBuffer::createBuffer(JNIEnv *env, double* data, qsizetype capacity)
 {
-    if(m_buffer_object)
-        m_buffer_object = Java::Runtime::ByteBuffer::asDoubleBuffer(env, m_buffer_object);
+    jobject buffer_object = createBuffer(env, reinterpret_cast<void*>(data), capacity*sizeof(jdouble));
+    if(buffer_object)
+        buffer_object = Java::Runtime::ByteBuffer::asDoubleBuffer(env, buffer_object);
+    return buffer_object;
 }
 
-AbstractDataJBuffer::AbstractDataJBuffer(JNIEnv *env, const double* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, reinterpret_cast<const void*>(data), capacity*sizeof(jdouble))
+jobject AbstractDataJBuffer::createBuffer(JNIEnv *env, const double* data, qsizetype capacity)
 {
-    if(m_buffer_object)
-        m_buffer_object = Java::Runtime::ByteBuffer::asDoubleBuffer(env, m_buffer_object);
+    jobject buffer_object = createBuffer(env, reinterpret_cast<const void*>(data), capacity*sizeof(jdouble));
+    if(buffer_object)
+        buffer_object = Java::Runtime::ByteBuffer::asDoubleBuffer(env, buffer_object);
+    return buffer_object;
 }
 
-AbstractDataJBuffer::AbstractDataJBuffer(JNIEnv *env, QChar* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, reinterpret_cast<void*>(data), capacity*sizeof(jchar))
+jobject AbstractDataJBuffer::createBuffer(JNIEnv *env, QChar* data, qsizetype capacity)
 {
-    if(m_buffer_object)
-        m_buffer_object = Java::Runtime::ByteBuffer::asCharBuffer(env, m_buffer_object);
+    jobject buffer_object = createBuffer(env, reinterpret_cast<void*>(data), capacity*sizeof(jchar));
+    if(buffer_object)
+        buffer_object = Java::Runtime::ByteBuffer::asCharBuffer(env, buffer_object);
+    return buffer_object;
 }
-AbstractDataJBuffer::AbstractDataJBuffer(JNIEnv *env, const QChar* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, reinterpret_cast<const void*>(data), capacity*sizeof(jchar))
+jobject AbstractDataJBuffer::createBuffer(JNIEnv *env, const QChar* data, qsizetype capacity)
 {
-    if(m_buffer_object)
-        m_buffer_object = Java::Runtime::ByteBuffer::asCharBuffer(env, m_buffer_object);
+    jobject buffer_object = createBuffer(env, reinterpret_cast<const void*>(data), capacity*sizeof(jchar));
+    if(buffer_object)
+        buffer_object = Java::Runtime::ByteBuffer::asCharBuffer(env, buffer_object);
+    return buffer_object;
 }
-
-AbstractDataJBuffer::AbstractDataJBuffer(JNIEnv *env, wchar_t* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, reinterpret_cast<void*>(data), capacity*sizeof(jchar))
+jobject AbstractDataJBuffer::createBuffer(JNIEnv *env, wchar_t* data, qsizetype capacity)
 {
-    if(m_buffer_object)
-        m_buffer_object = Java::Runtime::ByteBuffer::asCharBuffer(env, m_buffer_object);
+    jobject buffer_object = createBuffer(env, reinterpret_cast<void*>(data), capacity*sizeof(jchar));
+    if(buffer_object)
+        buffer_object = Java::Runtime::ByteBuffer::asCharBuffer(env, buffer_object);
+    return buffer_object;
 }
-AbstractDataJBuffer::AbstractDataJBuffer(JNIEnv *env, const wchar_t* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, reinterpret_cast<const void*>(data), capacity*sizeof(jchar))
+jobject AbstractDataJBuffer::createBuffer(JNIEnv *env, const wchar_t* data, qsizetype capacity)
 {
-    if(m_buffer_object)
-        m_buffer_object = Java::Runtime::ByteBuffer::asCharBuffer(env, m_buffer_object);
+    jobject buffer_object = createBuffer(env, reinterpret_cast<const void*>(data), capacity*sizeof(jchar));
+    if(buffer_object)
+        buffer_object = Java::Runtime::ByteBuffer::asCharBuffer(env, buffer_object);
+    return buffer_object;
 }
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-AbstractDataJBuffer::AbstractDataJBuffer(JNIEnv *env, char32_t* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, reinterpret_cast<void*>(data), capacity*sizeof(char32_t))
+jobject AbstractDataJBuffer::createBuffer(JNIEnv *env, char32_t* data, qsizetype capacity)
 {
-    if(m_buffer_object)
-        m_buffer_object = Java::Runtime::ByteBuffer::asCharBuffer(env, m_buffer_object);
+    jobject buffer_object = createBuffer(env, reinterpret_cast<void*>(data), capacity*sizeof(char32_t));
+    if(buffer_object)
+        buffer_object = Java::Runtime::ByteBuffer::asCharBuffer(env, buffer_object);
+    return buffer_object;
 }
-AbstractDataJBuffer::AbstractDataJBuffer(JNIEnv *env, const char32_t* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, reinterpret_cast<const void*>(data), capacity*sizeof(char32_t))
+jobject AbstractDataJBuffer::createBuffer(JNIEnv *env, const char32_t* data, qsizetype capacity)
 {
-    if(m_buffer_object)
-        m_buffer_object = Java::Runtime::ByteBuffer::asCharBuffer(env, m_buffer_object);
+    jobject buffer_object = createBuffer(env, reinterpret_cast<const void*>(data), capacity*sizeof(char32_t));
+    if(buffer_object)
+        buffer_object = Java::Runtime::ByteBuffer::asCharBuffer(env, buffer_object);
+    return buffer_object;
 }
 
-AbstractDataJBuffer::AbstractDataJBuffer(JNIEnv *env, char16_t* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, reinterpret_cast<void*>(data), capacity*sizeof(jchar))
+jobject AbstractDataJBuffer::createBuffer(JNIEnv *env, char16_t* data, qsizetype capacity)
 {
-    if(m_buffer_object)
-        m_buffer_object = Java::Runtime::ByteBuffer::asCharBuffer(env, m_buffer_object);
+    jobject buffer_object = createBuffer(env, reinterpret_cast<void*>(data), capacity*sizeof(jchar));
+    if(buffer_object)
+        buffer_object = Java::Runtime::ByteBuffer::asCharBuffer(env, buffer_object);
+    return buffer_object;
 }
-AbstractDataJBuffer::AbstractDataJBuffer(JNIEnv *env, const char16_t* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, reinterpret_cast<const void*>(data), capacity*sizeof(jchar))
+jobject AbstractDataJBuffer::createBuffer(JNIEnv *env, const char16_t* data, qsizetype capacity)
 {
-    if(m_buffer_object)
-        m_buffer_object = Java::Runtime::ByteBuffer::asCharBuffer(env, m_buffer_object);
+    jobject buffer_object = createBuffer(env, reinterpret_cast<const void*>(data), capacity*sizeof(jchar));
+    if(buffer_object)
+        buffer_object = Java::Runtime::ByteBuffer::asCharBuffer(env, buffer_object);
+    return buffer_object;
 }
 #endif
 
-AbstractDataJBuffer::~AbstractDataJBuffer(){}
-
-void AbstractDataJBuffer::setLimit(JNIEnv *env, jobject buffer, jsize limit){
+void DataJBuffer::setLimit(JNIEnv *env, jobject buffer, jsize limit){
     if(buffer)
         Java::Runtime::Internal::Buffer::setLimit(env, buffer, limit);
 }
 
-LocalDataJBuffer::LocalDataJBuffer(JNIEnv *env, void* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity), m_env(env)
+DataJBuffer::DataJBuffer(JNIEnv *env, void* data, qsizetype capacity)
+    : m_env(env), m_buffer_object(AbstractDataJBuffer::createBuffer(env, data, capacity))
 {
 }
 
-LocalDataJBuffer::LocalDataJBuffer(JNIEnv *env, const void* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity), m_env(env)
+DataJBuffer::DataJBuffer(JNIEnv *env, const void* data, qsizetype capacity)
+    : m_env(env), m_buffer_object(AbstractDataJBuffer::createBuffer(env, data, capacity))
 {
 }
 
-LocalDataJBuffer::LocalDataJBuffer(JNIEnv *env, char* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity), m_env(env)
+DataJBuffer::DataJBuffer(JNIEnv *env, char* data, qsizetype capacity)
+    : m_env(env), m_buffer_object(AbstractDataJBuffer::createBuffer(env, data, capacity))
 {
 }
 
-LocalDataJBuffer::LocalDataJBuffer(JNIEnv *env, const char* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity), m_env(env)
+DataJBuffer::DataJBuffer(JNIEnv *env, const char* data, qsizetype capacity)
+    : m_env(env), m_buffer_object(AbstractDataJBuffer::createBuffer(env, data, capacity))
 {
 }
 
-LocalDataJBuffer::LocalDataJBuffer(JNIEnv *env, unsigned char* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity), m_env(env)
+DataJBuffer::DataJBuffer(JNIEnv *env, unsigned char* data, qsizetype capacity)
+    : m_env(env), m_buffer_object(AbstractDataJBuffer::createBuffer(env, data, capacity))
 {
 }
 
-LocalDataJBuffer::LocalDataJBuffer(JNIEnv *env, const unsigned char* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity), m_env(env)
+DataJBuffer::DataJBuffer(JNIEnv *env, const unsigned char* data, qsizetype capacity)
+    : m_env(env), m_buffer_object(AbstractDataJBuffer::createBuffer(env, data, capacity))
 {
 }
 
-LocalDataJBuffer::LocalDataJBuffer(JNIEnv *env, qint16* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity), m_env(env)
+DataJBuffer::DataJBuffer(JNIEnv *env, qint16* data, qsizetype capacity)
+    : m_env(env), m_buffer_object(AbstractDataJBuffer::createBuffer(env, data, capacity))
 {
 }
 
-LocalDataJBuffer::LocalDataJBuffer(JNIEnv *env, const qint16* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity), m_env(env)
+DataJBuffer::DataJBuffer(JNIEnv *env, const qint16* data, qsizetype capacity)
+    : m_env(env), m_buffer_object(AbstractDataJBuffer::createBuffer(env, data, capacity))
 {
 }
 
-LocalDataJBuffer::LocalDataJBuffer(JNIEnv *env, quint16* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity), m_env(env)
+DataJBuffer::DataJBuffer(JNIEnv *env, quint16* data, qsizetype capacity)
+    : m_env(env), m_buffer_object(AbstractDataJBuffer::createBuffer(env, data, capacity))
 {
 }
 
-LocalDataJBuffer::LocalDataJBuffer(JNIEnv *env, const quint16* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity), m_env(env)
+DataJBuffer::DataJBuffer(JNIEnv *env, const quint16* data, qsizetype capacity)
+    : m_env(env), m_buffer_object(AbstractDataJBuffer::createBuffer(env, data, capacity))
 {
 }
 
-LocalDataJBuffer::LocalDataJBuffer(JNIEnv *env, qint32* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity), m_env(env)
+DataJBuffer::DataJBuffer(JNIEnv *env, qint32* data, qsizetype capacity)
+    : m_env(env), m_buffer_object(AbstractDataJBuffer::createBuffer(env, data, capacity))
 {
 }
 
-LocalDataJBuffer::LocalDataJBuffer(JNIEnv *env, const qint32* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity), m_env(env)
+DataJBuffer::DataJBuffer(JNIEnv *env, const qint32* data, qsizetype capacity)
+    : m_env(env), m_buffer_object(AbstractDataJBuffer::createBuffer(env, data, capacity))
 {
 }
 
-LocalDataJBuffer::LocalDataJBuffer(JNIEnv *env, quint32* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity), m_env(env)
+DataJBuffer::DataJBuffer(JNIEnv *env, quint32* data, qsizetype capacity)
+    : m_env(env), m_buffer_object(AbstractDataJBuffer::createBuffer(env, data, capacity))
 {
 }
 
-LocalDataJBuffer::LocalDataJBuffer(JNIEnv *env, const quint32* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity), m_env(env)
+DataJBuffer::DataJBuffer(JNIEnv *env, const quint32* data, qsizetype capacity)
+    : m_env(env), m_buffer_object(AbstractDataJBuffer::createBuffer(env, data, capacity))
 {
 }
 
-LocalDataJBuffer::LocalDataJBuffer(JNIEnv *env, qint64* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity), m_env(env)
+DataJBuffer::DataJBuffer(JNIEnv *env, qint64* data, qsizetype capacity)
+    : m_env(env), m_buffer_object(AbstractDataJBuffer::createBuffer(env, data, capacity))
 {
 }
 
-LocalDataJBuffer::LocalDataJBuffer(JNIEnv *env, const qint64* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity), m_env(env)
+DataJBuffer::DataJBuffer(JNIEnv *env, const qint64* data, qsizetype capacity)
+    : m_env(env), m_buffer_object(AbstractDataJBuffer::createBuffer(env, data, capacity))
 {
 }
 
-LocalDataJBuffer::LocalDataJBuffer(JNIEnv *env, quint64* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity), m_env(env)
+DataJBuffer::DataJBuffer(JNIEnv *env, quint64* data, qsizetype capacity)
+    : m_env(env), m_buffer_object(AbstractDataJBuffer::createBuffer(env, data, capacity))
 {
 }
 
-LocalDataJBuffer::LocalDataJBuffer(JNIEnv *env, const quint64* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity), m_env(env)
+DataJBuffer::DataJBuffer(JNIEnv *env, const quint64* data, qsizetype capacity)
+    : m_env(env), m_buffer_object(AbstractDataJBuffer::createBuffer(env, data, capacity))
 {
 }
 
-LocalDataJBuffer::LocalDataJBuffer(JNIEnv *env, float* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity), m_env(env)
+DataJBuffer::DataJBuffer(JNIEnv *env, float* data, qsizetype capacity)
+    : m_env(env), m_buffer_object(AbstractDataJBuffer::createBuffer(env, data, capacity))
 {
 }
 
-LocalDataJBuffer::LocalDataJBuffer(JNIEnv *env, const float* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity), m_env(env)
+DataJBuffer::DataJBuffer(JNIEnv *env, const float* data, qsizetype capacity)
+    : m_env(env), m_buffer_object(AbstractDataJBuffer::createBuffer(env, data, capacity))
 {
 }
 
-LocalDataJBuffer::LocalDataJBuffer(JNIEnv *env, double* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity), m_env(env)
+DataJBuffer::DataJBuffer(JNIEnv *env, double* data, qsizetype capacity)
+    : m_env(env), m_buffer_object(AbstractDataJBuffer::createBuffer(env, data, capacity))
 {
 }
 
-LocalDataJBuffer::LocalDataJBuffer(JNIEnv *env, const double* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity), m_env(env)
+DataJBuffer::DataJBuffer(JNIEnv *env, const double* data, qsizetype capacity)
+    : m_env(env), m_buffer_object(AbstractDataJBuffer::createBuffer(env, data, capacity))
 {
 }
 
-LocalDataJBuffer::LocalDataJBuffer(JNIEnv *env, QChar* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity), m_env(env)
+DataJBuffer::DataJBuffer(JNIEnv *env, QChar* data, qsizetype capacity)
+    : m_env(env), m_buffer_object(AbstractDataJBuffer::createBuffer(env, data, capacity))
 {
 }
-LocalDataJBuffer::LocalDataJBuffer(JNIEnv *env, const QChar* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity), m_env(env)
+DataJBuffer::DataJBuffer(JNIEnv *env, const QChar* data, qsizetype capacity)
+    : m_env(env), m_buffer_object(AbstractDataJBuffer::createBuffer(env, data, capacity))
 {
 }
 
-LocalDataJBuffer::LocalDataJBuffer(JNIEnv *env, wchar_t* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity), m_env(env)
+DataJBuffer::DataJBuffer(JNIEnv *env, wchar_t* data, qsizetype capacity)
+    : m_env(env), m_buffer_object(AbstractDataJBuffer::createBuffer(env, data, capacity))
 {
 }
-LocalDataJBuffer::LocalDataJBuffer(JNIEnv *env, const wchar_t* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity), m_env(env)
+DataJBuffer::DataJBuffer(JNIEnv *env, const wchar_t* data, qsizetype capacity)
+    : m_env(env), m_buffer_object(AbstractDataJBuffer::createBuffer(env, data, capacity))
 {
 }
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-LocalDataJBuffer::LocalDataJBuffer(JNIEnv *env, char16_t* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity), m_env(env)
+DataJBuffer::DataJBuffer(JNIEnv *env, char16_t* data, qsizetype capacity)
+    : m_env(env), m_buffer_object(AbstractDataJBuffer::createBuffer(env, data, capacity))
 {
 }
-LocalDataJBuffer::LocalDataJBuffer(JNIEnv *env, const char16_t* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity), m_env(env)
+DataJBuffer::DataJBuffer(JNIEnv *env, const char16_t* data, qsizetype capacity)
+    : m_env(env), m_buffer_object(AbstractDataJBuffer::createBuffer(env, data, capacity))
 {
 }
-LocalDataJBuffer::LocalDataJBuffer(JNIEnv *env, char32_t* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity), m_env(env)
+DataJBuffer::DataJBuffer(JNIEnv *env, char32_t* data, qsizetype capacity)
+    : m_env(env), m_buffer_object(AbstractDataJBuffer::createBuffer(env, data, capacity))
 {
 }
-LocalDataJBuffer::LocalDataJBuffer(JNIEnv *env, const char32_t* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity), m_env(env)
+DataJBuffer::DataJBuffer(JNIEnv *env, const char32_t* data, qsizetype capacity)
+    : m_env(env), m_buffer_object(AbstractDataJBuffer::createBuffer(env, data, capacity))
 {
 }
 #endif
 
-LocalDataJBuffer::~LocalDataJBuffer(){
+DataJBuffer::~DataJBuffer(){
     try{
         if(m_buffer_object)
             truncateBuffer(m_env, m_buffer_object);
@@ -897,221 +1473,168 @@ LocalDataJBuffer::~LocalDataJBuffer(){
     }
 }
 
-void LocalDataJBuffer::setLimit(jsize limit){
+void DataJBuffer::setLimit(jsize limit){
     setLimit(m_env, m_buffer_object, limit);
 }
 
-jobject LocalDataJBuffer::buffer() const{
+jobject DataJBuffer::buffer() const{
     return m_buffer_object;
 }
 
-jobject LocalDataJBuffer::take(){
+jobject DataJBuffer::take(){
     jobject result = m_buffer_object;
     m_buffer_object = nullptr;
     return result;
 }
 
-DataJBuffer::DataJBuffer(JNIEnv *env, void* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity)
+struct PersistentDataJBufferPrivate{
+    JObjectWrapper m_buffer;
+};
+
+PersistentDataJBuffer::PersistentDataJBuffer(JNIEnv *env, void* data, qsizetype capacity)
+    : m_data(new PersistentDataJBufferPrivate{AbstractDataJBuffer::createBuffer(env, data, capacity)})
 {
-    if(m_buffer_object)
-        m_buffer_object = env->NewGlobalRef(m_buffer_object);
 }
 
-DataJBuffer::DataJBuffer(JNIEnv *env, const void* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity)
+PersistentDataJBuffer::PersistentDataJBuffer(JNIEnv *env, const void* data, qsizetype capacity)
+    : m_data(new PersistentDataJBufferPrivate{AbstractDataJBuffer::createBuffer(env, data, capacity)})
 {
-    if(m_buffer_object)
-        m_buffer_object = env->NewGlobalRef(m_buffer_object);
 }
 
-DataJBuffer::DataJBuffer(JNIEnv *env, char* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity)
+PersistentDataJBuffer::PersistentDataJBuffer(JNIEnv *env, char* data, qsizetype capacity)
+    : m_data(new PersistentDataJBufferPrivate{AbstractDataJBuffer::createBuffer(env, data, capacity)})
 {
-    if(m_buffer_object)
-        m_buffer_object = env->NewGlobalRef(m_buffer_object);
 }
 
-DataJBuffer::DataJBuffer(JNIEnv *env, const char* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity)
+PersistentDataJBuffer::PersistentDataJBuffer(JNIEnv *env, const char* data, qsizetype capacity)
+    : m_data(new PersistentDataJBufferPrivate{AbstractDataJBuffer::createBuffer(env, data, capacity)})
 {
-    if(m_buffer_object)
-        m_buffer_object = env->NewGlobalRef(m_buffer_object);
 }
 
-DataJBuffer::DataJBuffer(JNIEnv *env, unsigned char* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity)
+PersistentDataJBuffer::PersistentDataJBuffer(JNIEnv *env, unsigned char* data, qsizetype capacity)
+    : m_data(new PersistentDataJBufferPrivate{AbstractDataJBuffer::createBuffer(env, data, capacity)})
 {
-    if(m_buffer_object)
-        m_buffer_object = env->NewGlobalRef(m_buffer_object);
 }
 
-DataJBuffer::DataJBuffer(JNIEnv *env, const unsigned char* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity)
+PersistentDataJBuffer::PersistentDataJBuffer(JNIEnv *env, const unsigned char* data, qsizetype capacity)
+    : m_data(new PersistentDataJBufferPrivate{AbstractDataJBuffer::createBuffer(env, data, capacity)})
 {
-    if(m_buffer_object)
-        m_buffer_object = env->NewGlobalRef(m_buffer_object);
 }
 
-DataJBuffer::DataJBuffer(JNIEnv *env, qint16* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity)
+PersistentDataJBuffer::PersistentDataJBuffer(JNIEnv *env, qint16* data, qsizetype capacity)
+    : m_data(new PersistentDataJBufferPrivate{AbstractDataJBuffer::createBuffer(env, data, capacity)})
 {
-    if(m_buffer_object)
-        m_buffer_object = env->NewGlobalRef(m_buffer_object);
 }
 
-DataJBuffer::DataJBuffer(JNIEnv *env, const qint16* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity)
+PersistentDataJBuffer::PersistentDataJBuffer(JNIEnv *env, const qint16* data, qsizetype capacity)
+    : m_data(new PersistentDataJBufferPrivate{AbstractDataJBuffer::createBuffer(env, data, capacity)})
 {
-    if(m_buffer_object)
-        m_buffer_object = env->NewGlobalRef(m_buffer_object);
 }
 
-DataJBuffer::DataJBuffer(JNIEnv *env, quint16* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity)
+PersistentDataJBuffer::PersistentDataJBuffer(JNIEnv *env, quint16* data, qsizetype capacity)
+    : m_data(new PersistentDataJBufferPrivate{AbstractDataJBuffer::createBuffer(env, data, capacity)})
 {
-    if(m_buffer_object)
-        m_buffer_object = env->NewGlobalRef(m_buffer_object);
 }
 
-DataJBuffer::DataJBuffer(JNIEnv *env, const quint16* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity)
+PersistentDataJBuffer::PersistentDataJBuffer(JNIEnv *env, const quint16* data, qsizetype capacity)
+    : m_data(new PersistentDataJBufferPrivate{AbstractDataJBuffer::createBuffer(env, data, capacity)})
 {
-    if(m_buffer_object)
-        m_buffer_object = env->NewGlobalRef(m_buffer_object);
 }
 
-DataJBuffer::DataJBuffer(JNIEnv *env, qint32* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity)
+PersistentDataJBuffer::PersistentDataJBuffer(JNIEnv *env, qint32* data, qsizetype capacity)
+    : m_data(new PersistentDataJBufferPrivate{AbstractDataJBuffer::createBuffer(env, data, capacity)})
 {
-    if(m_buffer_object)
-        m_buffer_object = env->NewGlobalRef(m_buffer_object);
 }
 
-DataJBuffer::DataJBuffer(JNIEnv *env, const qint32* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity)
+PersistentDataJBuffer::PersistentDataJBuffer(JNIEnv *env, const qint32* data, qsizetype capacity)
+    : m_data(new PersistentDataJBufferPrivate{AbstractDataJBuffer::createBuffer(env, data, capacity)})
 {
-    if(m_buffer_object)
-        m_buffer_object = env->NewGlobalRef(m_buffer_object);
 }
 
-DataJBuffer::DataJBuffer(JNIEnv *env, quint32* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity)
+PersistentDataJBuffer::PersistentDataJBuffer(JNIEnv *env, quint32* data, qsizetype capacity)
+    : m_data(new PersistentDataJBufferPrivate{AbstractDataJBuffer::createBuffer(env, data, capacity)})
 {
-    if(m_buffer_object)
-        m_buffer_object = env->NewGlobalRef(m_buffer_object);
 }
 
-DataJBuffer::DataJBuffer(JNIEnv *env, const quint32* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity)
+PersistentDataJBuffer::PersistentDataJBuffer(JNIEnv *env, const quint32* data, qsizetype capacity)
+    : m_data(new PersistentDataJBufferPrivate{AbstractDataJBuffer::createBuffer(env, data, capacity)})
 {
-    if(m_buffer_object)
-        m_buffer_object = env->NewGlobalRef(m_buffer_object);
 }
 
-DataJBuffer::DataJBuffer(JNIEnv *env, qint64* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity)
+PersistentDataJBuffer::PersistentDataJBuffer(JNIEnv *env, qint64* data, qsizetype capacity)
+    : m_data(new PersistentDataJBufferPrivate{AbstractDataJBuffer::createBuffer(env, data, capacity)})
 {
-    if(m_buffer_object)
-        m_buffer_object = env->NewGlobalRef(m_buffer_object);
 }
 
-DataJBuffer::DataJBuffer(JNIEnv *env, const qint64* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity)
+PersistentDataJBuffer::PersistentDataJBuffer(JNIEnv *env, const qint64* data, qsizetype capacity)
+    : m_data(new PersistentDataJBufferPrivate{AbstractDataJBuffer::createBuffer(env, data, capacity)})
 {
-    if(m_buffer_object)
-        m_buffer_object = env->NewGlobalRef(m_buffer_object);
 }
 
-DataJBuffer::DataJBuffer(JNIEnv *env, quint64* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity)
+PersistentDataJBuffer::PersistentDataJBuffer(JNIEnv *env, quint64* data, qsizetype capacity)
+    : m_data(new PersistentDataJBufferPrivate{AbstractDataJBuffer::createBuffer(env, data, capacity)})
 {
-    if(m_buffer_object)
-        m_buffer_object = env->NewGlobalRef(m_buffer_object);
 }
 
-DataJBuffer::DataJBuffer(JNIEnv *env, const quint64* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity)
+PersistentDataJBuffer::PersistentDataJBuffer(JNIEnv *env, const quint64* data, qsizetype capacity)
+    : m_data(new PersistentDataJBufferPrivate{AbstractDataJBuffer::createBuffer(env, data, capacity)})
 {
-    if(m_buffer_object)
-        m_buffer_object = env->NewGlobalRef(m_buffer_object);
 }
 
-DataJBuffer::DataJBuffer(JNIEnv *env, float* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity)
+PersistentDataJBuffer::PersistentDataJBuffer(JNIEnv *env, float* data, qsizetype capacity)
+    : m_data(new PersistentDataJBufferPrivate{AbstractDataJBuffer::createBuffer(env, data, capacity)})
 {
-    if(m_buffer_object)
-        m_buffer_object = env->NewGlobalRef(m_buffer_object);
 }
 
-DataJBuffer::DataJBuffer(JNIEnv *env, const float* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity)
+PersistentDataJBuffer::PersistentDataJBuffer(JNIEnv *env, const float* data, qsizetype capacity)
+    : m_data(new PersistentDataJBufferPrivate{AbstractDataJBuffer::createBuffer(env, data, capacity)})
 {
-    if(m_buffer_object)
-        m_buffer_object = env->NewGlobalRef(m_buffer_object);
 }
 
-DataJBuffer::DataJBuffer(JNIEnv *env, double* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity)
+PersistentDataJBuffer::PersistentDataJBuffer(JNIEnv *env, double* data, qsizetype capacity)
+    : m_data(new PersistentDataJBufferPrivate{AbstractDataJBuffer::createBuffer(env, data, capacity)})
 {
-    if(m_buffer_object)
-        m_buffer_object = env->NewGlobalRef(m_buffer_object);
 }
 
-DataJBuffer::DataJBuffer(JNIEnv *env, const double* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity)
+PersistentDataJBuffer::PersistentDataJBuffer(JNIEnv *env, const double* data, qsizetype capacity)
+    : m_data(new PersistentDataJBufferPrivate{AbstractDataJBuffer::createBuffer(env, data, capacity)})
 {
-    if(m_buffer_object)
-        m_buffer_object = env->NewGlobalRef(m_buffer_object);
 }
 
-DataJBuffer::DataJBuffer(JNIEnv *env, QChar* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity)
+PersistentDataJBuffer::PersistentDataJBuffer(JNIEnv *env, QChar* data, qsizetype capacity)
+    : m_data(new PersistentDataJBufferPrivate{AbstractDataJBuffer::createBuffer(env, data, capacity)})
 {
-    if(m_buffer_object)
-        m_buffer_object = env->NewGlobalRef(m_buffer_object);
 }
-DataJBuffer::DataJBuffer(JNIEnv *env, const QChar* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity)
+PersistentDataJBuffer::PersistentDataJBuffer(JNIEnv *env, const QChar* data, qsizetype capacity)
+    : m_data(new PersistentDataJBufferPrivate{AbstractDataJBuffer::createBuffer(env, data, capacity)})
 {
-    if(m_buffer_object)
-        m_buffer_object = env->NewGlobalRef(m_buffer_object);
 }
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-DataJBuffer::DataJBuffer(JNIEnv *env, char16_t* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity)
+PersistentDataJBuffer::PersistentDataJBuffer(JNIEnv *env, char16_t* data, qsizetype capacity)
+    : m_data(new PersistentDataJBufferPrivate{AbstractDataJBuffer::createBuffer(env, data, capacity)})
 {
-    if(m_buffer_object)
-        m_buffer_object = env->NewGlobalRef(m_buffer_object);
 }
-DataJBuffer::DataJBuffer(JNIEnv *env, const char16_t* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity)
+PersistentDataJBuffer::PersistentDataJBuffer(JNIEnv *env, const char16_t* data, qsizetype capacity)
+    : m_data(new PersistentDataJBufferPrivate{AbstractDataJBuffer::createBuffer(env, data, capacity)})
 {
-    if(m_buffer_object)
-        m_buffer_object = env->NewGlobalRef(m_buffer_object);
 }
-DataJBuffer::DataJBuffer(JNIEnv *env, char32_t* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity)
+PersistentDataJBuffer::PersistentDataJBuffer(JNIEnv *env, char32_t* data, qsizetype capacity)
+    : m_data(new PersistentDataJBufferPrivate{AbstractDataJBuffer::createBuffer(env, data, capacity)})
 {
-    if(m_buffer_object)
-        m_buffer_object = env->NewGlobalRef(m_buffer_object);
 }
-DataJBuffer::DataJBuffer(JNIEnv *env, const char32_t* data, qsizetype capacity)
-    : AbstractDataJBuffer(env, data, capacity)
+PersistentDataJBuffer::PersistentDataJBuffer(JNIEnv *env, const char32_t* data, qsizetype capacity)
+    : m_data(new PersistentDataJBufferPrivate{AbstractDataJBuffer::createBuffer(env, data, capacity)})
 {
-    if(m_buffer_object)
-        m_buffer_object = env->NewGlobalRef(m_buffer_object);
 }
 #endif
 
-DataJBuffer::~DataJBuffer(){
-    if(m_buffer_object){
+PersistentDataJBuffer::~PersistentDataJBuffer(){
+    if(Q_LIKELY(m_data) && m_data->m_buffer){
         if(DefaultJniEnvironment env{100}){
             try{
-                truncateBuffer(env, m_buffer_object);
-                env->DeleteGlobalRef(m_buffer_object);
-                m_buffer_object = nullptr;
+                truncateBuffer(env, m_data->m_buffer.object(env));
+                m_data->m_buffer.clear(env);
             }catch(const JavaException& exn){
                 exn.report(env);
             } catch (const std::exception& e) {
@@ -1122,25 +1645,26 @@ DataJBuffer::~DataJBuffer(){
     }
 }
 
-void DataJBuffer::setLimit(JNIEnv *env, jsize limit){
-    setLimit(env, m_buffer_object, limit);
+void PersistentDataJBuffer::setLimit(JNIEnv *env, jsize limit){
+    setLimit(env, m_data->m_buffer.object(env), limit);
 }
 
-jobject DataJBuffer::buffer(JNIEnv *env) const{
-    return m_buffer_object ? env->NewLocalRef(m_buffer_object) : nullptr;
+jobject PersistentDataJBuffer::buffer(JNIEnv *env) const{
+    return Q_LIKELY(m_data) ? m_data->m_buffer.object(env) : nullptr;
 }
 
-jobject DataJBuffer::take(JNIEnv *env){
-    jobject result = m_buffer_object ? env->NewLocalRef(m_buffer_object) : nullptr;
-    m_buffer_object = nullptr;
-    return result;
+jobject PersistentDataJBuffer::take(JNIEnv *env){
+    if(Q_LIKELY(m_data)){
+        jobject result = m_data->m_buffer.object(env);
+        m_data->m_buffer.clear(env);
+        return result;
+    }else return nullptr;
 }
 
-void DataJBuffer::clear(JNIEnv *env){
-    if(m_buffer_object){
-        truncateBuffer(env, m_buffer_object);
-        env->DeleteGlobalRef(m_buffer_object);
-        m_buffer_object = nullptr;
+void PersistentDataJBuffer::clear(JNIEnv *env){
+    if(Q_LIKELY(m_data)){
+        truncateBuffer(env, m_data->m_buffer.object(env));
+        m_data->m_buffer.clear(env);
     }
 }
 

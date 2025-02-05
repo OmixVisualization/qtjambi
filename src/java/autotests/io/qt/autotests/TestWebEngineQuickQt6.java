@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -32,9 +32,6 @@ import static org.junit.Assume.assumeTrue;
 
 import org.junit.*;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import io.qt.QtInvokable;
 import io.qt.QtUtilities;
 import io.qt.autotests.generated.General;
@@ -49,6 +46,11 @@ public class TestWebEngineQuickQt6 extends ApplicationInitializer {
 	
     @BeforeClass
     public static void testInitialize() throws Exception {
+    	if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.MacOS)
+    			&& "x86_64".equals(System.getProperty("os.arch").toLowerCase())
+    			&& QLibraryInfo.version().compareTo(new QVersionNumber(6,5,4))>=0) {
+    		Assert.assertFalse("env SYSTEM_VERSION_COMPAT=0 required to run WebEngine on macOS x86_64", "10.16".equals(General.stringSysctlByName("kern.osproductversion")));
+    	}
     	QtUtilities.initializePackage("io.qt.webengine.quick");
         QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts);
     	boolean found = false;

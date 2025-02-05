@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -130,30 +130,32 @@ public class TestIterators extends ApplicationInitializer {
     @Test
     public void test_QDirIterator_correct_iteration() {
     	String uniqueDirectory = "QtJambi_QDirTest_"+TestUtility.processName();
+    	QDir userDir = new QDir(System.getProperty("user.dir", ""));
     	try {
-	    	QDir temp = QDir.temp();
-	    	Assert.assertTrue(temp.mkdir(uniqueDirectory));
-	    	Assert.assertTrue(temp.cd(uniqueDirectory));
-	    	Assert.assertTrue(temp.mkdir("A"));
-	    	Assert.assertTrue(temp.mkdir("B"));
-	    	Assert.assertTrue(temp.mkdir("C"));
-	    	Assert.assertTrue(temp.mkdir("D"));
-	    	Assert.assertTrue(temp.mkdir("E"));
+    		if(!userDir.mkdir(uniqueDirectory) && !userDir.exists(uniqueDirectory)) {
+    			userDir = QDir.temp();
+    	    	Assert.assertTrue(userDir.mkdir(uniqueDirectory));
+    		}
+	    	Assert.assertTrue(userDir.cd(uniqueDirectory));
+	    	Assert.assertTrue(userDir.mkdir("A"));
+	    	Assert.assertTrue(userDir.mkdir("B"));
+	    	Assert.assertTrue(userDir.mkdir("C"));
+	    	Assert.assertTrue(userDir.mkdir("D"));
+	    	Assert.assertTrue(userDir.mkdir("E"));
 	    	Set<String> subDirs = new HashSet<>();
-	    	for(String subdir : new QDirIterator(temp)) {
+	    	for(String subdir : new QDirIterator(userDir)) {
     			int idx = subdir.lastIndexOf('/');
     			subDirs.add(subdir.substring(idx+1));
 	    	}
 	    	Assert.assertEquals(new HashSet<>(Arrays.asList(".", "..", "A", "B", "C", "D", "E")), subDirs);
     	}finally {
-    		QDir temp = QDir.temp();
-    		if(temp.exists(uniqueDirectory)) {
-        		temp.cd("QtJambi_QDirTest");
-        		for(String s : temp.entryList()) {
-        			temp.rmdir(s);
+    		if(userDir.exists(uniqueDirectory)) {
+        		userDir.cd(uniqueDirectory);
+        		for(String s : userDir.entryList()) {
+        			userDir.rmdir(s);
         		}
-        		temp.cdUp();
-        		temp.rmdir(uniqueDirectory);
+        		userDir.cdUp();
+        		userDir.rmdir(uniqueDirectory);
         	}
 		}
     }

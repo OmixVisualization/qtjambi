@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** instance file is part of Qt Jambi.
 **
@@ -309,13 +309,21 @@ public class TestFlagsAndEnumParameters extends ApplicationInitializer{
 	
 	private static class AutoFlags extends QFlags<AutoFlag>{
 		private static final long serialVersionUID = 1297668415339650986L;
+
+		int value() {
+			return super.intValue();
+		}
 	}
 	
 	@Test
 	public void testAutoFlag(){
 		assertEquals(0x0200000, AutoFlag.X.value());
 		assertEquals(0x02000, AutoFlag.P.value());
-		assertEquals(AutoFlags.class, AutoFlag.P.asFlags().getClass());
+		@SuppressWarnings("unchecked")
+		QFlags<AutoFlag> flags = (QFlags<AutoFlag>)AutoFlag.P.asFlags();
+		assertEquals(AutoFlags.class, flags.getClass());
+		assertTrue(flags.testFlag(AutoFlag.P));
+		assertEquals(AutoFlag.P.value(), ((AutoFlags)flags).value());
 	}
 	
 	public enum TestEnum{
@@ -345,7 +353,12 @@ public class TestFlagsAndEnumParameters extends ApplicationInitializer{
 		private static final long serialVersionUID = 5669819378912505068L;
 
 		public MyFlags(TestEnum2... args) {
-			super(args);
+			super(0);
+			set(args);
+		}
+		
+		public MyFlags() {
+			super(0);
 		}
 
 		public MyFlags(int value) {
@@ -366,6 +379,13 @@ public class TestFlagsAndEnumParameters extends ApplicationInitializer{
 		public TestEnum2[] flags() {
 			return flags(TestEnum2.values());
 		}
-		
+
+        public final int value(){
+            return intValue();
+        }
+
+        public final void setValue(int value){
+            setIntValue(value);
+        }
 	}
 }

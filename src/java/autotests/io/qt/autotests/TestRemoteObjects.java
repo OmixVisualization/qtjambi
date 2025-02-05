@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -47,12 +47,14 @@ import io.qt.autotests.QtRemoteObjectsPong.NonQtType;
 import io.qt.core.QByteArray;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QDataStream;
+import io.qt.core.QDir;
 import io.qt.core.QEventLoop;
 import io.qt.core.QIODevice;
 import io.qt.core.QMetaObject;
 import io.qt.core.QMetaObject.AbstractPublicSignal0;
 import io.qt.core.QMetaType;
 import io.qt.core.QObject;
+import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QRect;
 import io.qt.core.QThread;
 import io.qt.core.QTimer;
@@ -91,7 +93,10 @@ public class TestRemoteObjects extends UnitTestInitializer {
 		pongThread.join(2000);
 		long t1 = System.currentTimeMillis();
     	final String jambidir = System.getProperty("user.dir");
-    	final File testsDir = new File(jambidir).getParentFile();
+    	File testsDir = new File(jambidir).getParentFile();
+    	if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android)) {
+    		testsDir = new File(QDir.tempPath());
+		}
     	final File targetDir = new File(testsDir, "tmp_"+TestUtility.processName());
     	final File testFile = new File(targetDir, "QtRemoteObjectsPong.touch.test");
 		while(!testFile.exists() && pongThread.isAlive()){
@@ -123,7 +128,10 @@ public class TestRemoteObjects extends UnitTestInitializer {
 			{
 		    	final String version = QtUtilities.qtjambiVersion().toString();
 		    	final String jambidir = System.getProperty("user.dir");
-		    	final File testsDir = new File(jambidir).getParentFile();
+		    	File testsDir = new File(jambidir).getParentFile();
+		    	if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android)) {
+		    		testsDir = new File(QDir.tempPath());
+				}
 		    	final File targetDir = new File(testsDir, "tmp_"+TestUtility.processName());
 				File tmpDir = new File(System.getProperty("java.io.tmpdir"));
 				if(new File(targetDir, "pid").isFile()) {

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -152,7 +152,7 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jobject %out = LocalDataJBuffer(%env, %in, jlong(sizeof(int)) * count).take();"}
+                    Text{content: "jobject %out = DataJBuffer(%env, %in, jlong(sizeof(int)) * count).take();"}
                 }
             }
             ModifyArgument{
@@ -533,10 +533,10 @@ TypeSystem{
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "Qt::ConnectionType %out = Qt::AutoConnection;\n"+
-                                  "JObjectArrayWrapper %inArray(%env, %in);\n"+
+                                  "JConstObjectArrayPointer<jobject> %inArray(%env, %in);\n"+
                                   "if(%inArray.length()>0){\n"+
                                   "for(jsize i=0, l=%inArray.length(); i<l; ++i){\n"+
-                                  "    %out = Qt::ConnectionType(%out | qtjambi_cast<Qt::ConnectionType>(%inArray.at(%env, i)));\n"+
+                                  "    %out = Qt::ConnectionType(%out | qtjambi_cast<Qt::ConnectionType>(%inArray[i]));\n"+
                                   "}\n"+
                                   "}"}
                 }
@@ -571,10 +571,10 @@ TypeSystem{
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "Qt::ConnectionType %out = Qt::AutoConnection;\n"+
-                                  "JObjectArrayWrapper %inArray(%env, %in);\n"+
+                                  "JConstObjectArrayPointer<jobject> %inArray(%env, %in);\n"+
                                   "if(%inArray.length()>0){\n"+
                                   "for(jsize i=0, l=%inArray.length(); i<l; ++i){\n"+
-                                  "    %out = Qt::ConnectionType(%out | qtjambi_cast<Qt::ConnectionType>(%inArray.at(%env, i)));\n"+
+                                  "    %out = Qt::ConnectionType(%out | qtjambi_cast<Qt::ConnectionType>(%inArray[i]));\n"+
                                   "}\n"+
                                   "}"}
                 }
@@ -632,10 +632,10 @@ TypeSystem{
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "Qt::ConnectionType %out = Qt::AutoConnection;\n"+
-                                  "JObjectArrayWrapper %inArray(%env, %in);\n"+
+                                  "JConstObjectArrayPointer<jobject> %inArray(%env, %in);\n"+
                                   "if(%inArray.length()>0){\n"+
                                   "    for(jsize i=0, l=%inArray.length(); i<l; ++i){\n"+
-                                  "        %out = Qt::ConnectionType(%out | qtjambi_cast<Qt::ConnectionType>(%inArray.at(%env, i)));\n"+
+                                  "        %out = Qt::ConnectionType(%out | qtjambi_cast<Qt::ConnectionType>(%inArray[i]));\n"+
                                   "    }\n"+
                                   "}"}
                 }
@@ -656,8 +656,12 @@ TypeSystem{
                         codeClass: CodeClass.Native
                         Text{content: "auto %out = [slot = JObjectWrapper(%env, %in)](const QScxmlEvent& event){\n"+
                                       "                    if(JniEnvironment env{200}){\n"+
-                                      "                        jobject _event = qtjambi_cast<jobject>(env, event);\n"+
-                                      "                        Java::QtCore::QMetaObject$Slot1::invoke(env, slot.object(env), _event);\n"+
+                                      "                        QTJAMBI_TRY{\n"+
+                                      "                            jobject _event = qtjambi_cast<jobject>(env, event);\n"+
+                                      "                            Java::QtCore::QMetaObject$Slot1::invoke(env, slot.object(env), _event);\n"+
+                                      "                        }QTJAMBI_CATCH(const JavaException& exn){\n"+
+                                      "                            exn.report(env);\n"+
+                                      "                        }QTJAMBI_TRY_END\n"+
                                       "                    }\n"+
                                       "                };"}
                     }
@@ -719,7 +723,11 @@ TypeSystem{
                         codeClass: CodeClass.Native
                         Text{content: "auto %out = [slot = JObjectWrapper(%env, %in)](const QScxmlEvent&){\n"+
                                       "                    if(JniEnvironment env{200}){\n"+
-                                      "                        Java::QtCore::QMetaObject$Slot0::invoke(env, slot.object(env));\n"+
+                                      "                        QTJAMBI_TRY{\n"+
+                                      "                            Java::QtCore::QMetaObject$Slot0::invoke(env, slot.object(env));\n"+
+                                      "                        }QTJAMBI_CATCH(const JavaException& exn){\n"+
+                                      "                            exn.report(env);\n"+
+                                      "                        }QTJAMBI_TRY_END\n"+
                                       "                    }\n"+
                                       "                };"}
                     }
@@ -780,10 +788,10 @@ TypeSystem{
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "Qt::ConnectionType %out = Qt::AutoConnection;\n"+
-                                  "JObjectArrayWrapper %inArray(%env, %in);\n"+
+                                  "JConstObjectArrayPointer<jobject> %inArray(%env, %in);\n"+
                                   "if(%inArray.length()>0){\n"+
                                   "    for(jsize i=0, l=%inArray.length(); i<l; ++i){\n"+
-                                  "        %out = Qt::ConnectionType(%out | qtjambi_cast<Qt::ConnectionType>(%inArray.at(%env, i)));\n"+
+                                  "        %out = Qt::ConnectionType(%out | qtjambi_cast<Qt::ConnectionType>(%inArray[i]));\n"+
                                   "    }\n"+
                                   "}"}
                 }
@@ -804,7 +812,11 @@ TypeSystem{
                         codeClass: CodeClass.Native
                         Text{content: "auto %out = [slot = JObjectWrapper(%env, %in)](bool b){\n"+
                                       "                    if(JniEnvironment env{200}){\n"+
-                                      "                        Java::QtCore::QMetaObject$Slot1::invoke(env, slot.object(env), Java::Runtime::Boolean::valueOf(env, b));\n"+
+                                      "                        QTJAMBI_TRY{\n"+
+                                      "                            Java::QtCore::QMetaObject$Slot1::invoke(env, slot.object(env), Java::Runtime::Boolean::valueOf(env, b));\n"+
+                                      "                        }QTJAMBI_CATCH(const JavaException& exn){\n"+
+                                      "                            exn.report(env);\n"+
+                                      "                        }QTJAMBI_TRY_END\n"+
                                       "                    }\n"+
                                       "                };"}
                     }
@@ -866,7 +878,11 @@ TypeSystem{
                         codeClass: CodeClass.Native
                         Text{content: "auto %out = [slot = JObjectWrapper(%env, %in)](bool){\n"+
                                       "                    if(JniEnvironment env{200}){\n"+
-                                      "                        Java::QtCore::QMetaObject$Slot0::invoke(env, slot.object(env));\n"+
+                                      "                        QTJAMBI_TRY{\n"+
+                                      "                            Java::QtCore::QMetaObject$Slot0::invoke(env, slot.object(env));\n"+
+                                      "                        }QTJAMBI_CATCH(const JavaException& exn){\n"+
+                                      "                            exn.report(env);\n"+
+                                      "                        }QTJAMBI_TRY_END\n"+
                                       "                    }\n"+
                                       "                };"}
                     }
@@ -928,10 +944,10 @@ TypeSystem{
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "Qt::ConnectionType %out = Qt::AutoConnection;\n"+
-                                  "JObjectArrayWrapper %inArray(%env, %in);\n"+
+                                  "JConstObjectArrayPointer<jobject> %inArray(%env, %in);\n"+
                                   "if(%inArray.length()>0){\n"+
                                   "    for(jsize i=0, l=%inArray.length(); i<l; ++i){\n"+
-                                  "        %out = Qt::ConnectionType(%out | qtjambi_cast<Qt::ConnectionType>(%inArray.at(%env, i)));\n"+
+                                  "        %out = Qt::ConnectionType(%out | qtjambi_cast<Qt::ConnectionType>(%inArray[i]));\n"+
                                   "    }\n"+
                                   "}"}
                 }
@@ -952,8 +968,12 @@ TypeSystem{
                         codeClass: CodeClass.Native
                         Text{content: "auto %out = [slot = JObjectWrapper(%env, %in)](const QScxmlEvent& event){\n"+
                                       "                    if(JniEnvironment env{200}){\n"+
-                                      "                        jobject _event = qtjambi_cast<jobject>(env, event);\n"+
-                                      "                        Java::QtCore::QMetaObject$Slot1::invoke(env, slot.object(env), _event);\n"+
+                                      "                        QTJAMBI_TRY{\n"+
+                                      "                            jobject _event = qtjambi_cast<jobject>(env, event);\n"+
+                                      "                            Java::QtCore::QMetaObject$Slot1::invoke(env, slot.object(env), _event);\n"+
+                                      "                        }QTJAMBI_CATCH(const JavaException& exn){\n"+
+                                      "                            exn.report(env);\n"+
+                                      "                        }QTJAMBI_TRY_END\n"+
                                       "                    }\n"+
                                       "                };"}
                     }
@@ -1015,7 +1035,11 @@ TypeSystem{
                         codeClass: CodeClass.Native
                         Text{content: "auto %out = [slot = JObjectWrapper(%env, %in)](const QScxmlEvent&){\n"+
                                       "                    if(JniEnvironment env{200}){\n"+
-                                      "                        Java::QtCore::QMetaObject$Slot0::invoke(env, slot.object(env));\n"+
+                                      "                        QTJAMBI_TRY{\n"+
+                                      "                            Java::QtCore::QMetaObject$Slot0::invoke(env, slot.object(env));\n"+
+                                      "                        }QTJAMBI_CATCH(const JavaException& exn){\n"+
+                                      "                            exn.report(env);\n"+
+                                      "                        }QTJAMBI_TRY_END\n"+
                                       "                    }\n"+
                                       "                };"}
                     }
@@ -1076,10 +1100,10 @@ TypeSystem{
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "Qt::ConnectionType %out = Qt::AutoConnection;\n"+
-                                  "JObjectArrayWrapper %inArray(%env, %in);\n"+
+                                  "JConstObjectArrayPointer<jobject> %inArray(%env, %in);\n"+
                                   "if(%inArray.length()>0){\n"+
                                   "    for(jsize i=0, l=%inArray.length(); i<l; ++i){\n"+
-                                  "        %out = Qt::ConnectionType(%out | qtjambi_cast<Qt::ConnectionType>(%inArray.at(%env, i)));\n"+
+                                  "        %out = Qt::ConnectionType(%out | qtjambi_cast<Qt::ConnectionType>(%inArray[i]));\n"+
                                   "    }\n"+
                                   "}"}
                 }
@@ -1100,7 +1124,11 @@ TypeSystem{
                         codeClass: CodeClass.Native
                         Text{content: "auto %out = [slot = JObjectWrapper(%env, %in)](bool b){\n"+
                                       "                    if(JniEnvironment env{200}){\n"+
-                                      "                        Java::QtCore::QMetaObject$Slot1::invoke(env, slot.object(env), Java::Runtime::Boolean::valueOf(env, b));\n"+
+                                      "                        QTJAMBI_TRY{\n"+
+                                      "                            Java::QtCore::QMetaObject$Slot1::invoke(env, slot.object(env), Java::Runtime::Boolean::valueOf(env, b));\n"+
+                                      "                        }QTJAMBI_CATCH(const JavaException& exn){\n"+
+                                      "                            exn.report(env);\n"+
+                                      "                        }QTJAMBI_TRY_END\n"+
                                       "                    }\n"+
                                       "                };"}
                     }
@@ -1162,7 +1190,11 @@ TypeSystem{
                         codeClass: CodeClass.Native
                         Text{content: "auto %out = [slot = JObjectWrapper(%env, %in)](bool){\n"+
                                       "                    if(JniEnvironment env{200}){\n"+
-                                      "                        Java::QtCore::QMetaObject$Slot0::invoke(env, slot.object(env));\n"+
+                                      "                        QTJAMBI_TRY{\n"+
+                                      "                            Java::QtCore::QMetaObject$Slot0::invoke(env, slot.object(env));\n"+
+                                      "                        }QTJAMBI_CATCH(const JavaException& exn){\n"+
+                                      "                            exn.report(env);\n"+
+                                      "                        }QTJAMBI_TRY_END\n"+
                                       "                    }\n"+
                                       "                };"}
                     }

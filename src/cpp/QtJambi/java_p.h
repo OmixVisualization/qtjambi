@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -73,8 +73,9 @@ namespace Java{
                                             QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(execPostRoutines)
                                          )
             QTJAMBI_REPOSITORY_DECLARE_CLASS(QThread,
-                                         QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(setJavaThreadReference)
-                                         QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getJavaThreadReference))
+                                             QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(setJavaThreadReference)
+                                             QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getJavaThreadReference)
+                                             QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
         }
 #if defined(QTJAMBI_LIGHTWEIGHT_MODELINDEX)
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QModelIndex,
@@ -149,6 +150,9 @@ namespace Java{
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QMetaType$GenericShortEnumerator,QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QMetaType$GenericLongEnumerator,QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QMetaType$GenericFlags,QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
+#if QT_VERSION >= QT_VERSION_CHECK(6, 9, 0)
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QMetaType$GenericLongFlags,QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
+#endif
 
         QTJAMBI_REPOSITORY_DECLARE_EMPTY_CLASS(QMetaObject$Connection)
 
@@ -253,6 +257,12 @@ namespace Java{
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(JarURLConnection,
                                          QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getJarEntry))
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(Channels,
+                                         QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(newInChannel))
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(ReadableByteChannel,
+                                         QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(read))
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(AutoCloseable,
+                                         QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(close))
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(ZipEntry,
                                          QTJAMBI_REPOSITORY_DECLARE_STRING_METHOD(getName)
@@ -260,8 +270,8 @@ namespace Java{
                                          QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(isDirectory))
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(InputStream,
-                                         QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(close)
                                          QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(read)
+                                         QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(read1)
                                          QTJAMBI_REPOSITORY_DECLARE_LONG_METHOD(skip))
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(MethodHandles$Lookup,)
@@ -354,7 +364,7 @@ namespace Java{
                      static inline void tryPrintStackTrace(JNIEnv* env, jthrowable object){
                           auto _this = __qt_get_this(env);
                           env->CallVoidMethod(object,_this.__printStackTrace);
-                      }
+                     }
         )
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(Arrays,
@@ -452,24 +462,21 @@ namespace Java{
         )
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(ResourceUtility,
-                                         QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(classPathDirs)
                                          QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(resolveUrlFromPath)
-                                         QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(resolveUrlToJarResource)
-                                         QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(pathToJarFiles)
-                                         QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(addSearchPath)
-                                         QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(initialize)
-                                         QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(clear)
-                                         QTJAMBI_REPOSITORY_DECLARE_STATIC_BOOLEAN_METHOD(isDirectory)
+                                         QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(resolveFileToJarResource)
+                                         QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(cleanupOnShutdown)
                                          )
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(ResourceUtility$JarResource,
                                          QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getJarEntry)
                                          QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getInputStream)
+                                         QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getChannel)
                                          QTJAMBI_REPOSITORY_DECLARE_LONG_METHOD(fileTime)
-                                         QTJAMBI_REPOSITORY_DECLARE_STRING_METHOD(getName)
-                                         QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(getOrReopen)
-                                         QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(put)
+                                         QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(ensureRef)
+                                         QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(_deref)
                                          QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(entryList)
+                                         QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(isDirectory)
+                                         QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(checkIsDirectory)
                                          )
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(LibraryUtility,
@@ -572,11 +579,16 @@ namespace Java{
                                          QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(comparator))
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QFlags,
-                                         QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(value)
-                                         QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(setValue))
+                                         QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(intValue)
+                                         QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(setIntValue))
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QLongFlags,
+                                         QTJAMBI_REPOSITORY_DECLARE_LONG_METHOD(longValue)
+                                         QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(setLongValue))
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QFlags$ConcreteWrapper,
-                      QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
+                                         QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QLongFlags$ConcreteWrapper,
+                                         QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QNoNativeResourcesException,
                       QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CONSTRUCTOR())
@@ -609,10 +621,6 @@ namespace Java{
         QTJAMBI_REPOSITORY_DECLARE_CLASS(SignalUtility$AbstractMultiSignal,
                       QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(initializeSignals)
                       QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(signal))
-
-        QTJAMBI_REPOSITORY_DECLARE_CLASS(QtArgument$Stream$Arg,
-                      QTJAMBI_REPOSITORY_DECLARE_CLASS_FIELD(type)
-                      QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(value))
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QtRejectedEntries,
                                          QTJAMBI_REPOSITORY_DECLARE_OBJECTARRAY_METHOD(value))
@@ -866,10 +874,18 @@ namespace Java{
 #endif //def Q_OS_ANDROID
 }
 
+enum class JniEnvironmentFlag{
+    Default = 0,
+    NoGetEnv = 0x001,
+    NoInitializeJavaThread = 0x010,
+    NoAttachCurrentThread = 0x100
+};
+typedef QFlags<JniEnvironmentFlag> JniEnvironmentFlags;
+
 struct DefaultJniEnvironment : JniEnvironment{
     DefaultJniEnvironment(int capacity = 0);
 };
 
-bool noExceptionForwarding();
+bool noExceptionForwarding(JNIEnv *env);
 
 #endif // JAVA_P_H

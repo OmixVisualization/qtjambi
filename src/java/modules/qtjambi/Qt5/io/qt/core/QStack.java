@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -35,10 +35,10 @@ import io.qt.*;
 
 /**
  * <p>Java wrapper for Qt class <a href="https://doc.qt.io/qt/qstack.html">QStack</a></p>
- * <p>QStack will no longer implement Deque interface if compiled with Java 21.
+ * <p>Due to changes in Java 21 QStack does no longer implement Deque interface.
  * Instead call {@link asDeque()} to get a Deque wrapper for the stack.</p>
  */
-public class QStack<T> extends QVector<T> implements Queue<T>, Deque<T>
+public class QStack<T> extends QVector<T> implements Queue<T>
 {
     /**
      * Creating a container with given element type and size.
@@ -119,7 +119,6 @@ public class QStack<T> extends QVector<T> implements Queue<T>, Deque<T>
     /**
      * @see Deque#addFirst(Object)
      */
-	@Override
     @QtUninvokable
 	public void addFirst(T e) {
 		push(e);
@@ -128,7 +127,6 @@ public class QStack<T> extends QVector<T> implements Queue<T>, Deque<T>
     /**
      * @see Deque#addLast(Object)
      */
-	@Override
     @QtUninvokable
 	public void addLast(T e) {
 		add(e);
@@ -137,7 +135,6 @@ public class QStack<T> extends QVector<T> implements Queue<T>, Deque<T>
     /**
      * @see Deque#offerFirst(Object)
      */
-	@Override
     @QtUninvokable
 	public boolean offerFirst(T e) {
 		push(e);
@@ -147,7 +144,6 @@ public class QStack<T> extends QVector<T> implements Queue<T>, Deque<T>
     /**
      * @see Deque#offerLast(Object)
      */
-	@Override
     @QtUninvokable
 	public boolean offerLast(T e) {
 		add(e);
@@ -157,7 +153,6 @@ public class QStack<T> extends QVector<T> implements Queue<T>, Deque<T>
     /**
      * @see Deque#pollFirst()
      */
-	@Override
     @QtUninvokable
 	public T pollFirst() {
 		if(size()==0)
@@ -168,7 +163,6 @@ public class QStack<T> extends QVector<T> implements Queue<T>, Deque<T>
     /**
      * @see Deque#pollLast()
      */
-	@Override
     @QtUninvokable
 	public T pollLast() {
 		if(size()==0)
@@ -180,7 +174,6 @@ public class QStack<T> extends QVector<T> implements Queue<T>, Deque<T>
     /**
      * @see Deque#getFirst()
      */
-	@Override
     @QtUninvokable
 	public T getFirst() {
 		if(size()==0)
@@ -191,7 +184,6 @@ public class QStack<T> extends QVector<T> implements Queue<T>, Deque<T>
     /**
      * @see Deque#getLast()
      */
-	@Override
     @QtUninvokable
 	public T getLast() {
 		if(size()==0)
@@ -238,7 +230,6 @@ public class QStack<T> extends QVector<T> implements Queue<T>, Deque<T>
     /**
      * @see Deque#removeFirstOccurrence(Object)
      */
-	@Override
     @QtUninvokable
 	public boolean removeFirstOccurrence(Object o) {
 		int idx = indexOf(o);
@@ -248,7 +239,6 @@ public class QStack<T> extends QVector<T> implements Queue<T>, Deque<T>
     /**
      * @see Deque#removeLastOccurrence(Object)
      */
-	@Override
     @QtUninvokable
 	public boolean removeLastOccurrence(Object o) {
 		int idx = lastIndexOf(o);
@@ -258,7 +248,6 @@ public class QStack<T> extends QVector<T> implements Queue<T>, Deque<T>
     /**
      * @see Deque#descendingIterator()
      */
-	@Override
     @QtUninvokable
 	public java.util.@NonNull Iterator<T> descendingIterator() {
 		return constEnd().toJavaDescendingIterator();
@@ -267,7 +256,6 @@ public class QStack<T> extends QVector<T> implements Queue<T>, Deque<T>
     /**
      * @see Deque#peekFirst()
      */
-	@Override
     @QtUninvokable
 	public T peekFirst() {
 		return first();
@@ -276,7 +264,6 @@ public class QStack<T> extends QVector<T> implements Queue<T>, Deque<T>
     /**
      * @see Deque#peekLast()
      */
-	@Override
     @QtUninvokable
 	public T peekLast() {
 		return last();
@@ -286,7 +273,6 @@ public class QStack<T> extends QVector<T> implements Queue<T>, Deque<T>
      * <p>See <code><a href="https://doc.qt.io/qt/qstack.html#push">QStack::<wbr>push(T)</a></code></p>
      * @see Deque#push(Object)
      */
-	@Override
     @QtUninvokable
 	public void push(T e) {
 		add(e);
@@ -296,7 +282,6 @@ public class QStack<T> extends QVector<T> implements Queue<T>, Deque<T>
      * <p>See <code><a href="https://doc.qt.io/qt/qstack.html#pop">QStack::<wbr>pop()</a></code></p>
      * @see Deque#pop()
      */
-	@Override
     @QtUninvokable
 	public T pop() {
 		return removeLast();
@@ -321,7 +306,7 @@ public class QStack<T> extends QVector<T> implements Queue<T>, Deque<T>
     public final @NonNull Deque<T> asDeque(){
     	return new StackDeque<>(this);
     }
-    
+	   
     /**
      * Returns a QStack containing given elements.
      *

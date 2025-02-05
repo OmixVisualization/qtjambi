@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -45,7 +45,6 @@ import io.qt.StrictNonNull;
 import io.qt.core.QByteArray;
 import io.qt.core.QMetaObject;
 import io.qt.core.QOperatingSystemVersion;
-import io.qt.internal.ClassAnalyzerUtility;
 
 /**
  * <p>Java wrapper for Qt class <a href="https://doc.qt.io/qt/qstandarditemeditorcreator.html">QStandardItemEditorCreator</a></p>
@@ -63,7 +62,7 @@ public class QStandardItemEditorCreator<T extends QWidget> implements QItemEdito
 	
     public QStandardItemEditorCreator(@StrictNonNull Factory<@Nullable T> constructor) {
         super();
-        SerializedLambda serializedLambda = ClassAnalyzerUtility.serializeLambdaExpression(Objects.requireNonNull(constructor, "Argument 'constructor': null not expected."));
+        SerializedLambda serializedLambda = QtJambi_LibraryUtilities.internal.serializeLambdaExpression(Objects.requireNonNull(constructor, "Argument 'constructor': null not expected."));
         QMetaObject metaObject = null;
         if(serializedLambda==null) {
             Class<?> implClass = null;

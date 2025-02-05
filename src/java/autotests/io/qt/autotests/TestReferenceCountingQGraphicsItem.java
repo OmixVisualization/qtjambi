@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -659,6 +659,7 @@ public class TestReferenceCountingQGraphicsItem extends ApplicationInitializer{
 	            QCoreApplication.processEvents();
 			}
 	        Assert.assertEquals(0, counter.get());
+	        o.isDisposed();
 	        o = null;
 		}
 		for (int i = 0; i < 50 && counter.get()==0; i++) {
@@ -796,6 +797,7 @@ public class TestReferenceCountingQGraphicsItem extends ApplicationInitializer{
 	            QCoreApplication.processEvents();
 			}
 	        Assert.assertEquals(0, counter.get());
+	        o.isDisposed();
 	        o = null;
 		}
 		for (int i = 0; i < 50 && counter.get()==0; i++) {
@@ -920,6 +922,7 @@ public class TestReferenceCountingQGraphicsItem extends ApplicationInitializer{
 	            QCoreApplication.processEvents();
 			}
 	        Assert.assertEquals(0, counter.get());
+	        o.isDisposed();
 	        o = null;
 		}
 		for (int i = 0; i < 50 && counter.get()==0; i++) {

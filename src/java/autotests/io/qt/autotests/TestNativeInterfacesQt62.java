@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -52,7 +52,7 @@ import io.qt.gui.nativeinterface.QXcbWindow;
 import io.qt.opengl.QOpenGLWindow;
 import io.qt.widgets.QApplication;
 
-public class TestNativeInterfacesQt6 extends ApplicationInitializer {
+public class TestNativeInterfacesQt62 extends ApplicationInitializer {
 	
 	@BeforeClass
 	public static void testInitialize() throws Exception {
@@ -127,6 +127,6 @@ public class TestNativeInterfacesQt6 extends ApplicationInitializer {
     }
 
     public static void main(String args[]) {
-        org.junit.runner.JUnitCore.main(TestNativeInterfacesQt6.class.getName());
+        org.junit.runner.JUnitCore.main(TestNativeInterfacesQt62.class.getName());
     }
 }

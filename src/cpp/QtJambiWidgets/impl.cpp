@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -69,11 +69,7 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/widgets,QStyle,
 }
 }
 
-extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets_QWidgetItem_hasWidgetItemV2)
-(JNIEnv *__jni_env,
- jobject,
- jobject wdg)
-{
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_widgets_QWidgetItem_hasWidgetItemV2(JNIEnv *__jni_env, jobject, jobject wdg){
     jboolean result = false;
     QTJAMBI_TRY{
         const QWidget *widget = qtjambi_cast<const QWidget*>(__jni_env, wdg);
@@ -89,11 +85,7 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_wid
 }
 
 // QInputDialog::open(QObject * receiver, const char * member)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets_QInputDialog_open)
-(JNIEnv *__jni_env,
- jobject _this,
- jobject obj, jobject metaMethod)
-{
+extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QInputDialog_open(JNIEnv *__jni_env, jobject _this, jobject obj, jobject metaMethod){
     QTJAMBI_TRY{
 #if QT_CONFIG(filedialog)
         QInputDialog *__qt_this = QtJambiAPI::convertJavaObjectToNative<QInputDialog>(__jni_env, _this);
@@ -122,11 +114,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
 
 
 // QFileDialog::open(QObject * receiver, const char * member)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets_QFileDialog_open)
-(JNIEnv *__jni_env,
- jobject _this,
- jobject obj, jobject metaMethod)
-{
+extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QFileDialog_open(JNIEnv *__jni_env, jobject _this, jobject obj, jobject metaMethod){
     QTJAMBI_TRY{
 #if QT_CONFIG(filedialog)
         QFileDialog *__qt_this = QtJambiAPI::convertJavaObjectToNative<QFileDialog>(__jni_env, _this);
@@ -154,11 +142,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
 }
 
 // QFontDialog::open(QObject * receiver, const char * member)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets_QFontDialog_open)
-(JNIEnv *__jni_env,
- jobject _this,
- jobject obj, jobject metaMethod)
-{
+extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QFontDialog_open(JNIEnv *__jni_env, jobject _this, jobject obj, jobject metaMethod){
     QTJAMBI_TRY{
 #if QT_CONFIG(fontdialog)
         QFontDialog *__qt_this = QtJambiAPI::convertJavaObjectToNative<QFontDialog>(__jni_env, _this);
@@ -187,11 +171,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
 
 
 // QColorDialog::open(QObject * receiver, const char * member)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets_QColorDialog_open)
-(JNIEnv *__jni_env,
- jobject _this,
- jobject obj, jobject metaMethod)
-{
+extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QColorDialog_open(JNIEnv *__jni_env, jobject _this, jobject obj, jobject metaMethod){
     QTJAMBI_TRY{
 #if QT_CONFIG(colordialog)
         QColorDialog *__qt_this = QtJambiAPI::convertJavaObjectToNative<QColorDialog>(__jni_env, _this);

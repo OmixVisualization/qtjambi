@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -29,22 +29,20 @@
 ****************************************************************************/
 package io.qt.autotests;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
 
 import io.qt.QNoNativeResourcesException;
-import io.qt.QtUtilities;
 import io.qt.autotests.generated.General;
+import io.qt.autotests.generated.SignalReceiver;
 import io.qt.autotests.generated.ThreadFactory;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QEvent;
 import io.qt.core.QEventLoop;
-import io.qt.core.QMetaObject;
 import io.qt.core.QObject;
 import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QThread;
@@ -63,248 +61,84 @@ public class TestQThreadAdoption extends ApplicationInitializer{
 		}catch(Throwable t) {}
     }
 	
-	private void initializeThread(QThread[] qthreads, Thread[] jthreads, int[] ownerships, AtomicInteger running, AtomicInteger gcQtThreadObjectsCounter, AtomicInteger gcJavaThreadObjectsCounter, boolean[] deletedQtThreadObjects, AtomicInteger deletedQtThreadObjectsCounter, int i, boolean isAdopted) {
+	private static class Stopper extends QObject{
+		public final Signal0 stop = new Signal0();
+	}
+	
+	private static void initializeThread(AtomicReference<QThread> qthreads, AtomicReference<Thread> jthreads, AtomicInteger ownership, AtomicInteger running, AtomicInteger gcQtThreadObjectsCounter, AtomicInteger gcJavaThreadObjectsCounter, SignalReceiver destroyedReceiver, SignalReceiver finished, boolean isAdopted) {
 		QThread currentQThread = QThread.currentThread();
 		Thread currentThread = Thread.currentThread();
-		qthreads[i] = currentQThread;
-		jthreads[i] = currentThread;
-		if(General.internalAccess.isJavaOwnership(qthreads[i]))
-			ownerships[i] = 1;
-		else if(General.internalAccess.isCppOwnership(qthreads[i]))
-			ownerships[i] = 2;
-		else if(General.internalAccess.isSplitOwnership(qthreads[i]))
-			ownerships[i] = 3;
-		if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows) || !isAdopted) {
-			QMetaObject.Connection[] connection = {null};
-			connection[0] = qthreads[i].destroyed.connect(()->{
-					deletedQtThreadObjects[i]=true; 
-					deletedQtThreadObjectsCounter.incrementAndGet();
-					QObject.disconnect(connection[0]);
-				}, Qt.ConnectionType.DirectConnection, singleShotConnection);
-		}else {
-			QtUtilities.getSignalOnDispose(qthreads[i]).connect(()->{
-					deletedQtThreadObjects[i]=true; 
-					deletedQtThreadObjectsCounter.incrementAndGet();
-				}, Qt.ConnectionType.DirectConnection, singleShotConnection);
-		}
+		qthreads.set(currentQThread);
+		jthreads.set(currentThread);
+		if(General.internalAccess.isJavaOwnership(currentQThread))
+			ownership.set(1);
+		else if(General.internalAccess.isCppOwnership(currentQThread))
+			ownership.set(2);
+		else if(General.internalAccess.isSplitOwnership(currentQThread))
+			ownership.set(3);
+		currentQThread.destroyed.connect(destroyedReceiver, "receiveSignal()", Qt.ConnectionType.DirectConnection, singleShotConnection);
+		currentQThread.finished.connect(finished, "receiveSignal()", Qt.ConnectionType.DirectConnection, singleShotConnection);
 		@SuppressWarnings("unused")
-		Object cleanable = General.internalAccess.registerCleaner(qthreads[i], gcQtThreadObjectsCounter::incrementAndGet);
-		cleanable = General.internalAccess.registerCleaner(jthreads[i], gcJavaThreadObjectsCounter::incrementAndGet);
+		Object cleanable = General.internalAccess.registerCleaner(currentQThread, gcQtThreadObjectsCounter::incrementAndGet);
+		cleanable = General.internalAccess.registerCleaner(currentThread, gcJavaThreadObjectsCounter::incrementAndGet);
 		cleanable = null;
-		String threadStrg = qthreads[0].toString();
-		QObject deleteOnFinish = new QObject();
-		{
-			QMetaObject.Connection[] connection = {null};
-			connection[0] = deleteOnFinish.destroyed.connect(()->{
-				QThread _currentThread = QThread.currentThread();
-				System.out.println("Object destroyed in thread " + _currentThread);
-				_currentThread = null;
-				QObject.disconnect(connection[0]);
-				}, Qt.ConnectionType.DirectConnection, singleShotConnection);
-		}
-		{
-			QMetaObject.Connection[] connection = {null};
-			connection[0] = qthreads[i].finished.connect(()->{
-				QThread _currentThread = QThread.currentThread();
-				System.out.println(threadStrg+" finished in thread " + _currentThread);
-				_currentThread = null;
-				deleteOnFinish.dispose();
-				QObject.disconnect(connection[0]);
-			}, Qt.ConnectionType.DirectConnection, singleShotConnection);
-		}
 		running.incrementAndGet();
 		currentQThread = null;
 		currentThread = null;
 	}
 	
 	@org.junit.Test
-	public void testAdoptedThreads() throws InterruptedException {
+	public void testNativeCreatedNativeStartedQLoopThread() throws InterruptedException {
 		AtomicInteger running = new AtomicInteger(0);
 		AtomicInteger gcQtThreadObjectsCounter = new AtomicInteger(0);
 		AtomicInteger gcJavaThreadObjectsCounter = new AtomicInteger(0);
-		AtomicInteger deletedQtThreadObjectsCounter = new AtomicInteger(0);
-		boolean[] deletedQtThreadObjects = new boolean[8];
-		class Stopper extends QObject{
-			public final Signal0 stop = new Signal0();
-		}
-		QThread[] qthreads = new QThread[8];
-		Thread[] jthreads = new Thread[8];
-		int[] ownerships = new int[8];
+		SignalReceiver finishedReceiver = new SignalReceiver();
+		SignalReceiver destroyedReceiver = new SignalReceiver();
+		AtomicReference<QThread> qthreads = new AtomicReference<>();
+		AtomicReference<Thread> jthreads = new AtomicReference<>();
+		AtomicInteger ownership = new AtomicInteger();
 		Stopper stopper = new Stopper();
-		int c = 0;
 		// QThread 0 is natively started looping Qt thread adopted by Java
-		QThread thread0;
+		QThread thread;
 		{
-			QThread thread = thread0 = ThreadFactory.startQLoopThread();
-			int i=c++;
-			Assert.assertTrue("QThread "+i+" has not split ownwership", General.internalAccess.isSplitOwnership(thread));
-			thread.setObjectName("thread"+i);
+			thread = ThreadFactory.startQLoopThread();
+			Assert.assertTrue("QThread NativeCreatedNativeStartedQLoopThread has not split ownership", General.internalAccess.isSplitOwnership(thread));
+			thread.setObjectName("thread-NativeCreatedNativeStartedQLoopThread");
 			QObject obj = new QObject();
-			obj.destroyed.connect(()->initializeThread(qthreads, jthreads, ownerships, running, gcQtThreadObjectsCounter, gcJavaThreadObjectsCounter, deletedQtThreadObjects, deletedQtThreadObjectsCounter, i, false), Qt.ConnectionType.DirectConnection, singleShotConnection);
+			obj.destroyed.connect(()->initializeThread(qthreads, jthreads, ownership, running, gcQtThreadObjectsCounter, gcJavaThreadObjectsCounter, destroyedReceiver, finishedReceiver, false), Qt.ConnectionType.DirectConnection, singleShotConnection);
 			obj.moveToThread(thread);
 			obj.disposeLater();
 			stopper.stop.connect(thread::quit);
-			thread = null;
-		}
-		// QThread 1 is natively started Qt thread adopted by Java
-		QThread thread1;
-		{
-			int i=c++;
-			QThread thread = thread1 = ThreadFactory.startQWorkerThread(()->{
-				initializeThread(qthreads, jthreads, ownerships, running, gcQtThreadObjectsCounter, gcJavaThreadObjectsCounter, deletedQtThreadObjects, deletedQtThreadObjectsCounter, i, false);
-				QEventLoop loop = new QEventLoop();
-				stopper.stop.connect(loop::quit);
-				loop.exec();
-				loop.dispose();
-			});
-			Assert.assertTrue("QThread "+i+" has not split ownwership", General.internalAccess.isSplitOwnership(thread));
-			thread.setObjectName("thread"+i);
-			thread = null;
-		}
-		// QThread 2 is natively started C++ thread adopted by Qt and by Java
-		{
-			int i=c++;
-			ThreadFactory.startNativeWorkerThread(()->{
-				initializeThread(qthreads, jthreads, ownerships, running, gcQtThreadObjectsCounter, gcJavaThreadObjectsCounter, deletedQtThreadObjects, deletedQtThreadObjectsCounter, i, true);
-				QEventLoop loop = new QEventLoop();
-				stopper.stop.connect(loop::quit);
-				loop.exec();
-				loop.dispose();
-			});
-		}
-		// QThread 3 is Java thread adopted by Qt
-		Thread thread3;
-		{
-			int i=c++;
-			Thread thread = thread3 = new Thread(()->{
-				initializeThread(qthreads, jthreads, ownerships, running, gcQtThreadObjectsCounter, gcJavaThreadObjectsCounter, deletedQtThreadObjects, deletedQtThreadObjectsCounter, i, false);
-				QEventLoop loop = new QEventLoop();
-				stopper.stop.connect(loop::quit);
-				loop.exec();
-				loop.dispose();
-			});
-			thread.setName("thread"+i);
-			thread.start();
-			thread = null;
-		}
-		// QThread 4 is Java-started Qt thread adopted by Java
-		QThread thread4;
-		{
-			int i=c++;
-			QThread thread = thread4 = QThread.create(()->{
-				initializeThread(qthreads, jthreads, ownerships, running, gcQtThreadObjectsCounter, gcJavaThreadObjectsCounter, deletedQtThreadObjects, deletedQtThreadObjectsCounter, i, false);
-				QEventLoop loop = new QEventLoop();
-				stopper.stop.connect(loop::quit);
-				loop.exec();
-				loop.dispose();
-			});
-			Assert.assertTrue("QThread "+i+" has not java ownwership", General.internalAccess.isJavaOwnership(thread));
-			thread.setName("thread"+i);
-			thread.start();
-			Assert.assertTrue("QThread "+i+" has not java ownwership", General.internalAccess.isJavaOwnership(thread));
-			thread = null;
-		}
-		// QThread 5 is Java-started looping Qt thread adopted by Java
-		QThread thread5;
-		{
-			int i=c++;
-			QThread thread = thread5 = new QThread();
-			thread.setObjectName("thread"+i);
-			{
-				QObject obj = new QObject();
-				obj.destroyed.connect(()->initializeThread(qthreads, jthreads, ownerships, running, gcQtThreadObjectsCounter, gcJavaThreadObjectsCounter, deletedQtThreadObjects, deletedQtThreadObjectsCounter, i, false));
-				obj.moveToThread(thread);
-				obj.disposeLater();
-			}
-			Assert.assertTrue("QThread "+i+" has not java ownwership", General.internalAccess.isJavaOwnership(thread));
-			thread.start();
-			stopper.stop.connect(thread::quit);
-			Assert.assertTrue("QThread "+i+" has not java ownwership", General.internalAccess.isJavaOwnership(thread));
-			thread = null;
-		}
-		// QThread 6 is natively created looping Qt thread adopted by Java
-		QThread thread6;
-		{
-			int i=c++;
-			QThread thread = thread6 = ThreadFactory.createQLoopThread();
-			thread.setObjectName("thread"+i);
-			{
-				QObject obj = new QObject();
-				obj.destroyed.connect(()->initializeThread(qthreads, jthreads, ownerships, running, gcQtThreadObjectsCounter, gcJavaThreadObjectsCounter, deletedQtThreadObjects, deletedQtThreadObjectsCounter, i, false));
-				obj.moveToThread(thread);
-				obj.disposeLater();
-			}
-			Assert.assertTrue("QThread "+i+" has not java ownwership", General.internalAccess.isJavaOwnership(thread));
-			thread.start();
-			stopper.stop.connect(thread::quit);
-			Assert.assertTrue("QThread "+i+" has not java ownwership", General.internalAccess.isJavaOwnership(thread));
-			thread = null;
-		}
-		// QThread 7 is natively created Qt thread adopted by Java
-		QThread thread7;
-		{
-			int i=c++;
-			QThread thread = thread7 = ThreadFactory.createQWorkerThread(()->{
-				initializeThread(qthreads, jthreads, ownerships, running, gcQtThreadObjectsCounter, gcJavaThreadObjectsCounter, deletedQtThreadObjects, deletedQtThreadObjectsCounter, i, false);
-				QEventLoop loop = new QEventLoop();
-				stopper.stop.connect(loop::quit);
-				loop.exec();
-				loop.dispose();
-			});
-			Assert.assertTrue("QThread "+i+" has not java ownwership", General.internalAccess.isJavaOwnership(thread));
-			thread.setObjectName("thread"+i);
-			thread.start();
-			Assert.assertTrue("QThread "+i+" has not java ownwership", General.internalAccess.isJavaOwnership(thread));
-			thread = null;
 		}
 		
 		int i=0;
-		while(running.get()<qthreads.length && i<100) {
+		while(running.get()<1 && i<100) {
 			Thread.yield();
 			Thread.sleep(150);
 			runGC();
 			++i;
 		}
-		Assert.assertEquals(qthreads.length, running.get());
+		Assert.assertEquals(1, running.get());
 		Set<Thread> runningThreads = Thread.getAllStackTraces().keySet();
-		for (int j = 0; j < jthreads.length; j++) {
-			Assert.assertTrue(jthreads[j]!=null);
-			Assert.assertTrue(runningThreads.contains(jthreads[j]));
-			Assert.assertEquals(Thread.State.RUNNABLE, jthreads[j].getState());
-			Assert.assertEquals("Java thread "+j+" is not associated to Qt thread "+j, qthreads[j], QThread.thread(jthreads[j]));
-			Assert.assertEquals("Qt thread "+j+" is not associated to Java thread "+j, jthreads[j], qthreads[j].javaThread());
+		{
+			Assert.assertTrue(jthreads.get()!=null);
+			Assert.assertTrue(runningThreads.contains(jthreads.get()));
+			Assert.assertEquals(Thread.State.RUNNABLE, jthreads.get().getState());
+			Assert.assertEquals("Java thread NativeCreatedNativeStartedQLoopThread is not associated to Qt thread", qthreads.get(), QThread.thread(jthreads.get()));
+			Assert.assertEquals("Qt thread NativeCreatedNativeStartedQLoopThread is not associated to Java thread", jthreads.get(), qthreads.get().javaThread());
 		}
-		Assert.assertEquals(thread0, qthreads[0]);
-		Assert.assertEquals(thread1, qthreads[1]);
-		Assert.assertEquals(thread3, jthreads[3]);
-		Assert.assertEquals(thread4, qthreads[4]);
-		Assert.assertEquals(thread5, qthreads[5]);
-		Assert.assertEquals(thread6, qthreads[6]);
-		Assert.assertEquals(thread7, qthreads[7]);
-		thread0 = null;
-		thread1 = null;
-		thread3 = null;
-		thread4 = null;
-		thread5 = null;
-		thread6 = null;
-		thread7 = null;
-		for (int j = 0; j < qthreads.length; j++) {
-			Assert.assertTrue("QThread "+j+" is null", qthreads[j]!=null);
-			if(j==2 || j==3)
-				Assert.assertEquals("QThread "+j+" has wrong thread-affinity", qthreads[j], qthreads[j].thread());
-			else
-				Assert.assertEquals("QThread "+j+" has wrong thread-affinity", QThread.currentThread(), qthreads[j].thread());
-			Assert.assertFalse("QThread "+j+" is disposed", qthreads[j].isDisposed());
-			Assert.assertTrue("QThread "+j+" not alive", qthreads[j].isAlive());
-			Assert.assertTrue("QThread "+j+" not running", qthreads[j].isRunning());
-			Assert.assertFalse("QThread "+j+" is finished", qthreads[j].isFinished());
-			Assert.assertEquals(jthreads[j], qthreads[j].javaThread());
-			Assert.assertFalse("QThread "+j+" has Cpp ownwership", General.internalAccess.isCppOwnership(qthreads[j]));
-			if(j<4) {
-				Assert.assertTrue("running QThread "+j+" has not split ownwership", ownerships[j]==3);
-			}else {
-				Assert.assertTrue("running QThread "+j+" has not Java ownwership", ownerships[j]==1);
-			}
+		Assert.assertEquals(thread, qthreads.get());
+		thread = null;
+		{
+			Assert.assertTrue("QThread NativeCreatedNativeStartedQLoopThread is null", qthreads.get()!=null);
+			Assert.assertEquals("QThread NativeCreatedNativeStartedQLoopThread has wrong thread-affinity", QThread.currentThread(), qthreads.get().thread());
+			Assert.assertFalse("QThread NativeCreatedNativeStartedQLoopThread is disposed", qthreads.get().isDisposed());
+			Assert.assertTrue("QThread NativeCreatedNativeStartedQLoopThread not alive", qthreads.get().isAlive());
+			Assert.assertTrue("QThread NativeCreatedNativeStartedQLoopThread not running", qthreads.get().isRunning());
+			Assert.assertFalse("QThread NativeCreatedNativeStartedQLoopThread is finished", qthreads.get().isFinished());
+			Assert.assertEquals(jthreads.get(), qthreads.get().javaThread());
+			Assert.assertFalse("QThread NativeCreatedNativeStartedQLoopThread has Cpp ownership", General.internalAccess.isCppOwnership(qthreads.get()));
+			Assert.assertTrue("running QThread NativeCreatedNativeStartedQLoopThread has not split ownership", ownership.get()==3);
 		}
 		stopper.stop.emit();
 		stopper.stop.disconnect();
@@ -316,11 +150,11 @@ public class TestQThreadAdoption extends ApplicationInitializer{
 			runGC();
 			++i;
 		}
-		for (int j = 0; j < qthreads.length; j++) {
+		{
 			try {
-				if(qthreads[j].isRunning()) {
+				if(qthreads.get().isRunning()) {
 					i = 0;
-					while(i<20 && qthreads[j].isRunning()) {
+					while(i<20 && qthreads.get().isRunning()) {
 						Thread.yield();
 						Thread.sleep(150);
 						runGC();
@@ -330,46 +164,38 @@ public class TestQThreadAdoption extends ApplicationInitializer{
 			}catch(Throwable t){}
 		}
 		runningThreads = Thread.getAllStackTraces().keySet();
-		for (int j = 0; j < jthreads.length; j++) {
+		{
 			if(!QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android))
-				Assert.assertEquals("post-mortem Java thread "+j+" state", Thread.State.TERMINATED, jthreads[j].getState());
+				Assert.assertEquals("post-mortem Java thread NativeCreatedNativeStartedQLoopThread state", Thread.State.TERMINATED, jthreads.get().getState());
 			else
-				Assert.assertTrue("post-mortem Java thread "+j+" state==RUNNABLE", Thread.State.RUNNABLE!=jthreads[j].getState());
-			Assert.assertFalse("post-mortem Java thread "+j+" is still running", runningThreads.contains(jthreads[j]));
-			if(!qthreads[j].isDisposed()) {
-				Assert.assertEquals("post-mortem Java thread "+j+" is not associated to Qt thread "+j, qthreads[j], QThread.thread(jthreads[j]));
-				Assert.assertEquals("post-mortem Qt thread "+j+" is not associated to Java thread "+j, jthreads[j], qthreads[j].javaThread());
+				Assert.assertTrue("post-mortem Java thread NativeCreatedNativeStartedQLoopThread state==RUNNABLE", Thread.State.RUNNABLE!=jthreads.get().getState());
+			Assert.assertFalse("post-mortem Java thread NativeCreatedNativeStartedQLoopThread is still running", runningThreads.contains(jthreads.get()));
+			if(!qthreads.get().isDisposed()) {
+				Assert.assertEquals("post-mortem Java thread NativeCreatedNativeStartedQLoopThread is not associated to Qt thread", qthreads.get(), QThread.thread(jthreads.get()));
+				Assert.assertEquals("post-mortem Qt thread NativeCreatedNativeStartedQLoopThread is not associated to Java thread", jthreads.get(), qthreads.get().javaThread());
 			}else {
-				Assert.assertEquals("post-mortem Java thread "+j+" is still associated to Qt thread", null, QThread.thread(jthreads[j]));
+				Assert.assertEquals("post-mortem Java thread NativeCreatedNativeStartedQLoopThread is still associated to Qt thread", null, QThread.thread(jthreads.get()));
 			}
-			jthreads[j] = null;
+			jthreads.set(null);
 		}
 		runningThreads = null;
-		for (int j = 0; j < qthreads.length; j++) {
-			Assert.assertTrue("QThread "+j+" is null", qthreads[j]!=null);
-			try {
-				// threads2 and thread3 might already be deleted or
-				// are deleted in parallel to this test
-				Assert.assertFalse("post-mortem QThread "+j+" still alive", qthreads[j].isAlive());
-				Assert.assertFalse("post-mortem QThread "+j+" still running", qthreads[j].isRunning());
-				Assert.assertTrue("post-mortem QThread "+j+" not finished", qthreads[j].isFinished());
-				switch(ownerships[j]) {
-				case 1:
-					Assert.assertTrue("post-mortem QThread "+j+" not Java ownership", General.internalAccess.isJavaOwnership(qthreads[j]));
-					break;
-				case 2:
-					Assert.assertTrue("post-mortem QThread "+j+" not Cpp ownership", General.internalAccess.isCppOwnership(qthreads[j]));
-					break;
-				case 3:
-					Assert.assertTrue("post-mortem QThread "+j+" not split ownership", General.internalAccess.isSplitOwnership(qthreads[j]));
-					break;
-				}
-			}catch(QNoNativeResourcesException e){
-				if(j!=2 && j!=3) {
-					throw e;
-				}
+		{
+			Assert.assertTrue("QThread NativeCreatedNativeStartedQLoopThread is null", qthreads.get()!=null);
+			Assert.assertFalse("post-mortem QThread NativeCreatedNativeStartedQLoopThread still alive", qthreads.get().isAlive());
+			Assert.assertFalse("post-mortem QThread NativeCreatedNativeStartedQLoopThread still running", qthreads.get().isRunning());
+			Assert.assertTrue("post-mortem QThread NativeCreatedNativeStartedQLoopThread not finished", qthreads.get().isFinished());
+			switch(ownership.get()) {
+			case 1:
+				Assert.assertTrue("post-mortem QThread NativeCreatedNativeStartedQLoopThread not Java ownership", General.internalAccess.isJavaOwnership(qthreads.get()));
+				break;
+			case 2:
+				Assert.assertTrue("post-mortem QThread NativeCreatedNativeStartedQLoopThread not Cpp ownership", General.internalAccess.isCppOwnership(qthreads.get()));
+				break;
+			case 3:
+				Assert.assertTrue("post-mortem QThread NativeCreatedNativeStartedQLoopThread not split ownership", General.internalAccess.isSplitOwnership(qthreads.get()));
+				break;
 			}
-			qthreads[j] = null;
+			qthreads.set(null);
 		}
 		QEventLoop loop = new QEventLoop();
 		{
@@ -381,7 +207,7 @@ public class TestQThreadAdoption extends ApplicationInitializer{
 				runGC();
 				QCoreApplication.processEvents();
 				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
-				if(deletedQtThreadObjectsCounter.get()==qthreads.length || System.currentTimeMillis()-t1>15000) {
+				if(finishedReceiver.received() || System.currentTimeMillis()-t1>15000) {
 					loop.quit();
 				}
 			});
@@ -399,7 +225,7 @@ public class TestQThreadAdoption extends ApplicationInitializer{
 				runGC();
 				QCoreApplication.processEvents();
 				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
-				if(gcQtThreadObjectsCounter.get()==qthreads.length || System.currentTimeMillis()-t1>15000) {
+				if(gcQtThreadObjectsCounter.get()==1 || System.currentTimeMillis()-t1>15000) {
 					loop.quit();
 				}
 			});
@@ -417,7 +243,7 @@ public class TestQThreadAdoption extends ApplicationInitializer{
 				runGC();
 				QCoreApplication.processEvents();
 				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
-				if(gcJavaThreadObjectsCounter.get()==jthreads.length || System.currentTimeMillis()-t1>15000) {
+				if(gcJavaThreadObjectsCounter.get()==1 || System.currentTimeMillis()-t1>15000) {
 					loop.quit();
 				}
 			});
@@ -426,13 +252,1416 @@ public class TestQThreadAdoption extends ApplicationInitializer{
 			loop.exec();
 			timer.dispose();
 		}
-		List<String> threadNames = new ArrayList<>();
-		for (int j = 0; j < deletedQtThreadObjects.length; j++) {
-			if(!deletedQtThreadObjects[j])
-				threadNames.add(""+j);
+		Assert.assertEquals("Java thread object NativeCreatedNativeStartedQLoopThread not GC-removed", 1, gcJavaThreadObjectsCounter.get());
+		Assert.assertTrue("QWorkerThread has not been deleted", destroyedReceiver.received());
+		Assert.assertEquals("QThread object NativeCreatedNativeStartedQLoopThread  not GC-removed", 1, gcQtThreadObjectsCounter.get());
+	}
+	
+	@org.junit.Test
+	public void testNativeCreatedNativeStartedQWorkerThread() throws InterruptedException {
+		AtomicInteger running = new AtomicInteger(0);
+		AtomicInteger gcQtThreadObjectsCounter = new AtomicInteger(0);
+		AtomicInteger gcJavaThreadObjectsCounter = new AtomicInteger(0);
+		SignalReceiver finishedReceiver = new SignalReceiver();
+		SignalReceiver destroyedReceiver = new SignalReceiver();
+		AtomicReference<QThread> qthreads = new AtomicReference<>();
+		AtomicReference<Thread> jthreads = new AtomicReference<>();
+		AtomicReference<Throwable> throwable = new AtomicReference<>();
+		AtomicInteger ownership = new AtomicInteger();
+		Stopper stopper = new Stopper();
+		// QThread 1 is natively started Qt thread adopted by Java
+		QThread thread;
+		{
+			thread = ThreadFactory.startQWorkerThread(()->{
+				try {
+					initializeThread(qthreads, jthreads, ownership, running, gcQtThreadObjectsCounter, gcJavaThreadObjectsCounter, destroyedReceiver, finishedReceiver, false);
+					QEventLoop loop = new QEventLoop();
+					stopper.stop.connect(loop::quit);
+					loop.exec();
+					loop.dispose();
+				}catch(Throwable t) {
+					throwable.set(t);
+				}					
+			});
+			Assert.assertTrue("QThread NativeCreatedNativeStartedQWorkerThread has not split ownership", General.internalAccess.isSplitOwnership(thread));
+			thread.setObjectName("thread-NativeCreatedNativeStartedQWorkerThread");
 		}
-		Assert.assertEquals("Number of GC-removed Java thread objects", jthreads.length, gcJavaThreadObjectsCounter.get());
-		Assert.assertTrue("QThreads have not been deleted: "+String.join(", ", threadNames), threadNames.isEmpty());
-		Assert.assertEquals("Number of GC-removed QThread objects", qthreads.length, gcQtThreadObjectsCounter.get());
+		
+		int i=0;
+		while(running.get()<1 && i<100) {
+			Thread.yield();
+			Thread.sleep(150);
+			runGC();
+			++i;
+		}
+		Assert.assertEquals(1, running.get());
+		Set<Thread> runningThreads = Thread.getAllStackTraces().keySet();
+		{
+			Assert.assertTrue(jthreads.get()!=null);
+			Assert.assertTrue(runningThreads.contains(jthreads.get()));
+			Assert.assertEquals(null, throwable.get());
+			Assert.assertEquals(Thread.State.RUNNABLE, jthreads.get().getState());
+			Assert.assertEquals("Java thread NativeCreatedNativeStartedQWorkerThread is not associated to Qt thread", qthreads.get(), QThread.thread(jthreads.get()));
+			Assert.assertEquals("Qt thread NativeCreatedNativeStartedQWorkerThread is not associated to Java thread", jthreads.get(), qthreads.get().javaThread());
+		}
+		Assert.assertEquals(thread, qthreads.get());
+		thread = null;
+		{
+			Assert.assertTrue("QThread NativeCreatedNativeStartedQWorkerThread is null", qthreads.get()!=null);
+			Assert.assertEquals("QThread NativeCreatedNativeStartedQWorkerThread has wrong thread-affinity", QThread.currentThread(), qthreads.get().thread());
+			Assert.assertFalse("QThread NativeCreatedNativeStartedQWorkerThread is disposed", qthreads.get().isDisposed());
+			Assert.assertTrue("QThread NativeCreatedNativeStartedQWorkerThread not alive", qthreads.get().isAlive());
+			Assert.assertTrue("QThread NativeCreatedNativeStartedQWorkerThread not running", qthreads.get().isRunning());
+			Assert.assertFalse("QThread NativeCreatedNativeStartedQWorkerThread is finished", qthreads.get().isFinished());
+			Assert.assertEquals(jthreads.get(), qthreads.get().javaThread());
+			Assert.assertFalse("QThread NativeCreatedNativeStartedQWorkerThread has Cpp ownership", General.internalAccess.isCppOwnership(qthreads.get()));
+			Assert.assertTrue("running QThread NativeCreatedNativeStartedQWorkerThread has not split ownership", ownership.get()==3);
+		}
+		stopper.stop.emit();
+		stopper.stop.disconnect();
+		
+		i = 0;
+		while(i<20) {
+			Thread.yield();
+			Thread.sleep(150);
+			runGC();
+			++i;
+		}
+		{
+			try {
+				if(qthreads.get().isRunning()) {
+					i = 0;
+					while(i<20 && qthreads.get().isRunning()) {
+						Thread.yield();
+						Thread.sleep(150);
+						runGC();
+						++i;
+					}
+				}
+			}catch(Throwable t){}
+		}
+		runningThreads = Thread.getAllStackTraces().keySet();
+		{
+			if(!QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android))
+				Assert.assertEquals("post-mortem Java thread NativeCreatedNativeStartedQWorkerThread state", Thread.State.TERMINATED, jthreads.get().getState());
+			else
+				Assert.assertTrue("post-mortem Java thread NativeCreatedNativeStartedQWorkerThread state==RUNNABLE", Thread.State.RUNNABLE!=jthreads.get().getState());
+			Assert.assertFalse("post-mortem Java thread NativeCreatedNativeStartedQWorkerThread is still running", runningThreads.contains(jthreads.get()));
+			if(!qthreads.get().isDisposed()) {
+				Assert.assertEquals("post-mortem Java thread NativeCreatedNativeStartedQWorkerThread is not associated to Qt thread", qthreads.get(), QThread.thread(jthreads.get()));
+				Assert.assertEquals("post-mortem Qt thread NativeCreatedNativeStartedQWorkerThread is not associated to Java thread", jthreads.get(), qthreads.get().javaThread());
+			}else {
+				Assert.assertEquals("post-mortem Java thread NativeCreatedNativeStartedQWorkerThread is still associated to Qt thread", null, QThread.thread(jthreads.get()));
+			}
+			jthreads.set(null);
+		}
+		runningThreads = null;
+		{
+			Assert.assertTrue("QThread NativeCreatedNativeStartedQWorkerThread is null", qthreads.get()!=null);
+			Assert.assertFalse("post-mortem QThread NativeCreatedNativeStartedQWorkerThread still alive", qthreads.get().isAlive());
+			Assert.assertFalse("post-mortem QThread NativeCreatedNativeStartedQWorkerThread still running", qthreads.get().isRunning());
+			Assert.assertTrue("post-mortem QThread NativeCreatedNativeStartedQWorkerThread not finished", qthreads.get().isFinished());
+			switch(ownership.get()) {
+			case 1:
+				Assert.assertTrue("post-mortem QThread NativeCreatedNativeStartedQWorkerThread not Java ownership", General.internalAccess.isJavaOwnership(qthreads.get()));
+				break;
+			case 2:
+				Assert.assertTrue("post-mortem QThread NativeCreatedNativeStartedQWorkerThread not Cpp ownership", General.internalAccess.isCppOwnership(qthreads.get()));
+				break;
+			case 3:
+				Assert.assertTrue("post-mortem QThread NativeCreatedNativeStartedQWorkerThread not split ownership", General.internalAccess.isSplitOwnership(qthreads.get()));
+				break;
+			}
+			qthreads.set(null);
+		}
+		QEventLoop loop = new QEventLoop();
+		{
+			QTimer timer = new QTimer();
+			long t1 = System.currentTimeMillis();
+			timer.timeout.connect(()->{
+				Thread.yield();
+				Thread.sleep(250);
+				runGC();
+				QCoreApplication.processEvents();
+				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+				if(finishedReceiver.received() || System.currentTimeMillis()-t1>15000) {
+					loop.quit();
+				}
+			});
+			timer.setInterval(300);
+			timer.start();
+			loop.exec();
+			timer.dispose();
+		}
+		{
+			QTimer timer = new QTimer();
+			long t1 = System.currentTimeMillis();
+			timer.timeout.connect(()->{
+				Thread.yield();
+				Thread.sleep(250);
+				runGC();
+				QCoreApplication.processEvents();
+				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+				if(gcQtThreadObjectsCounter.get()==1 || System.currentTimeMillis()-t1>15000) {
+					loop.quit();
+				}
+			});
+			timer.setInterval(300);
+			timer.start();
+			loop.exec();
+			timer.dispose();
+		}
+		{
+			QTimer timer = new QTimer();
+			long t1 = System.currentTimeMillis();
+			timer.timeout.connect(()->{
+				Thread.yield();
+				Thread.sleep(250);
+				runGC();
+				QCoreApplication.processEvents();
+				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+				if(gcJavaThreadObjectsCounter.get()==1 || System.currentTimeMillis()-t1>15000) {
+					loop.quit();
+				}
+			});
+			timer.setInterval(300);
+			timer.start();
+			loop.exec();
+			timer.dispose();
+		}
+		Assert.assertEquals("Java thread object NativeCreatedNativeStartedQWorkerThread not GC-removed", 1, gcJavaThreadObjectsCounter.get());
+		Assert.assertTrue("NativeCreatedNativeStartedQWorkerThread has not been deleted", destroyedReceiver.received());
+		Assert.assertEquals("QThread object NativeCreatedNativeStartedQWorkerThread  not GC-removed", 1, gcQtThreadObjectsCounter.get());
+	}
+	
+	@org.junit.Test
+	public void testStdWorkerThread() throws InterruptedException {
+		AtomicInteger running = new AtomicInteger(0);
+		AtomicInteger gcQtThreadObjectsCounter = new AtomicInteger(0);
+		AtomicInteger gcJavaThreadObjectsCounter = new AtomicInteger(0);
+		SignalReceiver finishedReceiver = new SignalReceiver();
+		SignalReceiver destroyedReceiver = new SignalReceiver();
+		AtomicReference<QThread> qthreads = new AtomicReference<>();
+		AtomicReference<Thread> jthreads = new AtomicReference<>();
+		AtomicReference<Throwable> throwable = new AtomicReference<>();
+		AtomicInteger ownership = new AtomicInteger();
+		Stopper stopper = new Stopper();
+		// QThread 2 is natively started C++ thread adopted by Qt and by Java
+		QThread thread;
+		{
+			thread = ThreadFactory.startNativeWorkerThread(()->{
+				try {
+					initializeThread(qthreads, jthreads, ownership, running, gcQtThreadObjectsCounter, gcJavaThreadObjectsCounter, destroyedReceiver, finishedReceiver, true);
+					QEventLoop loop = new QEventLoop();
+					stopper.stop.connect(loop::quit);
+					loop.exec();
+					loop.dispose();
+				}catch(Throwable t) {
+					throwable.set(t);
+				}
+			});
+			Assert.assertTrue("QThread StdWorkerThread has not split ownership", General.internalAccess.isSplitOwnership(thread));
+			thread.setObjectName("thread-StdWorkerThread");
+		}
+		
+		int i=0;
+		while(running.get()<1 && i<100) {
+			Thread.yield();
+			Thread.sleep(150);
+			runGC();
+			++i;
+		}
+		Assert.assertEquals(1, running.get());
+		Set<Thread> runningThreads = Thread.getAllStackTraces().keySet();
+		Assert.assertEquals(thread, qthreads.get());
+		{
+			Assert.assertTrue(jthreads.get()!=null);
+			Assert.assertTrue(runningThreads.contains(jthreads.get()));
+			Assert.assertEquals(null, throwable.get());
+			Assert.assertEquals(Thread.State.RUNNABLE, jthreads.get().getState());
+			Assert.assertEquals("Java thread StdWorkerThread is not associated to Qt thread", qthreads.get(), QThread.thread(jthreads.get()));
+			Assert.assertEquals("Qt thread StdWorkerThread is not associated to Java thread", jthreads.get(), qthreads.get().javaThread());
+		}
+		thread = null;
+		{
+			Assert.assertTrue("QThread StdWorkerThread is null", qthreads.get()!=null);
+			Assert.assertEquals("QThread StdWorkerThread has wrong thread-affinity", qthreads.get(), qthreads.get().thread());
+			Assert.assertFalse("QThread StdWorkerThread is disposed", qthreads.get().isDisposed());
+			Assert.assertTrue("QThread StdWorkerThread not alive", qthreads.get().isAlive());
+			Assert.assertTrue("QThread StdWorkerThread not running", qthreads.get().isRunning());
+			Assert.assertFalse("QThread StdWorkerThread is finished", qthreads.get().isFinished());
+			Assert.assertEquals(jthreads.get(), qthreads.get().javaThread());
+			Assert.assertFalse("QThread StdWorkerThread has Cpp ownership", General.internalAccess.isCppOwnership(qthreads.get()));
+			Assert.assertTrue("running QThread StdWorkerThread has not split ownership", ownership.get()==3);
+		}
+		stopper.stop.emit();
+		stopper.stop.disconnect();
+		
+		i = 0;
+		while(i<20) {
+			Thread.yield();
+			Thread.sleep(150);
+			runGC();
+			++i;
+		}
+		{
+			try {
+				if(qthreads.get().isRunning()) {
+					i = 0;
+					while(i<20 && qthreads.get().isRunning()) {
+						Thread.yield();
+						Thread.sleep(150);
+						runGC();
+						++i;
+					}
+				}
+			}catch(Throwable t){}
+		}
+		runningThreads = Thread.getAllStackTraces().keySet();
+		i = 0;
+		while(i<20) {
+			Thread.yield();
+			Thread.sleep(150);
+			runGC();
+			++i;
+		}
+		{
+			if(!QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android))
+				Assert.assertEquals("post-mortem Java thread StdWorkerThread state", Thread.State.TERMINATED, jthreads.get().getState());
+			else
+				Assert.assertTrue("post-mortem Java thread StdWorkerThread state==RUNNABLE", Thread.State.RUNNABLE!=jthreads.get().getState());
+			Assert.assertFalse("post-mortem Java thread StdWorkerThread is still running", runningThreads.contains(jthreads.get()));
+			if(!qthreads.get().isDisposed()) {
+				Assert.assertEquals("post-mortem Java thread StdWorkerThread is not associated to Qt thread", qthreads.get(), QThread.thread(jthreads.get()));
+				Assert.assertEquals("post-mortem Qt thread StdWorkerThread is not associated to Java thread", jthreads.get(), qthreads.get().javaThread());
+			}else {
+				Assert.assertEquals("post-mortem Java thread StdWorkerThread is still associated to Qt thread", null, QThread.thread(jthreads.get()));
+			}
+			jthreads.set(null);
+		}
+		runningThreads = null;
+		{
+			Assert.assertTrue("QThread StdWorkerThread is null", qthreads.get()!=null);
+			try {
+				// threads2 and thread3 might already be deleted or
+				// are deleted in parallel to this test
+				Assert.assertFalse("post-mortem QThread StdWorkerThread still alive", qthreads.get().isAlive());
+				Assert.assertFalse("post-mortem QThread StdWorkerThread still running", qthreads.get().isRunning());
+				Assert.assertTrue("post-mortem QThread StdWorkerThread not finished", qthreads.get().isFinished());
+				switch(ownership.get()) {
+				case 1:
+					Assert.assertTrue("post-mortem QThread StdWorkerThread not Java ownership", General.internalAccess.isJavaOwnership(qthreads.get()));
+					break;
+				case 2:
+					Assert.assertTrue("post-mortem QThread StdWorkerThread not Cpp ownership", General.internalAccess.isCppOwnership(qthreads.get()));
+					break;
+				case 3:
+					Assert.assertTrue("post-mortem QThread StdWorkerThread not split ownership", General.internalAccess.isSplitOwnership(qthreads.get()));
+					break;
+				}
+			}catch(QNoNativeResourcesException e){
+			}
+			qthreads.set(null);
+		}
+		QEventLoop loop = new QEventLoop();
+		{
+			QTimer timer = new QTimer();
+			long t1 = System.currentTimeMillis();
+			timer.timeout.connect(()->{
+				Thread.yield();
+				Thread.sleep(250);
+				runGC();
+				QCoreApplication.processEvents();
+				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+				if(finishedReceiver.received() || System.currentTimeMillis()-t1>15000) {
+					loop.quit();
+				}
+			});
+			timer.setInterval(300);
+			timer.start();
+			loop.exec();
+			timer.dispose();
+		}
+		{
+			QTimer timer = new QTimer();
+			long t1 = System.currentTimeMillis();
+			timer.timeout.connect(()->{
+				Thread.yield();
+				Thread.sleep(250);
+				runGC();
+				QCoreApplication.processEvents();
+				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+				if(gcQtThreadObjectsCounter.get()==1 || System.currentTimeMillis()-t1>15000) {
+					loop.quit();
+				}
+			});
+			timer.setInterval(300);
+			timer.start();
+			loop.exec();
+			timer.dispose();
+		}
+		{
+			QTimer timer = new QTimer();
+			long t1 = System.currentTimeMillis();
+			timer.timeout.connect(()->{
+				Thread.yield();
+				Thread.sleep(250);
+				runGC();
+				QCoreApplication.processEvents();
+				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+				if(gcJavaThreadObjectsCounter.get()==1 || System.currentTimeMillis()-t1>15000) {
+					loop.quit();
+				}
+			});
+			timer.setInterval(300);
+			timer.start();
+			loop.exec();
+			timer.dispose();
+		}
+		Assert.assertEquals("Java thread object StdWorkerThread not GC-removed", 1, gcJavaThreadObjectsCounter.get());
+		Assert.assertTrue("StdWorkerThread has not been deleted natively", destroyedReceiver.received());
+		Assert.assertEquals("QThread object StdWorkerThread  not GC-removed", 1, gcQtThreadObjectsCounter.get());
+	}
+	
+	@org.junit.Test
+	public void testStdLoopThread() throws InterruptedException {
+		AtomicInteger running = new AtomicInteger(0);
+		AtomicInteger gcQtThreadObjectsCounter = new AtomicInteger(0);
+		AtomicInteger gcJavaThreadObjectsCounter = new AtomicInteger(0);
+		SignalReceiver finishedReceiver = new SignalReceiver();
+		SignalReceiver destroyedReceiver = new SignalReceiver();
+		AtomicReference<QThread> qthreads = new AtomicReference<>();
+		AtomicReference<Thread> jthreads = new AtomicReference<>();
+		AtomicInteger ownership = new AtomicInteger();
+		Stopper stopper = new Stopper();
+		// QThread 2 is natively started C++ thread adopted by Qt and by Java
+		QThread thread;
+		{
+			thread = ThreadFactory.startNativeLoopThread();
+			Assert.assertTrue("QThread StdLoopThread has not split ownership", General.internalAccess.isSplitOwnership(thread));
+			thread.setObjectName("thread-StdLoopThread");
+			QObject obj = new QObject();
+			obj.destroyed.connect(()->initializeThread(qthreads, jthreads, ownership, running, gcQtThreadObjectsCounter, gcJavaThreadObjectsCounter, destroyedReceiver, finishedReceiver, false), Qt.ConnectionType.DirectConnection, singleShotConnection);
+			obj.moveToThread(thread);
+			obj.disposeLater();
+			stopper.stop.connect(thread::quit);
+		}
+		
+		int i=0;
+		while(running.get()<1 && i<100) {
+			Thread.yield();
+			Thread.sleep(150);
+			runGC();
+			++i;
+		}
+		Assert.assertEquals(1, running.get());
+		Set<Thread> runningThreads = Thread.getAllStackTraces().keySet();
+		{
+			Assert.assertTrue(jthreads.get()!=null);
+			Assert.assertEquals("Java thread StdLoopThread is not associated to Qt thread", qthreads.get(), QThread.thread(jthreads.get()));
+		}
+		Assert.assertEquals(thread, qthreads.get());
+		thread = null;
+		{
+			Assert.assertTrue("QThread StdLoopThread is null", qthreads.get()!=null);
+			Assert.assertEquals("QThread StdLoopThread has wrong thread-affinity", qthreads.get(), qthreads.get().thread());
+			Assert.assertFalse("QThread StdLoopThread is disposed", qthreads.get().isDisposed());
+			Assert.assertTrue("QThread StdLoopThread not alive", qthreads.get().isAlive());
+			Assert.assertTrue("QThread StdLoopThread not running", qthreads.get().isRunning());
+			Assert.assertFalse("QThread StdLoopThread is finished", qthreads.get().isFinished());
+			Assert.assertFalse("QThread StdLoopThread has Cpp ownership", General.internalAccess.isCppOwnership(qthreads.get()));
+			Assert.assertTrue("running QThread StdLoopThread has not split ownership", ownership.get()==3);
+		}
+		stopper.stop.emit();
+		stopper.stop.disconnect();
+		
+		i = 0;
+		while(i<20) {
+			Thread.yield();
+			Thread.sleep(150);
+			runGC();
+			++i;
+		}
+		{
+			try {
+				if(qthreads.get().isRunning()) {
+					i = 0;
+					while(i<20 && qthreads.get().isRunning()) {
+						Thread.yield();
+						Thread.sleep(150);
+						runGC();
+						++i;
+					}
+				}
+			}catch(Throwable t){}
+		}
+		runningThreads = Thread.getAllStackTraces().keySet();
+		{
+			if(!QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android))
+				Assert.assertEquals("post-mortem Java thread StdLoopThread state", Thread.State.TERMINATED, jthreads.get().getState());
+			else
+				Assert.assertTrue("post-mortem Java thread StdLoopThread state==RUNNABLE", Thread.State.RUNNABLE!=jthreads.get().getState());
+			Assert.assertFalse("post-mortem Java thread StdLoopThread is still running", runningThreads.contains(jthreads.get()));
+			if(!qthreads.get().isDisposed()) {
+				Assert.assertEquals("post-mortem Java thread StdLoopThread is not associated to Qt thread", qthreads.get(), QThread.thread(jthreads.get()));
+				Assert.assertEquals("post-mortem Qt thread StdLoopThread is not associated to Java thread", jthreads.get(), qthreads.get().javaThread());
+				Assert.assertEquals("Qt thread StdLoopThread is not associated to Java thread", jthreads.get(), qthreads.get().javaThread());
+			}else {
+				Assert.assertEquals("post-mortem Java thread StdLoopThread is still associated to Qt thread", null, QThread.thread(jthreads.get()));
+			}
+			jthreads.set(null);
+		}
+		runningThreads = null;
+		{
+			Assert.assertTrue("QThread StdLoopThread is null", qthreads.get()!=null);
+			try {
+				// threads2 and thread3 might already be deleted or
+				// are deleted in parallel to this test
+				Assert.assertFalse("post-mortem QThread StdLoopThread still alive", qthreads.get().isAlive());
+				Assert.assertFalse("post-mortem QThread StdLoopThread still running", qthreads.get().isRunning());
+				Assert.assertTrue("post-mortem QThread StdLoopThread not finished", qthreads.get().isFinished());
+				switch(ownership.get()) {
+				case 1:
+					Assert.assertTrue("post-mortem QThread StdLoopThread not Java ownership", General.internalAccess.isJavaOwnership(qthreads.get()));
+					break;
+				case 2:
+					Assert.assertTrue("post-mortem QThread StdLoopThread not Cpp ownership", General.internalAccess.isCppOwnership(qthreads.get()));
+					break;
+				case 3:
+					Assert.assertTrue("post-mortem QThread StdLoopThread not split ownership", General.internalAccess.isSplitOwnership(qthreads.get()));
+					break;
+				}
+			}catch(QNoNativeResourcesException e){
+			}
+			qthreads.set(null);
+		}
+		QEventLoop loop = new QEventLoop();
+		{
+			QTimer timer = new QTimer();
+			long t1 = System.currentTimeMillis();
+			timer.timeout.connect(()->{
+				Thread.yield();
+				Thread.sleep(250);
+				runGC();
+				QCoreApplication.processEvents();
+				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+				if(finishedReceiver.received() || System.currentTimeMillis()-t1>15000) {
+					loop.quit();
+				}
+			});
+			timer.setInterval(300);
+			timer.start();
+			loop.exec();
+			timer.dispose();
+		}
+		{
+			QTimer timer = new QTimer();
+			long t1 = System.currentTimeMillis();
+			timer.timeout.connect(()->{
+				Thread.yield();
+				Thread.sleep(250);
+				runGC();
+				QCoreApplication.processEvents();
+				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+				if(gcQtThreadObjectsCounter.get()==1 || System.currentTimeMillis()-t1>15000) {
+					loop.quit();
+				}
+			});
+			timer.setInterval(300);
+			timer.start();
+			loop.exec();
+			timer.dispose();
+		}
+		{
+			QTimer timer = new QTimer();
+			long t1 = System.currentTimeMillis();
+			timer.timeout.connect(()->{
+				Thread.yield();
+				Thread.sleep(250);
+				runGC();
+				QCoreApplication.processEvents();
+				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+				if(gcJavaThreadObjectsCounter.get()==1 || System.currentTimeMillis()-t1>15000) {
+					loop.quit();
+				}
+			});
+			timer.setInterval(300);
+			timer.start();
+			loop.exec();
+			timer.dispose();
+		}
+		Assert.assertEquals("Java thread object StdLoopThread not GC-removed", 1, gcJavaThreadObjectsCounter.get());
+		Assert.assertTrue("StdLoopThread has not been deleted natively", destroyedReceiver.received());
+		Assert.assertEquals("QThread object StdLoopThread  not GC-removed", 1, gcQtThreadObjectsCounter.get());
+	}
+	
+	@org.junit.Test
+	public void testJavaThread() throws InterruptedException {
+		AtomicInteger running = new AtomicInteger(0);
+		AtomicInteger gcQtThreadObjectsCounter = new AtomicInteger(0);
+		AtomicInteger gcJavaThreadObjectsCounter = new AtomicInteger(0);
+		SignalReceiver finishedReceiver = new SignalReceiver();
+		SignalReceiver destroyedReceiver = new SignalReceiver();
+		AtomicReference<QThread> qthreads = new AtomicReference<>();
+		AtomicReference<Thread> jthreads = new AtomicReference<>();
+		AtomicInteger ownership = new AtomicInteger();
+		Stopper stopper = new Stopper();
+		// QThread 3 is Java thread adopted by Qt
+		Thread thread;
+		{
+			thread = new Thread(()->{
+				initializeThread(qthreads, jthreads, ownership, running, gcQtThreadObjectsCounter, gcJavaThreadObjectsCounter, destroyedReceiver, finishedReceiver, false);
+				QEventLoop loop = new QEventLoop();
+				stopper.stop.connect(loop::quit);
+				loop.exec();
+				loop.dispose();
+			});
+			thread.setName("thread-JavaThread");
+			thread.start();
+		}
+		
+		int i=0;
+		while(running.get()<1 && i<100) {
+			Thread.yield();
+			Thread.sleep(150);
+			runGC();
+			++i;
+		}
+		Assert.assertEquals(1, running.get());
+		Set<Thread> runningThreads = Thread.getAllStackTraces().keySet();
+		Assert.assertTrue(jthreads.get()!=null);
+		Assert.assertTrue(runningThreads.contains(jthreads.get()));
+		Assert.assertEquals(Thread.State.RUNNABLE, jthreads.get().getState());
+		Assert.assertEquals("Java thread JavaThread is not associated to Qt thread", qthreads.get(), QThread.thread(jthreads.get()));
+		Assert.assertEquals("Qt thread JavaThread is not associated to Java thread", jthreads.get(), qthreads.get().javaThread());
+		Assert.assertEquals(thread, jthreads.get());
+		thread = null;
+		Assert.assertTrue("QThread JavaThread is null", qthreads.get()!=null);
+		Assert.assertEquals("QThread JavaThread has wrong thread-affinity", qthreads.get(), qthreads.get().thread());
+		Assert.assertFalse("QThread JavaThread is disposed", qthreads.get().isDisposed());
+		Assert.assertTrue("QThread JavaThread not alive", qthreads.get().isAlive());
+		Assert.assertTrue("QThread JavaThread not running", qthreads.get().isRunning());
+		Assert.assertFalse("QThread JavaThread is finished", qthreads.get().isFinished());
+		Assert.assertEquals(jthreads.get(), qthreads.get().javaThread());
+		Assert.assertFalse("QThread JavaThread has Cpp ownership", General.internalAccess.isCppOwnership(qthreads.get()));
+		Assert.assertTrue("running QThread JavaThread has not split ownership", ownership.get()==3);
+		stopper.stop.emit();
+		stopper.stop.disconnect();
+		
+		i = 0;
+		while(i<20) {
+			Thread.yield();
+			Thread.sleep(150);
+			runGC();
+			++i;
+		}
+		try {
+			if(qthreads.get().isRunning()) {
+				i = 0;
+				while(i<20 && qthreads.get().isRunning()) {
+					Thread.yield();
+					Thread.sleep(150);
+					runGC();
+					++i;
+				}
+			}
+		}catch(Throwable t){}
+		i = 0;
+		while(i<20) {
+			Thread.yield();
+			Thread.sleep(150);
+			runGC();
+			++i;
+		}
+		runningThreads = Thread.getAllStackTraces().keySet();
+		{
+			if(!QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android))
+				Assert.assertEquals("post-mortem Java thread JavaThread state", Thread.State.TERMINATED, jthreads.get().getState());
+			else
+				Assert.assertTrue("post-mortem Java thread JavaThread state==RUNNABLE", Thread.State.RUNNABLE!=jthreads.get().getState());
+			Assert.assertFalse("post-mortem Java thread JavaThread is still running", runningThreads.contains(jthreads.get()));
+			QThread reverse = QThread.thread(jthreads.get());
+			if(reverse!=null) {
+				Assert.assertTrue("post-mortem Java thread JavaThread is not associated to Qt thread", qthreads.get()==reverse);
+				Assert.assertEquals("post-mortem Qt thread JavaThread is not associated to Java thread", jthreads.get(), qthreads.get().javaThread());
+			}
+			jthreads.set(null);
+		}
+		runningThreads = null;
+		Assert.assertTrue("QThread JavaThread is null", qthreads.get()!=null);
+		try {
+			// threads2 and thread3 might already be deleted or
+			// are deleted in parallel to this test
+			Assert.assertFalse("post-mortem QThread JavaThread still alive", qthreads.get().isAlive());
+			Assert.assertFalse("post-mortem QThread JavaThread still running", qthreads.get().isRunning());
+			Assert.assertTrue("post-mortem QThread JavaThread not finished", qthreads.get().isFinished());
+			switch(ownership.get()) {
+			case 1:
+				Assert.assertTrue("post-mortem QThread JavaThread not Java ownership", General.internalAccess.isJavaOwnership(qthreads.get()));
+				break;
+			case 2:
+				Assert.assertTrue("post-mortem QThread JavaThread not Cpp ownership", General.internalAccess.isCppOwnership(qthreads.get()));
+				break;
+			case 3:
+				Assert.assertTrue("post-mortem QThread JavaThread not split ownership", General.internalAccess.isSplitOwnership(qthreads.get()));
+				break;
+			}
+		}catch(QNoNativeResourcesException e){
+		}
+		qthreads.set(null);
+		QEventLoop loop = new QEventLoop();
+		{
+			QTimer timer = new QTimer();
+			long t1 = System.currentTimeMillis();
+			timer.timeout.connect(()->{
+				Thread.yield();
+				Thread.sleep(250);
+				runGC();
+				QCoreApplication.processEvents();
+				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+				if(finishedReceiver.received() || System.currentTimeMillis()-t1>15000) {
+					loop.quit();
+				}
+			});
+			timer.setInterval(300);
+			timer.start();
+			loop.exec();
+			timer.dispose();
+		}
+		{
+			QTimer timer = new QTimer();
+			long t1 = System.currentTimeMillis();
+			timer.timeout.connect(()->{
+				Thread.yield();
+				Thread.sleep(250);
+				runGC();
+				QCoreApplication.processEvents();
+				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+				if(gcQtThreadObjectsCounter.get()==1 || System.currentTimeMillis()-t1>15000) {
+					loop.quit();
+				}
+			});
+			timer.setInterval(300);
+			timer.start();
+			loop.exec();
+			timer.dispose();
+		}
+		{
+			QTimer timer = new QTimer();
+			long t1 = System.currentTimeMillis();
+			timer.timeout.connect(()->{
+				Thread.yield();
+				Thread.sleep(250);
+				runGC();
+				QCoreApplication.processEvents();
+				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+				if(gcJavaThreadObjectsCounter.get()==1 || System.currentTimeMillis()-t1>15000) {
+					loop.quit();
+				}
+			});
+			timer.setInterval(300);
+			timer.start();
+			loop.exec();
+			timer.dispose();
+		}
+		Assert.assertEquals("Java thread object JavaThread not GC-removed", 1, gcJavaThreadObjectsCounter.get());
+		Assert.assertTrue("JavaThread has not been deleted natively", destroyedReceiver.received());
+		Assert.assertEquals("QThread object JavaThread  not GC-removed", 1, gcQtThreadObjectsCounter.get());
+	}
+	
+	@org.junit.Test
+	public void testJavaCreatedJavaStartedQWorkerThread() throws InterruptedException {
+		AtomicInteger running = new AtomicInteger(0);
+		AtomicInteger gcQtThreadObjectsCounter = new AtomicInteger(0);
+		AtomicInteger gcJavaThreadObjectsCounter = new AtomicInteger(0);
+		SignalReceiver finishedReceiver = new SignalReceiver();
+		SignalReceiver destroyedReceiver = new SignalReceiver();
+		AtomicReference<QThread> qthreads = new AtomicReference<>();
+		AtomicReference<Thread> jthreads = new AtomicReference<>();
+		AtomicReference<Throwable> throwable = new AtomicReference<>();
+		AtomicInteger ownership = new AtomicInteger();
+		Stopper stopper = new Stopper();
+		// QThread 4 is Java-started Qt thread adopted by Java
+		QThread thread;
+		{
+			thread = QThread.create(()->{
+				try {
+					initializeThread(qthreads, jthreads, ownership, running, gcQtThreadObjectsCounter, gcJavaThreadObjectsCounter, destroyedReceiver, finishedReceiver, false);
+					QEventLoop loop = new QEventLoop();
+					stopper.stop.connect(loop::quit);
+					loop.exec();
+					loop.dispose();
+				}catch(Throwable t) {
+					throwable.set(t);
+				}
+			});
+			Assert.assertTrue("QThread JavaCreatedJavaStartedQWorkerThread has not java ownership", General.internalAccess.isJavaOwnership(thread));
+			thread.setName("thread-JavaCreatedJavaStartedQWorkerThread");
+			thread.start();
+			Assert.assertTrue("QThread JavaCreatedJavaStartedQWorkerThread has not java ownership", General.internalAccess.isJavaOwnership(thread));
+		}
+		int i=0;
+		while(running.get()<1 && i<100) {
+			Thread.yield();
+			Thread.sleep(150);
+			runGC();
+			++i;
+		}
+		Assert.assertEquals(1, running.get());
+		Set<Thread> runningThreads = Thread.getAllStackTraces().keySet();
+		Assert.assertTrue(jthreads.get()!=null);
+		Assert.assertTrue(runningThreads.contains(jthreads.get()));
+		Assert.assertEquals(null, throwable.get());
+		Assert.assertEquals(Thread.State.RUNNABLE, jthreads.get().getState());
+		Assert.assertEquals("Java thread JavaCreatedJavaStartedQWorkerThread is not associated to Qt thread", qthreads.get(), QThread.thread(jthreads.get()));
+		Assert.assertEquals("Qt thread JavaCreatedJavaStartedQWorkerThread is not associated to Java thread", jthreads.get(), qthreads.get().javaThread());
+		Assert.assertEquals(thread, qthreads.get());
+		thread = null;
+		{
+			Assert.assertTrue("QThread JavaCreatedJavaStartedQWorkerThread is null", qthreads.get()!=null);
+			Assert.assertEquals("QThread JavaCreatedJavaStartedQWorkerThread has wrong thread-affinity", QThread.currentThread(), qthreads.get().thread());
+			Assert.assertFalse("QThread JavaCreatedJavaStartedQWorkerThread is disposed", qthreads.get().isDisposed());
+			Assert.assertTrue("QThread JavaCreatedJavaStartedQWorkerThread not alive", qthreads.get().isAlive());
+			Assert.assertTrue("QThread JavaCreatedJavaStartedQWorkerThread not running", qthreads.get().isRunning());
+			Assert.assertFalse("QThread JavaCreatedJavaStartedQWorkerThread is finished", qthreads.get().isFinished());
+			Assert.assertEquals(jthreads.get(), qthreads.get().javaThread());
+			Assert.assertFalse("QThread JavaCreatedJavaStartedQWorkerThread has Cpp ownership", General.internalAccess.isCppOwnership(qthreads.get()));
+			Assert.assertTrue("running QThread JavaCreatedJavaStartedQWorkerThread has not Java ownership", ownership.get()==1);
+		}
+		stopper.stop.emit();
+		stopper.stop.disconnect();
+		
+		i = 0;
+		while(i<20) {
+			Thread.yield();
+			Thread.sleep(150);
+			runGC();
+			++i;
+		}
+		{
+			try {
+				if(qthreads.get().isRunning()) {
+					i = 0;
+					while(i<20 && qthreads.get().isRunning()) {
+						Thread.yield();
+						Thread.sleep(150);
+						runGC();
+						++i;
+					}
+				}
+			}catch(Throwable t){}
+		}
+		runningThreads = Thread.getAllStackTraces().keySet();
+		{
+			if(!QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android))
+				Assert.assertEquals("post-mortem Java thread JavaCreatedJavaStartedQWorkerThread state", Thread.State.TERMINATED, jthreads.get().getState());
+			else
+				Assert.assertTrue("post-mortem Java thread JavaCreatedJavaStartedQWorkerThread state==RUNNABLE", Thread.State.RUNNABLE!=jthreads.get().getState());
+			Assert.assertFalse("post-mortem Java thread JavaCreatedJavaStartedQWorkerThread is still running", runningThreads.contains(jthreads.get()));
+			if(!qthreads.get().isDisposed()) {
+				Assert.assertEquals("post-mortem Java thread JavaCreatedJavaStartedQWorkerThread is not associated to Qt thread", qthreads.get(), QThread.thread(jthreads.get()));
+				Assert.assertEquals("post-mortem Qt thread JavaCreatedJavaStartedQWorkerThread is not associated to Java thread", jthreads.get(), qthreads.get().javaThread());
+			}else {
+				Assert.assertEquals("post-mortem Java thread JavaCreatedJavaStartedQWorkerThread is still associated to Qt thread", null, QThread.thread(jthreads.get()));
+			}
+			jthreads.set(null);
+		}
+		runningThreads = null;
+		{
+			Assert.assertTrue("QThread JavaCreatedJavaStartedQWorkerThread is null", qthreads.get()!=null);
+			Assert.assertFalse("post-mortem QThread JavaCreatedJavaStartedQWorkerThread still alive", qthreads.get().isAlive());
+			Assert.assertFalse("post-mortem QThread JavaCreatedJavaStartedQWorkerThread still running", qthreads.get().isRunning());
+			Assert.assertTrue("post-mortem QThread JavaCreatedJavaStartedQWorkerThread not finished", qthreads.get().isFinished());
+			switch(ownership.get()) {
+			case 1:
+				Assert.assertTrue("post-mortem QThread JavaCreatedJavaStartedQWorkerThread not Java ownership", General.internalAccess.isJavaOwnership(qthreads.get()));
+				break;
+			case 2:
+				Assert.assertTrue("post-mortem QThread JavaCreatedJavaStartedQWorkerThread not Cpp ownership", General.internalAccess.isCppOwnership(qthreads.get()));
+				break;
+			case 3:
+				Assert.assertTrue("post-mortem QThread JavaCreatedJavaStartedQWorkerThread not split ownership", General.internalAccess.isSplitOwnership(qthreads.get()));
+				break;
+			}
+			qthreads.set(null);
+		}
+		QEventLoop loop = new QEventLoop();
+		{
+			QTimer timer = new QTimer();
+			long t1 = System.currentTimeMillis();
+			timer.timeout.connect(()->{
+				Thread.yield();
+				Thread.sleep(250);
+				runGC();
+				QCoreApplication.processEvents();
+				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+				if(finishedReceiver.received() || System.currentTimeMillis()-t1>15000) {
+					loop.quit();
+				}
+			});
+			timer.setInterval(300);
+			timer.start();
+			loop.exec();
+			timer.dispose();
+		}
+		{
+			QTimer timer = new QTimer();
+			long t1 = System.currentTimeMillis();
+			timer.timeout.connect(()->{
+				Thread.yield();
+				Thread.sleep(250);
+				runGC();
+				QCoreApplication.processEvents();
+				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+				if(gcQtThreadObjectsCounter.get()==1 || System.currentTimeMillis()-t1>15000) {
+					loop.quit();
+				}
+			});
+			timer.setInterval(300);
+			timer.start();
+			loop.exec();
+			timer.dispose();
+		}
+		{
+			QTimer timer = new QTimer();
+			long t1 = System.currentTimeMillis();
+			timer.timeout.connect(()->{
+				Thread.yield();
+				Thread.sleep(250);
+				runGC();
+				QCoreApplication.processEvents();
+				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+				if(gcJavaThreadObjectsCounter.get()==1 || System.currentTimeMillis()-t1>15000) {
+					loop.quit();
+				}
+			});
+			timer.setInterval(300);
+			timer.start();
+			loop.exec();
+			timer.dispose();
+		}
+		Assert.assertEquals("Java thread object JavaCreatedJavaStartedQWorkerThread not GC-removed", 1, gcJavaThreadObjectsCounter.get());
+		Assert.assertTrue("JavaCreatedJavaStartedQWorkerThread has not been deleted natively", destroyedReceiver.received());
+		Assert.assertEquals("QThread object JavaCreatedJavaStartedQWorkerThread  not GC-removed", 1, gcQtThreadObjectsCounter.get());
+	}
+	
+	@org.junit.Test
+	public void testJavaCreatedJavaStartedQLoopThread() throws InterruptedException {
+		AtomicInteger running = new AtomicInteger(0);
+		AtomicInteger gcQtThreadObjectsCounter = new AtomicInteger(0);
+		AtomicInteger gcJavaThreadObjectsCounter = new AtomicInteger(0);
+		SignalReceiver finishedReceiver = new SignalReceiver();
+		SignalReceiver destroyedReceiver = new SignalReceiver();
+		AtomicReference<QThread> qthreads = new AtomicReference<>();
+		AtomicReference<Thread> jthreads = new AtomicReference<>();
+		AtomicInteger ownership = new AtomicInteger();
+		Stopper stopper = new Stopper();
+		// QThread 5 is Java-started looping Qt thread adopted by Java
+		QThread thread;
+		{
+			thread = new QThread();
+			thread.setObjectName("thread-JavaCreatedJavaStartedQLoopThread");
+			{
+				QObject obj = new QObject();
+				obj.destroyed.connect(()->initializeThread(qthreads, jthreads, ownership, running, gcQtThreadObjectsCounter, gcJavaThreadObjectsCounter, destroyedReceiver, finishedReceiver, false));
+				obj.moveToThread(thread);
+				obj.disposeLater();
+			}
+			Assert.assertTrue("QThread JavaCreatedJavaStartedQLoopThread has not java ownership", General.internalAccess.isJavaOwnership(thread));
+			thread.start();
+			stopper.stop.connect(thread::quit);
+			Assert.assertTrue("QThread JavaCreatedJavaStartedQLoopThread has not java ownership", General.internalAccess.isJavaOwnership(thread));
+		}
+		int i=0;
+		while(running.get()<1 && i<100) {
+			Thread.yield();
+			Thread.sleep(150);
+			runGC();
+			++i;
+		}
+		Assert.assertEquals(1, running.get());
+		Set<Thread> runningThreads = Thread.getAllStackTraces().keySet();
+		Assert.assertTrue(jthreads.get()!=null);
+		Assert.assertTrue(runningThreads.contains(jthreads.get()));
+		Assert.assertEquals(Thread.State.RUNNABLE, jthreads.get().getState());
+		Assert.assertEquals("Java thread JavaCreatedJavaStartedQLoopThread is not associated to Qt thread", qthreads.get(), QThread.thread(jthreads.get()));
+		Assert.assertEquals("Qt thread JavaCreatedJavaStartedQLoopThread is not associated to Java thread", jthreads.get(), qthreads.get().javaThread());
+		Assert.assertEquals(thread, qthreads.get());
+		thread = null;
+		Assert.assertTrue("QThread JavaCreatedJavaStartedQLoopThread is null", qthreads.get()!=null);
+		Assert.assertEquals("QThread JavaCreatedJavaStartedQLoopThread has wrong thread-affinity", QThread.currentThread(), qthreads.get().thread());
+		Assert.assertFalse("QThread JavaCreatedJavaStartedQLoopThread is disposed", qthreads.get().isDisposed());
+		Assert.assertTrue("QThread JavaCreatedJavaStartedQLoopThread not alive", qthreads.get().isAlive());
+		Assert.assertTrue("QThread JavaCreatedJavaStartedQLoopThread not running", qthreads.get().isRunning());
+		Assert.assertFalse("QThread JavaCreatedJavaStartedQLoopThread is finished", qthreads.get().isFinished());
+		Assert.assertEquals(jthreads.get(), qthreads.get().javaThread());
+		Assert.assertFalse("QThread JavaCreatedJavaStartedQLoopThread has Cpp ownership", General.internalAccess.isCppOwnership(qthreads.get()));
+		Assert.assertTrue("running QThread JavaCreatedJavaStartedQLoopThread has not Java ownership", ownership.get()==1);
+		stopper.stop.emit();
+		stopper.stop.disconnect();
+		
+		i = 0;
+		while(i<20) {
+			Thread.yield();
+			Thread.sleep(150);
+			runGC();
+			++i;
+		}
+		{
+			try {
+				if(qthreads.get().isRunning()) {
+					i = 0;
+					while(i<20 && qthreads.get().isRunning()) {
+						Thread.yield();
+						Thread.sleep(150);
+						runGC();
+						++i;
+					}
+				}
+			}catch(Throwable t){}
+		}
+		runningThreads = Thread.getAllStackTraces().keySet();
+		{
+			if(!QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android))
+				Assert.assertEquals("post-mortem Java thread JavaCreatedJavaStartedQLoopThread state", Thread.State.TERMINATED, jthreads.get().getState());
+			else
+				Assert.assertTrue("post-mortem Java thread JavaCreatedJavaStartedQLoopThread state==RUNNABLE", Thread.State.RUNNABLE!=jthreads.get().getState());
+			Assert.assertFalse("post-mortem Java thread JavaCreatedJavaStartedQLoopThread is still running", runningThreads.contains(jthreads.get()));
+			if(!qthreads.get().isDisposed()) {
+				Assert.assertEquals("post-mortem Java thread JavaCreatedJavaStartedQLoopThread is not associated to Qt thread", qthreads.get(), QThread.thread(jthreads.get()));
+				Assert.assertEquals("post-mortem Qt thread JavaCreatedJavaStartedQLoopThread is not associated to Java thread", jthreads.get(), qthreads.get().javaThread());
+			}else {
+				Assert.assertEquals("post-mortem Java thread JavaCreatedJavaStartedQLoopThread is still associated to Qt thread", null, QThread.thread(jthreads.get()));
+			}
+			jthreads.set(null);
+		}
+		runningThreads = null;
+		{
+			Assert.assertTrue("QThread JavaCreatedJavaStartedQLoopThread is null", qthreads.get()!=null);
+			Assert.assertFalse("post-mortem QThread JavaCreatedJavaStartedQLoopThread still alive", qthreads.get().isAlive());
+			Assert.assertFalse("post-mortem QThread JavaCreatedJavaStartedQLoopThread still running", qthreads.get().isRunning());
+			Assert.assertTrue("post-mortem QThread JavaCreatedJavaStartedQLoopThread not finished", qthreads.get().isFinished());
+			switch(ownership.get()) {
+			case 1:
+				Assert.assertTrue("post-mortem QThread JavaCreatedJavaStartedQLoopThread not Java ownership", General.internalAccess.isJavaOwnership(qthreads.get()));
+				break;
+			case 2:
+				Assert.assertTrue("post-mortem QThread JavaCreatedJavaStartedQLoopThread not Cpp ownership", General.internalAccess.isCppOwnership(qthreads.get()));
+				break;
+			case 3:
+				Assert.assertTrue("post-mortem QThread JavaCreatedJavaStartedQLoopThread not split ownership", General.internalAccess.isSplitOwnership(qthreads.get()));
+				break;
+			}
+			qthreads.set(null);
+		}
+		QEventLoop loop = new QEventLoop();
+		{
+			QTimer timer = new QTimer();
+			long t1 = System.currentTimeMillis();
+			timer.timeout.connect(()->{
+				Thread.yield();
+				Thread.sleep(250);
+				runGC();
+				QCoreApplication.processEvents();
+				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+				if(finishedReceiver.received() || System.currentTimeMillis()-t1>15000) {
+					loop.quit();
+				}
+			});
+			timer.setInterval(300);
+			timer.start();
+			loop.exec();
+			timer.dispose();
+		}
+		{
+			QTimer timer = new QTimer();
+			long t1 = System.currentTimeMillis();
+			timer.timeout.connect(()->{
+				Thread.yield();
+				Thread.sleep(250);
+				runGC();
+				QCoreApplication.processEvents();
+				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+				if(gcQtThreadObjectsCounter.get()==1 || System.currentTimeMillis()-t1>15000) {
+					loop.quit();
+				}
+			});
+			timer.setInterval(300);
+			timer.start();
+			loop.exec();
+			timer.dispose();
+		}
+		{
+			QTimer timer = new QTimer();
+			long t1 = System.currentTimeMillis();
+			timer.timeout.connect(()->{
+				Thread.yield();
+				Thread.sleep(250);
+				runGC();
+				QCoreApplication.processEvents();
+				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+				if(gcJavaThreadObjectsCounter.get()==1 || System.currentTimeMillis()-t1>15000) {
+					loop.quit();
+				}
+			});
+			timer.setInterval(300);
+			timer.start();
+			loop.exec();
+			timer.dispose();
+		}
+		Assert.assertEquals("Java thread object JavaCreatedJavaStartedQLoopThread not GC-removed", 1, gcJavaThreadObjectsCounter.get());
+		Assert.assertTrue("JavaCreatedJavaStartedQLoopThread has not been deleted natively", destroyedReceiver.received());
+		Assert.assertEquals("QThread object JavaCreatedJavaStartedQLoopThread  not GC-removed", 1, gcQtThreadObjectsCounter.get());
+	}
+	
+	@org.junit.Test
+	public void testNativeCreatedJavaStartedQLoopThread() throws InterruptedException {
+		AtomicInteger running = new AtomicInteger(0);
+		AtomicInteger gcQtThreadObjectsCounter = new AtomicInteger(0);
+		AtomicInteger gcJavaThreadObjectsCounter = new AtomicInteger(0);
+		SignalReceiver finishedReceiver = new SignalReceiver();
+		SignalReceiver destroyedReceiver = new SignalReceiver();
+		AtomicReference<QThread> qthreads = new AtomicReference<>();
+		AtomicReference<Thread> jthreads = new AtomicReference<>();
+		AtomicInteger ownership = new AtomicInteger();
+		Stopper stopper = new Stopper();
+		// QThread 6 is natively created looping Qt thread adopted by Java
+		QThread thread;
+		{
+			thread = ThreadFactory.createQLoopThread();
+			thread.setObjectName("thread-NativeCreatedJavaStartedQLoopThread");
+			{
+				QObject obj = new QObject();
+				obj.destroyed.connect(()->initializeThread(qthreads, jthreads, ownership, running, gcQtThreadObjectsCounter, gcJavaThreadObjectsCounter, destroyedReceiver, finishedReceiver, false));
+				obj.moveToThread(thread);
+				obj.disposeLater();
+			}
+			Assert.assertTrue("QThread NativeCreatedJavaStartedQLoopThread has not java ownership", General.internalAccess.isJavaOwnership(thread));
+			thread.start();
+			stopper.stop.connect(thread::quit);
+			Assert.assertTrue("QThread NativeCreatedJavaStartedQLoopThread has not java ownership", General.internalAccess.isJavaOwnership(thread));
+		}
+		int i=0;
+		while(running.get()<1 && i<100) {
+			Thread.yield();
+			Thread.sleep(150);
+			runGC();
+			++i;
+		}
+		Assert.assertEquals(1, running.get());
+		Set<Thread> runningThreads = Thread.getAllStackTraces().keySet();
+		{
+			Assert.assertTrue(jthreads.get()!=null);
+			Assert.assertTrue(runningThreads.contains(jthreads.get()));
+			Assert.assertEquals(Thread.State.RUNNABLE, jthreads.get().getState());
+			Assert.assertEquals("Java thread NativeCreatedJavaStartedQLoopThread is not associated to Qt thread", qthreads.get(), QThread.thread(jthreads.get()));
+			Assert.assertEquals("Qt thread NativeCreatedJavaStartedQLoopThread is not associated to Java thread", jthreads.get(), qthreads.get().javaThread());
+		}
+		Assert.assertEquals(thread, qthreads.get());
+		thread = null;
+		{
+			Assert.assertTrue("QThread NativeCreatedJavaStartedQLoopThread is null", qthreads.get()!=null);
+			Assert.assertEquals("QThread NativeCreatedJavaStartedQLoopThread has wrong thread-affinity", QThread.currentThread(), qthreads.get().thread());
+			Assert.assertFalse("QThread NativeCreatedJavaStartedQLoopThread is disposed", qthreads.get().isDisposed());
+			Assert.assertTrue("QThread NativeCreatedJavaStartedQLoopThread not alive", qthreads.get().isAlive());
+			Assert.assertTrue("QThread NativeCreatedJavaStartedQLoopThread not running", qthreads.get().isRunning());
+			Assert.assertFalse("QThread NativeCreatedJavaStartedQLoopThread is finished", qthreads.get().isFinished());
+			Assert.assertEquals(jthreads.get(), qthreads.get().javaThread());
+			Assert.assertFalse("QThread NativeCreatedJavaStartedQLoopThread has Cpp ownership", General.internalAccess.isCppOwnership(qthreads.get()));
+			Assert.assertTrue("running QThread NativeCreatedJavaStartedQLoopThread has not Java ownership", ownership.get()==1);
+		}
+		stopper.stop.emit();
+		stopper.stop.disconnect();
+		
+		i = 0;
+		while(i<20) {
+			Thread.yield();
+			Thread.sleep(150);
+			runGC();
+			++i;
+		}
+		{
+			try {
+				if(qthreads.get().isRunning()) {
+					i = 0;
+					while(i<20 && qthreads.get().isRunning()) {
+						Thread.yield();
+						Thread.sleep(150);
+						runGC();
+						++i;
+					}
+				}
+			}catch(Throwable t){}
+		}
+		runningThreads = Thread.getAllStackTraces().keySet();
+		{
+			if(!QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android))
+				Assert.assertEquals("post-mortem Java thread NativeCreatedJavaStartedQLoopThread state", Thread.State.TERMINATED, jthreads.get().getState());
+			else
+				Assert.assertTrue("post-mortem Java thread NativeCreatedJavaStartedQLoopThread state==RUNNABLE", Thread.State.RUNNABLE!=jthreads.get().getState());
+			Assert.assertFalse("post-mortem Java thread NativeCreatedJavaStartedQLoopThread is still running", runningThreads.contains(jthreads.get()));
+			if(!qthreads.get().isDisposed()) {
+				Assert.assertEquals("post-mortem Java thread NativeCreatedJavaStartedQLoopThread is not associated to Qt thread", qthreads.get(), QThread.thread(jthreads.get()));
+				Assert.assertEquals("post-mortem Qt thread NativeCreatedJavaStartedQLoopThread is not associated to Java thread", jthreads.get(), qthreads.get().javaThread());
+			}else {
+				Assert.assertEquals("post-mortem Java thread NativeCreatedJavaStartedQLoopThread is still associated to Qt thread", null, QThread.thread(jthreads.get()));
+			}
+			jthreads.set(null);
+		}
+		runningThreads = null;
+		{
+			Assert.assertTrue("QThread NativeCreatedJavaStartedQLoopThread is null", qthreads.get()!=null);
+			Assert.assertFalse("post-mortem QThread NativeCreatedJavaStartedQLoopThread still alive", qthreads.get().isAlive());
+			Assert.assertFalse("post-mortem QThread NativeCreatedJavaStartedQLoopThread still running", qthreads.get().isRunning());
+			Assert.assertTrue("post-mortem QThread NativeCreatedJavaStartedQLoopThread not finished", qthreads.get().isFinished());
+			switch(ownership.get()) {
+			case 1:
+				Assert.assertTrue("post-mortem QThread NativeCreatedJavaStartedQLoopThread not Java ownership", General.internalAccess.isJavaOwnership(qthreads.get()));
+				break;
+			case 2:
+				Assert.assertTrue("post-mortem QThread NativeCreatedJavaStartedQLoopThread not Cpp ownership", General.internalAccess.isCppOwnership(qthreads.get()));
+				break;
+			case 3:
+				Assert.assertTrue("post-mortem QThread NativeCreatedJavaStartedQLoopThread not split ownership", General.internalAccess.isSplitOwnership(qthreads.get()));
+				break;
+			}
+			qthreads.set(null);
+		}
+		QEventLoop loop = new QEventLoop();
+		{
+			QTimer timer = new QTimer();
+			long t1 = System.currentTimeMillis();
+			timer.timeout.connect(()->{
+				Thread.yield();
+				Thread.sleep(250);
+				runGC();
+				QCoreApplication.processEvents();
+				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+				if(finishedReceiver.received() || System.currentTimeMillis()-t1>15000) {
+					loop.quit();
+				}
+			});
+			timer.setInterval(300);
+			timer.start();
+			loop.exec();
+			timer.dispose();
+		}
+		{
+			QTimer timer = new QTimer();
+			long t1 = System.currentTimeMillis();
+			timer.timeout.connect(()->{
+				Thread.yield();
+				Thread.sleep(250);
+				runGC();
+				QCoreApplication.processEvents();
+				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+				if(gcQtThreadObjectsCounter.get()==1 || System.currentTimeMillis()-t1>15000) {
+					loop.quit();
+				}
+			});
+			timer.setInterval(300);
+			timer.start();
+			loop.exec();
+			timer.dispose();
+		}
+		{
+			QTimer timer = new QTimer();
+			long t1 = System.currentTimeMillis();
+			timer.timeout.connect(()->{
+				Thread.yield();
+				Thread.sleep(250);
+				runGC();
+				QCoreApplication.processEvents();
+				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+				if(gcJavaThreadObjectsCounter.get()==1 || System.currentTimeMillis()-t1>15000) {
+					loop.quit();
+				}
+			});
+			timer.setInterval(300);
+			timer.start();
+			loop.exec();
+			timer.dispose();
+		}
+		Assert.assertEquals("Java thread object NativeCreatedJavaStartedQLoopThread not GC-removed", 1, gcJavaThreadObjectsCounter.get());
+		Assert.assertTrue("NativeCreatedJavaStartedQLoopThread has not been deleted natively", destroyedReceiver.received());
+		Assert.assertEquals("QThread object NativeCreatedJavaStartedQLoopThread  not GC-removed", 1, gcQtThreadObjectsCounter.get());
+	}
+	
+	@org.junit.Test
+	public void testNativeCreatedJavaStartedQWorkerThread() throws InterruptedException {
+		AtomicInteger running = new AtomicInteger(0);
+		AtomicInteger gcQtThreadObjectsCounter = new AtomicInteger(0);
+		AtomicInteger gcJavaThreadObjectsCounter = new AtomicInteger(0);
+		SignalReceiver finishedReceiver = new SignalReceiver();
+		SignalReceiver destroyedReceiver = new SignalReceiver();
+		AtomicReference<QThread> qthreads = new AtomicReference<>();
+		AtomicReference<Thread> jthreads = new AtomicReference<>();
+		AtomicReference<Throwable> throwable = new AtomicReference<>();
+		AtomicInteger ownership = new AtomicInteger();
+		Stopper stopper = new Stopper();
+		// QThread 7 is natively created Qt thread adopted by Java
+		QThread thread;
+		{
+			thread = ThreadFactory.createQWorkerThread(()->{
+				try {
+					initializeThread(qthreads, jthreads, ownership, running, gcQtThreadObjectsCounter, gcJavaThreadObjectsCounter, destroyedReceiver, finishedReceiver, false);
+					QEventLoop loop = new QEventLoop();
+					stopper.stop.connect(loop::quit);
+					loop.exec();
+					loop.dispose();
+				}catch(Throwable t) {
+					throwable.set(t);
+				}					
+			});
+			Assert.assertTrue("QThread NativeCreatedJavaStartedQWorkerThread has not java ownership", General.internalAccess.isJavaOwnership(thread));
+			thread.setObjectName("thread-NativeCreatedJavaStartedQWorkerThread");
+			thread.start();
+			Assert.assertTrue("QThread NativeCreatedJavaStartedQWorkerThread has not java ownership", General.internalAccess.isJavaOwnership(thread));
+		}
+		int i=0;
+		while(running.get()<1 && i<100) {
+			Thread.yield();
+			Thread.sleep(150);
+			runGC();
+			++i;
+		}
+		Assert.assertEquals(1, running.get());
+		Set<Thread> runningThreads = Thread.getAllStackTraces().keySet();
+		{
+			Assert.assertTrue(jthreads.get()!=null);
+			Assert.assertTrue(runningThreads.contains(jthreads.get()));
+			Assert.assertEquals(null, throwable.get());
+			Assert.assertEquals(Thread.State.RUNNABLE, jthreads.get().getState());
+			Assert.assertEquals("Java thread NativeCreatedJavaStartedQWorkerThread is not associated to Qt thread", qthreads.get(), QThread.thread(jthreads.get()));
+			Assert.assertEquals("Qt thread NativeCreatedJavaStartedQWorkerThread is not associated to Java thread", jthreads.get(), qthreads.get().javaThread());
+		}
+		Assert.assertEquals(thread, qthreads.get());
+		thread = null;
+		{
+			Assert.assertTrue("QThread NativeCreatedJavaStartedQWorkerThread is null", qthreads.get()!=null);
+			Assert.assertEquals("QThread NativeCreatedJavaStartedQWorkerThread has wrong thread-affinity", QThread.currentThread(), qthreads.get().thread());
+			Assert.assertFalse("QThread NativeCreatedJavaStartedQWorkerThread is disposed", qthreads.get().isDisposed());
+			Assert.assertTrue("QThread NativeCreatedJavaStartedQWorkerThread not alive", qthreads.get().isAlive());
+			Assert.assertTrue("QThread NativeCreatedJavaStartedQWorkerThread not running", qthreads.get().isRunning());
+			Assert.assertFalse("QThread NativeCreatedJavaStartedQWorkerThread is finished", qthreads.get().isFinished());
+			Assert.assertEquals(jthreads.get(), qthreads.get().javaThread());
+			Assert.assertFalse("QThread NativeCreatedJavaStartedQWorkerThread has Cpp ownership", General.internalAccess.isCppOwnership(qthreads.get()));
+			Assert.assertTrue("running QThread NativeCreatedJavaStartedQWorkerThread has not Java ownership", ownership.get()==1);
+		}
+		stopper.stop.emit();
+		stopper.stop.disconnect();
+		
+		i = 0;
+		while(i<20) {
+			Thread.yield();
+			Thread.sleep(150);
+			runGC();
+			++i;
+		}
+		{
+			try {
+				if(qthreads.get().isRunning()) {
+					i = 0;
+					while(i<20 && qthreads.get().isRunning()) {
+						Thread.yield();
+						Thread.sleep(150);
+						runGC();
+						++i;
+					}
+				}
+			}catch(Throwable t){}
+		}
+		runningThreads = Thread.getAllStackTraces().keySet();
+		{
+			if(!QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android))
+				Assert.assertEquals("post-mortem Java thread NativeCreatedJavaStartedQWorkerThread state", Thread.State.TERMINATED, jthreads.get().getState());
+			else
+				Assert.assertTrue("post-mortem Java thread NativeCreatedJavaStartedQWorkerThread state==RUNNABLE", Thread.State.RUNNABLE!=jthreads.get().getState());
+			Assert.assertFalse("post-mortem Java thread NativeCreatedJavaStartedQWorkerThread is still running", runningThreads.contains(jthreads.get()));
+			if(!qthreads.get().isDisposed()) {
+				Assert.assertEquals("post-mortem Java thread NativeCreatedJavaStartedQWorkerThread is not associated to Qt thread", qthreads.get(), QThread.thread(jthreads.get()));
+				Assert.assertEquals("post-mortem Qt thread NativeCreatedJavaStartedQWorkerThread is not associated to Java thread", jthreads.get(), qthreads.get().javaThread());
+			}else {
+				Assert.assertEquals("post-mortem Java thread NativeCreatedJavaStartedQWorkerThread is still associated to Qt thread", null, QThread.thread(jthreads.get()));
+			}
+			jthreads.set(null);
+		}
+		runningThreads = null;
+		{
+			Assert.assertTrue("QThread NativeCreatedJavaStartedQWorkerThread is null", qthreads.get()!=null);
+			Assert.assertFalse("post-mortem QThread NativeCreatedJavaStartedQWorkerThread still alive", qthreads.get().isAlive());
+			Assert.assertFalse("post-mortem QThread NativeCreatedJavaStartedQWorkerThread still running", qthreads.get().isRunning());
+			Assert.assertTrue("post-mortem QThread NativeCreatedJavaStartedQWorkerThread not finished", qthreads.get().isFinished());
+			switch(ownership.get()) {
+			case 1:
+				Assert.assertTrue("post-mortem QThread NativeCreatedJavaStartedQWorkerThread not Java ownership", General.internalAccess.isJavaOwnership(qthreads.get()));
+				break;
+			case 2:
+				Assert.assertTrue("post-mortem QThread NativeCreatedJavaStartedQWorkerThread not Cpp ownership", General.internalAccess.isCppOwnership(qthreads.get()));
+				break;
+			case 3:
+				Assert.assertTrue("post-mortem QThread NativeCreatedJavaStartedQWorkerThread not split ownership", General.internalAccess.isSplitOwnership(qthreads.get()));
+				break;
+			}
+			qthreads.set(null);
+		}
+		QEventLoop loop = new QEventLoop();
+		{
+			QTimer timer = new QTimer();
+			long t1 = System.currentTimeMillis();
+			timer.timeout.connect(()->{
+				Thread.yield();
+				Thread.sleep(250);
+				runGC();
+				QCoreApplication.processEvents();
+				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+				if(finishedReceiver.received() || System.currentTimeMillis()-t1>15000) {
+					loop.quit();
+				}
+			});
+			timer.setInterval(300);
+			timer.start();
+			loop.exec();
+			timer.dispose();
+		}
+		{
+			QTimer timer = new QTimer();
+			long t1 = System.currentTimeMillis();
+			timer.timeout.connect(()->{
+				Thread.yield();
+				Thread.sleep(250);
+				runGC();
+				QCoreApplication.processEvents();
+				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+				if(gcQtThreadObjectsCounter.get()==1 || System.currentTimeMillis()-t1>15000) {
+					loop.quit();
+				}
+			});
+			timer.setInterval(300);
+			timer.start();
+			loop.exec();
+			timer.dispose();
+		}
+		{
+			QTimer timer = new QTimer();
+			long t1 = System.currentTimeMillis();
+			timer.timeout.connect(()->{
+				Thread.yield();
+				Thread.sleep(250);
+				runGC();
+				QCoreApplication.processEvents();
+				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+				if(gcJavaThreadObjectsCounter.get()==1 || System.currentTimeMillis()-t1>15000) {
+					loop.quit();
+				}
+			});
+			timer.setInterval(300);
+			timer.start();
+			loop.exec();
+			timer.dispose();
+		}
+		Assert.assertEquals("Java thread object NativeCreatedJavaStartedQWorkerThread not GC-removed", 1, gcJavaThreadObjectsCounter.get());
+		Assert.assertTrue("NativeCreatedJavaStartedQWorkerThread has not been deleted natively", destroyedReceiver.received());
+		Assert.assertEquals("QThread object NativeCreatedJavaStartedQWorkerThread  not GC-removed", 1, gcQtThreadObjectsCounter.get());
 	}
 }

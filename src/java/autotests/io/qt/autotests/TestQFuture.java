@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -53,7 +53,7 @@ import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QTimer;
 import io.qt.core.QUnhandledException;
 
-public class TestFuture extends ApplicationInitializer {
+public class TestQFuture extends ApplicationInitializer {
 	
 	static class IncompleteFutureWatcher extends QFutureWatcherBase{
 	}
@@ -433,6 +433,6 @@ public class TestFuture extends ApplicationInitializer {
     }
 
     public static void main(String args[]) {
-        org.junit.runner.JUnitCore.main(TestFuture.class.getName());
+        org.junit.runner.JUnitCore.main(TestQFuture.class.getName());
     }
 }

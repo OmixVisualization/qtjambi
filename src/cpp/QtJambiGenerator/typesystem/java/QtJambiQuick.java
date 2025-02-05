@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -30,7 +30,7 @@
 ****************************************************************************/
 
 class QSGGeometry.AttributeSet__{
-    @Deprecated
+    @Deprecated(forRemoval=true, since="6.8.2")
     public AttributeSet(java.util.Collection<Attribute> attributes, int stride){
         this(stride, attributes.toArray(new Attribute[attributes.size()]));
     }
@@ -39,7 +39,7 @@ class QSGGeometry.AttributeSet__{
         this(stride, attributes.toArray(new Attribute[attributes.size()]));
     }
 
-    @Deprecated
+    @Deprecated(forRemoval=true, since="6.8.2")
     public AttributeSet(Attribute[] attributes, int stride){
         this(stride, attributes);
     }

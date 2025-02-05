@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -33,6 +33,7 @@
 #include <QtCore/QMutex>
 #include <QtCore/QUrl>
 #include <QtCore/QResource>
+#include <QtCore/QScopeGuard>
 #include <QtCore/private/qabstractfileengine_p.h>
 #include <QtCore/private/qfsfileengine_p.h>
 #include "qtjambiapi.h"
@@ -47,27 +48,222 @@
 #include <android/asset_manager_jni.h>
 #endif
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
+#define qAsConst std::as_const
+#endif
+
 #include "qtjambi_cast.h"
+
+typedef QHash<QString, QSet<QString>> PathsToJarFilesHash;
+typedef QHash<QString, QSet<QString>> PathsToDirectoryHash;
+typedef QSet<QString> ClassPathDirURLSet;
+void truncateBuffer(JNIEnv *env, jobject buffer);
+
+class QClassPathFileEngineHandler: public QAbstractFileEngineHandler
+{
+public:
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+    typedef std::unique_ptr<QAbstractFileEngine> QAbstractFileEnginePointer;
+#else
+    typedef QAbstractFileEngine* QAbstractFileEnginePointer;
+#endif
+    QAbstractFileEnginePointer create(const QString &fileName) const override;
+    QClassPathFileEngineHandler();
+    ~QClassPathFileEngineHandler() override;
+    static void insertJarFileResources(JNIEnv *env, jobject directoryPaths, jstring jarFileName);
+    static void insertJarFileResource(const QString& directoryPath, const QString& jarFileName);
+    static void removeResource(const QString& jarFileName);
+    static void addClassPath(const QString& path, bool isDirectory);
+    static QSet<QString> jarFilesByDirectory(const QString& directoryPath, QString* directPath = nullptr);
+    static QSet<QString> classPathsByDirectory(const QString& topLevelDir);
+    static QSet<QString> classPathDirURLs();
+private:
+    mutable QReadWriteLock m_fileEngineLock;
+    PathsToJarFilesHash m_jarFilesByContentDirectories;
+    PathsToDirectoryHash m_filePathsByContentDirectories;
+    ClassPathDirURLSet m_classPathDirURLSet;
+    QString m_qtJambiConfFile;
+    friend void ensureHandler(JNIEnv* env, jstring strg);
+};
+
+Q_GLOBAL_STATIC(QScopedPointer<QClassPathFileEngineHandler>, gClassPathFileEngineHandler)
+
+QClassPathFileEngineHandler::QClassPathFileEngineHandler()
+    : QAbstractFileEngineHandler(), m_qtJambiConfFile()
+{
+}
+
+QClassPathFileEngineHandler::~QClassPathFileEngineHandler(){
+    QWriteLocker locker(&m_fileEngineLock);
+    m_jarFilesByContentDirectories.clear();
+    m_filePathsByContentDirectories.clear();
+    m_classPathDirURLSet.clear();
+}
+
+void initializeFileEngineResources(){
+    if(!gClassPathFileEngineHandler->get()){
+        gClassPathFileEngineHandler->reset(new QClassPathFileEngineHandler());
+    }
+}
+
+void ensureHandler(JNIEnv* env, jstring strg){
+    initializeFileEngineResources();
+    if(Q_UNLIKELY(!gClassPathFileEngineHandler.isDestroyed())){
+        QClassPathFileEngineHandler* handler = gClassPathFileEngineHandler->get();
+        if(Q_LIKELY(handler)){
+            QString qtJambiConfFile;
+            int length = strg ? env->GetStringLength(strg) : 0;
+            qtJambiConfFile.resize(length);
+            if(length>0)
+                env->GetStringRegion(strg, 0, length, reinterpret_cast<ushort*>(qtJambiConfFile.data()));
+            JavaException::check(env QTJAMBI_STACKTRACEINFO );
+            QWriteLocker locker(&handler->m_fileEngineLock);
+            handler->m_qtJambiConfFile = qtJambiConfFile;
+        }
+    }
+}
+
+void clearFileEngineResourcesAtShutdown(JNIEnv* env){
+    gClassPathFileEngineHandler->reset();
+    if(env){
+        Java::QtJambi::ResourceUtility::cleanupOnShutdown(env);
+    }
+}
+
+void QClassPathFileEngineHandler::insertJarFileResources(JNIEnv *env, jobject directoryPaths, jstring _jarFileName){
+    if(Q_UNLIKELY(!gClassPathFileEngineHandler.isDestroyed())){
+        QClassPathFileEngineHandler* handler = gClassPathFileEngineHandler->get();
+        if(Q_LIKELY(handler)){
+            const QString& jarFileName = qtjambi_cast<QString>(env, _jarFileName);
+            QWriteLocker locker(&handler->m_fileEngineLock);
+            jobject iter = Java::Runtime::Collection::iterator(env, directoryPaths);
+            while(Java::Runtime::Iterator::hasNext(env, iter)){
+                jstring path = jstring(Java::Runtime::Iterator::next(env, iter));
+                handler->m_jarFilesByContentDirectories[qtjambi_cast<QString>(env, path)].insert(jarFileName);
+            }
+        }
+    }
+}
+
+void QClassPathFileEngineHandler::insertJarFileResource(const QString& directoryPath, const QString& jarFileName){
+    if(Q_UNLIKELY(!gClassPathFileEngineHandler.isDestroyed())){
+        QClassPathFileEngineHandler* handler = gClassPathFileEngineHandler->get();
+        if(Q_LIKELY(handler)){
+            QWriteLocker locker(&handler->m_fileEngineLock);
+            handler->m_jarFilesByContentDirectories[directoryPath].insert(jarFileName);
+        }
+    }
+}
+
+void QClassPathFileEngineHandler::removeResource(const QString& path){
+    if(Q_UNLIKELY(!gClassPathFileEngineHandler.isDestroyed())){
+        QClassPathFileEngineHandler* handler = gClassPathFileEngineHandler->get();
+        if(Q_LIKELY(handler)){
+            QWriteLocker locker(&handler->m_fileEngineLock);
+            {
+                const QStringList keys = handler->m_jarFilesByContentDirectories.keys();
+                for(const QString& key : keys){
+                    handler->m_jarFilesByContentDirectories[key].remove(path);
+                }
+            }
+            {
+                const QStringList keys = handler->m_filePathsByContentDirectories.keys();
+                for(const QString& key : keys){
+                    handler->m_filePathsByContentDirectories[key].remove(path);
+                }
+            }
+            handler->m_classPathDirURLSet.remove(path);
+        }
+    }
+}
+
+QSet<QString> QClassPathFileEngineHandler::jarFilesByDirectory(const QString& directoryPath, QString* directPath){
+    if(Q_UNLIKELY(!gClassPathFileEngineHandler.isDestroyed())){
+        const QClassPathFileEngineHandler* handler = gClassPathFileEngineHandler->get();
+        if(Q_LIKELY(handler)){
+            if(directPath && !handler->m_qtJambiConfFile.isEmpty() && QStringLiteral(u"etc/qt/qt.conf")==directoryPath){
+                *directPath = handler->m_qtJambiConfFile;
+                return QSet<QString>{};
+            }
+            QReadLocker locker(&handler->m_fileEngineLock);
+            return handler->m_jarFilesByContentDirectories[directoryPath];
+        }
+    }
+    return QSet<QString>{};
+}
+
+QSet<QString> QClassPathFileEngineHandler::classPathsByDirectory(const QString& topLevelDir){
+    if(Q_UNLIKELY(!gClassPathFileEngineHandler.isDestroyed())){
+        const QClassPathFileEngineHandler* handler = gClassPathFileEngineHandler->get();
+        if(Q_LIKELY(handler)){
+            QReadLocker locker(&handler->m_fileEngineLock);
+            return handler->m_filePathsByContentDirectories[topLevelDir];
+        }
+    }
+    return QSet<QString>{};
+}
+
+QSet<QString> QClassPathFileEngineHandler::classPathDirURLs(){
+    if(Q_UNLIKELY(!gClassPathFileEngineHandler.isDestroyed())){
+        const QClassPathFileEngineHandler* handler = gClassPathFileEngineHandler->get();
+        if(Q_LIKELY(handler)){
+            QReadLocker locker(&handler->m_fileEngineLock);
+            return handler->m_classPathDirURLSet;
+        }
+    }
+    return QSet<QString>{};
+}
+
+void QClassPathFileEngineHandler::addClassPath(const QString& path, bool isDirectory){
+    if(Q_UNLIKELY(!gClassPathFileEngineHandler.isDestroyed())){
+        QClassPathFileEngineHandler* handler = gClassPathFileEngineHandler->get();
+        if(Q_LIKELY(handler)){
+            PathsToDirectoryHash classPathDirSet;
+            if(isDirectory){
+                QDir directory(path);
+                QFileInfoList fil = directory.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
+                for(const QFileInfo& file : fil){
+                    if(file.isDir()){
+                        classPathDirSet[file.fileName()].insert(path);
+                    }else{
+                        classPathDirSet[QString()].insert(path);
+                    }
+                }
+            }
+            QWriteLocker locker(&handler->m_fileEngineLock);
+            for(auto iter = classPathDirSet.keyValueBegin(); iter!=classPathDirSet.keyValueEnd(); ++iter){
+                handler->m_filePathsByContentDirectories[iter->first].unite(iter->second);
+            }
+            if(!isDirectory)
+                handler->m_classPathDirURLSet.insert(path);
+        }
+    }
+}
+
+void insertJarFileResources(JNIEnv *env, jobject directoryPaths, jstring jarFileName){
+    QClassPathFileEngineHandler::insertJarFileResources(env, directoryPaths, jarFileName);
+}
+
+void removeResource(const QString& jarFileName){
+    QClassPathFileEngineHandler::removeResource(jarFileName);
+}
+
+void addClassPath(const QString& path, bool isDirectory){
+    QClassPathFileEngineHandler::addClassPath(path, isDirectory);
+}
 
 class QClassPathEntry : public QSharedData{
 public:
     virtual ~QClassPathEntry();
-    virtual QString classPathEntryName() const = 0;
 };
 
 class QFSEntryEngine final : public QFSFileEngine, public QClassPathEntry {
 public:
-    QFSEntryEngine(const QString& file, const QString& classPathEntryFileName)
+    QFSEntryEngine(const QString& file)
                         : QFSFileEngine(file),
-                          QClassPathEntry(),
-                          m_classPathEntryFileName(classPathEntryFileName)
+                          QClassPathEntry()
     {}
-
-    QString classPathEntryName() const override {
-        return m_classPathEntryFileName;
-    }
 private:
-    QString m_classPathEntryFileName;
 };
 
 class QJarEntryEngine final : public QAbstractFileEngine, public QClassPathEntry {
@@ -79,7 +275,7 @@ public:
     static constexpr FileTime MetadataChangeTime = FileTime::FileMetadataChangeTime;
     static constexpr FileTime ModificationTime = FileTime::FileModificationTime;
 #endif
-    QJarEntryEngine(JNIEnv* env, jobject myJarFile, const QString& fileName, bool isDirectory, const QString& classPathEntryFileName, const QString& prefix);
+    QJarEntryEngine(JNIEnv* env, jobject myJarFile, const QString& jarFileName, const QString& fileName, const QString& prefix);
     ~QJarEntryEngine() override;
 
     void setFileName(const QString &file) override;
@@ -116,60 +312,62 @@ public:
     qint64 pos() const override;
 
     qint64 read(char *data, qint64 maxlen) override;
-
-    QString classPathEntryName() const override {
-        return m_classPathEntryFileName;
-    }
     bool isValid() const { return m_valid; }
 private:
     bool reset();
     bool reopen();
-    bool closeInternal();
+    bool close(JNIEnv* env);
+    bool closeStream();
+    bool closeStream(JNIEnv* env);
+    QString m_jarFileName;
     QString m_entryFileName;
     JObjectWrapper m_entry;
     JObjectWrapper m_myJarFile;
-    JObjectWrapper m_stream;
+    JObjectWrapper m_readChannel;
     qint64 m_pos;
+    qint64 m_size;
     QIODevice::OpenMode m_openMode;
     bool m_valid;
     bool m_directory;
     QString m_name;
     bool m_closed;
-    QString m_classPathEntryFileName;
     QString m_prefix;
 };
 
-QJarEntryEngine::QJarEntryEngine(JNIEnv* env, jobject myJarFile, const QString& fileName, bool isDirectory, const QString& classPathEntryFileName, const QString& prefix)
+QJarEntryEngine::QJarEntryEngine(JNIEnv* env, jobject myJarFile, const QString& jarFileName, const QString& fileName, const QString& prefix)
     : QAbstractFileEngine(),
       QClassPathEntry(),
+      m_jarFileName(jarFileName),
       m_entryFileName(),
       m_entry(),
       m_myJarFile(env, myJarFile),
-      m_stream(),
+      m_readChannel(),
       m_pos(-1),
+      m_size(0),
       m_openMode(QIODevice::NotOpen),
       m_valid(false),
-      m_directory(isDirectory),
+      m_directory(false),
       m_name(),
       m_closed(false),
-      m_classPathEntryFileName(classPathEntryFileName),
       m_prefix(prefix)
 {
     QJarEntryEngine::setFileName(fileName);
 }
 
 QJarEntryEngine::~QJarEntryEngine(){
-    try {
-        QJarEntryEngine::close();
-    } catch(const JavaException& exn) {
-        if(JniEnvironment env{200}){
+    if(JniEnvironment env{400}){
+        try {
+            QJarEntryEngine::close(env);
+        } catch(const JavaException& exn) {
             exn.report(env);
-        }
-    } catch(...){}
+        } catch(...){}
+        m_entry.assign(env, nullptr);
+        m_readChannel.assign(env, nullptr);
+        m_myJarFile.assign(env, nullptr);
+    }
 }
 
 void QJarEntryEngine::setFileName(const QString &fileName){
-    m_entry = nullptr;
     if (m_closed)
          return;
 
@@ -178,36 +376,32 @@ void QJarEntryEngine::setFileName(const QString &fileName){
         m_name = "";
         m_valid = true;
         m_directory = true;
+        m_entry = nullptr;
         return;
     }
 
-    if(JniEnvironment env{400}){
-        m_entry = Java::QtJambi::ResourceUtility$JarResource::getJarEntry(env, m_myJarFile.object(env), qtjambi_cast<jstring>(env, m_entryFileName));
+    if(JniEnvironmentExceptionHandler env{400}){
+        try{
+            jobject myJarFile = m_myJarFile.object(env);
+            jstring entryFileName = qtjambi_cast<jstring>(env, m_entryFileName);
+            jobject entry = Java::QtJambi::ResourceUtility$JarResource::getJarEntry(env, myJarFile, entryFileName);
+            m_entry.assign(env, entry);
 
-        if (!m_entry.object(env)) {
-            if((m_valid = m_directory))
-                m_name = fileName;
-        } else {
-            m_name = qtjambi_cast<QString>(env, Java::Runtime::ZipEntry::getName(env, m_entry.object(env)));
-            m_valid = true;
-        }
-    }
-}
-
-bool QJarEntryEngine::closeInternal() {
-    if(m_stream) {
-        if(JniEnvironment env{200}){
-            try {
-                Java::Runtime::InputStream::close(env, m_stream.object(env));
-            } catch(const JavaException&) {
+            if (!entry) {
+                m_directory = Java::QtJambi::ResourceUtility$JarResource::isDirectory(env, myJarFile, entryFileName);
+                m_size = 0;
+                if((m_valid = m_directory))
+                    m_name = fileName;
+            } else {
+                m_name = qtjambi_cast<QString>(env, Java::Runtime::ZipEntry::getName(env, entry));
+                m_directory = Java::QtJambi::ResourceUtility$JarResource::checkIsDirectory(env, myJarFile, entry);
+                m_size = m_directory ? 0 : Java::Runtime::ZipEntry::getSize(env, entry);
+                m_valid = true;
             }
-            m_stream = JObjectWrapper();
-            Java::QtJambi::ResourceUtility$JarResource::put(env, m_myJarFile.object(env));
-            return true;
+        }catch(const JavaException& exn){
+            env.handleException(exn, this, "QJarEntryEngine::setFileName(QString)");
         }
     }
-
-    return false;
 }
 
 bool QJarEntryEngine::copy(const QString &newName){
@@ -220,7 +414,7 @@ bool QJarEntryEngine::copy(const QString &newName){
         return false;
 
     if (!newFile.open(QFile::WriteOnly)) {
-        closeInternal();
+        closeStream();
         return false;
     }
 
@@ -242,20 +436,32 @@ bool QJarEntryEngine::copy(const QString &newName){
     }
 
     newFile.close();
-    if (!closeInternal())
+    if (!closeStream())
         return false;
 
     return (i == sz);
 }
 
 bool QJarEntryEngine::close(){
-    bool bf = closeInternal();
+    bool result = false;
+    if(m_readChannel || m_closed) {
+        if(JniEnvironmentExceptionHandler env{600}){
+            try{
+                result = close(env);
+            }catch(const JavaException& exn){
+                env.handleException(exn, this, "QJarEntryEngine::close()");
+            }
+        }
+    }
+    return result;
+}
+
+bool QJarEntryEngine::close(JNIEnv* env){
+    bool bf = closeStream(env);
 
     if(!m_closed) {
         // We really want to do this some how and not leave it to disposed()
-        if(JniEnvironment env{600}){
-            Java::QtJambi::ResourceUtility$JarResource::put(env, m_myJarFile.object(env));
-        }
+        Java::QtJambi::ResourceUtility$JarResource::_deref(env, m_myJarFile.object(env));
         // the reference this instance already had on construction
         // We do not null the reference here, since we could need to reopen() on handle
         // so we record the state separately with boolean m_closed flag.
@@ -263,6 +469,36 @@ bool QJarEntryEngine::close(){
     }
 
     return bf;
+}
+
+bool QJarEntryEngine::closeStream() {
+    if(m_readChannel) {
+        if(JniEnvironmentExceptionHandler env{200}){
+            try {
+                return closeStream(env);
+            } catch(const JavaException& exn) {
+                env.handleException(exn, this, "QJarEntryEngine::closeStream()");
+            }
+        }
+    }
+    return false;
+}
+
+bool QJarEntryEngine::closeStream(JNIEnv* env) {
+    if(m_readChannel) {
+        try {
+            Java::Runtime::AutoCloseable::close(env, m_readChannel.object(env));
+        } catch(const JavaException&) {
+        }
+        m_readChannel.assign(env, nullptr);
+        try{
+            Java::QtJambi::ResourceUtility$JarResource::_deref(env, m_myJarFile.object(env));
+        }catch(const JavaException&){
+        }
+        return true;
+    }
+
+    return false;
 }
 
 QStringList QJarEntryEngine::entryList(QDir::Filters filters, const QStringList &filterNames) const{
@@ -275,12 +511,16 @@ QStringList QJarEntryEngine::entryList(QDir::Filters filters, const QStringList 
         }
         if (!(filters & (QDir::Readable | QDir::Writable | QDir::Executable)))
             filters.setFlag(QDir::Readable);
-        if(JniEnvironment env{600}){
-            Java::QtJambi::ResourceUtility$JarResource::entryList(env, m_myJarFile.object(env),
+        if(JniEnvironmentExceptionHandler env{600}){
+            try{
+                Java::QtJambi::ResourceUtility$JarResource::entryList(env, m_myJarFile.object(env),
                                                qtjambi_cast<jobject>(env, &result),
                                                jint(int(filters)),
                                                qtjambi_cast<jobject>(env, filterNames),
                                                qtjambi_cast<jstring>(env, m_name), false);
+            }catch(const JavaException& exn){
+                env.handleException(exn, this, "QJarEntryEngine::entryList(QDir::Filters, QStringList)const");
+            }
         }
     }
     return result;
@@ -295,12 +535,16 @@ QStringList QJarEntryEngine::entryList(QDirListing::IteratorFlags filters, const
             if (m_entryFileName.length() > 0)
                 result << "..";
         }
-        if(JniEnvironment env{600}){
-            Java::QtJambi::ResourceUtility$JarResource::entryList(env, m_myJarFile.object(env),
+        if(JniEnvironmentExceptionHandler env{600}){
+            try{
+                Java::QtJambi::ResourceUtility$JarResource::entryList(env, m_myJarFile.object(env),
                                                                   qtjambi_cast<jobject>(env, &result),
                                                                   jint(int(filters)),
                                                                   qtjambi_cast<jobject>(env, filterNames),
                                                                   qtjambi_cast<jstring>(env, m_name), true);
+            }catch(const JavaException& exn){
+                env.handleException(exn, this, "QJarEntryEngine::entryList(QDirListing::IteratorFlags, QStringList)const");
+            }
         }
     }
     return result;
@@ -311,10 +555,7 @@ QStringList QJarEntryEngine::entryList(QDirListing::IteratorFlags filters, const
 QAbstractFileEngine::FileFlags QJarEntryEngine::fileFlags(FileFlags type) const{
     QAbstractFileEngine::FileFlags flags;
 
-    QFileInfo info;
-    if(JniEnvironment env{600}){
-        info = QFileInfo(qtjambi_cast<QString>(env, Java::QtJambi::ResourceUtility$JarResource::getName(env, m_myJarFile.object(env))));
-    }
+    QFileInfo info(m_jarFileName);
      if (info.exists()) {
          flags |= ExistsFlag;
          if(info.isReadable()){
@@ -349,9 +590,7 @@ QString QJarEntryEngine::fileName(FileName file) const{
         if (file == DefaultName
             || file == AbsoluteName
             || file == CanonicalName) {
-            if(JniEnvironment env{600}){
-            s = m_prefix + qtjambi_cast<QString>(env, Java::QtJambi::ResourceUtility$JarResource::getName(env, m_myJarFile.object(env))) + "#" + entryFileName;
-        }
+        s = m_prefix + m_jarFileName + "#" + entryFileName;
     } else if (file == BaseName) {
         auto pos = m_entryFileName.lastIndexOf("/");
         s = pos >= 0 ? m_entryFileName.mid(pos + 1) : entryFileName;
@@ -359,18 +598,20 @@ QString QJarEntryEngine::fileName(FileName file) const{
         auto pos = m_entryFileName.lastIndexOf("/");
         s = pos > 0 ? m_entryFileName.mid(0, pos) : "";
     } else if (file == CanonicalPathName || file == AbsolutePathName) {
-            if(JniEnvironment env{600}){
-            s = m_prefix + qtjambi_cast<QString>(env, Java::QtJambi::ResourceUtility$JarResource::getName(env, m_myJarFile.object(env))) + "#" + fileName(PathName);
-        }
+        s = m_prefix + m_jarFileName + "#" + fileName(PathName);
     }
     return s;
 }
 
 QDateTime QJarEntryEngine::fileTime(FileTime t) const{
-    if(JniEnvironment env{600}){
-        jlong time = Java::QtJambi::ResourceUtility$JarResource::fileTime(env, m_myJarFile.object(env), m_entry.object(env), t==BirthTime, t==AccessTime, t==MetadataChangeTime || t==ModificationTime);
-        if(time>=0)
-            return QDateTime::fromMSecsSinceEpoch(time);
+    if(JniEnvironmentExceptionHandler env{600}){
+        try{
+            jlong time = Java::QtJambi::ResourceUtility$JarResource::fileTime(env, m_myJarFile.object(env), m_entry.object(env), t==BirthTime, t==AccessTime, t==MetadataChangeTime || t==ModificationTime);
+            if(time>=0)
+                return QDateTime::fromMSecsSinceEpoch(time);
+        }catch(const JavaException& exn){
+            env.handleException(exn, this, "QJarEntryEngine::fileTime(FileTime)const");
+        }
     }
     return QDateTime();
 }
@@ -381,31 +622,34 @@ bool QJarEntryEngine::open(QIODevice::OpenMode openMode
 #endif
                            ) {
     bool bf = false;
-    closeInternal();  // reset state to open again
-
     if (m_entry) {
         if (!openMode.testFlag(QIODevice::WriteOnly) && !openMode.testFlag(QIODevice::Append)) {
-            if(JniEnvironment env{600}){
-                // There is a usage case where the application may have called close() on the handle and is now calling open() again.
-                // This can also happen implicitly if we need to rewind() on the Jar stream
-                int oldRefCount = Java::QtJambi::ResourceUtility$JarResource::getOrReopen(env, m_myJarFile.object(env));  // increment reference while we have stream open
+            if(JniEnvironmentExceptionHandler env{600}){
+                try{
+                    closeStream(env);
+                    // There is a usage case where the application may have called close() on the handle and is now calling open() again.
+                    // This can also happen implicitly if we need to rewind() on the Jar stream
+                    int oldRefCount = Java::QtJambi::ResourceUtility$JarResource::ensureRef(env, m_myJarFile.object(env));  // increment reference while we have stream open
 
-                m_stream = Java::QtJambi::ResourceUtility$JarResource::getInputStream(env, m_myJarFile.object(env), m_entry.object(env));
-                if (m_stream) {
-                    //if (openMode.isSet(QIODevice.OpenModeFlag.Text))
-                    //    m_reader = new BufferedReader(new InputStreamReader(m_stream));
-                    m_pos = 0;
-                    m_openMode = openMode;
-                    m_closed = false;  // this maybe due to reopen() or first open()
-                    bf = true;
-                }else{
-                    if(oldRefCount >= 0) {
-                        if(oldRefCount == 0)
-                            Java::QtJambi::ResourceUtility$JarResource::put(env, m_myJarFile.object(env)); // rollback extra reference
-                        Java::QtJambi::ResourceUtility$JarResource::put(env, m_myJarFile.object(env)); // rollback reference
+                    m_readChannel = Java::QtJambi::ResourceUtility$JarResource::getChannel(env, m_myJarFile.object(env), m_entry.object(env));
+                    if (m_readChannel) {
+                        m_pos = 0;
+                        m_openMode = openMode;
+                        m_closed = false;  // this maybe due to reopen() or first open()
+                        bf = true;
+                    }else{
+                        if(oldRefCount >= 0) {
+                            if(oldRefCount == 0)
+                                Java::QtJambi::ResourceUtility$JarResource::_deref(env, m_myJarFile.object(env)); // rollback extra reference
+                            Java::QtJambi::ResourceUtility$JarResource::_deref(env, m_myJarFile.object(env)); // rollback reference
+                        }
                     }
+                }catch(const JavaException& exn){
+                    env.handleException(exn, this, "QJarEntryEngine::open(QIODevice::OpenMode)");
                 }
             }
+        }else{
+            closeStream();
         }
     }
     return bf;
@@ -416,27 +660,17 @@ qint64 QJarEntryEngine::pos() const {
 }
 
 qint64 QJarEntryEngine::size() const{
-    if(JniEnvironment env{200}){
-        return m_entry ? Java::Runtime::ZipEntry::getSize(env, m_entry.object(env)) : 0;
-    }else return 0;
+    return m_size;
 }
 
 qint64 QJarEntryEngine::read(char *data, qint64 maxlen) {
     qint64 readBytes = 0;
-    if(m_stream){
-        if(JniEnvironment env{600}){
-            try{
-                while(readBytes<maxlen){
-                    QtJambiScope __qtjambi_scope;
-                    jbyteArray _data = qtjambi_array_cast<jbyteArray>(env, __qtjambi_scope, data+readBytes, jsize(qMin(qint64(INT_MAX), maxlen-readBytes)));
-                    jint r = Java::Runtime::InputStream::read(env, m_stream.object(env), _data);
-                    if(r<=0)
-                        break;
-                    readBytes += r;
-                }
-            }catch(const JavaException& exn){
-                exn.report(env);
-            }
+    if(m_pos<m_size && m_readChannel){
+        if(JniEnvironmentExceptionHandler env{600}){
+            jobject buffer = env->NewDirectByteBuffer(data, maxlen);
+            Java::Runtime::ReadableByteChannel::read(env, m_readChannel.object(env), buffer);
+            readBytes = Java::Runtime::Internal::Buffer::position(env, buffer);
+            truncateBuffer(env, buffer);
         }
     }
     if(readBytes==0)
@@ -446,7 +680,7 @@ qint64 QJarEntryEngine::read(char *data, qint64 maxlen) {
 }
 
 bool QJarEntryEngine::reset() {
-    if (!m_stream)
+    if (!m_readChannel)
         return false;  // not open
     if (m_pos == 0)
         return true;  // already open and at start
@@ -454,10 +688,10 @@ bool QJarEntryEngine::reset() {
 }
 
 bool QJarEntryEngine::reopen() {
-    if (!m_stream)
+    if (!m_readChannel)
         return false;  // not open
     QIODevice::OpenMode om = m_openMode;  // saved OpenMode
-    if(closeInternal())
+    if(closeStream())
         return open(om);
     return false;
 }
@@ -465,46 +699,23 @@ bool QJarEntryEngine::reopen() {
 bool QJarEntryEngine::seek(qint64 offset) {
     if(offset < 0)
         return false;
+    if(offset==0){
+        return reset();
+    }
     if(m_pos < offset) {
-        if(JniEnvironment env{600}){
-            while (m_pos < offset) {
-                qint64 skipBytesRemaining = qMin(offset - m_pos, qint64(std::numeric_limits<qint64>::max));
-
-                // InputStream#skip(long) may not skip all the requested bytes in a single invocation
-                qint64 skipBytesActual = Java::Runtime::InputStream::skip(env, m_stream.object(env), skipBytesRemaining);
-                if(skipBytesActual > 0)
-                    m_pos += skipBytesActual;	// The actual number of bytes skipped
-                else
-                    break;
-            }
+        QByteArray data;
+        data.fill('\0', offset - m_pos);
+        read(data.data(), data.size());
+        return m_pos == offset;
+    }else if(offset < m_size){
+        if(reset()){
+            QByteArray data;
+            data.fill('\0', offset);
+            read(data.data(), data.size());
+            return m_pos == offset;
         }
     }
-
-    if(m_pos == offset)
-        return true;
-    if (!open(m_openMode))  // open() will automatically force a close()
-        return false;
-    if (offset < m_pos) {
-        if (!reset())  // auto-rewind
-            return false;
-    }
-
-    if(m_pos < offset) {
-        if(JniEnvironment env{600}){
-            while (m_pos < offset) {
-                qint64 skipBytesRemaining = qMin(offset - m_pos, qint64(std::numeric_limits<qint64>::max));
-
-                // InputStream#skip(long) may not skip all the requested bytes in a single invocation
-                qint64 skipBytesActual = Java::Runtime::InputStream::skip(env, m_stream.object(env), skipBytesRemaining);
-                if(skipBytesActual > 0)
-                    m_pos += skipBytesActual;	// The actual number of bytes skipped
-                else
-                    return false;
-            }
-            return true;
-        }else return false;
-    }
-    return true;
+    return false;
 }
 
 #ifdef Q_OS_ANDROID
@@ -550,9 +761,6 @@ public:
 
     qint64 read(char *data, qint64 maxlen) override;
 
-    QString classPathEntryName() const override {
-        return QString("assets:/");
-    }
     bool isValid() const { return m_assetFile; }
 private:
     QString m_fileName;
@@ -735,9 +943,6 @@ public:
 
     QString fileName(FileName file=DefaultName) const override;
 
-    QString classPathEntryName() const override {
-        return QString("assets:/");
-    }
     bool isValid() const { return true; }
 private:
     QString m_fileName;
@@ -799,7 +1004,7 @@ QString QAssetDirectoryEngine::fileName(FileName file) const{
 
 class QUrlEntryEngine final : public QAbstractFileEngine, public QClassPathEntry {
 public:
-    QUrlEntryEngine(JNIEnv* env, jobject url, const QString& fileName, const QString& classPathEntryFileName);
+    QUrlEntryEngine(JNIEnv* env, jobject url, const QString& fileName);
 
     ~QUrlEntryEngine() override;
 
@@ -826,16 +1031,10 @@ public:
     }
 
     FileFlags fileFlags(FileFlags) const override;
-
-    QString classPathEntryName() const override {
-        return m_classPathEntryFileName;
-    }
-
 private:
-    QString m_classPathEntryFileName;
     QString m_fileName;
     JObjectWrapper m_connection;
-    JObjectWrapper m_inputStream;
+    JObjectWrapper m_readChannel;
     qint64 m_size;
     FileFlags m_flags;
 };
@@ -929,7 +1128,7 @@ public:
 
     bool isValid(){return !m_engines.isEmpty();}
 private:
-    bool addFromPath(JNIEnv* env, jobject url, const QString& fileName, const QString& prefix);
+    bool addFromPath(JNIEnv* env, jobject url, const QString& fileName, const QString& prefix, QList<QAbstractFileEngine*>& engines);
     QAbstractFileEngine* getFirstEngine() const;
 
     QString m_prefix;
@@ -1032,8 +1231,12 @@ QClassPathEngine::~QClassPathEngine(){
             exn.report(env);
         }
     } catch(...){}
-    qDeleteAll(m_engines);
-    m_engines.clear();
+    QList<QAbstractFileEngine*> engines;
+    {
+        QMutexLocker locker(&m_mutex);
+        m_engines.swap(engines);
+    }
+    qDeleteAll(engines);
 }
 
 QAbstractFileEngine* QClassPathEngine::getFirstEngine() const{
@@ -1045,11 +1248,15 @@ void QClassPathEngine::setFileName(const QString &fileName)
 {
     if (fileName==QClassPathEngine::fileName())
         return;
+    QList<QAbstractFileEngine*> engines;
+    auto scoped = qScopeGuard([&](){
+        {
+            QMutexLocker locker(&m_mutex);
+            m_engines.swap(engines);
+        }
+        qDeleteAll(engines);
+    });
     {
-        QMutexLocker locker(&m_mutex);
-        m_engines.clear();
-    }
-    if(JniEnvironment env{600}){
         QLatin1String fileNamePrefix1("classpath:");
         QLatin1String fileNamePrefix2("/:classpath:");
         QLatin1String fileNamePrefix3(":classpath:");
@@ -1069,7 +1276,6 @@ void QClassPathEngine::setFileName(const QString &fileName)
             m_prefix = fileNamePrefix4;
             m_fileName = fileName.mid(fileNamePrefix4.size());
         }else {
-            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Invalid format of path: '%1'").arg(fileName) QTJAMBI_STACKTRACEINFO );
             return;
         }
 
@@ -1096,48 +1302,142 @@ void QClassPathEngine::setFileName(const QString &fileName)
             m_baseName = m_baseName.mid(first, last-first).replace('\\', '/');
 
         if (m_selectedSource=="*") {
-            jobject pathToJarFiles = Java::QtJambi::ResourceUtility::pathToJarFiles(env, qtjambi_cast<jstring>(env, m_baseName));
-            jobject iter = QtJambiAPI::iteratorOfJavaIterable(env, pathToJarFiles);
-
-            if (QtJambiAPI::hasJavaIteratorNext(env, iter)) { // Its at least a directory which exists in jar files
-                while(QtJambiAPI::hasJavaIteratorNext(env, iter)) {
-                    jobject url = Java::QtJambi::ResourceUtility::resolveUrlFromPath(env, QtJambiAPI::nextOfJavaIterator(env, iter));
-                    addFromPath(env, url, m_baseName, m_prefix);
+#ifdef Q_OS_ANDROID
+            {
+                QFileInfo file = QFileInfo("assets:/qrc/" + m_baseName);
+                if(!file.exists()){
+                    file = QFileInfo("assets:qrc/" + m_baseName);
                 }
-            } else { // Its a file or directory, look for jar files which contains its a directory
-
-                QString parentSearch;
-
-                auto pos = m_baseName.lastIndexOf("/");
-                if (pos >= 0)
-                    parentSearch = m_baseName.mid(0, pos);
-
-                // This is all wrong... we need to maintain the ordered list of the mix then attempt
-                //  to populate from each in turn (if we are exhaustive) otherwise
-                pathToJarFiles = Java::QtJambi::ResourceUtility::pathToJarFiles(env, qtjambi_cast<jstring>(env, parentSearch));
-                iter = QtJambiAPI::iteratorOfJavaIterable(env, pathToJarFiles);
-                while(QtJambiAPI::hasJavaIteratorNext(env, iter)) {
-                    jobject url = Java::QtJambi::ResourceUtility::resolveUrlFromPath(env, QtJambiAPI::nextOfJavaIterator(env, iter));
-                    addFromPath(env, url, m_baseName, m_prefix);
+                if(file.exists()){
+                    if(file.isDir()){
+                        QStringList dirEntries = QDir(file.absoluteFilePath()).entryList();
+                        engines << new QAssetDirectoryEngine(std::move(dirEntries), m_baseName);
+                        return;
+                    }else if(m_prefix==":"){
+                        static AAssetManager *assetManager = nullptr;
+                        {
+                            QMutexLocker locker(&m_mutex);
+                            if(!assetManager){
+                                locker.unlock();
+                                AAssetManager *_assetManager = nullptr;
+                                if(JniEnvironment env{24}){
+                                    try{
+                                        if(jobject context = Java::Android::QtNative::getContext(env)){
+                                            if(jobject assets = Java::Android::ContextWrapper::getAssets(env, context)){
+                                                _assetManager = AAssetManager_fromJava(env, assets);
+                                            }
+                                        }
+                                    } catch (const JavaException& e) {
+                                        e.report(env);
+                                    }
+                                }
+                                locker.relock();
+                                assetManager = _assetManager;
+                            }
+                        }
+                        if(assetManager){
+                            engines << new QAssetEntryEngine(assetManager, m_baseName);
+                            return;
+                        }
+                    }
                 }
+            }
+#endif
+            QString directPath;
+            QSet<QString> resourcePaths = QClassPathFileEngineHandler::jarFilesByDirectory(m_baseName, &directPath);
+            if(!directPath.isEmpty()){
+                QFSEntryEngine* engine = new QFSEntryEngine(directPath);
+                engines << engine;
+            }else if (!resourcePaths.isEmpty()) { // Its at least a directory which exists in jar files
+                if(JniEnvironment env{int(16*resourcePaths.size())}){
+                    try{
+                        //QString fileName = m_baseName + u'/' + m_fileName;
+                        for(const QString& jarFilePath : qAsConst(resourcePaths)) {
+                            jobject jarFile = Java::QtJambi::ResourceUtility::resolveFileToJarResource(env, qtjambi_cast<jstring>(env, jarFilePath));
+                            if(jarFile){
+                                std::unique_ptr<QJarEntryEngine> engine{new QJarEntryEngine(env, jarFile, jarFilePath, m_baseName, m_prefix)};
+                                if(engine->isValid()) {
+                                    engines << engine.release();
+                                }
+                            }
+                        }
+                    } catch (const JavaException& e) {
+                        e.report(env);
+                    }
+                }
+                if(!engines.isEmpty())
+                    return;
+            }
+            QString filePath;
+            QString topLevelDir;
 
-                jobject classPathDirs = Java::QtJambi::ResourceUtility::classPathDirs(env);
-                iter = QtJambiAPI::iteratorOfJavaIterable(env, classPathDirs);
-                while(QtJambiAPI::hasJavaIteratorNext(env, iter)) {
-                    try {
-                        jobject path = QtJambiAPI::nextOfJavaIterator(env, iter);
-                        // FIXME: This maybe already URL or raw dir, I think we should just make this a
-                        //  dir in the native String format
-                        addFromPath(env, Java::QtJambi::ResourceUtility::resolveUrlFromPath(env, path), m_baseName, m_prefix);
+            auto pos = m_baseName.lastIndexOf("/");
+            if (pos >= 0)
+                filePath = m_baseName.mid(0, pos);
+            pos = m_baseName.indexOf("/");
+            if (pos >= 0)
+                topLevelDir = m_baseName.mid(0, pos);
+
+            // This is all wrong... we need to maintain the ordered list of the mix then attempt
+            //  to populate from each in turn (if we are exhaustive) otherwise
+            if(filePath!=m_baseName){
+                resourcePaths = QClassPathFileEngineHandler::jarFilesByDirectory(filePath);
+                if (!resourcePaths.isEmpty()) {
+                    if(JniEnvironment env{int(16*resourcePaths.size())}){
+                        try{
+                            for(const QString& jarFilePath : qAsConst(resourcePaths)) {
+                                jobject jarFile = Java::QtJambi::ResourceUtility::resolveFileToJarResource(env, qtjambi_cast<jstring>(env, jarFilePath));
+                                std::unique_ptr<QJarEntryEngine> engine{new QJarEntryEngine(env, jarFile, jarFilePath, m_baseName, m_prefix)};
+                                bool isValid;
+                                if((isValid = engine->isValid())) {
+                                    engines << engine.release();
+                                }
+                                if(isValid){
+                                    QClassPathFileEngineHandler::insertJarFileResource(jarFilePath, m_baseName);
+                                }
+                            }
+                        } catch (const JavaException& e) {
+                            e.report(env);
+                        }
+                    }
+                }
+            }
+            if(!topLevelDir.isEmpty()){
+                resourcePaths = QClassPathFileEngineHandler::classPathsByDirectory(topLevelDir);
+                if (!resourcePaths.isEmpty()) {
+                    if(JniEnvironment env{int(16*resourcePaths.size())}){
+                        try{
+                            for(const QString& classPath : qAsConst(resourcePaths)) {
+                                QDir directory(classPath);
+                                QFileInfo file(directory.absoluteFilePath(m_baseName));
+                                if(file.exists()){
+                                    QFSEntryEngine* engine = new QFSEntryEngine(file.absoluteFilePath());
+                                    engines << engine;
+                                }
+                            }
+                        } catch (const JavaException& e) {
+                            e.report(env);
+                        }
+                    }
+                }
+            }
+            resourcePaths = QClassPathFileEngineHandler::classPathDirURLs();
+            if (!resourcePaths.isEmpty()) {
+                if(JniEnvironment env{int(16*resourcePaths.size())}){
+                    try{
+                        for(const QString& path : qAsConst(resourcePaths)) {
+                            jobject url = Java::QtJambi::ResourceUtility::resolveUrlFromPath(env, qtjambi_cast<jstring>(env, path));
+                            addFromPath(env, url, m_baseName, m_prefix, engines);
+                        }
                     } catch (const JavaException& e) {
                         e.report(env);
                     }
                 }
             }
-        } else{
+        } else if(JniEnvironment env{100}){
             try {
                 jobject url = Java::QtJambi::ResourceUtility::resolveUrlFromPath(env, qtjambi_cast<jstring>(env, m_selectedSource));
-                addFromPath(env, url, m_baseName, m_prefix);
+                addFromPath(env, url, m_baseName, m_prefix, engines);
             } catch (const JavaException& e) {
                 e.report(env);
             }
@@ -1224,22 +1524,7 @@ QString QClassPathEngine::fileName(FileName file) const {
         QMutexLocker locker(&m_mutex);
         engines = m_engines;
     }
-    if(QAbstractFileEngine* afe = engines.value(0)){
-        QString classPathEntry;
-        if (engines.size() == 1) {
-            if (QClassPathEntry* cpe = dynamic_cast<QClassPathEntry*>(afe))
-                classPathEntry = cpe->classPathEntryName();
-            else{
-                if(JniEnvironment env{200}){
-                    JavaException::raiseRuntimeException(env, "Wrong engine type in class path file engine" QTJAMBI_STACKTRACEINFO );
-                }else{
-                    qCWarning(DebugAPI::internalCategory) << "Wrong engine type in class path file engine";
-                }
-            }
-        } else {
-            classPathEntry = "*";
-        }
-
+    if(!engines.isEmpty()){
         switch(file){
         case DefaultName:
             result = m_prefix + m_fileName;
@@ -1474,7 +1759,8 @@ QClassPathEngine::IteratorPtr QClassPathEngine::beginEntryList(QDir::Filters fil
 }
 #endif
 
-bool QClassPathEngine::addFromPath(JNIEnv* env, jobject url, const QString& fileName, const QString& prefix) {
+bool QClassPathEngine::addFromPath(JNIEnv* env, jobject url, const QString& fileName, const QString& prefix, QList<QAbstractFileEngine*>& engines) {
+    Q_UNUSED(prefix)
     // If it is a plain file on the disk, just read it from the disk
     if(!url)
         return false;
@@ -1488,25 +1774,26 @@ bool QClassPathEngine::addFromPath(JNIEnv* env, jobject url, const QString& file
                 ) {
             file = QFileInfo(file.absolutePath() + "/" + fileName);
             if(file.exists()){
-                QFSEntryEngine* engine = new QFSEntryEngine(file.absoluteFilePath(), urlPath);
-                QMutexLocker locker(&m_mutex);
-                m_engines << engine;
+                QFSEntryEngine* engine = new QFSEntryEngine(file.absoluteFilePath());
+                engines << engine;
                 return true;
+            }
+            return false;
 #ifdef Q_OS_ANDROID
-            }else if(urlPath=="file:/"){
-                file = QFileInfo("assets:/qrc/" + fileName);
-                if(!file.exists()){
-                    file = QFileInfo("assets:qrc/" + fileName);
-                }
-                if(file.exists()){
-                    if(file.isDir()){
-                        QStringList dirEntries = QDir(file.absoluteFilePath()).entryList();
+        }else if(urlPath=="file:/"){
+            file = QFileInfo("assets:/qrc/" + fileName);
+            if(!file.exists()){
+                file = QFileInfo("assets:qrc/" + fileName);
+            }
+            if(file.exists()){
+                if(file.isDir()){
+                    QStringList dirEntries = QDir(file.absoluteFilePath()).entryList();
+                    engines << new QAssetDirectoryEngine(std::move(dirEntries), fileName);
+                    return true;
+                }else if(prefix==":"){
+                    static AAssetManager *assetManager = nullptr;
+                    {
                         QMutexLocker locker(&m_mutex);
-                        m_engines << new QAssetDirectoryEngine(std::move(dirEntries), fileName);
-                        return true;
-                    }else if(prefix==":"){
-                        QMutexLocker locker(&m_mutex);
-                        static AAssetManager *assetManager = nullptr;
                         if(!assetManager){
                             locker.unlock();
                             AAssetManager *_assetManager = nullptr;
@@ -1518,15 +1805,14 @@ bool QClassPathEngine::addFromPath(JNIEnv* env, jobject url, const QString& file
                             locker.relock();
                             assetManager = _assetManager;
                         }
-                        if(assetManager){
-                            m_engines << new QAssetEntryEngine(assetManager, fileName);
-                            return true;
-                        }
+                    }
+                    if(assetManager){
+                        engines << new QAssetEntryEngine(assetManager, fileName);
+                        return true;
                     }
                 }
-#endif
             }
-            return false;
+#endif
         }else if(file.isFile()){
             urlPath = "jar:" + urlPath + "!/";
             url = Java::QtJambi::ResourceUtility::resolveUrlFromPath(env, qtjambi_cast<jstring>(env, urlPath));
@@ -1535,41 +1821,24 @@ bool QClassPathEngine::addFromPath(JNIEnv* env, jobject url, const QString& file
         urlPath = "jar:" + urlPath + "!/";
         url = Java::QtJambi::ResourceUtility::resolveUrlFromPath(env, qtjambi_cast<jstring>(env, urlPath));
     }
-    if(url && urlPath.startsWith("jar:")){
-        jobject jarFile = Java::QtJambi::ResourceUtility::resolveUrlToJarResource(env, url);
-        bool isDirectory = Java::QtJambi::ResourceUtility::isDirectory(env, jarFile, qtjambi_cast<jstring>(env, fileName));
-        QJarEntryEngine* engine = new QJarEntryEngine(env, jarFile, fileName, isDirectory, urlPath, prefix);
-        if(engine->isValid()) {
-            QMutexLocker locker(&m_mutex);
-            m_engines << engine;
+    urlPath = urlPath + fileName;
+    url = Java::QtJambi::ResourceUtility::resolveUrlFromPath(env, qtjambi_cast<jstring>(env, urlPath));
+    if(url){
+        std::unique_ptr<QUrlEntryEngine> engine{new QUrlEntryEngine(env, url, fileName)};
+        if(engine->fileFlags(QAbstractFileEngine::FileInfoAll).testFlag(QAbstractFileEngine::ExistsFlag)) {
+            engines << engine.release();
             return true;
-        }else{
-            delete engine;
-        }
-    }else{
-        urlPath = urlPath + fileName;
-        url = Java::QtJambi::ResourceUtility::resolveUrlFromPath(env, qtjambi_cast<jstring>(env, urlPath));
-        if(url){
-            QUrlEntryEngine* engine = new QUrlEntryEngine(env, url, fileName, urlPath);
-            if(engine->fileFlags(QAbstractFileEngine::FileInfoAll).testFlag(QAbstractFileEngine::ExistsFlag)) {
-                QMutexLocker locker(&m_mutex);
-                m_engines << engine;
-                return true;
-            }else{
-                delete engine;
-            }
         }
     }
     return false;
 }
 
-QUrlEntryEngine::QUrlEntryEngine(JNIEnv* env, jobject url, const QString& fileName, const QString& classPathEntryFileName)
+QUrlEntryEngine::QUrlEntryEngine(JNIEnv* env, jobject url, const QString& fileName)
     : QAbstractFileEngine(),
       QClassPathEntry(),
-      m_classPathEntryFileName(classPathEntryFileName),
       m_fileName(fileName),
       m_connection(),
-      m_inputStream(),
+      m_readChannel(),
       m_size(-1),
       m_flags()
 {
@@ -1601,12 +1870,14 @@ QUrlEntryEngine::~QUrlEntryEngine(){
 }
 
 qint64 QUrlEntryEngine::read(char *data, qint64 maxlen) {
-    if(m_inputStream){
+    if(m_readChannel){
         if(JniEnvironment env{400}){
             try{
-                QtJambiScope __qtjambi_scope;
-                jbyteArray _data = qtjambi_array_cast<jbyteArray>(env, __qtjambi_scope, data, jsize(qMin(qint64(INT_MAX), maxlen)));
-                return Java::Runtime::InputStream::read(env, m_inputStream.object(env), _data);
+                jobject buffer = env->NewDirectByteBuffer(data, maxlen);
+                Java::Runtime::ReadableByteChannel::read(env, m_readChannel.object(env), buffer);
+                jint pos = Java::Runtime::Internal::Buffer::position(env, buffer);
+                truncateBuffer(env, buffer);
+                return pos;
             }catch(const JavaException& exn){
                 exn.report(env);
                 return 0;
@@ -1621,10 +1892,14 @@ bool QUrlEntryEngine::open(QIODevice::OpenMode openMode
          ,std::optional<QFile::Permissions>
 #endif
         ) {
-    if((openMode & QIODevice::ReadOnly) && !m_inputStream && !m_flags.testFlag(DirectoryType)){
+    if((openMode & QIODevice::ReadOnly) && !m_readChannel && !m_flags.testFlag(DirectoryType)){
         if(JniEnvironment env{400}){
             try{
-                m_inputStream = JObjectWrapper(env, Java::Runtime::URLConnection::getInputStream(env, m_connection.object(env)));
+                if(jobject stream = Java::Runtime::URLConnection::getInputStream(env, m_connection.object(env))){
+                    m_readChannel.assign(env, Java::Runtime::Channels::newInChannel(env, stream));
+                }else{
+                    m_readChannel.assign(env, nullptr);
+                }
             }catch(const JavaException& exn){
                 exn.report(env);
                 return false;
@@ -1636,11 +1911,11 @@ bool QUrlEntryEngine::open(QIODevice::OpenMode openMode
 }
 
 bool QUrlEntryEngine::close() {
-    if(m_inputStream){
+    if(m_readChannel){
         if(JniEnvironment env{400}){
             try{
-                Java::Runtime::InputStream::close(env, m_inputStream.object(env));
-                m_inputStream = JObjectWrapper();
+                Java::Runtime::AutoCloseable::close(env, m_readChannel.object(env));
+                m_readChannel.assign(env, nullptr);
                 return true;
             }catch(const JavaException& exn){
                 exn.report(env);
@@ -1669,30 +1944,13 @@ bool AccessResource::needsClassPathEngine(const QString &fileName, QStringList& 
     return true;
 }
 
-class QClassPathFileEngineHandler: public QAbstractFileEngineHandler
-{
-public:
-#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
-    typedef std::unique_ptr<QAbstractFileEngine> QAbstractFileEnginePointer;
-#else
-    typedef QAbstractFileEngine* QAbstractFileEnginePointer;
-#endif
-    QAbstractFileEnginePointer create(const QString &fileName) const override;
-private:
-    QClassPathFileEngineHandler() = default;
-    ~QClassPathFileEngineHandler() override = default;
-    static QClassPathFileEngineHandler INSTANCE;
-    friend QScopedPointerDeleter<QClassPathFileEngineHandler>;
-};
-
-QClassPathFileEngineHandler QClassPathFileEngineHandler::INSTANCE;
-
 QClassPathFileEngineHandler::QAbstractFileEnginePointer QClassPathFileEngineHandler::create(const QString &fileName) const
 {
     QClassPathEngine *rv = nullptr;
     bool mightBeResource = false;
     if (fileName.startsWith("classpath:")
             || fileName.startsWith("/:classpath:")
+            || fileName.startsWith(":classpath:")
             || (mightBeResource = fileName.startsWith(":"))){
         QStringList resourceEntries;
         if(!mightBeResource || AccessResource::needsClassPathEngine(fileName, resourceEntries)){

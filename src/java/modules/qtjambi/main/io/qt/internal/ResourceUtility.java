@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -40,20 +40,21 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLConnection;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.attribute.FileTime;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.function.Function;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
@@ -68,15 +69,26 @@ import io.qt.core.QLocale;
  */
 final class ResourceUtility {
 	
-	static {
-		QtJambi_LibraryUtilities.initialize();
-	}
-	
 	private ResourceUtility() {
 	}
 	
 	private static final int ExcludeFiles =          0x000004;
 	private static final int ExcludeDirs =           0x000008;
+	
+	private static final Thread cleanupThread;
+	private final static JarResourceFactoryInterface factory;
+	static {
+		cleanupThread = new Thread(JarResource::release);
+		cleanupThread.setName("QtJambiResourceReleaserThread");
+		cleanupThread.setDaemon(true);
+		cleanupThread.start();
+		
+		if(Boolean.getBoolean("io.qt.acknowledge-resources")) {
+			factory = new RecognizableJarResourceFactory();
+		}else {
+			factory = new JarResourceFactory();
+		}
+	}
 	
 	private interface JarResourceFactoryInterface{
 		JarResource create(File fileToJarFile) throws IOException;
@@ -104,15 +116,6 @@ final class ResourceUtility {
 			return new RecognizableJarResource(urlToJarFile);
 		}
 	}
-	
-	private final static JarResourceFactoryInterface factory;
-	static {
-		if(Boolean.getBoolean("io.qt.acknowledge-resources")) {
-			factory = new RecognizableJarResourceFactory();
-		}else {
-			factory = new JarResourceFactory();
-		}
-	}
 
     private static class UrlOrFile {
         UrlOrFile(URL url, File file) {
@@ -124,164 +127,129 @@ final class ResourceUtility {
 		final File file;
     }
 
-	private static final Function<String, Set<String>> newSetFactory = s -> new HashSet<>();
-
-	private final static JarCache cache = new JarCache();
-    
     static void addSearchPath(URL url) {
     	if (url != null) {
-			cache.addPath(url);
+			addCachePath(url, false);
     	}
     }
 
 	static void addSearchPath(String path) {
 		URL url = resolveUrlFromPath(path);
 		if (url != null) {
-			cache.addPath(url);
+			addCachePath(url, false);
 		}
 	}
 
 	static void removeSearchPath(String path) {
 		URL url = resolveUrlFromPath(path);
 		if (url != null) {
-			cache.removePath(url);
+			removeCachePath(url);
 		}
 	}
 	
-	@NativeAccess
-	private static void initialize() {
-		List<URL> cpUrls = new ArrayList<>();
-		try {
-			for(URI uri : RetroHelper.moduleLocations()) {
-				try{
-					URL url = uri.toURL();
-					if(!"jrt".equals(url.getProtocol()) && !cpUrls.contains(url)) {
-						cache.addPath(url);
-						cpUrls.add(url);
-					}
-				} catch (Exception e) {
-					java.util.logging.Logger.getLogger("io.qt.internal.fileengine").log(java.util.logging.Level.SEVERE, "", e);
-				}
-			}
-			for(ClassLoader loader : RetroHelper.classLoaders()) {
-				if(loader instanceof URLClassLoader) {
-					for(URL url : ((URLClassLoader) loader).getURLs()) {
-						if(!cpUrls.contains(url)) {
-							cache.addPath(url);
-							cpUrls.add(url);				
-						}
-					}
-				}else {
-					Enumeration<URL> urls = loader.getResources("META-INF/MANIFEST.MF");
-					while (urls.hasMoreElements()) {
-						URL url = urls.nextElement();
-						try {
-							String end;
-							String urlPath;
-							if("jar".equals(url.getProtocol())) {
-								urlPath = url.getPath();
-								end = "!/META-INF/MANIFEST.MF";
-							}else {
-								urlPath = url.toString();
-								end = "/META-INF/MANIFEST.MF";
-								if(urlPath.endsWith(end))
-									end = "META-INF/MANIFEST.MF";
-							}
-							if(urlPath.endsWith(end)) {
-								urlPath = urlPath.substring(0, urlPath.length() - end.length());
-								URL fileUrl = CoreUtility.createURL(urlPath);
-								if(!"jar".equals(url.getProtocol()) && fileUrl.getPath().isEmpty()) {
-									fileUrl = CoreUtility.createURL(urlPath+"/");
-								}
-								if(!cpUrls.contains(fileUrl)) {
-									cache.addPath(fileUrl);
-									cpUrls.add(fileUrl);
-								}
-							}
-						} catch (Throwable e) {
-							java.util.logging.Logger.getLogger("io.qt.internal.fileengine")
-									.log(java.util.logging.Level.SEVERE, "", e);
-						}
-					}
-				}
-			}
-		} catch (Exception e) {
-			java.util.logging.Logger.getLogger("io.qt.internal.fileengine").log(java.util.logging.Level.SEVERE, "",
-					e);
-		}
-
-		String javaClassPath = System.getProperty("java.class.path");
-		if (javaClassPath == null)
-			javaClassPath = ""; // gets ignored below
-		String javaModulePath = System.getProperty("jdk.module.path");
-		if (javaModulePath != null)
-			javaClassPath = javaModulePath + File.pathSeparator + javaClassPath; // gets ignored below
-		String paths[] = javaClassPath.split("\\" + File.pathSeparator);
-
-		// Only add the .jar files that are not already added...
-		int counter = 0;
-		for (String path : paths) {
-			path = path.trim();
-			if (!path.isEmpty()) {
-				counter++; // count all paths, invalid and valid
-
-				URL url = resolveUrlFromPath(path);
-				boolean match = false;
-
-				if(url!=null){
-					cache.addPath(url);
-					if(url.toString().endsWith("/"))
-						continue;
-				}else{
-					continue;
-				}
-
-				JarResource resource2 = null;
-				JarResource resource1 = null;
-				try {
-					resource2 = resolveUrlToJarResource(url);
-					if (resource2 != null) {
-						for (URL otherURL : cpUrls) {
-							if(otherURL.toString().endsWith("/"))
-								continue;
-							resource1 = resolveUrlToJarResource(otherURL);
-							if (resource1 != null) {
-								File file1 = new File(resource1.getName());
-								File file2 = new File(resource2.getName());
-								if (file1.getCanonicalPath().equals(file2.getCanonicalPath())) {
-									match = true;
-									break;
-								}
-							}
-						}
-					}
-				} catch (Exception e) { // This should probably just be IOException
-					java.util.logging.Logger.getLogger("io.qt.internal.fileengine")
-							.log(java.util.logging.Level.SEVERE, "", e); // this has been so useful in finding many
-																			// bugs/issues
-				} finally {
-					if (resource2 != null) {
-						resource2.put();
-						resource2 = null;
-					}
-					if (resource1 != null) {
-						resource1.put();
-						resource1 = null;
-					}
-				}
-
-				if (!match)
-					cache.addPath(url);
-			}
-		}
-		
-		if (counter == 0) {
+	static void initialize(String qtJambiConfFile) {
+		ensureHandler(qtJambiConfFile);
+		if(!Boolean.getBoolean("io.qt.no-classpath-to-resourcepath")) {
+			Set<URL> cpUrls = new HashSet<>();
 			try {
-				cache.addPath(new File(System.getProperty("user.dir")).toURI().toURL());
-			} catch (MalformedURLException e) {
-				java.util.logging.Logger.getLogger("io.qt.internal.fileengine")
-				.log(java.util.logging.Level.SEVERE, "", e);
+				for(URI uri : RetroHelper.moduleLocations()) {
+					try{
+						URL url = uri.toURL();
+						if(!"jrt".equals(url.getProtocol()) && !cpUrls.contains(url)) {
+							addCachePath(url, true);
+							cpUrls.add(url);
+						}
+					} catch (Exception e) {
+						java.util.logging.Logger.getLogger("io.qt.internal.fileengine").log(java.util.logging.Level.SEVERE, "", e);
+					}
+				}
+				for(ClassLoader loader : RetroHelper.classLoaders()) {
+					if(loader instanceof URLClassLoader) {
+						for(URL url : ((URLClassLoader) loader).getURLs()) {
+							if(!cpUrls.contains(url)) {
+								addCachePath(url, true);
+								cpUrls.add(url);				
+							}
+						}
+					}else {
+						Enumeration<URL> urls = loader.getResources("META-INF/MANIFEST.MF");
+						while (urls.hasMoreElements()) {
+							URL url = urls.nextElement();
+							try {
+								String end;
+								String urlPath;
+								if("jar".equals(url.getProtocol())) {
+									urlPath = url.getPath();
+									end = "!/META-INF/MANIFEST.MF";
+								}else {
+									urlPath = url.toString();
+									end = "/META-INF/MANIFEST.MF";
+									if(urlPath.endsWith(end))
+										end = "META-INF/MANIFEST.MF";
+								}
+								if(urlPath.endsWith(end)) {
+									String metainfURL = url.toString();
+									metainfURL = metainfURL.substring(0, metainfURL.length()-11);
+									urlPath = urlPath.substring(0, urlPath.length() - end.length());
+									URL fileUrl = CoreUtility.createURL(urlPath);
+									if(!"jar".equals(url.getProtocol()) && fileUrl.getPath().isEmpty()) {
+										fileUrl = CoreUtility.createURL(urlPath+"/");
+									}
+									if(!cpUrls.contains(fileUrl)) {
+										addCachePath(fileUrl, true);
+										cpUrls.add(fileUrl);
+									}
+								}
+							} catch (Throwable e) {
+								java.util.logging.Logger.getLogger("io.qt.internal.fileengine")
+										.log(java.util.logging.Level.SEVERE, "", e);
+							}
+						}
+					}
+				}
+			} catch (Exception e) {
+				java.util.logging.Logger.getLogger("io.qt.internal.fileengine").log(java.util.logging.Level.SEVERE, "",
+						e);
 			}
+	
+			String javaClassPath = System.getProperty("java.class.path");
+			if (javaClassPath == null)
+				javaClassPath = ""; // gets ignored below
+			String javaModulePath = System.getProperty("jdk.module.path");
+			if (javaModulePath != null)
+				javaClassPath = javaModulePath + File.pathSeparator + javaClassPath; // gets ignored below
+			String paths[] = javaClassPath.split("\\" + File.pathSeparator);
+	
+			// Only add the .jar files that are not already added...
+			for (String path : paths) {
+				path = path.trim();
+				if (!path.isEmpty()) {
+					URL url = resolveUrlFromPath(path);
+					if(url!=null && !cpUrls.contains(url))
+						addCachePath(url, true);
+				}
+			}
+			
+			if (cpUrls.isEmpty()) {
+				try {
+					addCachePath(new File(System.getProperty("user.dir")).toURI().toURL(), true);
+				} catch (MalformedURLException e) {
+					java.util.logging.Logger.getLogger("io.qt.internal.fileengine")
+					.log(java.util.logging.Level.SEVERE, "", e);
+				}
+			}
+		}
+		switch(LibraryUtility.operatingSystem) {
+		case Android:
+			String androidBundlePath = androidBundlePath();
+			if(androidBundlePath!=null) {
+				URL url = resolveUrlFromPath("file:"+androidBundlePath);
+				if (url != null) {
+					addCachePath(url, true);
+				}
+			}
+			break;
+			default: break;
 		}
 	}
 
@@ -418,106 +386,17 @@ final class ResourceUtility {
 	}
 	
 	@NativeAccess
-	private static Collection<String> pathToJarFiles(String entry) {
-		return cache.pathToJarFiles(entry);
-	}
-	
-	@NativeAccess
-	private static boolean isDirectory(JarResource myJarFile, String fileName) {
-		boolean isDirectory = false;
-        JarEntry fileInJar = myJarFile.getJarEntry(fileName);
-
-        // If the entry exists in the given file, look it up and
-        // check if its a dir or not
-        if (fileInJar != null) {
-            isDirectory = fileInJar.isDirectory();
-            if (!isDirectory) {
-                boolean tmpIsDirectory = checkIsDirectory(myJarFile, fileInJar);
-                isDirectory = tmpIsDirectory;
-            } else {
-            }
-        }
-
-        if (!isDirectory) {
-            // Otherwise, look if the directory exists in the
-            // cache...
-        	Collection<String> pathToJarFiles = pathToJarFiles(fileName);
-            String jarFileName = myJarFile.getName();
-            if (pathToJarFiles != null) {
-                for (String thisPathToJar : pathToJarFiles) {
-                    if (thisPathToJar.equals(jarFileName)) {
-                        isDirectory = true;
-                        break;
-                    }
-                }
-            }
-
-            // Nasty fallback... Iterate through the .jar file and try to check if
-            // fileName is the prefix (hence directory) of any of the entries...
-            if (!isDirectory) {
-                String fileNameWithSlash = fileName + "/";
-                Enumeration<JarEntry> entries = myJarFile.entries();
-                while (entries.hasMoreElements()) {
-                    JarEntry entry = entries.nextElement();
-                    String entryName = entry.getName();
-                    if (entryName.startsWith(fileNameWithSlash)) {
-                        isDirectory = true;
-                        break;
-                    }
-                }
-            }
-        }
-        return isDirectory;
+	private static void cleanupOnShutdown() {
+		jarResources.clear();
 	}
 
-    /**
-     * The JarEntry.isDirectory() method in Java returns false
-     * even for directories, so we need this extra check
-     * which tries to read a byte from the entry in order
-     * to trigger an exception when the entry is a directory.
-     */
-	static boolean checkIsDirectory(JarResource myJarFile, JarEntry fileInJar) {
-        InputStream inStream = null;
-        try {
-            // CHECKME is this hack/trick/kludge maybe somewhat problematic
-            //  for connection handler based JarFile handles ?
-            inStream = myJarFile.getInputStream(fileInJar);
-            if(inStream == null)
-                return true;	// avoid NPE
-            inStream.read();
-        } catch(IOException e) {
-            return true;
-        } finally {
-            if(inStream != null) {
-                try {
-                    inStream.close();
-                } catch(IOException eat) {
-                }
-                inStream = null;
-            }
-        }
-
-        return false;
-    }
-
 	@NativeAccess
-	private static JarResource resolveUrlToJarResource(URL url) throws IOException, ZipException {
-        JarResource myJarFile = null;
-        UrlOrFile urlOrFile = checkURL(url);
-        try {
-            if(urlOrFile.file != null) {  // Due to workaround
-                if(urlOrFile.file.isFile()) // skip dirs
-                    myJarFile = factory.create(urlOrFile.file);
-            } else if(!"jrt".equals(urlOrFile.url.getProtocol())){
-                 myJarFile = factory.create(urlOrFile.url);
-            }
-        } catch(ZipException e) {
-            // This often fails with "java.util.zip.ZipException: error in opening zip file" but never discloses the filename
-            throw new ZipException(e.getMessage() + ": " + url);
-        }
+	private static JarResource resolveFileToJarResource(String file) throws IOException, ZipException {
+        JarResource myJarFile = jarResources.get(file);
+        if(myJarFile!=null)
+        	myJarFile.ensureRef();
         return myJarFile;
     }
-    
 
 
     private static UrlOrFile checkURL(URL url) {
@@ -547,15 +426,61 @@ final class ResourceUtility {
         private URL urlToJarFile;  // we save this to allow for close/reopen based on just this handle
         private JarFile jarFile;
         private int refCount;
+        private long time;
+        private final Map<String,Boolean> knownDirectoryPaths = Collections.synchronizedMap(new HashMap<>());
+        private static final LinkedList<JarResource> referencesResources = new LinkedList<>();
+        
+        static final int resourceCacheTime = 1000 * 60 * 3; // keeping cached jars open for 3 minutes
+        
+        static void release() {
+        	try {
+        		while(true) {
+        			JarResource resource;
+        			synchronized(referencesResources) {
+						if(referencesResources.isEmpty())
+							referencesResources.wait();
+						resource = referencesResources.poll();
+					}
+        			if(resource!=null) {
+        				long t1, t2;
+        				synchronized(resource) {
+        					t1 = resource.time;
+        					long delta = System.currentTimeMillis() - t1;
+        					if(delta<resourceCacheTime)
+        						resource.wait(resourceCacheTime-delta);
+        					t2 = resource.time;
+        				}
+        				if(t1==t2) {
+        					resource.deref();
+        				}else {
+        					synchronized(referencesResources) {
+        		            	referencesResources.push(resource);
+        		            }
+        				}
+        			}
+        		}
+			} catch (InterruptedException e) {
+			}
+        }
 
         JarResource(File fileToJarFile) throws IOException {
             this.fileToJarFile = fileToJarFile;
             openInternal();
+            time = System.currentTimeMillis();
+            synchronized(referencesResources) {
+            	referencesResources.push(this);
+            	referencesResources.notifyAll();
+            }
         }
 
         JarResource(URL urlToJarFile) throws IOException {
             this.urlToJarFile = urlToJarFile;
             openInternal();
+            time = System.currentTimeMillis();
+            synchronized(referencesResources) {
+            	referencesResources.push(this);
+            	referencesResources.notifyAll();
+            }
         }
 
         private void openInternal() throws IOException {
@@ -576,33 +501,43 @@ final class ResourceUtility {
         }
 
         // This method may never throw an exception
-        @NativeAccess
-        final void get() {
-            synchronized(this) {
-                refCount++;
+        final void ref() {
+            synchronized(referencesResources) {
+                ++refCount;
             }
         }
 
         // This method must cause a double increment on the reopen() case
         // Returns the previous refCount, so 0 means we just reopened, non-zero means we did get()
         @NativeAccess
-        final int getOrReopen() throws IOException {
+        final int ensureRef() throws IOException {
             int oldRefCount;
-            synchronized (this) {
+            synchronized (referencesResources) {
                 oldRefCount = refCount;
-                if(refCount <= 0)
-                    reopen();
-                get();
+                if(refCount <= 0) {
+                	if(jarFile != null)
+                        throw new IOException("jarFile already open");
+                    openInternal();
+                    referencesResources.push(this);
+                	referencesResources.notifyAll();
+                }
+                ref();
             }
+            synchronized (this) {
+            	time = System.currentTimeMillis();
+            	this.notifyAll();
+			}
             return oldRefCount;
         }
 
         // This method may never throw an exception
         @NativeAccess
-        final void put() {
+        final void deref() {
             JarFile closeJarFile = null;
-            synchronized(this) {
-                refCount--;
+            synchronized(referencesResources) {
+            	if(refCount == 0)
+            		return;
+                --refCount;
                 if(refCount == 0) {
                     closeJarFile = jarFile;
                     jarFile = null;
@@ -617,12 +552,6 @@ final class ResourceUtility {
                     urlConnection = null;
                 }
             }
-        }
-
-        final void reopen() throws IOException {
-            if(jarFile != null)
-                throw new IOException("jarFile already open");
-            openInternal();
         }
 
         @NativeAccess
@@ -682,6 +611,11 @@ final class ResourceUtility {
         }
         
         @NativeAccess
+        private ReadableByteChannel getChannel(ZipEntry ze) throws IOException{
+        	return Channels.newChannel(getInputStream(ze));
+        }
+        
+        @NativeAccess
         private void entryList(List<String> result, int _filters, Collection<String> filterNames, String mentryName, boolean isIteratorFlags){
             if (!mentryName.endsWith("/") && mentryName.length() > 0)
                 mentryName = mentryName + "/";
@@ -706,9 +640,7 @@ final class ResourceUtility {
                     entryName = entryName.substring(0, pos);
                     isDir = true;
                 } else {
-                    isDir = entry.isDirectory();
-                    if (!isDir)
-                        isDir = ResourceUtility.checkIsDirectory(this, entry);
+                    isDir = checkIsDirectory(entry);
                 }
 
                 if(!isIteratorFlags) {
@@ -779,6 +711,32 @@ final class ResourceUtility {
 	            return tm;
         	}
         }
+    	
+    	@NativeAccess
+    	private boolean isDirectory(String _fileName) {
+    		return knownDirectoryPaths.computeIfAbsent(_fileName, fileName->{
+	    		boolean isDirectory = false;
+	    		String fileNameWithSlash = fileName + "/";
+	            Enumeration<JarEntry> entries = entries();
+	            while (entries.hasMoreElements()) {
+	                JarEntry entry = entries.nextElement();
+	                String entryName = entry.getName();
+	                if (entryName.startsWith(fileNameWithSlash)) {
+	                    isDirectory = true;
+	                    break;
+	                }
+	            }
+	            return isDirectory;
+    		});
+    	}
+
+    	@NativeAccess
+    	boolean checkIsDirectory(JarEntry fileInJar) {
+    		boolean isDirectory = fileInJar.isDirectory();
+            if (!isDirectory)
+            	isDirectory = isDirectory(fileInJar.getName());
+            return isDirectory;
+        }
     }
     
     private static final class RecognizableJarResource extends JarResource{
@@ -830,202 +788,154 @@ final class ResourceUtility {
         }
     }
     
-    @NativeAccess
-    private static Collection<String> classPathDirs() {
-    	return cache.classPathDirs();
-    }
+    private final static Map<String,JarResource> jarResources = Collections.synchronizedMap(new HashMap<>());
     
-    @NativeAccess
-    private static void clear() {
-    	synchronized(cache.cache) {
-    		cache.cache.clear();
-    	}
-    	synchronized(cache.classPathDirs) {
-    			cache.classPathDirs.clear();
-    	}
-    }
-    
-    private final static class JarCache {
-    	
-        Collection<String> pathToJarFiles(String entry) {
-        	synchronized(cache) {
-	        	Set<String> result = cache.get(entry);
-	            return result==null? Collections.emptyList() : new HashSet<>(result);
-        	}
-        }
-
-        Collection<String> classPathDirs() {
-        	synchronized(classPathDirs) {
-        		return new HashSet<>(classPathDirs);
-        	}
-        }
-
-        private final Map<String, Set<String>> cache = new HashMap<>();
-        private final Set<String> classPathDirs = new HashSet<>();
-
-    	void addPath(URL url) {
-    		JarResource resource = null;
-            try {
-                // 
-                if(url.getProtocol().equals("file")) {
-                    File fileDir = new File(url.toURI());
-                    if(fileDir.isDirectory()) {
-                    	synchronized(classPathDirs) {
-                    		classPathDirs.add(fileDir.getAbsolutePath());
+	private static void addCachePath(URL url, boolean atInitialization) {
+		JarResource resource;
+		String resourceName;
+        try {
+            // 
+            if(url.getProtocol().equals("file")) {
+                File file = new File(url.toURI());
+                if(file.isDirectory()) {
+                	if(!atInitialization || !Boolean.getBoolean("io.qt.no-directories-to-resourcepath"))
+                		addClassPath(file.getAbsolutePath(), true);
+                    return;
+                } else if(file.isFile()) {
+                	resourceName = file.getPath();
+                    if(File.separatorChar=='\\')
+                    	resourceName = resourceName.replace(File.separatorChar, '/');
+                    resource = jarResources.computeIfAbsent(resourceName, p->{
+                    	try {
+                    		return factory.create(file);
+                        } catch(IOException eat) {
+                        	return null;
+                        }
+                    });
+                    if(atInitialization) {
+                    	if(resource.getJarEntry(LibraryUtility.DEPLOY_XML)!=null
+                    			|| resource.getJarEntry("META-INF/qtjambi-utilities.xml")!=null) {
+                    		jarResources.remove(resourceName);
+                    		resource.deref();
+                    		return;
                     	}
-                        return;
-                    } else if(fileDir.isFile()) {
-                        try {
-                            resource = factory.create(fileDir);
-                        } catch(IOException eat) {
-                        }
-                    }else {
-                    	return;
                     }
-                }else if(url.toString().endsWith("/") || url.getPath().isEmpty()) {
-                	synchronized(classPathDirs) {
-                		classPathDirs.add(url.toString());
-                	}
-                    return;
-                }
-                if(resource == null) {
-                    try {
-                        resource = factory.create(url);
-                    } catch(ZipException e) {
-                        throw new ZipException(e.getMessage() + ": " + url);
-                    }
-                }
-
-                String resourceName = resource.getName();
-
-                Set<String> seenSet = new TreeSet<>();
-                Enumeration<JarEntry> entries = resource.entries();
-                
-                while (entries.hasMoreElements()) {
-                    JarEntry entry = entries.nextElement();
-
-                    String dirName = null;
-                    boolean isToplevelFile = false;
-
-                    String entryName = entry.getName();
-
-                    // Remove potentially initial '/'
-                    while (entryName.startsWith("/"))
-                        entryName = entryName.substring(1);
-
-                    if (entry.isDirectory()) {
-                        if (entryName.endsWith("/"))
-                            dirName = entryName.substring(0, entryName.length() - 1);  // canonicalize
-                        else
-                            dirName = entryName;
-                    } else {
-                        int slashPos = entryName.lastIndexOf("/");
-                        if (slashPos > 0)
-                            dirName = entryName.substring(0, slashPos);  // isolate directory part
-                        else
-                            isToplevelFile = true;  // dirName will be null; there is no directory part
-                    }
-
-
-                    // Add all parent directories "foo/bar/dir1/dir2", "foo/bar/dir1", "foo/bar", "foo"
-                    while (dirName != null) {
-                        // optimization: if we saw the long nested path (then we already processed its parents as well)
-                        if (seenSet.contains(dirName))
-                            break;
-                        seenSet.add(dirName);
-                        synchronized(cache) {
-                        	cache.computeIfAbsent(dirName, newSetFactory).add(resourceName);
-                        }
-                        int slashPos = dirName.lastIndexOf("/");
-                        if (slashPos > 0)
-                            dirName = dirName.substring(0, slashPos);
-                        else
-                            dirName = null;
-                    }
-
-                    if (isToplevelFile) {
-                        if (!seenSet.contains("")) {
-                            seenSet.add("");
-                            synchronized(cache) {
-                            	cache.computeIfAbsent("", newSetFactory).add(resourceName);
-                            }
-                        }
-                    }
-                }
-
-                // Add root dir for all jar files (even empty ones)
-                if (!seenSet.contains("")) {
-                    seenSet.add("");
-                    // Add root dir for all jar files (even empty ones)
-                    synchronized(cache) {
-                    	cache.computeIfAbsent("", newSetFactory).add(resourceName);
-                    }
-                }
-            } catch (Exception e) {
-            } finally {
-                if (resource != null) {
-                    resource.put();
-                    resource = null;
-                }
-            }
-    	}
-
-    	void removePath(URL url) {
-    		JarResource resource = null;
-            try {
-                // 
-                if(url.getProtocol().equals("file")) {
-                    File fileDir = new File(url.toURI());
-                    if(fileDir.isDirectory()) {
-                    	removeImpl(fileDir.getAbsolutePath());
-                        return;
-                    } else if(fileDir.isFile()) {
-                        try {
-                            resource = factory.create(fileDir);
-                        } catch(IOException eat) {
-                        }
-                    }else {
-                    	return;
-                    }
-                }else if(url.toString().endsWith("/") || url.getPath().isEmpty()) {
-                	removeImpl(url.toString());
-                    return;
-                }
-                if(resource == null) {
-                    try {
-                        resource = factory.create(url);
-                    } catch(ZipException e) {
-                    }
-                }
-                if(resource != null) {
-                	removeImpl(resource.getName());
                 }else {
-                	removeImpl(url.toString());
+                	return;
                 }
-            } catch (Exception e) {
-            	removeImpl(url.toString());
-            } finally {
-                if (resource != null) {
-                    resource.put();
-                    resource = null;
+            }else if(url.toString().endsWith("/") || url.getPath().isEmpty()) {
+            	addClassPath(url.toString(), false);
+                return;
+            }else{
+                try {
+                    resource = factory.create(url);
+                    resourceName = resource.getName();
+                    if(File.separatorChar=='\\')
+                    	resourceName = resourceName.replace(File.separatorChar, '/');
+                    JarResource tmpResource = resource;
+                    resource = jarResources.computeIfAbsent(resourceName, p->tmpResource);
+                    if(resource!=tmpResource) {
+                    	tmpResource.deref();
+                    }
+                    if(atInitialization) {
+                    	if(resource.getJarEntry(LibraryUtility.DEPLOY_XML)!=null
+                    			|| resource.getJarEntry("META-INF/qtjambi-utilities.xml")!=null) {
+                    		jarResources.remove(resourceName);
+                    		resource.deref();
+                    		return;
+                    	}
+                    }
+                } catch(ZipException e) {
+                    throw new ZipException(e.getMessage() + ": " + url);
+                } catch(IOException eat) {
+                	resource = null;
+                	resourceName = null;
                 }
             }
-    	}
-    	
-    	private void removeImpl(String jarFileName) {
-    		synchronized(cache) {
-	    		for(String key : new ArrayList<>(cache.keySet())) {
-	    			Set<String> entries = cache.get(key);
-	    			if(entries!=null) {
-	    				entries.remove(jarFileName);
-	    				if(entries.isEmpty()) {
-	    					cache.remove(key);
-	    				}
-	    			}else {
-	    				cache.remove(key);
-	    			}
-	    		}
-    		}
-    	}
-    }
+
+            Set<String> directoryPaths = new TreeSet<>();
+            try {
+	            Enumeration<JarEntry> entries = resource.entries();
+	            while (entries.hasMoreElements()) {
+	                JarEntry entry = entries.nextElement();
+	
+	                String dirName = null;
+	                boolean isToplevelFile = false;
+	
+	                String entryName = entry.getName();
+	
+	                // Remove potentially initial '/'
+	                while (entryName.startsWith("/"))
+	                    entryName = entryName.substring(1);
+	
+	                if (entry.isDirectory()) {
+	                    if (entryName.endsWith("/"))
+	                        dirName = entryName.substring(0, entryName.length() - 1);  // canonicalize
+	                    else
+	                        dirName = entryName;
+	                } else {
+	                    int slashPos = entryName.lastIndexOf("/");
+	                    if (slashPos > 0)
+	                        dirName = entryName.substring(0, slashPos);  // isolate directory part
+	                    else
+	                        isToplevelFile = true;  // dirName will be null; there is no directory part
+	                }
+	
+	
+	                // Add all parent directories "foo/bar/dir1/dir2", "foo/bar/dir1", "foo/bar", "foo"
+	                while (dirName != null) {
+	                    // optimization: if we saw the long nested path (then we already processed its parents as well)
+	                    if (directoryPaths.contains(dirName))
+	                        break;
+	                    directoryPaths.add(dirName);
+	                    int slashPos = dirName.lastIndexOf("/");
+	                    if (slashPos > 0)
+	                        dirName = dirName.substring(0, slashPos);
+	                    else
+	                        dirName = null;
+	                }
+	
+	                if (isToplevelFile) {
+	                    if (!directoryPaths.contains("")) {
+	                        directoryPaths.add("");
+	                    }
+	                }
+	            }
+	
+	            // Add root dir for all jar files (even empty ones)
+	            if (!directoryPaths.contains("")) {
+	                // Add root dir for all jar files (even empty ones)
+	                directoryPaths.add("");
+	            }
+            }finally {
+            	insertJarFileResources(directoryPaths, resourceName);
+            }
+        } catch (Exception e) {
+        }
+	}
+
+	private static void removeCachePath(URL url) {
+        try {
+            if(url.getProtocol().equals("file")) {
+                File fileDir = new File(url.toURI());
+            	String resourceName = fileDir.getAbsolutePath();
+                if(File.separatorChar=='\\')
+                	resourceName = resourceName.replace(File.separatorChar, '/');
+            	removeResource(resourceName);
+            	JarResource resource = jarResources.remove(resourceName);
+            	if(resource!=null)
+            		resource.deref();
+            }else if(url.toString().endsWith("/") || url.getPath().isEmpty()) {
+            	removeResource(url.toString());
+            }
+        } catch (Exception e) {
+        	removeResource(url.toString());
+        }
+	}
+    
+	private static native void ensureHandler(String qtJambiConfFile);
+    private static native void insertJarFileResources(Collection<String> directoryPaths, String jarFileName);
+    private static native void removeResource(String path);
+    private static native void addClassPath(String path, boolean isDirectory);
+    private static native String androidBundlePath();
 }

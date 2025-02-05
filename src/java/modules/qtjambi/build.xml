@@ -1,6 +1,6 @@
 <!--===============================================================================================
 ==
-== Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+== Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 ==
 == This file is part of Qt Jambi.
 ==
@@ -87,14 +87,10 @@
         </condition>
         <property name="destdir" value="${deploymentdir}"/>
         <mkdir dir="${destdir}"/>
-		<condition property="qstackversion" value="8" else="21">
-			<less arg1="${target.java.version}" arg2="21"/>
-		</condition>
 		<path id="basesourcedirs">
 			<pathelement location="${generator.outputdir}/java/${module}"/>
 			<pathelement location="${antfile.dir}/main"/>
 			<pathelement location="${antfile.dir}/Qt${qtjambi.soname.version.major}"/>
-			<pathelement location="${antfile.dir}/Qt${qtjambi.soname.version.major}-JDK${qstackversion}"/>
 			<pathelement location="${antfile.dir}/Retro-JDK${retroversion}"/>
 			<pathelement location="${antfile.dir}/${jsr305-dir}"/>
 		</path>
@@ -137,12 +133,29 @@
 								</path>
 							</then>
 							<else>
-								<!-- Qt 6.7 and higher -->
-								<path id="sourcedirs">
-									<path refid="basesourcedirs"/>
-									<pathelement location="${antfile.dir}/Qt6.5"/>
-									<pathelement location="${antfile.dir}/Qt6-span"/>
-								</path>
+								<if>
+									<and>
+										<equals arg1="${qtjambi.soname.version.major}" arg2="6"/>
+										<less arg1="${qtjambi.soname.version.minor}" arg2="9"/>
+									</and>
+									<then>
+										<!-- Qt 6.7 to 6.8 -->
+										<path id="sourcedirs">
+											<path refid="basesourcedirs"/>
+											<pathelement location="${antfile.dir}/Qt6.5"/>
+											<pathelement location="${antfile.dir}/Qt6-span"/>
+										</path>
+									</then>
+									<else>
+										<!-- Qt 6.9 and higher -->
+										<path id="sourcedirs">
+											<path refid="basesourcedirs"/>
+											<pathelement location="${antfile.dir}/Qt6.5"/>
+											<pathelement location="${antfile.dir}/Qt6-span"/>
+											<pathelement location="${antfile.dir}/Qt6-longflags"/>
+										</path>
+									</else>
+								</if>
 							</else>
 						</if>
 					</else>

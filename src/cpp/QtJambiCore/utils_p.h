@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -79,7 +79,11 @@ namespace Java{
 namespace QtCore
 {
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QUnhandledException,
+                                    QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CONSTRUCTOR()
                                      )
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QException,
+                                     QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CONSTRUCTOR()
+                                    )
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QDebug,
                                      QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(__rcDevice)
                                      QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_FIELD(disabled))
@@ -265,6 +269,18 @@ namespace QtCore
                                      QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(test))
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QByteArray$Predicate,
                                      QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(test))
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QFuture$Runnable,
+                                     QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(run))
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QFuture$Function,
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(apply))
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QFuture$Consumer,
+                                     QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(accept))
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QFuture$Supplier,
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(get))
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QFuture$FutureFunction,
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(apply))
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QFuture$FutureConsumer,
+                                     QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(accept))
 namespace Internal
 {
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QAbstractFileEngineHandler,

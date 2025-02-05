@@ -1,10 +1,67 @@
-#include <QtCore/QPoint>
+/****************************************************************************
+**
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+**
+** This file is part of Qt Jambi.
+**
+** $BEGIN_LICENSE$
+**
+** GNU Lesser General Public License Usage
+** This file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** $END_LICENSE$
+**
+** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+**
+****************************************************************************/
+
+#include <QtCore/QtGlobal>
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) && QT_VERSION < QT_VERSION_CHECK(6, 2, 0)
+size_t qHash(const std::pair<float,double>& value, size_t seed = 0);
+#endif
+
 #include "containers.h"
+#include <QtCore/QPoint>
 #include <QtJambi/QtJambiAPI>
 #include <QtJambi/Cast>
 
 #include <QtCore/QSequentialIterable>
 #include <QtCore/QAssociativeIterable>
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) && QT_VERSION < QT_VERSION_CHECK(6, 2, 0)
+inline size_t qHash(const std::pair<float,double>& value, size_t seed){
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.first);
+    seed = hash(seed, value.second);
+    return seed;
+}
+#endif
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+uint qHash(const std::pair<const int&,const int&>& pair){
+    return qHash(pair, 0);
+}
+uint qHash(const std::pair<const float&,const double&>& pair){
+    return qHash(pair, 0);
+}
+uint qHash(const std::pair<const short&,const double&>& pair){
+    return qHash(pair, 0);
+}
+#endif
 
 namespace ContainerTest{
 

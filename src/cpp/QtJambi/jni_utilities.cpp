@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -43,16 +43,24 @@
 #include "java_p.h"
 #include "utils_p.h"
 #include "qtjambilink_p.h"
-#if QT_VERSION < QT_VERSION_CHECK(6, 8, 0)
+#if QT_VERSION < QT_VERSION_CHECK(6, 8, 0) \
+               || ( (defined(Q_OS_LINUX) \
+                    || defined(Q_OS_MACOS) \
+                    || defined(Q_OS_FREEBSD) \
+                    || defined(Q_OS_NETBSD) \
+                    || defined(Q_OS_OPENBSD) \
+                    || defined(Q_OS_SOLARIS) ) \
+               && !defined(Q_OS_ANDROID))
 #include "threadutils_p.h"
+#endif
+#ifdef Q_OS_ANDROID
+#include "androidapi.h"
 #endif
 #include "qtjambi_cast.h"
 
 void shutdown(JNIEnv * env, bool regular);
 
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambi_1LibraryUtilities_shutdown)
-(JNIEnv * env, jclass)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_internal_QtJambi_1LibraryUtilities_shutdown(JNIEnv * env, jclass)
 {
     QTJAMBI_NATIVE_METHOD_CALL("QtJambi_LibraryUtilities::shutdown()")
     try{
@@ -88,7 +96,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambi_1LibraryUtilities_shutdown)
     }
 }
 
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtJambi_1LibraryUtilities_internalAccess)(JNIEnv *env, jclass cls){
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_QtJambi_1LibraryUtilities_internalAccess(JNIEnv *env, jclass cls){
     try{
         return MetaInfoAPI::internalAccess(env, cls);
     }catch(const JavaException& exn){
@@ -97,12 +105,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtJa
     return nullptr;
 }
 
-extern "C" Q_DECL_EXPORT jobject JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_ExceptionUtility_convertNativeException)
-(JNIEnv *env,
- jclass,
- jlong exception)
-{
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_ExceptionUtility_convertNativeException(JNIEnv *env, jclass, jlong exception){
     if(exception){
         const std::exception* exn = reinterpret_cast<const std::exception*>(exception);
         if(typeid_equals(typeid(*exn), typeid(JavaException))){
@@ -115,10 +118,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_ExceptionUtility_convertNativeExcept
     return nullptr;
 }
 
-extern "C" Q_DECL_EXPORT jboolean JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_putenv)
-    (JNIEnv *env, jclass, jstring varName, jstring value)
-{
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_QtUtilities_putenv(JNIEnv *env, jclass, jstring varName, jstring value){
     try{
         J2CStringBuffer _varName(env, varName);
         J2CStringBuffer _value(env, value);
@@ -129,10 +129,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_putenv)
     return false;
 }
 
-extern "C" Q_DECL_EXPORT jboolean JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_ReferenceUtility_needsReferenceCounting)
-    (JNIEnv *env, jclass, QtJambiNativeID objId)
-{
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_internal_ReferenceUtility_needsReferenceCounting(JNIEnv *env, jclass, QtJambiNativeID objId){
     try{
         if (QSharedPointer<QtJambiLink> link = QtJambiLink::fromNativeId(objId)) {
             return link->needsReferenceCounting() || link->ownership()==QtJambiLink::Ownership::Java;
@@ -143,17 +140,63 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_ReferenceUtility_needsReferenceCount
     return false;
 }
 
-extern "C" Q_DECL_EXPORT jint JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_LibraryUtility_qtJambiVersion)(JNIEnv *,jclass)
-{
+void addClassPath(const QString& path, bool isDirectory);
+void removeResource(const QString& path);
+void insertJarFileResources(JNIEnv *env, jobject directoryPaths, jstring _jarFileName);
+void ensureHandler(JNIEnv* env, jstring qtJambiConfFile);
+
+extern "C" JNIEXPORT void JNICALL Java_io_qt_internal_ResourceUtility_ensureHandler(JNIEnv *env,jclass, jstring qtJambiConfFile){
+    try{
+        ensureHandler(env, qtJambiConfFile);
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+}
+
+extern "C" JNIEXPORT jstring JNICALL Java_io_qt_internal_ResourceUtility_androidBundlePath(JNIEnv *env,jclass){
+    try{
+#ifdef Q_OS_ANDROID
+        if(jobject context = Java::Android::QtNative::getContext(env)){
+            if(jobject appInfo = Java::Android::Context::getApplicationInfo(env, context)){
+                return Java::Android::ApplicationInfo::sourceDir(env, appInfo);
+            }
+        }
+#endif
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+    return nullptr;
+}
+
+extern "C" JNIEXPORT void JNICALL Java_io_qt_internal_ResourceUtility_addClassPath(JNIEnv *env,jclass, jstring path, jboolean isDirectory){
+    try{
+        addClassPath(qtjambi_cast<QString>(env, path), isDirectory);
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+}
+
+extern "C" JNIEXPORT void JNICALL Java_io_qt_internal_ResourceUtility_insertJarFileResources(JNIEnv *env,jclass, jobject directoryPaths, jstring jarFileName){
+    try{
+        insertJarFileResources(env, directoryPaths, jarFileName);
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+}
+
+extern "C" JNIEXPORT void JNICALL Java_io_qt_internal_ResourceUtility_removeResource(JNIEnv *env,jclass, jstring path){
+    try{
+        removeResource(qtjambi_cast<QString>(env, path));
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+}
+
+extern "C" JNIEXPORT jint JNICALL Java_io_qt_internal_LibraryUtility_qtJambiVersion(JNIEnv *,jclass){
     return QT_VERSION_CHECK(QT_VERSION_MAJOR, QT_VERSION_MINOR, QTJAMBI_PATCH_VERSION);
 }
 
-extern "C" Q_DECL_EXPORT jstring JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_LibraryUtility_libraryFilePath)
-(JNIEnv *env,
- jclass)
-{
+extern "C" JNIEXPORT jstring JNICALL Java_io_qt_internal_LibraryUtility_libraryFilePath(JNIEnv *env, jclass){
     try{
         QString path = getFunctionLibraryPath(reinterpret_cast<QFunctionPointer>(&Java_io_qt_internal_LibraryUtility_libraryFilePath));
         return qtjambi_cast<jstring>(env, path);
@@ -163,20 +206,11 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_LibraryUtility_libraryFilePath)
     return nullptr;
 }
 
-extern "C" Q_DECL_EXPORT jclass JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_AccessUtility_getClass)
-    (JNIEnv * env,
-     jobject, jobject e)
-{
+extern "C" JNIEXPORT jclass JNICALL Java_io_qt_internal_AccessUtility_getClass(JNIEnv * env, jobject, jobject e){
     return e ? env->GetObjectClass(e) : nullptr;
 }
 
-extern "C" Q_DECL_EXPORT jboolean JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_ClassAnalyzerUtility_isGeneratedClass)
-    (JNIEnv *env,
-     jclass,
-     jstring className)
-{
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_internal_ClassAnalyzerUtility_isGeneratedClass(JNIEnv *env, jclass, jstring className){
     try{
         QString cn = qtjambi_cast<QString>(env, className).replace(".", "/");
         return getTypeByJavaName(cn)!=nullptr || isJavaNameNamespace(cn);
@@ -186,10 +220,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_ClassAnalyzerUtility_isGeneratedClas
     return false;
 }
 
-extern "C" Q_DECL_EXPORT jboolean JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_unsetenv)
-    (JNIEnv *env, jclass, jstring varName)
-{
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_QtUtilities_unsetenv(JNIEnv *env, jclass, jstring varName){
     try{
         J2CStringBuffer _varName(env, varName);
         return qunsetenv(_varName.data());
@@ -199,10 +230,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_unsetenv)
     return false;
 }
 
-extern "C" Q_DECL_EXPORT jstring JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_getenv)
-    (JNIEnv *env, jclass, jstring varName)
-{
+extern "C" JNIEXPORT jstring JNICALL Java_io_qt_QtUtilities_getenv(JNIEnv *env, jclass, jstring varName){
     try{
         J2CStringBuffer _varName(env, varName);
         if(qEnvironmentVariableIsSet(_varName.constData())){
@@ -215,9 +243,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_getenv)
     return nullptr;
 }
 
-extern "C" Q_DECL_EXPORT bool JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_reinstallEventNotifyCallback)(JNIEnv * env)
-{
+extern "C" JNIEXPORT bool JNICALL Java_io_qt_QtUtilities_reinstallEventNotifyCallback(JNIEnv * env){
     try{
         if(QThread* mainThread = QCoreApplicationPrivate::theMainThread.loadRelaxed()){
             if(QThread::currentThread()!=mainThread){
@@ -244,19 +270,15 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_reinstallEventNotifyCallback)(JNI
     return false;
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_uiThreadCheck)(JNIEnv *env, jclass)
-{
+extern "C" JNIEXPORT void JNICALL Java_io_qt_QtUtilities_uiThreadCheck(JNIEnv *env, jclass){
     try{
-        QtJambiAPI::checkThreadUI(env, typeid(void));
+        QtJambiAPI::checkMainThread(env, typeid(void));
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
     }
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_threadCheck)(JNIEnv *env, jclass, jobject object)
-{
+extern "C" JNIEXPORT void JNICALL Java_io_qt_QtUtilities_threadCheck(JNIEnv *env, jclass, jobject object){
     try{
         checkThreadOnQObject(env, object);
     }catch(const JavaException& exn){
@@ -281,14 +303,12 @@ struct SignalCache : public QtJambiObjectData{
 };
 #endif
 
-extern "C" Q_DECL_EXPORT bool JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_saveUnixSignalHandlers)(JNIEnv *env, jclass)
-{
+extern "C" JNIEXPORT bool JNICALL Java_io_qt_QtUtilities_saveUnixSignalHandlers(JNIEnv *env, jclass){
 #if (defined(Q_OS_LINUX) || defined(Q_OS_MACOS) || defined(Q_OS_FREEBSD) || defined(Q_OS_NETBSD) || defined(Q_OS_OPENBSD) || defined(Q_OS_SOLARIS)) && !defined(Q_OS_ANDROID)
     try{
         QThread* mainThread = QCoreApplicationPrivate::theMainThread.loadRelaxed();
         if(!mainThread){
-            ThreadAPI::initializeMainThread(env);
+            ThreadPrivate::initializeMainThread(env);
             mainThread = QCoreApplicationPrivate::theMainThread.loadRelaxed();
         }
         if(mainThread){
@@ -315,9 +335,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_saveUnixSignalHandlers)(JNIEnv *e
     return false;
 }
 
-extern "C" Q_DECL_EXPORT bool JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_restoreUnixSignalHandlers)(JNIEnv *env, jclass)
-{
+extern "C" JNIEXPORT bool JNICALL Java_io_qt_QtUtilities_restoreUnixSignalHandlers(JNIEnv *env, jclass){
 #if (defined(Q_OS_LINUX) || defined(Q_OS_MACOS) || defined(Q_OS_FREEBSD) || defined(Q_OS_NETBSD) || defined(Q_OS_OPENBSD) || defined(Q_OS_SOLARIS)) && !defined(Q_OS_ANDROID)
     try{
         if(QThread* mainThread = QCoreApplicationPrivate::theMainThread.loadRelaxed()){
@@ -355,9 +373,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_restoreUnixSignalHandlers)(JNIEnv
     return false;
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_setDanglingPointerCheckEnabled)(JNIEnv *env, jclass, jboolean enabled)
-{
+extern "C" JNIEXPORT void JNICALL Java_io_qt_QtUtilities_setDanglingPointerCheckEnabled(JNIEnv *env, jclass, jboolean enabled){
     try{
         const char* property = "io.qt.enable-dangling-pointer-check";
         Java::Runtime::System::setProperty(env, env->NewStringUTF(property), env->NewStringUTF(enabled ? "true" : "false"));
@@ -367,9 +383,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_setDanglingPointerCheckEnabled)(J
     }
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_setMethodLogsEnabled)(JNIEnv *env, jclass, jboolean enabled)
-{
+extern "C" JNIEXPORT void JNICALL Java_io_qt_QtUtilities_setMethodLogsEnabled(JNIEnv *env, jclass, jboolean enabled){
     try{
         const char* property = "io.qt.enable-method-logs";
         Java::Runtime::System::setProperty(env, env->NewStringUTF(property), env->NewStringUTF(enabled ? "true" : "false"));
@@ -379,9 +393,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_setMethodLogsEnabled)(JNIEnv *env
     }
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_setEventLogsEnabled)(JNIEnv *env, jclass, jboolean enabled)
-{
+extern "C" JNIEXPORT void JNICALL Java_io_qt_QtUtilities_setEventLogsEnabled(JNIEnv *env, jclass, jboolean enabled){
     try{
         const char* property = "io.qt.enable-event-logs";
         Java::Runtime::System::setProperty(env, env->NewStringUTF(property), env->NewStringUTF(enabled ? "true" : "false"));
@@ -391,9 +403,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_setEventLogsEnabled)(JNIEnv *env,
     }
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_setThreadAffinityCheckEnabled)(JNIEnv *env, jclass, jboolean enabled)
-{
+extern "C" JNIEXPORT void JNICALL Java_io_qt_QtUtilities_setThreadAffinityCheckEnabled(JNIEnv *env, jclass, jboolean enabled){
     try{
         const char* property = "io.qt.enable-thread-affinity-check";
         Java::Runtime::System::setProperty(env, env->NewStringUTF(property), env->NewStringUTF(enabled ? "true" : "false"));
@@ -403,9 +413,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_setThreadAffinityCheckEnabled)(JN
     }
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_setSignalEmitThreadCheckEnabled)(JNIEnv *env, jclass, jboolean enabled)
-{
+extern "C" JNIEXPORT void JNICALL Java_io_qt_QtUtilities_setSignalEmitThreadCheckEnabled(JNIEnv *env, jclass, jboolean enabled){
     try{
         const char* property = "io.qt.enable-signal-emit-thread-check";
         Java::Runtime::System::setProperty(env, env->NewStringUTF(property), env->NewStringUTF(enabled ? "true" : "false"));
@@ -415,9 +423,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_setSignalEmitThreadCheckEnabled)(
     }
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_setNoExceptionForwardingFromMetaCallsEnabled)(JNIEnv *env, jclass, jboolean enabled)
-{
+extern "C" JNIEXPORT void JNICALL Java_io_qt_QtUtilities_setNoExceptionForwardingFromMetaCallsEnabled(JNIEnv *env, jclass, jboolean enabled){
     try{
         const char* property = "io.qt.no-exception-forwarding-from-meta-calls";
         Java::Runtime::System::setProperty(env, env->NewStringUTF(property), env->NewStringUTF(enabled ? "true" : "false"));
@@ -427,9 +433,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_setNoExceptionForwardingFromMetaC
     }
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_setNoExceptionForwardingFromVirtualCallsEnabled)(JNIEnv *env, jclass, jboolean enabled)
-{
+extern "C" JNIEXPORT void JNICALL Java_io_qt_QtUtilities_setNoExceptionForwardingFromVirtualCallsEnabled(JNIEnv *env, jclass, jboolean enabled){
     try{
         const char* property = "io.qt.no-exception-forwarding-from-virtual-calls";
         Java::Runtime::System::setProperty(env, env->NewStringUTF(property), env->NewStringUTF(enabled ? "true" : "false"));
@@ -441,9 +445,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_setNoExceptionForwardingFromVirtu
 
 void installSignalEmitThreadCheckHandler(JNIEnv *env, jobject handler);
 
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_installSignalEmitThreadCheckHandler)(JNIEnv *env, jclass, jobject handler)
-{
+extern "C" JNIEXPORT void JNICALL Java_io_qt_QtUtilities_installSignalEmitThreadCheckHandler(JNIEnv *env, jclass, jobject handler){
     try{
         installSignalEmitThreadCheckHandler(env, handler);
     }catch(const JavaException& exn){
@@ -451,9 +453,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_installSignalEmitThreadCheckHandl
     }
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_setEventThreadAffinityCheckEnabled)(JNIEnv *env, jclass, jboolean enabled)
-{
+extern "C" JNIEXPORT void JNICALL Java_io_qt_QtUtilities_setEventThreadAffinityCheckEnabled(JNIEnv *env, jclass, jboolean enabled){
     try{
         const char* property = "io.qt.enable-event-thread-affinity-check";
         Java::Runtime::System::setProperty(env, env->NewStringUTF(property), env->NewStringUTF(enabled ? "true" : "false"));

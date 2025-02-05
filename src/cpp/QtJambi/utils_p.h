@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -44,53 +44,27 @@ struct VariantUtility{
     static QVariant createVariant(const QMetaType& type, const void *data);
 };
 
-template<typename Super, typename Lock, Lock*(*accessLock)()>
-struct SecureContainer{
-};
-
-template<typename Super, QReadWriteLock*(*accessLock)()>
-struct SecureContainer<Super,QReadWriteLock,accessLock> : Super{
+template<typename Super, auto& gLock>
+struct SecureContainer : Super{
     SecureContainer(){
     }
     ~SecureContainer(){
         Super container;
-        {
-            QWriteLocker locker(accessLock());
+        if constexpr(std::is_same<decltype(gLock()),QReadWriteLock>::value){
+            QWriteLocker locker(gLock());
             container.swap(*this);
-        }
-    }
-};
-
-template<typename Super, QMutex*(*accessLock)()>
-struct SecureContainer<Super,QMutex,accessLock> : Super{
-    SecureContainer(){
-        accessLock();
-    }
-    ~SecureContainer(){
-        Super container;
-        {
+        }else if constexpr(std::is_same<decltype(gLock()),QRecursiveMutex>::value){
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            QMutexLocker locker(accessLock());
+            QMutexLocker locker(gLock());
 #else
-            QMutexLocker<QMutex> locker(accessLock());
+            QMutexLocker<QRecursiveMutex> locker(gLock());
 #endif
             container.swap(*this);
-        }
-    }
-};
-
-template<typename Super, QRecursiveMutex*(*accessLock)()>
-struct SecureContainer<Super,QRecursiveMutex,accessLock> : Super{
-    SecureContainer(){
-        accessLock();
-    }
-    ~SecureContainer(){
-        Super container;
-        {
+        }else if constexpr(std::is_same<decltype(gLock()),QMutex>::value){
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            QMutexLocker locker(accessLock());
+            QMutexLocker locker(gLock());
 #else
-            QMutexLocker<QRecursiveMutex> locker(accessLock());
+            QMutexLocker<QMutex> locker(gLock());
 #endif
             container.swap(*this);
         }
@@ -294,5 +268,49 @@ private:
     friend void reinitializeResettableFlag(JNIEnv * env, const char* property);
     friend void clearResettableFlags();
 };
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#define QtJambiMetaType QMetaType
+#else
+class QtJambiMetaType{
+public:
+    inline QtJambiMetaType() : m_metaType(new QMetaType()) {}
+    inline QtJambiMetaType(const QtJambiMetaType& other) : m_metaType(other.m_metaType) {}
+    inline QtJambiMetaType(int metaType) : m_metaType(new QMetaType(metaType)) {}
+    inline QtJambiMetaType(const QMetaType& metaType) : m_metaType(new QMetaType(metaType.id())) {}
+    inline QtJambiMetaType& operator=(int metaType){
+        if(m_metaType->id()!=metaType)
+            m_metaType.reset(new QMetaType(metaType));
+        return *this;
+    }
+    inline QtJambiMetaType& operator=(const QMetaType& metaType){
+        if(m_metaType->id()!=metaType.id())
+            m_metaType.reset(new QMetaType(metaType.id()));
+        return *this;
+    }
+    inline bool isValid() const { return m_metaType->isValid(); }
+    inline QByteArray name() const { return m_metaType->name(); }
+    inline int id() const { return m_metaType->id(); }
+    inline operator int() const { return m_metaType->id(); }
+    inline QMetaType::TypeFlags flags() const { return m_metaType->flags(); }
+    inline int sizeOf() const { return m_metaType->sizeOf(); }
+    inline operator const QMetaType&() const { return *m_metaType; }
+    inline const QMetaType& metaType() const { return *m_metaType; }
+    inline void *create(const void *copy = nullptr) const{
+        return QMetaType::create(id(), copy);
+    }
+    inline void destroy(void *data) const{
+        QMetaType::destroy(id(), data);
+    }
+    inline void *construct(void *where, const void *copy = nullptr) const{
+        return QMetaType::construct(id(), where, copy);
+    }
+    inline void destruct(void *data) const{
+        QMetaType::destruct(id(), data);
+    }
+private:
+    QSharedPointer<QMetaType> m_metaType;
+};
+#endif
 
 #endif // QTJAMBI_UTILS_P_H

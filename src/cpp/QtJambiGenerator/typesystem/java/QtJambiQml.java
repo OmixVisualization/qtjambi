@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -58,14 +58,14 @@ class __QtQml__ extends QtQml{
     /**
      * @deprecated Use {@link #qmlRegisterUncreatableType(Class, int, String, int, int, String, String)} instead.
      */
-    @Deprecated
+    @Deprecated(forRemoval=true, since="6.8.2")
     public static int qmlRegisterUncreatableClass(java.lang.@NonNull Class<? extends io.qt.core.@Nullable QObject> type, int metaObjectRevision, java.lang.@NonNull String uri, int versionMajor, int versionMinor, java.lang.@NonNull String qmlName, java.lang.@NonNull String reason) {
         return qmlRegisterUncreatableType(type, metaObjectRevision, uri, versionMajor, versionMinor, qmlName, reason);
     }
     /**
      * @deprecated Use {@link #qmlRegisterUncreatableType(Class, String, int, int, String, String)} instead.
      */
-    @Deprecated
+    @Deprecated(forRemoval=true, since="6.8.2")
     public static int qmlRegisterUncreatableClass(java.lang.@NonNull Class<? extends io.qt.core.@Nullable QObject> type, java.lang.@NonNull String uri, int versionMajor, int versionMinor, java.lang.@NonNull String qmlName, java.lang.@NonNull String reason) {
         return qmlRegisterUncreatableType(type, uri, versionMajor, versionMinor, qmlName, reason);
     }
@@ -73,7 +73,7 @@ class __QtQml__ extends QtQml{
     /**
      * @deprecated Use {@link #qmlRegisterSingletonInstance(String, int, int, String, QObject)} instead.
      */
-    @Deprecated
+    @Deprecated(forRemoval=true, since="6.8.2")
     public static int qmlRegisterSingletonInstance(io.qt.core.@NonNull QObject instance, @NonNull String uri, int versionMajor, int versionMinor, @NonNull String qmlName){
         return qmlRegisterSingletonInstance(uri, versionMajor, versionMinor, qmlName, instance);
     }

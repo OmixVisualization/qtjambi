@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -177,17 +177,20 @@ void QtJambiScope::addDeletion(QMetaType metaType, void* pointer){
 }
 #endif
 
+bool invalidateCollection(JNIEnv *env, jobject java_collection);
+bool forcedInvalidateCollection(JNIEnv *env, jobject java_collection);
+bool invalidateArray(JNIEnv *env, jobjectArray java_array);
+bool forcedInvalidateArray(JNIEnv *env, jobjectArray java_array);
+
 void QtJambiScope::addObjectInvalidation(JNIEnv *env, jobject object, bool persistent){
     if(persistent){
-        JObjectWrapper obj(env, object);
-        addFinalAction([obj]() mutable {
-            if(JniEnvironment env{200}){
-                QtJambiExceptionInhibitor __exnHandler;
+        addFinalAction([obj = JObjectWrapper(env, object)]() mutable {
+            if(JniEnvironmentExceptionInhibitor env{200}){
                 try{
                     InvalidateAfterUse::invalidate(env, obj.object(env));
                     obj.clear(env);
                 }catch(const JavaException& exn){
-                    __exnHandler.handle(env, exn, nullptr);
+                    env.handleException(exn, nullptr);
                 } catch (const std::exception& e) {
                     qCWarning(DebugAPI::internalCategory, "%s", e.what());
                 } catch (...) {
@@ -211,16 +214,17 @@ void QtJambiScope::addObjectInvalidation(JNIEnv *env, jobject object, bool persi
 
 void QtJambiScope::addObjectInvalidation(JNIEnv *env, QtJambiNativeID nativeId, bool persistent){
     if(persistent){
-        addFinalAction([nativeId](){
-            if(JniEnvironment env{200}){
-                QtJambiExceptionInhibitor __exnHandler;
-                try{
-                    InvalidateAfterUse::invalidate(env, nativeId);
-                }catch(const JavaException& exn){
-                    __exnHandler.handle(env, exn, nullptr);
-                } catch (const std::exception& e) {
-                    qCWarning(DebugAPI::internalCategory, "%s", e.what());
-                } catch (...) {
+        addFinalAction([link = QtJambiLink::fromNativeId(nativeId)](){
+            if(link){
+                if(JniEnvironmentExceptionInhibitor env{200}){
+                    try{
+                        link->invalidate(env);
+                    }catch(const JavaException& exn){
+                        env.handleException(exn, nullptr);
+                    } catch (const std::exception& e) {
+                        qCWarning(DebugAPI::internalCategory, "%s", e.what());
+                    } catch (...) {
+                    }
                 }
             }
         });
@@ -241,15 +245,13 @@ void QtJambiScope::addObjectInvalidation(JNIEnv *env, QtJambiNativeID nativeId, 
 
 void QtJambiScope::addForcedObjectInvalidation(JNIEnv *env, jobject object, bool persistent){
     if(persistent){
-        JObjectWrapper obj(env, object);
-        addFinalAction([obj]() mutable {
-            if(JniEnvironment env{200}){
-                QtJambiExceptionInhibitor __exnHandler;
+        addFinalAction([obj = JObjectWrapper(env, object)]() mutable {
+            if(JniEnvironmentExceptionInhibitor env{200}){
                 try{
                     InvalidateAfterUse::forcedInvalidate(env, obj.object(env));
                     obj.clear(env);
                 }catch(const JavaException& exn){
-                    __exnHandler.handle(env, exn, nullptr);
+                    env.handleException(exn, nullptr);
                 } catch (const std::exception& e) {
                     qCWarning(DebugAPI::internalCategory, "%s", e.what());
                 } catch (...) {
@@ -273,16 +275,17 @@ void QtJambiScope::addForcedObjectInvalidation(JNIEnv *env, jobject object, bool
 
 void QtJambiScope::addForcedObjectInvalidation(JNIEnv *env, QtJambiNativeID nativeId, bool persistent){
     if(persistent){
-        addFinalAction([nativeId](){
-            if(JniEnvironment env{200}){
-                QtJambiExceptionInhibitor __exnHandler;
-                try{
-                    InvalidateAfterUse::forcedInvalidate(env, nativeId);
-                }catch(const JavaException& exn){
-                    __exnHandler.handle(env, exn, nullptr);
-                } catch (const std::exception& e) {
-                    qCWarning(DebugAPI::internalCategory, "%s", e.what());
-                } catch (...) {
+        addFinalAction([link = QtJambiLink::fromNativeId(nativeId)](){
+            if(link){
+                if(JniEnvironmentExceptionInhibitor env{200}){
+                    try{
+                        link->invalidate(env);
+                    }catch(const JavaException& exn){
+                        env.handleException(exn, nullptr);
+                    } catch (const std::exception& e) {
+                        qCWarning(DebugAPI::internalCategory, "%s", e.what());
+                    } catch (...) {
+                    }
                 }
             }
         });
@@ -291,6 +294,126 @@ void QtJambiScope::addForcedObjectInvalidation(JNIEnv *env, QtJambiNativeID nati
             QtJambiExceptionInhibitor __exnHandler;
             try{
                 InvalidateAfterUse::forcedInvalidate(env, nativeId);
+            }catch(const JavaException& exn){
+                __exnHandler.handle(env, exn, nullptr);
+            } catch (const std::exception& e) {
+                qCWarning(DebugAPI::internalCategory, "%s", e.what());
+            } catch (...) {
+            }
+        });
+    }
+}
+
+void QtJambiScope::addContainerInvalidation(JNIEnv *env, jobject object, bool persistent){
+    if(persistent){
+        addFinalAction([obj = JObjectWrapper(env, object)]() mutable {
+            if(JniEnvironmentExceptionInhibitor env{200}){
+                try{
+                    (void)invalidateCollection(env, obj.object(env));
+                    obj.clear(env);
+                }catch(const JavaException& exn){
+                    env.handleException(exn, nullptr);
+                } catch (const std::exception& e) {
+                    qCWarning(DebugAPI::internalCategory, "%s", e.what());
+                } catch (...) {
+                }
+            }
+        });
+    }else{
+        addFinalAction([env, object](){
+            QtJambiExceptionInhibitor __exnHandler;
+            try{
+                (void)invalidateCollection(env, object);
+            }catch(const JavaException& exn){
+                __exnHandler.handle(env, exn, nullptr);
+            } catch (const std::exception& e) {
+                qCWarning(DebugAPI::internalCategory, "%s", e.what());
+            } catch (...) {
+            }
+        });
+    }
+}
+
+void QtJambiScope::addForcedContainerInvalidation(JNIEnv *env, jobject object, bool persistent){
+    if(persistent){
+        addFinalAction([obj = JObjectWrapper(env, object)]() mutable {
+            if(JniEnvironmentExceptionInhibitor env{200}){
+                try{
+                    (void)forcedInvalidateCollection(env, obj.object(env));
+                    obj.clear(env);
+                }catch(const JavaException& exn){
+                    env.handleException(exn, nullptr);
+                } catch (const std::exception& e) {
+                    qCWarning(DebugAPI::internalCategory, "%s", e.what());
+                } catch (...) {
+                }
+            }
+        });
+    }else{
+        addFinalAction([env, object](){
+            QtJambiExceptionInhibitor __exnHandler;
+            try{
+                (void)forcedInvalidateCollection(env, object);
+            }catch(const JavaException& exn){
+                __exnHandler.handle(env, exn, nullptr);
+            } catch (const std::exception& e) {
+                qCWarning(DebugAPI::internalCategory, "%s", e.what());
+            } catch (...) {
+            }
+        });
+    }
+}
+
+void QtJambiScope::addArrayInvalidation(JNIEnv *env, jobjectArray object, bool persistent){
+    if(persistent){
+        addFinalAction([obj = JObjectWrapper(env, object)]() mutable {
+            if(JniEnvironmentExceptionInhibitor env{200}){
+                try{
+                    (void)invalidateArray(env, obj.typedObject<jobjectArray>(env));
+                    obj.clear(env);
+                }catch(const JavaException& exn){
+                    env.handleException(exn, nullptr);
+                } catch (const std::exception& e) {
+                    qCWarning(DebugAPI::internalCategory, "%s", e.what());
+                } catch (...) {
+                }
+            }
+        });
+    }else{
+        addFinalAction([env, object](){
+            QtJambiExceptionInhibitor __exnHandler;
+            try{
+                (void)invalidateArray(env, object);
+            }catch(const JavaException& exn){
+                __exnHandler.handle(env, exn, nullptr);
+            } catch (const std::exception& e) {
+                qCWarning(DebugAPI::internalCategory, "%s", e.what());
+            } catch (...) {
+            }
+        });
+    }
+}
+
+void QtJambiScope::addForcedArrayInvalidation(JNIEnv *env, jobjectArray object, bool persistent){
+    if(persistent){
+        addFinalAction([obj = JObjectWrapper(env, object)]() mutable {
+            if(JniEnvironmentExceptionInhibitor env{200}){
+                try{
+                    (void)forcedInvalidateArray(env, obj.typedObject<jobjectArray>(env));
+                    obj.clear(env);
+                }catch(const JavaException& exn){
+                    env.handleException(exn, nullptr);
+                } catch (const std::exception& e) {
+                    qCWarning(DebugAPI::internalCategory, "%s", e.what());
+                } catch (...) {
+                }
+            }
+        });
+    }else{
+        addFinalAction([env, object](){
+            QtJambiExceptionInhibitor __exnHandler;
+            try{
+                (void)forcedInvalidateArray(env, object);
             }catch(const JavaException& exn){
                 __exnHandler.handle(env, exn, nullptr);
             } catch (const std::exception& e) {

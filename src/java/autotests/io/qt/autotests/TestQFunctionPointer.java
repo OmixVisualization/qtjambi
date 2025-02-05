@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -45,6 +45,7 @@ import io.qt.QtMetaType;
 import io.qt.QtObjectInterface;
 import io.qt.QtReferenceType;
 import io.qt.autotests.generated.FunctionalTest;
+import io.qt.autotests.generated.General;
 import io.qt.core.QDir;
 import io.qt.core.QEasingCurve;
 import io.qt.core.QFunctionPointer;
@@ -64,7 +65,6 @@ import io.qt.core.QSysInfo;
 import io.qt.core.Qt;
 import io.qt.gui.QColor;
 import io.qt.gui.QFont;
-import io.qt.internal.ClassAnalyzerUtility;
 
 public class TestQFunctionPointer extends ApplicationInitializer{
 	
@@ -433,7 +433,7 @@ public class TestQFunctionPointer extends ApplicationInitializer{
     	}catch(AssertionError e) {
     		throw e;
     	}catch(QUnsuccessfulInvocationException e) {
-    		if(ClassAnalyzerUtility.useAnnotatedType || !String.format("Type %1$s not supported without pointer or reference arithmetic.", QColor.class.getName()).equals(e.getMessage())) {
+    		if(General.internalAccess.useAnnotatedType() || !String.format("Type %1$s not supported without pointer or reference arithmetic.", QColor.class.getName()).equals(e.getMessage())) {
     			throw e;
     		}
     	}

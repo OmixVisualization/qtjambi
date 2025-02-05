@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -53,8 +53,8 @@ public class TestQPdfWidgets extends ApplicationInitializer {
     	Assert.assertTrue(error.name().equals("NoError") || error.name().equals("None"));
     	Assert.assertEquals(QPdfDocument.Status.Ready, document.status());
         QPdfSelection allText = document.getSelectionAtIndex(0, 9, 7);
-        Assert.assertTrue("Ownership of QPdfSelection", General.internalAccess.isJavaOwnership(allText));
-        Assert.assertTrue("Ownership of QPdfSelection's Clone", General.internalAccess.isJavaOwnership(allText.clone()));
+        Assert.assertTrue("Ownership of QPdfSelection is not Java", General.internalAccess.isJavaOwnership(allText));
+        Assert.assertTrue("Ownership of QPdfSelection's Clone is not Java", General.internalAccess.isJavaOwnership(allText.clone()));
         Assert.assertEquals("Text expected from selection", "QtJambi", allText.text());
     	QPdfView view = new QPdfView();
     	view.setDocument(document);

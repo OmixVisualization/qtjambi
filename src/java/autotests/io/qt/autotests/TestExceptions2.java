@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -109,7 +109,7 @@ public class TestExceptions2 extends ApplicationInitializer {
     }
     
     @Test
-    public void testInhibirtedExceptiom() {
+    public void testInhibitedExceptiom() {
     	QtUtilities.setNoExceptionForwardingFromVirtualCallsEnabled(true);
     	try {
     		QObject object = new QObject() {

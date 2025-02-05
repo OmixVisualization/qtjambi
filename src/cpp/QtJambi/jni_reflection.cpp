@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -33,8 +33,7 @@
 #include "java_p.h"
 #include "qtjambi_cast.h"
 
-extern "C" Q_DECL_EXPORT jobject JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_ReflectionUtility_privateLookup)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_ReflectionUtility_privateLookup
 (JNIEnv *env,
  jclass,
  jclass targetClass)
@@ -68,8 +67,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_ReflectionUtility_privateLookup)
     return nullptr;
 }
 
-extern "C" Q_DECL_EXPORT jboolean JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_ReflectionUtility_writeField)
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_internal_ReflectionUtility_writeField
 (JNIEnv *env,
  jclass,
  jobject owner,
@@ -94,8 +92,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_ReflectionUtility_writeField)
     return false;
 }
 
-extern "C" Q_DECL_EXPORT jobject JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_ReflectionUtility_readField)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_ReflectionUtility_readField
 (JNIEnv *env,
  jclass,
  jobject owner,

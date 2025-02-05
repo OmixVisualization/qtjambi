@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -91,16 +91,6 @@ public final class QRemoteObjectPendingReply<A> extends io.qt.QtObject implement
         this.metaType = QMetaType.fromType(typeA, instantiations);
 	}
 	
-	@Deprecated(forRemoval=true)
-	public QRemoteObjectPendingReply(@Nullable Class<A> type) {
-		this(null, type);
-	}
-
-	@Deprecated(forRemoval=true)
-	public QRemoteObjectPendingReply(@Nullable Class<A> type, @NonNull QRemoteObjectPendingCall other) {
-		this(other, type);
-	}
-
 	/**
 	 * Copy constructor
 	 */

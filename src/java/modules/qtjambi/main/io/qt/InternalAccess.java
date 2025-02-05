@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -29,7 +29,9 @@
 ****************************************************************************/
 package io.qt;
 
+import java.io.Serializable;
 import java.lang.invoke.MethodType;
+import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -57,6 +59,12 @@ public interface InternalAccess {
 	<E extends Enum<E> & io.qt.QtShortEnumerator> E resolveEnum(Class<E> cl, short value, String name);
 	
 	<E extends Enum<E> & io.qt.QtLongEnumerator> E resolveEnum(Class<E> cl, long value, String name);
+	
+	<T extends QtAbstractFlagEnumerator> T[] flagConstants(QFlags<T> flags);
+	
+	QFlags<?> asFlags(QtAbstractFlagEnumerator flag);
+	
+	boolean isSmallEnum(QtAbstractFlagEnumerator enm);
 
     boolean isJavaOwnership(io.qt.QtObject object);
 
@@ -89,6 +97,8 @@ public interface InternalAccess {
     long checkedNativeId(io.qt.QtObject object);
     
     long checkedNativeId(io.qt.QtObjectInterface object);
+    
+    Object findAssociation(Object object);
     
     interface NativeIdInfo{
     	long nativeId();
@@ -256,4 +266,8 @@ public interface InternalAccess {
     Package getDefinedPackage(ClassLoader cl, String pkg);
     
     void setQmlClassInfoGeneratorFunction(Function<Class<?>, Map<String, String>> qmlClassInfogeneratorFunction);
+    
+    SerializedLambda serializeLambdaExpression(Serializable slotObject);
+    
+    boolean useAnnotatedType();
 }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -76,12 +76,9 @@ struct MetaTypeSmartPointerHelper<DummyType,DummyType>{
 }
 
 Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, gFunctionsLock, (QReadWriteLock::Recursive))
-QReadWriteLock* functionsLock(){
-    return gFunctionsLock();
-}
-typedef SecureContainer<QHash<int,const QtPrivate::AbstractComparatorFunction *>,QReadWriteLock,&functionsLock> ComparatorFunctions;
+typedef SecureContainer<QHash<int,const QtPrivate::AbstractComparatorFunction *>, gFunctionsLock> ComparatorFunctions;
 Q_GLOBAL_STATIC(ComparatorFunctions, gComparatorFunctions)
-typedef SecureContainer<QHash<int,const QtPrivate::AbstractDebugStreamFunction *>,QReadWriteLock,&functionsLock> DebugStreamFunctions;
+typedef SecureContainer<QHash<int,const QtPrivate::AbstractDebugStreamFunction *>, gFunctionsLock> DebugStreamFunctions;
 Q_GLOBAL_STATIC(DebugStreamFunctions, gDebugStreamFunctions)
 
 bool RegistryAPI::registerComparator(const QtPrivate::AbstractComparatorFunction *f, int typeId){

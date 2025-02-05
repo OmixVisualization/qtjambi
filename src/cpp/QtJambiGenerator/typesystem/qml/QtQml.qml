@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -44,6 +44,22 @@ TypeSystem{
     InjectCode{
         target: CodeClass.MetaInfo
         Text{content: "initialize_meta_info_QQmlListProperty();"}
+    }
+
+    InjectCode{
+        target: CodeClass.PackageInitializer
+        position: Position.Beginning
+        Text{content: String.raw`@QtUninvokable private static native void initializeQmlDebugging(boolean enabledQmlDebuggingNowarn, boolean enabledQmlDebugging);`}
+    }
+
+    InjectCode{
+        target: CodeClass.Java
+        position: Position.End
+        Text{content: String.raw`
+            initializeQmlDebugging(Boolean.getBoolean("io.qt.enable-qml-debugging-nowarn")
+                                    || Boolean.getBoolean("io.qt.enabled-qml-debugging-nowarn"),
+                                   Boolean.getBoolean("io.qt.enable-qml-debugging")
+                                    || Boolean.getBoolean("io.qt.enabled-qml-debugging"));`}
     }
     
     InjectCode{
@@ -246,7 +262,7 @@ TypeSystem{
         ModifyFunction{
             signature: "importedScript(QString)const"
             threadAffinity: true
-            since: 6
+            since: 6.1
         }
     }
     
@@ -650,7 +666,7 @@ TypeSystem{
         ModifyFunction{
             signature: "toVariant(QJSValue::ObjectConversionBehavior) const"
             threadAffinity: true
-            since: 6
+            since: 6.1
         }
         ModifyFunction{
             signature: "prototype() const"
@@ -798,7 +814,7 @@ TypeSystem{
         ModifyFunction{
             signature: "operator<<(QQmlInfo,const QWindow*)"
             rename: "append"
-            since: 6
+            since: 6.2
         }
     }
     
@@ -817,6 +833,9 @@ TypeSystem{
     
     ObjectType{
         name: "QJSValueIterator"
+        Implements{
+            interfaces: "Iterable<io.qt.core.@NonNull QPair<@NonNull String,@NonNull QJSValue>>, java.util.Iterator<io.qt.core.@NonNull QPair<@NonNull String,@NonNull QJSValue>>"
+        }
         ExtraIncludes{
             Include{
                 fileName: "utils_p.h"
@@ -828,11 +847,40 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 threadAffinity: true
+                noImplicitCalls: true
             }
         }
         ModifyFunction{
             signature: "operator=( QJSValue & )"
             remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "next()"
+            rename: "tryNext"
+            access: Modification.Private
+        }
+        InjectCode{
+            InsertTemplate{
+                name: "core.self_iterator"
+                Replace{
+                    from: "%ELEMENT_TYPE"
+                    to: "io.qt.core.@NonNull QPair<@NonNull String,@NonNull QJSValue>"
+                }
+            }
+            Text{content: String.raw`
+/**
+ * <p>See <code><a href="https://doc.qt.io/qt/qjsvalueiterator.html#next">QJSValueIterator::<wbr/>next()</a></code></p>
+ * @return name and value of the current property
+ * @throws java.util.NoSuchElementException
+ */
+@QtUninvokable
+public final io.qt.core.@NonNull QPair<@NonNull String,@NonNull QJSValue> next() throws java.util.NoSuchElementException{
+    if(tryNext()){
+        return new io.qt.core.QPair<>(name(), value());
+    }else{
+        throw new java.util.NoSuchElementException();
+    }
+}`}
         }
     }
     
@@ -948,7 +996,7 @@ TypeSystem{
                 Text{content: String.raw`/**
  * @deprecated The native name of this enum entry is misleading. Use {@link ObjectOwnership#JavaOwnership} instead.
  */
-@Deprecated
+@Deprecated(forRemoval=false)
 public static final ObjectOwnership CppOwnership = JavaOwnership;
 /**
  * Equivalent to {@link ObjectOwnership#JavaOwnership}.
@@ -987,7 +1035,12 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
         ModifyFunction{
             signature: "registerModule(QString, QJSValue)"
             threadAffinity: true
-            since: 6
+            ModifyArgument{
+                index: 2
+                threadAffinity: true
+                noImplicitCalls: true
+            }
+            since: 6.2
         }
         ModifyFunction{
             signature: "newObject()"
@@ -996,7 +1049,7 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
         ModifyFunction{
             signature: "newSymbol(QString)"
             threadAffinity: true
-            since: 6
+            since: 6.2
         }
         ModifyFunction{
             signature: "newArray(uint)"
@@ -1017,11 +1070,21 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
         ModifyFunction{
             signature: "installExtensions(QJSEngine::Extensions,QJSValue)"
             threadAffinity: true
+            ModifyArgument{
+                index: 2
+                threadAffinity: true
+                noImplicitCalls: true
+            }
         }
         ModifyFunction{
             signature: "throwError(QJSValue)"
             threadAffinity: true
-            since: 6
+            ModifyArgument{
+                index: 1
+                threadAffinity: true
+                noImplicitCalls: true
+            }
+            since: 6.1
         }
         ModifyFunction{
             signature: "throwError(QString)"
@@ -1034,7 +1097,7 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
         ModifyFunction{
             signature: "catchError()"
             threadAffinity: true
-            since: 6
+            since: 6.1
         }
         ModifyFunction{
             signature: "toManagedValue<T>(T)"
@@ -1289,7 +1352,7 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
                 Text{content: String.raw`/**
  * @deprecated The native name of this enum entry is misleading. Use {@link ObjectOwnership#JavaOwnership} instead.
  */
-@Deprecated
+@Deprecated(forRemoval=false)
 public static final ObjectOwnership CppOwnership = JavaOwnership;
 /**
  * Equivalent to {@link ObjectOwnership#JavaOwnership}.

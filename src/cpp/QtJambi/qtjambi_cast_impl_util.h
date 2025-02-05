@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -233,36 +233,36 @@ struct jni_type<jintArray>{
     };
     template<typename T>
     struct NativeFactory<T,true>{
-        typedef JConstIntArrayPointer type;
+        typedef PersistentJConstIntArrayPointer type;
     };
     template<typename T>
     struct NativeFactory<T,false>{
-        typedef JIntArrayPointer type;
+        typedef PersistentJIntArrayPointer type;
     };
     template<typename T>
     struct JavaFactory<T,true,false>{
-        typedef ConstInt32PointerArray type;
+        typedef PersistentConstInt32PointerArray type;
     };
     template<typename T>
     struct JavaFactory<T,true,true>{
-        typedef ConstUInt32PointerArray type;
+        typedef PersistentConstUInt32PointerArray type;
     };
     template<typename T>
     struct JavaFactory<T,false,false>{
-        typedef Int32PointerArray type;
+        typedef PersistentInt32PointerArray type;
     };
     template<typename T>
     struct JavaFactory<T,false,true>{
-        typedef UInt32PointerArray type;
+        typedef PersistentUInt32PointerArray type;
     };
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     template<bool isUnsigned>
     struct JavaFactory<char32_t,true,isUnsigned>{
-        typedef ConstChar32PointerArray type;
+        typedef PersistentConstChar32PointerArray type;
     };
     template<bool isUnsigned>
     struct JavaFactory<char32_t,false,isUnsigned>{
-        typedef Char32PointerArray type;
+        typedef PersistentChar32PointerArray type;
     };
 #endif
 };
@@ -286,27 +286,27 @@ struct jni_type<jbyteArray>{
     };
     template<typename T>
     struct NativeFactory<T,true>{
-        typedef JConstByteArrayPointer type;
+        typedef PersistentJConstByteArrayPointer type;
     };
     template<typename T>
     struct NativeFactory<T,false>{
-        typedef JByteArrayPointer type;
+        typedef PersistentJByteArrayPointer type;
     };
     template<typename T>
     struct JavaFactory<T,true,false>{
-        typedef typename std::conditional<std::is_same<T,char>::value, ConstCharPointerArray, ConstInt8PointerArray>::type type;
+        typedef typename std::conditional<std::is_same<T,char>::value, PersistentConstCharPointerArray, PersistentConstInt8PointerArray>::type type;
     };
     template<typename T>
     struct JavaFactory<T,true,true>{
-        typedef ConstUInt8PointerArray type;
+        typedef PersistentConstUInt8PointerArray type;
     };
     template<typename T>
     struct JavaFactory<T,false,false>{
-        typedef typename std::conditional<std::is_same<T,char>::value, CharPointerArray, Int8PointerArray>::type type;
+        typedef typename std::conditional<std::is_same<T,char>::value, PersistentCharPointerArray, PersistentInt8PointerArray>::type type;
     };
     template<typename T>
     struct JavaFactory<T,false,true>{
-        typedef UInt8PointerArray type;
+        typedef PersistentUInt8PointerArray type;
     };
 };
 
@@ -329,27 +329,27 @@ struct jni_type<jshortArray>{
     };
     template<typename T>
     struct NativeFactory<T,true>{
-        typedef JConstShortArrayPointer type;
+        typedef PersistentJConstShortArrayPointer type;
     };
     template<typename T>
     struct NativeFactory<T,false>{
-        typedef JShortArrayPointer type;
+        typedef PersistentJShortArrayPointer type;
     };
     template<typename T>
     struct JavaFactory<T,true,false>{
-        typedef ConstInt16PointerArray type;
+        typedef PersistentConstInt16PointerArray type;
     };
     template<typename T>
     struct JavaFactory<T,true,true>{
-        typedef ConstUInt16PointerArray type;
+        typedef PersistentConstUInt16PointerArray type;
     };
     template<typename T>
     struct JavaFactory<T,false,false>{
-        typedef Int16PointerArray type;
+        typedef PersistentInt16PointerArray type;
     };
     template<typename T>
     struct JavaFactory<T,false,true>{
-        typedef UInt16PointerArray type;
+        typedef PersistentUInt16PointerArray type;
     };
 };
 
@@ -372,27 +372,27 @@ struct jni_type<jlongArray>{
     };
     template<typename T>
     struct NativeFactory<T,true>{
-        typedef JConstLongArrayPointer type;
+        typedef PersistentJConstLongArrayPointer type;
     };
     template<typename T>
     struct NativeFactory<T,false>{
-        typedef JLongArrayPointer type;
+        typedef PersistentJLongArrayPointer type;
     };
     template<typename T>
     struct JavaFactory<T,true,false>{
-        typedef ConstInt64PointerArray type;
+        typedef PersistentConstInt64PointerArray type;
     };
     template<typename T>
     struct JavaFactory<T,true,true>{
-        typedef ConstUInt64PointerArray type;
+        typedef PersistentConstUInt64PointerArray type;
     };
     template<typename T>
     struct JavaFactory<T,false,false>{
-        typedef Int64PointerArray type;
+        typedef PersistentInt64PointerArray type;
     };
     template<typename T>
     struct JavaFactory<T,false,true>{
-        typedef UInt64PointerArray type;
+        typedef PersistentUInt64PointerArray type;
     };
 };
 
@@ -414,25 +414,25 @@ struct jni_type<jcharArray>{
     struct JavaFactory{
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
         typedef typename std::conditional<std::is_same<T,QChar>::value,
-                                          typename std::conditional<isConst, ConstQCharPointerArray, QCharPointerArray>::type,
+                                          typename std::conditional<isConst, PersistentConstQCharPointerArray, PersistentQCharPointerArray>::type,
                                           typename std::conditional<std::is_same<T,char16_t>::value,
-                                                                    typename std::conditional<isConst, ConstChar16PointerArray, Char16PointerArray>::type,
-                                                                    typename std::conditional<isConst, ConstWCharPointerArray, WCharPointerArray>::type
+                                                                    typename std::conditional<isConst, PersistentConstChar16PointerArray, PersistentChar16PointerArray>::type,
+                                                                    typename std::conditional<isConst, PersistentConstWCharPointerArray, PersistentWCharPointerArray>::type
                                                                     >::type
                                           >::type type;
 #else
         typedef typename std::conditional<std::is_same<T,QChar>::value,
-                                          typename std::conditional<isConst, ConstQCharPointerArray, QCharPointerArray>::type,
-                                          typename std::conditional<isConst, ConstWCharPointerArray, WCharPointerArray>::type>::type type;
+                                          typename std::conditional<isConst, PersistentConstQCharPointerArray, PersistentQCharPointerArray>::type,
+                                          typename std::conditional<isConst, PersistentConstWCharPointerArray, PersistentWCharPointerArray>::type>::type type;
 #endif
     };
     template<typename T>
     struct NativeFactory<T,true>{
-        typedef JConstCharArrayPointer type;
+        typedef PersistentJConstCharArrayPointer type;
     };
     template<typename T>
     struct NativeFactory<T,false>{
-        typedef JCharArrayPointer type;
+        typedef PersistentJCharArrayPointer type;
     };
 };
 
@@ -455,19 +455,19 @@ struct jni_type<jbooleanArray>{
     };
     template<typename T>
     struct NativeFactory<T,true>{
-        typedef JConstBooleanArrayPointer type;
+        typedef PersistentJConstBooleanArrayPointer type;
     };
     template<typename T>
     struct NativeFactory<T,false>{
-        typedef JBooleanArrayPointer type;
+        typedef PersistentJBooleanArrayPointer type;
     };
     template<typename T>
     struct JavaFactory<T,true>{
-        typedef typename std::conditional<std::is_same<T,uchar>::value, ConstBool2PointerArray, ConstBoolPointerArray>::type type;
+        typedef typename std::conditional<std::is_same<T,uchar>::value, PersistentConstBool2PointerArray, PersistentConstBoolPointerArray>::type type;
     };
     template<typename T>
     struct JavaFactory<T,false>{
-        typedef typename std::conditional<std::is_same<T,uchar>::value, Bool2PointerArray, BoolPointerArray>::type type;
+        typedef typename std::conditional<std::is_same<T,uchar>::value, PersistentBool2PointerArray, PersistentBoolPointerArray>::type type;
     };
 };
 
@@ -490,19 +490,19 @@ struct jni_type<jdoubleArray>{
     };
     template<typename T>
     struct NativeFactory<T,true>{
-        typedef JConstDoubleArrayPointer type;
+        typedef PersistentJConstDoubleArrayPointer type;
     };
     template<typename T>
     struct NativeFactory<T,false>{
-        typedef JDoubleArrayPointer type;
+        typedef PersistentJDoubleArrayPointer type;
     };
     template<typename T>
     struct JavaFactory<T,true>{
-        typedef ConstDoublePointerArray type;
+        typedef PersistentConstDoublePointerArray type;
     };
     template<typename T>
     struct JavaFactory<T,false>{
-        typedef DoublePointerArray type;
+        typedef PersistentDoublePointerArray type;
     };
 };
 
@@ -524,19 +524,19 @@ struct jni_type<jfloatArray>{
     };
     template<typename T>
     struct NativeFactory<T,true>{
-        typedef JConstFloatArrayPointer type;
+        typedef PersistentJConstFloatArrayPointer type;
     };
     template<typename T>
     struct NativeFactory<T,false>{
-        typedef JFloatArrayPointer type;
+        typedef PersistentJFloatArrayPointer type;
     };
     template<typename T>
     struct JavaFactory<T,true>{
-        typedef ConstFloatPointerArray type;
+        typedef PersistentConstFloatPointerArray type;
     };
     template<typename T>
     struct JavaFactory<T,false>{
-        typedef FloatPointerArray type;
+        typedef PersistentFloatPointerArray type;
     };
 };
 

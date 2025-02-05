@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -80,6 +80,7 @@ public class TestQObject extends ApplicationInitializer {
 
     @Before
     public void setUp() {
+    	System.out.println("Start test "+testClassName()+"."+testMethodName());
     	TestUtility.setObjectCacheMode(TestUtility.OBJECT_CACHE_MODE_DISABLE);
 
         root = new QObject();
@@ -124,6 +125,7 @@ public class TestQObject extends ApplicationInitializer {
         // We need to undo this unusual setting to give any test cases that run after
         // within the same JVM a change of succeeding.
         TestUtility.setObjectCacheMode(TestUtility.OBJECT_CACHE_MODE_DEFAULT);
+        System.out.println("Test "+testClassName()+"."+testMethodName()+" finished!");
     }
 
     @Test
@@ -365,17 +367,17 @@ public class TestQObject extends ApplicationInitializer {
             o.toString();
     }
 
-    private static void threadExecutor(Runnable r, boolean qthread) {
+    private void threadExecutor(Runnable r, boolean qthread) {
     	if(qthread) {
     		QThread t = QThread.create(r);
-    		t.setObjectName("threadExecutor");
+    		t.setObjectName("threadExecutor-"+testRule.getMethodName());
             t.start();
             try {
                 t.join(1000);
             } catch (Exception e) { e.printStackTrace(); }
     	}else {
     		Thread t = new Thread(r);
-    		t.setName("threadExecutor");
+    		t.setName("threadExecutor-"+testRule.getMethodName());
             t.start();
             try {
                 t.join(1000);

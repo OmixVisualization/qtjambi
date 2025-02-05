@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -747,8 +747,8 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
     		};
     	}else if(QFlags.class.isAssignableFrom(keyType)) {
     		return (o1,o2)->{
-    			return ((QFlags<?>)o1).value() < ((QFlags<?>)o2).value() ? -1 : (
-    					((QFlags<?>)o2).value() < ((QFlags<?>)o1).value() ? 1 : 0
+    			return ((QFlags<?>)o1).toInt() < ((QFlags<?>)o2).toInt() ? -1 : (
+    					((QFlags<?>)o2).toInt() < ((QFlags<?>)o1).toInt() ? 1 : 0
     					);
     		};
     	}else if(QtEnumerator.class.isAssignableFrom(keyType)) {

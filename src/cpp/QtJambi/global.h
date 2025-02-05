@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -79,13 +79,6 @@
 #  include <jni_md.h>
 #endif
 
-/* Win64 ABI does not use underscore prefixes symbols we could also use !defined(__MINGW64__) */
-#if defined(Q_CC_MINGW) && !defined(_WIN64)
-#  define QTJAMBI_FUNCTION_PREFIX(name) _##name
-#else
-#  define QTJAMBI_FUNCTION_PREFIX(name) name
-#endif
-
 #ifndef QTJAMBI_GENERATOR_RUNNING
 
 typedef void (*PtrDeleterFunction)(void *,bool);
@@ -98,7 +91,7 @@ using hash_type = decltype(qHash(std::declval<char>()));
 
 #endif // QTJAMBI_GENERATOR_RUNNING
 
-#ifdef QT_OVERLOADED_MACRO
+#if defined(QT_OVERLOADED_MACRO) && QT_VERSION >= QT_VERSION_CHECK(6,2,0)
 #define QTJAMBI_OVERLOADED_MACRO QT_OVERLOADED_MACRO
 #else
 #define QTJAMBI_VA_ARGS_CHOOSE(_1, _2, _3, _4, _5, _6, _7, _8, _9, N, ...) N

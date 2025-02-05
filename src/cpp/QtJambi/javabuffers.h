@@ -1,6 +1,6 @@
 ﻿/****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -55,7 +55,7 @@ public:
     const void* data() const;
     const void* constData() const;
 
-    void commit(JNIEnv *env);
+    void commit();
 
     template<class T>
     inline qsizetype size() const {return size()*sizeof(char)/sizeof(T);}
@@ -96,6 +96,10 @@ protected:
     bool m_isdirect;
     bool m_readOnly;
     jboolean m_is_copy;
+    JNIEnv *m_env;
+private:
+    void* operator new(size_t) = delete;
+    void* operator new[](size_t) = delete;
     Q_DISABLE_COPY(JBufferConstData)
 };
 
@@ -121,7 +125,7 @@ public:
 
     void* data();
 
-    void commit(JNIEnv *env);
+    void commit();
 
     template<class T>
     inline T* data() {return reinterpret_cast<T*>(data());}
@@ -142,92 +146,108 @@ private:
     Q_DISABLE_COPY(JBufferData)
 };
 
-class AbstractDataJBuffer{
+class QTJAMBI_EXPORT PersistentJBufferConstData
+{
 public:
-    AbstractDataJBuffer(JNIEnv *env, void* data, qsizetype capacity);
-    AbstractDataJBuffer(JNIEnv *env, const void* data, qsizetype capacity);
-    AbstractDataJBuffer(JNIEnv *env, char* data, qsizetype capacity);
-    AbstractDataJBuffer(JNIEnv *env, const char* data, qsizetype capacity);
-    AbstractDataJBuffer(JNIEnv *env, unsigned char* data, qsizetype capacity);
-    AbstractDataJBuffer(JNIEnv *env, const unsigned char* data, qsizetype capacity);
-    AbstractDataJBuffer(JNIEnv *env, qint16* data, qsizetype capacity);
-    AbstractDataJBuffer(JNIEnv *env, const qint16* data, qsizetype capacity);
-    AbstractDataJBuffer(JNIEnv *env, quint16* data, qsizetype capacity);
-    AbstractDataJBuffer(JNIEnv *env, const quint16* data, qsizetype capacity);
-    AbstractDataJBuffer(JNIEnv *env, qint32* data, qsizetype capacity);
-    AbstractDataJBuffer(JNIEnv *env, const qint32* data, qsizetype capacity);
-    AbstractDataJBuffer(JNIEnv *env, quint32* data, qsizetype capacity);
-    AbstractDataJBuffer(JNIEnv *env, const quint32* data, qsizetype capacity);
-    AbstractDataJBuffer(JNIEnv *env, qint64* data, qsizetype capacity);
-    AbstractDataJBuffer(JNIEnv *env, const qint64* data, qsizetype capacity);
-    AbstractDataJBuffer(JNIEnv *env, quint64* data, qsizetype capacity);
-    AbstractDataJBuffer(JNIEnv *env, const quint64* data, qsizetype capacity);
-    AbstractDataJBuffer(JNIEnv *env, float* data, qsizetype capacity);
-    AbstractDataJBuffer(JNIEnv *env, const float* data, qsizetype capacity);
-    AbstractDataJBuffer(JNIEnv *env, double* data, qsizetype capacity);
-    AbstractDataJBuffer(JNIEnv *env, const double* data, qsizetype capacity);
-    AbstractDataJBuffer(JNIEnv *env, QChar* data, qsizetype capacity);
-    AbstractDataJBuffer(JNIEnv *env, const QChar* data, qsizetype capacity);
-    AbstractDataJBuffer(JNIEnv *env, wchar_t* data, qsizetype capacity);
-    AbstractDataJBuffer(JNIEnv *env, const wchar_t* data, qsizetype capacity);
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-    AbstractDataJBuffer(JNIEnv *env, char16_t* data, qsizetype capacity);
-    AbstractDataJBuffer(JNIEnv *env, const char16_t* data, qsizetype capacity);
-    AbstractDataJBuffer(JNIEnv *env, char32_t* data, qsizetype capacity);
-    AbstractDataJBuffer(JNIEnv *env, const char32_t* data, qsizetype capacity);
+    PersistentJBufferConstData(JNIEnv *env, jobject buffer_object);
+
+    ~PersistentJBufferConstData();
+
+    void clear(JNIEnv *env);
+
+    qsizetype size() const;
+    qsizetype capacity() const;
+    qsizetype position() const;
+    qsizetype limit() const;
+    bool isDirect() const;
+    bool isReadOnly() const;
+    bool isBuffering() const;
+
+    const void* data() const;
+    const void* constData() const;
+
+    void commit(JNIEnv *env);
+
+    template<class T>
+    inline qsizetype size() const {return size()*sizeof(char)/sizeof(T);}
+    template<class T>
+    inline qsizetype capacity() const {return capacity()*sizeof(char)/sizeof(T);}
+    template<class T>
+    inline qsizetype position() const {return position()*sizeof(char)/sizeof(T);}
+    template<class T>
+    inline qsizetype limit() const {return limit()*sizeof(char)/sizeof(T);}
+    template<class T>
+    inline const T* data() const {return reinterpret_cast<const T*>(data());}
+    template<class T>
+    inline const T* constData() const {return reinterpret_cast<const T*>(data());}
+    template<class T>
+    inline operator const T*() const {return data<T>();}
+
+    void* take();
+
+#if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
+    template<class T>
+    QSpan<const T> span() const { return data<T>() ? QSpan<const T>(data<T>(), size<T>()) : QSpan<const T>(); }
+    template<class T>
+    operator QSpan<const T> () const { return span<T>(); }
 #endif
-    ~AbstractDataJBuffer();
-    static QTJAMBI_EXPORT void setLimit(JNIEnv *env, jobject buffer, jsize limit);
-private:
-    jobject m_buffer_object;
-    friend class LocalDataJBuffer;
-    friend class DataJBuffer;
+    template<class T>
+    operator std::initializer_list<T> () const {
+        return QtJambiAPI::createIterable<std::initializer_list<T>>(constData<T>(), size<T>());
+    }
+    static bool isBuffer(JNIEnv *env, jobject obj);
+    static bool isReadOnlyBuffer(JNIEnv *env, jobject buffer);
+protected:
+    QScopedPointer<struct PersistentJBufferDataPrivate> m_data;
+    Q_DISABLE_COPY(PersistentJBufferConstData)
 };
 
-class QTJAMBI_EXPORT LocalDataJBuffer : public AbstractDataJBuffer{
+class QTJAMBI_EXPORT PersistentJBufferData: public PersistentJBufferConstData
+{
 public:
-    LocalDataJBuffer(JNIEnv *env, void* data, qsizetype capacity);
-    LocalDataJBuffer(JNIEnv *env, const void* data, qsizetype capacity);
-    LocalDataJBuffer(JNIEnv *env, char* data, qsizetype capacity);
-    LocalDataJBuffer(JNIEnv *env, const char* data, qsizetype capacity);
-    LocalDataJBuffer(JNIEnv *env, unsigned char* data, qsizetype capacity);
-    LocalDataJBuffer(JNIEnv *env, const unsigned char* data, qsizetype capacity);
-    LocalDataJBuffer(JNIEnv *env, qint16* data, qsizetype capacity);
-    LocalDataJBuffer(JNIEnv *env, const qint16* data, qsizetype capacity);
-    LocalDataJBuffer(JNIEnv *env, quint16* data, qsizetype capacity);
-    LocalDataJBuffer(JNIEnv *env, const quint16* data, qsizetype capacity);
-    LocalDataJBuffer(JNIEnv *env, qint32* data, qsizetype capacity);
-    LocalDataJBuffer(JNIEnv *env, const qint32* data, qsizetype capacity);
-    LocalDataJBuffer(JNIEnv *env, quint32* data, qsizetype capacity);
-    LocalDataJBuffer(JNIEnv *env, const quint32* data, qsizetype capacity);
-    LocalDataJBuffer(JNIEnv *env, qint64* data, qsizetype capacity);
-    LocalDataJBuffer(JNIEnv *env, const qint64* data, qsizetype capacity);
-    LocalDataJBuffer(JNIEnv *env, quint64* data, qsizetype capacity);
-    LocalDataJBuffer(JNIEnv *env, const quint64* data, qsizetype capacity);
-    LocalDataJBuffer(JNIEnv *env, float* data, qsizetype capacity);
-    LocalDataJBuffer(JNIEnv *env, const float* data, qsizetype capacity);
-    LocalDataJBuffer(JNIEnv *env, double* data, qsizetype capacity);
-    LocalDataJBuffer(JNIEnv *env, const double* data, qsizetype capacity);
-    LocalDataJBuffer(JNIEnv *env, QChar* data, qsizetype capacity);
-    LocalDataJBuffer(JNIEnv *env, const QChar* data, qsizetype capacity);
-    LocalDataJBuffer(JNIEnv *env, wchar_t* data, qsizetype capacity);
-    LocalDataJBuffer(JNIEnv *env, const wchar_t* data, qsizetype capacity);
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-    LocalDataJBuffer(JNIEnv *env, char16_t* data, qsizetype capacity);
-    LocalDataJBuffer(JNIEnv *env, const char16_t* data, qsizetype capacity);
-    LocalDataJBuffer(JNIEnv *env, char32_t* data, qsizetype capacity);
-    LocalDataJBuffer(JNIEnv *env, const char32_t* data, qsizetype capacity);
+    using PersistentJBufferConstData::isBuffer;
+    using PersistentJBufferConstData::isReadOnlyBuffer;
+    using PersistentJBufferConstData::size;
+    using PersistentJBufferConstData::capacity;
+    using PersistentJBufferConstData::position;
+    using PersistentJBufferConstData::limit;
+    using PersistentJBufferConstData::isBuffering;
+    using PersistentJBufferConstData::isReadOnly;
+    using PersistentJBufferConstData::data;
+    using PersistentJBufferConstData::constData;
+#if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
+    using PersistentJBufferConstData::span;
 #endif
-    ~LocalDataJBuffer();
-    using AbstractDataJBuffer::setLimit;
-    void setLimit(jsize limit);
-    jobject buffer() const;
-    jobject take();
+    PersistentJBufferData(JNIEnv *env, jobject buffer_object);
+
+    ~PersistentJBufferData();
+
+    void clear(JNIEnv *env);
+
+    void* data();
+
+    void commit(JNIEnv *env);
+
+    template<class T>
+    inline T* data() {return reinterpret_cast<T*>(data());}
+    template<class T>
+    inline operator T*() {return data<T>();}
+
+#if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
+    template<class T>
+    operator QSpan<T> () { return data<T>() ? QSpan<T>(data<T>(), size<T>()) : QSpan<T>(); }
+    template<class T>
+    operator QSpan<const T> () const { return data<const T>() ? QSpan<const T>(data<const T>(), size<const T>()) : QSpan<const T>(); }
+#endif
+    template<class T>
+    operator std::initializer_list<T> () const {
+        return QtJambiAPI::createIterable<std::initializer_list<T>>(constData<T>(), size<T>());
+    }
 private:
-    JNIEnv *m_env;
+    Q_DISABLE_COPY(PersistentJBufferData)
 };
 
-class QTJAMBI_EXPORT DataJBuffer : public AbstractDataJBuffer{
+class QTJAMBI_EXPORT DataJBuffer{
 public:
     DataJBuffer(JNIEnv *env, void* data, qsizetype capacity);
     DataJBuffer(JNIEnv *env, const void* data, qsizetype capacity);
@@ -262,11 +282,61 @@ public:
     DataJBuffer(JNIEnv *env, const char32_t* data, qsizetype capacity);
 #endif
     ~DataJBuffer();
-    using AbstractDataJBuffer::setLimit;
+    static void setLimit(JNIEnv *env, jobject buffer, jsize limit);
+    void setLimit(jsize limit);
+    jobject buffer() const;
+    jobject take();
+private:
+    JNIEnv *m_env;
+    jobject m_buffer_object;
+    void* operator new(size_t) = delete;
+    void* operator new[](size_t) = delete;
+};
+
+class QTJAMBI_EXPORT PersistentDataJBuffer{
+public:
+    PersistentDataJBuffer(JNIEnv *env, void* data, qsizetype capacity);
+    PersistentDataJBuffer(JNIEnv *env, const void* data, qsizetype capacity);
+    PersistentDataJBuffer(JNIEnv *env, char* data, qsizetype capacity);
+    PersistentDataJBuffer(JNIEnv *env, const char* data, qsizetype capacity);
+    PersistentDataJBuffer(JNIEnv *env, unsigned char* data, qsizetype capacity);
+    PersistentDataJBuffer(JNIEnv *env, const unsigned char* data, qsizetype capacity);
+    PersistentDataJBuffer(JNIEnv *env, qint16* data, qsizetype capacity);
+    PersistentDataJBuffer(JNIEnv *env, const qint16* data, qsizetype capacity);
+    PersistentDataJBuffer(JNIEnv *env, quint16* data, qsizetype capacity);
+    PersistentDataJBuffer(JNIEnv *env, const quint16* data, qsizetype capacity);
+    PersistentDataJBuffer(JNIEnv *env, qint32* data, qsizetype capacity);
+    PersistentDataJBuffer(JNIEnv *env, const qint32* data, qsizetype capacity);
+    PersistentDataJBuffer(JNIEnv *env, quint32* data, qsizetype capacity);
+    PersistentDataJBuffer(JNIEnv *env, const quint32* data, qsizetype capacity);
+    PersistentDataJBuffer(JNIEnv *env, qint64* data, qsizetype capacity);
+    PersistentDataJBuffer(JNIEnv *env, const qint64* data, qsizetype capacity);
+    PersistentDataJBuffer(JNIEnv *env, quint64* data, qsizetype capacity);
+    PersistentDataJBuffer(JNIEnv *env, const quint64* data, qsizetype capacity);
+    PersistentDataJBuffer(JNIEnv *env, float* data, qsizetype capacity);
+    PersistentDataJBuffer(JNIEnv *env, const float* data, qsizetype capacity);
+    PersistentDataJBuffer(JNIEnv *env, double* data, qsizetype capacity);
+    PersistentDataJBuffer(JNIEnv *env, const double* data, qsizetype capacity);
+    PersistentDataJBuffer(JNIEnv *env, QChar* data, qsizetype capacity);
+    PersistentDataJBuffer(JNIEnv *env, const QChar* data, qsizetype capacity);
+    PersistentDataJBuffer(JNIEnv *env, wchar_t* data, qsizetype capacity);
+    PersistentDataJBuffer(JNIEnv *env, const wchar_t* data, qsizetype capacity);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    PersistentDataJBuffer(JNIEnv *env, char16_t* data, qsizetype capacity);
+    PersistentDataJBuffer(JNIEnv *env, const char16_t* data, qsizetype capacity);
+    PersistentDataJBuffer(JNIEnv *env, char32_t* data, qsizetype capacity);
+    PersistentDataJBuffer(JNIEnv *env, const char32_t* data, qsizetype capacity);
+#endif
+    ~PersistentDataJBuffer();
+    inline static void setLimit(JNIEnv *env, jobject buffer, jsize limit){
+        DataJBuffer::setLimit(env, buffer, limit);
+    }
     void setLimit(JNIEnv *env, jsize limit);
     jobject buffer(JNIEnv *env) const;
     jobject take(JNIEnv *env);
     void clear(JNIEnv *env);
+private:
+    QScopedPointer<struct PersistentDataJBufferPrivate> m_data;
 };
 
 #endif // QTJAMBI_JAVABUFFERS_H

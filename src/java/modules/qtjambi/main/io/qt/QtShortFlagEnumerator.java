@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -29,8 +29,6 @@
 ****************************************************************************/
 package io.qt;
 
-import io.qt.internal.EnumUtility;
-
 /**
  * The QtByteFlagEnumerator interface servers as a base for all 16 Bit enums available as QFlags.
  * @see QFlags
@@ -42,7 +40,7 @@ public interface QtShortFlagEnumerator extends QtShortEnumerator, QtAbstractFlag
      */
 	public default short value() {
 		int o = ordinal();
-		if(!EnumUtility.isSmallEnum(this))
+		if(!QtJambi_LibraryUtilities.internal.isSmallEnum(this))
 			return (short)o;
 		return (short)(o==0 ? 0 : 0x01 << (o-1));
 	}

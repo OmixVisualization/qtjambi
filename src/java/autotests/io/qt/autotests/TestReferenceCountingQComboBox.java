@@ -184,6 +184,7 @@ public class TestReferenceCountingQComboBox extends ApplicationInitializer {
 	        Assert.assertEquals(0, counter.get());
 	        assertTrue(lineEdit.completer() != null);
 	        lineEdit = null;
+	        box.isDisposed();
 	        box = null;
 		}
 		for (int i = 0; i < 50 && counter.get()==0; i++) {

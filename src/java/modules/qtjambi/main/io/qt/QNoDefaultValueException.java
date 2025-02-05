@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -37,7 +37,7 @@ public class QNoDefaultValueException extends QConnectionException
 {
     private static final long serialVersionUID = 1L;
 
-    public QNoDefaultValueException(String signalName, int parameter)
+    public QNoDefaultValueException(@NonNull String signalName, int parameter)
     {
         super(String.format("No default value defined for parameter %1$s of signal %2$s.", parameter, signalName));
     }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -82,11 +82,11 @@ jobject QtJambiAPI::convertQSpanToJavaObject(JNIEnv *env,
     jobject obj = CoreAPI::javaObject(owner, env);
     returned = containerAccess->isConst() ? Java::QtCore::QConstSpan::newInstance(env, nullptr, obj) : Java::QtCore::QSpan::newInstance(env, nullptr, obj);
     QtJambiSpan* span = new QtJambiSpan{begin, qsizetype(size)};
-    const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForNativeObject(env, returned, span,
+    QSharedPointer<QtJambiLink> link = QtJambiLink::createLinkForNativeObject(env, returned, span,
                                                                                      LINK_NAME_ARG("QSpan")
                                                                                      owner,
                                                                                      QtJambiSpan::deleter, containerAccess);
-    if (!link) {
+    if(Q_UNLIKELY(!link)) {
         returned = nullptr;
         if(containerAccess)
             containerAccess->dispose();
@@ -117,10 +117,10 @@ jobject QtJambiAPI::convertQSequentialIteratorToJavaObject(JNIEnv *env,
     bool isMutable = dynamic_cast<AbstractSequentialIteratorAccess*>(containerAccess);
     returned = isMutable ? Java::QtCore::QSequentialIterator::newInstance(env, nullptr, obj)
                          : Java::QtCore::QSequentialConstIterator::newInstance(env, nullptr, obj);
-    const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForNativeObject(env, returned, iteratorPtr,
+    QSharedPointer<QtJambiLink> link = QtJambiLink::createLinkForNativeObject(env, returned, iteratorPtr,
                                                                                        LINK_NAME_ARG(isMutable ? "QSequentialIterator" : "QSequentialConstIterator")
                                                                                        owner, destructor_function, containerAccess);
-    if (!link) {
+    if(Q_UNLIKELY(!link)) {
         returned = nullptr;
         containerAccess->dispose();
     }
@@ -139,10 +139,10 @@ jobject QtJambiAPI::convertQAssociativeIteratorToJavaObject(JNIEnv *env,
     bool isMutable = dynamic_cast<AbstractAssociativeIteratorAccess*>(containerAccess);
     returned = isMutable ? Java::QtCore::QAssociativeIterator::newInstance(env, nullptr, obj)
                          : Java::QtCore::QAssociativeConstIterator::newInstance(env, nullptr, obj);
-    const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForNativeObject(env, returned, iteratorPtr,
+    QSharedPointer<QtJambiLink> link = QtJambiLink::createLinkForNativeObject(env, returned, iteratorPtr,
                                                                                             LINK_NAME_ARG(isMutable ? "QAssociativeIterator" : "QAssociativeConstIterator")
                                                                                             owner, destructor_function, containerAccess);
-    if (!link) {
+    if(Q_UNLIKELY(!link)) {
         returned = nullptr;
         containerAccess->dispose();
     }
@@ -241,7 +241,7 @@ jobject QtJambiAPI::convertQListToJavaObject(JNIEnv *env,
 
     QMetaType containerMetaType(containerAccess->registerContainer(containerName));
     QSharedPointer<QtJambiLink> link;
-    if(!!owner){
+    if(Q_UNLIKELY(!!owner)){
         link = QtJambiLink::createLinkForNativeObject(env, returned, const_cast<void*>(listPtr),
                                                         LINK_NAME_META_TYPE_ARG(containerMetaType)
                                                         owner, containerAccess);
@@ -266,7 +266,7 @@ jobject QtJambiAPI::convertQListToJavaObject(JNIEnv *env,
                                                        false, false, containerAccess);
         }
     }
-    if (!link) {
+    if(Q_UNLIKELY(!link)) {
         returned = nullptr;
         containerAccess->dispose();
     }
@@ -324,7 +324,7 @@ jobject ContainerAPI::objectFromQList(JNIEnv *env,
                                                       LINK_NAME_ARG(containerName)
                                                       false, false, containerAccess);
     }
-    if (!link) {
+    if(Q_UNLIKELY(!link)) {
         returned = nullptr;
         containerAccess->dispose();
         containerAccess = nullptr;
@@ -383,7 +383,7 @@ jobject ContainerAPI::objectFromQSpan(JNIEnv *env,
     link = QtJambiLink::createLinkForNativeObject(env, returned, const_cast<void*>(listPtr),
                                                   LINK_NAME_ARG(containerName)
                                                   false, false, containerAccess);
-    if (!link) {
+    if(Q_UNLIKELY(!link)) {
         returned = nullptr;
         containerAccess->dispose();
         containerAccess = nullptr;
@@ -408,10 +408,10 @@ jobject convertQListToJavaObject(JNIEnv *env,
                         )
 {
     void* listPtr = smartPointer.get();
-    if (!listPtr)
+    if(Q_UNLIKELY(!listPtr))
         return nullptr;
     for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(listPtr)){
-        if(link){
+        if(Q_LIKELY(link)){
             jobject obj = link->getJavaObjectLocalRef(env);
             switch(listType){
             case QtJambiAPI::ListType::QQueue:
@@ -465,10 +465,10 @@ jobject convertQListToJavaObject(JNIEnv *env,
     containerName += ">";
     containerName = QMetaObject::normalizedType(containerName);
     QMetaType containerMetaType(containerAccess->registerContainer(containerName));
-    const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSmartPointerToObject(env, returned,
+    QSharedPointer<QtJambiLink> link = QtJambiLink::createLinkForSmartPointerToObject(env, returned,
                                                                                                 LINK_NAME_META_TYPE_ARG(containerMetaType)
                                                                                                 smartPointer, containerAccess);
-    if (!link) {
+    if(Q_UNLIKELY(!link)) {
         returned = nullptr;
         containerAccess->dispose();
     }
@@ -525,7 +525,7 @@ jobject QtJambiAPI::convertQStringListToJavaObject(JNIEnv *env,
     returned = Java::QtCore::QStringList::newInstance(env, nullptr);
 
     QSharedPointer<QtJambiLink> link;
-    if(!!owner){
+    if(Q_UNLIKELY(!!owner)){
         link = QtJambiLink::createLinkForNativeObject(env, returned, const_cast<void*>(listPtr),
                                                         LINK_NAME_ARG("QStringList")
                                                         owner, containerAccess);
@@ -550,7 +550,7 @@ jobject QtJambiAPI::convertQStringListToJavaObject(JNIEnv *env,
                                                        false, false, containerAccess);
         }
     }
-    if (!link) {
+    if(Q_UNLIKELY(!link)) {
         returned = nullptr;
         containerAccess->dispose();
     }
@@ -562,10 +562,10 @@ jobject convertQStringListToJavaObject(JNIEnv *env,
                                                    const SmartPointer<char>& smartPointer)
 {
     void* listPtr = smartPointer.get();
-    if (!listPtr)
+    if(Q_UNLIKELY(!listPtr))
         return nullptr;
     for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(listPtr)){
-        if(link){
+        if(Q_LIKELY(link)){
             jobject obj = link->getJavaObjectLocalRef(env);
             if(Java::QtCore::QStringList::isInstanceOf(env, obj)){
                 return obj;
@@ -577,10 +577,10 @@ jobject convertQStringListToJavaObject(JNIEnv *env,
 
     jobject returned = nullptr;
     returned = Java::QtCore::QStringList::newInstance(env, nullptr);
-    const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSmartPointerToObject(env, returned,
+    QSharedPointer<QtJambiLink> link = QtJambiLink::createLinkForSmartPointerToObject(env, returned,
                                                                                               LINK_NAME_ARG("QStringList")
                                                                                               smartPointer, containerAccess);
-    if (!link) {
+    if(Q_UNLIKELY(!link)) {
         returned = nullptr;
         containerAccess->dispose();
     }
@@ -632,7 +632,7 @@ jobject QtJambiAPI::convertQSetToJavaObject(JNIEnv *env,
     containerName += ">";
     containerName = QMetaObject::normalizedType(containerName);
     QMetaType containerMetaType(containerAccess->registerContainer(containerName));
-    if(!!owner){
+    if(Q_UNLIKELY(!!owner)){
         link = QtJambiLink::createLinkForNativeObject(env, returned, const_cast<void*>(listPtr),
                                                         LINK_NAME_META_TYPE_ARG(containerMetaType)
                                                         owner, containerAccess);
@@ -657,7 +657,7 @@ jobject QtJambiAPI::convertQSetToJavaObject(JNIEnv *env,
                                                        false, false, containerAccess);
         }
     }
-    if (!link) {
+    if(Q_UNLIKELY(!link)) {
         returned = nullptr;
         containerAccess->dispose();
     }
@@ -671,10 +671,10 @@ jobject convertQSetToJavaObject(JNIEnv *env,
                                 )
 {
     void* listPtr = smartPointer.get();
-    if (!listPtr)
+    if(Q_UNLIKELY(!listPtr))
         return nullptr;
     for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(listPtr)){
-        if(link){
+        if(Q_LIKELY(link)){
             jobject obj = link->getJavaObjectLocalRef(env);
             if(Java::QtCore::QSet::isInstanceOf(env, obj)){
                 containerAccess->dispose();
@@ -691,10 +691,10 @@ jobject convertQSetToJavaObject(JNIEnv *env,
     containerName += ">";
     containerName = QMetaObject::normalizedType(containerName);
     QMetaType containerMetaType(containerAccess->registerContainer(containerName));
-    const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSmartPointerToObject(env, returned,
+    QSharedPointer<QtJambiLink> link = QtJambiLink::createLinkForSmartPointerToObject(env, returned,
                                                                                               LINK_NAME_META_TYPE_ARG(containerMetaType)
                                                                                               smartPointer, containerAccess);
-    if (!link) {
+    if(Q_UNLIKELY(!link)) {
         returned = nullptr;
         containerAccess->dispose();
     }
@@ -751,7 +751,7 @@ jobject QtJambiAPI::convertQLinkedListToJavaObject(JNIEnv *env,
     containerName += ">";
     containerName = QMetaObject::normalizedType(containerName);
     QMetaType containerMetaType(containerAccess->registerContainer(containerName));
-    if(!!owner){
+    if(Q_UNLIKELY(!!owner)){
         link = QtJambiLink::createLinkForNativeObject(env, returned, const_cast<void*>(listPtr),
                                                         LINK_NAME_META_TYPE_ARG(containerMetaType)
                                                         owner, containerAccess);
@@ -776,7 +776,7 @@ jobject QtJambiAPI::convertQLinkedListToJavaObject(JNIEnv *env,
                                                        false, false, containerAccess);
         }
     }
-    if (!link) {
+    if(Q_UNLIKELY(!link)) {
         returned = nullptr;
         containerAccess->dispose();
     }
@@ -790,10 +790,10 @@ jobject convertQLinkedListToJavaObject(JNIEnv *env,
                                 )
 {
     void* listPtr = smartPointer.get();
-    if (!listPtr)
+    if(Q_UNLIKELY(!listPtr))
         return nullptr;
     for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(listPtr)){
-        if(link){
+        if(Q_LIKELY(link)){
             jobject obj = link->getJavaObjectLocalRef(env);
             if(Java::QtCore::QLinkedList::isInstanceOf(env, obj)){
                 containerAccess->dispose();
@@ -810,10 +810,10 @@ jobject convertQLinkedListToJavaObject(JNIEnv *env,
     containerName += ">";
     containerName = QMetaObject::normalizedType(containerName);
     QMetaType containerMetaType(containerAccess->registerContainer(containerName));
-    const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSmartPointerToObject(env, returned,
+    QSharedPointer<QtJambiLink> link = QtJambiLink::createLinkForSmartPointerToObject(env, returned,
                                                                                               LINK_NAME_META_TYPE_ARG(containerMetaType)
                                                                                               smartPointer, containerAccess);
-    if (!link) {
+    if(Q_UNLIKELY(!link)) {
         returned = nullptr;
         containerAccess->dispose();
     }
@@ -889,7 +889,7 @@ jobject QtJambiAPI::convertQVectorToJavaObject(JNIEnv *env,
     containerName = QMetaObject::normalizedType(containerName);
     QMetaType containerMetaType(containerAccess->registerContainer(containerName));
     QSharedPointer<QtJambiLink> link;
-    if(!!owner){
+    if(Q_UNLIKELY(!!owner)){
         link = QtJambiLink::createLinkForNativeObject(env, returned, const_cast<void*>(listPtr),
                                                         LINK_NAME_META_TYPE_ARG(containerMetaType)
                                                         owner, containerAccess);
@@ -914,7 +914,7 @@ jobject QtJambiAPI::convertQVectorToJavaObject(JNIEnv *env,
                                                        false, false, containerAccess);
         }
     }
-    if (!link) {
+    if(Q_UNLIKELY(!link)) {
         returned = nullptr;
         containerAccess->dispose();
     }
@@ -949,7 +949,7 @@ jobject ContainerAPI::objectFromQVector(JNIEnv *env,
     link = QtJambiLink::createLinkForNativeObject(env, returned, const_cast<void*>(listPtr),
                                                LINK_NAME_META_TYPE_ARG(containerMetaType)
                                                false, false, containerAccess);
-    if (!link) {
+    if(Q_UNLIKELY(!link)) {
         returned = nullptr;
         containerAccess->dispose();
         containerAccess = nullptr;
@@ -979,10 +979,10 @@ jobject convertQVectorToJavaObject(JNIEnv *env,
                 )
 {
     void* listPtr = smartPointer.get();
-    if (!listPtr)
+    if(Q_UNLIKELY(!listPtr))
         return nullptr;
     for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(listPtr)){
-        if(link){
+        if(Q_LIKELY(link)){
             jobject obj = link->getJavaObjectLocalRef(env);
             if(vectorType==QtJambiAPI::VectorType::QStack){
                 if(Java::QtCore::QStack::isInstanceOf(env, obj)){
@@ -1012,10 +1012,10 @@ jobject convertQVectorToJavaObject(JNIEnv *env,
     containerName += ">";
     containerName = QMetaObject::normalizedType(containerName);
     QMetaType containerMetaType(containerAccess->registerContainer(containerName));
-    const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSmartPointerToObject(env, returned,
+    QSharedPointer<QtJambiLink> link = QtJambiLink::createLinkForSmartPointerToObject(env, returned,
                                                                                               LINK_NAME_META_TYPE_ARG(containerMetaType)
                                                                                               smartPointer, containerAccess);
-    if (!link) {
+    if(Q_UNLIKELY(!link)) {
         returned = nullptr;
         containerAccess->dispose();
     }
@@ -1082,7 +1082,7 @@ jobject QtJambiAPI::convertQHashToJavaObject(JNIEnv *env,
     containerName = QMetaObject::normalizedType(containerName);
     QMetaType containerMetaType(containerAccess->registerContainer(containerName));
     QSharedPointer<QtJambiLink> link;
-    if(!!owner){
+    if(Q_UNLIKELY(!!owner)){
         link = QtJambiLink::createLinkForNativeObject(env, returned, const_cast<void*>(listPtr),
                                                         LINK_NAME_META_TYPE_ARG(containerMetaType)
                                                         owner, containerAccess);
@@ -1107,7 +1107,7 @@ jobject QtJambiAPI::convertQHashToJavaObject(JNIEnv *env,
                                                        false, false, containerAccess);
         }
     }
-    if (!link) {
+    if(Q_UNLIKELY(!link)) {
         returned = nullptr;
         containerAccess->dispose();
     }
@@ -1121,10 +1121,10 @@ jobject convertQHashToJavaObject(JNIEnv *env,
                                 )
 {
     void* listPtr = smartPointer.get();
-    if (!listPtr)
+    if(Q_UNLIKELY(!listPtr))
         return nullptr;
     for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(listPtr)){
-        if(link){
+        if(Q_LIKELY(link)){
             jobject obj = link->getJavaObjectLocalRef(env);
             if(Java::QtCore::QHash::isInstanceOf(env, obj)){
                 containerAccess->dispose();
@@ -1143,10 +1143,10 @@ jobject convertQHashToJavaObject(JNIEnv *env,
     containerName += ">";
     containerName = QMetaObject::normalizedType(containerName);
     QMetaType containerMetaType(containerAccess->registerContainer(containerName));
-    const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSmartPointerToObject(env, returned,
+    QSharedPointer<QtJambiLink> link = QtJambiLink::createLinkForSmartPointerToObject(env, returned,
                                                                                               LINK_NAME_META_TYPE_ARG(containerMetaType)
                                                                                               smartPointer, containerAccess);
-    if (!link) {
+    if(Q_UNLIKELY(!link)) {
         returned = nullptr;
         containerAccess->dispose();
     }
@@ -1204,7 +1204,7 @@ jobject QtJambiAPI::convertQMultiHashToJavaObject(JNIEnv *env,
     containerName += ">";
     containerName = QMetaObject::normalizedType(containerName);
     QMetaType containerMetaType(containerAccess->registerContainer(containerName));
-    if(!!owner){
+    if(Q_UNLIKELY(!!owner)){
         link = QtJambiLink::createLinkForNativeObject(env, returned, const_cast<void*>(listPtr),
                                                         LINK_NAME_META_TYPE_ARG(containerMetaType)
                                                         owner, containerAccess);
@@ -1229,7 +1229,7 @@ jobject QtJambiAPI::convertQMultiHashToJavaObject(JNIEnv *env,
                                                        false, false, containerAccess);
         }
     }
-    if (!link) {
+    if(Q_UNLIKELY(!link)) {
         returned = nullptr;
         containerAccess->dispose();
     }
@@ -1243,10 +1243,10 @@ jobject convertQMultiHashToJavaObject(JNIEnv *env,
                                 )
 {
     void* listPtr = smartPointer.get();
-    if (!listPtr)
+    if(Q_UNLIKELY(!listPtr))
         return nullptr;
     for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(listPtr)){
-        if(link){
+        if(Q_LIKELY(link)){
             jobject obj = link->getJavaObjectLocalRef(env);
             if(Java::QtCore::QMultiHash::isInstanceOf(env, obj)){
                 containerAccess->dispose();
@@ -1265,10 +1265,10 @@ jobject convertQMultiHashToJavaObject(JNIEnv *env,
     containerName += ">";
     containerName = QMetaObject::normalizedType(containerName);
     QMetaType containerMetaType(containerAccess->registerContainer(containerName));
-    const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSmartPointerToObject(env, returned,
+    QSharedPointer<QtJambiLink> link = QtJambiLink::createLinkForSmartPointerToObject(env, returned,
                                                                                               LINK_NAME_META_TYPE_ARG(containerMetaType)
                                                                                               smartPointer, containerAccess);
-    if (!link) {
+    if(Q_UNLIKELY(!link)) {
         returned = nullptr;
         containerAccess->dispose();
     }
@@ -1325,7 +1325,7 @@ jobject QtJambiAPI::convertQMapToJavaObject(JNIEnv *env,
     containerName = QMetaObject::normalizedType(containerName);
     QMetaType containerMetaType(containerAccess->registerContainer(containerName));
     QSharedPointer<QtJambiLink> link;
-    if(!!owner){
+    if(Q_UNLIKELY(!!owner)){
         link = QtJambiLink::createLinkForNativeObject(env, returned, const_cast<void*>(listPtr),
                                                         LINK_NAME_META_TYPE_ARG(containerMetaType)
                                                         owner, containerAccess);
@@ -1350,7 +1350,7 @@ jobject QtJambiAPI::convertQMapToJavaObject(JNIEnv *env,
                                                        false, false, containerAccess);
         }
     }
-    if (!link) {
+    if(Q_UNLIKELY(!link)) {
         returned = nullptr;
         containerAccess->dispose();
     }
@@ -1364,10 +1364,10 @@ jobject convertQMapToJavaObject(JNIEnv *env,
                                 )
 {
     void* listPtr = smartPointer.get();
-    if (!listPtr)
+    if(Q_UNLIKELY(!listPtr))
         return nullptr;
     for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(listPtr)){
-        if(link){
+        if(Q_LIKELY(link)){
             jobject obj = link->getJavaObjectLocalRef(env);
             if(Java::QtCore::QMap::isInstanceOf(env, obj)){
                 containerAccess->dispose();
@@ -1386,10 +1386,10 @@ jobject convertQMapToJavaObject(JNIEnv *env,
     containerName += ">";
     containerName = QMetaObject::normalizedType(containerName);
     QMetaType containerMetaType(containerAccess->registerContainer(containerName));
-    const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSmartPointerToObject(env, returned,
+    QSharedPointer<QtJambiLink> link = QtJambiLink::createLinkForSmartPointerToObject(env, returned,
                                                                                                 LINK_NAME_META_TYPE_ARG(containerMetaType)
                                                                                                 smartPointer, containerAccess);
-    if (!link) {
+    if(Q_UNLIKELY(!link)) {
         returned = nullptr;
         containerAccess->dispose();
     }
@@ -1421,7 +1421,7 @@ jobject QtJambiAPI::convertQMultiMapToJavaObject(JNIEnv *env,
                                 )
 {
     Q_ASSERT(containerAccess);
-    if(QtJambiAPI::fromNativeId(owner)==listPtr){
+    if(Q_UNLIKELY(QtJambiAPI::fromNativeId(owner)==listPtr)){
         jobject obj = CoreAPI::javaObject(owner, env);
         if(Java::QtCore::QMultiMap::isInstanceOf(env, obj)){
             containerAccess->dispose();
@@ -1447,7 +1447,7 @@ jobject QtJambiAPI::convertQMultiMapToJavaObject(JNIEnv *env,
     containerName = QMetaObject::normalizedType(containerName);
     QMetaType containerMetaType(containerAccess->registerContainer(containerName));
     QSharedPointer<QtJambiLink> link;
-    if(!!owner){
+    if(Q_UNLIKELY(!!owner)){
         link = QtJambiLink::createLinkForNativeObject(env, returned, const_cast<void*>(listPtr),
                                                         LINK_NAME_META_TYPE_ARG(containerMetaType)
                                                         owner, containerAccess);
@@ -1472,7 +1472,7 @@ jobject QtJambiAPI::convertQMultiMapToJavaObject(JNIEnv *env,
                                                        false, false, containerAccess);
         }
     }
-    if (!link) {
+    if(Q_UNLIKELY(!link)) {
         returned = nullptr;
         containerAccess->dispose();
     }
@@ -1486,10 +1486,10 @@ jobject convertQMultiMapToJavaObject(JNIEnv *env,
                                 )
 {
     void* listPtr = smartPointer.get();
-    if (!listPtr)
+    if(Q_UNLIKELY(!listPtr))
         return nullptr;
     for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(listPtr)){
-        if(link){
+        if(Q_LIKELY(link)){
             jobject obj = link->getJavaObjectLocalRef(env);
             if(Java::QtCore::QMultiMap::isInstanceOf(env, obj)){
                 containerAccess->dispose();
@@ -1508,10 +1508,10 @@ jobject convertQMultiMapToJavaObject(JNIEnv *env,
     containerName += ">";
     containerName = QMetaObject::normalizedType(containerName);
     QMetaType containerMetaType(containerAccess->registerContainer(containerName));
-    const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSmartPointerToObject(env, returned,
+    QSharedPointer<QtJambiLink> link = QtJambiLink::createLinkForSmartPointerToObject(env, returned,
                                                                                                 LINK_NAME_META_TYPE_ARG(containerMetaType)
                                                                                                 smartPointer, containerAccess);
-    if (!link) {
+    if(Q_UNLIKELY(!link)) {
         returned = nullptr;
         containerAccess->dispose();
     }
@@ -1656,10 +1656,10 @@ void CoreAPI::initializeQList(JNIEnv *env, jobject object, jclass elementType, Q
     name += ">";
     name = QMetaObject::normalizedType(name);
     QMetaType containerMetaType(containerAccess->registerContainer(name));
-    const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForNativeObject(env, object, listPtr,
+    QSharedPointer<QtJambiLink> link = QtJambiLink::createLinkForNativeObject(env, object, listPtr,
                                                                                    LINK_NAME_META_TYPE_ARG(containerMetaType)
                                                                                    true, true, containerAccess);
-    if (!link) {
+    if(Q_UNLIKELY(!link)) {
         containerAccess->deleteContainer(listPtr);
         containerAccess->dispose();
     }else if(!isNativeContainer && other){
@@ -1833,10 +1833,10 @@ void CoreAPI::initializeQSet(JNIEnv *env, jobject object, jclass elementType, Qt
     name += ">";
     name = QMetaObject::normalizedType(name);
     QMetaType containerMetaType(containerAccess->registerContainer(name));
-    const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForNativeObject(env, object, listPtr,
+    QSharedPointer<QtJambiLink> link = QtJambiLink::createLinkForNativeObject(env, object, listPtr,
                                                                                    LINK_NAME_META_TYPE_ARG(containerMetaType)
                                                                                    true, true, containerAccess);
-    if (!link) {
+    if(Q_UNLIKELY(!link)) {
         containerAccess->deleteContainer(listPtr);
         containerAccess->dispose();
     }else if(!isNativeContainer && other){
@@ -1998,10 +1998,10 @@ void CoreAPI::initializeQLinkedList(JNIEnv *env, jobject object, jclass elementT
     name += ">";
     name = QMetaObject::normalizedType(name);
     QMetaType containerMetaType(containerAccess->registerContainer(name));
-    const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForNativeObject(env, object, listPtr,
+    QSharedPointer<QtJambiLink> link = QtJambiLink::createLinkForNativeObject(env, object, listPtr,
                                                                                    LINK_NAME_META_TYPE_ARG(containerMetaType)
                                                                                    true, true, containerAccess);
-    if (!link) {
+    if(Q_UNLIKELY(!link)) {
         containerAccess->deleteContainer(listPtr);
         containerAccess->dispose();
     }else if(!isNativeContainer && other){
@@ -2163,10 +2163,10 @@ void CoreAPI::initializeQVector(JNIEnv *env, jobject object, jclass elementType,
     name += ">";
     name = QMetaObject::normalizedType(name);
     QMetaType containerMetaType(containerAccess->registerContainer(name));
-    const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForNativeObject(env, object, listPtr,
+    QSharedPointer<QtJambiLink> link = QtJambiLink::createLinkForNativeObject(env, object, listPtr,
                                                                                    LINK_NAME_META_TYPE_ARG(containerMetaType)
                                                                                    true, true, containerAccess);
-    if (!link) {
+    if(Q_UNLIKELY(!link)) {
         containerAccess->deleteContainer(listPtr);
         containerAccess->dispose();
     }else if(!isNativeContainer && other){
@@ -2352,10 +2352,10 @@ void CoreAPI::initializeQHash(JNIEnv *env, jobject object, jclass keyType, QtJam
     name += ">";
     name = QMetaObject::normalizedType(name);
     QMetaType containerMetaType(containerAccess->registerContainer(name));
-    const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForNativeObject(env, object, listPtr,
+    QSharedPointer<QtJambiLink> link = QtJambiLink::createLinkForNativeObject(env, object, listPtr,
                                                                                    LINK_NAME_META_TYPE_ARG(containerMetaType)
                                                                                    true, true, containerAccess);
-    if (!link) {
+    if(Q_UNLIKELY(!link)) {
         containerAccess->deleteContainer(listPtr);
         containerAccess->dispose();
     }else if(!isNativeContainer && other){
@@ -2538,10 +2538,10 @@ void CoreAPI::initializeQMultiHash(JNIEnv *env, jobject object, jclass keyType, 
     name += ">";
     name = QMetaObject::normalizedType(name);
     QMetaType containerMetaType(containerAccess->registerContainer(name));
-    const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForNativeObject(env, object, listPtr,
+    QSharedPointer<QtJambiLink> link = QtJambiLink::createLinkForNativeObject(env, object, listPtr,
                                                                                    LINK_NAME_META_TYPE_ARG(containerMetaType)
                                                                                    true, true, containerAccess);
-    if (!link) {
+    if(Q_UNLIKELY(!link)) {
         containerAccess->deleteContainer(listPtr);
         containerAccess->dispose();
     }else if(!isNativeContainer && other){
@@ -2727,10 +2727,10 @@ void CoreAPI::initializeQMap(JNIEnv *env, jobject object, jclass keyType, QtJamb
     name += ">";
     name = QMetaObject::normalizedType(name);
     QMetaType containerMetaType(containerAccess->registerContainer(name));
-    const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForNativeObject(env, object, listPtr,
+    QSharedPointer<QtJambiLink> link = QtJambiLink::createLinkForNativeObject(env, object, listPtr,
                                                                                    LINK_NAME_META_TYPE_ARG(containerMetaType)
                                                                                    true, true, containerAccess);
-    if (!link) {
+    if(Q_UNLIKELY(!link)) {
         containerAccess->deleteContainer(listPtr);
         containerAccess->dispose();
     }else if(!isNativeContainer && other){
@@ -2912,10 +2912,10 @@ void CoreAPI::initializeQMultiMap(JNIEnv *env, jobject object, jclass keyType, Q
     name += ">";
     name = QMetaObject::normalizedType(name);
     QMetaType containerMetaType(containerAccess->registerContainer(name));
-    const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForNativeObject(env, object, listPtr,
+    QSharedPointer<QtJambiLink> link = QtJambiLink::createLinkForNativeObject(env, object, listPtr,
                                                                                    LINK_NAME_META_TYPE_ARG(containerMetaType)
                                                                                    true, true, containerAccess);
-    if (!link) {
+    if(Q_UNLIKELY(!link)) {
         containerAccess->deleteContainer(listPtr);
         containerAccess->dispose();
     }else{

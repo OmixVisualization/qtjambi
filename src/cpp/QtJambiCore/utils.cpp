@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -34,7 +34,8 @@
 
 namespace Java{
 namespace QtCore{
-QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QUnhandledException,)
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QUnhandledException, QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/lang/String;))
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QException, QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/lang/String;))
 #if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QFile$TrashResult,
     QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(ZLjava/lang/String;)
@@ -215,6 +216,24 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QDebug,
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QRunnable,)
 
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QFuture$Supplier,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(get,()Ljava/lang/Object;)
+                                )
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QFuture$Runnable,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(run,()V)
+                                )
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QFuture$Consumer,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(accept,(Ljava/lang/Object;)V)
+                                )
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QFuture$Function,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(apply,(Ljava/lang/Object;)Ljava/lang/Object;)
+                                )
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QFuture$FutureConsumer,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(accept,(Lio/qt/core/QFuture;)V)
+                                )
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QFuture$FutureFunction,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(apply,(Lio/qt/core/QFuture;)Ljava/lang/Object;)
+                                )
 namespace Internal
 {
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core/internal,QAbstractFileEngineHandler,

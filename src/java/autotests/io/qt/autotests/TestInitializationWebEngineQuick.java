@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -36,21 +36,28 @@ import org.junit.Test;
 
 import io.qt.core.QByteArray;
 import io.qt.core.QCoreApplication;
+import io.qt.core.QLibraryInfo;
 import io.qt.core.QList;
 import io.qt.core.QLogging;
 import io.qt.core.QObject;
+import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QTimer;
+import io.qt.core.QVersionNumber;
 import io.qt.core.Qt;
 import io.qt.core.QtMsgType;
 import io.qt.gui.*;
 import io.qt.qml.QQmlApplicationEngine;
 import io.qt.webengine.core.QWebEngineProfile;
 import io.qt.webengine.core.QWebEngineSettings;
-import io.qt.widgets.QApplication;
 
 public class TestInitializationWebEngineQuick extends UnitTestInitializer {
     @Test
     public void initialize() {
+    	if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.MacOS)
+    			&& "x86_64".equals(System.getProperty("os.arch").toLowerCase())
+    			&& QLibraryInfo.version().compareTo(new QVersionNumber(6,5,4))>=0) {
+    		Assert.assertTrue("env SYSTEM_VERSION_COMPAT=0 required to run WebEngine on macOS x86_64", "0".equals(System.getenv("SYSTEM_VERSION_COMPAT")));
+    	}
     	{
 	    	Assert.assertTrue(io.qt.QtUtilities.initializePackage("io.qt.webengine.quick"));
 	        QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts);

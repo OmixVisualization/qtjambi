@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -33,6 +33,7 @@ import static org.junit.Assert.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.junit.Assume;
 import org.junit.Test;
 
 import io.qt.QNoNativeResourcesException;
@@ -603,6 +604,7 @@ public class TestQObjectPropertyQt6 extends ApplicationInitializer {
     
     @Test
     public void testComputedProperty() {
+    	Assume.assumeTrue("Qt version >= 6.2", QLibraryInfo.version().compareTo(new QVersionNumber(6,2))>=0);
     	AtomicInteger iValue = new AtomicInteger(3);
     	AtomicReference<String> sValue = new AtomicReference<>("");
     	class PropertyOwner extends QObject{

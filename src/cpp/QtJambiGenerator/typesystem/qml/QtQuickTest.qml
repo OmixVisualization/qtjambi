@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -82,7 +82,7 @@ TypeSystem{
             }
             ConversionRule{
                 codeClass: CodeClass.Native
-                Text{content: "std::unique_ptr<ApplicationData> applicationData(new ApplicationData(%env, jobjectArray(%in)));\n"+
+                Text{content: "std::unique_ptr<ApplicationData> applicationData(ApplicationData::initialize<QGuiApplication>(%env, %in));\n"+
                               "char** %out = applicationData->chars();\n"+
                               "int %1 = applicationData->size();"}
             }
@@ -104,7 +104,7 @@ TypeSystem{
             }
             ConversionRule{
                 codeClass: CodeClass.Native
-                Text{content: "std::unique_ptr<ApplicationData> applicationData(new ApplicationData(%env, jobjectArray(%in)));\n"+
+                Text{content: "std::unique_ptr<ApplicationData> applicationData(ApplicationData::initialize<QGuiApplication>(%env, %in));\n"+
                               "char** %out = applicationData->chars();\n"+
                               "int %1 = applicationData->size();"}
             }

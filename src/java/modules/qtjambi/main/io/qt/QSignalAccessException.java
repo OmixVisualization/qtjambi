@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -35,7 +35,7 @@ package io.qt;
 public class QSignalAccessException extends RuntimeException {
     private static final long serialVersionUID = 1L;
 
-    public QSignalAccessException(Class<?> signalDeclaringClass, String signalName, Class<?> callerClass) {
+    public QSignalAccessException(@StrictNonNull Class<?> signalDeclaringClass, @NonNull String signalName, @StrictNonNull Class<?> callerClass) {
         super(signalDeclaringClass!=null 
         		? String.format("Unable to access private signal %1$s.%2$s from class %3$s.", signalDeclaringClass.getName(), signalName, callerClass.getName())
         		: String.format("Unable to access private signal %1$s from class %2$s.", signalName, callerClass.getName()));

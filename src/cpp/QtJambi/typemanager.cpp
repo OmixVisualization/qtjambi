@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -73,39 +73,11 @@ QT_WARNING_DISABLE_GCC("-Winit-list-lifetime")
 Q_LOGGING_CATEGORY(CATEGORY, "io.qtjambi.typemanager", QtWarningMsg)
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-#define QtJambiMetaType QMetaType
 #define METATYPE_ID(metaType) metaType.id()
 #else
 void * pointerConstructHelper(void * where, const void *pointer);
 void destructHelper(void *);
 #define METATYPE_ID(metaTypeId) metaTypeId
-class QtJambiMetaType{
-public:
-    inline QtJambiMetaType() : m_metaType(new QMetaType()) {}
-    inline QtJambiMetaType(const QtJambiMetaType& other) : m_metaType(other.m_metaType) {}
-    inline QtJambiMetaType(int metaType) : m_metaType(new QMetaType(metaType)) {}
-    inline QtJambiMetaType(const QMetaType& metaType) : m_metaType(new QMetaType(metaType.id())) {}
-    inline QtJambiMetaType& operator=(int metaType){
-        if(m_metaType->id()!=metaType)
-            m_metaType.reset(new QMetaType(metaType));
-        return *this;
-    }
-    inline QtJambiMetaType& operator=(const QMetaType& metaType){
-        if(m_metaType->id()!=metaType.id())
-            m_metaType.reset(new QMetaType(metaType.id()));
-        return *this;
-    }
-    inline bool isValid() const { return m_metaType->isValid(); }
-    inline QByteArray name() const { return m_metaType->name(); }
-    inline int id() const { return m_metaType->id(); }
-    inline operator int() const { return m_metaType->id(); }
-    inline QMetaType::TypeFlags flags() const { return m_metaType->flags(); }
-    inline int sizeOf() const { return m_metaType->sizeOf(); }
-    operator const QMetaType&() const { return *m_metaType; }
-    const QMetaType& metaType() const { return *m_metaType; }
-private:
-    QSharedPointer<QMetaType> m_metaType;
-};
 const std::type_info* getTypeByMetaType(const QtJambiMetaType& metaType){
     return getTypeByMetaType(metaType.metaType());
 }
@@ -113,28 +85,25 @@ const std::type_info* getTypeByMetaType(const QtJambiMetaType& metaType){
 
 const char* getInterface(const char*qt_interface);
 
-Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, gCacheLock, (QReadWriteLock::Recursive))
-QReadWriteLock* cacheLock(){
-    return gCacheLock();
-}
-typedef SecureContainer<QHash<hash_type, QtJambiUtils::InternalToExternalConverter>,QReadWriteLock,&cacheLock> InternalToExternalConverterHash;
-typedef SecureContainer<QHash<hash_type, QtJambiUtils::ExternalToInternalConverter>,QReadWriteLock,&cacheLock> ExternalToInternalConverterHash;
+Q_GLOBAL_STATIC(QReadWriteLock, gCacheLock)
+typedef SecureContainer<QHash<hash_type, QtJambiUtils::InternalToExternalConverter>, gCacheLock> InternalToExternalConverterHash;
+typedef SecureContainer<QHash<hash_type, QtJambiUtils::ExternalToInternalConverter>, gCacheLock> ExternalToInternalConverterHash;
 Q_GLOBAL_STATIC(InternalToExternalConverterHash, gInternalToExternalConverters)
 Q_GLOBAL_STATIC(ExternalToInternalConverterHash, gExternalToInternalConverters)
-typedef SecureContainer<QMap<int, QtJambiUtils::QHashFunction>,QReadWriteLock,&cacheLock> HashFunctionHash;
+typedef SecureContainer<QMap<int, QtJambiUtils::QHashFunction>, gCacheLock> HashFunctionHash;
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #if defined(QTJAMBI_GENERIC_ACCESS)
-typedef SecureContainer<QHash<hash_type, QtMetaContainerPrivate::QMetaAssociationInterface>,QReadWriteLock,&cacheLock> MetaAssociationHash;
-typedef SecureContainer<QHash<hash_type, QtMetaContainerPrivate::QMetaSequenceInterface>,QReadWriteLock,&cacheLock> MetaSequenceHash;
+typedef SecureContainer<QHash<hash_type, QtMetaContainerPrivate::QMetaAssociationInterface>, gCacheLock> MetaAssociationHash;
+typedef SecureContainer<QHash<hash_type, QtMetaContainerPrivate::QMetaSequenceInterface>, gCacheLock> MetaSequenceHash;
 Q_GLOBAL_STATIC(MetaAssociationHash, gMetaAssociationHash)
 Q_GLOBAL_STATIC(MetaSequenceHash, gMetaSequenceHash)
 #endif //defined(QTJAMBI_GENERIC_ACCESS)
 #endif
-typedef SecureContainer<QMap<int, QMetaEnum>,QReadWriteLock,&cacheLock> MetaEnumHash;
+typedef SecureContainer<QMap<int, QMetaEnum>, gCacheLock> MetaEnumHash;
 Q_GLOBAL_STATIC(HashFunctionHash, gHashFunctionByMetaTypeHash)
 Q_GLOBAL_STATIC(MetaEnumHash, gMetaEnumByMetaTypeHash)
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-typedef SecureContainer<QMap<QByteArray, size_t>,QReadWriteLock,&cacheLock> SizeByTypeHash;
+typedef SecureContainer<QMap<QByteArray, size_t>, gCacheLock> SizeByTypeHash;
 Q_GLOBAL_STATIC(SizeByTypeHash, gAlignmentByTypeHash)
 #endif
 
@@ -857,6 +826,10 @@ QString QtJambiTypeManager::getExternalTypeName(JNIEnv* environment, const QStri
         }
         if(enumerator.isValid()){
             if(enumerator.isFlag()){
+#if QT_VERSION >= QT_VERSION_CHECK(6, 9, 0)
+                if(enumerator.is64Bit())
+                    return "io/qt/core/QMetaType$GenericLongFlags";
+#endif
                 return "io/qt/core/QMetaType$GenericFlags";
             }else{
                 switch(metaType.sizeOf()){
@@ -887,6 +860,10 @@ QString QtJambiTypeManager::getExternalTypeName(JNIEnv* environment, const QStri
                         gMetaEnumByMetaTypeHash->insert(metaType.id(), enumerator);
                     }
                     if(enumerator.isFlag()){
+#if QT_VERSION >= QT_VERSION_CHECK(6, 9, 0)
+                        if(enumerator.is64Bit())
+                            return "io/qt/core/QMetaType$GenericLongFlags";
+#endif
                         return "io/qt/core/QMetaType$GenericFlags";
                     }else{
                         switch(metaType.sizeOf()){
@@ -919,6 +896,10 @@ QString QtJambiTypeManager::getExternalTypeName(JNIEnv* environment, const QStri
                         gMetaEnumByMetaTypeHash->insert(metaType.id(), enumerator);
                     }
                     if(enumerator.isFlag()){
+#if QT_VERSION >= QT_VERSION_CHECK(6, 9, 0)
+                        if(enumerator.is64Bit())
+                            return "io/qt/core/QMetaType$GenericLongFlags";
+#endif
                         return "io/qt/core/QMetaType$GenericFlags";
                     }else{
                         switch(metaType.sizeOf()){
@@ -1883,20 +1864,36 @@ QtJambiUtils::InternalToExternalConverter QtJambiTypeManager::getInternalToExter
                 p.l = Java::QtCore::QMetaType$GenericFlags::newInstance(env, _internalMetaType, value);
                 return true;
             };
+#if QT_VERSION >= QT_VERSION_CHECK(6, 9, 0)
+        }else if (Java::QtCore::QMetaType$GenericLongFlags::isSameClass(_env,externalClass)) {
+            jint _internalMetaType = internalMetaType.id();
+            return [_internalMetaType](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                jlong value = *reinterpret_cast<const qint64*>(in);
+                p.l = Java::QtCore::QMetaType$GenericLongFlags::newInstance(env, _internalMetaType, value);
+                return true;
+            };
+#endif
         }else{
             externalClass = getGlobalClassRef(_env, externalClass);
             switch(pointerType){
             case PointerType::NoPointer:{
-                return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-                    p.l = QtJambiAPI::convertQFlagsToJavaObject(env, *reinterpret_cast<const int *>(in), externalClass);
-                    return p.l!=nullptr;
-                };
+                if(internalMetaType.sizeOf()==sizeof(jlong)){
+                    return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                        p.l = CoreAPI::convertQFlagsToJavaObject(env, *reinterpret_cast<const jlong *>(in), externalClass);
+                        return p.l!=nullptr;
+                    };
+                }else{
+                    return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                        p.l = CoreAPI::convertQFlagsToJavaObject(env, *reinterpret_cast<const jint *>(in), externalClass);
+                        return p.l!=nullptr;
+                    };
+                }
             }break;
             case PointerType::SharedPointer:{
                 return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
                     const QSharedPointer<jint>* ptr = reinterpret_cast<const QSharedPointer<jint>*>(in);
                     if(ptr && *ptr){
-                        p.l = QtJambiAPI::convertQFlagsToJavaObject(env, **ptr, externalClass);
+                        p.l = CoreAPI::convertQFlagsToJavaObject(env, **ptr, externalClass);
                     }
                     return true;
                 };
@@ -1905,7 +1902,7 @@ QtJambiUtils::InternalToExternalConverter QtJambiTypeManager::getInternalToExter
                 return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
                     const std::shared_ptr<jint>* ptr = reinterpret_cast<const std::shared_ptr<jint>*>(in);
                     if(ptr && *ptr){
-                        p.l = QtJambiAPI::convertQFlagsToJavaObject(env, **ptr, externalClass);
+                        p.l = CoreAPI::convertQFlagsToJavaObject(env, **ptr, externalClass);
                     }
                     return true;
                 };
@@ -2042,22 +2039,22 @@ QtJambiUtils::InternalToExternalConverter QtJambiTypeManager::getInternalToExter
             case PointerType::NoPointer:{
                 if (Java::QtJambi::QtEnumerator::isAssignableFrom(_env,externalClass)) {
                     return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-                        p.l = QtJambiAPI::convertEnumToJavaObject(env, *reinterpret_cast<const qint32 *>(in), externalClass);
+                        p.l = CoreAPI::convertEnumToJavaObject(env, *reinterpret_cast<const qint32 *>(in), externalClass);
                         return p.l!=nullptr;
                     };
                 }else if (Java::QtJambi::QtShortEnumerator::isAssignableFrom(_env,externalClass)) {
                     return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-                        p.l = QtJambiAPI::convertEnumToJavaObject(env, *reinterpret_cast<const qint16 *>(in), externalClass);
+                        p.l = CoreAPI::convertEnumToJavaObject(env, *reinterpret_cast<const qint16 *>(in), externalClass);
                         return p.l!=nullptr;
                     };
                 }else if (Java::QtJambi::QtByteEnumerator::isAssignableFrom(_env,externalClass)) {
                     return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-                        p.l = QtJambiAPI::convertEnumToJavaObject(env, *reinterpret_cast<const qint8 *>(in), externalClass);
+                        p.l = CoreAPI::convertEnumToJavaObject(env, *reinterpret_cast<const qint8 *>(in), externalClass);
                         return p.l!=nullptr;
                     };
                 }else if (Java::QtJambi::QtLongEnumerator::isAssignableFrom(_env,externalClass)) {
                     return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-                        p.l = QtJambiAPI::convertEnumToJavaObject(env, *reinterpret_cast<const qint64 *>(in), externalClass);
+                        p.l = CoreAPI::convertEnumToJavaObject(env, *reinterpret_cast<const qint64 *>(in), externalClass);
                         return p.l!=nullptr;
                     };
                 }else /*if (Java::Runtime::Enum::isAssignableFrom(_env,externalClass))*/ {
@@ -2071,33 +2068,33 @@ QtJambiUtils::InternalToExternalConverter QtJambiTypeManager::getInternalToExter
             case PointerType::SharedPointer:{
                 if (Java::QtJambi::QtEnumerator::isAssignableFrom(_env,externalClass)) {
                     return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-                        const QSharedPointer<jint>* ptr = reinterpret_cast<const QSharedPointer<jint>*>(in);
+                        const QSharedPointer<qint32>* ptr = reinterpret_cast<const QSharedPointer<qint32>*>(in);
                         if(ptr && *ptr){
-                            p.l = QtJambiAPI::convertQFlagsToJavaObject(env, **ptr, externalClass);
+                            p.l = CoreAPI::convertEnumToJavaObject(env, **ptr, externalClass);
                         }
                         return true;
                     };
                 }else if (Java::QtJambi::QtShortEnumerator::isAssignableFrom(_env,externalClass)) {
                     return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-                        const QSharedPointer<jshort>* ptr = reinterpret_cast<const QSharedPointer<jshort>*>(in);
+                        const QSharedPointer<qint16>* ptr = reinterpret_cast<const QSharedPointer<qint16>*>(in);
                         if(ptr && *ptr){
-                            p.l = QtJambiAPI::convertQFlagsToJavaObject(env, **ptr, externalClass);
+                            p.l = CoreAPI::convertEnumToJavaObject(env, **ptr, externalClass);
                         }
                         return true;
                     };
                 }else if (Java::QtJambi::QtByteEnumerator::isAssignableFrom(_env,externalClass)) {
                     return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-                        const QSharedPointer<jbyte>* ptr = reinterpret_cast<const QSharedPointer<jbyte>*>(in);
+                        const QSharedPointer<qint8>* ptr = reinterpret_cast<const QSharedPointer<qint8>*>(in);
                         if(ptr && *ptr){
-                            p.l = QtJambiAPI::convertQFlagsToJavaObject(env, **ptr, externalClass);
+                            p.l = CoreAPI::convertEnumToJavaObject(env, **ptr, externalClass);
                         }
                         return true;
                     };
                 }else if (Java::QtJambi::QtLongEnumerator::isAssignableFrom(_env,externalClass)) {
                     return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-                        const QSharedPointer<jlong>* ptr = reinterpret_cast<const QSharedPointer<jlong>*>(in);
+                        const QSharedPointer<qint64>* ptr = reinterpret_cast<const QSharedPointer<qint64>*>(in);
                         if(ptr && *ptr){
-                            p.l = QtJambiAPI::convertQFlagsToJavaObject(env, **ptr, externalClass);
+                            p.l = CoreAPI::convertEnumToJavaObject(env, **ptr, externalClass);
                         }
                         return true;
                     };
@@ -2115,33 +2112,33 @@ QtJambiUtils::InternalToExternalConverter QtJambiTypeManager::getInternalToExter
             case PointerType::shared_ptr:{
                 if (Java::QtJambi::QtEnumerator::isAssignableFrom(_env,externalClass)) {
                     return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-                        const std::shared_ptr<jint>* ptr = reinterpret_cast<const std::shared_ptr<jint>*>(in);
+                        const std::shared_ptr<qint32>* ptr = reinterpret_cast<const std::shared_ptr<qint32>*>(in);
                         if(ptr && *ptr){
-                            p.l = QtJambiAPI::convertQFlagsToJavaObject(env, **ptr, externalClass);
+                            p.l = CoreAPI::convertEnumToJavaObject(env, **ptr, externalClass);
                         }
                         return true;
                     };
                 }else if (Java::QtJambi::QtShortEnumerator::isAssignableFrom(_env,externalClass)) {
                     return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-                        const std::shared_ptr<jshort>* ptr = reinterpret_cast<const std::shared_ptr<jshort>*>(in);
+                        const std::shared_ptr<qint16>* ptr = reinterpret_cast<const std::shared_ptr<qint16>*>(in);
                         if(ptr && *ptr){
-                            p.l = QtJambiAPI::convertQFlagsToJavaObject(env, **ptr, externalClass);
+                            p.l = CoreAPI::convertEnumToJavaObject(env, **ptr, externalClass);
                         }
                         return true;
                     };
                 }else if (Java::QtJambi::QtByteEnumerator::isAssignableFrom(_env,externalClass)) {
                     return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-                        const std::shared_ptr<jbyte>* ptr = reinterpret_cast<const std::shared_ptr<jbyte>*>(in);
+                        const std::shared_ptr<qint8>* ptr = reinterpret_cast<const std::shared_ptr<qint8>*>(in);
                         if(ptr && *ptr){
-                            p.l = QtJambiAPI::convertQFlagsToJavaObject(env, **ptr, externalClass);
+                            p.l = CoreAPI::convertEnumToJavaObject(env, **ptr, externalClass);
                         }
                         return true;
                     };
                 }else if (Java::QtJambi::QtLongEnumerator::isAssignableFrom(_env,externalClass)) {
                     return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-                        const std::shared_ptr<jlong>* ptr = reinterpret_cast<const std::shared_ptr<jlong>*>(in);
+                        const std::shared_ptr<qint64>* ptr = reinterpret_cast<const std::shared_ptr<qint64>*>(in);
                         if(ptr && *ptr){
-                            p.l = QtJambiAPI::convertQFlagsToJavaObject(env, **ptr, externalClass);
+                            p.l = CoreAPI::convertEnumToJavaObject(env, **ptr, externalClass);
                         }
                         return true;
                     };
@@ -2738,10 +2735,17 @@ QtJambiUtils::InternalToExternalConverter QtJambiTypeManager::getInternalToExter
                         if(typeId)
                             metaObject = registeredOriginalMetaObject(*typeId);
                         QMetaType::TypeFlags flags;
+#if QT_VERSION < QT_VERSION_CHECK(6, 9, 0)
                         if(Java::QtCore::QObject::isAssignableFrom(_env, externalClass)){
                             flags = QMetaType::TypeFlags(QtPrivate::QMetaTypeTypeFlags<QObject*>::Flags);
                         }else{
                             flags = QMetaType::TypeFlags(QtPrivate::QMetaTypeTypeFlags<void*>::Flags);
+#else
+                        if(Java::QtCore::QObject::isAssignableFrom(_env, externalClass)){
+                            flags = QMetaType::TypeFlags(QtPrivate::QMetaTypeForType<QObject*>::flags());
+                        }else{
+                            flags = QMetaType::TypeFlags(QtPrivate::QMetaTypeForType<void*>::flags());
+#endif
                             if(metaObject)
                                 flags.setFlag(QMetaType::PointerToGadget);
                         }
@@ -3515,10 +3519,17 @@ QtJambiUtils::InternalToExternalConverter QtJambiTypeManager::getInternalToExter
                         if(typeId)
                             metaObject = registeredOriginalMetaObject(*typeId);
                         QMetaType::TypeFlags flags;
+#if QT_VERSION < QT_VERSION_CHECK(6, 9, 0)
                         if(Java::QtCore::QObject::isAssignableFrom(_env, externalClass)){
                             flags = QMetaType::TypeFlags(QtPrivate::QMetaTypeTypeFlags<QObject*>::Flags);
                         }else{
                             flags = QMetaType::TypeFlags(QtPrivate::QMetaTypeTypeFlags<void*>::Flags);
+#else
+                        if(Java::QtCore::QObject::isAssignableFrom(_env, externalClass)){
+                            flags = QMetaType::TypeFlags(QtPrivate::QMetaTypeForType<QObject*>::flags());
+                        }else{
+                            flags = QMetaType::TypeFlags(QtPrivate::QMetaTypeForType<void*>::flags());
+#endif
                             if(metaObject)
                                 flags.setFlag(QMetaType::PointerToGadget);
                         }
@@ -3573,10 +3584,17 @@ QtJambiUtils::InternalToExternalConverter QtJambiTypeManager::getInternalToExter
                         if(typeId)
                             metaObject = registeredOriginalMetaObject(*typeId);
                         QMetaType::TypeFlags flags;
+#if QT_VERSION < QT_VERSION_CHECK(6, 9, 0)
                         if(Java::QtCore::QObject::isAssignableFrom(_env, externalClass)){
                             flags = QMetaType::TypeFlags(QtPrivate::QMetaTypeTypeFlags<QObject*>::Flags);
                         }else{
                             flags = QMetaType::TypeFlags(QtPrivate::QMetaTypeTypeFlags<void*>::Flags);
+#else
+                        if(Java::QtCore::QObject::isAssignableFrom(_env, externalClass)){
+                            flags = QMetaType::TypeFlags(QtPrivate::QMetaTypeForType<QObject*>::flags());
+                        }else{
+                            flags = QMetaType::TypeFlags(QtPrivate::QMetaTypeForType<void*>::flags());
+#endif
                             if(metaObject)
                                 flags.setFlag(QMetaType::PointerToGadget);
                         }
@@ -4518,8 +4536,13 @@ QVariant int_for_QtEnumerator_or_QFlags(JNIEnv* env, jobject enum_value) {
         return 0;
 
     QVariant result;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 9, 0)
+    if (Java::QtJambi::QLongFlags::isInstanceOf(env, enum_value)) {
+        result = QVariant::fromValue<qint64>(Java::QtJambi::QLongFlags::longValue(env,enum_value));
+    }else
+#endif
     if (Java::QtJambi::QFlags::isInstanceOf(env, enum_value)) {
-        result = QVariant::fromValue<qint32>(Java::QtJambi::QFlags::value(env,enum_value));
+        result = QVariant::fromValue<qint32>(Java::QtJambi::QFlags::intValue(env,enum_value));
     }else if (Java::QtJambi::QtEnumerator::isInstanceOf(env, enum_value)) {
         result = QVariant::fromValue<qint32>(Java::QtJambi::QtEnumerator::value(env,enum_value));
     }else if (Java::QtJambi::QtShortEnumerator::isInstanceOf(env, enum_value)) {
@@ -5971,6 +5994,66 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                 }
                 return true;
             };
+#if QT_VERSION >= QT_VERSION_CHECK(6, 9, 0)
+        }else if(Java::QtCore::QMetaType$GenericLongFlags::isSameClass(_env,externalClass)){
+            QMetaType _internalMetaType = internalMetaType;
+            return [_internalMetaType](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType valueType) -> bool{
+                switch(valueType){
+                case jValueType::l:
+                    if(Java::QtCore::QMetaType$GenericLongFlags::isInstanceOf(env,val.l)){
+                        const QMetaType& given = qtjambi_cast<const QMetaType&>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l));
+                        if(_internalMetaType!=given){
+                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name(), _internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
+                        }
+                        if(scope && !out){
+                            qint64* ptr;
+                            out = ptr = new qint64;
+                            scope->addDeletion(ptr);
+                        }
+                        if(!out)
+                            return false;
+                        *reinterpret_cast<qint64*>(out) = int_for_QtEnumerator_or_QFlags(env, val.l).value<qint64>();
+                    }else{
+                        if(val.l){
+                            QString className = QtJambiAPI::getObjectClassName(env, val.l);
+                            bool matches = false;
+                            if(const std::type_info* typeId = getTypeByJavaName(className)){
+                                if(registeredMetaTypeID(*typeId)==METATYPE_ID(_internalMetaType))
+                                    matches = true;
+                            }
+                            if(!matches){
+                                for(auto mtype : registeredCustomMetaTypesForJavaClass(className.toLatin1())){
+                                    if(mtype==_internalMetaType)
+                                        matches = true;
+                                }
+                            }
+                            if(!matches && !env->IsInstanceOf(val.l, Java::Runtime::Number::getClass(env)))
+                                Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassName(env, val.l).replace("$", "."), "any number") QTJAMBI_STACKTRACEINFO );
+                        }
+                        if(scope && !out){
+                            qint64* ptr;
+                            out = ptr = new qint64;
+                            scope->addDeletion(ptr);
+                        }
+                        if(!out)
+                            return false;
+                        *reinterpret_cast<qint64*>(out) = !val.l ? 0 : int_for_QtEnumerator_or_QFlags(env, val.l).value<qint64>();
+                    }
+                    break;
+                default:
+                    if(scope && !out){
+                        qint64* ptr;
+                        out = ptr = new qint64;
+                        scope->addDeletion(ptr);
+                    }
+                    if(!out)
+                        return false;
+                    *reinterpret_cast<qint64*>(out) = val.j;
+                    break;
+                }
+                return true;
+            };
+#endif
         }else {
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
             int _internalMetaType = internalMetaType.id();
@@ -7899,10 +7982,17 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                                 if(typeId)
                                     metaObject = registeredOriginalMetaObject(*typeId);
                                 QMetaType::TypeFlags flags;
+#if QT_VERSION < QT_VERSION_CHECK(6, 9, 0)
                                 if(Java::QtCore::QObject::isAssignableFrom(_env, externalClass)){
                                     flags = QMetaType::TypeFlags(QtPrivate::QMetaTypeTypeFlags<QObject*>::Flags);
                                 }else{
                                     flags = QMetaType::TypeFlags(QtPrivate::QMetaTypeTypeFlags<void*>::Flags);
+#else
+                                if(Java::QtCore::QObject::isAssignableFrom(_env, externalClass)){
+                                    flags = QMetaType::TypeFlags(QtPrivate::QMetaTypeForType<QObject*>::flags());
+                                }else{
+                                    flags = QMetaType::TypeFlags(QtPrivate::QMetaTypeForType<void*>::flags());
+#endif
                                     if(metaObject)
                                         flags.setFlag(QMetaType::PointerToGadget);
                                 }
@@ -8399,10 +8489,17 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                             if(typeId)
                                 metaObject = registeredOriginalMetaObject(*typeId);
                             QMetaType::TypeFlags flags;
+#if QT_VERSION < QT_VERSION_CHECK(6, 9, 0)
                             if(Java::QtCore::QObject::isAssignableFrom(_env, externalClass)){
                                 flags = QMetaType::TypeFlags(QtPrivate::QMetaTypeTypeFlags<QObject*>::Flags);
                             }else{
                                 flags = QMetaType::TypeFlags(QtPrivate::QMetaTypeTypeFlags<void*>::Flags);
+#else
+                            if(Java::QtCore::QObject::isAssignableFrom(_env, externalClass)){
+                                flags = QMetaType::TypeFlags(QtPrivate::QMetaTypeForType<QObject*>::flags());
+                            }else{
+                                flags = QMetaType::TypeFlags(QtPrivate::QMetaTypeForType<void*>::flags());
+#endif
                                 if(metaObject)
                                     flags.setFlag(QMetaType::PointerToGadget);
                             }
@@ -8457,10 +8554,17 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                             if(typeId)
                                 metaObject = registeredOriginalMetaObject(*typeId);
                             QMetaType::TypeFlags flags;
+#if QT_VERSION < QT_VERSION_CHECK(6, 9, 0)
                             if(Java::QtCore::QObject::isAssignableFrom(_env, externalClass)){
                                 flags = QMetaType::TypeFlags(QtPrivate::QMetaTypeTypeFlags<QObject*>::Flags);
                             }else{
                                 flags = QMetaType::TypeFlags(QtPrivate::QMetaTypeTypeFlags<void*>::Flags);
+#else
+                            if(Java::QtCore::QObject::isAssignableFrom(_env, externalClass)){
+                                flags = QMetaType::TypeFlags(QtPrivate::QMetaTypeForType<QObject*>::flags());
+                            }else{
+                                flags = QMetaType::TypeFlags(QtPrivate::QMetaTypeForType<void*>::flags());
+#endif
                                 if(metaObject)
                                     flags.setFlag(QMetaType::PointerToGadget);
                             }
@@ -10042,8 +10146,8 @@ struct BiContainerTypeInfo{
     QtPrivate::QMetaTypeInterface::DataStreamInFn dataStreamIn;
 };
 
-typedef SecureContainer<QHash<const QtPrivate::QMetaTypeInterface*,ContainerTypeInfo>,QReadWriteLock,&cacheLock> ContainerTypeInfoHash;
-typedef SecureContainer<QHash<const QtPrivate::QMetaTypeInterface*,BiContainerTypeInfo>,QReadWriteLock,&cacheLock> BiContainerTypeInfoHash;
+typedef SecureContainer<QHash<const QtPrivate::QMetaTypeInterface*,ContainerTypeInfo>, gCacheLock> ContainerTypeInfoHash;
+typedef SecureContainer<QHash<const QtPrivate::QMetaTypeInterface*,BiContainerTypeInfo>, gCacheLock> BiContainerTypeInfoHash;
 Q_GLOBAL_STATIC(ContainerTypeInfoHash, gContainerTypeInfos)
 Q_GLOBAL_STATIC(BiContainerTypeInfoHash, gBiContainerTypeInfos)
 

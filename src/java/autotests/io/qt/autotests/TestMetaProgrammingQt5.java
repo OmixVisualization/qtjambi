@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -213,13 +213,9 @@ public class TestMetaProgrammingQt5 extends ApplicationInitializer {
 
     @Test
     public void testMetaProperties() {
-    	boolean canRequired = false;
-    	try{
-            canRequired = io.qt.internal.PropertyFlags.valueOf("Required")!=null;
-        }catch(Throwable t){}
         ExpectedValues expectedValues[] = {
                 new ExpectedValues("testDesignableProperty", true, false, true, false, false, false),
-                new ExpectedValues("requiredProperty", true, false, true, false, canRequired, false),
+                new ExpectedValues("requiredProperty", true, false, true, false, io.qt.internal.TestUtility.canRequiredProperty, false),
                 new ExpectedValues("ordinaryProperty", true, false, true, false, false, true),
                 new ExpectedValues("annotatedProperty", true, false, true, false, false, false),
                 new ExpectedValues("ordinaryReadOnlyProperty", false, false, true, false, false, false),

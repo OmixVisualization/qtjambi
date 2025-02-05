@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -243,7 +243,7 @@ static bool customConvert(const QVariant::Private *d, int t,
                     }else if (Java::QtJambi::QtLongEnumerator::isInstanceOf(env, java_object)) {
                         enumValue.setValue<qint64>(Java::QtJambi::QtLongEnumerator::value(env, java_object));
                     }else if (Java::QtJambi::QFlags::isInstanceOf(env, java_object)) {
-                        enumValue.setValue<qint32>(Java::QtJambi::QFlags::value(env, java_object));
+                        enumValue.setValue<qint32>(Java::QtJambi::QFlags::intValue(env, java_object));
                     }else if (Java::Runtime::Integer::isInstanceOf(env, java_object)) {
                         enumValue.setValue<qint32>(Java::Runtime::Number::intValue(env, java_object));
                     }else if (Java::Runtime::Short::isInstanceOf(env, java_object)) {

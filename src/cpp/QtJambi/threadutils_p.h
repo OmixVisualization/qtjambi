@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -42,6 +42,7 @@
 
 class QtJambiLink;
 class EventDispatcherCheck;
+class QThreadUserData;
 
 typedef QExplicitlySharedDataPointer<EventDispatcherCheck> EventDispatcherCheckPointer;
 
@@ -59,7 +60,7 @@ public:
     };
 
     typedef void (*CleanupFunction)(JNIEnv *env, Data*);
-    static void adoptThread(JNIEnv *env, jobject jthreadObject, QThread* thread, jint associationHashcode, QWeakPointer<QtJambiLink>&& wlink, CleanupFunction _cleaner = nullptr);
+    static void adoptThread(JNIEnv *env, jobject jthreadObject, QThread* thread, QThreadUserData* threadData, jint associationHashcode, QWeakPointer<QtJambiLink>&& wlink, CleanupFunction _cleaner = nullptr);
     static void detach(JNIEnv *env);
     static bool isAlive();
 private:
@@ -69,7 +70,7 @@ private:
     EventDispatcherCheck(Data& data, CleanupFunction _cleaner);
     Data* m_data;
     QMutex m_mutex;
-    CleanupFunction cleaner;
+    CleanupFunction m_cleaner;
     friend EventDispatcherCheckPointer;
 };
 
@@ -83,24 +84,14 @@ public:
         AdoptedThread
     };
     QThreadUserData();
-    QThreadUserData(JNIEnv *env, jobject threadGroup);
     ~QThreadUserData() override;
     QTJAMBI_OBJECTUSERDATA_ID_DECL
-    void initialize(QThread* thread, bool isAdopted = false);
+    void initializeDefault(QThread* thread);
+    void initializeAdopted(QThread* thread);
+    void reinitializeMain(QThread* thread);
     void deleteAtThreadEnd(QObject* object);
     void doAtThreadEnd(QtJambiUtils::Runnable&& action);
-    inline bool isDaemon() const { return m_isDaemon; }
-    inline void setDaemon(bool isDaemon) { m_isDaemon = isDaemon; }
-    inline QByteArray getName() const { return m_name; }
-    inline void setName(const QByteArray& name) { m_name = name; }
-    jobject getThreadGroup() const;
-    jobject getUncaughtExceptionHandler() const;
-    void setUncaughtExceptionHandler(JNIEnv *env, jobject uncaughtExceptionHandler);
-    jobject getContextClassLoader() const;
-    void setContextClassLoader(JNIEnv *env, jobject contextClassLoader);
-    void clearContextClassLoader(JNIEnv *env);
-    void clearThreadGroup(JNIEnv *env);
-    void clearUncaughtExceptionHandler(JNIEnv *env);
+    inline bool isJavaLaunched() const {return m_isJavaLaunched;}
     inline bool purgeOnExit() const {return m_threadType!=ProcessMainThread;}
     inline QObject* threadDeleter() const {return m_threadDeleter.get();}
     inline ThreadType threadType() const { return m_threadType; }
@@ -119,16 +110,36 @@ private:
     QList<QPointer<QObject>> m_objectsForDeletion;
     QList<QtJambiUtils::Runnable>* m_finalActions;
     QMutex* m_mutex;
-    jobject m_threadGroup;
-    bool m_isDaemon;
-    QByteArray m_name;
-    jobject m_uncaughtExceptionHandler;
-    jobject m_contextClassLoader;
     QMetaObject::Connection m_finishedConnection;
 
     ThreadType m_threadType;
+    bool m_isJavaLaunched = false;
 
     friend EventDispatcherCheck;
+};
+
+class QThreadInitializationUserData : public QtJambiObjectData{
+public:
+    QThreadInitializationUserData();
+    QThreadInitializationUserData(JNIEnv *env, jobject threadGroup);
+    ~QThreadInitializationUserData() override;
+    QTJAMBI_OBJECTUSERDATA_ID_DECL
+    jobject getThreadGroup() const;
+    jobject getUncaughtExceptionHandler(JNIEnv *env) const;
+    void setUncaughtExceptionHandler(JNIEnv *env, jobject uncaughtExceptionHandler);
+    jobject getContextClassLoader(JNIEnv *env) const;
+    inline bool isDaemon() const { return m_isDaemon; }
+    inline void setDaemon(bool isDaemon) { m_isDaemon = isDaemon; }
+    inline QByteArray getName() const { return m_name; }
+    inline void setName(const QByteArray& name) { m_name = name; }
+    void setContextClassLoader(JNIEnv *env, jobject contextClassLoader);
+    void clear(JNIEnv *env);
+private:
+    jobject m_threadGroup = nullptr;
+    JObjectWrapper m_uncaughtExceptionHandler;
+    JObjectWrapper m_contextClassLoader;
+    bool m_isDaemon = true;
+    QByteArray m_name;
 };
 
 struct QThreadAdoptionUserData : public QtJambiObjectData{
@@ -158,5 +169,91 @@ private:
     int reserved2 = 0;
     friend class Deleter;
 };
+
+class LinkInvalidator : public AbstractThreadEvent{
+public:
+    LinkInvalidator(QSharedPointer<QtJambiLink>&& link);
+    LinkInvalidator* clone() const override;
+private:
+    void execute() override;
+    LinkInvalidator(const LinkInvalidator& other);
+    QSharedPointer<QtJambiLink> m_link;
+};
+
+bool threadRequiresCoreApplication(QThread* thread);
+
+struct JNIInvokablePrivate;
+
+namespace ThreadPrivate{
+class JNIInvokable{
+    typedef void(*Deleter)(void*);
+    typedef void(*Invoker)(void*, JNIEnv *);
+public:
+    typedef void(*FunctionPointer)(JNIEnv *);
+
+private:
+    explicit JNIInvokable(void* data, Invoker invoker, Deleter deleter) noexcept;
+public:
+    JNIInvokable() noexcept;
+    ~JNIInvokable() noexcept;
+    JNIInvokable(const JNIInvokable& other) noexcept;
+    JNIInvokable(JNIInvokable&& other) noexcept;
+    JNIInvokable(FunctionPointer functor) noexcept;
+    inline JNIInvokable(nullptr_t) noexcept : JNIInvokable(FunctionPointer(nullptr)) {}
+
+    JNIInvokable& operator=(const JNIInvokable& other) noexcept;
+    JNIInvokable& operator=(JNIInvokable&& other) noexcept;
+
+    template<typename Functor, typename std::enable_if<!std::is_pointer<Functor>::value, bool>::type = true
+             , typename std::enable_if<!std::is_same<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type, JNIInvokable>::value, bool>::type = true
+             , typename std::enable_if<!std::is_null_pointer<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type>::value, bool>::type = true
+             , typename std::enable_if<!std::is_same<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type, FunctionPointer>::value, bool>::type = true
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+             , typename std::enable_if<std::is_invocable<Functor, JNIEnv *>::value, bool>::type = true
+#endif
+             >
+    JNIInvokable(Functor&& functor) noexcept
+        : JNIInvokable(
+              new typename std::remove_reference<typename std::remove_cv<Functor>::type>::type(std::move(functor)),
+              [](void* data, JNIEnv *env){
+                  typename std::remove_reference<typename std::remove_cv<Functor>::type>::type* fct = reinterpret_cast<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type*>(data);
+                  (*fct)(env);
+              },
+              [](void* data){
+                  delete reinterpret_cast<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type*>(data);
+              }
+              ){}
+    bool operator==(const JNIInvokable& other) const noexcept;
+    void operator()(JNIEnv * env) const;
+    operator bool() const noexcept;
+    bool operator !() const noexcept;
+    template<typename T>
+    static JNIInvokable deleter(T* t){
+        return JNIInvokable(
+            reinterpret_cast<void*>(t),
+            [](void* data){
+                T* ptr = reinterpret_cast<T*>(data);
+                delete ptr;
+            }, nullptr);
+    }
+    template<typename T>
+    static JNIInvokable arrayDeleter(T* t){
+        return JNIInvokable(
+            reinterpret_cast<void*>(t),
+            [](void* data){
+                T* ptr = reinterpret_cast<T*>(data);
+                delete[] ptr;
+            }, nullptr);
+    }
+private:
+    friend JNIInvokablePrivate;
+    QExplicitlySharedDataPointer<JNIInvokablePrivate> d;
+};
+
+QThread* currentThread();
+jobject fromQThread(JNIEnv * env, jobject java_qthread, QThread *thread, const QSharedPointer<QtJambiLink>& link);
+void initializeMainThread(JNIEnv *__jni_env);
+void doInPurgeThread(JNIInvokable &&fun);
+}
 
 #endif // THREADUTILS_P_H

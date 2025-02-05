@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -997,6 +997,11 @@ TypeSystem{
             }
         }
     }
+
+    ObjectType{
+        name: "QSpline3DSeries"
+        since: 6.9
+    }
     
     ValueType{
         name: "QScatterDataItem"
@@ -1562,6 +1567,7 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 threadAffinity: true
+                noImplicitCalls: true
             }
         }
         InjectCode{
@@ -1574,7 +1580,7 @@ template<> QExplicitlySharedDataPointer<QGraphsLinePrivate>::~QExplicitlySharedD
 }
 #endif
 `}
-            until: 6.8
+            until: [6,8,0]
         }
         since: 6.8
     }

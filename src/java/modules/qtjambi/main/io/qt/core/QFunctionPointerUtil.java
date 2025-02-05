@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -52,7 +52,6 @@ import io.qt.QtObjectInterface;
 import io.qt.QtPointerType;
 import io.qt.QtReferenceType;
 import io.qt.QtUtilities;
-import io.qt.internal.ClassAnalyzerUtility;
 
 final class QFunctionPointerUtil {
 	private QFunctionPointerUtil() {}
@@ -91,7 +90,7 @@ final class QFunctionPointerUtil {
 			QtMetaType metaTypeDecl = null;
 			QtPointerType pointerType = null;
 			QtReferenceType referenceType = null;
-			if(ClassAnalyzerUtility.useAnnotatedType) {
+			if(QtJambi_LibraryUtilities.internal.useAnnotatedType()) {
 				if(functionMethod.getAnnotatedReturnType()!=null) {
 					metaTypeDecl = functionMethod.getAnnotatedReturnType().getAnnotation(QtMetaType.class);
 					pointerType = functionMethod.getAnnotatedReturnType().getAnnotation(QtPointerType.class);
@@ -139,7 +138,7 @@ final class QFunctionPointerUtil {
 					returnType = new QGenericReturnType<>(functionMethod.getReturnType(), null, 2);
 				}else {
 					AnnotatedElement annotatedReturnType = null;
-					if(ClassAnalyzerUtility.useAnnotatedType)
+					if(QtJambi_LibraryUtilities.internal.useAnnotatedType())
 						annotatedReturnType = functionMethod.getAnnotatedReturnType();
 					int metaType = QtJambi_LibraryUtilities.internal.registerMetaType(functionMethod.getReturnType(), functionMethod.getGenericReturnType(), annotatedReturnType, false, false);
 					if(metaType!=0) {
@@ -164,7 +163,7 @@ final class QFunctionPointerUtil {
             Class<?>[] parameterTypes = functionMethod.getParameterTypes();
             Type[] genericParameterTypes = functionMethod.getGenericParameterTypes();
             AnnotatedElement[] annotatedParameterTypes = null;
-            if(ClassAnalyzerUtility.useAnnotatedType)
+            if(QtJambi_LibraryUtilities.internal.useAnnotatedType())
             	annotatedParameterTypes = functionMethod.getAnnotatedParameterTypes();
 			for (int i = 0; i < argumentTypes.length; i++) {
 				if(annotatedParameterTypes!=null && annotatedParameterTypes[i]!=null) {

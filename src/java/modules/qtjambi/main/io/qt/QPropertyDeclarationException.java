@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -35,7 +35,7 @@ package io.qt;
 public class QPropertyDeclarationException extends RuntimeException {
     private static final long serialVersionUID = 1L;
 
-    public QPropertyDeclarationException(String message) {
+    public QPropertyDeclarationException(@NonNull String message) {
         super(message);
     }
 }

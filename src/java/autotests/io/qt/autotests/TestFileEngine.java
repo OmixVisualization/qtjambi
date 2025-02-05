@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -41,11 +41,13 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 
+import org.junit.AfterClass;
 import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.QtUtilities;
+import io.qt.internal.TestUtility;
 import io.qt.core.QByteArray;
 import io.qt.core.QDir;
 import io.qt.core.QFile;
@@ -65,11 +67,34 @@ import io.qt.gui.QPixmap;
 import io.qt.widgets.QLabel;
 
 public class TestFileEngine extends ApplicationInitializer {
+	private static String search_path1 = null;
+	private static java.io.File tmpFile1 = null;
+	private static File tmpFile2 = null;
+	private static String search_path2 = null;
 	
 	@BeforeClass
     public static void testInitialize() throws Exception {
     	ApplicationInitializer.testInitializeWithWidgets();
     }
+	
+	@AfterClass
+    public static void testDispose() throws Exception {
+		if(search_path1!=null) {
+			runGC();
+			QResource.removeClassPath(search_path1);
+			if(tmpFile1!=null && !tmpFile1.delete()) {
+				tmpFile1.deleteOnExit();
+			}
+		}
+		if(search_path2!=null) {
+			runGC();
+			QResource.removeClassPath(search_path2);
+			if(tmpFile2!=null && !tmpFile2.delete()) {
+				tmpFile2.deleteOnExit();
+			}
+		}
+		ApplicationInitializer.testDispose();
+	}
 	
     private int byteArrayCompare(byte[] a, int aOff, byte[] b, int bOff, int len) {
         int count = 0;
@@ -128,25 +153,28 @@ public class TestFileEngine extends ApplicationInitializer {
 	        assertTrue(af.open(QIODevice.OpenModeFlag.ReadOnly));
 	        af.close();
 	    }
-    	String search_path = null;
-    	java.io.File tmpFile = null;
     	try{
     		URL url = TestFileEngine.class.getResource("TestClassFunctionality.jar");
         	Assume.assumeTrue(url!=null);
         	if(url.getProtocol().equals("file")) {
-        		search_path = new java.io.File(url.toURI()).getAbsolutePath();
+        		search_path1 = new java.io.File(url.toURI()).getAbsolutePath();
         	}else {
-        		tmpFile = File.createTempFile("TestClassFunctionality",".jar");
+        		File userDir = new File(System.getProperty("user.dir", ""));
+        		if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android)) {
+        			userDir = new File(QDir.tempPath());
+        		}
+	        	userDir.mkdirs();
+	        	tmpFile1 = new File(userDir, "TestFileEngine_testClassPathFileEngine_pid" + TestUtility.processName() + ".jar");
         		try (InputStream is = url.openStream()){
-            		Files.copy(is, tmpFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            		Files.copy(is, tmpFile1.toPath(), StandardCopyOption.REPLACE_EXISTING);
             	}
-        		search_path = tmpFile.getAbsolutePath();
+        		search_path1 = tmpFile1.getAbsolutePath();
         	}
     	} catch (Exception e) {
     		e.printStackTrace();
     		Assume.assumeTrue("TestClassFunctionality.jar not found on classpath", false);
         }
-        QResource.addClassPath(search_path);
+        QResource.addClassPath(search_path1);
         
         {
 	        QFileInfo ne_info = new QFileInfo("classpath:TestClassFunctionality_nosuchfile.txt");
@@ -387,11 +415,15 @@ public class TestFileEngine extends ApplicationInitializer {
 	        assertEquals(file.size(), 13L);
 	
         }finally {
+        	runGC();
         	if(finalAction!=null)
         		finalAction.run();
-	        QResource.removeClassPath(search_path);
-	        if(tmpFile!=null)
-	        	tmpFile.delete();
+	        QResource.removeClassPath(search_path1);
+	        if(tmpFile1!=null && tmpFile1.exists()) {
+	        	if(!tmpFile1.delete()) {
+	        		tmpFile1.deleteOnExit();
+	        	}
+	        }
         }
     }
 	
@@ -400,23 +432,28 @@ public class TestFileEngine extends ApplicationInitializer {
 		QtUtilities.initializePackage(io.qt.autotests.generated.General.class);
 		QFileInfo info = new QFileInfo(":io/qt/autotests/TestClassFunctionality.jar");
         assertTrue(info.exists());
+        info.dispose();
         
         info = new QFileInfo(":io/qt/autotests/generated/");
 		assertTrue(info.isDir());
-		QStringList content = new QDir(":io/qt/autotests/generated/").entryList(QDir.Filter.NoFilter.asFlags(), QDir.SortFlag.NoSort.asFlags());
+		QDir dir = new QDir(":io/qt/autotests/generated/");
+		QStringList content = dir.entryList(QDir.Filter.NoFilter.asFlags(), QDir.SortFlag.NoSort.asFlags());
+		dir.dispose();
 		if(!QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android))
 			assertTrue("directory :io/qt/autotests/generated/ contains class", content.contains("General.class"));
 		assertTrue("directory :io/qt/autotests/generated/ contains image", content.contains("qjlogo.png"));
+        info.dispose();
 		
         info = new QFileInfo(":io/qt/autotests/generated/qjlogo.png");
 		assertTrue(info.exists());
+        info.dispose();
 		
         info = new QFileInfo(":io/qt/autotests/generated/resource.txt");// this is the alias
 		assertFalse(info.exists());
+        info.dispose();
 		
         info = new QFileInfo(":io/qt/autotests/generated/Text");
 		assertTrue(info.exists());
-		
 		{
 			QFile file = new QFile();
 			try {
@@ -428,24 +465,31 @@ public class TestFileEngine extends ApplicationInitializer {
 				file.dispose();
 			}
 		}
+		info.dispose();
 		
 		if(!QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android)) {
 	        info = new QFileInfo(":io/qt/autotests/generated/General.class");
 			assertTrue(info.exists());
+	        info.dispose();
 		}
 		
         URL url = TestFileEngine.class.getResource("resources.jar");
-        File tmpFile = null;
         try {
 	        if(url.getProtocol().equals("file")) {
-	        	QResource.addClassPath(new java.io.File(url.toURI()).getAbsolutePath());
+	        	search_path2 = new java.io.File(url.toURI()).getAbsolutePath();
 	        }else {
-	        	tmpFile = File.createTempFile("resources", ".jar");
+	        	File userDir = new File(System.getProperty("user.dir", ""));
+	        	if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android)) {
+        			userDir = new File(System.getProperty("java.io.tmpdir", ""));
+        		}
+	        	userDir.mkdirs();
+	        	tmpFile2 = new File(userDir, "TestFileEngine_testResourceFileEngine_pid" + TestUtility.processName() + ".jar");
 	        	try (InputStream is = url.openStream()){
-	        		Files.copy(is, tmpFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+	        		Files.copy(is, tmpFile2.toPath(), StandardCopyOption.REPLACE_EXISTING);
 	        	}
-	        	QResource.addClassPath(tmpFile.getAbsolutePath());
+	        	search_path2 = tmpFile2.getAbsolutePath();
 	        }
+	        QResource.addClassPath(search_path2);
 	        
 	        QLocale.setDefault(new QLocale(QLocale.Language.Spanish, QLocale.Country.Argentina));
 	        info = new QFileInfo(":io/qt/qtjambi/resources/Text.txt");
@@ -461,6 +505,7 @@ public class TestFileEngine extends ApplicationInitializer {
 					file.dispose();
 				}
 			}
+			info.dispose();
 			
 			QLocale.setDefault(new QLocale(QLocale.Language.German, QLocale.Country.Germany));
 	        info = new QFileInfo(":io/qt/qtjambi/resources/Text.txt");
@@ -476,6 +521,7 @@ public class TestFileEngine extends ApplicationInitializer {
 					file.dispose();
 				}
 			}
+			info.dispose();
 			
 			QLocale.setDefault(new QLocale(QLocale.Language.German, QLocale.Country.Austria));
 	        info = new QFileInfo(":io/qt/qtjambi/resources/Text.txt");
@@ -491,6 +537,7 @@ public class TestFileEngine extends ApplicationInitializer {
 					file.dispose();
 				}
 			}
+			info.dispose();
 			
 			QDir.addSearchPath("text", ":io/qt/qtjambi/resources/");
 			
@@ -508,11 +555,17 @@ public class TestFileEngine extends ApplicationInitializer {
 					file.dispose();
 				}
 			}
+			info.dispose();
         }finally {
-			if(tmpFile!=null) {
-				QResource.removeClassPath(tmpFile.getAbsolutePath());
-				tmpFile.delete();
-			}
+        	runGC();
+        	if(search_path2!=null) {
+        		QResource.removeClassPath(search_path2);
+    			if(tmpFile2!=null && tmpFile2.exists()) {
+    				if(!tmpFile2.delete()) {
+    					tmpFile2.deleteOnExit();
+    				}
+    			}
+        	}
 		}
 	}
 	

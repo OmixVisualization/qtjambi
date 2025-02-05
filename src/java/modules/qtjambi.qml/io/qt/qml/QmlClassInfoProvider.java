@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -40,24 +40,17 @@ final class QmlClassInfoProvider {
 	
 	static final Map<String,Integer> packageVersions = Collections.synchronizedMap(new TreeMap<>());
 	
-	@SuppressWarnings("deprecation")
 	static int majorVersion(Package pkg) {
 		return packageVersions.computeIfAbsent(pkg.getName(), packageName->{
-			QmlImportMajorVersion importMajorVersion = pkg.getAnnotation(QmlImportMajorVersion.class);
     		QmlImport qmlimport = pkg.getAnnotation(QmlImport.class);
-    		if(importMajorVersion==null && qmlimport==null) {
+    		if(qmlimport==null) {
     			try {
     				Class<?> infoClass = QtJambi_LibraryUtilities.class.getClassLoader().loadClass(packageName+".package-info");
-    				importMajorVersion = infoClass.getAnnotation(QmlImportMajorVersion.class);
     				qmlimport = infoClass.getAnnotation(QmlImport.class);
     			} catch (Throwable e) {}
     		}
-    		if(qmlimport!=null) {
+    		if(qmlimport!=null)
     			return qmlimport.majorVersion();
-    		}
-    		if(importMajorVersion!=null) {
-    			return importMajorVersion.value();
-    		}
     		return 1;
 		});
 	}

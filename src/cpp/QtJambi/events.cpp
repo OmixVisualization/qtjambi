@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -182,7 +182,7 @@ bool UIInitialCheck::trivial(QObject *){return true;}
 
 bool UIInitialCheck::initialEventNotify(QObject *receiver, QEvent *event, bool* result){
     QCoreApplication* instance = QCoreApplication::instance();
-    if(instance) {
+    if(Q_LIKELY(instance)) {
         if(QtJambiShellInterface* shellInterface = dynamic_cast<QtJambiShellInterface*>(instance)){
             QtJambiShellImpl* shellImpl = QtJambiShellImpl::get(shellInterface);
             if(!shellImpl->hasEmptyVTable()){
@@ -288,9 +288,17 @@ const QObject* UIInitialCheck::initialGetPixmapOwner(const void * ptr){
     if(threadedPixmapsChecker()){
         getPixmapOwner = &trivial;
     }else{
-        getPixmapOwner = &RegistryAPI::mainThreadOwner;
+        getPixmapOwner = &QtJambiAPI::mainThreadOwner;
     }
     return getPixmapOwner(ptr);
+}
+
+const QObject* QtJambiAPI::mainThreadOwner(const void *)
+{
+    if(QCoreApplicationPrivate::is_app_closing){
+        return nullptr;
+    }
+    return QCoreApplication::instance();
 }
 
 template<UIInitialCheck::ConstructorCheck replacement>
@@ -592,11 +600,7 @@ bool checkThreadOnSignalEmit(QObject* object){
     return UIInitialCheck::signalEmitThreadCheck(object);
 }
 
-void QtJambiAPI::checkThreadQPixmap(JNIEnv *env, const std::type_info& typeId){
-    UIInitialCheck::pixmapUseCheck(env, typeId);
-}
-
-void QtJambiAPI::checkThreadUI(JNIEnv *env, const std::type_info& typeId){
+void QtJambiAPI::checkMainThread(JNIEnv *env, const std::type_info& typeId){
     UIInitialCheck::uiThreadCheck(env, typeId);
 }
 
@@ -608,16 +612,12 @@ void QtJambiAPI::checkThreadOnArgument(JNIEnv *env, const char* argumentName, co
     UIInitialCheck::valueArgumentThreadCheck(env, argumentName, argumentType, argumentOwner);
 }
 
-void QtJambiAPI::checkThreadOnArgumentUI(JNIEnv *env, const char* argumentName, const std::type_info& argumentType){
+void QtJambiAPI::checkMainThreadOnArgument(JNIEnv *env, const char* argumentName, const std::type_info& argumentType){
     UIInitialCheck::uiArgumentThreadCheck(env, argumentName, argumentType);
 }
 
 void QtJambiAPI::checkThreadOnArgumentQPixmap(JNIEnv *env, const char* argumentName, const std::type_info& argumentType){
     UIInitialCheck::pixmapArgumentThreadCheck(env, argumentName, argumentType);
-}
-
-const QObject* QtJambiAPI::getPixmapOwner(const void * ptr){
-    return UIInitialCheck::getPixmapOwner(ptr);
 }
 
 void QtJambiAPI::checkThreadOnArgument(JNIEnv *env, const char* argumentName, const std::type_info& argumentType, const void* argument){
@@ -636,8 +636,16 @@ void QtJambiAPI::checkThreadOnParent(JNIEnv *env, const std::type_info& parentTy
     UIInitialCheck::generalConstructorThreadCheck(env, parentType, parent);
 }
 
-void QtJambiAPI::checkThreadConstructingUI(JNIEnv *env, const std::type_info& constructedType){
+void QtJambiAPI::checkMainThreadConstructing(JNIEnv *env, const std::type_info& constructedType){
     UIInitialCheck::uiConstructorCheck(env, constructedType);
+}
+
+const QObject* QtJambiAPI::getPixmapOwner(const void * ptr){
+    return UIInitialCheck::getPixmapOwner(ptr);
+}
+
+void QtJambiAPI::checkThreadQPixmap(JNIEnv *env, const std::type_info& typeId){
+    UIInitialCheck::pixmapUseCheck(env, typeId);
 }
 
 void QtJambiAPI::checkThreadConstructingQPixmap(JNIEnv *env, const std::type_info& constructedType){
@@ -652,16 +660,7 @@ void QtJambiAPI::checkThreadConstructingQWindow(JNIEnv *env, const std::type_inf
     UIInitialCheck::windowConstructorCheck(env, constructedType, parent);
 }
 
-void QtJambiAPI::checkThreadConstructingApplication(JNIEnv *env, const std::type_info& constructedType){
-#ifdef Q_OS_DARWIN
-    if (constructedType!=typeid(QCoreApplication) && !pthread_main_np()) {
-        JavaException::raiseError(env, "QtJambi does not appear to be running on the main thread and will "
-                 "most likely be unstable and crash. "
-                 "Please make sure to launch your 'java' command with the "
-                 "'-XstartOnFirstThread' command line option. For instance: "
-                 "java -XstartOnFirstThread any.vendor.MainClass" QTJAMBI_STACKTRACEINFO );
-    }
-#endif
+void checkThreadConstructingApplication(JNIEnv *env, const std::type_info& constructedType){
     if(Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.enable-thread-affinity-check"))){
         QThread* mainThread = QCoreApplicationPrivate::theMainThread.loadRelaxed();
         QThread* currentThread = QThread::currentThread();
@@ -748,6 +747,23 @@ void onDynamicPropertyChange(QObject *receiver, QDynamicPropertyChangeEvent* eve
 bool eventNotifier(QObject *receiver, QEvent *event, bool* result)
 {
     QTJAMBI_DEBUG_EVENT_PRINT(receiver, event);
+    if (receiver == nullptr) {                        // serious error
+        qCCritical(DebugAPI::internalCategory, "QCoreApplication::notify: Unexpected null receiver");
+        return true;
+    }
+    QObjectPrivate *d = QObjectPrivate::get(receiver);
+    if(!d || d->wasDeleted){
+        if(JniEnvironmentExceptionHandler env{200}){
+            try{
+                Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Dangling pointer to QObject: %p", receiver) QTJAMBI_STACKTRACEINFO );
+            }catch(const JavaException& exn){
+                env.handleException(exn, "QCoreApplication::sendEvent");
+            }
+        }else{
+            qCCritical(DebugAPI::internalCategory, "QCoreApplication::notify: Receiver has been already deleted");
+        }
+        return true;
+    }
     switch (event->type()) {
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     case QEvent::DynamicPropertyChange:
@@ -789,14 +805,9 @@ bool eventNotifier(QObject *receiver, QEvent *event, bool* result)
     default:
         break;
     }
-    if (!QCoreApplicationPrivate::threadRequiresCoreApplication()){
-        QObjectPrivate *d = QObjectPrivate::get(receiver);
-        QThreadData *threadData = d->threadData;
+    QThreadData *threadData = d->threadData;
+    if (!(threadData && threadData->requiresCoreApplication)){
         ScopedScopeLevelCounter scopeLevelCounter(threadData);
-        if (receiver == nullptr) {                        // serious error
-            qCWarning(DebugAPI::internalCategory, "QCoreApplication::notify: Unexpected null receiver");
-            return true;
-        }
 #ifndef QT_NO_DEBUG
         QCoreApplicationPrivate::checkReceiverThread(receiver);
 #endif
@@ -824,57 +835,58 @@ bool threadAffineEventNotify(void **data)
 {
     if(QObject *receiver = reinterpret_cast<QObject *>(data[0])){
         QEvent *event = reinterpret_cast<QEvent *>(data[1]);
-        {
-            if(const QObjectPrivate* p = QObjectPrivate::get(receiver)){
-                QThreadData *thr = p->threadData;
-                ScopedScopeLevelCounter scopeLevelCounter(thr);
-                QThreadData *currentThread = QThreadData::get2(QThread::currentThread());
-                ScopedScopeLevelCounter cscopeLevelCounter(currentThread);
-                if(thr && thr->threadId!=nullptr && currentThread != thr){
-                    QMetaEnum enm = QMetaEnum::fromType<QEvent::Type>();
-                    QString eventDescr;
-                    if(enm.isValid()){
-                        eventDescr = QLatin1String(enm.valueToKeys(event->type()));
-                    }else{
-                        eventDescr = QString::number(int(event->type()));
-                    }
-                    if(QCoreApplicationPrivate::is_app_closing)
-                        return false;
-                    if(JniEnvironmentExceptionHandler env{200}){
-                        try{
-                            qCWarning(DebugAPI::internalCategory, "Cannot send events to objects owned by a different thread (event type: %ls). "
-                                                                  "Current thread 0x%p. Receiver '%ls' (of type '%s') was created in thread 0x%p",
-                                      qUtf16Printable(eventDescr),
-                                      currentThread, qUtf16Printable(receiver->objectName()),
-                                      receiver->metaObject()->className(), thr);
-                            if(QtJambiShellInterface* shellInterface = dynamic_cast<QtJambiShellInterface*>(receiver)){
-                                JavaException::raiseQThreadAffinityException(env, QString::asprintf("Cannot send events to objects owned by a different thread (event type: %ls). "
-                                                                                                               "Current thread 0x%p. Receiver '%ls' (of type '%s') was created in thread 0x%p",
-                                                                                                               qUtf16Printable(eventDescr),
-                                                                                                               currentThread, qUtf16Printable(receiver->objectName()),
-                                                                                                               receiver->metaObject()->className(), thr) QTJAMBI_STACKTRACEINFO ,
-                                                                             QtJambiShellInterface::getJavaObjectLocalRef(env, shellInterface),
-                                                                             nullptr, nullptr);
-                            }else if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForQObject(receiver)) {
-                                JavaException::raiseQThreadAffinityException(env, QString::asprintf("Cannot send events to objects owned by a different thread (event type: %ls). "
-                                                                                                    "Current thread 0x%p. Receiver '%ls' (of type '%s') was created in thread 0x%p",
-                                                                                                    qUtf16Printable(eventDescr),
-                                                                                                    currentThread, qUtf16Printable(receiver->objectName()),
-                                                                                                    receiver->metaObject()->className(), thr) QTJAMBI_STACKTRACEINFO ,
-                                                                             link->getJavaObjectLocalRef(env),
-                                                                             nullptr, nullptr);
-                            }else{
-                                JavaException::raiseQThreadAffinityException(env, QString::asprintf("Cannot send events to objects owned by a different thread (event type: %ls). "
-                                                  "Current thread 0x%p. Receiver '%ls' (of type '%s') was created in thread 0x%p",
-                                                  qUtf16Printable(eventDescr),
-                                                  currentThread, qUtf16Printable(receiver->objectName()),
-                                                  receiver->metaObject()->className(), thr) QTJAMBI_STACKTRACEINFO ,
-                                                  nullptr, nullptr, nullptr);
-                            }
-                        }catch(const JavaException& exn){
-                            env.handleException(exn, "QCoreApplication::sendEvent");
+        if(const QObjectPrivate* p = QObjectPrivate::get(receiver)){
+            if(p->wasDeleted){
+                if(QThreadData *thr = p->threadData){
+                    ScopedScopeLevelCounter scopeLevelCounter(thr);
+                    QThreadData *currentThread = QThreadData::get2(QThread::currentThread());
+                    ScopedScopeLevelCounter cscopeLevelCounter(currentThread);
+                    if(thr->threadId!=nullptr && currentThread != thr){
+                        QMetaEnum enm = QMetaEnum::fromType<QEvent::Type>();
+                        QString eventDescr;
+                        if(enm.isValid()){
+                            eventDescr = QLatin1String(enm.valueToKeys(event->type()));
+                        }else{
+                            eventDescr = QString::number(int(event->type()));
                         }
-                        return true;
+                        if(QCoreApplicationPrivate::is_app_closing)
+                            return false;
+                        if(JniEnvironmentExceptionHandler env{200}){
+                            try{
+                                qCWarning(DebugAPI::internalCategory, "Cannot send events to objects owned by a different thread (event type: %ls). "
+                                                                      "Current thread 0x%p. Receiver '%ls' (of type '%s') was created in thread 0x%p",
+                                          qUtf16Printable(eventDescr),
+                                          currentThread, qUtf16Printable(receiver->objectName()),
+                                          receiver->metaObject()->className(), thr);
+                                if(QtJambiShellInterface* shellInterface = dynamic_cast<QtJambiShellInterface*>(receiver)){
+                                    JavaException::raiseQThreadAffinityException(env, QString::asprintf("Cannot send events to objects owned by a different thread (event type: %ls). "
+                                                                                                        "Current thread 0x%p. Receiver '%ls' (of type '%s') was created in thread 0x%p",
+                                                                                                        qUtf16Printable(eventDescr),
+                                                                                                        currentThread, qUtf16Printable(receiver->objectName()),
+                                                                                                        receiver->metaObject()->className(), thr) QTJAMBI_STACKTRACEINFO ,
+                                                                                 QtJambiShellInterface::getJavaObjectLocalRef(env, shellInterface),
+                                                                                 nullptr, nullptr);
+                                }else if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForQObject(receiver)) {
+                                    JavaException::raiseQThreadAffinityException(env, QString::asprintf("Cannot send events to objects owned by a different thread (event type: %ls). "
+                                                                                                        "Current thread 0x%p. Receiver '%ls' (of type '%s') was created in thread 0x%p",
+                                                                                                        qUtf16Printable(eventDescr),
+                                                                                                        currentThread, qUtf16Printable(receiver->objectName()),
+                                                                                                        receiver->metaObject()->className(), thr) QTJAMBI_STACKTRACEINFO ,
+                                                                                 link->getJavaObjectLocalRef(env),
+                                                                                 nullptr, nullptr);
+                                }else{
+                                    JavaException::raiseQThreadAffinityException(env, QString::asprintf("Cannot send events to objects owned by a different thread (event type: %ls). "
+                                                                                                        "Current thread 0x%p. Receiver '%ls' (of type '%s') was created in thread 0x%p",
+                                                                                                        qUtf16Printable(eventDescr),
+                                                                                                        currentThread, qUtf16Printable(receiver->objectName()),
+                                                                                                        receiver->metaObject()->className(), thr) QTJAMBI_STACKTRACEINFO ,
+                                                                                 nullptr, nullptr, nullptr);
+                                }
+                            }catch(const JavaException& exn){
+                                env.handleException(exn, "QCoreApplication::sendEvent");
+                            }
+                            return true;
+                        }
                     }
                 }
             }

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -43,6 +43,7 @@ import org.junit.Assume;
 import org.junit.BeforeClass;
 
 import io.qt.autotests.generated.General;
+import io.qt.autotests.generated.SignalReceiver;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QEvent;
 import io.qt.core.QEventLoop;
@@ -51,6 +52,7 @@ import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QThread;
 import io.qt.core.QTimeLine;
 import io.qt.core.QTimer;
+import io.qt.core.Qt;
 
 public class TestQThread extends ApplicationInitializer{
 	
@@ -352,6 +354,7 @@ public class TestQThread extends ApplicationInitializer{
 	@org.junit.Test
 	public void testQThreadRequestInterruption() throws InterruptedException, ClassNotFoundException{
 		AtomicBoolean continued = new AtomicBoolean();
+		AtomicBoolean done = new AtomicBoolean();
 		AtomicBoolean interrupted = new AtomicBoolean();
 		AtomicBoolean interruptionRequested = new AtomicBoolean();
 		QThread thread = QThread.create(()->{
@@ -366,20 +369,26 @@ public class TestQThread extends ApplicationInitializer{
 				try {
 					Thread.sleep(10);
 				} catch (InterruptedException e) {
+				}finally {
+					interruptionRequested.set(QThread.currentThread().isInterruptionRequested());
+					done.set(true);
 				}
-				interruptionRequested.set(QThread.currentThread().isInterruptionRequested());
 			}
 		});
 		try {
 			thread.start();
-			Thread.sleep(100);
-			assertTrue(thread.isRunning());
-			assertFalse(thread.isFinished());
+			Thread jthread;
+			do {
+				Thread.yield();
+				Thread.sleep(100);
+				jthread = thread.javaThread();
+			}while(jthread==null || jthread.getState()!=Thread.State.WAITING);
 			thread.requestInterruption();
 			thread.join(2000);
-			assertTrue(interrupted.get());
+			assertTrue(done.get());
 			assertFalse(continued.get());
 			assertTrue(interruptionRequested.get());
+			assertTrue(interrupted.get());
 		}finally {
 			synchronized(TestQThread.class) {
 				TestQThread.class.notifyAll();
@@ -504,7 +513,10 @@ public class TestQThread extends ApplicationInitializer{
 			thread.finished.connect(()->finished.set(true));
 			reference = new WeakReference<>(thread);
 			thread.start();
-			thread.join(2000);
+			do {
+				Thread.yield();
+				Thread.sleep(100);
+			}while(!finished.get());
 			if(exception[0]!=null)
 				throw exception[0];
 			Assert.assertTrue(javaThreads[0]!=null);
@@ -515,6 +527,16 @@ public class TestQThread extends ApplicationInitializer{
 			Assert.assertTrue(General.internalAccess.isJavaOwnership(thread));
 			Assert.assertTrue(finished.get());
 			Assert.assertFalse(thread.isAlive());
+			if(javaThreads[0].getState()!=Thread.State.TERMINATED) {
+				javaThreads[0].interrupt();
+				int i = 0;
+				while(i<20 && javaThreads[0].getState()!=Thread.State.TERMINATED) {
+					Thread.yield();
+					Thread.sleep(150);
+					runGC();
+					++i;
+				}
+			}
 			javaThreads[0] = null;
 			javaThreads[1] = null;
 			qtarray[0] = null;
@@ -573,6 +595,7 @@ public class TestQThread extends ApplicationInitializer{
 					currentThread = null;
 				}
 			}, parent);
+			thread.setDaemon(true);
 			reference = new WeakReference<>(thread);
 			thread.finished.connect(()->finished.set(true));
 			thread.start();
@@ -580,6 +603,7 @@ public class TestQThread extends ApplicationInitializer{
 			if(exception[0]!=null)
 				throw exception[0];
 			Assert.assertTrue(javaThreads[0]!=null);
+			Assert.assertTrue("not a daemon", javaThreads[0].isDaemon());
 			Assert.assertEquals(javaThreads[0], javaThreads[1]);
 			jreference = new WeakReference<>(javaThreads[0]);
 			Assert.assertEquals(thread, qtarray[0]);
@@ -587,6 +611,16 @@ public class TestQThread extends ApplicationInitializer{
 			Assert.assertTrue(General.internalAccess.isCppOwnership(thread));
 			Assert.assertTrue(finished.get());
 			Assert.assertFalse(thread.isAlive());
+			if(javaThreads[0].getState()!=Thread.State.TERMINATED) {
+				javaThreads[0].interrupt();
+				int i = 0;
+				while(i<20 && javaThreads[0].getState()!=Thread.State.TERMINATED) {
+					Thread.yield();
+					Thread.sleep(150);
+					runGC();
+					++i;
+				}
+			}
 			javaThreads[0] = null;
 			javaThreads[1] = null;
 			qtarray[0] = null;
@@ -601,11 +635,7 @@ public class TestQThread extends ApplicationInitializer{
 			QTimer timer = new QTimer();
 			long t1 = System.currentTimeMillis();
 			timer.timeout.connect(()->{
-				Thread.yield();
-				Thread.sleep(250);
 				runGC();
-				QCoreApplication.processEvents();
-				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
 				if(reference.get()==null || System.currentTimeMillis()-t1>20000) {
 					loop.quit();
 				}
@@ -660,6 +690,13 @@ public class TestQThread extends ApplicationInitializer{
 			thread.join(2000);
 			if(exception[0]!=null)
 				throw exception[0];
+			int i = 0;
+			while(i<20) {
+				Thread.yield();
+				Thread.sleep(150);
+				runGC();
+				++i;
+			}
 			Assert.assertTrue(javaThreads[0]!=null);
 			Assert.assertEquals(javaThreads[0], javaThreads[1]);
 			jreference = new WeakReference<>(javaThreads[0]);
@@ -669,22 +706,28 @@ public class TestQThread extends ApplicationInitializer{
 			Assert.assertTrue(General.internalAccess.isJavaOwnership(thread));
 			Assert.assertTrue(finished.get());
 			Assert.assertFalse(thread.isAlive());
+			if(javaThreads[0].getState()!=Thread.State.TERMINATED)
+				javaThreads[0].interrupt();
 			javaThreads[0] = null;
 			javaThreads[1] = null;
 			qtarray[0] = null;
 			thread = null;
 			obj = null;
 		}
-		for (int i = 0; i < 120; i++) {
-			ApplicationInitializer.runGC();
-			QCoreApplication.processEvents();
-			QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
-			QCoreApplication.processEvents();
-			ApplicationInitializer.runGC();
-			Thread.yield();
-			Thread.sleep(50);
-			if(reference.get()==null)
-				break;
+		QEventLoop loop = new QEventLoop();
+		{
+			QTimer timer = new QTimer();
+			long t1 = System.currentTimeMillis();
+			timer.timeout.connect(()->{
+				runGC();
+				if(reference.get()==null || System.currentTimeMillis()-t1>20000) {
+					loop.quit();
+				}
+			});
+			timer.setInterval(300);
+			timer.start();
+			loop.exec();
+			timer.dispose();
 		}
 		QThread remaining = reference.get();
 		Assert.assertTrue("QThread reference is not null and existing", remaining==null || remaining.isDisposed());
@@ -751,30 +794,43 @@ public class TestQThread extends ApplicationInitializer{
 			Assert.assertEquals(parent, reference.get().parent());
 			parent = null;
 		}
-		for (int i = 0; i < 120; i++) {
-			ApplicationInitializer.runGC();
-			QCoreApplication.processEvents();
-			QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
-			QCoreApplication.processEvents();
-			ApplicationInitializer.runGC();
-			try {
+		QEventLoop loop = new QEventLoop();
+		{
+			QTimer timer = new QTimer();
+			long t1 = System.currentTimeMillis();
+			timer.timeout.connect(()->{
+				runGC();
+				if(reference.get()==null || System.currentTimeMillis()-t1>20000) {
+					loop.quit();
+				}
+			});
+			timer.setInterval(300);
+			timer.start();
+			loop.exec();
+			timer.dispose();
+		}
+		Thread javaThread = jreference.get();
+		if(javaThread!=null && javaThread.getState()!=Thread.State.TERMINATED) {
+			javaThread.interrupt();
+			javaThread = null;
+			int i = 0;
+			do{
 				Thread.yield();
-				Thread.sleep(200);
-			} catch (InterruptedException e) {
-				break;
-			}
-			if(reference.get()==null)
-				break;
+				Thread.sleep(150);
+				runGC();
+				++i;
+				javaThread = jreference.get();
+			}while(i<20 && javaThread!=null && javaThread.getState()!=Thread.State.TERMINATED);
 		}
 		QThread remaining = reference.get();
 		Assert.assertTrue("QThread reference is not null and existing", remaining==null || remaining.isDisposed());
 		Assert.assertTrue("QThread reference is not null but disposed", null==remaining);
-		Assert.assertTrue("Thread reference is not", null==jreference.get());
+		Assert.assertTrue("Thread reference is not null", null==jreference.get());
 	}
 	
 	@org.junit.Test
 	public void testDeleteAdoptedThread() throws Throwable {
-		AtomicBoolean finished = new AtomicBoolean();
+		SignalReceiver finished = new SignalReceiver();
 		AtomicBoolean threadCleaned = new AtomicBoolean();
 		AtomicBoolean qthreadCleaned = new AtomicBoolean();
 		{
@@ -784,7 +840,7 @@ public class TestQThread extends ApplicationInitializer{
 			Throwable[] exception = {null};
 			Thread thread = new Thread(()->{
 				QThread currentThread = QThread.currentThread();
-				currentThread.finished.connect(()->finished.set(true));
+				currentThread.finished.connect(finished, "receiveSignal()", Qt.ConnectionType.DirectConnection);
 				try {
 					qtarray[0] = currentThread;
 					splitOwnership[0] = General.internalAccess.isSplitOwnership(currentThread);
@@ -808,11 +864,11 @@ public class TestQThread extends ApplicationInitializer{
 			Assert.assertEquals(javaThreads[0], javaThreads[1]);
 			Assert.assertTrue(splitOwnership[0]);
 			Assert.assertFalse("QThread is null", qtarray[0]==null);
-			for (int i = 0; i < 120 && !finished.get(); i++) {
+			for (int i = 0; i < 120 && !finished.received(); i++) {
 				Thread.yield();
 				Thread.sleep(100);
 			}
-			Assert.assertTrue("Thread termintated without emitting QThread::finished", finished.get());
+			Assert.assertTrue("Thread termintated without emitting QThread::finished", finished.received());
 //			Assert.assertTrue("QThread is disposed", qtarray[0].isDisposed());
 			javaThreads[0] = null;
 			javaThreads[1] = null;

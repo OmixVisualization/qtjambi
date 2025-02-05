@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -2716,6 +2716,8 @@ void MetaClass::setBaseClass(MetaClass *base_class) {
             m_type_entry->setQWindow(true);
         if(base_class->typeEntry()->isQAbstractItemModel())
             m_type_entry->setQAbstractItemModel(true);
+        if(base_class->typeEntry()->isQThread())
+            m_type_entry->setQThread(true);
         if(base_class->typeEntry()->isQCoreApplication())
             m_type_entry->setQCoreApplication(true);
         if(base_class->typeEntry()->isQAction())

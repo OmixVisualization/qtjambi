@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -37,33 +37,67 @@ TypeSystem{
     LoadTypeSystem{name: "QtGui"; unless: "QTJAMBI_NO_GUI"}
     Template{
         name: "gui.addAction"
-        Text{content: "public final QAction addAction(%EXTRA String text %INFIX_EXTRA, Object receiver, String method %END_EXTRA %CONNECTION_TYPE) {\n"+
-                      "    QAction returned = addAction(%CALL_EXTRA text %END_CALL_EXTRA);\n"+
-                      "    %POST_CALL\n"+
-                      "    returned.triggered.connect(receiver, method %USE_CONNECTION_TYPE);\n"+
-                      "    return returned;\n"+
-                      "}\n"+
-                      "\n"+
-                      "public final QAction addAction(%EXTRA String text %INFIX_EXTRA, io.qt.core.QMetaObject.Slot0 slot %END_EXTRA %CONNECTION_TYPE) {\n"+
-                      "    QAction returned = addAction(%CALL_EXTRA text %END_CALL_EXTRA);\n"+
-                      "    %POST_CALL\n"+
-                      "    returned.triggered.connect(slot %USE_CONNECTION_TYPE);\n"+
-                      "    return returned;\n"+
-                      "}\n"+
-                      "\n"+
-                      "public final QAction addAction(%EXTRA String text %INFIX_EXTRA, io.qt.core.QMetaObject.Slot1<? super Boolean> slot %END_EXTRA %CONNECTION_TYPE) {\n"+
-                      "    QAction returned = addAction(%CALL_EXTRA text %END_CALL_EXTRA);\n"+
-                      "    %POST_CALL\n"+
-                      "    returned.triggered.connect(slot %USE_CONNECTION_TYPE);\n"+
-                      "    return returned;\n"+
-                      "}\n"+
-                      "\n"+
-                      "public final QAction addAction(%EXTRA String text %INFIX_EXTRA, io.qt.core.QMetaObject.Connectable1<? super Boolean> signal %END_EXTRA %CONNECTION_TYPE) {\n"+
-                      "    QAction returned = addAction(%CALL_EXTRA text %END_CALL_EXTRA);\n"+
-                      "    %POST_CALL\n"+
-                      "    returned.triggered.connect(signal %USE_CONNECTION_TYPE);\n"+
-                      "    return returned;\n"+
-                      "}"}
+        Text{content: String.raw`
+/**
+ * <p>Overloaded function for {@link #addAction(java.lang.String)}, creating action connected to method.</p>
+ */
+public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTRA, @StrictNonNull Object receiver, @StrictNonNull String method %END_EXTRA %CONNECTION_TYPE) {
+    QAction returned = addAction(%CALL_EXTRA text %END_CALL_EXTRA);
+    %POST_CALL
+    returned.triggered.connect(receiver, method %USE_CONNECTION_TYPE);
+    return returned;
+}
+
+/**
+ * <p>Overloaded function for {@link #addAction(java.lang.String)}, creating action connected to slot.</p>
+ */
+public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTRA, io.qt.core.QMetaObject.@StrictNonNull Slot0 slot %END_EXTRA %CONNECTION_TYPE) {
+    QAction returned = addAction(%CALL_EXTRA text %END_CALL_EXTRA);
+    %POST_CALL
+    returned.triggered.connect(slot %USE_CONNECTION_TYPE);
+    return returned;
+}
+
+/**
+ * <p>Overloaded function for {@link #addAction(java.lang.String)}, creating action connected to slot.</p>
+ */
+public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTRA, io.qt.core.QMetaObject.@StrictNonNull Slot1<? super Boolean> slot %END_EXTRA %CONNECTION_TYPE) {
+    QAction returned = addAction(%CALL_EXTRA text %END_CALL_EXTRA);
+    %POST_CALL
+    returned.triggered.connect(slot %USE_CONNECTION_TYPE);
+    return returned;
+}
+
+/**
+ * <p>Overloaded function for {@link #addAction(java.lang.String)}, creating action connected to slot.</p>
+ */
+public final <Receiver> @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTRA, @StrictNonNull Receiver receiver, io.qt.core.QMetaObject.@StrictNonNull Slot1<Receiver> slot %END_EXTRA %CONNECTION_TYPE) {
+    QAction returned = addAction(%CALL_EXTRA text %END_CALL_EXTRA);
+    %POST_CALL
+    returned.triggered.connect(receiver, slot %USE_CONNECTION_TYPE);
+    return returned;
+}
+
+/**
+ * <p>Overloaded function for {@link #addAction(java.lang.String)}, creating action connected to slot.</p>
+ */
+public final <Receiver> @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTRA, @StrictNonNull Receiver receiver, io.qt.core.QMetaObject.@StrictNonNull Slot2<Receiver, ? super Boolean> slot %END_EXTRA %CONNECTION_TYPE) {
+    QAction returned = addAction(%CALL_EXTRA text %END_CALL_EXTRA);
+    %POST_CALL
+    returned.triggered.connect(receiver, slot %USE_CONNECTION_TYPE);
+    return returned;
+}
+
+/**
+ * <p>Overloaded function for {@link #addAction(java.lang.String)}, creating action connected to signal.</p>
+ */
+public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTRA, io.qt.core.QMetaObject.@StrictNonNull Connectable1<? super Boolean> signal %END_EXTRA %CONNECTION_TYPE) {
+    QAction returned = addAction(%CALL_EXTRA text %END_CALL_EXTRA);
+    %POST_CALL
+    returned.triggered.connect(signal %USE_CONNECTION_TYPE);
+    return returned;
+}
+            `}
     }
     
     Template{
@@ -76,7 +110,7 @@ TypeSystem{
             }
             Replace{
                 from: "%END_EXTRA"
-                to: ", QKeySequence shortcut"
+                to: ", @NonNull QKeySequence shortcut"
             }
             Replace{
                 from: "%END_CALL_EXTRA"
@@ -142,11 +176,11 @@ TypeSystem{
             }
             Replace{
                 from: "%INFIX_EXTRA"
-                to: ", QKeySequence shortcut"
+                to: ", @NonNull QKeySequence shortcut"
             }
             Replace{
                 from: "%CONNECTION_TYPE"
-                to: ", Qt.ConnectionType... connectionType"
+                to: ", Qt.@NonNull ConnectionType @NonNull... connectionType"
             }
             Replace{
                 from: "%USE_CONNECTION_TYPE"
@@ -173,7 +207,7 @@ TypeSystem{
             }
             Replace{
                 from: "%CONNECTION_TYPE"
-                to: ", Qt.ConnectionType... connectionType"
+                to: ", Qt.@NonNull ConnectionType @NonNull... connectionType"
             }
             Replace{
                 from: "%USE_CONNECTION_TYPE"
@@ -4412,18 +4446,17 @@ try{
         }
         InjectCode{
             target: CodeClass.Native
-            Text{content: "extern \"C\" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets_QMenu_setAsOSXDockMenu)\n"+
-                          " (JNIEnv *__jni_env, jobject __this)\n"+
-                          "{\n"+
-                          "#ifdef Q_OS_OSX\n"+
-                          "    QMenu* __qt_this = qtjambi_cast<QMenu*>(__jni_env, __this);\n"+
-                          "    QtJambiAPI::checkNullPointer(__jni_env, __qt_this);\n"+
-                          "    __qt_this->setAsDockMenu();\n"+
-                          "#else\n"+
-                          "    Q_UNUSED(__jni_env)\n"+
-                          "    Q_UNUSED(__this)\n"+
-                          "#endif\n"+
-                          "}"}
+            Text{content: String.raw`
+extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIEnv *__jni_env, jobject __this){
+#ifdef Q_OS_OSX
+    QMenu* __qt_this = qtjambi_cast<QMenu*>(__jni_env, __this);
+    QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
+    __qt_this->setAsDockMenu();
+#else
+    Q_UNUSED(__jni_env)
+    Q_UNUSED(__this)
+#endif
+}`}
         }
         InjectCode{
             until: [6, 2]
@@ -10123,7 +10156,7 @@ try{
                 name: "widget.addAction_with_shortcut"
                 Replace{
                     from: "%EXTRA"
-                    to: "QIcon icon,"
+                    to: "@NonNull QIcon icon,"
                 }
                 Replace{
                     from: "%CALL_EXTRA"
@@ -10985,14 +11018,17 @@ try{
                     codeClass: CodeClass.Native
                     Text{content: "std::function<void(const QString&,const QByteArray&)> %out;\n"+
                                   "if(%in){\n"+
-                                  "    JObjectWrapper wrapper(%env, %in);\n"+
-                                  "    %out = [wrapper](const QString& value1,const QByteArray& value2){\n"+
-                                  "                        if(JniEnvironment env{200}){\n"+
+                                  "    %out = [wrapper = JObjectWrapper(%env, %in)](const QString& value1,const QByteArray& value2){\n"+
+                                  "                    if(JniEnvironment env{200}){\n"+
+                                  "                        QTJAMBI_TRY{\n"+
                                   "                            jstring _value1 = qtjambi_cast<jstring>(env, value1);\n"+
                                   "                            jobject _value2 = qtjambi_cast<jobject>(env, value2);\n"+
                                   "                            Java::Runtime::BiConsumer::accept(env, wrapper.object(env), _value1, _value2);\n"+
-                                  "                        }\n"+
-                                  "                    };\n"+
+                                  "                        }QTJAMBI_CATCH(const JavaException& exn){\n"+
+                                  "                            exn.report(env);\n"+
+                                  "                        }QTJAMBI_TRY_END\n"+
+                                  "                    }\n"+
+                                  "                };\n"+
                                   "}"}
                 }
             }
@@ -11010,14 +11046,17 @@ try{
                     codeClass: CodeClass.Native
                     Text{content: "std::function<void(const QString&,const QByteArray&)> %out;\n"+
                                   "if(%in){\n"+
-                                  "    JObjectWrapper wrapper(%env, %in);\n"+
-                                  "    %out = [wrapper](const QString& value1,const QByteArray& value2){\n"+
-                                  "                        if(JniEnvironment env{200}){\n"+
+                                  "    %out = [wrapper = JObjectWrapper(%env, %in)](const QString& value1,const QByteArray& value2){\n"+
+                                  "                    if(JniEnvironment env{200}){\n"+
+                                  "                        QTJAMBI_TRY{\n"+
                                   "                            jstring _value1 = qtjambi_cast<jstring>(env, value1);\n"+
                                   "                            jobject _value2 = qtjambi_cast<jobject>(env, value2);\n"+
                                   "                            Java::Runtime::BiConsumer::accept(env, wrapper.object(env), _value1, _value2);\n"+
-                                  "                        }\n"+
-                                  "                    };\n"+
+                                  "                        }QTJAMBI_CATCH(const JavaException& exn){\n"+
+                                  "                            exn.report(env);\n"+
+                                  "                        }QTJAMBI_TRY_END\n"+
+                                  "                    }\n"+
+                                  "                };\n"+
                                   "}"}
                 }
             }
@@ -12273,7 +12312,7 @@ try{
         Rejection{functionName: "compressEvent"}
         Rejection{
             functionName: "nativeInterface"
-            since: [6, 2]
+            since: 6
         }
         ExtraIncludes{
             Include{
@@ -12403,7 +12442,7 @@ try{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "std::unique_ptr<ApplicationData> applicationData(new ApplicationData(%env, jobjectArray(%in)));\n"+
+                    Text{content: "std::unique_ptr<ApplicationData> applicationData(ApplicationData::initialize<QApplication>(%env, %in));\n"+
                                   "char** %out = applicationData->chars();\n"+
                                   "int& __qt_%1 = applicationData->size();"}
                 }

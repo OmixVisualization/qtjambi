@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -64,6 +64,10 @@ public:
     void addObjectInvalidation(JNIEnv *env, QtJambiNativeID nativeId, bool persistent = true);
     void addForcedObjectInvalidation(JNIEnv *env, jobject object, bool persistent = true);
     void addForcedObjectInvalidation(JNIEnv *env, QtJambiNativeID nativeId, bool persistent = true);
+    void addContainerInvalidation(JNIEnv *env, jobject object, bool persistent = true);
+    void addForcedContainerInvalidation(JNIEnv *env, jobject object, bool persistent = true);
+    void addArrayInvalidation(JNIEnv *env, jobjectArray object, bool persistent = true);
+    void addForcedArrayInvalidation(JNIEnv *env, jobjectArray object, bool persistent = true);
     QtJambiNativeID relatedNativeID() const;
 protected:
     QtJambiScope(QtJambiScopePrivate&);

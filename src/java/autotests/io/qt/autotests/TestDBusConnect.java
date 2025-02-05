@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -45,7 +45,9 @@ import org.junit.Test;
 import io.qt.QtUtilities;
 import io.qt.core.QByteArray;
 import io.qt.core.QDataStream;
+import io.qt.core.QDir;
 import io.qt.core.QEventLoop;
+import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QRect;
 import io.qt.core.QRectF;
 import io.qt.core.QThread;
@@ -90,7 +92,10 @@ public class TestDBusConnect {
 		pongThread.join(2000);
 		long t1 = System.currentTimeMillis();
     	final String jambidir = System.getProperty("user.dir");
-    	final File testsDir = new File(jambidir).getParentFile();
+    	File testsDir = new File(jambidir).getParentFile();
+    	if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android)) {
+    		testsDir = new File(QDir.tempPath());
+		}
     	final File targetDir = new File(testsDir, "tmp_"+TestUtility.processName());
     	final File testFile = new File(targetDir, "QtDBusPong.touch.test");
 		while(!testFile.exists() && pongThread.isAlive()){
@@ -132,7 +137,10 @@ public class TestDBusConnect {
 			{
 		    	final String version = QtUtilities.qtjambiVersion().toString();
 		    	final String jambidir = System.getProperty("user.dir");
-		    	final File testsDir = new File(jambidir).getParentFile();
+		    	File testsDir = new File(jambidir).getParentFile();
+		    	if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android)) {
+		    		testsDir = new File(QDir.tempPath());
+				}
 		    	final File targetDir = new File(testsDir, "tmp_"+TestUtility.processName());
 				File tmpDir = new File(System.getProperty("java.io.tmpdir"));
 				if(new File(targetDir, "pid").isFile()) {

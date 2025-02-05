@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -29,8 +29,6 @@
 ****************************************************************************/
 package io.qt;
 
-import io.qt.internal.EnumUtility;
-
 /**
  * The QtFlagEnumerator interface servers as a base for all qint32 enums available as QFlags.
  * @see QFlags
@@ -41,6 +39,6 @@ public interface QtAbstractFlagEnumerator extends QtAbstractEnumerator{
 	 * @return QFlags
 	 */
 	public default QFlags<?> asFlags(){
-		return EnumUtility.asFlags(this, QFlags.ConcreteWrapper::new);
+		return QtJambi_LibraryUtilities.internal.asFlags(this);
 	}
 }

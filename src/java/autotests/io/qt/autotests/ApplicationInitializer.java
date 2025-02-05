@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -48,6 +48,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.BeforeClass;
+import org.junit.rules.TestRule;
 
 import io.qt.Nullable;
 import io.qt.QNoNativeResourcesException;
@@ -77,13 +78,25 @@ import io.qt.widgets.QDialog;
 
 public abstract class ApplicationInitializer extends UnitTestInitializer{
 	
-	@org.junit.Rule public final org.junit.rules.TestRule testRule = new org.junit.rules.TestRule(){
+	public static class MyTestRule implements TestRule{
+		private String className;
+		private String methodName;
 		@Override
 		public org.junit.runners.model.Statement apply(org.junit.runners.model.Statement base, org.junit.runner.Description description) {
-			java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.INFO, "Start test "+description.getClassName()+"."+description.getMethodName());
+			className = description.getTestClass().getSimpleName();
+			methodName = description.getMethodName();
+			java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.INFO, "Start test "+className+"."+methodName);
 			return base;
 		}
-	};
+		public String getClassName() {
+			return className;
+		}
+		public String getMethodName() {
+			return methodName;
+		}
+	}
+	
+	@org.junit.Rule public final MyTestRule testRule = new MyTestRule();
 	
 	private static String testClassName = "";
 	
@@ -153,11 +166,13 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
     			WeakReference<QtObjectInterface> weak = instances.remove(0);
     			QtObjectInterface o = weak.get();
     			if(o!=null && General.internalAccess.isCppOwnership(o) && !o.isDisposed()) {
-    				if(o instanceof QObject && ((QObject) o).thread()!=currentThread) {
-    					((QObject) o).disposeLater();
-    				}else {
-    					o.dispose();
-    				}
+    				try {
+	    				if(o instanceof QObject && ((QObject) o).thread()!=currentThread) {
+	    					((QObject) o).disposeLater();
+	    				}else {
+	    					o.dispose();
+	    				}
+    				}catch(QNoNativeResourcesException e) {}
     			}
     		}
 	        runGC();
@@ -545,6 +560,7 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
     static void runGC() {
     	Thread.yield();
     	runFinalization.accept(Runtime.getRuntime());
+    	Thread.yield();
     }
     
     public static String currentThreadToString(){
@@ -558,5 +574,12 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
 
 	public static void setTestClassName(String n) {
 		testClassName = n;
+	}
+
+	public static String testClassName() {
+		return testClassName;
+	}
+	public String testMethodName() {
+		return testRule.methodName;
 	}
 }

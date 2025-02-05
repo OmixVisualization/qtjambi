@@ -1,6 +1,6 @@
 <!--===============================================================================================
 ==
-== Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+== Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 ==
 == This file is part of Qt Jambi.
 ==
@@ -41,57 +41,102 @@
                 </not>
             </and>
         </condition>
-        <condition property="less.qt63" value="true">
+        <condition property="geq.qt61" value="true">
 			<or>
-				<less arg1="6" arg2="${qtjambi.soname.version.major}"/>
+				<greater arg1="${qtjambi.soname.version.major}" arg2="6"/>
 				<and>
 					<equals arg1="${qtjambi.soname.version.major}" arg2="6"/>
-					<less arg1="3" arg2="${qtjambi.soname.version.minor}"/>
+					<greater-or-equals arg1="${qtjambi.soname.version.minor}" arg2="1"/>
 				</and>
 			</or>
         </condition>
-        <condition property="less.qt65" value="true">
+        <condition property="geq.qt62" value="true">
 			<or>
-				<less arg1="6" arg2="${qtjambi.soname.version.major}"/>
+				<greater arg1="${qtjambi.soname.version.major}" arg2="6"/>
 				<and>
 					<equals arg1="${qtjambi.soname.version.major}" arg2="6"/>
-					<less arg1="4" arg2="${qtjambi.soname.version.minor}"/>
+					<greater-or-equals arg1="${qtjambi.soname.version.minor}" arg2="2"/>
 				</and>
 			</or>
         </condition>
-        <condition property="less.qt66" value="true">
+        <condition property="geq.qt63" value="true">
 			<or>
-				<less arg1="6" arg2="${qtjambi.soname.version.major}"/>
+				<greater arg1="${qtjambi.soname.version.major}" arg2="6"/>
 				<and>
 					<equals arg1="${qtjambi.soname.version.major}" arg2="6"/>
-					<less arg1="5" arg2="${qtjambi.soname.version.minor}"/>
+					<greater-or-equals arg1="${qtjambi.soname.version.minor}" arg2="3"/>
 				</and>
 			</or>
         </condition>
-        <condition property="less.qt67" value="true">
+        <condition property="geq.qt64" value="true">
 			<or>
-				<less arg1="6" arg2="${qtjambi.soname.version.major}"/>
+				<greater arg1="${qtjambi.soname.version.major}" arg2="6"/>
 				<and>
 					<equals arg1="${qtjambi.soname.version.major}" arg2="6"/>
-					<less arg1="6" arg2="${qtjambi.soname.version.minor}"/>
+					<greater-or-equals arg1="${qtjambi.soname.version.minor}" arg2="4"/>
 				</and>
 			</or>
         </condition>
-        <condition property="less.qt68" value="true">
+        <condition property="geq.qt65" value="true">
 			<or>
-				<less arg1="6" arg2="${qtjambi.soname.version.major}"/>
+				<greater arg1="${qtjambi.soname.version.major}" arg2="6"/>
 				<and>
 					<equals arg1="${qtjambi.soname.version.major}" arg2="6"/>
-					<less arg1="7" arg2="${qtjambi.soname.version.minor}"/>
+					<greater-or-equals arg1="${qtjambi.soname.version.minor}" arg2="5"/>
 				</and>
 			</or>
         </condition>
-        <condition property="less.qt69" value="true">
+        <condition property="geq.qt66" value="true">
 			<or>
-				<less arg1="6" arg2="${qtjambi.soname.version.major}"/>
+				<greater arg1="${qtjambi.soname.version.major}" arg2="6"/>
 				<and>
 					<equals arg1="${qtjambi.soname.version.major}" arg2="6"/>
-					<less arg1="8" arg2="${qtjambi.soname.version.minor}"/>
+					<greater-or-equals arg1="${qtjambi.soname.version.minor}" arg2="6"/>
+				</and>
+			</or>
+        </condition>
+        <condition property="geq.qt67" value="true">
+			<or>
+				<greater arg1="${qtjambi.soname.version.major}" arg2="6"/>
+				<and>
+					<equals arg1="${qtjambi.soname.version.major}" arg2="6"/>
+					<greater-or-equals arg1="${qtjambi.soname.version.minor}" arg2="7"/>
+				</and>
+			</or>
+        </condition>
+        <condition property="geq.qt68" value="true">
+			<or>
+				<greater arg1="${qtjambi.soname.version.major}" arg2="6"/>
+				<and>
+					<equals arg1="${qtjambi.soname.version.major}" arg2="6"/>
+					<greater-or-equals arg1="${qtjambi.soname.version.minor}" arg2="8"/>
+				</and>
+			</or>
+        </condition>
+        <condition property="geq.qt69" value="true">
+			<or>
+				<greater arg1="${qtjambi.soname.version.major}" arg2="6"/>
+				<and>
+					<equals arg1="${qtjambi.soname.version.major}" arg2="6"/>
+					<greater-or-equals arg1="${qtjambi.soname.version.minor}" arg2="9"/>
+				</and>
+			</or>
+        </condition>
+        <condition property="geq.qt610" value="true">
+			<or>
+				<greater arg1="${qtjambi.soname.version.major}" arg2="6"/>
+				<and>
+					<equals arg1="${qtjambi.soname.version.major}" arg2="6"/>
+					<greater-or-equals arg1="${qtjambi.soname.version.minor}" arg2="10"/>
+				</and>
+			</or>
+        </condition>
+        <condition property="geq.qt611" value="true">
+			<or>
+				<greater arg1="${qtjambi.soname.version.major}" arg2="6"/>
+				<and>
+					<equals arg1="${qtjambi.soname.version.major}" arg2="6"/>
+					<greater-or-equals arg1="${qtjambi.soname.version.minor}" arg2="11"/>
 				</and>
 			</or>
         </condition>
@@ -110,12 +155,21 @@
             <exclude name="io/qt/**/TestJDK*.java"/>
             <exclude name="io/qt/**/Test*Qt5.java" unless="${qtjambi.isqt5}"/>
             <exclude name="io/qt/**/Test*Qt6.java" unless="${qtjambi.isqt6}"/>
-            <exclude name="io/qt/**/Test*Qt63.java" unless="${less.qt63}"/>
-            <exclude name="io/qt/**/Test*Qt65.java" unless="${less.qt65}"/>
-            <exclude name="io/qt/**/Test*Qt66.java" unless="${less.qt66}"/>
-            <exclude name="io/qt/**/Test*Qt67.java" unless="${less.qt67}"/>
-            <exclude name="io/qt/**/Test*Qt68.java" unless="${less.qt68}"/>
-            <exclude name="io/qt/**/Test*Qt69.java" unless="${less.qt69}"/>
+            <exclude name="io/qt/**/Test*Qt61.java" unless="${geq.qt61}"/>
+            <exclude name="io/qt/**/Test*Qt62.java" unless="${geq.qt62}"/>
+            <exclude name="io/qt/**/Test*Qt63.java" unless="${geq.qt63}"/>
+            <exclude name="io/qt/**/Test*Qt64.java" unless="${geq.qt64}"/>
+            <exclude name="io/qt/**/Test*Qt65.java" unless="${geq.qt65}"/>
+            <exclude name="io/qt/**/Test*Qt66.java" unless="${geq.qt66}"/>
+            <exclude name="io/qt/**/Test*Qt67.java" unless="${geq.qt67}"/>
+            <exclude name="io/qt/**/Test*Qt68.java" unless="${geq.qt68}"/>
+            <exclude name="io/qt/**/Test*Qt69.java" unless="${geq.qt69}"/>
+            <exclude name="io/qt/**/Test*Qt610.java" unless="${geq.qt610}"/>
+            <exclude name="io/qt/**/Test*Qt611.java" unless="${geq.qt611}"/>
+            <exclude name="io/qt/**/Test*Qt612.java" unless="${geq.qt612}"/>
+            <exclude name="io/qt/**/Test*Qt613.java" unless="${geq.qt613}"/>
+            <exclude name="io/qt/**/Test*Qt614.java" unless="${geq.qt614}"/>
+            <exclude name="io/qt/**/Test*Qt615.java" unless="${geq.qt615}"/>
             <exclude name="io/qt/**/Test*Qml.java" unless="${qtjambi.qml.any.true}"/>
             <exclude name="io/qt/**/Test*ActiveX.java" unless="${qtjambi.activex.any.true}"/>
             <exclude name="io/qt/**/Test*OpenGL.java" unless="${qtjambi.opengl.any.true}"/>
@@ -822,6 +876,33 @@
 							<os family="mac"/>
 							<then>
 								<property name="XstartOnFirstThread" value="-XstartOnFirstThread" />
+								<if>
+									<and>
+										<or>
+											<equals arg1="${jdk-exec-version}" arg2="x64"/>
+											<equals arg1="${jdk-exec-version}" arg2=""/>
+										</or>
+										<or>
+											<less arg1="6" arg2="${qtjambi.soname.version.major}"/>
+											<and>
+												<equals arg1="${qtjambi.soname.version.major}" arg2="6"/>
+												<or>
+													<less arg1="5" arg2="${qtjambi.soname.version.minor}"/>
+													<and>
+														<equals arg1="${qtjambi.soname.version.major}" arg2="5"/>
+														<less arg1="5" arg2="${qtjambi.soname.version.patch}"/>
+													</and>
+												</or>
+											</and>
+										</or>
+									</and>
+									<then>
+										<property name="SYSTEM_VERSION_COMPAT" value="SYSTEM_VERSION_COMPAT" />
+									</then>
+									<else>
+										<property name="SYSTEM_VERSION_COMPAT" value="_" />
+									</else>
+								</if>
 							</then>
 							<else>
 								<property name="XstartOnFirstThread" value="-Dx" />
@@ -925,7 +1006,7 @@
 									<jvmarg value="${Ddeploymentdir}"/>
 									<jvmarg value="${enablepreview}"/>
 									<jvmarg value="-Dx-verbose:class"/>
-									<env key="${env.qtjambi.debug.trace}" value="1"/>
+									<env key="${SYSTEM_VERSION_COMPAT}" value="0"/>
 									<env key="QT_MULTIMEDIA_PREFERRED_PLUGINS" value="Test"/>
 									<!--env key="QML_IMPORT_PATH" value="${absQtPath}/../qml"/-->
 						<!--            <jvmarg value="-verbose"/> -->

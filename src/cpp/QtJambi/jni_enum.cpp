@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -32,10 +32,7 @@
 #include "exception.h"
 #include "utils_p.h"
 
-extern "C" Q_DECL_EXPORT jobject JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_EnumUtility_resolveLongEnum)
-(JNIEnv *env, jclass, jint hashCode, jclass enumClass, jlong value, jstring entryName)
-{
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_EnumUtility_resolveLongEnum(JNIEnv *env, jclass, jint hashCode, jclass enumClass, jlong value, jstring entryName){
     try{
         return resolveLongEnum(env, hashCode, enumClass, value, entryName);
     }catch(const JavaException& exn){
@@ -44,10 +41,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_EnumUtility_resolveLongEnum)
     return nullptr;
 }
 
-extern "C" Q_DECL_EXPORT jobject JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_EnumUtility_resolveByteEnum)
-(JNIEnv *env, jclass, jint hashCode, jclass enumClass, jbyte value, jstring entryName)
-{
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_EnumUtility_resolveByteEnum(JNIEnv *env, jclass, jint hashCode, jclass enumClass, jbyte value, jstring entryName){
     try{
         return resolveByteEnum(env, hashCode, enumClass, value, entryName);
     }catch(const JavaException& exn){
@@ -56,10 +50,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_EnumUtility_resolveByteEnum)
     return nullptr;
 }
 
-extern "C" Q_DECL_EXPORT jobject JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_EnumUtility_resolveShortEnum)
-(JNIEnv *env, jclass, jint hashCode, jclass enumClass, jshort value, jstring entryName)
-{
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_EnumUtility_resolveShortEnum(JNIEnv *env, jclass, jint hashCode, jclass enumClass, jshort value, jstring entryName){
     try{
         return resolveShortEnum(env, hashCode, enumClass, value, entryName);
     }catch(const JavaException& exn){
@@ -68,10 +59,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_EnumUtility_resolveShortEnum)
     return nullptr;
 }
 
-extern "C" Q_DECL_EXPORT jobject JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_EnumUtility_resolveIntEnum)
-(JNIEnv *env, jclass, jint hashCode, jclass enumClass, jint value, jstring entryName)
-{
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_EnumUtility_resolveIntEnum(JNIEnv *env, jclass, jint hashCode, jclass enumClass, jint value, jstring entryName){
     try{
         return resolveIntEnum(env, hashCode, enumClass, value, entryName);
     }catch(const JavaException& exn){

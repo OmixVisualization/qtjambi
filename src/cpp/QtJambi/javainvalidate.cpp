@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -47,13 +47,13 @@ bool invalidateJavaObject(JNIEnv *env, jobject java_object)
     return false;
 }
 
-bool invalidateArray(JNIEnv *env, jobject java_array)
+bool invalidateArray(JNIEnv *env, jobjectArray java_array)
 {
     bool result = false;
     Q_ASSERT(java_array);
-    jsize array_size = env->GetArrayLength(jobjectArray(java_array));
+    jsize array_size = env->GetArrayLength(java_array);
     for (int i=0; i<array_size; ++i) {
-        jobject java_element = env->GetObjectArrayElement(jobjectArray(java_array), i);
+        jobject java_element = env->GetObjectArrayElement(java_array, i);
         if (java_element) {
             result |= invalidateJavaObject(env, java_element);
         }
@@ -86,13 +86,13 @@ bool forcedInvalidateJavaObject(JNIEnv *env, jobject java_object)
     return false;
 }
 
-bool forcedInvalidateArray(JNIEnv *env, jobject java_array)
+bool forcedInvalidateArray(JNIEnv *env, jobjectArray java_array)
 {
     bool result = false;
     Q_ASSERT(java_array);
-    jsize array_size = env->GetArrayLength(jobjectArray(java_array));
+    jsize array_size = env->GetArrayLength(java_array);
     for (int i=0; i<array_size; ++i) {
-        jobject java_element = env->GetObjectArrayElement(jobjectArray(java_array), i);
+        jobject java_element = env->GetObjectArrayElement(java_array, i);
         if (java_element) {
             result |= forcedInvalidateJavaObject(env, java_element);
         }
@@ -117,7 +117,7 @@ bool forcedInvalidateCollection(JNIEnv *env, jobject java_collection)
 }
 
 void InvalidateAfterUse::invalidate(JNIEnv *env, jobject java_object){
-    invalidateJavaObject(env, java_object);
+    (void)invalidateJavaObject(env, java_object);
 }
 
 void InvalidateAfterUse::invalidate(JNIEnv *env, QtJambiNativeID nativeId){
@@ -129,7 +129,7 @@ void InvalidateAfterUse::invalidate(JNIEnv *env, QtJambiNativeID nativeId){
 }
 
 void InvalidateAfterUse::forcedInvalidate(JNIEnv *env, jobject java_object){
-    forcedInvalidateJavaObject(env, java_object);
+    (void)forcedInvalidateJavaObject(env, java_object);
 }
 
 void InvalidateAfterUse::forcedInvalidate(JNIEnv *env, QtJambiNativeID nativeId){
@@ -144,30 +144,27 @@ struct InvalidateAfterUsePrivate{
 
 InvalidateAfterUsePrivate::~InvalidateAfterUsePrivate() = default;
 
-template<bool(INVALIDATE)(JNIEnv*, jobject)>
+template<typename JObject, bool(INVALIDATE)(JNIEnv*, JObject)>
 struct InvalidateObjectAfterUsePrivate : InvalidateAfterUsePrivate{
-    InvalidateObjectAfterUsePrivate(JNIEnv *env, jobject object)
+    InvalidateObjectAfterUsePrivate(JNIEnv *env, JObject object)
         : m_env(env),
-          m_object(m_env->NewGlobalRef(object))
+          m_object(object)
     {}
     ~InvalidateObjectAfterUsePrivate() override {
         QtJambiExceptionInhibitor __exnHandler;
         try{
             INVALIDATE(m_env, m_object);
         }catch(const JavaException& exn){
-            m_env->DeleteGlobalRef(m_object);
             m_object = nullptr;
             __exnHandler.handle(m_env, exn, nullptr);
         } catch (const std::exception& e) {
             qCWarning(DebugAPI::internalCategory, "%s", e.what());
         } catch (...) {
         }
-        if(m_object)
-            m_env->DeleteGlobalRef(m_object);
     }
 
     JNIEnv *m_env;
-    jobject m_object;
+    JObject m_object;
 };
 
 template<bool(TEST)(const QSharedPointer<QtJambiLink>&)>
@@ -208,7 +205,7 @@ AbstractInvalidateAfterUse::~AbstractInvalidateAfterUse()
 }
 
 InvalidateAfterUse::InvalidateAfterUse(JNIEnv *env, jobject object)
-    : AbstractInvalidateAfterUse(*new InvalidateObjectAfterUsePrivate<invalidateJavaObject>(env, object))
+    : AbstractInvalidateAfterUse(*new InvalidateObjectAfterUsePrivate<jobject,invalidateJavaObject>(env, object))
 {}
 
 InvalidateAfterUse::InvalidateAfterUse(JNIEnv *env, QtJambiNativeID nativeId)
@@ -216,7 +213,7 @@ InvalidateAfterUse::InvalidateAfterUse(JNIEnv *env, QtJambiNativeID nativeId)
 {}
 
 ForcedInvalidateAfterUse::ForcedInvalidateAfterUse(JNIEnv *env, jobject object)
-    : AbstractInvalidateAfterUse(*new InvalidateObjectAfterUsePrivate<forcedInvalidateJavaObject>(env, object))
+    : AbstractInvalidateAfterUse(*new InvalidateObjectAfterUsePrivate<jobject,forcedInvalidateJavaObject>(env, object))
 {}
 
 ForcedInvalidateAfterUse::ForcedInvalidateAfterUse(JNIEnv *env, QtJambiNativeID nativeId)
@@ -224,17 +221,17 @@ ForcedInvalidateAfterUse::ForcedInvalidateAfterUse(JNIEnv *env, QtJambiNativeID 
 {}
 
 InvalidateContainerAfterUse::InvalidateContainerAfterUse(JNIEnv *env, jobject object)
-    : AbstractInvalidateAfterUse(*new InvalidateObjectAfterUsePrivate<invalidateCollection>(env, object))
+    : AbstractInvalidateAfterUse(*new InvalidateObjectAfterUsePrivate<jobject,invalidateCollection>(env, object))
 {}
 
 InvalidateArrayAfterUse::InvalidateArrayAfterUse(JNIEnv *env, jobjectArray object)
-    : AbstractInvalidateAfterUse(*new InvalidateObjectAfterUsePrivate<invalidateArray>(env, object))
+    : AbstractInvalidateAfterUse(*new InvalidateObjectAfterUsePrivate<jobjectArray,invalidateArray>(env, object))
 {}
 
 ForcedInvalidateContainerAfterUse::ForcedInvalidateContainerAfterUse(JNIEnv *env, jobject object)
-    : AbstractInvalidateAfterUse(*new InvalidateObjectAfterUsePrivate<forcedInvalidateCollection>(env, object))
+    : AbstractInvalidateAfterUse(*new InvalidateObjectAfterUsePrivate<jobject,forcedInvalidateCollection>(env, object))
 {}
 
 ForcedInvalidateArrayAfterUse::ForcedInvalidateArrayAfterUse(JNIEnv *env, jobjectArray object)
-    : AbstractInvalidateAfterUse(*new InvalidateObjectAfterUsePrivate<forcedInvalidateArray>(env, object))
+    : AbstractInvalidateAfterUse(*new InvalidateObjectAfterUsePrivate<jobjectArray,forcedInvalidateArray>(env, object))
 {}

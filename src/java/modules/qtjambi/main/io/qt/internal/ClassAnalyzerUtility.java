@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -51,11 +51,9 @@ import java.lang.reflect.WildcardType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.function.Function;
 
 import io.qt.NativeAccess;
@@ -80,13 +78,13 @@ import io.qt.internal.SignalUtility.AbstractSignal;
 /**
  * @hidden
  */
-public abstract class ClassAnalyzerUtility {
+final class ClassAnalyzerUtility {
 
 	private ClassAnalyzerUtility() {
 		throw new RuntimeException();
 	}
 
-	public static final boolean useAnnotatedType;
+	static final boolean useAnnotatedType;
 	static {
 		QtJambi_LibraryUtilities.initialize();
 		boolean _useAnnotatedType = false;
@@ -96,48 +94,7 @@ public abstract class ClassAnalyzerUtility {
 		}catch(Throwable t) {}
 		useAnnotatedType = _useAnnotatedType;
 	}
-	
-	public static final Comparator<Class<?>> COMPARATOR = (c1,c2)->{
-		if(c1!=null) {
-			if(c2!=null) {
-				if(c1.getClassLoader()==c2.getClassLoader()) {
-					return c1.getName().compareTo(c2.getName());
-				}else {
-					int id1 = System.identityHashCode(c1.getClassLoader());
-					int id2 = System.identityHashCode(c2.getClassLoader());
-					if(id1<id2)
-						return -1;
-					if(id1>id2)
-						return 1;
-					return c1.getName().compareTo(c2.getName());
-				}
-			}else {
-				return 1;
-			}
-		}else if(c2!=null){
-			return -1;
-		}else {
-			return 0;
-		}
-	};
-	private static final Comparator<QPair<Class<? extends QtObjectInterface>, Class<?>>> COMPARATOR2 = (p1,p2)->{
-		if(p1!=null) {
-			if(p2!=null) {
-				int cmp = COMPARATOR.compare(p1.first, p2.first);
-				if(cmp==0) {
-					cmp = COMPARATOR.compare(p1.second, p2.second);
-				}
-				return cmp;
-			}else {
-				return 1;
-			}
-		}else if(p2!=null){
-			return -1;
-		}else {
-			return 0;
-		}
-	};
-	private static final Map<Class<?>, Boolean> isClassGenerated = new TreeMap<>(COMPARATOR);
+	private static final Map<Class<?>, Boolean> isClassGenerated = new HashMap<>();
 	private static final Map<Class<?>, Function<Object,Object>> lambdaWriteReplaceHandles = Collections.synchronizedMap(new HashMap<>());
 	private static final Map<Class<?>, Function<QtObjectInterface,io.qt.MemberAccess<?>>> memberAccessFactories = Collections.synchronizedMap(new HashMap<>());
 	private static interface Check {
@@ -532,7 +489,7 @@ public abstract class ClassAnalyzerUtility {
 			QtUtilities.initializePackage(cls);
 			if (isGeneratedClass(cls) || cls.isInterface())
 				return null;
-			Map<Class<? extends QtObjectInterface>, Function<QtObjectInterface,io.qt.MemberAccess<?>>> result = new TreeMap<>((c1,c2)->c1==c2 ? 0 : -1);
+			Map<Class<? extends QtObjectInterface>, Function<QtObjectInterface,io.qt.MemberAccess<?>>> result = new HashMap<>();
 			Class<?> generatedSuperClass = findGeneratedSuperclass(cls);
 			for (Class<?> _interface : cls.getInterfaces()) {
 				QtUtilities.initializePackage(_interface);
@@ -633,7 +590,7 @@ public abstract class ClassAnalyzerUtility {
 
 	private static native boolean isGeneratedClass(String className);
 	
-	public static Class<?> toClass(Type type){
+	static Class<?> toClass(Type type){
 		if (type instanceof Class) {
 			return (Class<?>) type;
 		} else if (type instanceof GenericArrayType) {
@@ -664,61 +621,6 @@ public abstract class ClassAnalyzerUtility {
 		} else {
 			throw new RuntimeException("Unable to find raw type for " + type.getTypeName()+"; type: "+AccessUtility.instance.getClass(type));
 		}
-	}
-	
-	/**
-	 * @hidden
-	 */
-	public static final class MethodInfo{
-		MethodInfo(Class<?> implClass, int ownerIndex, int qobjectIndex, MethodHandle methodHandle, Method reflectiveMethod, boolean isStaticMethod, Constructor<?> reflectiveConstructor, QMetaMethod metaMethod) {
-			this.implClass = implClass;
-			this.methodHandle = methodHandle;
-			this.reflectiveMethod = reflectiveMethod;
-			this.isStaticMethod = isStaticMethod;
-			this.reflectiveConstructor = reflectiveConstructor;
-			this.ownerIndex = ownerIndex;
-			this.qobjectIndex = qobjectIndex;
-			if(metaMethod!=null && metaMethod.isValid()) {
-				metaObject = metaMethod.enclosingMetaObject();
-				methodIndex = metaMethod.methodIndex();
-				expectedParameterTypes = metaMethod.parameterCount();
-			}else {
-				metaObject = null;
-				methodIndex = -1;
-				expectedParameterTypes = -1;
-			}
-		}
-		public final Class<?> implClass;
-		public final MethodHandle methodHandle;
-		public final Method reflectiveMethod;
-		public final boolean isStaticMethod;
-		public final Constructor<?> reflectiveConstructor;
-		public final QMetaObject metaObject;
-		public final int methodIndex;
-		public final int expectedParameterTypes;
-		final int ownerIndex;
-		final int qobjectIndex;
-		public QMetaMethod metaMethod() {
-			return metaObject==null ? new QMetaMethod() : metaObject.method(methodIndex);
-		}
-	}
-	
-	/**
-	 * @hidden
-	 */
-	public static final class LambdaInfo {
-		public LambdaInfo(MethodInfo methodInfo, Object owner, QObject qobject, List<Object> lambdaArgs) {
-			super();
-			this.methodInfo = methodInfo;
-			this.owner = owner;
-			this.qobject = qobject;
-			this.lambdaArgs = lambdaArgs;
-		}
-
-		public final MethodInfo methodInfo;
-		public final Object owner;
-		public final QObject qobject;
-		public final List<Object> lambdaArgs;
 	}
 	
 	static final class LambdaTools{
@@ -793,6 +695,10 @@ public abstract class ClassAnalyzerUtility {
 				result = prime * result + ((serializedLambda.getCapturedArg(i) == null) ? 0 : serializedLambda.getCapturedArg(i).hashCode());
 			}
 			return result;
+		}
+		
+		static MethodInfo lambdaSlotHandles(Class<?> slotClass) {
+			return lambdaSlotHandles.get(slotClass);
 		}
 
 		static MethodInfo lambdaSlotHandles(Class<?> slotClass, SerializedLambda serializedLambda) {
@@ -876,16 +782,25 @@ public abstract class ClassAnalyzerUtility {
 				}
 				if (methodHandle!=null && methodHandle.isVarargsCollector())
 					methodHandle = methodHandle.asFixedArity();
-				return new MethodInfo(implClass, ownerIndex, qobjectIndex, methodHandle, reflectiveMethod, isStaticMethod, reflectiveConstructor, metaMethod);
+				return new MethodInfo(implClass, 
+						serializedLambda.getCapturedArgCount()>0, 
+						ownerIndex, 
+						qobjectIndex,
+						serializedLambda.getCapturingClass(),
+						methodHandle, 
+						reflectiveMethod, 
+						isStaticMethod, 
+						reflectiveConstructor, 
+						metaMethod);
 			});
 		}
 	}
 	
-	public static LambdaInfo lambdaInfo(Serializable slotObject) {
+	static LambdaInfo lambdaInfo(Serializable slotObject) {
 		return lambdaInfo(slotObject, (Object)null);
 	}
 
-	public static LambdaInfo lambdaInfo(Serializable slotObject, Object owner) {
+	static LambdaInfo lambdaInfo(Serializable slotObject, Object owner) {
 		if(owner instanceof QObject)
 			return lambdaInfo(slotObject, (QObject)owner);
 		//String className = slotObject.getClass().getName();
@@ -893,14 +808,19 @@ public abstract class ClassAnalyzerUtility {
 		if (slotClass.isSynthetic()
 				//&& className.contains("Lambda$") && className.contains("/")
 				) {
-			SerializedLambda serializedLambda = serializeLambdaExpression(slotObject);
-			if(serializedLambda == null)
-				return null;
-			MethodInfo methodInfo = LambdaTools.lambdaSlotHandles(slotClass, serializedLambda);
+			MethodInfo methodInfo = LambdaTools.lambdaSlotHandles(slotClass);
+			SerializedLambda serializedLambda = null;
+			if(methodInfo==null) {
+				serializedLambda = serializeLambdaExpression(slotObject);
+				if(serializedLambda != null)
+					methodInfo = LambdaTools.lambdaSlotHandles(slotClass, serializedLambda);
+			}else if(methodInfo.hasCapturedArgs){
+				serializedLambda = serializeLambdaExpression(slotObject);
+			}
 			QObject qobject = null;
 			List<Object> lambdaArgsList = Collections.emptyList();
-			if (methodInfo.methodHandle != null) {
-				int lambdaArgCount = LambdaTools.getCapturedArgCount(serializedLambda);
+			if (methodInfo!=null && methodInfo.methodHandle != null) {
+				int lambdaArgCount = methodInfo.hasCapturedArgs ? LambdaTools.getCapturedArgCount(serializedLambda) : 0;
 				Object capturedArg0 = lambdaArgCount > 0 ? LambdaTools.getCapturedArg(serializedLambda, 0) : null;
 				if(methodInfo.reflectiveConstructor!=null) {
 					if(lambdaArgCount == 0
@@ -975,19 +895,24 @@ public abstract class ClassAnalyzerUtility {
 		return null;
 	}
 	
-	public static LambdaInfo lambdaInfo(Serializable slotObject, @StrictNonNull QObject qobject) {
+	static LambdaInfo lambdaInfo(Serializable slotObject, @StrictNonNull QObject qobject) {
 		//String className = slotObject.getClass().getName();
 		Class<?> slotClass = AccessUtility.instance.getClass(slotObject);
 		if (slotClass.isSynthetic()
 				//&& className.contains("Lambda$") && className.contains("/")
 				) {
-			SerializedLambda serializedLambda = serializeLambdaExpression(slotObject);
-			if(serializedLambda == null)
-				return null;
-			MethodInfo methodInfo = LambdaTools.lambdaSlotHandles(slotClass, serializedLambda);
+			MethodInfo methodInfo = LambdaTools.lambdaSlotHandles(slotClass);
+			SerializedLambda serializedLambda = null;
+			if(methodInfo==null) {
+				serializedLambda = serializeLambdaExpression(slotObject);
+				if(serializedLambda != null)
+					methodInfo = LambdaTools.lambdaSlotHandles(slotClass, serializedLambda);
+			}else if(methodInfo.hasCapturedArgs){
+				serializedLambda = serializeLambdaExpression(slotObject);
+			}
 			List<Object> lambdaArgsList = Collections.emptyList();
-			if (methodInfo.methodHandle != null) {
-				int lambdaArgCount = LambdaTools.getCapturedArgCount(serializedLambda);
+			if (methodInfo!=null && methodInfo.methodHandle != null) {
+				int lambdaArgCount = methodInfo.hasCapturedArgs ? LambdaTools.getCapturedArgCount(serializedLambda) : 0;
 				Object capturedArg0 = lambdaArgCount > 0 ? LambdaTools.getCapturedArg(serializedLambda, 0) : null;
 				if(methodInfo.reflectiveConstructor!=null) {
 					if(lambdaArgCount == 0
@@ -1024,7 +949,7 @@ public abstract class ClassAnalyzerUtility {
 		return null;
 	}
 
-	public static SerializedLambda serializeLambdaExpression(Serializable slotObject) {
+	static SerializedLambda serializeLambdaExpression(Serializable slotObject) {
 		Class<?> slotClass = AccessUtility.instance.getClass(slotObject);
 		if (slotClass.isSynthetic()) {
 			Function<Object,Object> writeReplaceHandle = lambdaWriteReplaceHandles.computeIfAbsent(slotClass, cls -> {
@@ -1052,77 +977,6 @@ public abstract class ClassAnalyzerUtility {
 		return null;
 	}
 
-	@SuppressWarnings("unchecked")
-	public static <T> Class<T> getFactoryClass(QMetaObject.Method1<T, ?> method) {
-		return (Class<T>) getFactoryClass((Serializable) method);
-	}
-
-	@SuppressWarnings("unchecked")
-	public static <T> Class<T> getFactoryClass(QMetaObject.Method2<T, ?, ?> method) {
-		return (Class<T>) getFactoryClass((Serializable) method);
-	}
-
-	@SuppressWarnings("unchecked")
-	public static <T> Class<T> getFactoryClass(QMetaObject.Method3<T, ?, ?, ?> method) {
-		return (Class<T>) getFactoryClass((Serializable) method);
-	}
-
-	@SuppressWarnings("unchecked")
-	public static <T> Class<T> getFactoryClass(QMetaObject.Method4<T, ?, ?, ?, ?> method) {
-		return (Class<T>) getFactoryClass((Serializable) method);
-	}
-
-	@SuppressWarnings("unchecked")
-	public static <T> Class<T> getFactoryClass(QMetaObject.Method5<T, ?, ?, ?, ?, ?> method) {
-		return (Class<T>) getFactoryClass((Serializable) method);
-	}
-
-	@SuppressWarnings("unchecked")
-	public static <T> Class<T> getFactoryClass(QMetaObject.Method6<T, ?, ?, ?, ?, ?, ?> method) {
-		return (Class<T>) getFactoryClass((Serializable) method);
-	}
-
-	@SuppressWarnings("unchecked")
-	public static <T> Class<T> getFactoryClass(QMetaObject.Method7<T, ?, ?, ?, ?, ?, ?, ?> method) {
-		return (Class<T>) getFactoryClass((Serializable) method);
-	}
-
-	@SuppressWarnings("unchecked")
-	public static <T> Class<T> getFactoryClass(QMetaObject.Method8<T, ?, ?, ?, ?, ?, ?, ?, ?> method) {
-		return (Class<T>) getFactoryClass((Serializable) method);
-	}
-
-	@SuppressWarnings("unchecked")
-	public static <T> Class<T> getFactoryClass(QMetaObject.Method9<T, ?, ?, ?, ?, ?, ?, ?, ?, ?> method) {
-		return (Class<T>) getFactoryClass((Serializable) method);
-	}
-
-	private static Class<?> getFactoryClass(Serializable method) {
-		LambdaInfo lamdaInfo = lambdaInfo(method);
-		if(lamdaInfo!=null) {
-			if (lamdaInfo.methodInfo.reflectiveMethod != null && (lamdaInfo.lambdaArgs == null || lamdaInfo.lambdaArgs.isEmpty())
-					&& !lamdaInfo.methodInfo.reflectiveMethod.isSynthetic() && !lamdaInfo.methodInfo.reflectiveMethod.isBridge()
-					&& !Modifier.isStatic(lamdaInfo.methodInfo.reflectiveMethod.getModifiers())) {
-				return lamdaInfo.methodInfo.reflectiveMethod.getDeclaringClass();
-			}else if (lamdaInfo.methodInfo.reflectiveConstructor != null && (lamdaInfo.lambdaArgs == null || lamdaInfo.lambdaArgs.isEmpty())
-					&& !lamdaInfo.methodInfo.reflectiveConstructor.isSynthetic()
-					&& !Modifier.isStatic(lamdaInfo.methodInfo.reflectiveConstructor.getModifiers())) {
-				return lamdaInfo.methodInfo.reflectiveConstructor.getDeclaringClass();
-			}
-		}
-		return null;
-	}
-
-	@SuppressWarnings("unchecked")
-	public static <R> Class<R> getReturnType(QMetaObject.Method1<?, R> method) {
-		LambdaInfo lamdaInfo = lambdaInfo(method);
-		if (lamdaInfo!=null && lamdaInfo.methodInfo.methodHandle != null) {
-			return (Class<R>) lamdaInfo.methodInfo.methodHandle.type().returnType();
-		} else {
-			return null;
-		}
-	}
-	
 	static <S extends java.io.Serializable> io.qt.core.QObject lambdaContext(S lambdaExpression){
 		if(lambdaExpression instanceof AbstractSignal) {
 			QtSignalEmitterInterface containingObject = ((AbstractSignal) lambdaExpression).containingObject();

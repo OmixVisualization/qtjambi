@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -48,10 +48,7 @@ public:
     }
 };
 
-extern "C" Q_DECL_EXPORT jobject JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_webengine_quick_QtWebEngineQuick_toWebEngineSettings)
-(JNIEnv *env, jclass, jobject object)
-{
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_webengine_quick_QtWebEngineQuick_toWebEngineSettings(JNIEnv *env, jclass, jobject object){
     jobject __java_return_value{0};
     QTJAMBI_TRY {
         QObject *_object = qtjambi_cast<QObject*>(env, object);
@@ -66,10 +63,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_webengine_quick_QtWebEngineQuick_toWebEngineS
     return __java_return_value;
 }
 
-extern "C" Q_DECL_EXPORT jobject JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_webengine_quick_QtWebEngineQuick_toWebEngineScriptCollection)
-(JNIEnv *env, jclass, jobject object)
-{
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_webengine_quick_QtWebEngineQuick_toWebEngineScriptCollection(JNIEnv *env, jclass, jobject object){
     jobject __java_return_value{0};
     QTJAMBI_TRY {
         QObject *_object = qtjambi_cast<QObject*>(env, object);

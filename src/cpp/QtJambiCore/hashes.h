@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -713,6 +713,10 @@ inline size_t qHash(const QUuid::Id128Bytes &value, size_t seed = 0){
 #endif // QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
 
 #ifdef QTJAMBI_GENERATOR_RUNNING
+#if QT_VERSION < QT_VERSION_CHECK(6, 9, 0)
+namespace QtMocConstants{}
+#endif
+
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 QDebug operator<<(QDebug out, const QByteArrayView &);
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -38,11 +38,8 @@
 #include "supertypeinfo_p.h"
 #include "registryutil_p.h"
 
-Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, gSuperTypeInfosLock, (QReadWriteLock::Recursive))
-QReadWriteLock* superTypeInfosLock(){
-    return gSuperTypeInfosLock();
-}
-typedef SecureContainer<QHash<jint,SuperTypeInfos>,QReadWriteLock,&superTypeInfosLock> SuperTypeInfosMap;
+Q_GLOBAL_STATIC(QReadWriteLock, gSuperTypeInfosLock)
+typedef SecureContainer<QHash<jint,SuperTypeInfos>, gSuperTypeInfosLock> SuperTypeInfosMap;
 Q_GLOBAL_STATIC(SuperTypeInfosMap, gSuperTypeInfosMap)
 
 void resolveClasses(JNIEnv *env, QString signature, QList<jclass> &argumentTypes){

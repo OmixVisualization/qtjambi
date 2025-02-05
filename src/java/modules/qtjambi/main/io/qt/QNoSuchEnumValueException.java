@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -35,7 +35,7 @@ package io.qt;
 public class QNoSuchEnumValueException extends RuntimeException {
     private static final long serialVersionUID = 1L;
 
-    public QNoSuchEnumValueException(String name) {
+    public QNoSuchEnumValueException(@NonNull String name) {
         super(name);
     }
     
@@ -55,51 +55,51 @@ public class QNoSuchEnumValueException extends RuntimeException {
         super(String.valueOf(value));
     }
 
-    public QNoSuchEnumValueException(int value, String name) {
+    public QNoSuchEnumValueException(int value, @NonNull String name) {
     	super(String.format("%1$s(%2$s)", name, String.valueOf(value)));
     }
 
-	public QNoSuchEnumValueException(long value, String name) {
+	public QNoSuchEnumValueException(long value, @NonNull String name) {
 		super(String.format("%1$s(%2$s)", name, String.valueOf(value)));
     }
 	
-	public QNoSuchEnumValueException(short value, String name) {
+	public QNoSuchEnumValueException(short value, @NonNull String name) {
 		super(String.format("%1$s(%2$s)", name, String.valueOf(value)));
     }
 	
-	public QNoSuchEnumValueException(byte value, String name) {
+	public QNoSuchEnumValueException(byte value, @NonNull String name) {
         super(String.format("%1$s(%2$s)", name, String.valueOf(value)));
     }
 
-    public QNoSuchEnumValueException(int value, Throwable t) {
+    public QNoSuchEnumValueException(int value, @Nullable Throwable t) {
         super(String.valueOf(value), t);
     }
 
-	public QNoSuchEnumValueException(long value, Throwable t) {
+	public QNoSuchEnumValueException(long value, @Nullable Throwable t) {
         super(String.valueOf(value), t);
     }
 	
-	public QNoSuchEnumValueException(short value, Throwable t) {
+	public QNoSuchEnumValueException(short value, @Nullable Throwable t) {
         super(String.valueOf(value), t);
     }
 	
-	public QNoSuchEnumValueException(byte value, Throwable t) {
+	public QNoSuchEnumValueException(byte value, @Nullable Throwable t) {
         super(String.valueOf(value), t);
     }
 
-    public QNoSuchEnumValueException(int value, String name, Throwable t) {
+    public QNoSuchEnumValueException(int value, @NonNull String name, @Nullable Throwable t) {
     	super(String.format("%1$s(%2$s)", name, String.valueOf(value)), t);
     }
 
-	public QNoSuchEnumValueException(long value, String name, Throwable t) {
+	public QNoSuchEnumValueException(long value, @NonNull String name, @Nullable Throwable t) {
 		super(String.format("%1$s(%2$s)", name, String.valueOf(value)), t);
     }
 	
-	public QNoSuchEnumValueException(short value, String name, Throwable t) {
+	public QNoSuchEnumValueException(short value, @NonNull String name, @Nullable Throwable t) {
 		super(String.format("%1$s(%2$s)", name, String.valueOf(value)), t);
     }
 	
-	public QNoSuchEnumValueException(byte value, String name, Throwable t) {
+	public QNoSuchEnumValueException(byte value, @NonNull String name, @Nullable Throwable t) {
         super(String.format("%1$s(%2$s)", name, String.valueOf(value)), t);
     }
 }

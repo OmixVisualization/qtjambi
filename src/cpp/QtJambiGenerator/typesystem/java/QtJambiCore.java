@@ -1,7 +1,7 @@
 /****************************************************************************
  **
  ** Copyright (C) 1992-2009 Nokia. All rights reserved.
- ** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+ ** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
  **
  ** This file is part of Qt Jambi.
  **
@@ -8386,7 +8386,7 @@ class QObject___ extends QObject {
 
 class QObject_5__ extends QObject {
     @QtUninvokable
-    static QObject getQPropertyOwner(io.qt.internal.ClassAnalyzerUtility.LambdaInfo info) {
+    static QObject getQPropertyOwner(io.qt.internal.LambdaInfo info) {
         return null;
     }
 }// class
@@ -11910,7 +11910,7 @@ class QObject_6__ extends QObject {
         }
     }
 
-    static QObject getQPropertyOwner(io.qt.internal.ClassAnalyzerUtility.LambdaInfo info) {
+    static QObject getQPropertyOwner(io.qt.internal.LambdaInfo info) {
         if(info!=null) {
             if(info.owner==null && info.methodInfo.isStaticMethod && info.lambdaArgs.size()>0) {
                 Object arg = info.lambdaArgs.get(0);
@@ -12180,14 +12180,21 @@ abstract class QUrl___ extends QUrl{
     public static final class FormattingOptions extends QFlags<@NonNull FormattingOption> implements Comparable<@NonNull FormattingOptions> {
         private static final long serialVersionUID = -4458464052834800982L;
 
-        public FormattingOptions(@Nullable FormattingOption @NonNull... args) {
-            super(args); 
-            for (FormattingOption arg : args) {
-                if( !(arg instanceof UrlFormattingOption) 
-                        && !(arg instanceof ComponentFormattingOption) ) {
-                    throw new IllegalArgumentException("Custom implementations of FormattingOption (" + QtJambi_LibraryUtilities.internal.getClass(arg).getName() + ") are not allowed.");
+        public FormattingOptions() {
+            super(0);
+        }
+
+        public FormattingOptions(@NonNull FormattingOption @NonNull... args) {
+            super(0);
+            if(args!=null)
+                for (FormattingOption arg : args) {
+                    if( arg!=null
+                            && !(arg instanceof UrlFormattingOption)
+                            && !(arg instanceof ComponentFormattingOption) ) {
+                        throw new IllegalArgumentException("Custom implementations of FormattingOption (" + QtJambi_LibraryUtilities.internal.getClass(arg).getName() + ") are not allowed.");
+                    }
                 }
-            }
+            set(args);
         }
         
         public FormattingOptions(int value) { 
@@ -12201,7 +12208,8 @@ abstract class QUrl___ extends QUrl{
         
         @Override
         public @NonNull FormattingOptions combined(@StrictNonNull FormattingOption flag) {
-            if( !(flag instanceof UrlFormattingOption) 
+            if( flag!=null
+                    && !(flag instanceof UrlFormattingOption)
                     && !(flag instanceof ComponentFormattingOption) ) {
                 throw new IllegalArgumentException("Custom implementations of FormattingOption (" + QtJambi_LibraryUtilities.internal.getClass(flag).getName() + ") are not allowed.");
             }
@@ -12210,7 +12218,8 @@ abstract class QUrl___ extends QUrl{
 
         @Override
         public @NonNull FormattingOptions cleared(@StrictNonNull FormattingOption flag) {
-            if( !(flag instanceof UrlFormattingOption)
+            if( flag!=null
+                    && !(flag instanceof UrlFormattingOption)
                     && !(flag instanceof ComponentFormattingOption) ) {
                 throw new IllegalArgumentException("Custom implementations of FormattingOption (" + QtJambi_LibraryUtilities.internal.getClass(flag).getName() + ") are not allowed.");
             }
@@ -12251,6 +12260,21 @@ abstract class QUrl___ extends QUrl{
         @Override
         public int compareTo(@StrictNonNull FormattingOptions o) {
                 return Integer.compare(value(), o.value());
+        }
+
+        /**
+         * Returns the value of this QFlags.
+         */
+        public final int value(){
+            return intValue();
+        }
+
+        /**
+         * Sets the value of this QFlags.
+         * @param value new value
+         */
+        public final void setValue(int value){
+            setIntValue(value);
         }
     }
 
@@ -12304,7 +12328,7 @@ abstract class QUrl___ extends QUrl{
     /**
      * @deprecated Use <code>new QUrl("qrc:path")</code> instead.
      */
-    @Deprecated
+    @Deprecated(forRemoval=true, since="6.8.2")
     public static io.qt.core.@NonNull QUrl fromClassPath(java.lang.@NonNull String classpath){
         return new io.qt.core.QUrl("qrc:"+classpath);
     }
@@ -12437,9 +12461,6 @@ class QCoreApplication___ extends QCoreApplication {
     
     private static boolean __qt_isInitializing = false;
 
-    @QtUninvokable
-    private static native void preinit();
-
     /**
      * <p>Overloaded function for {@link #sendPostedEvents(io.qt.core.QObject, int)}</p>
      */
@@ -12492,7 +12513,6 @@ class QCoreApplication___ extends QCoreApplication {
     public static <T extends @NonNull QCoreApplication> T initialize(String applicationName, String args @StrictNonNull[], java.util.function.@NonNull Function<String[],T> constructor) {
         if (instance() != null)
             throw new RuntimeException("QCoreApplication can only be initialized once");
-        preinit();
         String[] _args = new String[args.length+1];
         if(applicationName!=null && !applicationName.isEmpty()){
             _args[0] = applicationName;
@@ -12637,27 +12657,37 @@ class QCoreApplication___ extends QCoreApplication {
     @NativeAccess
     @QtUninvokable
     private static void execPreRoutines() {
-        for(Runnable preRoutine : new java.util.ArrayList<>(preRoutines)) {
+        while(!preRoutines.isEmpty()){
+            Runnable preRoutine;
+            try {
+                preRoutine = preRoutines.remove(0);
+            } catch (IndexOutOfBoundsException e) {
+                break;
+            }
             try {
                 preRoutine.run();
             }catch(Throwable t) {
                 java.util.logging.Logger.getLogger("io.qt.core").throwing("Runnable", "run", t);
             }
         }
-        preRoutines.clear();
     }
 
     @NativeAccess
     @QtUninvokable
     private static void execPostRoutines() {
-        for(Runnable postRoutine : new java.util.ArrayList<>(postRoutines)) {
+        while(!postRoutines.isEmpty()){
+            Runnable postRoutine;
+            try {
+                postRoutine = postRoutines.remove(0);
+            } catch (IndexOutOfBoundsException e) {
+                break;
+            }
             try {
                 postRoutine.run();
             }catch(Throwable t) {
                 java.util.logging.Logger.getLogger("io.qt.core").throwing("Runnable", "run", t);
             }
         }
-        postRoutines.clear();
     }
 
     /**
@@ -14445,379 +14475,379 @@ class QByteArrayView___ extends QByteArray {
 }// class
 
 class QIODevice_template__ extends QIODevice {
-        /**
-         * @deprecated use {@link #fromBuffer(java.nio.Buffer)} instead.
-         */
-        @Deprecated
-        @QtUninvokable
-        public static @NonNull QIODevice fromDirectBuffer(java.nio.@NonNull Buffer buffer){
-            return fromBuffer(buffer);
+    /**
+     * @deprecated use {@link #fromBuffer(java.nio.Buffer)} instead.
+     */
+    @Deprecated(forRemoval=true, since="6.8.2")
+    @QtUninvokable
+    public static @NonNull QIODevice fromDirectBuffer(java.nio.@NonNull Buffer buffer){
+        return fromBuffer(buffer);
+    }
+
+    /**
+     * Creates QIODevice from direct buffer. The new I/O device is not open.
+     * @param buffer
+     * @return new new QIODevice or null if no direct buffer
+     */
+    @QtUninvokable
+    public native static @NonNull QIODevice fromBuffer(java.nio.@NonNull Buffer buffer);
+
+    /**
+     * Creates a new InputStream for reading from given QIODevice.
+     * If the given device is open for reading it remains open after closing the InputStream.
+     * If the give device is still not open the InputStream opens it for reading and closes it finally.
+     * If the device cannot be opened for reading {@code null} is returned.
+     *
+     * @param device
+     * @return new InputStream
+     */
+    @QtUninvokable
+    public static java.io.@Nullable InputStream toInputStream(@StrictNonNull QIODevice device) {
+        boolean closeFinally;
+        if((closeFinally = !device.isOpen()))
+            device.open(OpenModeFlag.ReadOnly);
+        if(device.isOpen() && device.isReadable()) {
+            return new java.io.InputStream(){
+                private final byte[] buffer1 = {0};
+                @Override
+                public int read() throws java.io.IOException {
+                    device.read(buffer1);
+                    return buffer1[0];
+                }
+                @Override
+                public int read(byte[] b) throws java.io.IOException {
+                    return device.read(b);
+                }
+                @Override
+                public int read(byte b[], int off, int len) throws java.io.IOException {
+                    return device.read(b, off, len);
+                }
+                @Override
+                public void close() throws java.io.IOException {
+                    if(closeFinally)
+                        device.close();
+                }
+
+                @Override
+                public int available() throws java.io.IOException {
+                    return (int)device.bytesAvailable();
+                }
+            };
         }
+        return null;
+    }
 
-        /**
-         * Creates QIODevice from direct buffer. The new I/O device is not open.
-         * @param buffer
-         * @return new new QIODevice or null if no direct buffer
-         */
-        @QtUninvokable
-        public native static @NonNull QIODevice fromBuffer(java.nio.@NonNull Buffer buffer);
+    /**
+     * Creates a new OutputStream for writing to given QIODevice.
+     * If the given device is open for writing it remains open after closing the OutputStream.
+     * If the give device is still not open the OutputStream opens it for writing and closes it finally.
+     * If the device cannot be opened for writing {@code null} is returned.
+     *
+     * @param device
+     * @return new OutputStream
+     */
+    @QtUninvokable
+    public static java.io.@Nullable OutputStream toOutputStream(@StrictNonNull QIODevice device) {
+        boolean closeFinally;
+        if((closeFinally = !device.isOpen()))
+            device.open(OpenModeFlag.WriteOnly);
+        if(device.isOpen() && device.isWritable()) {
+            return new java.io.OutputStream(){
+                private final byte[] buffer1 = {0};
+                @Override
+                public void write(int b) throws java.io.IOException {
+                    buffer1[0] = (byte)b;
+                    device.write(buffer1);
+                }
 
-        /**
-         * Creates a new InputStream for reading from given QIODevice.
-         * If the given device is open for reading it remains open after closing the InputStream.
-         * If the give device is still not open the InputStream opens it for reading and closes it finally.
-         * If the device cannot be opened for reading {@code null} is returned.
-         *
-         * @param device
-         * @return new InputStream
-         */
-        @QtUninvokable
-        public static java.io.@Nullable InputStream toInputStream(@StrictNonNull QIODevice device) {
-            boolean closeFinally;
-            if((closeFinally = !device.isOpen()))
-                device.open(OpenModeFlag.ReadOnly);
-            if(device.isOpen() && device.isReadable()) {
-                return new java.io.InputStream(){
-                    private final byte[] buffer1 = {0};
-                    @Override
-                    public int read() throws java.io.IOException {
-                        device.read(buffer1);
-                        return buffer1[0];
-                    }
-                    @Override
-                    public int read(byte[] b) throws java.io.IOException {
-                        return device.read(b);
-                    }
-                    @Override
-                    public int read(byte b[], int off, int len) throws java.io.IOException {
-                        return device.read(b, off, len);
-                    }
-                    @Override
-                    public void close() throws java.io.IOException {
-                        if(closeFinally)
-                            device.close();
-                    }
+                @Override
+                public void write(byte[] b) throws java.io.IOException {
+                    device.write(b);
+                }
 
-                    @Override
-                    public int available() throws java.io.IOException {
-                        return (int)device.bytesAvailable();
-                    }
-                };
+                @Override
+                public void write(byte[] b, int off, int len) throws java.io.IOException {
+                    device.write(b, off, len);
+                }
+
+                @Override
+                public void close() throws java.io.IOException {
+                    if(closeFinally)
+                        device.close();
+                }
+            };
+        }
+        return null;
+    }
+
+    /**
+     * Creates a new WritableByteChannel for writing to given QIODevice.
+     * If the given device is open for writing it remains open after closing the Channel.
+     * If the give device is still not open the Channel opens it for writing and closes it finally.
+     * If the device cannot be opened for writing {@code null} is returned.
+     *
+     * @param device
+     * @return new WritableByteChannel
+     */
+    @QtUninvokable
+    public static java.nio.channels.@Nullable WritableByteChannel toWritableByteChannel(@StrictNonNull QIODevice device) {
+        boolean closeFinally;
+        if((closeFinally = !device.isOpen()))
+            device.open(OpenModeFlag.WriteOnly);
+        if(device.isOpen() && device.isWritable()) {
+            return new java.nio.channels.WritableByteChannel(){
+                @Override
+                public void close() throws java.io.IOException {
+                    if(closeFinally)
+                        device.close();
+                }
+
+                @Override
+                public boolean isOpen() {
+                    return device.isOpen();
+                }
+
+                @Override
+                public int write(java.nio.ByteBuffer src) {
+                    return device.write(src);
+                }
+            };
+        }
+        return null;
+    }
+
+    /**
+     * Creates a new ReadableByteChannel for reading from given QIODevice.
+     * If the given device is open for reading it remains open after closing the Channel.
+     * If the give device is still not open the Channel opens it for reading and closes it finally.
+     * If the device cannot be opened for reading {@code null} is returned.
+     *
+     * @param device
+     * @return new ReadableByteChannel
+     */
+    @QtUninvokable
+    public static java.nio.channels.@Nullable ReadableByteChannel toReadableByteChannel(@StrictNonNull QIODevice device) {
+        boolean closeFinally;
+        if((closeFinally = !device.isOpen()))
+            device.open(OpenModeFlag.ReadOnly);
+        if(device.isOpen() && device.isReadable()) {
+            return new java.nio.channels.ReadableByteChannel(){
+                @Override
+                public void close() throws java.io.IOException {
+                    if(closeFinally)
+                        device.close();
+                }
+
+                @Override
+                public boolean isOpen() {
+                    return device.isOpen();
+                }
+
+                @Override
+                public int read(java.nio.ByteBuffer src) {
+                    return device.read(src);
+                }
+            };
+        }
+        return null;
+    }
+
+    /**
+     * Creates a new open QIODevice for reading from given InputStream
+     * @param stream
+     * @return new open read-only QIODevice
+     */
+    @QtUninvokable
+    public static @NonNull QIODevice fromInputStream(java.io.@StrictNonNull InputStream stream) {
+        java.util.Objects.requireNonNull(stream);
+        return new QIODevice() {
+            {
+                setOpenMode(QIODevice.OpenModeFlag.ReadOnly);
             }
-            return null;
-        }
 
-        /**
-         * Creates a new OutputStream for writing to given QIODevice.
-         * If the given device is open for writing it remains open after closing the OutputStream.
-         * If the give device is still not open the OutputStream opens it for writing and closes it finally.
-         * If the device cannot be opened for writing {@code null} is returned.
-         *
-         * @param device
-         * @return new OutputStream
-         */
-        @QtUninvokable
-        public static java.io.@Nullable OutputStream toOutputStream(@StrictNonNull QIODevice device) {
-            boolean closeFinally;
-            if((closeFinally = !device.isOpen()))
-                device.open(OpenModeFlag.WriteOnly);
-            if(device.isOpen() && device.isWritable()) {
-                return new java.io.OutputStream(){
-                    private final byte[] buffer1 = {0};
-                    @Override
-                    public void write(int b) throws java.io.IOException {
-                        buffer1[0] = (byte)b;
-                        device.write(buffer1);
-                    }
-
-                    @Override
-                    public void write(byte[] b) throws java.io.IOException {
-                        device.write(b);
-                    }
-
-                    @Override
-                    public void write(byte[] b, int off, int len) throws java.io.IOException {
-                        device.write(b, off, len);
-                    }
-
-                    @Override
-                    public void close() throws java.io.IOException {
-                        if(closeFinally)
-                            device.close();
-                    }
-                };
-            }
-            return null;
-        }
-
-        /**
-         * Creates a new WritableByteChannel for writing to given QIODevice.
-         * If the given device is open for writing it remains open after closing the Channel.
-         * If the give device is still not open the Channel opens it for writing and closes it finally.
-         * If the device cannot be opened for writing {@code null} is returned.
-         *
-         * @param device
-         * @return new WritableByteChannel
-         */
-        @QtUninvokable
-        public static java.nio.channels.@Nullable WritableByteChannel toWritableByteChannel(@StrictNonNull QIODevice device) {
-            boolean closeFinally;
-            if((closeFinally = !device.isOpen()))
-                device.open(OpenModeFlag.WriteOnly);
-            if(device.isOpen() && device.isWritable()) {
-                return new java.nio.channels.WritableByteChannel(){
-                    @Override
-                    public void close() throws java.io.IOException {
-                        if(closeFinally)
-                            device.close();
-                    }
-
-                    @Override
-                    public boolean isOpen() {
-                        return device.isOpen();
-                    }
-
-                    @Override
-                    public int write(java.nio.ByteBuffer src) {
-                        return device.write(src);
-                    }
-                };
-            }
-            return null;
-        }
-
-        /**
-         * Creates a new ReadableByteChannel for reading from given QIODevice.
-         * If the given device is open for reading it remains open after closing the Channel.
-         * If the give device is still not open the Channel opens it for reading and closes it finally.
-         * If the device cannot be opened for reading {@code null} is returned.
-         *
-         * @param device
-         * @return new ReadableByteChannel
-         */
-        @QtUninvokable
-        public static java.nio.channels.@Nullable ReadableByteChannel toReadableByteChannel(@StrictNonNull QIODevice device) {
-            boolean closeFinally;
-            if((closeFinally = !device.isOpen()))
-                device.open(OpenModeFlag.ReadOnly);
-            if(device.isOpen() && device.isReadable()) {
-                return new java.nio.channels.ReadableByteChannel(){
-                    @Override
-                    public void close() throws java.io.IOException {
-                        if(closeFinally)
-                            device.close();
-                    }
-
-                    @Override
-                    public boolean isOpen() {
-                        return device.isOpen();
-                    }
-
-                    @Override
-                    public int read(java.nio.ByteBuffer src) {
-                        return device.read(src);
-                    }
-                };
-            }
-            return null;
-        }
-        
-        /**
-         * Creates a new open QIODevice for reading from given InputStream
-         * @param stream
-         * @return new open read-only QIODevice
-         */
-        @QtUninvokable
-        public static @NonNull QIODevice fromInputStream(java.io.@StrictNonNull InputStream stream) {
-            java.util.Objects.requireNonNull(stream);
-            return new QIODevice() {
-                {
-                    setOpenMode(QIODevice.OpenModeFlag.ReadOnly);
-                }
-
-                @Override
-                public long bytesAvailable() {
-                    try {
-                        return stream.available();
-                    } catch (java.io.IOException e) {
-                        return 0;
-                    }
-                }
-
-                @Override
-                public boolean canReadLine() {
-                    return false;
-                }
-
-                @Override
-                public void close() {
-                    try {
-                        stream.close();
-                    } catch (java.io.IOException e) {
-                    }
-                    super.close();
-                }
-
-                @Override
-                public boolean isSequential() {
-                    return true;
-                }
-
-                @Override
-                public boolean open(OpenMode mode) {
-                    if(mode.value()==OpenModeFlag.ReadOnly.value())
-                        return super.open(mode);
-                    else return false;
-                }
-
-                @Override
-                public long pos() {
-                    return super.pos();
-                }
-
-                @Override
-                protected int readLineData(java.nio.ByteBuffer data) {
+            @Override
+            public long bytesAvailable() {
+                try {
+                    return stream.available();
+                } catch (java.io.IOException e) {
                     return 0;
                 }
+            }
 
-                @Override
-                public boolean reset() {
-                    try {
-                        stream.reset();
-                    } catch (java.io.IOException e) {
-                        return false;
-                    }
-                    return super.reset();
+            @Override
+            public boolean canReadLine() {
+                return false;
+            }
+
+            @Override
+            public void close() {
+                try {
+                    stream.close();
+                } catch (java.io.IOException e) {
                 }
+                super.close();
+            }
 
-                @Override
-                public boolean seek(long pos) {
+            @Override
+            public boolean isSequential() {
+                return true;
+            }
+
+            @Override
+            public boolean open(OpenMode mode) {
+                if(mode.value()==OpenModeFlag.ReadOnly.value())
+                    return super.open(mode);
+                else return false;
+            }
+
+            @Override
+            public long pos() {
+                return super.pos();
+            }
+
+            @Override
+            protected int readLineData(java.nio.ByteBuffer data) {
+                return 0;
+            }
+
+            @Override
+            public boolean reset() {
+                try {
+                    stream.reset();
+                } catch (java.io.IOException e) {
                     return false;
                 }
+                return super.reset();
+            }
 
-                @Override
-                protected int writeData(java.nio.ByteBuffer data) {
+            @Override
+            public boolean seek(long pos) {
+                return false;
+            }
+
+            @Override
+            protected int writeData(java.nio.ByteBuffer data) {
+                return 0;
+            }
+
+            @Override
+            protected int readData(java.nio.ByteBuffer data) {
+                if(data==null)
                     return 0;
-                }
-                
-                @Override
-                protected int readData(java.nio.ByteBuffer data) {
-                    if(data==null)
-                        return 0;
-                    try {
-                        if(data.hasArray()) {
-                            return stream.read(data.array(), data.position(), data.limit()-data.position());
-                        }else if(data.capacity()>data.position()){
-                            int initialPos = data.position();
-                            int nextByte = stream.read();
-                            while(nextByte>=0) {
-                                data.put((byte)nextByte);
-                                if(data.capacity()==data.position())
-                                    break;
-                                nextByte = stream.read();
-                            }
-                            return data.position()-initialPos;
+                try {
+                    if(data.hasArray()) {
+                        return stream.read(data.array(), data.position(), data.limit()-data.position());
+                    }else if(data.capacity()>data.position()){
+                        int initialPos = data.position();
+                        int nextByte = stream.read();
+                        while(nextByte>=0) {
+                            data.put((byte)nextByte);
+                            if(data.capacity()==data.position())
+                                break;
+                            nextByte = stream.read();
                         }
-                    } catch (java.io.IOException e) {
+                        return data.position()-initialPos;
                     }
-                    return -1;
+                } catch (java.io.IOException e) {
                 }
+                return -1;
+            }
 %SKIP1
-            };
-        }
-        
-        /**
-         * Creates a new open QIODevice for writing to given InputStream
-         * @param stream
-         * @return new open write-only QIODevice
-         */
-        @QtUninvokable
-        public static @NonNull QIODevice fromOutputStream(java.io.@StrictNonNull OutputStream stream) {
-            java.util.Objects.requireNonNull(stream);
-            return new QIODevice() {
-                {
-                    setOpenMode(QIODevice.OpenModeFlag.WriteOnly);
-                }
+        };
+    }
 
-                @Override
-                public long bytesAvailable() {
+    /**
+     * Creates a new open QIODevice for writing to given InputStream
+     * @param stream
+     * @return new open write-only QIODevice
+     */
+    @QtUninvokable
+    public static @NonNull QIODevice fromOutputStream(java.io.@StrictNonNull OutputStream stream) {
+        java.util.Objects.requireNonNull(stream);
+        return new QIODevice() {
+            {
+                setOpenMode(QIODevice.OpenModeFlag.WriteOnly);
+            }
+
+            @Override
+            public long bytesAvailable() {
+                return 0;
+            }
+
+            @Override
+            public boolean canReadLine() {
+                return false;
+            }
+
+            @Override
+            public void close() {
+                try {
+                    stream.close();
+                } catch (java.io.IOException e) {
+                }
+                super.close();
+            }
+
+            @Override
+            public boolean isSequential() {
+                return true;
+            }
+
+            @Override
+            public boolean open(OpenMode mode) {
+                if(mode.value()==OpenModeFlag.WriteOnly.value())
+                    return super.open(mode);
+                else return false;
+            }
+
+            @Override
+            protected int readLineData(java.nio.ByteBuffer data) {
+                return 0;
+            }
+
+            @Override
+            public boolean reset() {
+                return false;
+            }
+
+            @Override
+            public boolean seek(long pos) {
+                return false;
+            }
+
+            @Override
+            public long size() {
+                return super.size();
+            }
+
+            @Override
+            protected int writeData(java.nio.ByteBuffer data) {
+                if(data==null)
                     return 0;
-                }
-
-                @Override
-                public boolean canReadLine() {
-                    return false;
-                }
-
-                @Override
-                public void close() {
-                    try {
-                        stream.close();
-                    } catch (java.io.IOException e) {
-                    }
-                    super.close();
-                }
-
-                @Override
-                public boolean isSequential() {
-                    return true;
-                }
-
-                @Override
-                public boolean open(OpenMode mode) {
-                    if(mode.value()==OpenModeFlag.WriteOnly.value())
-                        return super.open(mode);
-                    else return false;
-                }
-
-                @Override
-                protected int readLineData(java.nio.ByteBuffer data) {
-                    return 0;
-                }
-
-                @Override
-                public boolean reset() {
-                    return false;
-                }
-
-                @Override
-                public boolean seek(long pos) {
-                    return false;
-                }
-
-                @Override
-                public long size() {
-                    return super.size();
-                }
-
-                @Override
-                protected int writeData(java.nio.ByteBuffer data) {
-                    if(data==null)
-                        return 0;
-                    try {
-                        if(data.hasArray()) {
-                            stream.write(data.array(), data.position(), data.limit()-data.position());
-                            return data.limit()-data.position();
-                        }else{
-                            int initialPos = data.position();
-                            while(data.limit()>data.position()) {
-                                int nextByte = data.get();
-                                stream.write(nextByte);
-                            }
-                            return data.position()-initialPos;
+                try {
+                    if(data.hasArray()) {
+                        stream.write(data.array(), data.position(), data.limit()-data.position());
+                        return data.limit()-data.position();
+                    }else{
+                        int initialPos = data.position();
+                        while(data.limit()>data.position()) {
+                            int nextByte = data.get();
+                            stream.write(nextByte);
                         }
-                    } catch (java.io.IOException e) {
+                        return data.position()-initialPos;
                     }
-                    return -1;
+                } catch (java.io.IOException e) {
                 }
-                
-                @Override
-                protected int readData(java.nio.ByteBuffer data) {
-                    return 0;
-                }
+                return -1;
+            }
+
+            @Override
+            protected int readData(java.nio.ByteBuffer data) {
+                return 0;
+            }
 %SKIP2
-            };
-        }
+        };
+    }
 
     /**
      * Creates a new open QIODevice for reading from given Channel
@@ -14961,7 +14991,6 @@ class QFutureInterfaceBase___ {
 }// class
 
 class QtFuture___ {
-
     /**
      * <p>See <a href="@docRoot/qtfuture.html#connect"><code>QtFuture::connect(Sender *, Signal)</code></a></p>
      */
@@ -15369,7 +15398,7 @@ class QtFuture_6_1__ {
     }
 }// class
 
-class QtFuture_6_3__ {
+class QtFuture_6_3to5__ {
     /**
      * <p>See <a href="@docRoot/qtfuture.html#whenAny-1"><code>QtFuture::whenAny(Futures)</code></a></p>
      */
@@ -15381,6 +15410,7 @@ class QtFuture_6_3__ {
     /**
      * <p>See <a href="@docRoot/qtfuture.html#whenAny-1"><code>QtFuture::whenAny(Futures)</code></a></p>
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     @QtUninvokable
     public static @NonNull QFuture<QFuture<?>> whenAny(java.util.@NonNull Collection<@NonNull QFuture<?>> futures) {
         if(futures==null || futures.size()==0)
@@ -15388,13 +15418,14 @@ class QtFuture_6_3__ {
         QPromise<QFuture<?>> promise = new QPromise<>();
         promise.start();
         java.util.concurrent.atomic.AtomicBoolean ab = new java.util.concurrent.atomic.AtomicBoolean();
-        for (QFuture<?> qFuture : futures) {
-            qFuture.then(f->{
-                if(ab.compareAndExchange(false, true)) {
-                    promise.addResult(f);
-                    promise.finish();
-                }
-            });
+        QFuture.FutureConsumer fc = f->{
+            if(ab.compareAndExchange(false, true)) {
+                promise.addResult(f.clone());
+                promise.finish();
+            }
+        };
+        for (QFuture qFuture : futures) {
+            qFuture.then(fc);
         }
         return promise.future();
     }
@@ -15417,13 +15448,10 @@ class QtFuture_6_3__ {
         QPromise<QList<QFuture<?>>> promise = new QPromise<>();
         promise.start();
         QList<QFuture<?>> list = new QList<>(QMetaType.Type.QVariant);
-        list.resize(futures.size());
         java.util.concurrent.atomic.AtomicInteger ai = new java.util.concurrent.atomic.AtomicInteger(futures.size());
-        int i=0;
         for (QFuture<?> qFuture : futures) {
-            int _i = i++;
-            qFuture.then(f->{
-                list.set(_i, f);
+            list.add(qFuture.clone());
+            qFuture.then(()->{
                 if(ai.incrementAndGet()==0) {
                     promise.addResult(list);
                     promise.finish();
@@ -15434,12 +15462,12 @@ class QtFuture_6_3__ {
     }
 }// class
 
-class QtFuture_6_6__ {
+class QtFuture_6_6to10__ {
     /**
      * Use makeReadyValueFuture() instead
      */
     @QtUninvokable
-    @Deprecated
+    @Deprecated(forRemoval=true, since="6.6")
     public static <T> @NonNull QFuture<T> makeReadyFuture(T value){
         return makeReadyValueFuture(value);
     }
@@ -15448,7 +15476,7 @@ class QtFuture_6_6__ {
      * Use makeReadyRangeFuture() instead
      */
     @QtUninvokable
-    @Deprecated
+    @Deprecated(forRemoval=true, since="6.6")
     public static <T> @NonNull QFuture<T> makeReadyFuture(java.util.@NonNull Collection<T> values){
         return makeReadyRangeFuture(values);
     }
@@ -15457,11 +15485,13 @@ class QtFuture_6_6__ {
      * Use makeReadyVoidFuture() instead
      */
     @QtUninvokable
-    @Deprecated
+    @Deprecated(forRemoval=true, since="6.6")
     public static @NonNull QFuture<Void> makeReadyFuture(){
         return makeReadyVoidFuture();
     }
+}// class
 
+class QtFuture_6_6__ {
     /**
      * <p>See <a href="@docRoot/qtfuture.html#makeReadyValueFuture"><code>QtFuture::makeReadyValueFuture(T)</code></a></p>
      */
@@ -15474,7 +15504,6 @@ class QtFuture_6_6__ {
         promise.reportFinished();
         return promise.future();
     }
-
     /**
      * <p>See <a href="@docRoot/qtfuture.html#makeReadyRangeFuture"><code>QtFuture::makeReadyRangeFuture(QList&lt;T>)</code></a></p>
      */
@@ -15499,6 +15528,67 @@ class QtFuture_6_6__ {
         promise.reportStarted();
         promise.reportResults(QList.of(value0, valuesN));
         promise.reportFinished();
+        return promise.future();
+    }
+
+    /**
+     * <p>See <a href="@docRoot/qtfuture.html#whenAny-1"><code>QtFuture::whenAny(Futures)</code></a></p>
+     */
+    @QtUninvokable
+    public static @NonNull QFuture<QFuture<?>> whenAny(@NonNull QFuture<?> @NonNull... futures) {
+        return whenAny(java.util.Arrays.asList(futures));
+    }
+
+    /**
+     * <p>See <a href="@docRoot/qtfuture.html#whenAny-1"><code>QtFuture::whenAny(Futures)</code></a></p>
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @QtUninvokable
+    public static @NonNull QFuture<QFuture<?>> whenAny(java.util.@NonNull Collection<@NonNull QFuture<?>> futures) {
+        if(futures==null || futures.size()==0)
+            return makeReadyRangeFuture(java.util.Collections.emptyList());
+        QPromise<QFuture<?>> promise = new QPromise<>();
+        promise.start();
+        java.util.concurrent.atomic.AtomicBoolean ab = new java.util.concurrent.atomic.AtomicBoolean();
+        for (QFuture qFuture : futures) {
+            qFuture.then((QFuture f)->{
+                if(ab.compareAndExchange(false, true)) {
+                    promise.addResult(f.clone());
+                    promise.finish();
+                }
+            });
+        }
+        return promise.future();
+    }
+
+    /**
+     * <p>See <a href="@docRoot/qtfuture.html#whenAll-1"><code>QtFuture::whenAll(Futures)</code></a></p>
+     */
+    @QtUninvokable
+    public static @NonNull QFuture<@NonNull QList<@NonNull QFuture<?>>> whenAll(@NonNull QFuture<?> @NonNull... futures) {
+        return whenAll(java.util.Arrays.asList(futures));
+    }
+
+    /**
+     * <p>See <a href="@docRoot/qtfuture.html#whenAll-1"><code>QtFuture::whenAll(Futures)</code></a></p>
+     */
+    @QtUninvokable
+    public static @NonNull QFuture<@NonNull QList<@NonNull QFuture<?>>> whenAll(java.util.@NonNull Collection<@NonNull QFuture<?>> futures) {
+        if(futures==null || futures.size()==0)
+            return makeReadyRangeFuture(java.util.Collections.emptyList());
+        QPromise<QList<QFuture<?>>> promise = new QPromise<>();
+        promise.start();
+        QList<QFuture<?>> list = new QList<>(QMetaType.Type.QVariant);
+        java.util.concurrent.atomic.AtomicInteger ai = new java.util.concurrent.atomic.AtomicInteger(futures.size());
+        for (QFuture<?> qFuture : futures) {
+            list.add(qFuture.clone());
+            qFuture.then(()->{
+                if(ai.incrementAndGet()==0) {
+                    promise.addResult(list);
+                    promise.finish();
+                }
+            });
+        }
         return promise.future();
     }
 }// class
@@ -15859,13 +15949,13 @@ class QMetaType___ extends QMetaType {
     
         @Override
         @QtUninvokable
-        public @NonNull GenericFlags combined(@StrictNonNull GenericFlag flag) {
+        public @NonNull GenericFlags combined(@Nullable GenericFlag flag) {
             return clone().setFlag(flag, true);
         }
 
         @Override
         @QtUninvokable
-        public @NonNull GenericFlags cleared(@StrictNonNull GenericFlag flag) {
+        public @NonNull GenericFlags cleared(@Nullable GenericFlag flag) {
             return clone().setFlag(flag, false);
         }
 
@@ -15897,10 +15987,26 @@ class QMetaType___ extends QMetaType {
             return this;
         }
 
+        @SuppressWarnings({ "rawtypes", "unchecked" })
         @Override
         @QtUninvokable
-        public int compareTo(@StrictNonNull QFlags<?> o) {
-                return Integer.compare(value(), o.value());
+        public int compareTo(@NonNull QFlags<?> o) {
+            return QFlags.compare((QFlags)this, (QFlags)o);
+        }
+
+        /**
+         * Returns the value of this QFlags.
+         */
+        public final int value(){
+            return intValue();
+        }
+
+        /**
+         * Sets the value of this QFlags.
+         * @param value new value
+         */
+        public final void setValue(int value){
+            setIntValue(value);
         }
     }
     
@@ -16303,6 +16409,140 @@ class QMetaType___ extends QMetaType {
     }
 }// class
 
+class QMetaType_69__ extends QMetaType {
+
+    /**
+     * This class represents a QMetaType-registered but Java-unknown enumerator type which can be used in QFlags.
+     */
+    public static final class GenericLongFlag implements QtLongFlagEnumerator{
+        private GenericLongFlag(long value) {
+            super();
+            this.value = value;
+        }
+
+        private final long value;
+
+        @Override
+        @QtUninvokable
+        public long value() {
+            return value;
+        }
+
+        @Override
+        @QtUninvokable
+        public int ordinal() { return -1; }
+
+        @Override
+        @QtUninvokable
+        public @NonNull String name() { return "unknown"; }
+
+        @Override
+        @QtUninvokable
+        public @NonNull Class<? extends QtLongFlagEnumerator> getDeclaringClass() { return GenericLongFlag.class; }
+    }
+
+    /**
+     * This class represents a QMetaType-registered but Java-unknown QFlags type.
+     */
+    public static final class GenericLongFlags extends QLongFlags<@NonNull GenericLongFlag> implements GenericTypeInterface, Comparable<@NonNull QLongFlags<?>>{
+        private static final long serialVersionUID = -7659504264600507749L;
+
+        @NativeAccess
+        private GenericLongFlags(int type, long value) {
+            super(value);
+            this.type = type;
+        }
+
+        private final int type;
+
+        @Override
+        @QtUninvokable
+        public final @NonNull QMetaType metaType() {
+            return new QMetaType(type);
+        }
+
+        @QtUninvokable
+        public @NonNull GenericLongFlag @NonNull[] flags(){
+            return new GenericLongFlag[]{new GenericLongFlag(value())};
+        }
+
+        @Override
+        @QtUninvokable
+        public @NonNull GenericLongFlags clone() {
+            return new GenericLongFlags(type, value());
+        }
+
+        @Override
+        @QtUninvokable
+        public @NonNull GenericLongFlags combined(@Nullable GenericLongFlag flag) {
+            return clone().setFlag(flag, true);
+        }
+
+        @Override
+        @QtUninvokable
+        public @NonNull GenericLongFlags cleared(@Nullable GenericLongFlag flag) {
+            return clone().setFlag(flag, false);
+        }
+
+        /**
+         * Sets the flag <code>e</code>
+         * @param e enum entry
+         * @return this
+         */
+        @QtUninvokable
+        public final @NonNull GenericLongFlags setFlag(@Nullable GenericLongFlag e){
+            return setFlag(e, true);
+        }
+
+        /**
+         * Sets or clears the flag <code>flag</code>
+         * @param e enum entry
+         * @param on set (true) or clear (false)
+         * @return this
+         */
+        @QtUninvokable
+        public final @NonNull GenericLongFlags setFlag(@Nullable GenericLongFlag e, boolean on){
+            if(e!=null){
+                if (on) {
+                    setValue(value() | e.value());
+                }else {
+                    setValue(value() & ~e.value());
+                }
+            }
+            return this;
+        }
+
+        @SuppressWarnings({ "rawtypes", "unchecked" })
+        @Override
+        @QtUninvokable
+        public int compareTo(@NonNull QLongFlags<?> o) {
+            return QLongFlags.compare((QLongFlags)this, (QLongFlags)o);
+        }
+
+        /**
+         * Returns the value of this QFlags.
+         */
+        public final long value(){
+            return longValue();
+        }
+
+        /**
+         * See <a href="https://doc.qt.io/qt/qflags.html#toInt">QFlags::toInt() const</a>
+         */
+        public final long toLong(){
+            return longValue();
+        }
+
+        /**
+         * Sets the value of this QFlags.
+         * @param value new value
+         */
+        public final void setValue(long value){
+            setLongValue(value);
+        }
+    }
+}// class
+
 class QMetaType_toString__ extends QMetaType {
 /**
  * Returns the type name associated with this <code>QMetaType</code> as {@link String}.
@@ -16319,7 +16559,7 @@ class QVariant_5__ {
     /**
      * @deprecated Use {@link QDataStream#writeObject(Object)} instead.
      */
-    @Deprecated
+    @Deprecated(forRemoval=true, since="6.8.2")
     public static void saveObject(@StrictNonNull QDataStream stream, @Nullable Object object){
         saveObject(stream, object, null);
     }
@@ -16327,7 +16567,7 @@ class QVariant_5__ {
     /**
      * @deprecated Use {@link QDataStream#writeObject(Object)} instead.
      */
-    @Deprecated
+    @Deprecated(forRemoval=true, since="6.8.2")
     public static void saveObject(@StrictNonNull QDataStream stream, @Nullable Object object, @Nullable Boolean @Nullable[] ok){
         QVariant variant = new QVariant(object);
         int metaType = variant.userType();
@@ -16340,7 +16580,7 @@ class QVariant_5__ {
     /**
      * @deprecated Use {@link QDataStream#readObject(Class, QMetaType...)} instead.
      */
-    @Deprecated
+    @Deprecated(forRemoval=true, since="6.8.2")
     public static @Nullable Object loadObject(@StrictNonNull QDataStream stream){
         return loadObject(stream, null);
     }
@@ -16348,7 +16588,7 @@ class QVariant_5__ {
     /**
      * @deprecated Use {@link QDataStream#readObject(Class, QMetaType...)} instead.
      */
-    @Deprecated
+    @Deprecated(forRemoval=true, since="6.8.2")
     public static @Nullable Object loadObject(@StrictNonNull QDataStream stream, @Nullable Boolean @Nullable[] ok){
         java.util.Optional<Object> optional = QMetaType.load(stream, stream.readInt());
         if(ok!=null && ok.length>0)
@@ -16472,7 +16712,7 @@ class QVariant_5__ {
      * Convenient static function for type conversion.
      * @see {@link #canConvert(int)}
      */
-    @Deprecated
+    @Deprecated(forRemoval=true, since="6.8.2")
     public static boolean canConvert(@Nullable Object obj, int targetType) {
         QMetaType objectType = QMetaType.fromObject(obj);
         if(objectType.id()==targetType)
@@ -16516,7 +16756,7 @@ class QVariant_6__ {
     /**
      * @deprecated Use {@link QDataStream#writeObject(Object)} instead.
      */
-    @Deprecated
+    @Deprecated(forRemoval=true, since="6.8.2")
     public static void saveObject(@StrictNonNull QDataStream stream, @Nullable Object object){
         saveObject(stream, object, null);
     }
@@ -16524,7 +16764,7 @@ class QVariant_6__ {
     /**
      * @deprecated Use {@link QDataStream#writeObject(Object)} instead.
      */
-    @Deprecated
+    @Deprecated(forRemoval=true, since="6.8.2")
     public static void saveObject(@StrictNonNull QDataStream stream, @Nullable Object object, Boolean @Nullable[] ok){
         QVariant variant = new QVariant(object);
         QMetaType metaType = variant.metaType();
@@ -16537,7 +16777,7 @@ class QVariant_6__ {
     /**
      * @deprecated Use {@link QDataStream#readObject(Class, QMetaType...)} instead.
      */
-    @Deprecated
+    @Deprecated(forRemoval=true, since="6.8.2")
     public static Object loadObject(@StrictNonNull QDataStream stream){
         return loadObject(stream, null);
     }
@@ -16545,7 +16785,7 @@ class QVariant_6__ {
     /**
      * @deprecated Use {@link QDataStream#readObject(Class, QMetaType...)} instead.
      */
-    @Deprecated
+    @Deprecated(forRemoval=true, since="6.8.2")
     public static Object loadObject(@StrictNonNull QDataStream stream, Boolean @Nullable[] ok){
         QMetaType metaType = new QMetaType(stream.readInt());
         java.util.Optional<Object> optional = metaType.load(stream);
@@ -16632,7 +16872,7 @@ class QVariant_6__ {
     /**
      * <p>See <a href="@docRoot/qvariant.html#canConvert"><code>QVariant::canConvert(QMetaType)const</code></a></p>
      */
-    @Deprecated
+    @Deprecated(forRemoval=true, since="6.8.2")
     @QtUninvokable
     public final boolean canConvert(@StrictNonNull Type targetType){
         return canConvert(new QMetaType(targetType.value()));
@@ -16676,7 +16916,7 @@ class QVariant_6__ {
      * Convenient static function for type conversion.
      * @see {@link #canConvert(QMetaType)}
      */
-    @Deprecated
+    @Deprecated(forRemoval=true, since="6.8.2")
     public static boolean canConvert(@Nullable Object obj, int targetType) {
         return canConvert(obj, new QMetaType(targetType));
     }
@@ -16707,7 +16947,7 @@ class QVariant___ {
      * Create a variant for the native nullptr type.
      * @deprecated Use QVariant.NULL instead
      */
-     @Deprecated
+    @Deprecated(forRemoval=true, since="6.8.2")
     public static QVariant nullVariant() {
         return new QVariant(QMetaType.Type.Nullptr);
     }
@@ -16797,7 +17037,7 @@ class QVariant___ {
     /**
      * Use {@link QMetaType#fromObject(Object)} instead.
      */
-    @Deprecated
+    @Deprecated(forRemoval=true, since="6.8.2")
     public static int type(@Nullable Object obj) {
         return QMetaType.fromObject(obj).id();
     }
@@ -16817,7 +17057,7 @@ class QVariant___ {
     /**
      * Use {@link #isValid()} instead.
      */
-    @Deprecated
+    @Deprecated(forRemoval=true, since="6.8.2")
     public static boolean isValid(@Nullable Object variant) {
         return new QVariant(variant).isValid();
     }
@@ -18109,9 +18349,15 @@ class QMetaMethod___ {
     }
     
     private static native QMetaMethod methodFromMethod(long metaObjectPointer, Object[] method);
+
+    private static class CoreUtility extends io.qt.internal.CoreUtility{
+        protected static io.qt.internal.LambdaInfo lambdaInfo(java.io.Serializable slotObject) {
+            return io.qt.internal.CoreUtility.lambdaInfo(slotObject);
+        }
+    }
     
     private static QMetaMethod fromMethodImpl(QMetaObject.AbstractSlot method) {
-        io.qt.internal.ClassAnalyzerUtility.LambdaInfo info = io.qt.internal.ClassAnalyzerUtility.lambdaInfo(method);
+        io.qt.internal.LambdaInfo info = CoreUtility.lambdaInfo(method);
         if(info!=null)
             return info.methodInfo.metaMethod();
         return new QMetaMethod();
@@ -18472,7 +18718,7 @@ class QMetaEnum___{
     }
     
     /**
-     * Returns the enum entry of the given value.
+     * Returns the enum entry of the given index.
      */
     @QtUninvokable
     public final io.qt.@Nullable QtAbstractEnumerator entry(int index) {
@@ -18519,6 +18765,21 @@ class QMetaEnum___{
             return null;
         }
     }
+
+    @QtUninvokable
+    private static Class<?> enumType(Class<?> enumType){
+        if(enumType.getSuperclass()==QFlags.class) {
+                java.lang.reflect.Type superType = enumType.getGenericSuperclass();
+                if(superType instanceof java.lang.reflect.ParameterizedType) {
+                        java.lang.reflect.ParameterizedType ptype = (java.lang.reflect.ParameterizedType)superType;
+                        java.lang.reflect.Type[] typeArgs = ptype.getActualTypeArguments();
+                        if(typeArgs.length==1 && typeArgs[0] instanceof Class) {
+                                return (Class<?>)typeArgs[0];
+                        }
+                }
+        }
+        return null;
+    }
     
     /**
      * Returns flags for the given value.
@@ -18526,7 +18787,7 @@ class QMetaEnum___{
     @QtUninvokable
     public final io.qt.@Nullable QFlags<?> flags(int value) {
         Class<?> enumType = type();
-        if(QtFlagEnumerator.class.isAssignableFrom(enumType)) {
+        if(QtAbstractFlagEnumerator.class.isAssignableFrom(enumType)) {
             Class<?> flagsType = flagsType(enumType);
             if(flagsType!=null)
                 return flags(flagsType, value);
@@ -18535,29 +18796,40 @@ class QMetaEnum___{
         }
         return null;
     }
+
+    @QtUninvokable
+    private static native QFlags<? extends QtFlagEnumerator> flags(Class<?> cls, int value);
     
     /**
      * Returns flags for the given enum names.
      */
     @QtUninvokable
     public final io.qt.@Nullable QFlags<?> flags(String... names) {
-        @SuppressWarnings("unchecked")
-        QFlags<QtFlagEnumerator> flags = (QFlags<QtFlagEnumerator>)flags(0);
-        if(flags!=null){
-            for (String name : names) {
-                QtAbstractEnumerator entry = entry(name);
-                if(entry instanceof QtFlagEnumerator) {
-                    flags.set((QtFlagEnumerator)entry);
-                }else {
-                    throw new QNoSuchEnumValueException(name);
-                }
-            }
+        Class<?> flagsType = null;
+        Class<?> enumType = type();
+        if(QtAbstractFlagEnumerator.class.isAssignableFrom(enumType)) {
+            flagsType = flagsType(enumType);
+        }else if(QFlags.class.isAssignableFrom(enumType)) {
+                flagsType = enumType;
+                enumType = enumType(flagsType);
         }
-        return flags;
+        if(flagsType!=null && enumType!=null) {
+                @SuppressWarnings("unchecked")
+                QFlags<QtAbstractFlagEnumerator> flags = (QFlags<QtAbstractFlagEnumerator>)flags(0);
+                if(flags!=null){
+                    for (String name : names) {
+                        QtAbstractEnumerator entry = entry(name);
+                        if(enumType.isInstance(entry)) {
+                            flags.setFlag((QtAbstractFlagEnumerator)entry);
+                        }else {
+                            throw new QNoSuchEnumValueException(name);
+                        }
+                    }
+                }
+                return flags;
+        }
+        return null;
     }
-    
-    @QtUninvokable
-    private static native QFlags<? extends QtFlagEnumerator> flags(Class<?> cls, int value);
     
     /**
      * Returns the enum entry of the given value.
@@ -18565,6 +18837,10 @@ class QMetaEnum___{
     @QtUninvokable
     public final io.qt.@Nullable QtAbstractEnumerator resolve(int value) {
         Class<?> type = type();
+        if(QFlags.class.isAssignableFrom(type))
+            type = enumType(type);
+        if(type==null)
+            return null;
         if(type.isEnum()) {
             byte bitSize = 4;
             if(QtByteEnumerator.class.isAssignableFrom(type)) {
@@ -18581,8 +18857,54 @@ class QMetaEnum___{
     }
     
     @QtUninvokable
-    private static native QtAbstractEnumerator resolveEntry(Class<?> cls, int value, byte bitSize);
+    private static native QtAbstractEnumerator resolveEntry(Class<?> cls, long value, byte bitSize);
 
+}// class
+
+class QMetaEnum_69__{
+    /**
+     * Returns flags for the given value.
+     */
+    @QtUninvokable
+    public final io.qt.@Nullable QFlags<?> flags(long value) {
+        Class<?> enumType = type();
+        if(QtLongFlagEnumerator.class.isAssignableFrom(enumType)) {
+            Class<?> flagsType = flagsType(enumType);
+            if(flagsType!=null)
+                return longFlags(flagsType, value);
+        }else if(QFlags.class.isAssignableFrom(enumType)) {
+            return longFlags(enumType, value);
+        }
+        return null;
+    }
+
+    @QtUninvokable
+    private static native QFlags<? extends QtLongFlagEnumerator> longFlags(Class<?> cls, long value);
+
+    /**
+     * Returns the enum entry of the given value.
+     */
+    @QtUninvokable
+    public final io.qt.@Nullable QtAbstractEnumerator resolve(long value) {
+        Class<?> type = type();
+        if(QFlags.class.isAssignableFrom(type))
+            type = enumType(type);
+        if(type==null)
+            return null;
+        if(type.isEnum()) {
+            byte bitSize = 4;
+            if(QtByteEnumerator.class.isAssignableFrom(type)) {
+                bitSize = 1;
+            }else if(QtShortEnumerator.class.isAssignableFrom(type)) {
+                bitSize = 2;
+            }else if(QtLongEnumerator.class.isAssignableFrom(type)) {
+                bitSize = 8;
+            }
+            return resolveEntry(type, value, bitSize);
+        }else {
+            return enclosingMetaObject().getEnumEntry(this, (int)value);
+        }
+    }
 }// class
 
 class Qt___ extends Qt {
@@ -18633,6 +18955,71 @@ class QFactoryLoader_63_{
 }// class
 
 class QFactoryLoader__{
+    private static class CoreUtility extends io.qt.internal.CoreUtility{
+        protected static LambdaInfo lambdaInfo(Serializable slotObject) {
+            return io.qt.internal.CoreUtility.lambdaInfo(slotObject);
+        }
+    }
+    private static Class<?> getFactoryClass(Serializable method) {
+        io.qt.internal.LambdaInfo lamdaInfo = CoreUtility.lambdaInfo(method);
+        if(lamdaInfo!=null) {
+                if (lamdaInfo.methodInfo.reflectiveMethod != null && (lamdaInfo.lambdaArgs == null || lamdaInfo.lambdaArgs.isEmpty())
+                                && !lamdaInfo.methodInfo.reflectiveMethod.isSynthetic() && !lamdaInfo.methodInfo.reflectiveMethod.isBridge()
+                                && !Modifier.isStatic(lamdaInfo.methodInfo.reflectiveMethod.getModifiers())) {
+                        return lamdaInfo.methodInfo.reflectiveMethod.getDeclaringClass();
+                }else if (lamdaInfo.methodInfo.reflectiveConstructor != null && (lamdaInfo.lambdaArgs == null || lamdaInfo.lambdaArgs.isEmpty())
+                                && !lamdaInfo.methodInfo.reflectiveConstructor.isSynthetic()
+                                && !Modifier.isStatic(lamdaInfo.methodInfo.reflectiveConstructor.getModifiers())) {
+                        return lamdaInfo.methodInfo.reflectiveConstructor.getDeclaringClass();
+                }
+        }
+        return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> Class<T> getFactoryClass(QMetaObject.Method1<T, ?> method) {
+        return (Class<T>) getFactoryClass((Serializable) method);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> Class<T> getFactoryClass(QMetaObject.Method2<T, ?, ?> method) {
+        return (Class<T>) getFactoryClass((Serializable) method);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> Class<T> getFactoryClass(QMetaObject.Method3<T, ?, ?, ?> method) {
+        return (Class<T>) getFactoryClass((Serializable) method);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> Class<T> getFactoryClass(QMetaObject.Method4<T, ?, ?, ?, ?> method) {
+        return (Class<T>) getFactoryClass((Serializable) method);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> Class<T> getFactoryClass(QMetaObject.Method5<T, ?, ?, ?, ?, ?> method) {
+        return (Class<T>) getFactoryClass((Serializable) method);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> Class<T> getFactoryClass(QMetaObject.Method6<T, ?, ?, ?, ?, ?, ?> method) {
+        return (Class<T>) getFactoryClass((Serializable) method);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> Class<T> getFactoryClass(QMetaObject.Method7<T, ?, ?, ?, ?, ?, ?, ?> method) {
+        return (Class<T>) getFactoryClass((Serializable) method);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> Class<T> getFactoryClass(QMetaObject.Method8<T, ?, ?, ?, ?, ?, ?, ?, ?> method) {
+        return (Class<T>) getFactoryClass((Serializable) method);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> Class<T> getFactoryClass(QMetaObject.Method9<T, ?, ?, ?, ?, ?, ?, ?, ?, ?> method) {
+        return (Class<T>) getFactoryClass((Serializable) method);
+    }
 
     @QtUninvokable
     public static void registerFactory(Class<? extends QtObjectInterface> factoryClass){
@@ -18657,7 +19044,7 @@ class QFactoryLoader__{
         if (index != -1) {
             QJsonValue iidValue = getIID(index);
             if(iidValue.isString()) {
-                Class<P> factoryClass = io.qt.internal.ClassAnalyzerUtility.getFactoryClass(create);
+                Class<P> factoryClass = getFactoryClass(create);
                 if(factoryClass!=null && factoryClass==registeredPluginInterface(iidValue.toString())) {
                     QObject factoryObject = instance(index);
                     P factory = QMetaObject.cast(factoryClass, factoryObject);
@@ -18693,7 +19080,7 @@ class QFactoryLoader__{
         if (index != -1) {
             QJsonValue iidValue = getIID(index);
             if(iidValue.isString()) {
-                Class<P> factoryClass = io.qt.internal.ClassAnalyzerUtility.getFactoryClass(create);
+                Class<P> factoryClass = getFactoryClass(create);
                 if(factoryClass!=null && factoryClass==registeredPluginInterface(iidValue.toString())) {
                     QObject factoryObject = instance(index);
                     P factory = QMetaObject.cast(factoryClass, factoryObject);
@@ -18729,7 +19116,7 @@ class QFactoryLoader__{
         if (index != -1) {
             QJsonValue iidValue = getIID(index);
             if(iidValue.isString()) {
-                Class<P> factoryClass = io.qt.internal.ClassAnalyzerUtility.getFactoryClass(create);
+                Class<P> factoryClass = getFactoryClass(create);
                 if(factoryClass!=null && factoryClass==registeredPluginInterface(iidValue.toString())) {
                     QObject factoryObject = instance(index);
                     P factory = QMetaObject.cast(factoryClass, factoryObject);
@@ -18765,7 +19152,7 @@ class QFactoryLoader__{
         if (index != -1) {
             QJsonValue iidValue = getIID(index);
             if(iidValue.isString()) {
-                Class<P> factoryClass = io.qt.internal.ClassAnalyzerUtility.getFactoryClass(create);
+                Class<P> factoryClass = getFactoryClass(create);
                 if(factoryClass!=null && factoryClass==registeredPluginInterface(iidValue.toString())) {
                     QObject factoryObject = instance(index);
                     P factory = QMetaObject.cast(factoryClass, factoryObject);
@@ -18801,7 +19188,7 @@ class QFactoryLoader__{
         if (index != -1) {
             QJsonValue iidValue = getIID(index);
             if(iidValue.isString()) {
-                Class<P> factoryClass = io.qt.internal.ClassAnalyzerUtility.getFactoryClass(create);
+                Class<P> factoryClass = getFactoryClass(create);
                 if(factoryClass!=null && factoryClass==registeredPluginInterface(iidValue.toString())) {
                     QObject factoryObject = instance(index);
                     P factory = QMetaObject.cast(factoryClass, factoryObject);
@@ -18837,7 +19224,7 @@ class QFactoryLoader__{
         if (index != -1) {
             QJsonValue iidValue = getIID(index);
             if(iidValue.isString()) {
-                Class<P> factoryClass = io.qt.internal.ClassAnalyzerUtility.getFactoryClass(create);
+                Class<P> factoryClass = getFactoryClass(create);
                 if(factoryClass!=null && factoryClass==registeredPluginInterface(iidValue.toString())) {
                     QObject factoryObject = instance(index);
                     P factory = QMetaObject.cast(factoryClass, factoryObject);
@@ -18873,7 +19260,7 @@ class QFactoryLoader__{
         if (index != -1) {
             QJsonValue iidValue = getIID(index);
             if(iidValue.isString()) {
-                Class<P> factoryClass = io.qt.internal.ClassAnalyzerUtility.getFactoryClass(create);
+                Class<P> factoryClass = getFactoryClass(create);
                 if(factoryClass!=null && factoryClass==registeredPluginInterface(iidValue.toString())) {
                     QObject factoryObject = instance(index);
                     P factory = QMetaObject.cast(factoryClass, factoryObject);
@@ -18909,7 +19296,7 @@ class QFactoryLoader__{
         if (index != -1) {
             QJsonValue iidValue = getIID(index);
             if(iidValue.isString()) {
-                Class<P> factoryClass = io.qt.internal.ClassAnalyzerUtility.getFactoryClass(create);
+                Class<P> factoryClass = getFactoryClass(create);
                 if(factoryClass!=null && factoryClass==registeredPluginInterface(iidValue.toString())) {
                     QObject factoryObject = instance(index);
                     P factory = QMetaObject.cast(factoryClass, factoryObject);
@@ -18945,7 +19332,7 @@ class QFactoryLoader__{
         if (index != -1) {
             QJsonValue iidValue = getIID(index);
             if(iidValue.isString()) {
-                Class<P> factoryClass = io.qt.internal.ClassAnalyzerUtility.getFactoryClass(create);
+                Class<P> factoryClass = getFactoryClass(create);
                 if(factoryClass!=null && factoryClass==registeredPluginInterface(iidValue.toString())) {
                     QObject factoryObject = instance(index);
                     P factory = QMetaObject.cast(factoryClass, factoryObject);
@@ -18979,7 +19366,7 @@ class QFactoryLoader__{
         if (index != -1) {
             QJsonValue iidValue = getIID(index);
             if(iidValue.isString()) {
-                Class<P> factoryClass = io.qt.internal.ClassAnalyzerUtility.getFactoryClass(create);
+                Class<P> factoryClass = getFactoryClass(create);
                 if(factoryClass!=null && factoryClass==registeredPluginInterface(iidValue.toString())) {
                     QObject factoryObject = instance(index);
                     P factory = QMetaObject.cast(factoryClass, factoryObject);
@@ -19015,7 +19402,7 @@ class QFactoryLoader__{
         if (index != -1) {
             QJsonValue iidValue = getIID(index);
             if(iidValue.isString()) {
-                Class<P> factoryClass = io.qt.internal.ClassAnalyzerUtility.getFactoryClass(create);
+                Class<P> factoryClass = getFactoryClass(create);
                 if(factoryClass!=null && factoryClass==registeredPluginInterface(iidValue.toString())) {
                     QObject factoryObject = instance(index);
                     P factory = QMetaObject.cast(factoryClass, factoryObject);
@@ -19051,7 +19438,7 @@ class QFactoryLoader__{
         if (index != -1) {
             QJsonValue iidValue = getIID(index);
             if(iidValue.isString()) {
-                Class<P> factoryClass = io.qt.internal.ClassAnalyzerUtility.getFactoryClass(create);
+                Class<P> factoryClass = getFactoryClass(create);
                 if(factoryClass!=null && factoryClass==registeredPluginInterface(iidValue.toString())) {
                     QObject factoryObject = instance(index);
                     P factory = QMetaObject.cast(factoryClass, factoryObject);
@@ -19087,7 +19474,7 @@ class QFactoryLoader__{
         if (index != -1) {
             QJsonValue iidValue = getIID(index);
             if(iidValue.isString()) {
-                Class<P> factoryClass = io.qt.internal.ClassAnalyzerUtility.getFactoryClass(create);
+                Class<P> factoryClass = getFactoryClass(create);
                 if(factoryClass!=null && factoryClass==registeredPluginInterface(iidValue.toString())) {
                     QObject factoryObject = instance(index);
                     P factory = QMetaObject.cast(factoryClass, factoryObject);
@@ -19123,7 +19510,7 @@ class QFactoryLoader__{
         if (index != -1) {
             QJsonValue iidValue = getIID(index);
             if(iidValue.isString()) {
-                Class<P> factoryClass = io.qt.internal.ClassAnalyzerUtility.getFactoryClass(create);
+                Class<P> factoryClass = getFactoryClass(create);
                 if(factoryClass!=null && factoryClass==registeredPluginInterface(iidValue.toString())) {
                     QObject factoryObject = instance(index);
                     P factory = QMetaObject.cast(factoryClass, factoryObject);
@@ -19159,7 +19546,7 @@ class QFactoryLoader__{
         if (index != -1) {
             QJsonValue iidValue = getIID(index);
             if(iidValue.isString()) {
-                Class<P> factoryClass = io.qt.internal.ClassAnalyzerUtility.getFactoryClass(create);
+                Class<P> factoryClass = getFactoryClass(create);
                 if(factoryClass!=null && factoryClass==registeredPluginInterface(iidValue.toString())) {
                     QObject factoryObject = instance(index);
                     P factory = QMetaObject.cast(factoryClass, factoryObject);
@@ -19195,7 +19582,7 @@ class QFactoryLoader__{
         if (index != -1) {
             QJsonValue iidValue = getIID(index);
             if(iidValue.isString()) {
-                Class<P> factoryClass = io.qt.internal.ClassAnalyzerUtility.getFactoryClass(create);
+                Class<P> factoryClass = getFactoryClass(create);
                 if(factoryClass!=null && factoryClass==registeredPluginInterface(iidValue.toString())) {
                     QObject factoryObject = instance(index);
                     P factory = QMetaObject.cast(factoryClass, factoryObject);
@@ -19231,7 +19618,7 @@ class QFactoryLoader__{
         if (index != -1) {
             QJsonValue iidValue = getIID(index);
             if(iidValue.isString()) {
-                Class<P> factoryClass = io.qt.internal.ClassAnalyzerUtility.getFactoryClass(create);
+                Class<P> factoryClass = getFactoryClass(create);
                 if(factoryClass!=null && factoryClass==registeredPluginInterface(iidValue.toString())) {
                     QObject factoryObject = instance(index);
                     P factory = QMetaObject.cast(factoryClass, factoryObject);
@@ -19375,7 +19762,7 @@ class QPluginLoader_java__{
     /**
      * @deprecated Use {@link #qRegisterStaticPluginFunction(QObject)} instead.
      */
-    @Deprecated
+    @Deprecated(forRemoval=true, since="6.8.2")
     public static void registerStaticPluginFunction(QObject instance){
         qRegisterStaticPluginFunction(instance);
     }
@@ -19383,7 +19770,7 @@ class QPluginLoader_java__{
     /**
      * @deprecated Use {@link #qRegisterStaticPluginFunction(QObject, QJsonObject)} instead.
      */
-    @Deprecated
+    @Deprecated(forRemoval=true, since="6.8.2")
     public static void registerStaticPluginFunction(QObject instance, QJsonObject metaData){
         qRegisterStaticPluginFunction(instance, metaData);
     }
@@ -19391,7 +19778,7 @@ class QPluginLoader_java__{
     /**
      * @deprecated Use {@link #qRegisterStaticPluginFunction(QObject, java.util.Map)} instead.
      */
-    @Deprecated
+    @Deprecated(forRemoval=true, since="6.8.2")
     public static void registerStaticPluginFunction(QObject instance, java.util.Map<String, Object> metaData){
         qRegisterStaticPluginFunction(instance, metaData);
     }
@@ -19399,7 +19786,7 @@ class QPluginLoader_java__{
     /**
      * @deprecated Use {@link #qRegisterStaticPluginFunction(Class)} instead.
      */
-    @Deprecated
+    @Deprecated(forRemoval=true, since="6.8.2")
     public static void registerStaticPluginFunction(Class<? extends QObject> pluginClass){
         qRegisterStaticPluginFunction(pluginClass, (QJsonObject)null);
     }
@@ -19407,7 +19794,7 @@ class QPluginLoader_java__{
     /**
      * @deprecated Use {@link #qRegisterStaticPluginFunction(Class, QJsonObject)} instead.
      */
-    @Deprecated
+    @Deprecated(forRemoval=true, since="6.8.2")
     public static void registerStaticPluginFunction(Class<? extends QObject> pluginClass, QJsonObject metaData){
         qRegisterStaticPluginFunction(pluginClass, metaData);
     }
@@ -19415,7 +19802,7 @@ class QPluginLoader_java__{
     /**
      * @deprecated Use {@link #qRegisterStaticPluginFunction(Class, java.util.Map)} instead.
      */
-    @Deprecated
+    @Deprecated(forRemoval=true, since="6.8.2")
     public static void registerStaticPluginFunction(Class<? extends QObject> pluginClass, java.util.Map<String, Object> metaData){
         qRegisterStaticPluginFunction(pluginClass, metaData);
     }
@@ -19423,7 +19810,7 @@ class QPluginLoader_java__{
     /**
      * @deprecated Use {@link #qRegisterPluginInterface(Class)} instead.
      */
-    @Deprecated
+    @Deprecated(forRemoval=true, since="6.8.2")
     public static void registerPluginInterface(Class<? extends QtObjectInterface> factoryClass){
         qRegisterPluginInterface(factoryClass);
     }
@@ -19690,14 +20077,15 @@ class QThread_68__{
 }// class
 
 class QThread___{
-    static native void initialize();
     /**
      * @see Thread#Thread(ThreadGroup, Runnable, String, long)
      */
     public QThread(ThreadGroup group, String name, long stackSize, QObject parent) {
         super((QPrivateConstructor)null);        
         initialize_native(this, parent);
-        initialize(group);
+        if(group==null)
+            group = Thread.currentThread().getThreadGroup();
+        initializeQThread(QtJambi_LibraryUtilities.internal.nativeId(this), group);
         if(name!=null)
             setName(name);
         if(stackSize>=0 && stackSize <= 0x0ffffffffL)
@@ -19916,12 +20304,6 @@ class QThread___{
         this(group, name, -1, null);
     }
     
-    private void initialize(ThreadGroup group) {
-        if(group==null)
-            group = Thread.currentThread().getThreadGroup();
-        __qt_initialize(group);
-    }
-    
     /**
      * @see Thread#getThreadGroup()
      */
@@ -19931,10 +20313,10 @@ class QThread___{
         if(javaThread!=null) {
             return javaThread.getThreadGroup();
         }
-        return __qt_getThreadGroup();
+        return getThreadGroup(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     
-    private native ThreadGroup __qt_getThreadGroup();
+    private static native ThreadGroup getThreadGroup(long nativeId);
     
     /**
      * @see Thread#setName(String)
@@ -19943,10 +20325,10 @@ class QThread___{
     public final void setName(@Nullable String name) {
         Thread javaThread = getJavaThreadReference();
         if(!isRunning() && javaThread==null)
-            __qt_setName(name);
+            setName(QtJambi_LibraryUtilities.internal.nativeId(this), name);
     }
     
-    private native void __qt_setName(String name);
+    private static native void setName(long nativeId, String name);
     
     /**
      * @see Thread#getName()
@@ -19957,10 +20339,10 @@ class QThread___{
         if(javaThread!=null) {
             return javaThread.getName();
         }
-        return __qt_getName();
+        return getName(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     
-    private native String __qt_getName();
+    private static native String getName(long nativeId);
     
     /**
      * @see Thread#setDaemon(boolean)
@@ -19969,10 +20351,10 @@ class QThread___{
     public void setDaemon(boolean daemon) {
         Thread javaThread = getJavaThreadReference();
         if(!isRunning() && javaThread==null)
-            __qt_setDaemon(daemon);
+            setDaemon(QtJambi_LibraryUtilities.internal.nativeId(this), daemon);
     }
     
-    private native void __qt_setDaemon(boolean daemon);
+    private static native void setDaemon(long nativeId, boolean daemon);
     
     /**
      * @see Thread#isDaemon()
@@ -19983,10 +20365,10 @@ class QThread___{
         if(javaThread!=null) {
             return javaThread.isDaemon();
         }
-        return __qt_isDaemon();
+        return isDaemon(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     
-    private native boolean __qt_isDaemon();
+    private static native boolean isDaemon(long nativeId);
     
     /**
      * @see Thread#setUncaughtExceptionHandler(java.lang.Thread.UncaughtExceptionHandler)
@@ -19997,11 +20379,11 @@ class QThread___{
         if(javaThread!=null) {
             javaThread.setUncaughtExceptionHandler(handler);
         }else {
-            __qt_setUncaughtExceptionHandler(handler);
+            setUncaughtExceptionHandler(QtJambi_LibraryUtilities.internal.nativeId(this), handler);
         }
     }
     
-    private native void __qt_setUncaughtExceptionHandler(Thread.UncaughtExceptionHandler handler);
+    private static native void setUncaughtExceptionHandler(long nativeId, Thread.UncaughtExceptionHandler handler);
     
     /**
      * @see Thread#getUncaughtExceptionHandler()
@@ -20012,10 +20394,10 @@ class QThread___{
         if(javaThread!=null) {
             return javaThread.getUncaughtExceptionHandler();
         }
-        return __qt_getUncaughtExceptionHandler();
+        return getUncaughtExceptionHandler(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     
-    private native Thread.UncaughtExceptionHandler __qt_getUncaughtExceptionHandler();
+    private static native Thread.UncaughtExceptionHandler getUncaughtExceptionHandler(long nativeId);
     
     /**
      * Sets the class loader of this thread
@@ -20027,11 +20409,11 @@ class QThread___{
         if(javaThread!=null) {
             javaThread.setContextClassLoader(cl);
         }else {
-            __qt_setContextClassLoader(cl);
+            setContextClassLoader(QtJambi_LibraryUtilities.internal.nativeId(this), cl);
         }
     }
     
-    private native void __qt_setContextClassLoader(ClassLoader cl);
+    private static native void setContextClassLoader(long nativeId, ClassLoader cl);
     
     /**
      * Returns the class loader of this thread
@@ -20043,12 +20425,12 @@ class QThread___{
         if(javaThread!=null) {
             return javaThread.getContextClassLoader();
         }
-        return __qt_getContextClassLoader();
+        return getContextClassLoader(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     
-    private native ClassLoader __qt_getContextClassLoader();
+    private static native ClassLoader getContextClassLoader(long nativeId);
     
-    private native void __qt_initialize(ThreadGroup group);
+    private static native void initializeQThread(long nativeId, ThreadGroup group);
     @NativeAccess
     private java.lang.ref.WeakReference<Thread> javaThread = null;
     @NativeAccess
@@ -20068,16 +20450,21 @@ class QThread___{
     public final @Nullable Thread javaThread() {
         Thread javaThread = getJavaThreadReference();
         if(javaThread==null){
-            javaThread = findJavaThread();
+            javaThread = findJavaThread(QtJambi_LibraryUtilities.internal.nativeId(this));
             setJavaThreadReference(javaThread);
         }
         return javaThread;
     }
     
     @QtUninvokable
-    private native Thread findJavaThread();
+    private native Thread findJavaThread(long nativeId);
     @QtUninvokable
-    public static native @Nullable QThread thread(@NonNull Thread thread);
+    public static @Nullable QThread thread(@NonNull Thread thread) {
+        Object ass = QtJambi_LibraryUtilities.internal.findAssociation(thread);
+        if(ass instanceof QThread)
+                return (QThread)ass;
+        return null;
+    }
     
     /**
      * Returns true if thread is running.
@@ -20373,6 +20760,13 @@ class QUntypedBindable_java__{
     @QtUninvokable
     private native QUntypedPropertyBinding overrideBinding(QBindableInterface iface, QUntypedPropertyData data, QUntypedPropertyBinding binding);
     
+}// class
+
+class QUntypedBindable_java_60_{
+@QtUninvokable
+public final io.qt.core.@NonNull QMetaType metaType(){
+    return iface()==null ? new QMetaType() : iface().metaType();
+}
 }// class
 
 class QUntypedBindable_java_65_{
@@ -21773,7 +22167,7 @@ class QMutexLocker_6__{
     }
 
     /**
-     * <p>See <code><a href="@docRoot/qmutexlocker.html#QMutexLocker-1">QMutexLocker&lt;QMutex&gt;::<wbr/>QMutexLocker(QRecursiveMutex*)</a></code></p>
+     * <p>See <code><a href="@docRoot/qmutexlocker.html#QMutexLocker-1">QMutexLocker&lt;QRecursiveMutex&gt;::<wbr/>QMutexLocker(QRecursiveMutex*)</a></code></p>
      * @since This function was introduced in Qt 6.4.
      * @param mutex
      */
@@ -21827,7 +22221,7 @@ void __qt_destruct_QMutexLocker_QRecursiveMutex_(void* ptr)
 }
 
 // QMutexLocker<QRecursiveMutex>::QMutexLocker(QRecursiveMutex*)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMutexLocker_initialize_1native__Lio_qt_core_QMutexLocker_2Lio_qt_core_QRecursiveMutex_2)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QMutexLocker_initialize_1native__Lio_qt_core_QMutexLocker_2Lio_qt_core_QRecursiveMutex_2
 (JNIEnv *__jni_env,
  jclass __jni_class,
  jobject __jni_object,

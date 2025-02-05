@@ -6,7 +6,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.junit.AfterClass;
@@ -23,10 +22,8 @@ import io.qt.core.QFuture;
 import io.qt.core.QFutureInterface;
 import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QPromise;
-import io.qt.core.QStringList;
 import io.qt.core.QThread;
 import io.qt.core.QThreadPool;
-import io.qt.core.QtFuture;
 
 public class TestConcurrentQt6 extends ApplicationInitializer {
 	
@@ -548,14 +545,5 @@ public class TestConcurrentQt6 extends ApplicationInitializer {
 
         assertTrue(future.result()!=null);
         assertEquals(n, future.result().intValue());
-    }
-    
-    @Test
-    public void testFutureUnwrap() {
-    	QStringList list = new QStringList("A", "B", "C");
-    	@SuppressWarnings("deprecation")
-		QFuture<QFuture<QFuture<String>>> results = QtConcurrent.mapped(list, s->QtFuture.makeReadyFuture(Arrays.asList(QtFuture.makeReadyFuture(s), QtFuture.makeReadyFuture(s))));
-    	QFuture<String> unwrapped = results.unwrap(String.class);
-    	assertEquals(6, unwrapped.results().size());
     }
 }

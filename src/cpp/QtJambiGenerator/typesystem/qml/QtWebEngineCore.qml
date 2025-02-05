@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -48,13 +48,16 @@ TypeSystem{
         name: "webc.comsumer.function"
         Text{content: "std::function<void(%TYPE)> %out;\n"+
                       "if(%in){\n"+
-                      "    JObjectWrapper wrapper(%env, %in);\n"+
-                      "    %out = [wrapper](%TYPE value){\n"+
-                      "                        if(JniEnvironment env{200}){\n"+
+                      "    %out = [wrapper = JObjectWrapper(%env, %in)](%TYPE value){\n"+
+                      "                    if(JniEnvironment env{200}){\n"+
+                      "                        QTJAMBI_TRY{\n"+
                       "                            jobject _value = qtjambi_cast<jobject>(env, value);\n"+
                       "                            Java::Runtime::Consumer::accept(env, wrapper.object(env), _value);\n"+
-                      "                        }\n"+
-                      "                    };\n"+
+                      "                        }QTJAMBI_CATCH(const JavaException& exn){\n"+
+                      "                            exn.report(env);\n"+
+                      "                        }QTJAMBI_TRY_END\n"+
+                      "                    }\n"+
+                      "                };\n"+
                       "}"}
     }
     
@@ -205,15 +208,19 @@ TypeSystem{
                     codeClass: CodeClass.Native
                     Text{content: "std::function<bool(const QWebEngineCookieStore::FilterRequest &)> %out;\n"+
                                   "if(%in){\n"+
-                                  "    JObjectWrapper wrapper(%env, %in);\n"+
-                                  "    %out = [wrapper](const QWebEngineCookieStore::FilterRequest & value) -> bool {\n"+
-                                  "                        if(JniEnvironment env{200}){\n"+
+                                  "    %out = [wrapper = JObjectWrapper(%env, %in)](const QWebEngineCookieStore::FilterRequest & value) -> bool {\n"+
+                                  "                    bool result{false};\n"+
+                                  "                    if(JniEnvironment env{200}){\n"+
+                                  "                        QTJAMBI_TRY{\n"+
                                   "                            jobject _value = qtjambi_cast<jobject>(env, value);\n"+
-                                  "                            return Java::Runtime::Predicate::test(env, wrapper.object(env), _value);\n"+
-                                  "                        }\n"+
-                                  "                    return false;\n"+
+                                  "                            result = Java::Runtime::Predicate::test(env, wrapper.object(env), _value);\n"+
+                                  "                        }QTJAMBI_CATCH(const JavaException& exn){\n"+
+                                  "                            exn.report(env);\n"+
+                                  "                        }QTJAMBI_TRY_END\n"+
+                                  "                    }\n"+
+                                  "                    return result;\n"+
                                   "                };\n"+
-                                  "            }"}
+                                  "}"}
                 }
             }
         }
@@ -705,14 +712,17 @@ TypeSystem{
                     codeClass: CodeClass.Native
                     Text{content: "std::function<void(std::unique_ptr<QWebEngineNotification>)> %out;\n"+
                                   "if(%in){\n"+
-                                  "    JObjectWrapper wrapper(%env, %in);\n"+
-                                  "    %out = [wrapper](std::unique_ptr<QWebEngineNotification> value){\n"+
-                                  "                        if(JniEnvironment env{200}){\n"+
+                                  "    %out = [wrapper = JObjectWrapper(%env, %in)](std::unique_ptr<QWebEngineNotification> value){\n"+
+                                  "                    if(JniEnvironment env{200}){\n"+
+                                  "                        QTJAMBI_TRY{\n"+
                                   "                            QtJambiScope __qtjambi_scope;\n"+
                                   "                            jobject _value = qtjambi_cast<jobject>(env, __qtjambi_scope, value);\n"+
                                   "                            Java::Runtime::Consumer::accept(env, wrapper.object(env), _value);\n"+
-                                  "                        }\n"+
-                                  "                    };\n"+
+                                  "                        }QTJAMBI_CATCH(const JavaException& exn){\n"+
+                                  "                            exn.report(env);\n"+
+                                  "                        }QTJAMBI_TRY_END\n"+
+                                  "                    }\n"+
+                                  "                };\n"+
                                   "}"}
                 }
             }
@@ -734,14 +744,17 @@ TypeSystem{
                     codeClass: CodeClass.Native
                     Text{content: "std::function<void(const QIcon &, const QUrl &)> %out;\n"+
                                   "if(%in){\n"+
-                                  "    JObjectWrapper wrapper(%env, %in);\n"+
-                                  "    %out = [wrapper](const QIcon & icon, const QUrl & url){\n"+
-                                  "                        if(JniEnvironment env{200}){\n"+
+                                  "    %out = [wrapper = JObjectWrapper(%env, %in)](const QIcon & icon, const QUrl & url){\n"+
+                                  "                    if(JniEnvironment env{200}){\n"+
+                                  "                        QTJAMBI_TRY{\n"+
                                   "                            jobject _icon = qtjambi_cast<jobject>(env, icon);\n"+
                                   "                            jobject _url = qtjambi_cast<jobject>(env, url);\n"+
                                   "                            Java::Runtime::BiConsumer::accept(env, wrapper.object(env), _icon, _url);\n"+
-                                  "                        }\n"+
-                                  "                    };\n"+
+                                  "                        }QTJAMBI_CATCH(const JavaException& exn){\n"+
+                                  "                            exn.report(env);\n"+
+                                  "                        }QTJAMBI_TRY_END\n"+
+                                  "                    }\n"+
+                                  "                };\n"+
                                   "}"}
                 }
             }
@@ -760,15 +773,18 @@ TypeSystem{
                     codeClass: CodeClass.Native
                     Text{content: "std::function<void(const QIcon &, const QUrl &, const QUrl &)> %out;\n"+
                                   "if(%in){\n"+
-                                  "    JObjectWrapper wrapper(%env, %in);\n"+
-                                  "    %out = [wrapper](const QIcon & icon, const QUrl & url, const QUrl & url2){\n"+
-                                  "                        if(JniEnvironment env{200}){\n"+
+                                  "    %out = [wrapper = JObjectWrapper(%env, %in)](const QIcon & icon, const QUrl & url, const QUrl & url2){\n"+
+                                  "                    if(JniEnvironment env{200}){\n"+
+                                  "                        QTJAMBI_TRY{\n"+
                                   "                            jobject _icon = qtjambi_cast<jobject>(env, icon);\n"+
                                   "                            jobject _url = qtjambi_cast<jobject>(env, url);\n"+
                                   "                            jobject _url2 = qtjambi_cast<jobject>(env, url2);\n"+
                                   "                            Java::QtWebEngineCore::QWebEngineProfile$IconAvailableCallback::accept(env, wrapper.object(env), _icon, _url, _url2);\n"+
-                                  "                        }\n"+
-                                  "                    };\n"+
+                                  "                        }QTJAMBI_CATCH(const JavaException& exn){\n"+
+                                  "                            exn.report(env);\n"+
+                                  "                        }QTJAMBI_TRY_END\n"+
+                                  "                    }\n"+
+                                  "                };\n"+
                                   "}"}
                 }
             }
@@ -801,6 +817,31 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/webengine/core,QWebEngineProfile$IconAvail
                 `}
         }
         since: [6, 2]
+    }
+
+    ObjectType{
+        name: "QWebEngineProfileBuilder"
+        ModifyFunction{
+            signature: "createOffTheRecordProfile(QObject*)"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "createProfile(const QString &, QObject *)"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+        }
+        since: 6.9
     }
     
     ValueType{
@@ -1049,6 +1090,7 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/webengine/core,QWebEngineProfile$IconAvail
             ModifyArgument{
                 index: 1
                 threadAffinity: true
+                noImplicitCalls: true
             }
         }
         ModifyFunction{
@@ -1056,6 +1098,7 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/webengine/core,QWebEngineProfile$IconAvail
             ModifyArgument{
                 index: 2
                 threadAffinity: true
+                noImplicitCalls: true
             }
         }
         ModifyFunction{
@@ -1063,6 +1106,7 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/webengine/core,QWebEngineProfile$IconAvail
             ModifyArgument{
                 index: 3
                 threadAffinity: true
+                noImplicitCalls: true
             }
         }
         ModifyFunction{

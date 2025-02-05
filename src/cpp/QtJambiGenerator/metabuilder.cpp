@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -4007,6 +4007,8 @@ MetaClass *MetaBuilder::traverseClass(ClassModelItem class_item, QList<PendingCl
             type->setQWindow(true);
         }else if(full_class_name==QLatin1String("QAbstractItemModel")){
             type->setQAbstractItemModel(true);
+        }else if(full_class_name==QLatin1String("QThread")){
+            type->setQThread(true);
         }else if(full_class_name==QLatin1String("QCoreApplication")){
             type->setQCoreApplication(true);
         }else if(full_class_name==QLatin1String("QAction")){
@@ -4160,6 +4162,8 @@ MetaClass *MetaBuilder::traverseClass(ClassModelItem class_item, QList<PendingCl
                         instantiation->setQWidget(true);
                     }else if(meta_class->typeEntry()->isQWindow()){
                         instantiation->setQWindow(true);
+                    }else if(meta_class->typeEntry()->isQThread()){
+                        instantiation->setQThread(true);
                     }else if(meta_class->typeEntry()->isQAbstractItemModel()){
                         instantiation->setQAbstractItemModel(true);
                     }else if(meta_class->typeEntry()->isQAction()){
@@ -10021,6 +10025,15 @@ void MetaBuilder::setupComparable(MetaClass *cls) {
             if(f->arguments().size()==1)
                 compare << f;
             break;
+/*        case OperatorType::None:
+            if((f->name()=="compare" || f->name()=="compareTo")
+                    && f->type()
+                    && f->type()->typeEntry()
+                    && f->type()->typeEntry()->qualifiedTargetLangName()=="int"
+                    && f->arguments().size()>=1
+                    ){
+
+            }*/
         default: break;
         }
     }

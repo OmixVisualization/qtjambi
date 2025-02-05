@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -47,7 +47,7 @@
 #endif
 #define JNI_ONLOAD JNI_OnLoad_##LIBRARY_NAME
 #else
-#define JNI_ONLOAD QTJAMBI_FUNCTION_PREFIX(JNI_OnLoad)
+#define JNI_ONLOAD JNI_OnLoad
 #endif
 
 namespace MetaInfoAPI{

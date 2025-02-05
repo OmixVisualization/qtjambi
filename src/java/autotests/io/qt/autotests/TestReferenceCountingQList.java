@@ -433,10 +433,11 @@ public class TestReferenceCountingQList extends ApplicationInitializer {
 		}
         Assert.assertEquals(COUNT, counter.get());
         container.swap(new QList<>(QWidgetItem.class));
-    	for (int i = 0; i < 50 && counter.get()<COUNT+1; i++) {
+    	for (int i = 0; i < 80 && counter.get()<COUNT+1; i++) {
             ApplicationInitializer.runGC();
+            Thread.yield();
             synchronized(ApplicationInitializer.class) {
-            	Thread.sleep(25+i*10);
+            	Thread.sleep(25+i);
             }
             QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
             QCoreApplication.processEvents();
@@ -464,7 +465,8 @@ public class TestReferenceCountingQList extends ApplicationInitializer {
             QCoreApplication.processEvents();
 		}
         Assert.assertEquals(0, counter.get());
-    	list = null;
+        list.isDisposed();
+        list = null;
         for (int i = 0; i < 50 && counter.get()<2; i++) {
             ApplicationInitializer.runGC();
             synchronized(ApplicationInitializer.class) {
@@ -477,10 +479,11 @@ public class TestReferenceCountingQList extends ApplicationInitializer {
         @SuppressWarnings("unused")
 		QWidgetItem first = mid.takeFirst();
         first = null;
-        for (int i = 0; i < 50 && counter.get()<COUNT; i++) {
+        for (int i = 0; i < 60 && counter.get()<COUNT; i++) {
             ApplicationInitializer.runGC();
+            Thread.yield();
             synchronized(ApplicationInitializer.class) {
-            	Thread.sleep(25+i*10);
+            	Thread.sleep(25+i);
             }
             QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
             QCoreApplication.processEvents();

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -109,9 +109,13 @@ TypeSystem{
                         codeClass: CodeClass.Native
                         Text{content: "auto %out = [slot = JObjectWrapper(%env, %in)](const QAudioFormat& format, const QByteArray& buffer){\n"+
                                       "                    if(JniEnvironment env{200}){\n"+
-                                      "                        jobject _format = QtJambiAPI::convertNativeToJavaObjectAsCopy(env, &format, Java::QtMultimedia::QAudioFormat::getClass(env));\n"+
-                                      "                        jobject _buffer = qtjambi_cast<jobject>(env, buffer);\n"+
-                                      "                        Java::QtCore::QMetaObject$Slot2::invoke(env, slot.object(env), _format, _buffer);\n"+
+                                      "                        QTJAMBI_TRY{\n"+
+                                      "                            jobject _format = QtJambiAPI::convertNativeToJavaObjectAsCopy(env, &format, Java::QtMultimedia::QAudioFormat::getClass(env));\n"+
+                                      "                            jobject _buffer = qtjambi_cast<jobject>(env, buffer);\n"+
+                                      "                            Java::QtCore::QMetaObject$Slot2::invoke(env, slot.object(env), _format, _buffer);\n"+
+                                      "                        }QTJAMBI_CATCH(const JavaException& exn){\n"+
+                                      "                            exn.report(env);\n"+
+                                      "                        }QTJAMBI_TRY_END\n"+
                                       "                    }\n"+
                                       "                };"}
                     }
@@ -133,8 +137,12 @@ TypeSystem{
                         codeClass: CodeClass.Native
                         Text{content: "auto %out = [slot = JObjectWrapper(%env, %in)](const QAudioBuffer& buffer){\n"+
                                       "                    if(JniEnvironment env{200}){\n"+
-                                      "                        jobject _buffer = QtJambiAPI::convertNativeToJavaObjectAsCopy(env, &buffer, Java::QtMultimedia::QAudioBuffer::getClass(env));\n"+
-                                      "                        Java::QtCore::QMetaObject$Slot1::invoke(env, slot.object(env), _buffer);\n"+
+                                      "                        QTJAMBI_TRY{\n"+
+                                      "                            jobject _buffer = QtJambiAPI::convertNativeToJavaObjectAsCopy(env, &buffer, Java::QtMultimedia::QAudioBuffer::getClass(env));\n"+
+                                      "                            Java::QtCore::QMetaObject$Slot1::invoke(env, slot.object(env), _buffer);\n"+
+                                      "                        }QTJAMBI_CATCH(const JavaException& exn){\n"+
+                                      "                            exn.report(env);\n"+
+                                      "                        }QTJAMBI_TRY_END\n"+
                                       "                    }\n"+
                                       "                };"}
                     }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -40,73 +40,7 @@
 
 #include "qtjambi_cast.h"
 
-// enum helpers...
-
-template<typename INT>
-jobject convertEnumToJavaObject(JNIEnv *env, INT qt_enum, jclass cl, const QString& className, jobject (*resolveEnum)(JNIEnv *, jint, jclass, INT, jstring))
-{
-    Q_ASSERT(cl);
-
-    jobject obj;
-    QString sig;
-    switch ( sizeof(INT) ) {
-    case 1:  sig = QLatin1String("(B)L%1;"); break;
-    case 2:  sig = QLatin1String("(S)L%1;"); break;
-    case 8:  sig = QLatin1String("(J)L%1;"); break;
-    default: sig = QLatin1String("(I)L%1;"); break;
-    }
-    jmethodID method = JavaAPI::resolveMethod(env, "resolve", qPrintable(sig.arg(className)), cl, true);
-    if(method){
-        obj = env->CallStaticObjectMethod(cl, method, qt_enum);
-        JavaException::check(env QTJAMBI_STACKTRACEINFO );
-    }else{
-        jint hashCode = Java::Runtime::Object::hashCode(env,cl);
-        obj = resolveEnum(env, hashCode, cl, qt_enum, nullptr);
-    }
-    return obj;
-}
-
-jobject QtJambiAPI::convertEnumToJavaObject(JNIEnv *env, qint32 qt_enum, jclass cls)
-{
-    return convertEnumToJavaObject<jint>(env, jint(qt_enum), cls, QtJambiAPI::getClassName(env, cls).replace(QLatin1Char('.'), QLatin1Char('/')), &resolveIntEnum);
-}
-
-jobject QtJambiAPI::convertEnumToJavaObject(JNIEnv *env, qint16 qt_enum, jclass cls)
-{
-    return convertEnumToJavaObject<jshort>(env, jshort(qt_enum), cls, QtJambiAPI::getClassName(env, cls).replace(QLatin1Char('.'), QLatin1Char('/')), &resolveShortEnum);
-}
-
-jobject QtJambiAPI::convertEnumToJavaObject(JNIEnv *env, qint8 qt_enum, jclass cls)
-{
-    return convertEnumToJavaObject<jbyte>(env, jbyte(qt_enum), cls, QtJambiAPI::getClassName(env, cls).replace(QLatin1Char('.'), QLatin1Char('/')), &resolveByteEnum);
-}
-
-jobject QtJambiAPI::convertEnumToJavaObject(JNIEnv *env, qint64 qt_enum, jclass cls)
-{
-    return convertEnumToJavaObject<jlong>(env, jlong(qt_enum), cls, QtJambiAPI::getClassName(env, cls).replace(QLatin1Char('.'), QLatin1Char('/')), &resolveLongEnum);
-}
-
-jobject QtJambiAPI::convertEnumToJavaObject(JNIEnv *env, quint32 qt_enum, jclass cls)
-{
-    return convertEnumToJavaObject<jint>(env, jint(qt_enum), cls, QtJambiAPI::getClassName(env, cls).replace(QLatin1Char('.'), QLatin1Char('/')), &resolveIntEnum);
-}
-
-jobject QtJambiAPI::convertEnumToJavaObject(JNIEnv *env, quint16 qt_enum, jclass cls)
-{
-    return convertEnumToJavaObject<jshort>(env, jshort(qt_enum), cls, QtJambiAPI::getClassName(env, cls).replace(QLatin1Char('.'), QLatin1Char('/')), &resolveShortEnum);
-}
-
-jobject QtJambiAPI::convertEnumToJavaObject(JNIEnv *env, quint8 qt_enum, jclass cls)
-{
-    return convertEnumToJavaObject<jbyte>(env, jbyte(qt_enum), cls, QtJambiAPI::getClassName(env, cls).replace(QLatin1Char('.'), QLatin1Char('/')), &resolveByteEnum);
-}
-
-jobject QtJambiAPI::convertEnumToJavaObject(JNIEnv *env, quint64 qt_enum, jclass cls)
-{
-    return convertEnumToJavaObject<jlong>(env, jlong(qt_enum), cls, QtJambiAPI::getClassName(env, cls).replace(QLatin1Char('.'), QLatin1Char('/')), &resolveLongEnum);
-}
-
-jobject QtJambiAPI::convertQFlagsToJavaObject(JNIEnv *env, int qt_flags, jclass cl)
+jobject CoreAPI::convertQFlagsToJavaObject(JNIEnv *env, jint qt_flags, jclass cl)
 {
     jobject obj = nullptr;
     Q_ASSERT(cl);
@@ -121,24 +55,75 @@ jobject QtJambiAPI::convertQFlagsToJavaObject(JNIEnv *env, int qt_flags, jclass 
         if(method){
             obj = env->NewObject(cl, method, qt_flags);
         }else{
-            method = JavaAPI::resolveMethod(env, "<init>", "()V", cl);
+            method = JavaAPI::resolveMethod(env, "<init>", "(J)V", cl);
             if(method){
-                obj = env->NewObject(cl, method);
-                JavaException::check(env QTJAMBI_STACKTRACEINFO );
+                obj = env->NewObject(cl, method, jlong(qt_flags));
             }else{
-                jclass enumClass = Java::QtJambi::EnumUtility::getEnumForQFlags(env, cl);
-                QString args = QLatin1String("(L%1;)V");
-                args = args.arg(QtJambiAPI::getClassName(env, enumClass).replace(".", "/"));
-                method = JavaAPI::resolveMethod(env, "<init>", qPrintable(args), cl);
+                method = JavaAPI::resolveMethod(env, "<init>", "()V", cl);
                 if(method){
-                    obj = env->NewObject(cl, method, env->NewObjectArray(0, enumClass, nullptr));
+                    obj = env->NewObject(cl, method);
                     JavaException::check(env QTJAMBI_STACKTRACEINFO );
                 }else{
-                    obj = env->AllocObject(cl);
-                    JavaException::check(env QTJAMBI_STACKTRACEINFO );
+                    jclass enumClass = Java::QtJambi::EnumUtility::getEnumForQFlags(env, cl);
+                    QString args = QLatin1String("(L%1;)V");
+                    args = args.arg(QtJambiAPI::getClassName(env, enumClass).replace(".", "/"));
+                    method = JavaAPI::resolveMethod(env, "<init>", qPrintable(args), cl);
+                    if(method){
+                        obj = env->NewObject(cl, method, env->NewObjectArray(0, enumClass, nullptr));
+                        JavaException::check(env QTJAMBI_STACKTRACEINFO );
+                    }else{
+                        obj = env->AllocObject(cl);
+                        JavaException::check(env QTJAMBI_STACKTRACEINFO );
+                    }
                 }
+                Java::QtJambi::QFlags::setIntValue(env, obj, qt_flags);
             }
-            Java::QtJambi::QFlags::setValue(env, obj, qt_flags);
+        }
+    }
+    return obj;
+}
+
+jobject CoreAPI::convertQFlagsToJavaObject(JNIEnv *env, jlong qt_flags, jclass cl)
+{
+    jobject obj = nullptr;
+    Q_ASSERT(cl);
+    if(Java::QtJambi::QtFlagEnumerator::isAssignableFrom(env, cl)){
+        cl = Java::QtCore::QMetaEnum::flagsType(env, cl);
+    }
+    if(Java::QtJambi::QFlags::isAssignableFrom(env, cl)){
+        if(Java::QtJambi::QFlags::isSameClass(env, cl) || Java::QtJambi::QLongFlags::isSameClass(env, cl)){
+            cl = Java::QtJambi::QLongFlags$ConcreteWrapper::getClass(env);
+        }
+        jmethodID method = JavaAPI::resolveMethod(env, "<init>", "(J)V", cl);
+        if(method){
+            obj = env->NewObject(cl, method, qt_flags);
+        }else{
+            method = JavaAPI::resolveMethod(env, "<init>", "(I)V", cl);
+            if(method){
+                obj = env->NewObject(cl, method, jint(qt_flags));
+            }else{
+                method = JavaAPI::resolveMethod(env, "<init>", "()V", cl);
+                if(method){
+                    obj = env->NewObject(cl, method);
+                    JavaException::check(env QTJAMBI_STACKTRACEINFO );
+                }else{
+                    jclass enumClass = Java::QtJambi::EnumUtility::getEnumForQFlags(env, cl);
+                    QString args = QLatin1String("(L%1;)V");
+                    args = args.arg(QtJambiAPI::getClassName(env, enumClass).replace(".", "/"));
+                    method = JavaAPI::resolveMethod(env, "<init>", qPrintable(args), cl);
+                    if(method){
+                        obj = env->NewObject(cl, method, env->NewObjectArray(0, enumClass, nullptr));
+                        JavaException::check(env QTJAMBI_STACKTRACEINFO );
+                    }else{
+                        obj = env->AllocObject(cl);
+                        JavaException::check(env QTJAMBI_STACKTRACEINFO );
+                    }
+                }
+                if(Java::QtJambi::QLongFlags::isAssignableFrom(env, cl))
+                    Java::QtJambi::QLongFlags::setLongValue(env, obj, qt_flags);
+                else
+                    Java::QtJambi::QFlags::setIntValue(env, obj, qt_flags);
+            }
         }
     }
     return obj;
@@ -1115,8 +1100,16 @@ QVariant internal_convertJavaObjectToQVariant(JNIEnv *env, jobject java_object, 
         const QMetaType& internalMetaType = qtjambi_cast<const QMetaType&>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, java_object));
         if(!convert)
             return QVariant(FROM_META_TYPE(internalMetaType), nullptr);
-        int value = Java::QtJambi::QFlags::value(env, java_object);
+        int value = Java::QtJambi::QFlags::intValue(env, java_object);
         return QVariant(FROM_META_TYPE(internalMetaType), &value);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 9, 0)
+    } else if (Java::QtCore::QMetaType$GenericLongFlags::isSameClass(env, object_class)) {
+        const QMetaType& internalMetaType = qtjambi_cast<const QMetaType&>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, java_object));
+        if(!convert)
+            return QVariant(FROM_META_TYPE(internalMetaType), nullptr);
+        jlong value = Java::QtJambi::QLongFlags::longValue(env, java_object);
+        return QVariant(FROM_META_TYPE(internalMetaType), &value);
+#endif
     } else if (Java::QtCore::QMetaType$GenericValue::isSameClass(env, object_class)) {
         const QMetaType& internalMetaType = qtjambi_cast<const QMetaType&>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, java_object));
         if(!convert)
@@ -1784,7 +1777,11 @@ QVariant QtJambiAPI::convertJavaObjectToQVariant(JNIEnv *env, jobject java_objec
 
 bool QtJambiAPI::convertJavaToNative(JNIEnv *env, const std::type_info& typeId, jobject java_object, void * output, QtJambiScope* scope)
 {
-    if(QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, typeId)){
+    QtJambiTypeEntryPtr typeEntry;
+    const std::type_info* typeIdPtr = &typeId;
+    if(typeIdPtr)
+        typeEntry = QtJambiTypeEntry::getTypeEntry(env, typeId);
+    if(typeEntry){
         jvalue java_value;
         java_value.l = java_object;
         return typeEntry->convertToNative(env, java_value, jValueType::l, output, scope);
@@ -1964,6 +1961,7 @@ SmartPointer<QObject> convertToNativeSmartPointer(JNIEnv *env, jobject java_obje
                 void* ptr = link->pointer();
                 bool createdByJava = link->createdByJava();
                 bool is_shell = link->isShell();
+                bool isQThread = link->isQThread();
                 QtJambiLink::Ownership ownership = link->ownership();
                 const InterfaceOffsetInfo* interfaceOffsets = link->interfaceOffsetInfo();
                 QtJambiShellImpl* shell = nullptr;
@@ -1977,9 +1975,9 @@ SmartPointer<QObject> convertToNativeSmartPointer(JNIEnv *env, jobject java_obje
                 link->invalidate(env);
                 link.clear();
                 if(interfaceOffsets && !interfaceOffsets->offsets.isEmpty()){
-                    link = QtJambiLink::createLinkForNewSmartPointerToQObject(env, java_object, createdByJava, ownership, is_shell, reinterpret_cast<QObject*>(ptr), result, *interfaceOffsets);
+                    link = QtJambiLink::createLinkForNewSmartPointerToQObject(env, java_object, createdByJava, ownership, is_shell, reinterpret_cast<QObject*>(ptr), isQThread, result, *interfaceOffsets);
                 }else{
-                    link = QtJambiLink::createLinkForNewSmartPointerToQObject(env, java_object, createdByJava, ownership, is_shell, reinterpret_cast<QObject*>(ptr), result);
+                    link = QtJambiLink::createLinkForNewSmartPointerToQObject(env, java_object, createdByJava, ownership, is_shell, reinterpret_cast<QObject*>(ptr), isQThread, result);
                 }
                 Q_ASSERT(link && link->isSmartPointer());
                 if(shell){
@@ -2110,7 +2108,7 @@ SmartPointer<char> convertToNativeSmartPointer(JNIEnv *env, const std::type_info
         }else if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, java_object)){
             Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassName(env, java_object).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
         }else if((!typeId || typeid_equals(*typeId, typeid(QString))) && Java::Runtime::String::isInstanceOf(env, java_object)){
-            auto sp = SmartPointerUtility<SmartPointer>::template SharedPointer<QString>(new QString(qtjambi_cast<QString>(env, jstring(java_object))));
+            auto sp = SmartPointerUtility<SmartPointer>::template SharedPointer<QString>(new QString(qtjambi_cast<QString>(env, static_cast<jstring>(java_object))));
             result = SmartPointer<char>(SmartPointerUtility<SmartPointer>::template SharedPointer<char>(sp, reinterpret_cast<char*>(sp.get())));
         }else if(!typeId && Java::Runtime::Integer::isInstanceOf(env, java_object)){
             auto sp = SmartPointerUtility<SmartPointer>::template SharedPointer<qint32>(new qint32(Java::Runtime::Number::intValue(env, java_object)));
@@ -2482,7 +2480,7 @@ jobject internal_convertNativeToJavaObject(NativeToJavaConversionMode mode, JNIE
 
 jobject QtJambiAPI::convertModelIndexToJavaObject(JNIEnv *env, const QModelIndex& index){
     jobject result{nullptr};
-    if(QModelIndexTypeEntry::convertModelIndexToJava(env, &index, NativeToJavaConversionMode::MakeCopyOfValues, result)){
+    if(QtJambiTypeEntry::convertModelIndexNativeToJava(env, &index, NativeToJavaConversionMode::MakeCopyOfValues, result)){
         return result;
     }else{
         return nullptr;
@@ -2491,7 +2489,7 @@ jobject QtJambiAPI::convertModelIndexToJavaObject(JNIEnv *env, const QModelIndex
 
 jobject QtJambiAPI::convertModelIndexToEphemeralJavaObject(JNIEnv *env, QtJambiScope& scope, const QModelIndex* index){
     jobject result{nullptr};
-    if(QModelIndexTypeEntry::convertModelIndexToJava(env, index, NativeToJavaConversionMode::MakeCopyOfValues, result, &scope)){
+    if(QtJambiTypeEntry::convertModelIndexNativeToJava(env, index, NativeToJavaConversionMode::MakeCopyOfValues, result, &scope)){
         return result;
     }else{
         return nullptr;
@@ -2501,20 +2499,16 @@ jobject QtJambiAPI::convertModelIndexToEphemeralJavaObject(JNIEnv *env, QtJambiS
 bool QtJambiAPI::convertJavaToModelIndex(JNIEnv *env, jobject java_object, QModelIndex*& output, QtJambiScope* scope){
     if(!java_object)
         return true;
-    jvalue java_value;
-    java_value.l = java_object;
 #if defined(QTJAMBI_LIGHTWEIGHT_MODELINDEX)
     if(!scope)
         JavaException::raiseError(env, "Cannot cast to QModelIndex reference without scope." QTJAMBI_STACKTRACEINFO );
 #endif
-    return QModelIndexTypeEntry::convertJavaToNative(env, java_value, jValueType::l, &output, scope);
+    return QtJambiTypeEntry::convertModelIndexJavaToNative(env, java_object, &output, scope);
 }
 
 bool QtJambiAPI::convertJavaToModelIndex(JNIEnv *env, jobject java_object, QModelIndex& output){
-    jvalue java_value;
-    java_value.l = java_object;
     QModelIndex* indexPtr = nullptr;
-    bool result = QModelIndexTypeEntry::convertJavaToNative(env, java_value, jValueType::l, &indexPtr, nullptr);
+    bool result = QtJambiTypeEntry::convertModelIndexJavaToNative(env, java_object, &indexPtr, nullptr);
     if(result && indexPtr)
         output = *indexPtr;
     return result;
@@ -2537,7 +2531,11 @@ jobject internal_convertSmartPointerToJavaObject_impl(JNIEnv *env,
                             const std::type_info& typeId, const SmartPointer<char>& smartPointer, bool* ok)
 {
     if(ok) *ok = true;
-    if(QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, typeId)){
+    QtJambiTypeEntryPtr typeEntry;
+    const std::type_info* typeIdPtr = &typeId;
+    if(typeIdPtr)
+        typeEntry = QtJambiTypeEntry::getTypeEntry(env, typeId);
+    if(typeEntry){
         jvalue result;
         qintptr offset = 0;
         typeEntry = typeEntry->getFittingTypeEntry(env, smartPointer.get(), offset);
@@ -2566,7 +2564,13 @@ jobject internal_convertQObjectSmartPointerToJavaObject_impl(JNIEnv *env, const 
                                                              const SmartPointer<QObject>& smartPointer, bool* ok)
 {
     if(ok) *ok = true;
-    if(QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, typeId)){
+    QtJambiTypeEntryPtr typeEntry;
+    const std::type_info* typeIdPtr = &typeId;
+    if(!typeEntry && typeIdPtr)
+        typeEntry = QtJambiTypeEntry::getTypeEntry(env, typeId);
+    if(!typeEntry)
+        typeEntry = QtJambiTypeEntry::getTypeEntry(env, typeid(QObject));
+    if(typeEntry){
         jvalue result;
         qintptr offset = 0;
         typeEntry = typeEntry->getFittingTypeEntry(env, smartPointer.get(), offset);
@@ -2686,6 +2690,7 @@ jobject internal_convertQObjectSmartPointerToJavaObject_notype(JNIEnv *env, cons
                 if(object){
                     bool createdByJava = link->createdByJava();
                     bool is_shell = link->isShell();
+                    bool isQThread = link->isQThread();
                     QtJambiShellImpl* shell = nullptr;
                     if(is_shell){
                         const SuperTypeInfos infos = SuperTypeInfos::fromClass(env, env->GetObjectClass(object));
@@ -2697,9 +2702,9 @@ jobject internal_convertQObjectSmartPointerToJavaObject_notype(JNIEnv *env, cons
                     link.clear();
                     const InterfaceOffsetInfo* interfaceOffsets = getInterfaceOffsets(env, env->GetObjectClass(object));
                     if(interfaceOffsets && !interfaceOffsets->offsets.isEmpty()){
-                        link = QtJambiLink::createLinkForSmartPointerToQObject(env, object, createdByJava,  is_shell, smartPointer, *interfaceOffsets);
+                        link = QtJambiLink::createLinkForSmartPointerToQObject(env, object, createdByJava, is_shell, smartPointer, isQThread, *interfaceOffsets);
                     }else{
-                        link = QtJambiLink::createLinkForSmartPointerToQObject(env, object, createdByJava,  is_shell, smartPointer);
+                        link = QtJambiLink::createLinkForSmartPointerToQObject(env, object, createdByJava, is_shell, smartPointer, isQThread);
                     }
                     if(shell){
                         shell->overrideLink(link);
@@ -2796,9 +2801,9 @@ jobject internal_convertQObjectSmartPointerToJavaObject_notype(JNIEnv *env, cons
 
         const InterfaceOffsetInfo* interfaceOffsets = getInterfaceOffsets(env, clazz);
         if(interfaceOffsets && !interfaceOffsets->offsets.isEmpty()){
-            link = QtJambiLink::createLinkForSmartPointerToQObject(env, object, false, false, smartPointer, *interfaceOffsets);
+            link = QtJambiLink::createLinkForSmartPointerToQObject(env, object, false, false, smartPointer, Java::QtCore::QThread::isAssignableFrom(env, clazz), *interfaceOffsets);
         }else{
-            link = QtJambiLink::createLinkForSmartPointerToQObject(env, object, false, false, smartPointer);
+            link = QtJambiLink::createLinkForSmartPointerToQObject(env, object, false, false, smartPointer, Java::QtCore::QThread::isAssignableFrom(env, clazz));
         }
         if (!link) {
             qCWarning(DebugAPI::internalCategory, "Qt Jambi: Couldn't created wrapper for class %s", className);
@@ -2866,7 +2871,8 @@ jobject internal_convertQObjectToJavaObject_type(JNIEnv *env, const QObject *qt_
     if (!qt_object)
         return nullptr;
     QtJambiTypeEntryPtr typeEntry;
-    if(!typeEntry)
+    const std::type_info* typeIdPtr = &typeId;
+    if(!typeEntry && typeIdPtr)
         typeEntry = QtJambiTypeEntry::getTypeEntry(env, typeId);
     if(!typeEntry)
         typeEntry = QtJambiTypeEntry::getTypeEntry(env, typeid(QObject));
@@ -3020,7 +3026,7 @@ jobject internal_convertQObjectToJavaObject_notype(JNIEnv *env, const QObject *c
             return nullptr;
         }
 
-        link = QtJambiLink::createLinkForQObject(env, obj, qt_object, false, false);
+        link = QtJambiLink::createLinkForNativeQObject(env, obj, clazz, qt_object);
         if (!link) {
             qCWarning(DebugAPI::internalCategory, "Qt Jambi: Couldn't created wrapper for class %s", qPrintable(java_name));
             return nullptr;

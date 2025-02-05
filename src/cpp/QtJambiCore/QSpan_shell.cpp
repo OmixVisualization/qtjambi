@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -51,7 +51,7 @@ QT_WARNING_DISABLE_DEPRECATED
 // emitting  (functionsInTargetLang writeFinalFunction)
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_AbstractSpan_constBegin)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_AbstractSpan_constBegin
     (JNIEnv *env,
      jobject _this,
      QtJambiNativeID __this_nativeId)
@@ -70,7 +70,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
     return result;
 }
 
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_AbstractSpan_constEnd)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_AbstractSpan_constEnd
     (JNIEnv *env,
      jobject _this,
      QtJambiNativeID __this_nativeId)
@@ -89,7 +89,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
         return result;
 }
 
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_AbstractSpan_begin)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_AbstractSpan_begin
     (JNIEnv *env,
      jobject _this,
      QtJambiNativeID __this_nativeId)
@@ -108,7 +108,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
         return result;
 }
 
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_AbstractSpan_end)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_AbstractSpan_end
     (JNIEnv *env,
      jobject _this,
      QtJambiNativeID __this_nativeId)
@@ -127,7 +127,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
         return result;
 }
 
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_AbstractSpan_elementType)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_AbstractSpan_elementType
     (JNIEnv *__jni_env,
      jclass,
      QtJambiNativeID __this_nativeId)
@@ -145,7 +145,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
         return result;
 }
 
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_AbstractSpan_asBuffer)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_AbstractSpan_asBuffer
     (JNIEnv *env,
      jclass,
      jclass bufferClass,
@@ -162,13 +162,13 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
             jint elementSize = containerAccess->elementMetaType().sizeOf() + (containerAccess->elementMetaType().alignOf() > 0 ? containerAccess->elementMetaType().sizeOf() % containerAccess->elementMetaType().alignOf() : 0);
             jint size_bytes = span->size * elementSize;
             if(containerAccess->isConst()){
-                result = LocalDataJBuffer(env, reinterpret_cast<char*>(const_cast<void*>(span->begin)), size_bytes).take();
+                result = DataJBuffer(env, reinterpret_cast<char*>(const_cast<void*>(span->begin)), size_bytes).take();
             }else{
-                result = LocalDataJBuffer(env, reinterpret_cast<const char*>(span->begin), size_bytes).take();
+                result = DataJBuffer(env, reinterpret_cast<const char*>(span->begin), size_bytes).take();
             }
         }else{
             ownerId = InvalidNativeID;
-            result = LocalDataJBuffer(env, reinterpret_cast<char*>(0), 0).take();
+            result = DataJBuffer(env, reinterpret_cast<char*>(0), 0).take();
         }
         if(!!ownerId)
             QtJambiAPI::registerDependency(env, result, ownerId);
@@ -193,7 +193,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
     return result;
 }
 
-extern "C" Q_DECL_EXPORT jarray JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_AbstractSpan_asArray)
+extern "C" JNIEXPORT jarray JNICALL Java_io_qt_core_AbstractSpan_asArray
     (JNIEnv *env,
      jclass,
      QtJambiNativeID __this_nativeId,
@@ -218,28 +218,28 @@ extern "C" Q_DECL_EXPORT jarray JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_
         pointer.pointer = span->begin;
         switch(type){
         case 'B':
-            result = ConstCharPointerArray(env, pointer.b, span->size).array(env);
+            result = ConstCharPointerArray(env, pointer.b, span->size).array();
             break;
         case 'S':
-            result = ConstInt16PointerArray(env, pointer.s, span->size).array(env);
+            result = ConstInt16PointerArray(env, pointer.s, span->size).array();
             break;
         case 'I':
-            result = ConstInt32PointerArray(env, pointer.i, span->size).array(env);
+            result = ConstInt32PointerArray(env, pointer.i, span->size).array();
             break;
         case 'J':
-            result = ConstInt64PointerArray(env, pointer.j, span->size).array(env);
+            result = ConstInt64PointerArray(env, pointer.j, span->size).array();
             break;
         case 'C':
-            result = ConstQCharPointerArray(env, pointer.c, span->size).array(env);
+            result = ConstQCharPointerArray(env, pointer.c, span->size).array();
             break;
         case 'F':
-            result = ConstFloatPointerArray(env, pointer.f, span->size).array(env);
+            result = ConstFloatPointerArray(env, pointer.f, span->size).array();
             break;
         case 'D':
-            result = ConstDoublePointerArray(env, pointer.d, span->size).array(env);
+            result = ConstDoublePointerArray(env, pointer.d, span->size).array();
             break;
         case 'Z':
-            result = ConstBoolPointerArray(env, pointer.z, span->size).array(env);
+            result = ConstBoolPointerArray(env, pointer.z, span->size).array();
             break;
         default:
             JavaException::raiseIllegalArgumentException(env, "Unable to create QSpan" QTJAMBI_STACKTRACEINFO );
@@ -251,7 +251,7 @@ extern "C" Q_DECL_EXPORT jarray JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_
     return result;
 }
 
-extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_AbstractSpan_size)
+extern "C" JNIEXPORT jint JNICALL Java_io_qt_core_AbstractSpan_size
     (JNIEnv *env,
      jclass,
      QtJambiNativeID __this_nativeId)
@@ -270,7 +270,7 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_Ab
         return result;
 }
 
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_AbstractSpan_get)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_AbstractSpan_get
     (JNIEnv *env,
      jobject,
      QtJambiNativeID __this_nativeId,
@@ -290,7 +290,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
     return result;
 }
 
-extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_AbstractSpan_set)
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_AbstractSpan_set
     (JNIEnv *env,
      jobject _this,
      QtJambiNativeID __this_nativeId,
@@ -311,7 +311,7 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_cor
         return result;
 }
 
-extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_AbstractSpan_isConst)
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_AbstractSpan_isConst
     (JNIEnv *env,
      jclass,
      QtJambiNativeID __this_nativeId)
@@ -334,7 +334,7 @@ void __qt_construct_QSpan_cref_Iterator(void* __qtjambi_ptr, JNIEnv*, jobject, j
     new(__qtjambi_ptr) QtJambiSpan{reinterpret_cast<void*>(__java_arguments[0].j), qsizetype(__java_arguments[1].j)};
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_AbstractSpan_initializeFromBegin)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_AbstractSpan_initializeFromBegin
     (JNIEnv *__jni_env,
      jclass,
      jobject __jni_object,
@@ -368,7 +368,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_Ab
 
 template<bool isConst>
 class BufferArraySpan : public ManagedSpan{
-    typedef typename std::conditional<isConst, JBufferConstData, JBufferData>::type BufferAccess;
+    typedef typename std::conditional<isConst, PersistentJBufferConstData, PersistentJBufferData>::type BufferAccess;
 
     struct Data : ManagedSpanData{
         BufferAccess bufferAccess;
@@ -407,7 +407,7 @@ public:
     }
 };
 
-extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_AbstractSpan_initializeFromBuffer)
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_AbstractSpan_initializeFromBuffer
     (JNIEnv *__jni_env,
      jclass,
      jobject __jni_object,
@@ -512,7 +512,7 @@ public:
     }
 };
 
-extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_AbstractSpan_initializeFromBooleanArray)
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_AbstractSpan_initializeFromBooleanArray
     (JNIEnv *__jni_env,
      jclass,
      jobject __jni_object,
@@ -533,7 +533,7 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_cor
     return result;
 }
 
-extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_AbstractSpan_initializeFromByteArray)
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_AbstractSpan_initializeFromByteArray
     (JNIEnv *__jni_env,
      jclass,
      jobject __jni_object,
@@ -554,7 +554,7 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_cor
     return result;
 }
 
-extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_AbstractSpan_initializeFromShortArray)
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_AbstractSpan_initializeFromShortArray
     (JNIEnv *__jni_env,
      jclass,
      jobject __jni_object,
@@ -575,7 +575,7 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_cor
     return result;
 }
 
-extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_AbstractSpan_initializeFromIntArray)
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_AbstractSpan_initializeFromIntArray
     (JNIEnv *__jni_env,
      jclass,
      jobject __jni_object,
@@ -596,7 +596,7 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_cor
     return result;
 }
 
-extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_AbstractSpan_initializeFromLongArray)
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_AbstractSpan_initializeFromLongArray
     (JNIEnv *__jni_env,
      jclass,
      jobject __jni_object,
@@ -617,7 +617,7 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_cor
     return result;
 }
 
-extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_AbstractSpan_initializeFromFloatArray)
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_AbstractSpan_initializeFromFloatArray
     (JNIEnv *__jni_env,
      jclass,
      jobject __jni_object,
@@ -638,7 +638,7 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_cor
     return result;
 }
 
-extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_AbstractSpan_initializeFromDoubleArray)
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_AbstractSpan_initializeFromDoubleArray
     (JNIEnv *__jni_env,
      jclass,
      jobject __jni_object,
@@ -659,7 +659,7 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_cor
     return result;
 }
 
-extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_AbstractSpan_initializeFromCharArray)
+extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_AbstractSpan_initializeFromCharArray
     (JNIEnv *__jni_env,
      jclass,
      jobject __jni_object,
@@ -706,7 +706,7 @@ void __qt_construct_QSpan_cref_ManagedClone(void* __qtjambi_ptr, JNIEnv*, jobjec
     }
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_AbstractSpan_initializeFromClone)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_AbstractSpan_initializeFromClone
     (JNIEnv *__jni_env,
      jclass,
      jobject __jni_object,
@@ -752,7 +752,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_Ab
     }QTJAMBI_TRY_END
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_AbstractSpan_commit)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_AbstractSpan_commit
     (JNIEnv *env,
      jclass,
      QtJambiNativeID __this_nativeId)
@@ -766,7 +766,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_Ab
     }QTJAMBI_TRY_END
 }
 
-extern "C" Q_DECL_EXPORT jstring JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_AbstractSpan_toString)
+extern "C" JNIEXPORT jstring JNICALL Java_io_qt_core_AbstractSpan_toString
     (JNIEnv *env,
      jclass,
      QtJambiNativeID __this_nativeId)
@@ -790,7 +790,7 @@ extern "C" Q_DECL_EXPORT jstring JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
         return result;
 }
 
-extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_AbstractSpan_hashCode)
+extern "C" JNIEXPORT jint JNICALL Java_io_qt_core_AbstractSpan_hashCode
     (JNIEnv *env,
      jclass,
      QtJambiNativeID __this_nativeId)
@@ -816,7 +816,7 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_Ab
     return result;
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_AbstractSpan_toList)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_AbstractSpan_toList
     (JNIEnv *,
      jclass,
      QtJambiNativeID __this_nativeId,

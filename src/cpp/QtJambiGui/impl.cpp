@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -157,7 +157,7 @@ QAbstractOpenGLFunctions* qtjambi_QOpenGLContext_versionFunctions(JNIEnv *__jni_
 }
 #else
 
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QPointerEvent_setPoint)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_gui_QPointerEvent_setPoint
 (JNIEnv *__jni_env,
  jobject _this,
  jlong i0,
@@ -180,9 +180,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QPo
 
 #if QT_VERSION >= QT_VERSION_CHECK(5,12,0)
 // QGradient::QGradient(QGradient::Preset arg__1)
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QGradient_create)
-(JNIEnv *__jni_env, jclass, int preset)
-{
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_gui_QGradient_create(JNIEnv *__jni_env, jclass, int preset){
     jobject _result{nullptr};
     QTJAMBI_NATIVE_METHOD_CALL("QGradient::QGradient(QGradient::Preset arg__1)")
     QTJAMBI_TRY{
@@ -222,7 +220,7 @@ hash_type qHash(const QColorMatrix &value, hash_type seed = 0)
 
 hash_type qHash(const QColorTransform &value, hash_type seed)
 {
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+#if QT_VERSION < QT_VERSION_CHECK(6,2,0)
     QColorTransformPrivate* p = *reinterpret_cast<QColorTransformPrivate*const*>(&value);
 #else
     QColorTransformPrivate* p = QColorTransformPrivate::get(value);

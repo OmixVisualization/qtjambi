@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -142,15 +142,6 @@ public final class QtUtilities {
     }
 
     public static @Nullable File jambiDeploymentDir() {
-        return Utility.jambiDeploymentDir();
-    }
-    
-    /**
-     * @deprecated Use {@link #jambiDeploymentDir()} instead.
-     * @return
-     */
-    @Deprecated(forRemoval=true)
-    public static @Nullable File jambiTempDir() {
         return Utility.jambiDeploymentDir();
     }
     

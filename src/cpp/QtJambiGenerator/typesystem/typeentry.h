@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -1277,6 +1277,8 @@ class ComplexTypeEntry : public TypeEntry {
         void setQModelIndex(bool b);
         bool isQAbstractItemModel() const;
         void setQAbstractItemModel(bool b);
+        bool isQThread() const;
+        void setQThread(bool b);
         bool isQEvent() const;
         void setQEvent(bool b);
         bool isQByteArrayView() const;
@@ -1523,6 +1525,7 @@ class ComplexTypeEntry : public TypeEntry {
             IsQByteArrayView = 0x200000,
             IsQModelIndex = 0x800000,
             IsQAbstractItemModel = 0x1000000,
+            IsQThread = 0x2000000,
         };
         QFlags<ComplexAttributeFlag> m_attributes;
 

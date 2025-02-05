@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -74,19 +74,7 @@ Q_DECL_EXPORT int execute_generator(int argc, char *argv[]) {
     return app.generate();
 }
 
-/* Win64 ABI does not use underscore prefixes symbols we could also use !defined(__MINGW64__) */
-#if defined(Q_CC_MINGW) && !defined(_WIN64)
-#  define QTJAMBI_FUNCTION_PREFIX(name) _##name
-#else
-#  define QTJAMBI_FUNCTION_PREFIX(name) name
-#endif
-
-extern "C" Q_DECL_EXPORT int JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qtjambi_generator_Main_invoke)
-(JNIEnv * env,
- jclass,
- jobjectArray args)
-{
+extern "C" JNIEXPORT int JNICALL Java_io_qt_qtjambi_generator_Main_invoke(JNIEnv * env, jclass, jobjectArray args){
     if(args){
         QVector<QByteArray> data;
         jsize length = env->GetArrayLength(args)+1;
@@ -111,10 +99,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qtjambi_generator_Main_invoke)
     }
 }
 
-extern "C" Q_DECL_EXPORT jlong JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qtjambi_generator_GeneratorApplication_initialize)
-(JNIEnv *,jclass)
-{
+extern "C" JNIEXPORT jlong JNICALL Java_io_qt_qtjambi_generator_GeneratorApplication_initialize(JNIEnv *,jclass){
     static int argc = 1;
     static char *argv = const_cast<char*>("QtJambiGenerator");
     void* ptr = new GeneratorApplication(argc, &argv);

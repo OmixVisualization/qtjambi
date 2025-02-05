@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -65,6 +65,17 @@ QDebug& operator<<(QDebug& debug, const DebugAPI::Printer& printer){
     return debug;
 }
 
+bool enabledMethodTracePrints(JNIEnv *env = nullptr){
+    static ResettableBoolFlag b(env, "io.qt.enable-method-logs");
+    static bool b2 = qEnvironmentVariableIsSet("QTJAMBI_DEBUG_TRACE");
+    return b || b2;
+}
+
+bool enabledEventPrints(JNIEnv *env = nullptr){
+    static ResettableBoolFlag b(env, "io.qt.enable-event-logs");
+    return b;
+}
+
 namespace DebugAPI{
 
 Q_LOGGING_CATEGORY(internalCategory, "io.qtjambi.internal")
@@ -89,17 +100,6 @@ for (QLoggingCategoryMacroHolder<QtDebugMsg> qt_category(category()); qt_categor
 #endif
 */
 #define QTJAMBI_DEBUG_MESSAGE_LOGGER(category) QMessageLogger(adaptFile(file), line, function, category.categoryName()).debug().nospace().noquote()
-
-bool enabledMethodTracePrints(){
-    static ResettableBoolFlag b("io.qt.enable-method-logs");
-    static bool b2 = qEnvironmentVariableIsSet("QTJAMBI_DEBUG_TRACE");
-    return b || b2;
-}
-
-bool enabledEventPrints(){
-    static ResettableBoolFlag b("io.qt.enable-event-logs");
-    return b;
-}
 
 #if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME)
 #define OPTIONAL_LINK_NAME(ARG) ARG
@@ -210,7 +210,7 @@ public:
         }
     }
     static MethodPrintPrivate* create(MethodPrint::Type callType, const void* pointer, const char* message, const char* file, int line, const char *function){
-        if(enabledMethodTracePrints()){
+        if(Q_UNLIKELY(enabledMethodTracePrints())){
             switch(callType){
             case MethodPrint::Disabled:
                 return nullptr;
@@ -224,7 +224,7 @@ public:
         return nullptr;
     }
     static MethodPrintPrivate* create(MethodPrint::Type callType, const QtJambiShell* shell, const char* method, const char* file, int line, const char *function){
-        if(enabledMethodTracePrints()){
+        if(Q_UNLIKELY(enabledMethodTracePrints())){
             switch(callType){
             case MethodPrint::Disabled:
                 return nullptr;
@@ -249,7 +249,7 @@ public:
         }
     }
     static MethodPrintPrivate* create(MethodPrint::Type callType, QtJambiNativeID nativeID, const char* method, const char* file, int line, const char *function){
-        if(enabledMethodTracePrints()){
+        if(Q_UNLIKELY(enabledMethodTracePrints())){
             switch(callType){
             case MethodPrint::Disabled:
                 return nullptr;
@@ -274,7 +274,7 @@ public:
         }
     }
     static MethodPrintPrivate* create(MethodPrint::Type callType, const QtJambiShellInterface* shellInterface, const char* method, const char* file, int line, const char *function){
-        if(enabledMethodTracePrints()){
+        if(Q_UNLIKELY(enabledMethodTracePrints())){
             switch(callType){
             case MethodPrint::Disabled:
                 return nullptr;
@@ -300,7 +300,7 @@ public:
         return nullptr;
     }
     static MethodPrintPrivate* create(const QSharedPointer<QtJambiLink>& link, const char* method, const char* file, int line, const char *function){
-        if(enabledMethodTracePrints()){
+        if(Q_UNLIKELY(enabledMethodTracePrints())){
             const QLoggingCategory& category = debugAPICleanupCallsCategory();
             if(!category.isDebugEnabled())
                 return nullptr;
@@ -317,7 +317,7 @@ public:
         return nullptr;
     }
     static MethodPrintPrivate* create(const QWeakPointer<QtJambiLink>& wlink, const char* method, const char* file, int line, const char *function){
-        if(enabledMethodTracePrints()){
+        if(Q_UNLIKELY(enabledMethodTracePrints())){
             const QLoggingCategory& category = debugAPICleanupCallsCategory();
             if(!category.isDebugEnabled())
                 return nullptr;
@@ -336,7 +336,7 @@ public:
         return nullptr;
     }
     static MethodPrintPrivate* create(MethodPrint::Type callType, const char* file, int line, const char *function, const char* message,...){
-        if(enabledMethodTracePrints()){
+        if(Q_UNLIKELY(enabledMethodTracePrints())){
             switch(callType){
             case MethodPrint::Disabled:
                 return nullptr;
@@ -352,7 +352,7 @@ public:
         return nullptr;
     }
     static MethodPrintPrivate* create(const QLoggingCategory& category, const char* file, int line, const char *function, const char* message,...){
-        if(enabledMethodTracePrints()){
+        if(Q_UNLIKELY(enabledMethodTracePrints())){
             if(!category.isDebugEnabled())
                 return nullptr;
             return new MethodPrintPrivate(category, file, line, function, [data = QString::asprintf(message)](QDebug& dbg) -> QDebug& {
@@ -362,7 +362,7 @@ public:
         return nullptr;
     }
     static MethodPrintPrivate* create(MethodPrint::Type callType, const char* file, int line, const char *function, Printer&& printer){
-        if(enabledMethodTracePrints()){
+        if(Q_UNLIKELY(enabledMethodTracePrints())){
             switch(callType){
             case MethodPrint::Disabled:
                 return nullptr;
@@ -376,7 +376,7 @@ public:
         return nullptr;
     }
     static MethodPrintPrivate* create(const QLoggingCategory& category, const char* file, int line, const char *function, Printer&& printer){
-        if(enabledMethodTracePrints()){
+        if(Q_UNLIKELY(enabledMethodTracePrints())){
             if(!category.isDebugEnabled())
                 return nullptr;
             return new MethodPrintPrivate(category, file, line, function, std::move(printer));

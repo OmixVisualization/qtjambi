@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -158,9 +158,6 @@ private:
 };
 
 Q_GLOBAL_STATIC(QRecursiveMutex, gMutex)
-QRecursiveMutex* mutex(){
-    return gMutex();
-}
 
 struct Libraries{
     Libraries():dir(nullptr){}
@@ -237,19 +234,19 @@ private:
     friend void unregister_file_by_function(QFunctionPointer fn);
 };
 
-typedef SecureContainer<QHash<void*,void(*)(void*)>,QRecursiveMutex,&mutex> FunctionPointerCleanupHash;
+typedef SecureContainer<QHash<void*,void(*)(void*)>,gMutex> FunctionPointerCleanupHash;
 Q_GLOBAL_STATIC(FunctionPointerCleanupHash, gFunctionPointerCleanups)
 Q_GLOBAL_STATIC(Libraries, gLibraries)
 
 void register_file_by_function(LibraryFile* libFile, QFunctionPointer fn){
-    if(!gLibraries.isDestroyed()){
+    if(Q_LIKELY(!gLibraries.isDestroyed())){
         QMutexLocker locker(gMutex());
         gLibraries->filesByFunction[quintptr(fn)] = libFile;
     }
 }
 
 void unregister_file_by_function(QFunctionPointer fn){
-    if(!gLibraries.isDestroyed()){
+    if(Q_LIKELY(!gLibraries.isDestroyed())){
         QMutexLocker locker(gMutex());
         gLibraries->filesByFunction.remove(quintptr(fn));
     }
@@ -258,7 +255,7 @@ void unregister_file_by_function(QFunctionPointer fn){
 void clearFunctionPointersAtShutdown(){
     Libraries libraries;
     QHash<void*,void(*)(void*)> functionPointerCleanups;
-    if(!gLibraries.isDestroyed()){
+    if(Q_LIKELY(!gLibraries.isDestroyed())){
         QMutexLocker locker(gMutex());
         gLibraries->swap(libraries);
         gFunctionPointerCleanups->swap(functionPointerCleanups);
@@ -281,7 +278,7 @@ void registerFunctionPointerCleanup(void* ptr, void(*cleanup)(void*)){
 }
 
 void unregisterFunctionPointerCleanup(void* ptr){
-    if(!gFunctionPointerCleanups.isDestroyed()){
+    if(Q_LIKELY(!gFunctionPointerCleanups.isDestroyed())){
         QMutexLocker locker(gMutex());
         gFunctionPointerCleanups->remove(ptr);
     }
@@ -394,7 +391,7 @@ QFunctionPointer extractFunction(
 }
 
 bool disposeFunction(QFunctionPointer fn){
-    if(!gLibraries.isDestroyed()){
+    if(Q_LIKELY(!gLibraries.isDestroyed())){
         QMutexLocker locker(gMutex());
         return gLibraries->disposeFunction(fn);
     }

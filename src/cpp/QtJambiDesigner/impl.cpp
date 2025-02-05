@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -39,7 +39,7 @@ namespace Java{
     }
 }
 
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_designer_util_QtJambi_1LibraryUtilities_internalAccess)(JNIEnv *env, jclass cls){
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_designer_util_QtJambi_1LibraryUtilities_internalAccess(JNIEnv *env, jclass cls){
     jobject result{0};
     QTJAMBI_TRY{
         result = MetaInfoAPI::internalAccess(env, cls);

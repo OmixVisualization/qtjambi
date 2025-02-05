@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -136,17 +136,17 @@ public:
     struct SignalInfo{
         const QMetaObject* metaObject;
         int methodIndex;
-        jobject signalTypes;
+        JObjectWrapper signalTypes;
         jclass signalClass;
         SignalInfo()
             : metaObject(nullptr), methodIndex(-1), signalTypes(nullptr), signalClass(nullptr) {}
-        SignalInfo(const QMetaObject* _metaObject, int _methodIndex, jobject _signalTypes, jclass _signalClass)
+        SignalInfo(const QMetaObject* _metaObject, int _methodIndex, const JObjectWrapper& _signalTypes, jclass _signalClass)
             : metaObject(_metaObject), methodIndex(_methodIndex), signalTypes(_signalTypes), signalClass(_signalClass) {}
     };
 
     static SignalInfo signalInfo(JNIEnv *env, const QMetaObject* metaObject, jfieldID fieldId, jmethodID emitMethodID);
     static QVector<SignalInfo> signalInfos(JNIEnv *env, const QMetaObject* metaObject, jfieldID fieldId);
-    static const QList<ParameterTypeInfo>& methodParameterInfo(JNIEnv * env, const QMetaMethod& method);
+    static QVector<ParameterTypeInfo> methodParameterInfo(JNIEnv * env, const QMetaMethod& method);
     static jobject toReflected(JNIEnv * env, const QMetaMethod& method);
     static void resolveSignals(JNIEnv *env, jobject java_object, const QMetaObject* metaObject, JavaException& ocurredException);
     static JObjectWrapper resolveExtraSignal(JNIEnv *env, jobject java_object, const QMetaMethod& method);

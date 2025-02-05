@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -81,6 +81,11 @@ public class TestQmlThreadAffinityQt65 extends ApplicationInitializer{
 				try {
 					try {
 						engine.singletonInstance("", "");
+						Assert.fail("QThreadAffinityException expected to be thrown");
+					} catch (QThreadAffinityException e) {
+					}
+					try {
+						engine.clearSingletons();
 						Assert.fail("QThreadAffinityException expected to be thrown");
 					} catch (QThreadAffinityException e) {
 					}

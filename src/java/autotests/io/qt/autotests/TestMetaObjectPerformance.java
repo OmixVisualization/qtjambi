@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -35,13 +35,13 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.QtInvokable;
+import io.qt.autotests.generated.General;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QMetaMethod;
 import io.qt.core.QMetaObject;
 import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.Qt;
 import io.qt.widgets.*;
-import io.qt.internal.ClassAnalyzerUtility;
 
 public class TestMetaObjectPerformance extends ApplicationInitializer {
 	
@@ -51,7 +51,7 @@ public class TestMetaObjectPerformance extends ApplicationInitializer {
 	@BeforeClass
     public static void testInitialize() throws Exception {
     	ApplicationInitializer.testInitializeWithWidgets();
-    	hasSerializableLambdas = ClassAnalyzerUtility.serializeLambdaExpression((QMetaObject.Slot0)ApplicationInitializer::testInitializeWithWidgets) != null;
+    	hasSerializableLambdas = General.internalAccess.serializeLambdaExpression((QMetaObject.Slot0)ApplicationInitializer::testInitializeWithWidgets) != null;
     }
 	
 	static class Widget extends QWidget{

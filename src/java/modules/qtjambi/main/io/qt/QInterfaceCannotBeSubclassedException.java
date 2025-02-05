@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -36,11 +36,11 @@ public class QInterfaceCannotBeSubclassedException extends Exception {
 
     private static final long serialVersionUID = 1L;
 
-    public QInterfaceCannotBeSubclassedException(Class<?> clazz) {
+    public QInterfaceCannotBeSubclassedException(@StrictNonNull Class<?> clazz) {
         super("Interface '" + clazz.getName() + "' is not intended to be subclassed by non-Qt classes.");
     }
     
-    public QInterfaceCannotBeSubclassedException(String message) {
+    public QInterfaceCannotBeSubclassedException(@NonNull String message) {
         super(message);
     }
 }

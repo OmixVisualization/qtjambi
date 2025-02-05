@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -341,7 +341,7 @@ jobject QtJambiAPI::convertQFutureWatcherToJavaObject(JNIEnv* env, const QFuture
             return result;
     }
     jobject result = Java::QtCore::QFutureWatcher::newInstance(env, jlong(futureSetter), jlong(futureResult), jlong(futureGetter));
-    QtJambiLink::createLinkForQObject(env, result, const_cast<QFutureWatcherBase*>(futureWatcher), false, false);
+    QtJambiLink::createLinkForNativeQObject(env, result, const_cast<QFutureWatcherBase*>(futureWatcher));
     return result;
 }
 

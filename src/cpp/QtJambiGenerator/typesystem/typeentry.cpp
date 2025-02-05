@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 ** (in parts)
 **
 ** This file is part of QtJambi.
@@ -248,6 +248,12 @@ bool ComplexTypeEntry::isQModelIndex() const {
 }
 void ComplexTypeEntry::setQModelIndex(bool b) {
     m_attributes.setFlag(IsQModelIndex, b);
+}
+bool ComplexTypeEntry::isQThread() const {
+    return m_attributes.testFlag(IsQThread);
+}
+void ComplexTypeEntry::setQThread(bool b) {
+    m_attributes.setFlag(IsQThread, b);
 }
 bool ComplexTypeEntry::isQAbstractItemModel() const {
     return m_attributes.testFlag(IsQAbstractItemModel);

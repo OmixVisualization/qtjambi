@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -43,6 +43,8 @@ protected:
     AbstractInvalidateAfterUse(InvalidateAfterUsePrivate& p);
 private:
     InvalidateAfterUsePrivate* p;
+    void* operator new(size_t) = delete;
+    void* operator new[](size_t) = delete;
     Q_DISABLE_COPY_MOVE(AbstractInvalidateAfterUse)
 };
 
@@ -55,6 +57,8 @@ public:
     static void forcedInvalidate(JNIEnv *env, jobject java_object);
     static void forcedInvalidate(JNIEnv *env, QtJambiNativeID nativeId);
     Q_DISABLE_COPY_MOVE(InvalidateAfterUse)
+    void* operator new(size_t) = delete;
+    void* operator new[](size_t) = delete;
 };
 
 class QTJAMBI_EXPORT ForcedInvalidateAfterUse : public AbstractInvalidateAfterUse{
@@ -63,6 +67,8 @@ public:
     ForcedInvalidateAfterUse(JNIEnv *env, QtJambiNativeID nativeId);
 private:
     Q_DISABLE_COPY_MOVE(ForcedInvalidateAfterUse)
+    void* operator new(size_t) = delete;
+    void* operator new[](size_t) = delete;
 };
 
 #define QTJAMBI_INVALIDATE_AFTER_USE(env, object)\
@@ -76,6 +82,8 @@ public:
     InvalidateContainerAfterUse(JNIEnv *env, jobject object);
 private:
     Q_DISABLE_COPY_MOVE(InvalidateContainerAfterUse)
+    void* operator new(size_t) = delete;
+    void* operator new[](size_t) = delete;
 };
 
 class QTJAMBI_EXPORT ForcedInvalidateContainerAfterUse : public AbstractInvalidateAfterUse{
@@ -83,6 +91,8 @@ public:
     ForcedInvalidateContainerAfterUse(JNIEnv *env, jobject object);
 private:
     Q_DISABLE_COPY_MOVE(ForcedInvalidateContainerAfterUse)
+    void* operator new(size_t) = delete;
+    void* operator new[](size_t) = delete;
 };
 
 #define QTJAMBI_INVALIDATE_CONTAINER_AFTER_USE(env, object)\
@@ -95,6 +105,8 @@ public:
     InvalidateArrayAfterUse(JNIEnv *env, jobjectArray object);
 private:
     Q_DISABLE_COPY_MOVE(InvalidateArrayAfterUse)
+    void* operator new(size_t) = delete;
+    void* operator new[](size_t) = delete;
 };
 
 class QTJAMBI_EXPORT ForcedInvalidateArrayAfterUse : public AbstractInvalidateAfterUse{
@@ -102,6 +114,8 @@ public:
     ForcedInvalidateArrayAfterUse(JNIEnv *env, jobjectArray object);
 private:
     Q_DISABLE_COPY_MOVE(ForcedInvalidateArrayAfterUse)
+    void* operator new(size_t) = delete;
+    void* operator new[](size_t) = delete;
 };
 
 #define QTJAMBI_INVALIDATE_ARRAY_AFTER_USE(env, object)\

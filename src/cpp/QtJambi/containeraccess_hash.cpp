@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -846,7 +846,11 @@ AutoHashAccess::QHashData::QHashData(const AutoHashAccess&, size_t reserve)
     numBuckets = QHashPrivate::GrowthPolicy::bucketsForCapacity(reserve);
     size_t nSpans = (numBuckets + Span::LocalBucketMask) / Span::NEntries;
     spans = new Span[nSpans];
+#if QT_VERSION < QT_VERSION_CHECK(6, 2, 0)
+    seed = qGlobalQHashSeed();
+#else
     seed = QHashSeed::globalSeed();
+#endif
 }
 
 AutoHashAccess::QHashData::QHashData(const AutoHashAccess& access, const QHashData &other, size_t reserved)
@@ -1273,7 +1277,7 @@ bool AutoHashAccess::isSharedWith(const void* container, const void* container2)
 void AutoHashAccess::swap(JNIEnv *, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
     QHashData *& map = *reinterpret_cast<QHashData **>(container.container);
     QHashData *& map2 = *reinterpret_cast<QHashData **>(container2.container);
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION < QT_VERSION_CHECK(6, 2, 0)
     qSwap(map, map2);
 #else
     qt_ptr_swap(map, map2);
