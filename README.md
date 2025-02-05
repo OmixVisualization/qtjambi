@@ -19,7 +19,9 @@ would simply add the corresponding Java libraries (.jar files) to their Java pro
 
 QtJambi is available for Java 8 or 11 and higher using Qt5.15 and Qt6 in Java on Windows, Android Linux and macOS. 
 Most Qt modules are available as QtJambi module as [listed here](www/Modules.md). All modules are published as Maven Artifact.
+
 **The native components for Windows available on Maven require Qt binaries for MSVC (msvc2022_64). Mingw Qt is not compatible with QtJambi unless you build it from scratch with Mingw.**
+
 **By default, the native components of only essential modules are made available on Maven. Please make a request via [/issues](Issues) if you require native components not yet available.**
 
 ## Support
@@ -94,7 +96,7 @@ You can call ant with additional properties as listed below. Therefore use the `
 
 * `qt` - specify comma-separated Qt versions to be used, e.g. `-Dqt="6.5,6.7,6.8"`.
 * `qtbase` - specify Qt installer's base directory, e.g. `-Dqtbase=/var/Qt`. Can be combined with `qt`.
-* `qtdir` - specify Qt version and platform directory, e.g. `-Dqtdir=/var/Qt/6.8.1/macos`. This option allows multiple directories separated by path separator. (If this option is specified `qt` and `qtbase` have no effect.)
+* `qtdir` - specify Qt version and platform directory, e.g. `-Dqtdir=/var/Qt/6.8.2/macos`. This option allows multiple directories separated by path separator. (If this option is specified `qt` and `qtbase` have no effect.)
 * `qmake` - specify a path to a `qmake` program to be used for building QtJambi. (If this option is specified `qt`, `qtbase` and `qtdir` have no effect.)
 * `android` - specify `true` to build QtJambi for Android. Therefore, Qt for Android has to be installed. By specify `-Dandroid=only` ant skips building QtJambi for the build platform. When compiling for Android all required NDK and SDK components are downloaded automatically. Alternatively, specify the Android NDK install path with `-Dndk=...`.
 
@@ -188,11 +190,11 @@ java -cp qtjambi-6.8.2.jar;. -Djava.library.path=C:\Qt\6.8.2\msvc2022_64\bin Tes
 ```
 On Linux it looks this way:
 ``` bash
-java -cp qtjambi-6.8.2.jar:. -Djava.library.path=<path to>/Qt/6.8.2/gcc_64/lib Test
+java -cp qtjambi-6.8.2.jar:. -Djava.library.path=/var/Qt/6.8.2/gcc_64/lib Test
 ```
 On macOS you additionally need to use the start parameter `-XstartOnFirstThread`:
 ``` bash
-java -cp qtjambi-6.8.2.jar:. -Djava.library.path=<path to>/Qt/6.8.2/macos/lib -XstartOnFirstThread Test
+java -cp qtjambi-6.8.2.jar:. -Djava.library.path=/Library/Qt/6.8.2/macos/lib -XstartOnFirstThread Test
 ```
 
 On Linux of your distribution provides Qt (of correct version) as system library you don't need to specify library path at all.
