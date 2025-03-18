@@ -2900,9 +2900,19 @@ jobject internal_convertQObjectToJavaObject_notype(JNIEnv *env, const QObject *c
     if (!const_qt_object)
         return nullptr;
     QObject * qt_object = const_cast<QObject *>(const_qt_object);
-    const std::type_info* _typeId = tryGetTypeInfo(env, RegistryAPI::Private::PolymorphicTypeInfoSupplier<QObject>::value, qt_object);
+    const std::type_info* _typeId = tryGetTypeInfo(RegistryAPI::Private::PolymorphicTypeInfoSupplier<QObject>::value, qt_object);
     if(!_typeId){
-        Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Dangling pointer to QObject: %p", qt_object) QTJAMBI_STACKTRACEINFO );
+        QString java_type;
+        if(className.isNull() && clazz){
+            java_type = QtJambiAPI::getClassName(env, clazz).replace(QLatin1Char('$'), QLatin1Char('.'));
+        }else{
+            java_type = className.replace('/', '.').replace('$', '.');
+        }
+        if(enabledDanglingPointerCheck()){
+            Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Cannot convert dangling pointer %p to object of type %s", qt_object, qPrintable(java_type)) QTJAMBI_STACKTRACEINFO );
+        }else{
+            qCWarning(DebugAPI::internalCategory, "Trying to convert possible dangling pointer %p to object of type %s", qt_object, qPrintable(java_type));
+        }
     }
     QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForQObject(qt_object);
     {

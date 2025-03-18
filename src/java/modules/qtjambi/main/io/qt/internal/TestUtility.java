@@ -30,6 +30,8 @@
 
 package io.qt.internal;
 
+import java.io.File;
+
 import io.qt.QtObjectInterface;
 import io.qt.core.QMetaMethod;
 import io.qt.core.QMetaObject;
@@ -103,11 +105,11 @@ public abstract class TestUtility {
 		return LibraryUtility.isMinGWBuilt();
 	}
 	
-	public static String qtLibraryPath() {
+	public static File qtLibraryPath() {
 		return LibraryUtility.qtLibraryPath();
 	}
 	
-	public static String qtJambiLibraryPath() {
+	public static File qtJambiLibraryPath() {
 		return LibraryUtility.qtJambiLibraryPath();
 	}
 	

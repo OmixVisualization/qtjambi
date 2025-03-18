@@ -10393,6 +10393,22 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
             remove: RemoveFlag.All
         }
         ModifyFunction{
+            signature: "information(QWidget *, QString, QString, QMessageBox::StandardButton, QMessageBox::StandardButton)"
+            threadAffinity: Affinity.UI
+        }
+        ModifyFunction{
+            signature: "question(QWidget *, QString, QString, QMessageBox::StandardButton, QMessageBox::StandardButton)"
+            threadAffinity: Affinity.UI
+        }
+        ModifyFunction{
+            signature: "warning(QWidget *, QString, QString, QMessageBox::StandardButton, QMessageBox::StandardButton)"
+            threadAffinity: Affinity.UI
+        }
+        ModifyFunction{
+            signature: "critical(QWidget *, QString, QString, QMessageBox::StandardButton, QMessageBox::StandardButton)"
+            threadAffinity: Affinity.UI
+        }
+        ModifyFunction{
             signature: "information(QWidget *, QString, QString, QMessageBox::StandardButtons, QMessageBox::StandardButton)"
             threadAffinity: Affinity.UI
         }

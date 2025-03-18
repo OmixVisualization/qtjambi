@@ -88,6 +88,8 @@ public class TestDBusConnect {
 				loop.dispose();
 			}
 		});
+		pongThread.setDaemon(true);
+		pongThread.finished.connect(pongThread::disposeLater);
 		pongThread.start();
 		pongThread.join(2000);
 		long t1 = System.currentTimeMillis();
@@ -128,7 +130,6 @@ public class TestDBusConnect {
 			if(pongThread!=null) {
 				pongThread.interrupt();
 				pongThread.join(2000);
-				pongThread.dispose();
 				pongThread = null;
 			}
 			if (exception != null)

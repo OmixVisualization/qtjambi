@@ -272,7 +272,7 @@ struct qtjambi_shared_pointer_container1_caster<false, has_scope, Pointer, p_is_
     typedef typename std::conditional<p_is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;\
     typedef typename std::conditional<p_is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;\
     typedef typename std::conditional<p_is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;\
-    typedef IntermediateSequentialContainer<TYPE,T_content> IContainer;\
+    typedef IntermediateSequentialContainer<false,TYPE,T_content> IContainer;\
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){\
         if (!in)\
             return pointer_ref_or_clone_decider<p_is_pointer, p_is_const, p_is_reference, has_scope, NativeType>::convert(env, scope, nullptr);\
@@ -286,7 +286,7 @@ struct qtjambi_shared_pointer_container1_caster<false, has_scope, Pointer, p_is_
                 list = new Container();\
                 pointer.reset(list);\
             }else{\
-                IContainer* ilist = new IContainer(env, in, *scope);\
+                IContainer* ilist = new IContainer(env, in);\
                 list =ilist;\
                 pointer = Pointer<IContainer>(ilist);\
             }\
@@ -387,7 +387,7 @@ struct qtjambi_shared_pointer_container2_caster<false, has_scope,\
     typedef typename std::conditional<p_is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;\
     typedef typename std::conditional<p_is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;\
     typedef typename std::conditional<p_is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;\
-    typedef IntermediateAssociativeContainer<TYPE,K_content,T_content> IContainer;\
+    typedef IntermediateAssociativeContainer<false,TYPE,K_content,T_content> IContainer;\
 \
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){\
         if (!in)\
@@ -402,7 +402,7 @@ struct qtjambi_shared_pointer_container2_caster<false, has_scope,\
                 map = new Container();\
                 pointer.reset(map);\
             }else{\
-                IContainer* imap = new IContainer(env, in, *scope);\
+                IContainer* imap = new IContainer(env, in);\
                 map = imap;\
                 pointer = Pointer<IContainer>(imap);\
             }\

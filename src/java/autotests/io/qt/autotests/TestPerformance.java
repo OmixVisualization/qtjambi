@@ -32,12 +32,15 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -50,6 +53,7 @@ import io.qt.autotests.generated.PerformanceTests.VirtualHost;
 import io.qt.core.QAbstractItemModel;
 import io.qt.core.QAbstractListModel;
 import io.qt.core.QAbstractTableModel;
+import io.qt.core.QByteArray;
 import io.qt.core.QEvent;
 import io.qt.core.QModelIndex;
 import io.qt.core.QSize;
@@ -61,13 +65,11 @@ import io.qt.widgets.QTableView;
 
 public class TestPerformance extends ApplicationInitializer {
 	
-	static {
-		System.setProperty("io.qt.experimental.fast-jni", "true");
-		System.setProperty("io.qt.experimental.fast-jni-for-overrides", "true");
-	}
-	
 	@BeforeClass
     public static void testInitialize() throws Exception {
+		Assume.assumeTrue("Performance tests are disabled. Specify -Denable-performance-tests=true to enable them.", Boolean.getBoolean("enable-performance-tests"));
+		System.setProperty("io.qt.experimental.fast-jni", "true");
+		System.setProperty("io.qt.experimental.fast-jni-for-overrides", "true");
     	ApplicationInitializer.testInitializeWithWidgets();
     }
 	
@@ -462,6 +464,37 @@ public class TestPerformance extends ApplicationInitializer {
     	System.out.println("Calling thread_local:       "+format.format(duration.toNanos()*0.001)+"\u00b5s");
     	duration = PerformanceTests.testAcquireQThreadStorage(count);
     	System.out.println("Calling QThreadStorage:     "+format.format(duration.toNanos()*0.001)+"\u00b5s");
+    }
+    
+    @SuppressWarnings("unused")
+	private static void test() throws InterruptedException {
+//    	Thread.sleep(1);
+    	int c = 0;
+    	for (int i = 1; i < count; i++) {
+			c %= i;
+		}
+    }
+    
+    @Test
+    public void testClassCall() {
+    	Map<Object,Object> classMap = new HashMap<>();
+    	java.time.Duration duration;
+    	duration = PerformanceTests.testClassCallBuffer(count, new QByteArray(TestPerformance.class.getName().replace('.', '/')), new QByteArray("test"), classMap);
+    	System.out.println("Calling class on buffer map:         "+format.format(duration.toNanos()*0.001)+"\u00b5s");
+    	classMap.clear();
+    	duration = PerformanceTests.testClassCallString(count, new QByteArray(TestPerformance.class.getName().replace('.', '/')), new QByteArray("test"), classMap);
+    	System.out.println("Calling class on string map:         "+format.format(duration.toNanos()*0.001)+"\u00b5s");
+    	classMap.clear();
+    	duration = PerformanceTests.testClassCallHash(count, new QByteArray(TestPerformance.class.getName().replace('.', '/')), new QByteArray("test"), classMap);
+    	System.out.println("Calling class on hash map:         "+format.format(duration.toNanos()*0.001)+"\u00b5s");
+    	duration = PerformanceTests.testClassCall(count, new QByteArray(TestPerformance.class.getName().replace('.', '/')), new QByteArray("test"));
+    	System.out.println("Calling class:                       "+format.format(duration.toNanos()*0.001)+"\u00b5s");
+    	duration = PerformanceTests.testClassCallGlobalRef(count, new QByteArray(TestPerformance.class.getName().replace('.', '/')), new QByteArray("test"));
+    	System.out.println("Calling class with global reference: "+format.format(duration.toNanos()*0.001)+"\u00b5s");
+    	duration = PerformanceTests.testClassCallLocalRef(count, new QByteArray(TestPerformance.class.getName().replace('.', '/')), new QByteArray("test"));
+    	System.out.println("Calling class with local reference:  "+format.format(duration.toNanos()*0.001)+"\u00b5s");
+    	duration = PerformanceTests.testClassCallLocalFromGlobalRef(count, new QByteArray(TestPerformance.class.getName().replace('.', '/')), new QByteArray("test"));
+    	System.out.println("Calling class with local reference from global:  "+format.format(duration.toNanos()*0.001)+"\u00b5s");
     }
 
     public static void main(String args[]) {

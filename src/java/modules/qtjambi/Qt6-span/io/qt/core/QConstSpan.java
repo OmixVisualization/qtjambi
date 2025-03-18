@@ -319,6 +319,13 @@ public class QConstSpan<T> extends AbstractSpan<T>{
 	}
 
 	/**
+     * <p>See <code><a href="https://doc.qt.io/qt/qspan.html#chopped">QSpan::<wbr>chopped(size_type)const</a></code></p>
+     */
+	public @NonNull QConstSpan<T> chopped(int n) {
+		return first(size()-n);
+	}
+
+	/**
      * <p>See <code><a href="https://doc.qt.io/qt/qspan.html#sliced">QSpan::<wbr>sliced(size_type)const</a></code></p>
      */
 	public @NonNull QConstSpan<T> sliced(int offset) {

@@ -1142,7 +1142,7 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(java/net,JarURLConnection,
                                 QTJAMBI_REPOSITORY_DEFINE_METHOD(getJarEntry,()Ljava/util/jar/JarEntry;)
 )
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/nio/channels,Channels,
-                                QTJAMBI_REPOSITORY_DEFINE_RENAMED_METHOD(newInChannel, newChannel,(Ljava/io/InputStream;)Ljava/nio/channels/ReadableByteChannel;)
+                                QTJAMBI_REPOSITORY_DEFINE_RENAMED_STATIC_METHOD(newInChannel, newChannel,(Ljava/io/InputStream;)Ljava/nio/channels/ReadableByteChannel;)
 )
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/nio/channels,ReadableByteChannel,
                                 QTJAMBI_REPOSITORY_DEFINE_METHOD(read,(Ljava/nio/ByteBuffer;)I)

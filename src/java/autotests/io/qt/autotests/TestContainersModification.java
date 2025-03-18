@@ -59,16 +59,4 @@ public class TestContainersModification extends ApplicationInitializer{
 		} catch (ConcurrentModificationException e) {
 		}
 	}
-
-//  @Test
-	public void testPerformance() {
-		QStringList list = new QStringList();
-//  	list.fill("", 0xffffff);//not in Qt5
-		long t1 = System.currentTimeMillis();
-		for (@SuppressWarnings("unused")
-		String string : list) {
-		}
-		long t2 = System.currentTimeMillis();
-		System.out.println("time: " + (t2 - t1));
-	}
 }

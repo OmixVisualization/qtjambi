@@ -624,6 +624,19 @@ TypeSystem{
     
     ValueType{
         name: "QDomNodeList"
+        IteratorType{
+            name: "It"
+            genericClass: true
+            since: 6.9
+        }
+        Rejection{functionName: "begin"}
+        Rejection{functionName: "cbegin"}
+        Rejection{functionName: "rbegin"}
+        Rejection{functionName: "crbegin"}
+        Rejection{functionName: "end"}
+        Rejection{functionName: "cend"}
+        Rejection{functionName: "rend"}
+        Rejection{functionName: "crend"}
     }
     
     ValueType{

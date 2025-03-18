@@ -258,7 +258,7 @@ namespace Java{
         QTJAMBI_REPOSITORY_DECLARE_CLASS(JarURLConnection,
                                          QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getJarEntry))
         QTJAMBI_REPOSITORY_DECLARE_CLASS(Channels,
-                                         QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(newInChannel))
+                                         QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(newInChannel))
         QTJAMBI_REPOSITORY_DECLARE_CLASS(ReadableByteChannel,
                                          QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(read))
         QTJAMBI_REPOSITORY_DECLARE_CLASS(AutoCloseable,

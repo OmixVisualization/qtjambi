@@ -401,7 +401,7 @@ public final class QmlTypes {
 						qmlClassLoader.addURL(url);
 					}
 				} catch (Throwable e) {
-					Logger.getLogger("internal").throwing(QmlTypes.class.getName(), "registerTypes()", e);
+					Logger.getLogger("io.qt.internal").throwing(QmlTypes.class.getName(), "registerTypes()", e);
 				}
 			}
 			java.lang.Package _package = QtJambi_LibraryUtilities.internal.getDefinedPackage(qmlClassLoader, uri);

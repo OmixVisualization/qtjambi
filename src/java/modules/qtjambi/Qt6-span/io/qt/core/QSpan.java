@@ -290,6 +290,13 @@ public final class QSpan<T> extends QConstSpan<T>{
 	public final @NonNull QSpan<T> last(int n) {
 		return subspan(size()-n, n);
 	}
+	
+	/**
+     * <p>See <code><a href="https://doc.qt.io/qt/qspan.html#chopped">QSpan::<wbr>chopped(size_type)const</a></code></p>
+     */
+	public @NonNull QSpan<T> chopped(int n) {
+		return first(size()-n);
+	}
 
 	/**
      * <p>See <code><a href="https://doc.qt.io/qt/qspan.html#sliced">QSpan::<wbr>sliced(size_type)const</a></code></p>

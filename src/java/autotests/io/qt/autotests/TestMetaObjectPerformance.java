@@ -50,6 +50,7 @@ public class TestMetaObjectPerformance extends ApplicationInitializer {
 	
 	@BeforeClass
     public static void testInitialize() throws Exception {
+		Assume.assumeTrue("Performance tests are disabled. Specify -Denable-performance-tests=true to enable them.", Boolean.getBoolean("enable-performance-tests"));
     	ApplicationInitializer.testInitializeWithWidgets();
     	hasSerializableLambdas = General.internalAccess.serializeLambdaExpression((QMetaObject.Slot0)ApplicationInitializer::testInitializeWithWidgets) != null;
     }

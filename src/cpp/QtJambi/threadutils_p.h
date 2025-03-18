@@ -199,7 +199,7 @@ public:
     JNIInvokable(const JNIInvokable& other) noexcept;
     JNIInvokable(JNIInvokable&& other) noexcept;
     JNIInvokable(FunctionPointer functor) noexcept;
-    inline JNIInvokable(nullptr_t) noexcept : JNIInvokable(FunctionPointer(nullptr)) {}
+    inline JNIInvokable(std::nullptr_t) noexcept : JNIInvokable(FunctionPointer(nullptr)) {}
 
     JNIInvokable& operator=(const JNIInvokable& other) noexcept;
     JNIInvokable& operator=(JNIInvokable&& other) noexcept;

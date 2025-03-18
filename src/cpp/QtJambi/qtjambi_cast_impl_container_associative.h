@@ -47,19 +47,22 @@ enum class QtJambiNativeID : jlong;
 
 namespace QtJambiPrivate {
 
-template<template<typename K, typename T> class Container, typename K, typename T>
+template<bool has_scope, template<typename K, typename T> class Container, typename K, typename T>
 struct IntermediateAssociativeContainer : Container<K,T>{
-    IntermediateAssociativeContainer(JNIEnv *env, jobject object, QtJambiScope& scope) : Container<K,T>(), m_scope(scope), m_object(env->NewWeakGlobalRef(object)){}
+    IntermediateAssociativeContainer(JNIEnv *env, jobject object, QtJambiScope* scope = nullptr)
+        : Container<K,T>(), m_scope(scope), m_object(env->NewWeakGlobalRef(object)){}
     ~IntermediateAssociativeContainer(){
         QTJAMBI_TRY_ANY{
             if(JniEnvironment env{200}){
                 QTJAMBI_TRY{
                     jobject object = env->NewLocalRef(m_object);
+                    env->DeleteWeakGlobalRef(jweak(m_object));
                     if(!env->IsSameObject(object, nullptr)){
                         QtJambiAPI::clearJavaMap(env, object);
                         for(typename Container<K,T>::const_iterator i = Container<K,T>::constBegin(); i!=Container<K,T>::constEnd(); ++i){
-                            jobject key = qtjambi_scoped_cast<true,jobject,decltype(i.key())>::cast(env, i.key(), nullptr, &m_scope);
-                            jobject val = qtjambi_scoped_cast<true,jobject,decltype(i.value())>::cast(env, i.value(), nullptr, &m_scope);
+                            JniLocalFrame f(env, 64);
+                            jobject key = qtjambi_scoped_cast<has_scope,jobject,decltype(i.key())>::cast(env, i.key(), nullptr, m_scope);
+                            jobject val = qtjambi_scoped_cast<has_scope,jobject,decltype(i.value())>::cast(env, i.value(), nullptr, m_scope);
                             QtJambiAPI::putJavaMap(env, object, key, val);
                         }
                     }
@@ -71,7 +74,7 @@ struct IntermediateAssociativeContainer : Container<K,T>{
             printf("An unknown exception occurred.\n");
         }QTJAMBI_TRY_END
     }
-    QtJambiScope& m_scope;
+    QtJambiScope* m_scope;
     jobject m_object;
 };
 

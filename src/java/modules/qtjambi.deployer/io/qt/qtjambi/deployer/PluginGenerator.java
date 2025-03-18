@@ -537,6 +537,8 @@ final class PluginGenerator {
 						case "windows-arm64":
 						case "windows-x86":
 						case "windows-x64":
+						case "windows-mingw-x64":
+						case "windows-llvm-mingw-x64":
 	                        if(isDebug==null){
 								newFile = new File(subdirectory, pluginName + (entry.getValue().toExternalForm().endsWith("d.dll") ? "d.dll" : ".dll"));
 							}else{

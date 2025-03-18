@@ -31,7 +31,10 @@ public abstract class UnitTestInitializer {
 				Properties properties = new Properties();
 				properties.load(UnitTestInitializer.class.getResourceAsStream("debuglogging.properties"));
 				properties.setProperty(".level", logLevel);
+				properties.setProperty("io.qt.level", logLevel);
+				properties.setProperty("io.qt.core.level", logLevel);
 				properties.setProperty("io.qt.internal.level", logLevel);
+				properties.setProperty("io.qt.cleanup.level", logLevel);
 				properties.setProperty("io.qt.autotests.level", logLevel);
 				properties.store(out, null);
 				LogManager.getLogManager().readConfiguration(new ByteArrayInputStream(out.toByteArray()));
@@ -78,6 +81,7 @@ public abstract class UnitTestInitializer {
 				if(!"debug".equals(System.getProperty("io.qt.debug"))) {
 					System.clearProperty("io.qt.no-deployment-spec");
 					System.clearProperty("io.qt.library-path-override");
+					System.setProperty("io.qt.library-path-override", "");
 					System.clearProperty("io.qt.qml-imports");
 					System.clearProperty("io.qt.pluginpath");
 				}else {

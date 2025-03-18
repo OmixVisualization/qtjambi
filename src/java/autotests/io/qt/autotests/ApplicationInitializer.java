@@ -332,9 +332,15 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
     		if(isDebug)
     			executable += "_debug";
     	}
-    	String qtBinariesPath = TestUtility.qtLibraryPath();
-    	if(isDebug)
+    	String qtBinariesPath = "";
+    	if(isDebug) {
     		qtBinariesPath = System.getProperty("io.qt.library-path-override");
+    	}else {
+        	File qtLibraryPath = TestUtility.qtLibraryPath();    		
+        	if(qtLibraryPath!=null) {
+        		qtBinariesPath = qtLibraryPath.getAbsolutePath();
+        	}
+    	}
     	File utilitiesDir = new File(new File(testsDir.getParentFile(), "qtjambi"), "bin");
     	String macosPrefix = "";
 		final File tmpDir = new File(System.getProperty("java.io.tmpdir"));

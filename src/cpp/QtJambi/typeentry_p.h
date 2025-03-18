@@ -31,43 +31,10 @@
 #define QTJAMBI_TYPEENTRY_P_H
 
 #include <QtCore/QObject>
-#include <typeindex>
 #include <typeinfo>
 #include "qtjambiapi.h"
 #include "registryapi.h"
 #include "utils_p.h"
-
-struct PolymorphicIdHandler{
-    PolymorphicIdHandler(const std::type_info& targetTypeId, PolymorphyHandler polymorphyHandler)
-        : m_targetTypeId(targetTypeId),
-          m_polymorphyHandler(polymorphyHandler)
-    {
-    }
-    const std::type_info& m_targetTypeId;
-    PolymorphyHandler m_polymorphyHandler;
-};
-
-struct InterfaceOffsetInfo{
-    QMap<size_t,uint> offsets;
-    QSet<size_t> interfaces;
-    QMap<size_t, QSet<const std::type_info*>> inheritedInterfaces;
-};
-
-enum class EntryTypes
-{
-    Unspecific = 0,
-    ObjectTypeInfo,
-    EnumTypeInfo,
-    FlagsTypeInfo,
-    FunctionalTypeInfo,
-    InterfaceValueTypeInfo,
-    InterfaceTypeInfo,
-    QObjectTypeInfo,
-    ValueTypeInfo,
-    SpecialTypeInfo,
-    StringTypeInfo,
-    PrimitiveTypeInfo
-};
 
 typedef QExplicitlySharedDataPointer<const class QtJambiTypeEntry> QtJambiTypeEntryPtr;
 
@@ -171,7 +138,7 @@ private:
 #if QT_VERSION >= 0x050C00
 class QCborValueRefTypeEntry : public AbstractSimpleTypeEntry{
 public:
-    QCborValueRefTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size);
+    using AbstractSimpleTypeEntry::AbstractSimpleTypeEntry;
     NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
     bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
 private:
@@ -180,7 +147,7 @@ private:
 
 class StringTypeEntry : public AbstractSimpleTypeEntry{
 public:
-    StringTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size);
+    using AbstractSimpleTypeEntry::AbstractSimpleTypeEntry;
     NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
     bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
     bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
@@ -188,27 +155,11 @@ public:
 private:
     template<template<typename> class SmartPointer>
     bool convertSmartPointerToJava(JNIEnv *env, const SmartPointer<char>& smartPointer, jvalue& output, jValueType valueType) const;
-};
-
-class StringUtilTypeEntry : public AbstractSimpleTypeEntry{
-public:
-    StringUtilTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size);
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
-    bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
-private:
-};
-
-class MetaUtilTypeEntry : public AbstractSimpleTypeEntry{
-public:
-    MetaUtilTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size);
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
-    bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
-private:
 };
 
 class QVariantTypeEntry : public AbstractSimpleTypeEntry{
 public:
-    QVariantTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size);
+    using AbstractSimpleTypeEntry::AbstractSimpleTypeEntry;
     NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
     bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
     bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
@@ -216,78 +167,6 @@ public:
 private:
     template<template<typename> class SmartPointer>
     bool convertSmartPointerToJava(JNIEnv *env, const SmartPointer<char>& smartPointer, jvalue& output, jValueType valueType) const;
-};
-
-class JLongTypeEntry : public AbstractSimpleTypeEntry{
-public:
-    JLongTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size);
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
-    bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
-private:
-};
-
-class JIntTypeEntry : public AbstractSimpleTypeEntry{
-public:
-    JIntTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size);
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
-    bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
-private:
-};
-
-class JShortTypeEntry : public AbstractSimpleTypeEntry{
-public:
-    JShortTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size);
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
-    bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
-private:
-};
-
-class JByteTypeEntry : public AbstractSimpleTypeEntry{
-public:
-    JByteTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size);
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
-    bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
-private:
-};
-
-class JCharTypeEntry : public AbstractSimpleTypeEntry{
-public:
-    JCharTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size);
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
-    bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
-private:
-};
-
-class JBooleanTypeEntry : public AbstractSimpleTypeEntry{
-public:
-    JBooleanTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size);
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
-    bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
-private:
-};
-
-class JDoubleTypeEntry : public AbstractSimpleTypeEntry{
-public:
-    JDoubleTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size);
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
-    bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
-private:
-};
-
-class JFloatTypeEntry : public AbstractSimpleTypeEntry{
-public:
-    JFloatTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size);
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
-    bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
-private:
-};
-
-class NullptrTypeEntry : public AbstractSimpleTypeEntry{
-public:
-    NullptrTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size);
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
-    bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
-private:
 };
 
 class ShellableTypeEntry : public QtJambiTypeEntry{

@@ -7199,10 +7199,11 @@ const char (&%out)[5] = *reinterpret_cast<const char(*)[5]>(bufferData);
             InjectCode{
                 target: CodeClass.Native
                 position: Position.Beginning
-                Text{content: "if(!Java::QtCore::QCoreApplication::__qt_isInitializing(%env)){\n"+
-                              "    Java::Runtime::IllegalAccessError::throwNew(%env, \"Not allowed to instantiate QGuiApplication. Please use QGuiApplication.initialize() instead.\" QTJAMBI_STACKTRACEINFO );\n"+
-                              "    return;\n"+
-                              "}"}
+                Text{content: String.raw`
+if(!Java::QtCore::QCoreApplication::__qt_isInitializing(%env)){
+    Java::Runtime::IllegalAccessError::throwNew(%env, "Not allowed to instantiate QGuiApplication. Please use QGuiApplication.initialize() instead." QTJAMBI_STACKTRACEINFO );
+    return;
+}`}
             }
             ModifyArgument{
                 index: 1
@@ -7220,9 +7221,10 @@ const char (&%out)[5] = *reinterpret_cast<const char(*)[5]>(bufferData);
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "std::unique_ptr<ApplicationData> applicationData(ApplicationData::initialize<QGuiApplication>(%env, %in));\n"+
-                                  "char** %out = applicationData->chars();\n"+
-                                  "int& __qt_%1 = applicationData->size();"}
+                    Text{content: String.raw`
+std::unique_ptr<ApplicationData> applicationData(ApplicationData::initialize<QGuiApplication>(%env, %in));
+char** %out = applicationData->chars();
+int& __qt_%1 = applicationData->size();`}
                 }
             }
             ModifyArgument{
@@ -7233,8 +7235,9 @@ const char (&%out)[5] = *reinterpret_cast<const char(*)[5]>(bufferData);
             InjectCode{
                 target: CodeClass.Native
                 position: Position.End
-                Text{content: "applicationData->update(%env);\n"+
-                              "QTJAMBI_SET_OBJECTUSERDATA(ApplicationData, __qt_this, applicationData.release());"}
+                Text{content: String.raw`
+applicationData->update(%env);
+QTJAMBI_SET_OBJECTUSERDATA(ApplicationData, __qt_this, applicationData.release());`}
             }
         }
         ModifyFunction{
@@ -10819,49 +10822,48 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
         InjectCode{
             target: CodeClass.Native
             since: [6, 2]
-            Text{content: "// QScreen::resolveInterface(const char * name, int revision) const\n"+
-                          "extern \"C\" Q_DECL_EXPORT jobject JNICALL Java_io_qt_gui_QScreen_nativeInterface\n"+
-                          "(JNIEnv *__jni_env,\n"+
-                          " jobject __this,\n"+
-                          " QtJambiNativeID __this_nativeId,\n"+
-                          " jclass name0)\n"+
-                          "{\n"+
-                          "    Q_UNUSED(__this)\n"+
-                          "    jobject __java_return_value{0};\n"+
-                          "    QTJAMBI_TRY{\n"+
-                          "        struct Screen : QScreen{\n"+
-                          "            jobject nativeInterface(JNIEnv *__jni_env, QtJambiNativeID __this_nativeId, jclass name0)const{\n"+
-                          "                CoreAPI::NITypeInfo info = CoreAPI::getNativeInterfaceInfo(__jni_env, name0);\n"+
-                          "                const char* __qt_name0 = info.name;\n"+
-                          "                int __qt_revision1 = info.revision;\n"+
-                          "                void* __qt_return_value = resolveInterface(__qt_name0, static_cast<int>(__qt_revision1));\n"+
-                          "                jobject __java_return_value = QtJambiAPI::convertNativeToJavaObjectAsWrapper(__jni_env, __qt_return_value, name0);\n"+
-                          "                QtJambiAPI::registerDependency(__jni_env, __java_return_value, __this_nativeId);\n"+
-                          "                return __java_return_value;\n"+
-                          "            }\n"+
-                          "        };\n"+
-                          "\n"+
-                          "        const Screen *__qt_this = QtJambiAPI::objectFromNativeId<Screen>(__this_nativeId);\n"+
-                          "        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);\n"+
-                          "        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL(\"QScreen::resolveInterface(const char * name, int revision) const\", __qt_this)\n"+
-                          "        __java_return_value = __qt_this->nativeInterface(__jni_env, __this_nativeId, name0);\n"+
-                          "    }QTJAMBI_CATCH(const JavaException& exn){\n"+
-                          "        exn.raiseInJava(__jni_env);\n"+
-                          "    }QTJAMBI_TRY_END\n"+
-                          "    return __java_return_value;\n"+
-                          "\n"+
-                          "}"}
+            Text{content: String.raw`
+// QScreen::resolveInterface(const char * name, int revision) const
+extern "C" Q_DECL_EXPORT jobject JNICALL Java_io_qt_gui_QScreen_nativeInterface
+(JNIEnv *__jni_env,
+ jobject __this,
+ QtJambiNativeID __this_nativeId,
+ jclass name0)
+{
+    Q_UNUSED(__this)
+    jobject __java_return_value{0};
+    QTJAMBI_TRY{
+        struct Screen : QScreen{
+            jobject nativeInterface(JNIEnv *__jni_env, QtJambiNativeID __this_nativeId, jclass name0)const{
+                CoreAPI::NITypeInfo info = CoreAPI::getNativeInterfaceInfo(__jni_env, name0);
+                void* __qt_return_value = resolveInterface(info.name, info.revision);
+                jobject __java_return_value = QtJambiAPI::convertNativeToJavaObjectAsWrapper(__jni_env, __qt_return_value, name0);
+                QtJambiAPI::registerDependency(__jni_env, __java_return_value, __this_nativeId);
+                return __java_return_value;
+            }
+        };
+
+        const Screen *__qt_this = QtJambiAPI::objectFromNativeId<Screen>(__this_nativeId);
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QScreen::resolveInterface(const char * name, int revision) const", __qt_this)
+        __java_return_value = __qt_this->nativeInterface(__jni_env, __this_nativeId, name0);
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+    return __java_return_value;
+}`}
         }
         InjectCode{
             target: CodeClass.Java
             since: [6, 2]
-            Text{content: "@QtUninvokable\n"+
-                          "public final <QNativeInterface extends QtObjectInterface> QNativeInterface nativeInterface(java.lang.Class<QNativeInterface> name){\n"+
-                          "    return nativeInterface(QtJambi_LibraryUtilities.internal.nativeId(this), name);\n"+
-                          "}\n"+
-                          "\n"+
-                          "@QtUninvokable\n"+
-                          "private native <QNativeInterface extends QtObjectInterface> QNativeInterface nativeInterface(long __this__nativeId, java.lang.Class<QNativeInterface> name);"}
+            Text{content: String.raw`
+@QtUninvokable
+public final <QNativeInterface extends QtObjectInterface> QNativeInterface nativeInterface(java.lang.Class<QNativeInterface> name){
+    return nativeInterface(QtJambi_LibraryUtilities.internal.nativeId(this), name);
+}
+
+@QtUninvokable
+private native <QNativeInterface extends QtObjectInterface> QNativeInterface nativeInterface(long __this__nativeId, java.lang.Class<QNativeInterface> name);`}
         }
     }
     

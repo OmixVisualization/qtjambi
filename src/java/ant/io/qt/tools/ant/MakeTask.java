@@ -67,7 +67,8 @@ public class MakeTask extends Task {
 		            String compiler = (String)PropertyHelper.getProperty(getProject(), Constants.TOOLS_COMPILER);
 		
 		            if(FindCompiler.Compiler.MinGW.toString().equals(compiler)
-	            			|| FindCompiler.Compiler.MinGW_W64.toString().equals(compiler))
+	            			|| FindCompiler.Compiler.MinGW_W64.toString().equals(compiler)
+	            			|| FindCompiler.Compiler.LLVM_MinGW_W64.toString().equals(compiler))
 		                return new File(compilerPathValue, "mingw32-make.exe").getAbsolutePath();
 		            return new File(compilerPathValue, "nmake.exe").getAbsolutePath();
 				default:
@@ -79,7 +80,9 @@ public class MakeTask extends Task {
     	        case Windows:
     	            String compiler = (String)PropertyHelper.getProperty(getProject(), Constants.COMPILER);
     	
-    	            if(FindCompiler.Compiler.MinGW.toString().equals(compiler) || FindCompiler.Compiler.MinGW_W64.toString().equals(compiler))
+    	            if(FindCompiler.Compiler.MinGW.toString().equals(compiler) 
+    	            		|| FindCompiler.Compiler.MinGW_W64.toString().equals(compiler)
+    	            		|| FindCompiler.Compiler.LLVM_MinGW_W64.toString().equals(compiler))
     	                return "mingw32-make";
     	            String qtdir = (String)PropertyHelper.getProperty(getProject(), "qtjambi.qtdir");
     	            if(qtdir!=null) {
@@ -125,7 +128,9 @@ public class MakeTask extends Task {
 	        case Windows:
 	            String compiler = (String)PropertyHelper.getProperty(getProject(), Constants.COMPILER);
 	
-	            if(FindCompiler.Compiler.MinGW.toString().equals(compiler) || FindCompiler.Compiler.MinGW_W64.toString().equals(compiler))
+	            if(FindCompiler.Compiler.MinGW.toString().equals(compiler) 
+	            		|| FindCompiler.Compiler.MinGW_W64.toString().equals(compiler)
+	            		|| FindCompiler.Compiler.LLVM_MinGW_W64.toString().equals(compiler))
 	                return "mingw32-make";
 	            String qtdir = (String)PropertyHelper.getProperty(getProject(), "qtjambi.qtdir");
 	            if(qtdir!=null) {

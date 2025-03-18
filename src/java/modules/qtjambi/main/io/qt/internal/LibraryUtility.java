@@ -156,15 +156,15 @@ final class LibraryUtility {
     private static final List<String> systemLibrariesList;
     private static final List<String> jniLibdirBeforeList;
     private static final List<String> jniLibdirList;
-    private static boolean isMinGWBuilt = false;
+    private static Boolean isMinGWBuilt = null;
     
 	static final OperatingSystem operatingSystem = OperatingSystem.decideOperatingSystem();
 	static final Architecture architecture = Architecture.decideArchitecture();
     static final String osArchName;
     
     private static LibraryBundle.Configuration configuration = null;
-    private static String qtJambiLibraryPath = null;
-    private static String qtLibraryPath = null;
+    private static File qtJambiLibraryPath = null;
+    private static File qtLibraryPath = null;
 	private static Boolean dontUseQtJambiFrameworks = operatingSystem==OperatingSystem.MacOS ? null : Boolean.FALSE;
 	private static Boolean dontUseQtFrameworks = operatingSystem==OperatingSystem.MacOS ? null : Boolean.FALSE;
     
@@ -185,8 +185,6 @@ final class LibraryUtility {
     private static final File jambiSourcesDir;
     private static final File jambiHeadersDir;
     private static final File jambiJarDir;
-    @NativeAccess
-    private static String qtJambiConfFile;
     private static final boolean isMavenRepo, isGradleCache, isNativeSubdir, isDebuginfoSubdir;
     private static final List<Library> pluginLibraries = Collections.synchronizedList(new ArrayList<>());
 
@@ -309,18 +307,26 @@ final class LibraryUtility {
             LIBINFIX = libInfix;
         }
 
+        String _osArchName;
         switch (operatingSystem) {
         case MacOS:
         case IOS:
-            osArchName = operatingSystem.name().toLowerCase();
+            _osArchName = operatingSystem.name().toLowerCase();
             break;
         default:
         	switch(architecture) {
         	case x86_64:
-        		osArchName = operatingSystem.name().toLowerCase()+"-x64"; break;
+        		_osArchName = operatingSystem.name().toLowerCase()+"-x64"; break;
         	default:
-        		osArchName = operatingSystem.name().toLowerCase()+"-"+architecture.name().toLowerCase(); break;
+        		_osArchName = operatingSystem.name().toLowerCase()+"-"+architecture.name().toLowerCase(); break;
         	}
+        	switch (operatingSystem) {
+            case Windows:
+            	if(System.getProperty("qtjambi.osname", "").startsWith("windows-"))
+            		_osArchName = System.getProperty("qtjambi.osname", "");
+	            break;
+	            default:
+            }
             break;
         }
         
@@ -578,6 +584,22 @@ final class LibraryUtility {
     					}
 			        	if (f!=null && f.exists()) {
 			        		loadQtFromLibraryPath = true;
+			        		if(!loadQtJambiFromLibraryPath && _osArchName.equals("windows-x64")) {
+			        			// check mingw
+			        			File util = new File(path, "libstdc++-6.dll");
+			        			if(util.exists()) {
+			        				isMinGWBuilt = Boolean.TRUE;
+				    				_osArchName = "windows-mingw-x64";
+			        			}else {
+			        				util = new File(path, "libc++.dll");
+				        			if(util.exists()) {
+				        				isMinGWBuilt = Boolean.TRUE;
+					    				_osArchName = "windows-llvm-mingw-x64";
+				        			}else {
+				        				
+				        			}
+			        			}
+			        		}
 			        		break loop1;
 			        	}
 		    		}while(iter.hasNext());
@@ -865,20 +887,35 @@ final class LibraryUtility {
 		        
 	
 	    		ClassLoader loader = classLoader();
-	            Enumeration<URL> specsFound = Collections.emptyEnumeration();
+	            List<URL> specsFound = new ArrayList<>();
 	            try {
-					specsFound = loader.getResources(DEPLOY_XML);
+					Enumeration<URL> enm = loader.getResources(DEPLOY_XML);
+					while(enm.hasMoreElements()) {
+						specsFound.add(enm.nextElement());
+					}
 				} catch (IOException e) {
 					logger.log(Level.WARNING, "", e);
 				}
-	            dontSearchDeploymentSpec = specsFound.hasMoreElements();
+	            switch (operatingSystem) {
+                case Windows:
+		            for(URL _url : specsFound) {
+		            	try {
+		            		LibraryBundle bundle = LibraryBundle.read(_url, null);
+		            		if(bundle!=null && "qtjambi".equals(bundle.module()) && bundle.system().startsWith("windows-")) {
+		            			_osArchName = bundle.system();
+		            		}
+		            	}catch(Exception e) {}
+		            }
+		            break;
+		            default:
+	            }
+	            dontSearchDeploymentSpec = !specsFound.isEmpty();
             	Map<URL,URL> debuginfosByURL = Collections.emptyMap();
 	            if(dontSearchDeploymentSpec && !"debug".equals(System.getProperty("io.qt.debug")) && debugInfoDeployment) {
 	            	debuginfosByURL = new HashMap<>();
 	            	List<URL> foundURLs = new ArrayList<>();
 	            	Map<String,QPair<URL,URL>> urlsByFileName = new TreeMap<>();
-		            while (specsFound.hasMoreElements()) {
-		            	URL _url = specsFound.nextElement();
+		            for(URL _url : specsFound) {
 		            	String url = _url.toString();
 		            	if(url.startsWith("jar:file:") && url.endsWith(DEPLOY_XML_IN_JAR)) {
 		            		url = url.substring(4, url.length()-DEPLOY_XML_IN_JAR.length());
@@ -915,7 +952,7 @@ final class LibraryUtility {
 		            		}
 		            	}
 		            }
-		            specsFound = Collections.enumeration(foundURLs);
+		            specsFound = foundURLs;
 	            }
 	            
 	            if(!dontSearchDeploymentSpec && jambiJarDir!=null) {
@@ -928,8 +965,8 @@ final class LibraryUtility {
 	            	debuginfosByURL = new HashMap<>();
 	            	if(!loadQtJambiFromLibraryPath) {
 	            		String version = String.format("%1$s.%2$s.%3$s", QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion, QtJambi_LibraryUtilities.qtJambiPatch);
-	            		String nativeModule = String.format("qtjambi-native-%1$s", osArchName);
-	            		String debuginfoModule = String.format("qtjambi-debuginfo-%1$s", osArchName);
+	            		String nativeModule = String.format("qtjambi-native-%1$s", _osArchName);
+	            		String debuginfoModule = String.format("qtjambi-debuginfo-%1$s", _osArchName);
 		            	if("debug".equals(System.getProperty("io.qt.debug"))) {
 			    			File nativeFile = null;
 			    			if(maybeMavenRepo) {
@@ -959,6 +996,45 @@ final class LibraryUtility {
 				    				_isNativeSubdir = nativeFile.exists();
 				    			}
 			    			}
+			    			if(!nativeFile.exists() && "windows-x64".equals(_osArchName)) {
+			    				for(String compiler : new String[]{"windows-llvm-mingw-x64", "windows-mingw-x64"}) {
+				    				nativeModule = String.format("qtjambi-native-%1$s", compiler);
+				            		debuginfoModule = String.format("qtjambi-debuginfo-%1$s", compiler);
+				            		nativeFile = null;
+				            		if(maybeMavenRepo) {
+					    				try {
+						    				File jarDir = new File(new File(jambiJarDir.getParentFile().getParentFile(), String.format("%1$s-debug", nativeModule)), version);
+						    				nativeFile = new File(jarDir, String.format("%1$s-debug-%2$s.jar", nativeModule, version));
+						    				_isMavenRepo = nativeFile.exists();
+					    				} catch (Throwable e) {}
+					    			}
+					    			if(maybeGradleCache) {
+					    				try {
+						    				File jarDir = new File(new File(jambiJarDir.getParentFile().getParentFile().getParentFile(), String.format("%1$s-debug", nativeModule)), version);
+						    				for(File subdir : jarDir.listFiles()) {
+				        						if(subdir.isDirectory()) {
+				        							nativeFile = new File(subdir, String.format("%1$s-debug-%2$s.jar", nativeModule, version));
+				        							if(nativeFile.exists())
+				        								break;
+				        						}
+						    				}
+						    				_isGradleCache = nativeFile.exists();
+					    				} catch (Throwable e) {}
+					    			}
+					    			if(nativeFile==null || !nativeFile.exists()) {
+					    				nativeFile = new File(jambiJarDir, String.format("%1$s-debug-%2$s.jar", nativeModule, version));
+					    				if(!nativeFile.exists()) {
+						    				nativeFile = new File(new File(jambiJarDir, "native"), String.format("%1$s-debug-%2$s.jar", nativeModule, version));
+						    				_isNativeSubdir = nativeFile.exists();
+						    			}
+					    			}
+					    			if(nativeFile.exists()) {
+					    				isMinGWBuilt = Boolean.TRUE;
+					    				_osArchName = compiler;
+					    				break;
+					    			}
+			    				}
+		            		}
 			    			if(nativeFile.exists()) {
 			    				isDebug = true;
 			    				try {
@@ -966,6 +1042,7 @@ final class LibraryUtility {
 								} catch (IOException e) {
 								}
 			    			}
+			    			osArchName = _osArchName;
 		            	}else {
 		            		File nativeFile = null;
 		            		if(maybeMavenRepo) {
@@ -995,6 +1072,46 @@ final class LibraryUtility {
 				    				_isNativeSubdir = nativeFile.exists();
 				    			}
 		            		}
+		            		if(!nativeFile.exists() && "windows-x64".equals(_osArchName)) {
+			    				for(String compiler : new String[]{"windows-llvm-mingw-x64", "windows-mingw-x64"}) {
+				    				nativeModule = String.format("qtjambi-native-%1$s", compiler);
+				            		debuginfoModule = String.format("qtjambi-debuginfo-%1$s", compiler);
+				            		nativeFile = null;
+				            		if(maybeMavenRepo) {
+					    				try {
+						    				File jarDir = new File(new File(jambiJarDir.getParentFile().getParentFile(), nativeModule), version);
+						    				nativeFile = new File(jarDir, String.format("%1$s-%2$s.jar", nativeModule, version));
+						    				_isMavenRepo = nativeFile.exists();
+					    				} catch (Throwable e) {}
+					    			}
+				            		if(maybeGradleCache) {
+					    				try {
+						    				File jarDir = new File(new File(jambiJarDir.getParentFile().getParentFile().getParentFile(), nativeModule), version);
+						    				for(File subdir : jarDir.listFiles()) {
+				        						if(subdir.isDirectory()) {
+				        							nativeFile = new File(subdir, String.format("%1$s-%2$s.jar", nativeModule, version));
+				        							if(nativeFile.exists())
+				        								break;
+				        						}
+						    				}
+						    				_isGradleCache = nativeFile.exists();
+					    				} catch (Throwable e) {}
+					    			}
+				            		if(nativeFile==null || !nativeFile.exists()) {
+				            			nativeFile = new File(jambiJarDir, String.format("%1$s-%2$s.jar", nativeModule, version));
+				            			if(!nativeFile.exists()) {
+						    				nativeFile = new File(new File(jambiJarDir, "native"), String.format("%1$s-%2$s.jar", nativeModule, version));
+						    				_isNativeSubdir = nativeFile.exists();
+						    			}
+				            		}
+					    			if(nativeFile.exists()) {
+					    				_osArchName = compiler;
+					    				isMinGWBuilt = Boolean.TRUE;
+					    				break;
+					    			}
+			    				}
+		            		}
+		            		osArchName = _osArchName;
 			    			if(nativeFile.exists()) {
 			    				try {
 			    					URL url = CoreUtility.createURL("jar:"+nativeFile.toURI()+DEPLOY_XML_IN_JAR);
@@ -1074,9 +1191,9 @@ final class LibraryUtility {
 		            	}
 		        		final String suffix;
 	        			if(isDebug) {
-	        				suffix = String.format("-native-%1$s-debug", osArchName);
+	        				suffix = String.format("-native-%1$s-debug", _osArchName);
 		        		}else {
-		        			suffix = String.format("-native-%1$s", osArchName);
+		        			suffix = String.format("-native-%1$s", _osArchName);
 		        		}
 		            	final String versionedSuffix = String.format("%1$s-%2$s.%3$s.", suffix, QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion);
 		        		if(_isMavenRepo) {
@@ -1151,10 +1268,12 @@ final class LibraryUtility {
 								}
 							}
 	    				} catch (Throwable e) {}
+	            	}else {
+	            		osArchName = _osArchName;
 	            	}
 	            	if(!loadQtFromLibraryPath) {
 	            		int qtPatchVersion = -1;
-	            		String libPrefix = String.format("qt-lib-core-native-%1$s%2$s-%3$s.%4$s.", osArchName, isDebug && operatingSystem==OperatingSystem.Windows ? "-debug" : "", QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion);
+	            		String libPrefix = String.format("qt-lib-core-native-%1$s%2$s-%3$s.%4$s.", _osArchName, isDebug && operatingSystem==OperatingSystem.Windows ? "-debug" : "", QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion);
 	        			for(File lib : (_isNativeSubdir ? new File(jambiJarDir, "native") : jambiJarDir).listFiles()) {
 	            			if(lib.isFile() && lib.getName().startsWith(libPrefix) && lib.getName().endsWith(".jar")) {
 	            				String version = lib.getName().substring(libPrefix.length(), lib.getName().length()-4);
@@ -1164,7 +1283,7 @@ final class LibraryUtility {
 	            			}
 	            		}
 	            		if(qtPatchVersion>=0) {
-	            			String libSuffix = String.format("-native-%1$s%2$s-%3$s.%4$s.%5$s.jar", osArchName, isDebug && operatingSystem==OperatingSystem.Windows ? "-debug" : "", QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion, qtPatchVersion);
+	            			String libSuffix = String.format("-native-%1$s%2$s-%3$s.%4$s.%5$s.jar", _osArchName, isDebug && operatingSystem==OperatingSystem.Windows ? "-debug" : "", QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion, qtPatchVersion);
 	            			for(File lib : (_isNativeSubdir ? new File(jambiJarDir, "native") : jambiJarDir).listFiles()) {
 	            				if(lib.isFile() && lib.getName().startsWith("qt-") && lib.getName().endsWith(libSuffix)) {
 	            					try {
@@ -1184,7 +1303,7 @@ final class LibraryUtility {
 	            		}
 	            	}
 	            	if(!foundURLs.isEmpty())
-	            		specsFound = Collections.enumeration(foundURLs);
+	            		specsFound = foundURLs;
 			    	isMavenRepo = _isMavenRepo;
 			    	isGradleCache = _isGradleCache;
 			    	isNativeSubdir = _isNativeSubdir;
@@ -1194,11 +1313,10 @@ final class LibraryUtility {
 			    	isGradleCache = false;
 	            	isNativeSubdir = false;
 	            	isDebuginfoSubdir = false;
+	            	osArchName = _osArchName;
 	            }
 	            
-	            while (specsFound.hasMoreElements()) {
-	                URL url = specsFound.nextElement();
-	                
+	            for(URL url : specsFound) {
 	                if(loadedNativeDeploymentUrls.contains(url))
 	                	continue;
 	                loadedNativeDeploymentUrls.add(url);
@@ -1223,7 +1341,7 @@ final class LibraryUtility {
 									try {
 										URL debuginfoURL = debuginfosByURL.get(url);
 										logger.log(Level.FINEST, ()->debuginfoURL==null ? String.format("Extracting libraries from %1$s", url.getFile().replace(DEPLOY_XML_IN_JAR, "")) : String.format("Extracting libraries from %1$s and %2$s", url.getFile().replace(DEPLOY_XML_IN_JAR, ""), debuginfoURL.getFile().replace(DEPLOY_XML_IN_JAR, "")));
-									    spec = prepareNativeDeployment(url, debuginfoURL, jarName, null);
+									    spec = prepareNativeDeployment(url, debuginfoURL, jarName, null, osArchName);
 									} catch (ParserConfigurationException | SAXException | ZipException e) {
 										logger.log(Level.WARNING, String.format("Unable to load native libraries from %1$s: %2$s", (jarName==null ? jarUrl : jarName), e.getMessage()), e);
 									} catch (IOException e) {
@@ -1237,17 +1355,18 @@ final class LibraryUtility {
 	                    try {
 	                    	URL debuginfoURL = debuginfosByURL.get(url);
 	                    	logger.log(Level.FINEST, ()->debuginfoURL==null ? String.format("Extracting libraries from %1$s", url.getFile().replace(DEPLOY_XML_IN_JAR, "")) : String.format("Extracting libraries from %1$s and %2$s", url.getFile().replace(DEPLOY_XML_IN_JAR, ""), debuginfoURL.getFile().replace(DEPLOY_XML_IN_JAR, "")));
-							spec = prepareNativeDeployment(url, debuginfoURL, null, Boolean.FALSE);
+							spec = prepareNativeDeployment(url, debuginfoURL, null, Boolean.FALSE, osArchName);
 						} catch (ParserConfigurationException | SAXException | ZipException e) {
 							logger.log(Level.WARNING, String.format("Unable to load native libraries from %1$s: %2$s", url, e.getMessage()), e);
 						} catch (IOException e) {
 						}
 	                }
 	                if(spec != null) {
-	                	if("qtjambi".equals(spec.module()))
+	                	if("qtjambi".equals(spec.module())) {
 	                		nativeDeployments.add(0, spec);
-	                	else
+	                	}else {
 	                		nativeDeployments.add(spec);
+	                	}
 	                }
 	            }
 	            if(!nativeDeployments.isEmpty()) {
@@ -1255,10 +1374,10 @@ final class LibraryUtility {
                 	configuration = qtjambiSpec.configuration();
 	            	switch (operatingSystem) {
 	                case Windows:
-	                	qtJambiLibraryPath = new File(qtjambiSpec.extractionDir(), "bin").getAbsolutePath();
+	                	qtJambiLibraryPath = new File(qtjambiSpec.extractionDir(), "bin");
 	                	break;
 	            	default:
-	            		qtJambiLibraryPath = new File(qtjambiSpec.extractionDir(), "lib").getAbsolutePath();
+	            		qtJambiLibraryPath = new File(qtjambiSpec.extractionDir(), "lib");
 	            		break;
 	            	}
 	            	for(LibraryBundle spec : nativeDeployments) {
@@ -1294,6 +1413,7 @@ final class LibraryUtility {
 		    	isGradleCache = false;
             	isNativeSubdir = false;
             	isDebuginfoSubdir = false;
+            	osArchName = _osArchName;
 	    	}
 		} catch (RuntimeException | Error e) {
 			logger.log(Level.WARNING, "", e);
@@ -1408,7 +1528,7 @@ final class LibraryUtility {
 	    	String libraryPlatformName;
 	    	switch (operatingSystem) {
 	        case Windows: 
-	        	libraryPlatformName = "plugins/containeraccess/" + (configuration == LibraryBundle.Configuration.Debug && !isMinGWBuilt
+	        	libraryPlatformName = "plugins/containeraccess/" + (configuration == LibraryBundle.Configuration.Debug && !isMinGWBuilt()
 		                ? library + "d.dll"  // "QtFood4.dll"
 		                : library + ".dll");
 	        	break;
@@ -1595,14 +1715,16 @@ final class LibraryUtility {
 							availability = _availability;
 					}
 				}else {
-					if(!isMinGWBuilt && operatingSystem==OperatingSystem.Windows) {
+					if(isMinGWBuilt==null && operatingSystem==OperatingSystem.Windows) {
 						Availability stdCAvailability = getLibraryAvailability(null, "libstdc++-6", null, null, LibraryBundle.Configuration.Release, null);
 				    	if(stdCAvailability.entry!=null){
-				    		isMinGWBuilt = true;
+				    		isMinGWBuilt = Boolean.TRUE;
 				    	}else if(stdCAvailability.file!=null){
-				    		isMinGWBuilt = new File(stdCAvailability.file.getParentFile(), "Qt"+QtJambi_LibraryUtilities.qtMajorVersion+"Core.dll").isFile();
+				    		isMinGWBuilt = Boolean.valueOf(new File(stdCAvailability.file.getParentFile(), "Qt"+QtJambi_LibraryUtilities.qtMajorVersion+"Core.dll").isFile());
+				    	}else {
+				    		isMinGWBuilt = Boolean.FALSE;
 				    	}
-				    	if(isMinGWBuilt) {
+				    	if(isMinGWBuilt()) {
 				    		availability = getLibraryAvailability("Qt", "Core", LIBINFIX, null, configuration, null, QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion);
 				    	}
 			    	}
@@ -1670,7 +1792,7 @@ final class LibraryUtility {
 				logger.log(Level.INFO, ()->String.format("Call debugger command: set substitute-path ../../../../../sources/ %1$s/", new File(jambiSourcesDir, "sources").getAbsolutePath()));
 				break;
         	case Windows:
-        		if(!isMinGWBuilt) {
+        		if(!isMinGWBuilt()) {
         			logger.log(Level.INFO, ()->String.format("Call debugger command: srcpath %1$s", new File(jambiSourcesDir, "sources").getAbsolutePath()));
         			break;
         		}
@@ -1683,7 +1805,7 @@ final class LibraryUtility {
     	try{
     		coreLib = loadNativeLibrary(Object.class, availability, QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion);
     		if(coreLib!=null)
-    			qtLibraryPath = coreLib.getParentFile().getAbsolutePath();
+    			qtLibraryPath = coreLib.getParentFile();
         } catch(UnsatisfiedLinkError t) {
             LibraryUtility.analyzeUnsatisfiedLinkError(t, availability.file, true);
             throw t;
@@ -1819,8 +1941,15 @@ final class LibraryUtility {
 					+ minorVersion + "." 
 					+ patchVersion + ".");
         }
-        String _qtJambiConfFile = qtJambiConfFile;
-        qtJambiConfFile = null;
+        String _qtJambiConfFile = null;
+        if(qtLibraryPath!=null && jambiDeploymentDir!=null) {
+        	if(jambiDeploymentDir.equals(qtLibraryPath.getParentFile()) || jambiDeploymentDir.getAbsolutePath().contains(qtLibraryPath.getParentFile().getAbsolutePath())) {
+	        	File file = new File(new File(qtLibraryPath.getParentFile(), "bin"), "qt.conf");
+	        	if(file.exists()) {
+	        		_qtJambiConfFile = file.getAbsolutePath();
+	        	}
+        	}
+        }
         ResourceUtility.initialize(_qtJambiConfFile);
     }
     private static native int qtJambiVersion();
@@ -1968,7 +2097,7 @@ final class LibraryUtility {
 										}
 										File _debuginfoFile = debuginfoFile;
 										logger.log(Level.FINEST, ()->_debuginfoFile==null ? String.format("Extracting libraries from %1$s", nativeFile.getAbsolutePath()) : String.format("Extracting libraries from %1$s and %2$s", nativeFile.getAbsolutePath(), _debuginfoFile.getAbsolutePath()));
-										deployment = prepareNativeDeployment(nativeFileURL, debuginfoFileURL, nativeFile.getName(), null);
+										deployment = prepareNativeDeployment(nativeFileURL, debuginfoFileURL, nativeFile.getName(), null, osArchName);
 										if(deployment != null 
 												&& String.format("%1$s.%2$s.%3$s", versionArray[0], versionArray[1], versionArray[2]).equals(deployment.version())
 												&& deployment.configuration()==configuration
@@ -1980,10 +2109,10 @@ final class LibraryUtility {
 						                	if(qtJambiLibraryPath==null) {
 							                	switch (operatingSystem) {
 							                    case Windows:
-							                    	qtJambiLibraryPath = new File(deployment.extractionDir(), "bin").getAbsolutePath();
+							                    	qtJambiLibraryPath = new File(deployment.extractionDir(), "bin");
 							                    	break;
 							                	default:
-							                		qtJambiLibraryPath = new File(deployment.extractionDir(), "lib").getAbsolutePath();
+							                		qtJambiLibraryPath = new File(deployment.extractionDir(), "lib");
 							                		break;
 							                	}
 						                	}
@@ -2151,7 +2280,7 @@ final class LibraryUtility {
     }
     
     public static boolean isMinGWBuilt() {
-		return isMinGWBuilt;
+		return Boolean.TRUE.equals(isMinGWBuilt);
 	}
     
     static boolean isAvailableQtLibrary(Class<?> callerClass, String library) {
@@ -2276,7 +2405,7 @@ final class LibraryUtility {
             libraryPaths.addAll(ldLibraryPaths.computeIfAbsent(libPaths2, LibraryUtility::splitPath));
         synchronized(loadedNativeDeploymentUrls) {
 	        if(qtJambiLibraryPath!=null)
-	        	libraryPaths.add(qtJambiLibraryPath);
+	        	libraryPaths.add(qtJambiLibraryPath.getAbsolutePath());
         }
         switch (operatingSystem) {
         case Windows:
@@ -2661,10 +2790,10 @@ final class LibraryUtility {
 		};
     }
     
-    private static LibraryBundle prepareNativeDeployment(URL deploymentSpec, URL debuginfoFileURL, String jarName, Boolean shouldUnpack) throws ParserConfigurationException, SAXException, IOException{
+    private static LibraryBundle prepareNativeDeployment(URL deploymentSpec, URL debuginfoFileURL, String jarName, Boolean shouldUnpack, String osArchName) throws ParserConfigurationException, SAXException, IOException{
         LibraryBundle spec = null;
         try {
-			spec = LibraryBundle.read(deploymentSpec);
+			spec = LibraryBundle.read(deploymentSpec, osArchName);
         } catch (java.util.zip.ZipException e1) {
 		} catch (SpecificationException e1) {
 			logger.warning(String.format("Unable to load native libraries from %1$s: %2$s", (jarName==null ? deploymentSpec : jarName), e1.getMessage()));
@@ -2674,7 +2803,7 @@ final class LibraryUtility {
         LibraryBundle debuginfoSpec = null;
         if(debuginfoFileURL!=null) {
 	        try {
-	        	debuginfoSpec = LibraryBundle.read(debuginfoFileURL);
+	        	debuginfoSpec = LibraryBundle.read(debuginfoFileURL, osArchName);
 	        	if(!debuginfoSpec.isDebuginfo()
 	        			|| !spec.compiler().equals(debuginfoSpec.compiler())
 	        			|| !spec.configuration().equals(debuginfoSpec.configuration())
@@ -2815,37 +2944,23 @@ final class LibraryUtility {
 				case MacOS:
 					break;
 				default:
-            			if((jambiDeploymentDir.isDirectory() || jambiDeploymentDir.mkdirs())) {
-            				File binFolder = new File(jambiDeploymentDir, "bin");
+            			if((tmpDir.isDirectory() || tmpDir.mkdirs())) {
+            				File binFolder = new File(tmpDir, "bin");
             				binFolder.mkdirs();
             				File confFile = new File(binFolder, "qt.conf");
             				if(!confFile.exists()) {
 	            				try {
 		            				try(PrintStream out = new PrintStream(new FileOutputStream(confFile), false, "UTF-8")){
 				            			out.println("[Paths]");
-				            			out.print("Prefix=");
-				            			if(File.separatorChar=='/')
-				            				out.println(jambiDeploymentDir.getAbsolutePath());
-				            			else
-				            				out.println(jambiDeploymentDir.getAbsolutePath().replace(File.separator, "/"));
-				            			out.println("Libraries=lib");
-				            			out.println(operatingSystem==OperatingSystem.Windows ? "LibraryExecutables=bin" : "LibraryExecutables=libexec");
-				            			out.println("Binaries=bin");
-				            			out.println("Plugins=plugins");
-				            			out.println("QmlImports=qml");
-				            			out.println("Translations=translations");
-				            			out.println("ArchData=.");
-				            			out.println("Data=.");
-				            			out.println("Headers=include");
+				            			out.println("Prefix=..");
 				            			out.flush();
 		            				}
 	        					}catch(Throwable t){
 	        						confFile.delete();
 	        					}
 	            				if(confFile.exists()) {
-		            				qtJambiConfFile = confFile.getAbsolutePath();
 		            				if(operatingSystem!=OperatingSystem.Windows) {
-		            					File libFolder = new File(jambiDeploymentDir, "libexec");
+		            					File libFolder = new File(tmpDir, "libexec");
 		                				libFolder.mkdirs();
 		                				Files.copy(confFile.toPath(), new File(libFolder, "qt.conf").toPath());
 		            				}
@@ -3440,11 +3555,11 @@ final class LibraryUtility {
 	        	if(version!=null && version.length>0 && !isQt){
 	        		replacements.add(""+version[0]);
 	        		replacements.add("");
-		            return configuration == LibraryBundle.Configuration.Debug && !isMinGWBuilt
+		            return configuration == LibraryBundle.Configuration.Debug && !isMinGWBuilt()
 			                ? qtXlibName + "d%1$s.dll"  // "QtFood4.dll"
 			                : qtXlibName + "%1$s.dll";  // "QtFoo4.dll"
 	        	}else {
-		            return configuration == LibraryBundle.Configuration.Debug && !isMinGWBuilt
+		            return configuration == LibraryBundle.Configuration.Debug && !isMinGWBuilt()
 		                ? qtXlibName + "d.dll"  // "QtFood4.dll"
 		                : qtXlibName + ".dll";  // "QtFoo4.dll"
 	        	}
@@ -3574,13 +3689,13 @@ final class LibraryUtility {
         }
     }
 
-    static String qtJambiLibraryPath() {
+    static File qtJambiLibraryPath() {
     	synchronized(loadedNativeDeploymentUrls) {
     		return qtJambiLibraryPath;
     	}
 	}
 
-	static String qtLibraryPath() {
+	static File qtLibraryPath() {
 		return qtLibraryPath;
 	}
 
@@ -3621,11 +3736,34 @@ final class LibraryUtility {
 	}
 	
 	private static List<String> readVersion(java.io.File file, final byte[] prefix) {
+		switch(LibraryUtility.operatingSystem) {
+        case MacOS:
+        	if(file.isDirectory() && file.getName().endsWith(".framework")) {
+        		String name = file.getName().substring(0, file.getName().length()-10);
+        		File library = new File(file, name);
+        		if(!library.exists()) {
+        			library = new File(file, "Versions/Current/"+name);
+        			if(!library.exists()) {
+            			library = new File(file, "Versions/A/"+name);
+            			if(!library.exists()) {
+                			library = new File(file, "Versions/"+QtJambi_LibraryUtilities.qtMajorVersion+"/"+name);
+                		}
+            		}
+        		}
+        		if(library.exists()) {
+        			file = library;
+        		}
+        	}
+			break;
+		default:
+			break;
+		}
 		final boolean canUniversalBuild = LibraryUtility.operatingSystem==OperatingSystem.MacOS
 				|| LibraryUtility.operatingSystem==OperatingSystem.IOS;
 		final List<String> qtLibraryBuilds = new ArrayList<>();
+		final Set<Integer> indexes = new HashSet<>();
 		final byte[] buildBy = "build; by".getBytes(StandardCharsets.US_ASCII);
-		try {
+		if(file.isFile()) try {
 			byte[] data = Files.readAllBytes(file.toPath());
 			int idx = 0;
 			while(true) {
@@ -3633,8 +3771,9 @@ final class LibraryUtility {
 				if(idx<0)
 					break;
 				idx = reverseFindSequence(idx, data, prefix);
-				if(idx<0)
+				if(idx<0 || indexes.contains(idx))
 					break;
+				indexes.add(idx);
 				ByteArrayOutputStream os = new ByteArrayOutputStream();
 				int parenCount = 0;
 				for(int i=idx; i<data.length; ++i){
@@ -3738,7 +3877,10 @@ final class LibraryUtility {
 				}
 			default:
 				if(!qtLibraryBuild.contains(String.format("Qt %1$s.%2$s.", QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion))) {
-					throw new LinkageError(String.format("Mismatching versions: Cannot run Qtjambi %1$s.%2$s with %3$s.", QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion, qtLibraryBuild), t);
+					if(coreLib!=null)
+						throw new LinkageError(String.format("Mismatching versions: Cannot run Qtjambi %1$s.%2$s with %3$s (%4%s).", QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion, qtLibraryBuild, coreLib.getAbsolutePath()), t);
+					else
+						throw new LinkageError(String.format("Mismatching versions: Cannot run Qtjambi %1$s.%2$s with %3$s.", QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion, qtLibraryBuild), t);
 				}else {
 					String message = "";
 					if(LibraryUtility.operatingSystem.isUnixLike()) {
@@ -3798,10 +3940,17 @@ final class LibraryUtility {
 	                        }
 	                    }
 	                }
-	                if(new java.io.File(coreLib.getParentFile(), "libstdc++-6.dll").exists() || LibraryUtility.isMinGWBuilt()) {
+	                if(new java.io.File(coreLib.getParentFile(), "libc++.dll").exists() || new java.io.File(coreLib.getParentFile(), "libstdc++-6.dll").exists() || LibraryUtility.isMinGWBuilt()) {
 	                    throw new LinkageError("Cannot combine msvc-based QtJambi with mingw-based Qt library. Please install and use Qt (MSVC x64) instead.", t);
 	                }else {
-	                    throw new LinkageError("Cannot combine mingw-based QtJambi with msvc-based Qt library. Please install and use Qt (MinGW x64) instead.", t);
+	                	switch(osArchName) {
+	                	case "windows-llvm-mingw-x64":
+	                		throw new LinkageError("Cannot combine mingw-based QtJambi with msvc-based Qt library. Please install and use Qt (LLVM MinGW x64) instead.", t);
+	                	case "windows-mingw-x64":
+	                		throw new LinkageError("Cannot combine mingw-based QtJambi with msvc-based Qt library. Please install and use Qt (MinGW x64) instead.", t);
+	                	case "windows-x64":
+	                		throw new LinkageError("Cannot combine msvc-based QtJambi with mingw-based Qt library. Please install and use Qt (MSVC x64) instead.", t);
+	                	}
 	                }
 	            }
 	            break;

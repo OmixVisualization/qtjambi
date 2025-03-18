@@ -832,7 +832,7 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/webengine/core,QWebEngineProfile$IconAvail
             }
         }
         ModifyFunction{
-            signature: "createProfile(const QString &, QObject *)"
+            signature: "createProfile(const QString &, QObject *)const"
             ModifyArgument{
                 index: 0
                 DefineOwnership{

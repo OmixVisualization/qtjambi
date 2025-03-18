@@ -485,13 +485,40 @@ struct ThreadDetacher : public QtJambiObjectData {
             }
             QThreadUserData* data{nullptr};
             if(QThread* thread = threadData->m_thread.data()){
+                QtJambiLinkUserData* lud{nullptr};
+                ValueOwnerUserData* vud{nullptr};
+                DependencyManagerUserData* dud{nullptr};
+                QAbstractEventDispatcher * eventDispatcher = thread->eventDispatcher();
                 {
                     QReadLocker locker(QtJambiLinkUserData::lock());
                     data = QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, thread);
+                    if(eventDispatcher){
+                        lud = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, eventDispatcher);
+                        vud = QTJAMBI_GET_OBJECTUSERDATA(ValueOwnerUserData, eventDispatcher);
+                        dud = QTJAMBI_GET_OBJECTUSERDATA(DependencyManagerUserData, eventDispatcher);
+                    }
                 }
-                if(data && data->purgeOnExit()){
+                if(dud || vud || lud || (data && data->purgeOnExit())){
                     QWriteLocker locker(QtJambiLinkUserData::lock());
-                    QTJAMBI_SET_OBJECTUSERDATA(QThreadUserData, thread, nullptr);
+                    if(data && data->purgeOnExit())
+                        QTJAMBI_SET_OBJECTUSERDATA(QThreadUserData, thread, nullptr);
+                    if(lud)
+                        QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, eventDispatcher, nullptr);
+                    if(vud)
+                        QTJAMBI_SET_OBJECTUSERDATA(ValueOwnerUserData, eventDispatcher, nullptr);
+                    if(dud)
+                        QTJAMBI_SET_OBJECTUSERDATA(DependencyManagerUserData, eventDispatcher, nullptr);
+                }
+                if(dud){
+                    dud->clear(eventDispatcher, env);
+                    delete dud;
+                }
+                if(vud){
+                    delete vud;
+                }
+                if(lud){
+                    lud->clear(env);
+                    delete lud;
                 }
             }
             if(data && data->purgeOnExit())
@@ -525,19 +552,13 @@ struct ThreadDetacher : public QtJambiObjectData {
 };
 
 void thread_detacher_cleaner(JNIEnv *env, EventDispatcherCheck::Data* threadData) {
-#if !defined(Q_OS_ANDROID) //&& (!defined(Q_OS_MACOS) || QT_VERSION < QT_VERSION_CHECK(6, 8, 2))
+#if !defined(Q_OS_ANDROID) && (!defined(Q_OS_MACOS) || QT_VERSION < QT_VERSION_CHECK(6, 8, 2))
     if(!threadData->m_thread || QThreadData::get2(threadData->m_thread)->isAdopted){
         ThreadDetacher::finish(env, threadData);
         return;
     }
     QAbstractEventDispatcher * eventDispatcher = nullptr;
-    if(threadData->m_thread && !(eventDispatcher = threadData->m_thread->eventDispatcher())){
-        if (QThread::currentThread()==threadData->m_thread && (QCoreApplication::instance() || !threadRequiresCoreApplication(threadData->m_thread))) {
-            QEventLoop loop;
-            eventDispatcher = threadData->m_thread->eventDispatcher();
-        }
-    }
-    if(eventDispatcher){
+    if(threadData->m_thread && (eventDispatcher = threadData->m_thread->eventDispatcher())){
         QWriteLocker locker(QtJambiLinkUserData::lock());
         QTJAMBI_SET_OBJECTUSERDATA_ID(QTJAMBI_OBJECTUSERDATA_TYPE_ID(ThreadDetacher), eventDispatcher, new ThreadDetacher(threadData));
     }else
@@ -577,6 +598,15 @@ JNIEnv *currentJNIEnvironment(JavaVM *vm, bool& requiresDetach, JniEnvironmentFl
                     // Java thread is already terminated. Attaching leads to deadlock.
                     return nullptr;
                 }
+            }else{
+                // don't attach to current thread after detach during cleanup
+                QThreadPrivate* tp = static_cast<QThreadPrivate*>(QObjectPrivate::get(currentThread));
+#if QT_VERSION < QT_VERSION_CHECK(6, 9, 0)
+                if(tp && (tp->isInFinish || tp->finished))
+#else
+                if(tp && (tp->threadState==QThreadPrivate::Finishing || tp->threadState==QThreadPrivate::Finished))
+#endif
+                    return nullptr;
             }
             bool isDaemon = true;
             QByteArray name;

@@ -29,6 +29,7 @@
 ****************************************************************************/
 package io.qt.internal;
 
+import java.io.File;
 import java.util.Map;
 
 import io.qt.core.QPair;
@@ -46,12 +47,8 @@ public abstract class DeployerUtility {
 	
 	protected static native String getInterfaceIID(Class<?> cls);
 
-	protected static String qtLibraryPath() {
+	protected static File qtLibraryPath() {
 		return LibraryUtility.qtLibraryPath();
-	}
-	
-	protected static String qtJambiLibraryPath() {
-		return LibraryUtility.qtJambiLibraryPath();
 	}
 	
 	protected static String osArchName() {

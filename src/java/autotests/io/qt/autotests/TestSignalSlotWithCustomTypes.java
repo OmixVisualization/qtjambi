@@ -210,45 +210,6 @@ public class TestSignalSlotWithCustomTypes extends ApplicationInitializer {
 		o1.change1.emit(t1);
 		Assert.assertEquals(t1, r1.received1);
 	}
-	
-//	@Test
-    public void testPerformance() {
-		SenderObject1 o1 = new SenderObject1();
-		ReceiverObject1 r1 = new ReceiverObject1();
-		Connection connection1 = o1.change1.connect(r1::receive);
-		Assert.assertTrue(connection1 instanceof QtObject);
-		SenderObject2 o2 = new SenderObject2();
-		ReceiverObject2 r2 = new ReceiverObject2();
-		Connection connection2 = o2.change1.connect(r2::receive);
-		Assert.assertFalse(connection2 instanceof QtObject);
-		UnregisteredType1 t = new UnregisteredType1();
-		int count = 1000;
-		long time11 = System.currentTimeMillis();
-		o1.change0.disconnect();
-		for(int i=0; i<count; ++i) {
-			o1.change1.emit(t);
-		}
-		long time21 = System.currentTimeMillis();
-		for(int i=0; i<count; ++i) {
-			o2.change1.emit(t);
-		}
-		long time31 = System.currentTimeMillis();
-		o1.change0.connect(r1::receive0);
-		o2.change0.connect(r2::receive0);
-		long time12 = System.currentTimeMillis();
-		for(int i=0; i<count; ++i) {
-			o1.change0.emit();
-		}
-		long time22 = System.currentTimeMillis();
-		for(int i=0; i<count; ++i) {
-			o2.change0.emit();
-		}
-		long time32 = System.currentTimeMillis();
-		System.out.println("    native connection takes "+(time21-time11)+"ms");
-		System.out.println("reflective connection takes "+(time31-time21)+"ms");
-		System.out.println("    native connection takes "+(time22-time12)+"ms");
-		System.out.println("reflective connection takes "+(time32-time22)+"ms");
-	}
     
     @Test
     public void testVariantSlot() {

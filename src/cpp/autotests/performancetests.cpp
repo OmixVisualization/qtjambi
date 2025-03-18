@@ -39,6 +39,15 @@
 #include <QtJambi/Cast>
 
 namespace Java{
+namespace Runtime{
+QTJAMBI_REPOSITORY_DECLARE_CLASS(Map,
+                                 QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(put)
+                                 QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(get))
+QTJAMBI_REPOSITORY_DEFINE_CLASS(java/util,Map,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(put,(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;)
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(get,(Ljava/lang/Object;)Ljava/lang/Object;)
+                                )
+}
 namespace Autotests{
 QTJAMBI_REPOSITORY_DECLARE_CLASS(PerformanceTests,
                                  QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(empty)
@@ -304,6 +313,162 @@ std::chrono::nanoseconds PerformanceTests::testConvertQModelIndex(int count){
         QtJambiScope scope;
         QtJambiAPI::convertModelIndexToEphemeralJavaObject(env, scope, &index);
         //std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+    auto end = std::chrono::high_resolution_clock::now();
+    return std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
+}
+
+std::chrono::nanoseconds PerformanceTests::testClassCall(int count, const QByteArray& className, const QByteArray& methodName){
+    JniEnvironment env{500};
+    jmethodID mtd;
+    {
+        JniLocalFrame f(env, 24);
+        jclass cls = env->FindClass(className.constData());
+        JavaException::check(env);
+        mtd = env->GetStaticMethodID(cls, methodName.constData(), "()V");
+        JavaException::check(env);
+    }
+    auto start = std::chrono::high_resolution_clock::now();
+    for(int i=0; i<count; ++i){
+        JniLocalFrame f(env, 24);
+        jclass cls = env->FindClass(className.data());
+        JavaException::check(env);
+        env->CallStaticVoidMethod(cls, mtd);
+        JavaException::check(env);
+    }
+    auto end = std::chrono::high_resolution_clock::now();
+    return std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
+}
+
+std::chrono::nanoseconds PerformanceTests::testClassCallBuffer(int count, const QByteArray& className, const QByteArray& methodName, jobject map){
+    JniEnvironment env{500};
+    jmethodID mtd;
+    {
+        JniLocalFrame f(env, 24);
+        jclass cls = env->FindClass(className.constData());
+        JavaException::check(env);
+        QtJambiAPI::putJavaMap(env, map, env->NewDirectByteBuffer(const_cast<char*>(className.constData()), className.capacity()), cls);
+        mtd = env->GetStaticMethodID(cls, methodName.constData(), "()V");
+        JavaException::check(env);
+    }
+    auto start = std::chrono::high_resolution_clock::now();
+    for(int i=0; i<count; ++i){
+        JniLocalFrame f(env, 24);
+        jclass cls = jclass(Java::Runtime::Map::get(env, map, env->NewDirectByteBuffer(const_cast<char*>(className.constData()), className.capacity())));
+        JavaException::check(env);
+        env->CallStaticVoidMethod(cls, mtd);
+        JavaException::check(env);
+    }
+    auto end = std::chrono::high_resolution_clock::now();
+    return std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
+}
+
+std::chrono::nanoseconds PerformanceTests::testClassCallString(int count, const QByteArray& className, const QByteArray& methodName, jobject map){
+    JniEnvironment env{500};
+    jmethodID mtd;
+    {
+        JniLocalFrame f(env, 24);
+        jclass cls = env->FindClass(className.constData());
+        JavaException::check(env);
+        QtJambiAPI::putJavaMap(env, map, env->NewStringUTF(className.constData()), cls);
+        mtd = env->GetStaticMethodID(cls, methodName.constData(), "()V");
+        JavaException::check(env);
+    }
+    auto start = std::chrono::high_resolution_clock::now();
+    for(int i=0; i<count; ++i){
+        JniLocalFrame f(env, 24);
+        jclass cls = jclass(Java::Runtime::Map::get(env, map, env->NewStringUTF(className.constData())));
+        JavaException::check(env);
+        env->CallStaticVoidMethod(cls, mtd);
+        JavaException::check(env);
+    }
+    auto end = std::chrono::high_resolution_clock::now();
+    return std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
+}
+
+std::chrono::nanoseconds PerformanceTests::testClassCallHash(int count, const QByteArray& className, const QByteArray& methodName, jobject map){
+    JniEnvironment env{500};
+    jmethodID mtd;
+    {
+        JniLocalFrame f(env, 24);
+        jclass cls = env->FindClass(className.constData());
+        JavaException::check(env);
+
+        QtJambiAPI::putJavaMap(env, map, Java::Runtime::Long::valueOf(env, qHash(className)), cls);
+        mtd = env->GetStaticMethodID(cls, methodName.constData(), "()V");
+        JavaException::check(env);
+    }
+    auto start = std::chrono::high_resolution_clock::now();
+    for(int i=0; i<count; ++i){
+        JniLocalFrame f(env, 24);
+        jclass cls = jclass(Java::Runtime::Map::get(env, map, Java::Runtime::Long::valueOf(env, qHash(className))));
+        JavaException::check(env);
+        env->CallStaticVoidMethod(cls, mtd);
+        JavaException::check(env);
+    }
+    auto end = std::chrono::high_resolution_clock::now();
+    return std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
+}
+
+std::chrono::nanoseconds PerformanceTests::testClassCallGlobalRef(int count, const QByteArray& className, const QByteArray& methodName){
+    JniEnvironment env{500};
+    jmethodID mtd;
+    jclass cls;
+    {
+        JniLocalFrame f(env, 24);
+        cls = env->FindClass(className.constData());
+        JavaException::check(env);
+        mtd = env->GetStaticMethodID(cls, methodName.constData(), "()V");
+        JavaException::check(env);
+        cls = jclass(env->NewGlobalRef(cls));
+    }
+    auto start = std::chrono::high_resolution_clock::now();
+    for(int i=0; i<count; ++i){
+        JniLocalFrame f(env, 24);
+        env->CallStaticVoidMethod(cls, mtd);
+        JavaException::check(env);
+    }
+    auto end = std::chrono::high_resolution_clock::now();
+    return std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
+}
+
+std::chrono::nanoseconds PerformanceTests::testClassCallLocalRef(int count, const QByteArray& className, const QByteArray& methodName){
+    JniEnvironment env{500};
+    jmethodID mtd;
+    jclass cls;
+    {
+        cls = env->FindClass(className.constData());
+        JavaException::check(env);
+        mtd = env->GetStaticMethodID(cls, methodName.constData(), "()V");
+        JavaException::check(env);
+    }
+    auto start = std::chrono::high_resolution_clock::now();
+    for(int i=0; i<count; ++i){
+        JniLocalFrame f(env, 24);
+        env->CallStaticVoidMethod(cls, mtd);
+        JavaException::check(env);
+    }
+    auto end = std::chrono::high_resolution_clock::now();
+    return std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
+}
+
+std::chrono::nanoseconds PerformanceTests::testClassCallLocalFromGlobalRef(int count, const QByteArray& className, const QByteArray& methodName){
+    JniEnvironment env{500};
+    jmethodID mtd;
+    jclass cls;
+    {
+        JniLocalFrame f(env, 24);
+        cls = env->FindClass(className.constData());
+        JavaException::check(env);
+        mtd = env->GetStaticMethodID(cls, methodName.constData(), "()V");
+        JavaException::check(env);
+        cls = jclass(env->NewGlobalRef(cls));
+    }
+    auto start = std::chrono::high_resolution_clock::now();
+    for(int i=0; i<count; ++i){
+        JniLocalFrame f(env, 24);
+        env->CallStaticVoidMethod(jclass(env->NewLocalRef(cls)), mtd);
+        JavaException::check(env);
     }
     auto end = std::chrono::high_resolution_clock::now();
     return std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);

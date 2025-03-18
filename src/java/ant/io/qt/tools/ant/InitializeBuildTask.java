@@ -351,7 +351,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 				sourceValue = " (available compilers: " + finder.getAvailableCompilers() + "; detected: "
 						+ (detectedCompiler==null ? "none" : detectedCompiler) + ")";
 			}
-			isMinGW = compiler==Compiler.MinGW || compiler==Compiler.MinGW_W64;
+			isMinGW = compiler==Compiler.MinGW || compiler==Compiler.MinGW_W64 || compiler==Compiler.LLVM_MinGW_W64;
 			mySetProperty(-1, Constants.COMPILER, sourceValue, compilerValue, true); // report value
 			if(compilerError!=null)
 				mySetProperty(-1, "qtjambi.compiler.error", sourceValue, compilerError, true);
@@ -589,7 +589,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 			}else {
 				OSInfo.setCrossCompilation(null, null);
 			}
-			osname = OSInfo.targetPlatform();
+			osname = OSInfo.targetPlatform(compiler);
 		} else {
 			if ("help".equals(osname) || "?".equals(osname)) {
 				OSInfo.OperationSystem[] values = OSInfo.OperationSystem.values();
@@ -2309,7 +2309,10 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 			boolean isAndroid = false;
 			switch (OSInfo.crossOS()) {
 			case Windows:
-				libSuffixes = new String[] { "d.dll", ".dll" };
+				if(isMinGW)
+					libSuffixes = new String[] { ".dll.debug", ".dll" };
+				else
+					libSuffixes = new String[] { "d.dll", ".dll" };
 				break;
 			case MacOS:
 				libSuffixes = new String[] { "_debug." + qtVersion + ".dylib", "." + qtVersion + ".dylib" };

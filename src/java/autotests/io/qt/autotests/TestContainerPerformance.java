@@ -3,6 +3,7 @@ package io.qt.autotests;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -18,6 +19,7 @@ public class TestContainerPerformance extends ApplicationInitializer{
 	private static final int CAPACITY = 50000;
 	@BeforeClass
     public static void testInitialize() throws Exception {
+		Assume.assumeTrue("Performance tests are disabled. Specify -Denable-performance-tests=true to enable them.", Boolean.getBoolean("enable-performance-tests"));
     	ApplicationInitializer.testInitializeWithWidgets();
     }
 	
@@ -178,5 +180,17 @@ public class TestContainerPerformance extends ApplicationInitializer{
 		System.out.println("consume QList<QObject*> performance: "+tdiffc1+"ms");
 		System.out.println("consume ArrayList<QObject> performance: "+tdiffc2+"ms");
 		System.out.println();
+	}
+    
+//  @Test
+	public void testIteratorPerformance() {
+		QStringList list = new QStringList();
+//  	list.fill("", 0xffffff);//not in Qt5
+		long t1 = System.currentTimeMillis();
+		for (@SuppressWarnings("unused")
+		String string : list) {
+		}
+		long t2 = System.currentTimeMillis();
+		System.out.println("time: " + (t2 - t1));
 	}
 }

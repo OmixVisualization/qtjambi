@@ -433,9 +433,11 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "if(%in){\n"+
-                                  "    %out = Java::QtRemoteObjects::IoDeviceBase$ReadResult::newInstance(%env, qtjambi_cast<jobject>(%env, __qt_%1), qtjambi_cast<jobject>(%env, __qt_%2));\n"+
-                                  "}"}
+                    Text{content: String.raw`
+if(%in){
+    %out = Java::QtRemoteObjects::IoDeviceBase$ReadResult::newInstance(%env, qtjambi_cast<jobject>(%env, __qt_%1), qtjambi_cast<jobject>(%env, __qt_%2));
+}`
+                    }
                 }
             }
         }
@@ -501,9 +503,11 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "if(%in){\n"+
-                                  "    %out = Java::QtRemoteObjects::QtROIoDeviceBase$ReadResult::newInstance(%env, qtjambi_cast<jobject>(%env, __qt_%1), qtjambi_cast<jobject>(%env, __qt_%2));\n"+
-                                  "}"}
+                    Text{content: String.raw`
+if(%in){
+    %out = Java::QtRemoteObjects::QtROIoDeviceBase$ReadResult::newInstance(%env, qtjambi_cast<jobject>(%env, __qt_%1), qtjambi_cast<jobject>(%env, __qt_%2));
+}`
+                    }
                 }
             }
         }
@@ -529,6 +533,10 @@ TypeSystem{
             Include{
                 fileName: "QtJambi/JavaAPI"
                 location: Include.Global
+            }
+            Include{
+                fileName: "utils_p.h"
+                location: Include.Local
             }
             until: [5, 12, 0]
         }
@@ -559,14 +567,11 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "if(%in){\n"+
-                                  "    jclass cls = JavaAPI::resolveClass(%env, \"io/qt/remoteobjects/ServerIoDevice$ReadResult\");\n"+
-                                  "    JavaException::check(%env QTJAMBI_STACKTRACEINFO );\n"+
-                                  "    jmethodID constructor = JavaAPI::resolveMethod(%env, \"<init>\", \"(Lio/qt/remoteobjects/QtRemoteObjects$QRemoteObjectPacketTypeEnum;Ljava/lang/String;)V\", cls, false);\n"+
-                                  "    JavaException::check(%env QTJAMBI_STACKTRACEINFO );\n"+
-                                  "    %out = %env->NewObject(cls, constructor, qtjambi_cast<jobject>(%env, __qt_%1), qtjambi_cast<jobject>(%env, __qt_%2));\n"+
-                                  "    JavaException::check(%env QTJAMBI_STACKTRACEINFO );\n"+
-                                  "}"}
+                    Text{content: String.raw`
+if(%in){
+    %out = Java::QtRemoteObjects::ServerIoDevice$ReadResult::newInstance(%env, qtjambi_cast<jobject>(%env, __qt_%1), qtjambi_cast<jobject>(%env, __qt_%2));
+}`
+                    }
                 }
             }
             until: [5, 12, 0]
@@ -606,6 +611,10 @@ TypeSystem{
                 fileName: "QtJambi/JavaAPI"
                 location: Include.Global
             }
+            Include{
+                fileName: "utils_p.h"
+                location: Include.Local
+            }
             until: [5, 12, 0]
         }
         ModifyFunction{
@@ -635,14 +644,11 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "if(%in){\n"+
-                                  "    jclass cls = JavaAPI::resolveClass(%env, \"io/qt/remoteobjects/ClientIoDevice$ReadResult\");\n"+
-                                  "    JavaException::check(%env QTJAMBI_STACKTRACEINFO );\n"+
-                                  "    jmethodID constructor = JavaAPI::resolveMethod(%env, \"<init>\", \"(Lio/qt/remoteobjects/QtRemoteObjects$QRemoteObjectPacketTypeEnum;Ljava/lang/String;)V\", cls, false);\n"+
-                                  "    JavaException::check(%env QTJAMBI_STACKTRACEINFO );\n"+
-                                  "    %out = %env->NewObject(cls, constructor, qtjambi_cast<jobject>(%env, __qt_%1), qtjambi_cast<jobject>(%env, __qt_%2));\n"+
-                                  "    JavaException::check(%env QTJAMBI_STACKTRACEINFO );\n"+
-                                  "}"}
+                    Text{content: String.raw`
+if(%in){
+    %out = Java::QtRemoteObjects::ClientIoDevice$ReadResult::newInstance(%env, qtjambi_cast<jobject>(%env, __qt_%1), qtjambi_cast<jobject>(%env, __qt_%2));
+}`
+                    }
                 }
             }
             until: [5, 12, 0]

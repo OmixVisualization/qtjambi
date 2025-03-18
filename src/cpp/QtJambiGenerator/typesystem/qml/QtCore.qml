@@ -649,8 +649,9 @@ public final %ITERATOR_TYPE iterator() {
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = __qt_%1;"}
+                    Text{content: String.raw`
+Q_UNUSED(__qt_return_value)
+%out = __qt_%1;`}
                 }
             }
             ModifyArgument{
@@ -675,8 +676,9 @@ public final %ITERATOR_TYPE iterator() {
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = __qt_%1;"}
+                    Text{content: String.raw`
+Q_UNUSED(__qt_return_value)
+%out = __qt_%1;`}
                 }
             }
             ModifyArgument{
@@ -8419,6 +8421,29 @@ if(destinationChildV<0)
         ImplicitCast{from: "java.nio.@NonNull ByteBuffer"}
         ImplicitCast{from: "byte @NonNull[]"}
         ModifyFunction{
+            signature: "QByteArrayView(QByteArrayView)"
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.End
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: String.raw`
+                    __rcSource = %1==null ? null : %1.__rcSource;
+                    if(__rcSource instanceof Purger)
+                        ((Purger)__rcSource).register(this);`}
+            }
+        }
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Clone
+            Text{content: String.raw`
+                clone.__rcSource = __rcSource;
+                if(clone.__rcSource instanceof Purger)
+                    ((Purger)clone.__rcSource).register(clone);`}
+        }
+        ModifyFunction{
             signature: "QByteArrayView(std::nullptr_t)"
             remove: RemoveFlag.All
         }
@@ -11703,6 +11728,19 @@ if(destinationChildV<0)
             ModifyArgument{
                 index: 1
                 InhibitImplicitCall{type: "io.qt.core.@StrictNonNull QByteArray"}
+            }
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.End
+                ArgumentMap{
+                    index: 0
+                    metaName: "%0"
+                }
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "%0.assignSource(%1);"}
             }
             since: 6.9
         }
@@ -15792,24 +15830,25 @@ try{
             InjectCode{
                 target: CodeClass.Native
                 position: Position.Beginning
-                Text{content: "bool useQGuiApplicationExec = false;\n"+
-                              "QCoreApplication* instance = QCoreApplication::instance();\n"+
-                              "if (!instance)\n"+
-                              "    JavaException::raiseRuntimeException(%env, \"QCoreApplication has not been initialized with QCoreApplication.initialize()\" QTJAMBI_STACKTRACEINFO );\n"+
-                              "else if(instance->inherits(\"QGuiApplication\")){\n"+
-                              "    useQGuiApplicationExec = true;\n"+
-                              "    QTJAMBI_TRY_ANY{\n"+
-                              "        Java::QtGui::QGuiApplication::getClass(%env);\n"+
-                              "    }QTJAMBI_CATCH_ANY{\n"+
-                              "        useQGuiApplicationExec = false;\n"+
-                              "    }QTJAMBI_TRY_END\n"+
-                              "    if(useQGuiApplicationExec)\n"+
-                              "        __java_return_value = Java::QtGui::QGuiApplication::exec(%env);\n"+
-                              "}else if(instance->thread()!=QThread::currentThread())\n"+
-                              "    JavaException::raiseRuntimeException(%env, \"exec() must be called from the main thread.\" QTJAMBI_STACKTRACEINFO );\n"+
-                              "else if(QThreadData::get2(instance->thread())->eventLoops.size()>0)\n"+
-                              "    JavaException::raiseRuntimeException(%env, \"The event loop is already running.\" QTJAMBI_STACKTRACEINFO );\n"+
-                              "if(!useQGuiApplicationExec){"}
+                Text{content: String.raw`
+bool useQGuiApplicationExec = false;
+QCoreApplication* instance = QCoreApplication::instance();
+if (!instance)
+    JavaException::raiseRuntimeException(%env, "QCoreApplication has not been initialized with QCoreApplication.initialize()" QTJAMBI_STACKTRACEINFO );
+else if(instance->inherits("QGuiApplication")){
+    useQGuiApplicationExec = true;
+    QTJAMBI_TRY_ANY{
+        Java::QtGui::QGuiApplication::getClass(%env);
+    }QTJAMBI_CATCH_ANY{
+        useQGuiApplicationExec = false;
+    }QTJAMBI_TRY_END
+    if(useQGuiApplicationExec)
+        __java_return_value = Java::QtGui::QGuiApplication::exec(%env);
+}else if(instance->thread()!=QThread::currentThread())
+    JavaException::raiseRuntimeException(%env, "exec() must be called from the main thread." QTJAMBI_STACKTRACEINFO );
+else if(QThreadData::get2(instance->thread())->eventLoops.size()>0)
+    JavaException::raiseRuntimeException(%env, "The event loop is already running." QTJAMBI_STACKTRACEINFO );
+if(!useQGuiApplicationExec){`}
             }
             InjectCode{
                 target: CodeClass.Native
@@ -15887,18 +15926,20 @@ try{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "if(inherits(\"QGuiApplication\")){\n"+
-                                  "    bool classNotFound = false;\n"+
-                                  "    QTJAMBI_TRY_ANY{\n"+
-                                  "        Java::QtGui::QGuiApplication::getClass(%env);\n"+
-                                  "    }QTJAMBI_CATCH_ANY{\n"+
-                                  "        classNotFound = true;\n"+
-                                  "    }QTJAMBI_TRY_END\n"+
-                                  "    if(!classNotFound)\n"+
-                                  "        return Java::QtGui::QGuiApplication::resolveInterface(%env, CoreAPI::javaObject(__this_nativeId, %env), %in);\n"+
-                                  "}\n"+
-                                  "CoreAPI::NITypeInfo info = CoreAPI::getNativeInterfaceInfo(%env, %in);\n"+
-                                  "const char* %out = info.name;"}
+                    Text{content: String.raw`
+if(inherits("QGuiApplication")){
+    bool classNotFound = false;
+    QTJAMBI_TRY_ANY{
+        Java::QtGui::QGuiApplication::getClass(%env);
+    }QTJAMBI_CATCH_ANY{
+        classNotFound = true;
+    }QTJAMBI_TRY_END
+    if(!classNotFound)
+        return Java::QtGui::QGuiApplication::resolveInterface(%env, CoreAPI::javaObject(__this_nativeId, %env), %in);
+}
+CoreAPI::NITypeInfo info = CoreAPI::getNativeInterfaceInfo(%env, %in);
+const char* %out = info.name;
+                        `}
                 }
             }
             ModifyArgument{
@@ -15923,12 +15964,13 @@ try{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "struct{\n"
-                                  + "    Qt::PermissionStatus status = Qt::PermissionStatus::Undetermined;\n"
-                                  + "    QVariant data;\n"
-                                  + "}permission;\n"
-                                  + "permission.data = qtjambi_cast<QVariant>(%env, %in);\n"
-                                  + "const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);"}
+                    Text{content: String.raw`
+struct{
+    Qt::PermissionStatus status = Qt::PermissionStatus::Undetermined;
+    QVariant data;
+}permission;
+permission.data = qtjambi_cast<QVariant>(%env, %in);
+const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
                 }
             }
             since: [6, 5]
@@ -20803,6 +20845,11 @@ else`}
             since: 6
         }
         ModifyFunction{
+            signature: "setUnicode<>(const char16_t *, qsizetype)"
+            remove: RemoveFlag.All
+            since: 6.9
+        }
+        ModifyFunction{
             signature: "setUtf16(const ushort *, qsizetype)"
             ModifyArgument{
                 index: 1
@@ -20812,6 +20859,29 @@ else`}
                 }
             }
             since: 6
+            until: 6.8
+        }
+        ModifyFunction{
+            signature: "setUtf16<>(const ushort *, qsizetype)"
+            ModifyArgument{
+                index: 1
+                AsBuffer{
+                    lengthParameter: 2
+                    AsArray{}
+                }
+            }
+            since: 6.9
+        }
+        ModifyFunction{
+            signature: "setUtf16(const char16_t *, qsizetype)"
+            ModifyArgument{
+                index: 1
+                AsBuffer{
+                    lengthParameter: 2
+                    AsArray{}
+                }
+            }
+            since: 6.9
         }
         ModifyFunction{
             signature: "setRawData(const QChar *, int)"
@@ -23343,6 +23413,10 @@ else
         }
         Rejection{
             functionName: "dummyLocked"
+        }
+        Rejection{
+            fieldName: "FutexAlwaysAvailable"
+            since: 6.9
         }
         ModifyFunction{
             signature: "lock()"

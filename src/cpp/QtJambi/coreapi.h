@@ -96,7 +96,7 @@ public:
     template<typename T>
     static std::unique_ptr<ApplicationData> initialize(JNIEnv *env, jobjectArray array){
         typedef typename std::remove_cv<typename std::remove_pointer<T>::type>::type T_;
-        return initialize(env, array, typeid(T_), std::is_same<T_, QCoreApplication>::value);
+        return initialize(env, array, typeid(T_), !std::is_same<T_, QCoreApplication>::value);
     }
     ~ApplicationData() override;
 

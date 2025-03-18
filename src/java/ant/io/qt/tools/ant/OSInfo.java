@@ -32,6 +32,8 @@
 
 package io.qt.tools.ant;
 
+import io.qt.tools.ant.FindCompiler.Compiler;
+
 /**
  * The OSInfo class contains some basic information about the current
  * running system. The information is mostly retreived from
@@ -159,10 +161,28 @@ public class OSInfo
     	}
     }
     
-    public static String targetPlatform() {
+    public static String targetPlatform(Compiler compiler) {
     	if(crossOS==null) {
     		switch (os()) {
             case Windows:
+            	switch(compiler) {
+            	case MinGW:
+            	case MinGW_W64:
+	            	switch(arch()) {
+	            	case x86_64:
+	            		return os().name().toLowerCase()+"-mingw-x64";
+	            	default:
+	            		return os().name().toLowerCase()+"-mingw-"+arch().name().toLowerCase();
+	            	}
+            	case LLVM_MinGW_W64:
+	            	switch(arch()) {
+	            	case x86_64:
+	            		return os().name().toLowerCase()+"-llvm-mingw-x64";
+	            	default:
+	            		return os().name().toLowerCase()+"-llvm-mingw-"+arch().name().toLowerCase();
+	            	}
+	            	default:
+            	}
             case Linux:
             case FreeBSD:
             case NetBSD:
@@ -185,6 +205,24 @@ public class OSInfo
     	}else {
 	    	switch (crossOS) {
 	        case Windows:
+	        	switch(compiler) {
+            	case MinGW:
+            	case MinGW_W64:
+	            	switch(arch()) {
+	            	case x86_64:
+	            		return os().name().toLowerCase()+"-mingw-x64";
+	            	default:
+	            		return os().name().toLowerCase()+"-mingw-"+arch().name().toLowerCase();
+	            	}
+            	case LLVM_MinGW_W64:
+	            	switch(arch()) {
+	            	case x86_64:
+	            		return os().name().toLowerCase()+"-llvm-mingw-x64";
+	            	default:
+	            		return os().name().toLowerCase()+"-llvm-mingw-"+arch().name().toLowerCase();
+	            	}
+	            	default:
+            	}
 	        case Linux:
 	        case FreeBSD:
 	        case NetBSD:

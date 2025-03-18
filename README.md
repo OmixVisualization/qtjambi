@@ -96,7 +96,7 @@ You can call ant with additional properties as listed below. Therefore use the `
 
 * `qt` - specify comma-separated Qt versions to be used, e.g. `-Dqt="6.5,6.7,6.8"`.
 * `qtbase` - specify Qt installer's base directory, e.g. `-Dqtbase=/var/Qt`. Can be combined with `qt`.
-* `qtdir` - specify Qt version and platform directory, e.g. `-Dqtdir=/var/Qt/6.8.2/macos`. This option allows multiple directories separated by path separator. (If this option is specified `qt` and `qtbase` have no effect.)
+* `qtdir` - specify Qt version and platform directory, e.g. `-Dqtdir=/var/Qt/6.8.3/macos`. This option allows multiple directories separated by path separator. (If this option is specified `qt` and `qtbase` have no effect.)
 * `qmake` - specify a path to a `qmake` program to be used for building QtJambi. (If this option is specified `qt`, `qtbase` and `qtdir` have no effect.)
 * `android` - specify `true` to build QtJambi for Android. Therefore, Qt for Android has to be installed. By specify `-Dandroid=only` ant skips building QtJambi for the build platform. When compiling for Android all required NDK and SDK components are downloaded automatically. Alternatively, specify the Android NDK install path with `-Dndk=...`.
 
@@ -122,7 +122,7 @@ Find unit test results in directory `TestResults`.
 After building QtJambi for the running operation system you can additionally cross-compile QtJambi for other platforms.
 For instance if you want to build for Linux arm:
 
-`> ant -Dqmake=/opt/Qt/6.8.2/arm-gnueabi/bin/qmake library.native`
+`> ant -Dqmake=/opt/Qt/6.8.3/arm-gnueabi/bin/qmake library.native`
 
 Just specify the third-platform cross-compiled qmake with `-Dqmake=path`.
 
@@ -147,7 +147,7 @@ to your project:
   <version>$VERSION</version>
 </dependency>
 ```
-(exchange `$VERSION` either by `6.8.2` or any other published version).
+(exchange `$VERSION` either by `6.8.3` or any other published version).
 
 Otherwise, download QtJambi JAR file from [Maven Central Repository](https://search.maven.org/artifact/io.qtjambi/qtjambi/).
 
@@ -167,7 +167,7 @@ public class Test {
 Compile the file:
 
 ``` powershell
-javac -cp qtjambi-6.8.2.jar Test.java
+javac -cp qtjambi-6.8.3.jar Test.java
 ```
 
 ### Execute Example
@@ -186,15 +186,15 @@ By default, on Windows Qt libraries are located in `bin` directory and on Linux 
 
 The example program can be executed this way on Windows:
 ``` powershell
-java -cp qtjambi-6.8.2.jar;. -Djava.library.path=C:\Qt\6.8.2\msvc2022_64\bin Test
+java -cp qtjambi-6.8.3.jar;. -Djava.library.path=C:\Qt\6.8.3\msvc2022_64\bin Test
 ```
 On Linux it looks this way:
 ``` bash
-java -cp qtjambi-6.8.2.jar:. -Djava.library.path=/var/Qt/6.8.2/gcc_64/lib Test
+java -cp qtjambi-6.8.3.jar:. -Djava.library.path=/var/Qt/6.8.3/gcc_64/lib Test
 ```
 On macOS you additionally need to use the start parameter `-XstartOnFirstThread`:
 ``` bash
-java -cp qtjambi-6.8.2.jar:. -Djava.library.path=/Library/Qt/6.8.2/macos/lib -XstartOnFirstThread Test
+java -cp qtjambi-6.8.3.jar:. -Djava.library.path=/Library/Qt/6.8.3/macos/lib -XstartOnFirstThread Test
 ```
 
 On Linux of your distribution provides Qt (of correct version) as system library you don't need to specify library path at all.
@@ -239,12 +239,4 @@ Instead of starting your program with a java command as shown above you can depl
 
 ## Further Reading
 
-* [QtJambi modules](www/Modules.md)
-* [What's new in QtJambi](www/Whats-New.md)
-* [How to develop with QtJambi](www/How-to-develop-Qt-in-Java.md)
-* [How to Create Android Apps](www/Android.md)
-* [Characteristics of QtJambi](www/Characteristics-of-QtJambi.md)
-* [How to deploy QtJambi applications](www/How-to-deploy-QtJambi-applications.md)
-* [How to bundle Qt](www/How-to-bundle-Qt-libraries.md)
-* [How to debug QtJambi applications](www/How-to-debug.md)
-* [QtJambi API Reference Documentation](https://doc.qtjambi.io/latest)
+* [QtJambi Documentation](https://doc.qtjambi.io)

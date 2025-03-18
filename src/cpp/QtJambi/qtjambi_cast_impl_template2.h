@@ -451,7 +451,7 @@ struct qtjambi_jnitype_template2_cast<false, has_scope,\
                     pointer = new NativeType();\
                     scope->addDeletion(pointer);\
                 }else{\
-                    auto ipointer = new IntermediateAssociativeContainer<TYPE,K,T>(env, in, *scope);\
+                    auto ipointer = new IntermediateAssociativeContainer<has_scope,TYPE,K,T>(env, in, scope);\
                     pointer = ipointer;\
                     scope->addDeletion(ipointer);\
                 }\

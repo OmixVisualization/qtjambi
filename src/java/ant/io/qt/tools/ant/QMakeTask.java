@@ -43,6 +43,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 
+import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.PropertyHelper;
 import org.apache.tools.ant.Task;
@@ -233,6 +234,10 @@ public class QMakeTask extends Task {
         getProject().log(this, msg, Project.MSG_INFO);
 
         PropertyHelper propertyHelper = PropertyHelper.getPropertyHelper(getProject());
+        String error = AntUtil.getPropertyAsString(propertyHelper, "qtjambi.compiler.error");
+        if(error!=null && !error.isEmpty()) {
+        	throw new BuildException(error);
+        }
         if(qtjambiConfig == null) {
             String thisQtjambiConfig = AntUtil.getPropertyAsString(propertyHelper, Constants.CONFIG);
             if(thisQtjambiConfig != null) {

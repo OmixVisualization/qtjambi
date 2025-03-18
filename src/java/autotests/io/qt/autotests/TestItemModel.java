@@ -41,6 +41,7 @@ import io.qt.QNoNativeResourcesException;
 import io.qt.QtPrimitiveType;
 import io.qt.core.QAbstractListModel;
 import io.qt.core.QAbstractTableModel;
+import io.qt.core.QLogging;
 import io.qt.core.QMetaMethod;
 import io.qt.core.QMetaObject;
 import io.qt.core.QModelIndex;
@@ -57,6 +58,7 @@ public class TestItemModel extends ApplicationInitializer {
 	@BeforeClass
     public static void testInitialize() throws Exception {
     	ApplicationInitializer.testInitializeWithWidgets();
+    	QLogging.qInstallMessageHandler((t, c, m)->System.out.println(m));
     }
 	
     @Test

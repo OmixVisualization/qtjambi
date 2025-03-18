@@ -33,6 +33,7 @@ package io.qt.tools.ant;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -81,6 +82,7 @@ public class FindCompiler {
         MSVC20XX_arm64("msvc20XXarb64"),
         MinGW("mingw"),
         MinGW_W64("mingw-w64"),
+        LLVM_MinGW_W64("llvm-mingw-w64"),
         OldGCC("gcc3.3"),
         GCC("gcc"),
         SUNCC("suncc"),
@@ -124,6 +126,7 @@ public class FindCompiler {
             if(name.equals("msvc20XXarm64")) return MSVC20XX_arm64;
             if(name.equals("mingw")) return MinGW;
             if(name.equals("mingw-w64")) return MinGW_W64;
+            if(name.equals("llvm-mingw-w64")) return LLVM_MinGW_W64;
             if(name.equals("gcc3.3")) return OldGCC;
             if(name.equals("gcc")) return GCC;
             if(name.equals("suncc")) return SUNCC;
@@ -277,7 +280,7 @@ public class FindCompiler {
             compiler = mingw_w64;
         } else {
             throw new BuildException("No compiler detected, please make sure " +
-                    "MinGW, MinGW-W64 or VisualC++ binaries are available in PATH");
+                    "MinGW, MinGW-W64, LLVM-MinGW-W64 or VisualC++ binaries are available in PATH");
         }
     }
 
@@ -480,8 +483,12 @@ public class FindCompiler {
             String[] sA = Exec.executeCaptureOutput(task, cmdAndArgs, new File("."), propertyHelper.getProject(), compilerPathValue, null, false);
             Util.emitDebugLog(propertyHelper.getProject(), sA);
             if(sA != null && sA.length == 2 && sA[1] != null) {
-                if(match(new String[] { sA[1] }, new String[] { "mingw-w64", "mingw64" }))   // sA[1] is stderr
-                    return Compiler.MinGW_W64;
+            	if(sA[1].contains("x86_64-w64-mingw32"))
+            		return Compiler.MinGW_W64;
+            	else if(sA[1].contains("clang") && sA[1].contains("x86_64-w64-windows-gnu"))
+            		return Compiler.LLVM_MinGW_W64;
+            	else if(sA[1].contains("mingw64") || sA[1].contains("mingw-w64"))
+            		return Compiler.MinGW_W64;
             }
         } catch(InterruptedException ex) {
             if(verbose)

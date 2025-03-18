@@ -51,18 +51,22 @@ enum class QtJambiNativeID : jlong;
 
 namespace QtJambiPrivate {
 
-template<template<typename T> class Container, typename T>
+template<bool has_scope, template<typename T> class Container, typename T>
 struct IntermediateSequentialContainer : Container<T>{
-    IntermediateSequentialContainer(JNIEnv *env, jobject object, QtJambiScope& scope) : Container<T>(), m_scope(scope), m_object(env->NewWeakGlobalRef(object)){}
+    IntermediateSequentialContainer(JNIEnv *env, jobject object, QtJambiScope* scope = nullptr)
+        : Container<T>(), m_scope(scope), m_object(env->NewWeakGlobalRef(object)){}
     ~IntermediateSequentialContainer(){
         QTJAMBI_TRY_ANY{
             if(JniEnvironment env{200}){
                 QTJAMBI_TRY{
                     jobject object = env->NewLocalRef(m_object);
+                    env->DeleteWeakGlobalRef(jweak(m_object));
                     if(!env->IsSameObject(object, nullptr)){
                         QtJambiAPI::clearJavaCollection(env, object);
                         for(typename Container<T>::const_iterator i = Container<T>::constBegin(); i!=Container<T>::constEnd(); ++i){
-                            QtJambiAPI::addToJavaCollection(env, object, qtjambi_scoped_cast<true,jobject,decltype(*i)>::cast(env, *i, nullptr, &m_scope));
+                            JniLocalFrame f(env, 32);
+                            jobject val = qtjambi_scoped_cast<has_scope,jobject,decltype(*i)>::cast(env, *i, nullptr, m_scope);
+                            QtJambiAPI::addToJavaCollection(env, object, val);
                         }
                     }
                 }QTJAMBI_CATCH(const JavaException& exn){
@@ -73,7 +77,7 @@ struct IntermediateSequentialContainer : Container<T>{
             printf("An unknown exception occurred.\n");
         }QTJAMBI_TRY_END
     }
-    QtJambiScope& m_scope;
+    QtJambiScope* m_scope;
     jobject m_object;
 };
 

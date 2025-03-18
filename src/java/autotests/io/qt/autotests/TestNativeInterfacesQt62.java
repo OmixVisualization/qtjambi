@@ -69,17 +69,25 @@ public class TestNativeInterfacesQt62 extends ApplicationInitializer {
     	assertEquals(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows), winapp!=null);
     	assertEquals(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows), winwin!=null);
     	QCocoaWindow cocoawin = window.nativeInterface(QCocoaWindow.class);
-    	assertEquals(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.MacOS), cocoawin!=null);
+    	assertEquals(cocoawin==null 
+    			? "QCocoaWindow is null on "+QOperatingSystemVersion.current().type().name() 
+    			: "QCocoaWindow is " + cocoawin.getClass().getName()+" on "+QOperatingSystemVersion.current().type().name(), 
+    			QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.MacOS), cocoawin!=null);
     	QX11Application x11app = QApplication.instance().nativeInterface(QX11Application.class);
-    	assertEquals(!QOperatingSystemVersion.current().isAnyOfType(
-													    			QOperatingSystemVersion.OSType.MacOS,
-													    			QOperatingSystemVersion.OSType.Android,
-													    			QOperatingSystemVersion.OSType.IOS,
-													    			QOperatingSystemVersion.OSType.TvOS,
-													    			QOperatingSystemVersion.OSType.WatchOS,
-													    			QOperatingSystemVersion.OSType.Windows), x11app!=null);
+    	assertEquals(x11app==null 
+    			? "QX11Application is null on "+QOperatingSystemVersion.current().type().name() 
+    			: "QX11Application is " + x11app.getClass().getName()+" on "+QOperatingSystemVersion.current().type().name(), 
+    			!QOperatingSystemVersion.current().isAnyOfType( QOperatingSystemVersion.OSType.MacOS,
+												    			QOperatingSystemVersion.OSType.Android,
+												    			QOperatingSystemVersion.OSType.IOS,
+												    			QOperatingSystemVersion.OSType.TvOS,
+												    			QOperatingSystemVersion.OSType.WatchOS,
+												    			QOperatingSystemVersion.OSType.Windows), x11app!=null);
     	QXcbWindow xcbwin = window.nativeInterface(QXcbWindow.class);
-    	assertEquals(!QOperatingSystemVersion.current().isAnyOfType(
+    	assertEquals(xcbwin==null 
+    			? "QXcbWindow is null on "+QOperatingSystemVersion.current().type().name() 
+    			: "QXcbWindow is " + xcbwin.getClass().getName()+" on "+QOperatingSystemVersion.current().type().name(), 
+    			!QOperatingSystemVersion.current().isAnyOfType(
     			QOperatingSystemVersion.OSType.MacOS,
     			QOperatingSystemVersion.OSType.Android,
     			QOperatingSystemVersion.OSType.IOS,

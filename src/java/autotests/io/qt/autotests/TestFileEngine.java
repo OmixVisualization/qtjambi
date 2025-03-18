@@ -33,15 +33,19 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLStreamHandler;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -53,12 +57,14 @@ import io.qt.core.QDir;
 import io.qt.core.QFile;
 import io.qt.core.QFileInfo;
 import io.qt.core.QIODevice;
+import io.qt.core.QLibraryInfo;
 import io.qt.core.QLocale;
 import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QRegularExpression;
 import io.qt.core.QResource;
 import io.qt.core.QString;
 import io.qt.core.QStringList;
+import io.qt.core.QVersionNumber;
 import io.qt.core.Qt;
 import io.qt.core.internal.QAbstractFileEngineHandler;
 import io.qt.core.internal.QFSFileEngine;
@@ -74,6 +80,36 @@ public class TestFileEngine extends ApplicationInitializer {
 	
 	@BeforeClass
     public static void testInitialize() throws Exception {
+		URL.setURLStreamHandlerFactory(protocol->{
+			if("qjtest".equals(protocol)) {
+				return new URLStreamHandler() {
+					@Override
+					protected URLConnection openConnection(URL u) throws IOException {
+						return new URLConnection(u) {
+							final byte[] file;
+							{
+								file = getURL().getPath().substring(getURL().getPath().indexOf('/')+1).getBytes();
+								setDoInput(true);
+							}
+							@Override
+							public void connect() throws IOException {
+							}
+
+							@Override
+							public InputStream getInputStream() throws IOException {
+								return new ByteArrayInputStream(file);
+							}
+
+							@Override
+							public long getContentLengthLong() {
+								return file.length;
+							}
+						};
+					}
+				};
+			}
+			return null;
+		});
     	ApplicationInitializer.testInitializeWithWidgets();
     }
 	
@@ -107,6 +143,25 @@ public class TestFileEngine extends ApplicationInitializer {
             len--;
         }
         return count;
+    }
+    
+    @Test
+    public void testCustomURL() {
+    	QResource.addClassPath("qjtest:container1/");
+    	try {
+    		QFile file = new QFile(":file.txt");
+    		Assert.assertTrue(file.exists());
+    		Assert.assertTrue(file.open(QFile.OpenModeFlag.ReadOnly));
+    		Assert.assertEquals("file.txt", file.readAll().toString());
+    		file.close();
+    	}finally {
+    		QResource.removeClassPath("qjtest:container1/");
+    	}
+		QFile file = new QFile("classpath:qjtest:container2/#file2.txt");
+		Assert.assertTrue(file.exists());
+		Assert.assertTrue(file.open(QFile.OpenModeFlag.ReadOnly));
+		Assert.assertEquals("file2.txt", file.readAll().toString());
+		file.close();
     }
 
     // The purpose of this test is to check the JUnit testcase CLASSPATH is setup as
@@ -346,18 +401,20 @@ public class TestFileEngine extends ApplicationInitializer {
 		        }
 
 		        List<QFileInfo> dirTwoEntryInfoList = dirtwo.entryInfoList();
-		        if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows)) {
+		        if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows)
+		        		&& QLibraryInfo.version().compareTo(new QVersionNumber(6,8,0))<0) {
 		            // CHECKME FIXME On Windows we see ".." entry, we should explain why this is different and if necessary fix something
-		            assertEquals(dirTwoEntryInfoList.size(), 2);
+		            assertEquals(2, dirTwoEntryInfoList.size());
 		        } else {
-		            assertEquals(dirTwoEntryInfoList.size(), 1);
+		            assertEquals(1, dirTwoEntryInfoList.size());
 		        }
 	        }
 	
 	        QDir dir = new QDir("classpath:TestClassFunctionality_dir/");
 	        assertTrue(dir.exists());
 	
-	        if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows)) {
+	        if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows)
+	        		&& QLibraryInfo.version().compareTo(new QVersionNumber(6,8,0))<0) {
 	            // CHECKME FIXME On Windows we see ".." entry, we should explain why this is different and if necessary fix something
 	            // "..", "TestClassFunctionality_dir2", "TestClassFunctionality_file_in_dir.txt"
 	            assertEquals("number of files in directory classpath:TestClassFunctionality_dir/", dir.entryList().size(), 3);
@@ -372,12 +429,13 @@ public class TestFileEngine extends ApplicationInitializer {
 	        assertTrue(found);
 	
 	        List<QFileInfo> entryInfoList = dir.entryInfoList();
-	        if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows)) {
+	        if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows)
+	        		&& QLibraryInfo.version().compareTo(new QVersionNumber(6,8,0))<0) {
 	            // CHECKME FIXME On Windows we see ".." entry, we should explain why this is different and if necessary fix something
 	            // "..", "TestClassFunctionality_dir2", "TestClassFunctionality_file_in_dir.txt"
-	            assertEquals(entryInfoList.size(), 3);
+	            assertEquals(3, entryInfoList.size());
 	        } else {
-	            assertEquals(entryInfoList.size(), 2);
+	            assertEquals(2, entryInfoList.size());
 	        }
 	
 	        int i = 0;

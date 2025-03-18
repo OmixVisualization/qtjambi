@@ -53,7 +53,6 @@ import io.qt.core.QGenericArgument;
 import io.qt.core.QLibraryInfo;
 import io.qt.core.QList;
 import io.qt.core.QMap;
-import io.qt.core.QMessageLogContext;
 import io.qt.core.QMetaType;
 import io.qt.core.QObject;
 import io.qt.core.QOperatingSystemVersion;
@@ -67,6 +66,15 @@ import io.qt.gui.QColor;
 import io.qt.gui.QFont;
 
 public class TestQFunctionPointer extends ApplicationInitializer{
+	
+	private static boolean hasJNA;
+	static{
+		try {
+			hasJNA = Class.forName("com.sun.jna.Native")!=null;
+		} catch (Throwable e) {
+			hasJNA = false;
+		}
+	}
 	
 	@Test
     public void testFunctionExtraction() {
@@ -90,10 +98,10 @@ public class TestQFunctionPointer extends ApplicationInitializer{
 	
 	@AfterClass
     public static void testDispose() throws Exception {
-		System.out.println("                            char.class.hashCode(): "+char.class.hashCode());
-		System.out.println("              System.identityHashCode(char.class): "+System.identityHashCode(char.class));
-		System.out.println("              QMessageLogContext.class.hashCode(): "+QMessageLogContext.class.hashCode());
-		System.out.println("System.identityHashCode(QMessageLogContext.class): "+System.identityHashCode(QMessageLogContext.class));
+//		System.out.println("                            char.class.hashCode(): "+char.class.hashCode());
+//		System.out.println("              System.identityHashCode(char.class): "+System.identityHashCode(char.class));
+//		System.out.println("              QMessageLogContext.class.hashCode(): "+QMessageLogContext.class.hashCode());
+//		System.out.println("System.identityHashCode(QMessageLogContext.class): "+System.identityHashCode(QMessageLogContext.class));
 		ApplicationInitializer.testDispose();
 	}
 	
@@ -148,6 +156,7 @@ public class TestQFunctionPointer extends ApplicationInitializer{
 	@SuppressWarnings("deprecation")
 	@Test
     public void testSingleParamFunctions() throws Throwable {
+		Assume.assumeTrue("JNA library not available", hasJNA);
     	QObject obj = new QObject();
     	obj.setObjectName("QObject Test");
     	QFunctionPointer fp = FunctionalTest.getFunction(0);
@@ -187,6 +196,7 @@ public class TestQFunctionPointer extends ApplicationInitializer{
 	@SuppressWarnings("deprecation")
 	@Test
     public void testMultipleParamsFunctions() throws Throwable {
+		Assume.assumeTrue("JNA library not available", hasJNA);
     	QObject obj = new QObject();
     	obj.setObjectName("QObject Test");
 		QFunctionPointer fp = FunctionalTest.getFunction(11);
@@ -241,6 +251,7 @@ public class TestQFunctionPointer extends ApplicationInitializer{
 	
 	@Test
     public void testReturningFunctions_char() throws Throwable {
+		Assume.assumeTrue("JNA library not available", hasJNA);
 		Assume.assumeTrue("Cannot run on Qt5", QLibraryInfo.version().majorVersion()>=6);
 		QFunctionPointer fp = FunctionalTest.getFunction(35);
     	try {
@@ -257,16 +268,20 @@ public class TestQFunctionPointer extends ApplicationInitializer{
 	
 	@Test
     public void testReturningFunctions_QChar() throws Throwable {
+		Assume.assumeTrue("JNA library not available", hasJNA);
 		Assume.assumeFalse("Cannot run on Android", QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android));
 		Assume.assumeFalse("Cannot run on Windows arm64", QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows) && QSysInfo.buildCpuArchitecture().equals("arm64"));
+		Assume.assumeFalse("Cannot run on Windows MINGW", QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows) && !QLibraryInfo.build().contains("MSVC"));
 		QFunctionPointer fp = FunctionalTest.getFunction(25);
     	Assert.assertEquals((Object)'W', fp.invoke(char.class, 'W'));    	
 	}
 	
 	@Test
     public void testReturningFunctions_flags() throws Throwable {
+		Assume.assumeTrue("JNA library not available", hasJNA);
 		Assume.assumeFalse("Cannot run on Android", QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android));
 		Assume.assumeFalse("Cannot run on Windows arm64", QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows) && QSysInfo.buildCpuArchitecture().equals("arm64"));
+		Assume.assumeFalse("Cannot run on Windows MINGW", QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows) && !QLibraryInfo.build().contains("MSVC"));
     	QFunctionPointer fp = FunctionalTest.getFunction(45);
     	Assert.assertEquals(Qt.AlignmentFlag.AlignVCenter.combined(Qt.AlignmentFlag.AlignJustify), fp.invoke(Qt.Alignment.class));
     	fp = FunctionalTest.getFunction(32);
@@ -275,6 +290,7 @@ public class TestQFunctionPointer extends ApplicationInitializer{
 	
 	@Test
     public void testReturningFunctions_enum() throws Throwable {
+		Assume.assumeTrue("JNA library not available", hasJNA);
 		QFunctionPointer fp = FunctionalTest.getFunction(31);
     	Assert.assertEquals(Qt.AlignmentFlag.AlignBottom, fp.invoke(Qt.AlignmentFlag.class, Qt.AlignmentFlag.AlignBottom));
 	}
@@ -303,8 +319,10 @@ public class TestQFunctionPointer extends ApplicationInitializer{
 	
 	@Test
     public void testStructReturningFunctions() throws Throwable {
+		Assume.assumeTrue("JNA library not available", hasJNA);
 		Assume.assumeTrue("Windows only", QOperatingSystemVersion.current().isAnyOfType(OSType.Windows));
 		Assume.assumeFalse("Cannot run on Windows arm64", QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows) && QSysInfo.buildCpuArchitecture().equals("arm64"));
+		Assume.assumeFalse("Cannot run on Windows MINGW", QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows) && !QLibraryInfo.build().contains("MSVC"));
 		QFunctionPointer fp = FunctionalTest.getFunction(34);
     	Object variant = new Object();
     	Assert.assertEquals(variant, fp.invoke(QGenericArgument.<Object>returning(new QMetaType(QMetaType.Type.QVariant)), QGenericArgument.of(variant).as(new QMetaType(QMetaType.Type.QVariant)).asConstRef()));
@@ -350,6 +368,7 @@ public class TestQFunctionPointer extends ApplicationInitializer{
 	
 	@Test
     public void testArrayFunctions() throws Throwable {
+		Assume.assumeTrue("JNA library not available", hasJNA);
 		QFunctionPointer fp;
 		{
         	fp = FunctionalTest.getFunction(48);
@@ -377,6 +396,7 @@ public class TestQFunctionPointer extends ApplicationInitializer{
 	
 	@Test
     public void testVariadicFunction() throws Throwable {
+		Assume.assumeTrue("JNA library not available", hasJNA);
     	Assume.assumeTrue("Cannot run variadic function on macOS arm64.", 
 				!QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.MacOS, 
 																QOperatingSystemVersion.OSType.IOS, 
@@ -398,6 +418,7 @@ public class TestQFunctionPointer extends ApplicationInitializer{
     	
 	@Test
     public void testFunctionPointerCast() throws Throwable {
+		Assume.assumeTrue("JNA library not available", hasJNA);
 		QFunctionPointer fp = FunctionalTest.getFunction(53);
     	{
     		Fun53 fun53 = fp.cast(Fun53.class);
@@ -460,6 +481,7 @@ public class TestQFunctionPointer extends ApplicationInitializer{
 	
 	@Test
     public void testStructReturningFunctionPointerCast() throws Throwable {
+		Assume.assumeTrue("JNA library not available", hasJNA);
 		Assume.assumeTrue("Windows only", QOperatingSystemVersion.current().isAnyOfType(OSType.Windows));
 		Assume.assumeFalse("Cannot run on Windows arm64", QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows) && QSysInfo.buildCpuArchitecture().equals("arm64"));
     	QObject obj = new QObject();

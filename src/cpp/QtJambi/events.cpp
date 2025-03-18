@@ -753,16 +753,30 @@ bool eventNotifier(QObject *receiver, QEvent *event, bool* result)
     }
     QObjectPrivate *d = QObjectPrivate::get(receiver);
     if(!d || d->wasDeleted){
-        if(JniEnvironmentExceptionHandler env{200}){
-            try{
-                Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Dangling pointer to QObject: %p", receiver) QTJAMBI_STACKTRACEINFO );
-            }catch(const JavaException& exn){
-                env.handleException(exn, "QCoreApplication::sendEvent");
+        if(
+#if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
+            (d && !d->receiveParentEvents) ||
+#endif
+            (event->type()!=QEvent::ParentChange
+                && event->type()!=QEvent::ParentAboutToChange)){
+            const std::type_info* _typeId = tryGetTypeInfo(RegistryAPI::Private::PolymorphicTypeInfoSupplier<QObject>::value, receiver);
+            if(!_typeId){
+                if(enabledDanglingPointerCheck()){
+                    if(JniEnvironmentExceptionHandler env{200}){
+                        try{
+                            Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("QCoreApplication::notify(): QEvent(%d) sent to QObject %p which has been already deleted", event->type(), receiver) QTJAMBI_STACKTRACEINFO );
+                        }catch(const JavaException& exn){
+                            env.handleException(exn, "QCoreApplication::sendEvent");
+                        }
+                    }else{
+                        qCCritical(DebugAPI::internalCategory, "QCoreApplication::notify(): QEvent(%d) sent to QObject %p which has been already deleted", event->type(), receiver);
+                    }
+                    return true;
+                }else{
+                    qCWarning(DebugAPI::internalCategory, "QCoreApplication::notify(): QEvent(%d) sent to QObject %p which has been already deleted", event->type(), receiver);
+                }
             }
-        }else{
-            qCCritical(DebugAPI::internalCategory, "QCoreApplication::notify: Receiver has been already deleted");
         }
-        return true;
     }
     switch (event->type()) {
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)

@@ -236,11 +236,20 @@ int qRegisterNormalizedMetaType_QIntHash(class QByteArray const &name){
 
 namespace Java{
 namespace QtRemoteObjects{
+#if QT_VERSION <= QT_VERSION_CHECK(5, 12, 0)
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/remoteobjects,ClientIoDevice$ReadResult,
+                                QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/remoteobjects/QtRemoteObjects$QRemoteObjectPacketTypeEnum;Ljava/lang/String;)
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/remoteobjects,ServerIoDevice$ReadResult,
+                                QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/remoteobjects/QtRemoteObjects$QRemoteObjectPacketTypeEnum;Ljava/lang/String;)
+#elif QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/remoteobjects,IoDeviceBase$ReadResult,
                                 QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/remoteobjects/QtRemoteObjects$QRemoteObjectPacketTypeEnum;Ljava/lang/String;)
 )
+#endif
+#if QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/remoteobjects,QtROIoDeviceBase$ReadResult,
                                 QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/remoteobjects/QtRemoteObjects$QRemoteObjectPacketTypeEnum;Ljava/lang/String;)
 )
+#endif
 }
 }

@@ -221,11 +221,11 @@ QT_WARNING_DISABLE_DEPRECATED
                         if(is_const){\
                             pointer = new NativeType();\
                             scope->addDeletion(pointer);\
-                    }else{\
-                            auto ipointer = new IntermediateSequentialContainer<TYPE,T>(env, in, *scope);\
+                        }else{\
+                            auto ipointer = new IntermediateSequentialContainer<has_scope, TYPE,T>(env, in, scope);\
                             pointer = ipointer;\
                             scope->addDeletion(ipointer);\
-                    }\
+                        }\
                         jobject iterator = QtJambiAPI::iteratorOfJavaIterable(env, in);\
                         while(QtJambiAPI::hasJavaIteratorNext(env, iterator)) {\
                             jobject element = QtJambiAPI::nextOfJavaIterator(env, iterator);\

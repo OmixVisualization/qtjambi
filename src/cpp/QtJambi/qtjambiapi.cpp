@@ -723,14 +723,12 @@ const std::type_info* checkedGetTypeInfo(TypeInfoSupplier typeInfoSupplier, cons
 #endif
 }
 
-const std::type_info* tryGetTypeInfo(JNIEnv *env, TypeInfoSupplier typeInfoSupplier, const void* ptr){
+const std::type_info* tryGetTypeInfo(TypeInfoSupplier typeInfoSupplier, const void* ptr){
     Q_ASSERT(typeInfoSupplier);
 #if defined(DO_TYPECHECK_BY_CATCHING_SIGNAL)
-    if(enabledDanglingPointerCheck(env)){
+    if(enabledDanglingPointerCheck()){
         return checkedGetTypeInfo(typeInfoSupplier, ptr);
     }
-#else
-    Q_UNUSED(env)
 #endif
     try{
         return typeInfoSupplier(ptr);
@@ -740,7 +738,7 @@ const std::type_info* tryGetTypeInfo(JNIEnv *env, TypeInfoSupplier typeInfoSuppl
 }
 
 void QtJambiAPI::checkDanglingPointer(JNIEnv *env, const void* ptr, const std::type_info& typeId, TypeInfoSupplier typeInfoSupplier){
-    if(enabledDanglingPointerCheck(env) && ptr && typeInfoSupplier){
+    if(enabledDanglingPointerCheck() && ptr && typeInfoSupplier){
         const std::type_info* _typeId = nullptr;
         _typeId = checkedGetTypeInfo(typeInfoSupplier, ptr);
         if(!_typeId){

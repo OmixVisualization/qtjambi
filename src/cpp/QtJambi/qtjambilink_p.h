@@ -143,7 +143,7 @@ struct QtJambiLinkUserData : public QtJambiObjectData
 
     inline const QWeakPointer<QtJambiLink>& link() const { return m_link; }
     virtual inline const QMetaObject* metaObject() const {return nullptr; }
-    void clear();
+    void clear(JNIEnv * env);
 
     QTJAMBI_OBJECTUSERDATA_ID_DECL
     static QReadWriteLock* lock();
@@ -604,6 +604,7 @@ public:
     static QSharedPointer<QtJambiLink> fromNativeId(QtJambiNativeID native_id);
     static QSharedPointer<QtJambiLink> findLinkForQObject(const QObject *qobject);
     static QList<QSharedPointer<QtJambiLink>> findLinksForPointer(const void *ptr);
+    static jobject findObjectForPointer(JNIEnv* env, jclass clazz, const void *ptr);
     static QSharedPointer<QtJambiLink> findLinkForJavaObject(JNIEnv *env, jobject java);
     static QSharedPointer<QtJambiLink> findLinkForJavaInterface(JNIEnv *env, jobject java);
     static void* findPointerForJavaObject(JNIEnv *env, jobject java);

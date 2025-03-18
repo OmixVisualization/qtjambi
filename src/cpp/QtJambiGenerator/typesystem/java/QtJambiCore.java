@@ -14408,11 +14408,8 @@ class QByteArrayView___ extends QByteArray {
         if(offset+length>data.length)
             length = data.length-offset;
         initialize_native(this, data, offset, length, pointerOut);
-        if(pointerOut[0]!=null) {
-            long pointer = pointerOut[0];
-            purgeTask = ()->purgeBytes(pointer);
-            QtUtilities.getSignalOnDispose(this).connect(purgeTask::run);                
-        }
+        if(pointerOut[0]!=null)
+            __rcSource = new Purger(this, pointerOut[0], Purger.Mode.Bytes);
     }
     private native static void initialize_native(QByteArrayView instance, byte[] data, int offset, int length, Long[] pointerOut);
     private native static void purgeBytes(long pointer);
@@ -14424,11 +14421,8 @@ class QByteArrayView___ extends QByteArray {
         super((QPrivateConstructor)null);
         Long[] pointerOut = {null};
         initialize_native(this, data, pointerOut);
-        if(pointerOut[0]!=null) {
-            long pointer = pointerOut[0];
-            purgeTask = ()->purgeString(pointer);
-            QtUtilities.getSignalOnDispose(this).connect(purgeTask::run);                
-        }
+        if(pointerOut[0]!=null)
+            __rcSource = new Purger(this, pointerOut[0], Purger.Mode.String);
     }
     private native static void initialize_native(QByteArrayView instance, String data, Long[] pointerOut);
     private native static void purgeString(long pointer);
@@ -14440,16 +14434,12 @@ class QByteArrayView___ extends QByteArray {
         super((QPrivateConstructor)null);
         if(data.isDirect()) {
             initialize_native(this, data, data.position(), data.limit()-data.position());
-            purgeTask = data::hashCode;
-            QtUtilities.getSignalOnDispose(this).connect(purgeTask::run);
+            __rcSource = data;
         }else {
             Long[] pointerOut = {null};
             initialize_native(this, data, pointerOut);
-            if(pointerOut[0]!=null) {
-                long pointer = pointerOut[0];
-                purgeTask = ()->purgeBuffer(pointer);
-                QtUtilities.getSignalOnDispose(this).connect(purgeTask::run);
-            }
+            if(pointerOut[0]!=null)
+                __rcSource = new Purger(this, pointerOut[0], Purger.Mode.Buffer);
         }
     }
     private native static void initialize_native(QByteArrayView instance, java.nio.ByteBuffer data, int offset, int length);
@@ -14463,15 +14453,54 @@ class QByteArrayView___ extends QByteArray {
         super((QPrivateConstructor)null);
         if(data!=null) {
             initialize_native(this, data);
-            purgeTask = data::isDisposed;
-            QtUtilities.getSignalOnDispose(this).connect(purgeTask::run);
+            __rcSource = data;
         }else {
             initialize_native(this);
         }
     }
     private native static void initialize_native(QByteArrayView instance, QByteArray data);
     
-    private Runnable purgeTask;
+    private static class Purger implements QMetaObject.Slot0{
+        enum Mode{
+            Buffer,
+            String,
+            Bytes
+        }
+        private static final long serialVersionUID = 5686767543992375547L;
+        private final long pointer;
+        private final Mode mode;
+        private final java.util.concurrent.atomic.AtomicInteger counter = new java.util.concurrent.atomic.AtomicInteger(1);
+        Purger(QByteArrayView view, long pointer, Mode mode) {
+            this.pointer = pointer;
+            this.mode = mode;
+            QtUtilities.getSignalOnDispose(view).connect(this);
+        }
+        void register(QByteArrayView view) {
+            if(counter.getAndIncrement()!=0)
+                QtUtilities.getSignalOnDispose(view).connect(this);
+        }
+        @Override
+        public void invoke() throws Throwable {
+            if(counter.decrementAndGet()==0) {
+                switch(mode) {
+                case Buffer:
+                    purgeBuffer(pointer);
+                    break;
+                case Bytes:
+                    purgeBytes(pointer);
+                    break;
+                case String:
+                    purgeString(pointer);
+                    break;
+                }
+            }
+        }
+    }
+    private Object __rcSource;
+    void assignSource(Object rcSource){
+        if(__rcSource!=null)
+            __rcSource = rcSource;
+    }
 }// class
 
 class QIODevice_template__ extends QIODevice {

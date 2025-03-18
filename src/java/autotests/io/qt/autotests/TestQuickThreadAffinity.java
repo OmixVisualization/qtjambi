@@ -38,7 +38,6 @@ import io.qt.QThreadAffinityException;
 import io.qt.QtUtilities;
 import io.qt.core.QEventLoop;
 import io.qt.core.QThread;
-import io.qt.core.QUrl;
 import io.qt.gui.QSurfaceFormat;
 import io.qt.quick.QQuickItem;
 import io.qt.quick.QQuickView;

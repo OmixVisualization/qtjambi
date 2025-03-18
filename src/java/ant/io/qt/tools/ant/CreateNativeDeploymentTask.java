@@ -3,11 +3,11 @@ package io.qt.tools.ant;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.concurrent.TimeUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -846,7 +847,12 @@ public class CreateNativeDeploymentTask extends Task {
 				|| Files.size(targetFilePath)!=Files.size(sourceFilePath)) {
 			skipNativeJar = false;
 			targetFile.getParentFile().mkdirs();
-			Files.copy(sourceFilePath, targetFilePath, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
+			try {
+				Files.copy(sourceFilePath, targetFilePath, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
+			}catch(FileSystemException e){
+				if(!e.getFile().contains("._"))
+					throw e;
+			}
 		}
 	}
     

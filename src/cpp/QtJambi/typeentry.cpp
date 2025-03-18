@@ -50,6 +50,10 @@ QT_WARNING_DISABLE_DEPRECATED
 #include "qtjambi_cast.h"
 #include "supertypeinfo_p.h"
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
+#define qAsConst std::as_const
+#endif
+
 bool isQObject(const std::type_info& typeId);
 
 Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, gTypeEntryLock, (QReadWriteLock::Recursive))
@@ -57,7 +61,6 @@ typedef SecureContainer<QMap<size_t, QMap<QByteArray,QtJambiTypeEntryPtr>>, gTyp
 Q_GLOBAL_STATIC(TypeEntryHash, gTypeEntryHash)
 
 const char* getJavaNameByFunctional(const char* qt_name);
-QList<const PolymorphicIdHandler*> getPolymorphicIdHandlers(const std::type_info& polymorphicBaseTypeId);
 
 void clear_type_entries()
 {
@@ -104,7 +107,208 @@ template<typename T, class = decltype(std::declval<T>().superTypeForCustomMetaOb
 constexpr std::true_type  has_superTypeForCustomMetaObject_test(const T&);
 constexpr std::false_type has_superTypeForCustomMetaObject_test(...);
 template<typename T> struct has_superTypeForCustomMetaObject : decltype(has_superTypeForCustomMetaObject_test(std::declval<T>())){};
+
+template<typename... RuntimeTypes>
+struct IsInstanceOfAny{
+
+};
+
+template<typename RuntimeType1, typename... RuntimeTypes>
+struct IsInstanceOfAny<RuntimeType1, RuntimeTypes...>{
+    static bool fail(JNIEnv *env, jobject obj){
+        return obj && failNonNull(env, obj);
+    }
+    static bool failNonNull(JNIEnv *env, jobject obj){
+        return !RuntimeType1::isInstanceOf(env, obj) && !IsInstanceOfAny<RuntimeTypes...>::fail(env, obj);
+    }
+};
+
+template<typename RuntimeTypeN>
+struct IsInstanceOfAny<RuntimeTypeN>{
+    static bool fail(JNIEnv *env, jobject obj){
+        return obj && failNonNull(env, obj);
+    }
+    static bool failNonNull(JNIEnv *env, jobject obj){
+        return !RuntimeTypeN::isInstanceOf(env, obj);
+    }
+};
+
+template<>
+struct IsInstanceOfAny<>{
+    static bool fail(JNIEnv*, jobject){
+        return false;
+    }
+    static bool failNonNull(JNIEnv*, jobject){
+        return false;
+    }
+};
+
+template<typename PrimitiveType,
+         typename BoxedType>
+struct PrimitiveHelper{
+    static PrimitiveType unbox(const BoxedType* bt){
+        return *bt;
+    }
+
+    static void assign(BoxedType* bt, PrimitiveType pt){
+        *bt = pt;
+    }
+};
+
+template<typename PrimitiveType>
+struct PrimitiveHelper<PrimitiveType,QChar>{
+    static PrimitiveType unbox(const QChar* bt){
+        return bt->unicode();
+    }
+
+    static void assign(QChar* bt, PrimitiveType pt){
+        *bt = pt;
+    }
+};
+
+template<typename PrimitiveType>
+struct PrimitiveHelper<PrimitiveType,QLatin1Char>{
+    static PrimitiveType unbox(const QLatin1Char* bt){
+        return bt->unicode();
+    }
+
+    static void assign(QLatin1Char* bt, PrimitiveType pt){
+        *bt = QLatin1Char(char(pt));
+    }
+};
 }
+
+template<typename PrimitiveType,
+         typename BoxedType,
+         jobject(*toJavaObject)(JNIEnv *, PrimitiveType),
+         PrimitiveType fromJavaObject(JNIEnv *, jobject),
+         typename... RuntimeTypes>
+class PrimitiveTypeEntry : public AbstractSimpleTypeEntry{
+public:
+    using AbstractSimpleTypeEntry::AbstractSimpleTypeEntry;
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode, jvalue& output, jValueType javaType) const override{
+        if constexpr(std::is_same<PrimitiveType,std::nullptr_t>::value){
+            Q_UNUSED(env)
+            Q_UNUSED(qt_object)
+            Q_UNUSED(javaType)
+            output.l = nullptr;
+        }else{
+            const BoxedType* value = reinterpret_cast<const BoxedType*>(qt_object);
+            if(value){
+                switch (javaType) {
+                case jValueType::z:
+                    output.z = QtJambiPrivate::PrimitiveHelper<PrimitiveType,BoxedType>::unbox(value)!=0;
+                    break;
+                case jValueType::b:
+                    output.b = jbyte(QtJambiPrivate::PrimitiveHelper<PrimitiveType,BoxedType>::unbox(value));
+                    break;
+                case jValueType::c:
+                    output.c = jchar(QtJambiPrivate::PrimitiveHelper<PrimitiveType,BoxedType>::unbox(value));
+                    break;
+                case jValueType::s:
+                    output.s = jshort(QtJambiPrivate::PrimitiveHelper<PrimitiveType,BoxedType>::unbox(value));
+                    break;
+                case jValueType::i:
+                    output.i = jint(QtJambiPrivate::PrimitiveHelper<PrimitiveType,BoxedType>::unbox(value));
+                    break;
+                case jValueType::j:
+                    output.j = QtJambiPrivate::PrimitiveHelper<PrimitiveType,BoxedType>::unbox(value);
+                    break;
+                case jValueType::f:
+                    output.f = jfloat(QtJambiPrivate::PrimitiveHelper<PrimitiveType,BoxedType>::unbox(value));
+                    break;
+                case jValueType::d:
+                    output.d = jdouble(QtJambiPrivate::PrimitiveHelper<PrimitiveType,BoxedType>::unbox(value));
+                    break;
+                case jValueType::l:
+                    output.l = toJavaObject(env, QtJambiPrivate::PrimitiveHelper<PrimitiveType,BoxedType>::unbox(value));
+                    break;
+                }
+            }
+        }
+        return true;
+    }
+    bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope*) const override{
+        if constexpr(std::is_same<PrimitiveType,std::nullptr_t>::value){
+            Q_UNUSED(env)
+            Q_UNUSED(javaType)
+            if(void** value = reinterpret_cast<void**>(output))
+                *value = nullptr;
+        }else{
+            BoxedType* value = reinterpret_cast<BoxedType*>(output);
+            if(value){
+                switch (javaType) {
+                case jValueType::z:
+                    QtJambiPrivate::PrimitiveHelper<PrimitiveType,BoxedType>::assign(value, PrimitiveType(java_value.z));
+                    break;
+                case jValueType::b:
+                    QtJambiPrivate::PrimitiveHelper<PrimitiveType,BoxedType>::assign(value, PrimitiveType(java_value.b));
+                    break;
+                case jValueType::c:
+                    QtJambiPrivate::PrimitiveHelper<PrimitiveType,BoxedType>::assign(value, PrimitiveType(java_value.c));
+                    break;
+                case jValueType::s:
+                    QtJambiPrivate::PrimitiveHelper<PrimitiveType,BoxedType>::assign(value, PrimitiveType(java_value.s));
+                    break;
+                case jValueType::i:
+                    QtJambiPrivate::PrimitiveHelper<PrimitiveType,BoxedType>::assign(value, PrimitiveType(java_value.i));
+                    break;
+                case jValueType::j:
+                    QtJambiPrivate::PrimitiveHelper<PrimitiveType,BoxedType>::assign(value, PrimitiveType(java_value.j));
+                    break;
+                case jValueType::f:
+                    QtJambiPrivate::PrimitiveHelper<PrimitiveType,BoxedType>::assign(value, PrimitiveType(java_value.f));
+                    break;
+                case jValueType::d:
+                    QtJambiPrivate::PrimitiveHelper<PrimitiveType,BoxedType>::assign(value, PrimitiveType(java_value.d));
+                    break;
+                case jValueType::l:
+                    if(QtJambiPrivate::IsInstanceOfAny<RuntimeTypes...>::fail(env, java_value.l))
+                        return false;
+                    QtJambiPrivate::PrimitiveHelper<PrimitiveType,BoxedType>::assign(value, fromJavaObject(env, java_value.l));
+                    break;
+                }
+            }
+        }
+        return true;
+    }
+private:
+};
+
+jboolean fromJavaBooleanObject(JNIEnv *env, jobject bool_object)
+{
+    return QtJambiAPI::fromJavaBooleanObject(env, bool_object);
+}
+
+using JLongTypeEntry = PrimitiveTypeEntry<jlong, jlong, QtJambiAPI::toJavaLongObject, QtJambiAPI::fromJavaLongObject, Java::Runtime::Byte, Java::Runtime::Short, Java::Runtime::Integer, Java::Runtime::Long>;
+using JIntTypeEntry = PrimitiveTypeEntry<jint, jint, QtJambiAPI::toJavaIntegerObject, QtJambiAPI::fromJavaIntegerObject, Java::Runtime::Byte, Java::Runtime::Short, Java::Runtime::Integer>;
+using JShortTypeEntry = PrimitiveTypeEntry<jshort, jshort, QtJambiAPI::toJavaShortObject, QtJambiAPI::fromJavaShortObject, Java::Runtime::Byte, Java::Runtime::Short, Java::Runtime::Integer>;
+using JByteTypeEntry = PrimitiveTypeEntry<jbyte, jbyte, QtJambiAPI::toJavaByteObject, QtJambiAPI::fromJavaByteObject, Java::Runtime::Byte, Java::Runtime::Short, Java::Runtime::Integer>;
+using JBooleanTypeEntry = PrimitiveTypeEntry<jboolean, jboolean, QtJambiAPI::toJavaBooleanObject, fromJavaBooleanObject, Java::Runtime::Boolean>;
+using JDoubleTypeEntry = PrimitiveTypeEntry<jdouble, jdouble, QtJambiAPI::toJavaDoubleObject, QtJambiAPI::fromJavaDoubleObject, Java::Runtime::Number>;
+using JFloatTypeEntry = PrimitiveTypeEntry<jfloat, jfloat, QtJambiAPI::toJavaFloatObject, QtJambiAPI::fromJavaFloatObject, Java::Runtime::Byte, Java::Runtime::Short, Java::Runtime::Integer, Java::Runtime::Float>;
+using JCharTypeEntry = PrimitiveTypeEntry<jchar, jchar, QtJambiAPI::toJavaCharacterObject, QtJambiAPI::fromJavaCharacterObject, Java::Runtime::Character>;
+using JCharQCharTypeEntry = PrimitiveTypeEntry<jchar, QChar, QtJambiAPI::toJavaCharacterObject, QtJambiAPI::fromJavaCharacterObject, Java::Runtime::Character>;
+using JCharQLatin1CharTypeEntry = PrimitiveTypeEntry<jchar, QLatin1Char, QtJambiAPI::toJavaCharacterObject, QtJambiAPI::fromJavaCharacterObject, Java::Runtime::Character>;
+using NullptrTypeEntry = PrimitiveTypeEntry<std::nullptr_t, std::nullptr_t, nullptr, nullptr>;
+
+template<typename StringType>
+class StringUtilTypeEntry : public AbstractSimpleTypeEntry{
+public:
+    using AbstractSimpleTypeEntry::AbstractSimpleTypeEntry;
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
+    bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
+private:
+};
+
+template<typename TargetType>
+class MetaUtilTypeEntry : public AbstractSimpleTypeEntry{
+public:
+    using AbstractSimpleTypeEntry::AbstractSimpleTypeEntry;
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
+    bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
+private:
+};
 
 template<typename Super>
 class ValueTypeEntry : public Super{
@@ -556,8 +760,22 @@ public:
 protected:
     using ObjectTypeEntry<Super>::ObjectTypeEntry;
 private:
-    QSharedPointer<QtJambiLink> createLinkForNativeObject(JNIEnv *env, jobject javaObject, void *object, NativeToJavaConversionMode mode, bool isMetaCopy, AbstractContainerAccess* ca) const override{
-        auto link = ObjectTypeEntry<Super>::createLinkForNativeObject(env, javaObject, object, mode, isMetaCopy, ca);
+    QtJambiTypeEntry::NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType javaType) const{
+        if(javaType!=jValueType::l)
+            JavaException::raiseIllegalArgumentException(env, "Cannot convert object type" QTJAMBI_STACKTRACEINFO );
+        if (!qt_object){
+            output.l = nullptr;
+            return true;
+        }
+        output.l = env->NewObject(ObjectTypeEntry<Super>::creatableClass(), ObjectTypeEntry<Super>::creatorMethod(), nullptr);
+        JavaException::check(env QTJAMBI_STACKTRACEINFO );
+        auto link = ObjectTypeEntry<Super>::createLinkForNativeObject(
+            env,
+            output.l,
+            const_cast<void*>(qt_object),
+            mode,
+            false,
+            nullptr);
         link->disableDebugMessaging();
         return link;
     }
@@ -2665,8 +2883,21 @@ QtJambiTypeEntryPtr QtJambiTypeEntry::getTypeEntry(JNIEnv* env, const std::type_
             size_t value_size = getValueSize(typeId);
             if(typeid_equals(typeId, typeid(QString))){
                 result = new StringTypeEntry(env, typeId, qt_name, java_name, java_class, value_size);
-            }else{
-                result = new StringUtilTypeEntry(env, typeId, qt_name, java_name, java_class, value_size);
+            }else if(typeid_equals(typeId, typeid(QStringView))){
+                result = new StringUtilTypeEntry<QStringView>(env, typeId, qt_name, java_name, java_class, value_size);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+            }else if(typeid_equals(typeId, typeid(QStringRef))){
+                result = new StringUtilTypeEntry<QStringRef>(env, typeId, qt_name, java_name, java_class, value_size);
+            }else if(typeid_equals(typeId, typeid(QXmlStreamStringRef))){
+                result = new StringUtilTypeEntry<QXmlStreamStringRef>(env, typeId, qt_name, java_name, java_class, value_size);
+#else
+            }else if(typeid_equals(typeId, typeid(QAnyStringView))){
+                result = new StringUtilTypeEntry<QAnyStringView>(env, typeId, qt_name, java_name, java_class, value_size);
+            }else if(typeid_equals(typeId, typeid(QUtf8StringView))){
+                result = new StringUtilTypeEntry<QUtf8StringView>(env, typeId, qt_name, java_name, java_class, value_size);
+#endif
+            }else if(typeid_equals(typeId, typeid(QLatin1String))){
+                result = new StringUtilTypeEntry<QLatin1String>(env, typeId, qt_name, java_name, java_class, value_size);
             }
             break;
         }
@@ -2679,8 +2910,16 @@ QtJambiTypeEntryPtr QtJambiTypeEntry::getTypeEntry(JNIEnv* env, const std::type_
                 result = new JFloatTypeEntry(env, typeId, qt_name, java_name, java_class, value_size);
             }else if(typeid_equals(typeId, typeid(bool)) || typeid_equals(typeId, typeid(jboolean))){
                 result = new JBooleanTypeEntry(env, typeId, qt_name, java_name, java_class, value_size);
-            }else if(typeid_equals(typeId, typeid(wchar_t)) || typeid_equals(typeId, typeid(QChar)) || typeid_equals(typeId, typeid(QLatin1Char)) || typeid_equals(typeId, typeid(jchar))){
+            }else if(typeid_equals(typeId, typeid(wchar_t))
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+                     || typeid_equals(typeId, typeid(char16_t))
+#endif
+                     || typeid_equals(typeId, typeid(jchar))){
                 result = new JCharTypeEntry(env, typeId, qt_name, java_name, java_class, value_size);
+            }else if(typeid_equals(typeId, typeid(QChar))){
+                result = new JCharQCharTypeEntry(env, typeId, qt_name, java_name, java_class, value_size);
+            }else if(typeid_equals(typeId, typeid(QLatin1Char))){
+                result = new JCharQLatin1CharTypeEntry(env, typeId, qt_name, java_name, java_class, value_size);
             }else if(typeid_equals(typeId, typeid(qint32)) || typeid_equals(typeId, typeid(quint32)) || typeid_equals(typeId, typeid(jint))){
                 result = new JIntTypeEntry(env, typeId, qt_name, java_name, java_class, value_size);
             }else if(typeid_equals(typeId, typeid(qint16)) || typeid_equals(typeId, typeid(quint16)) || typeid_equals(typeId, typeid(jshort))){
@@ -2704,14 +2943,30 @@ QtJambiTypeEntryPtr QtJambiTypeEntry::getTypeEntry(JNIEnv* env, const std::type_
                     JavaException(env, exceptionOccurred).raise();
                 Q_ASSERT(creator_method);
                 result = new FlagsTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, nullptr);
-            }else if(typeid_equals(typeId, typeid(QMetaObject::Connection))
-                     || typeid_equals(typeId, typeid(QMetaObject))
-                     || typeid_equals(typeId, typeid(JIteratorWrapper))
+            }else if(typeid_equals(typeId, typeid(QMetaObject::Connection))){
+                result = new MetaUtilTypeEntry<QMetaObject::Connection>(env, typeId, qt_name, java_name, java_class, value_size);
+            }else if(typeid_equals(typeId, typeid(QMetaObject))){
+                result = new MetaUtilTypeEntry<QMetaObject>(env, typeId, qt_name, java_name, java_class, value_size);
+            }else if(typeid_equals(typeId, typeid(JIteratorWrapper))
                      || typeid_equals(typeId, typeid(JCollectionWrapper))
                      || typeid_equals(typeId, typeid(JMapWrapper))
                      || typeid_equals(typeId, typeid(JObjectWrapper))
+                     || typeid_equals(typeId, typeid(JIntArrayWrapper))
+                     || typeid_equals(typeId, typeid(JLongArrayWrapper))
+                     || typeid_equals(typeId, typeid(JShortArrayWrapper))
+                     || typeid_equals(typeId, typeid(JByteArrayWrapper))
+                     || typeid_equals(typeId, typeid(JBooleanArrayWrapper))
+                     || typeid_equals(typeId, typeid(JCharArrayWrapper))
+                     || typeid_equals(typeId, typeid(JFloatArrayWrapper))
+                     || typeid_equals(typeId, typeid(JDoubleArrayWrapper))
                      || typeid_equals(typeId, typeid(JEnumWrapper))){
-                result = new MetaUtilTypeEntry(env, typeId, qt_name, java_name, java_class, value_size);
+                result = new MetaUtilTypeEntry<JObjectWrapper>(env, typeId, qt_name, java_name, java_class, value_size);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+            }else if(typeid_equals(typeId, typeid(JQObjectWrapper))){
+                result = new MetaUtilTypeEntry<JQObjectWrapper>(env, typeId, qt_name, java_name, java_class, value_size);
+            }else if(typeid_equals(typeId, typeid(JObjectValueWrapper))){
+                result = new MetaUtilTypeEntry<JObjectValueWrapper>(env, typeId, qt_name, java_name, java_class, value_size);
+#endif
             }else if(typeid_equals(typeId, typeid(QVariant))){
                 result = new QVariantTypeEntry(env, typeId, qt_name, java_name, java_class, value_size);
 #if QT_VERSION >= 0x050C00
@@ -2972,14 +3227,9 @@ QtJambiTypeEntry::NativeToJavaResult QtJambiTypeEntry::convertModelIndexNativeTo
             }
         }
         if(mode==NativeToJavaConversionMode::None){
-            for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(index)){
-                if(link){
-                    jobject obj = link->getJavaObjectLocalRef(env);
-                    if(Java::QtCore::QModelIndex::isInstanceOf(env, obj)){
-                        output = obj;
-                        return true;
-                    }
-                }
+            if(jobject obj = QtJambiLink::findObjectForPointer(env, Java::QtCore::QModelIndex::getClass(env), index)){
+                output = obj;
+                return true;
             }
         }
         void *copy = mode==NativeToJavaConversionMode::MakeCopyOfValues ? new QModelIndex(*index) : const_cast<QModelIndex*>(index);
@@ -3085,10 +3335,14 @@ QtJambiTypeEntryPtr getFittingTypeEntry(JNIEnv *env, const QObject *qt_object, q
     if(qt_object){
         const std::type_info& type = entry->type();
         qintptr _offset = 0;
-        const std::type_info* _typeId = tryGetTypeInfo(env, RegistryAPI::Private::PolymorphicTypeInfoSupplier<QObject>::value, qt_object);
+        const std::type_info* _typeId = tryGetTypeInfo(RegistryAPI::Private::PolymorphicTypeInfoSupplier<QObject>::value, qt_object);
         if(!_typeId){
-            QLatin1String java_type(getJavaName(type));
-            Java::QtJambi::QDanglingPointerException::throwNew(env, QString("Cannot convert dangling pointer to object of type %1").arg(QString(QLatin1String(java_type)).replace(QLatin1Char('/'), QLatin1Char('.')).replace(QLatin1Char('$'), QLatin1Char('.'))) QTJAMBI_STACKTRACEINFO );
+            QByteArray java_type = QByteArray(getJavaName(type)).replace('/', '.').replace('$', '.');
+            if(enabledDanglingPointerCheck()){
+                Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Cannot convert dangling pointer %p to object of type %s", qt_object, java_type.constData()) QTJAMBI_STACKTRACEINFO );
+            }else{
+                qCWarning(DebugAPI::internalCategory, "Trying to convert possible dangling pointer %p to object of type %s", qt_object, java_type.constData());
+            }
         }
         if(_typeId && typeid_not_equals(*_typeId, type)){
             if(QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
@@ -3138,7 +3392,7 @@ QtJambiTypeEntryPtr getFittingTypeEntry(JNIEnv *env, const QObject *qt_object, q
             QList<const PolymorphicIdHandler*> _polymorphicHandlers;
             polymorphicHandlers.swap(_polymorphicHandlers);
             void *_object = const_cast<QObject *>(qt_object);
-            for(const PolymorphicIdHandler* handler : _polymorphicHandlers){
+            for(const PolymorphicIdHandler* handler : qAsConst(_polymorphicHandlers)){
                 Q_ASSERT(handler->m_polymorphyHandler);
                 _offset = 0;
                 if(handler->m_polymorphyHandler(_object, _offset)) {
@@ -3170,10 +3424,14 @@ QtJambiTypeEntryPtr getFittingTypeEntry(JNIEnv *env, const void *qt_object, qint
         qintptr _offset = 0;
         const std::type_info* _typeId = nullptr;
         if(typeInfoSupplier){
-            _typeId = tryGetTypeInfo(env, typeInfoSupplier, qt_object);
+            _typeId = tryGetTypeInfo(typeInfoSupplier, qt_object);
             if(!_typeId){
-                QLatin1String java_type(getJavaName(type));
-                Java::QtJambi::QDanglingPointerException::throwNew(env, QString("Cannot convert dangling pointer to object of type %1").arg(QString(QLatin1String(java_type)).replace(QLatin1Char('/'), QLatin1Char('.')).replace(QLatin1Char('$'), QLatin1Char('.'))) QTJAMBI_STACKTRACEINFO );
+                QByteArray java_type = QByteArray(getJavaName(type)).replace('/', '.').replace('$', '.');
+                if(enabledDanglingPointerCheck()){
+                    Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Cannot convert dangling pointer %p to object of type %s", qt_object, java_type.constData()) QTJAMBI_STACKTRACEINFO );
+                }else{
+                    qCWarning(DebugAPI::internalCategory, "Trying to convert possible dangling pointer %p to object of type %s", qt_object, java_type.constData());
+                }
             }
         }
         if(_typeId && typeid_not_equals(*_typeId, type)){
@@ -3186,7 +3444,7 @@ QtJambiTypeEntryPtr getFittingTypeEntry(JNIEnv *env, const void *qt_object, qint
             QList<const PolymorphicIdHandler*> _polymorphicHandlers;
             polymorphicHandlers.swap(_polymorphicHandlers);
             void *_object = const_cast<void *>(qt_object);
-            for(const PolymorphicIdHandler* handler : _polymorphicHandlers){
+            for(const PolymorphicIdHandler* handler : qAsConst(_polymorphicHandlers)){
                 Q_ASSERT(handler->m_polymorphyHandler);
                 _offset = 0;
                 if(handler->m_polymorphyHandler(_object, _offset)) {
@@ -3350,14 +3608,9 @@ QtJambiTypeEntry::NativeToJavaResult ObjectTypeAbstractEntry::convertToJava(JNIE
     bool makeCopyOfValues = false;
     switch(!isValue() && mode==NativeToJavaConversionMode::MakeCopyOfValues ? NativeToJavaConversionMode::None : mode){
     case NativeToJavaConversionMode::None:
-        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(qt_object)){
-            if(link){
-                jobject obj = link->getJavaObjectLocalRef(env);
-                if(obj && env->IsInstanceOf(obj, javaClass())){
-                    output.l = obj;
-                    return true;
-                }
-            }
+        if(jobject obj = QtJambiLink::findObjectForPointer(env, javaClass(), qt_object)){
+            output.l = obj;
+            return true;
         }
         break;
     case NativeToJavaConversionMode::MakeCopyOfValues:
@@ -4035,16 +4288,6 @@ bool AbstractSimpleTypeEntry::convertSmartPointerToJava(JNIEnv *env, const std::
     return convertToJava(env, _ptr, NativeToJavaConversionMode::MakeCopyOfValues, output, javaType);
 }
 
-JLongTypeEntry::JLongTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size)
-    : AbstractSimpleTypeEntry(env, typeId, qt_name, java_name, java_class, value_size)
-{
-}
-
-StringTypeEntry::StringTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size)
-    : AbstractSimpleTypeEntry(env, typeId, qt_name, java_name, java_class, value_size)
-{
-}
-
 QtJambiTypeEntry::NativeToJavaResult StringTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode, jvalue& output, jValueType javaType) const{
     const QString* strg = reinterpret_cast<const QString*>(qt_object);
     switch (javaType) {
@@ -4154,7 +4397,7 @@ bool StringTypeEntry::convertToNative(JNIEnv *env, jvalue java_value, jValueType
                 *value = *strg;
             }else{
                 if(scope){
-                    PersistentJString2QChars* buffer = new PersistentJString2QChars(env, jstring(java_value.l));
+                    PersistentJString2QChars* buffer = new PersistentJString2QChars(env, static_cast<jstring>(java_value.l));
                     scope->addDeletion(buffer);
                     JavaException::check(env QTJAMBI_STACKTRACEINFO );
                     *value = buffer->toString();
@@ -4183,11 +4426,6 @@ bool StringTypeEntry::convertToNative(JNIEnv *env, jvalue java_value, jValueType
 }
 
 #if QT_VERSION >= 0x050C00
-QCborValueRefTypeEntry::QCborValueRefTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size)
-    : AbstractSimpleTypeEntry(env, typeId, qt_name, java_name, java_class, value_size)
-{
-}
-
 QtJambiTypeEntry::NativeToJavaResult QCborValueRefTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType javaType) const{
     const QCborValueConstRef* vref = reinterpret_cast<const QCborValueConstRef*>(qt_object);
     QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, typeid(QCborValue), "QCborValue");
@@ -4202,13 +4440,9 @@ bool QCborValueRefTypeEntry::convertToNative(JNIEnv *env, jvalue, jValueType, vo
 }
 #endif
 
-StringUtilTypeEntry::StringUtilTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size)
-    : AbstractSimpleTypeEntry(env, typeId, qt_name, java_name, java_class, value_size)
-{
-}
-
-QtJambiTypeEntry::NativeToJavaResult StringUtilTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode, jvalue& output, jValueType javaType) const{
-    if(typeid_equals(type(), typeid(QStringView))){
+template<typename StringType>
+QtJambiTypeEntry::NativeToJavaResult StringUtilTypeEntry<StringType>::convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode, jvalue& output, jValueType javaType) const{
+    if constexpr(std::is_same<StringType,QStringView>::value){
         const QStringView* sref = reinterpret_cast<const QStringView*>(qt_object);
         if(sref){
             switch (javaType) {
@@ -4229,7 +4463,7 @@ QtJambiTypeEntry::NativeToJavaResult StringUtilTypeEntry::convertToJava(JNIEnv *
             }
         }
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    }else if(typeid_equals(type(), typeid(QStringRef))){
+    }else if constexpr(std::is_same<StringType,QStringRef>::value){
         const QStringRef* sref = reinterpret_cast<const QStringRef*>(qt_object);
         if(sref){
             switch (javaType) {
@@ -4249,7 +4483,7 @@ QtJambiTypeEntry::NativeToJavaResult StringUtilTypeEntry::convertToJava(JNIEnv *
                 break;
             }
         }
-    }else if(typeid_equals(type(), typeid(QXmlStreamStringRef))){
+    }else if constexpr(std::is_same<StringType,QXmlStreamStringRef>::value){
         const QXmlStreamStringRef* xref = reinterpret_cast<const QXmlStreamStringRef*>(qt_object);
         if(xref){
             QStringRef sref(*xref);
@@ -4272,7 +4506,7 @@ QtJambiTypeEntry::NativeToJavaResult StringUtilTypeEntry::convertToJava(JNIEnv *
             }
         }
 #else
-    }else if(typeid_equals(type(), typeid(QAnyStringView))){
+    }else if constexpr(std::is_same<StringType,QAnyStringView>::value){
         const QAnyStringView* sref = reinterpret_cast<const QAnyStringView*>(qt_object);
         if(sref){
             switch (javaType) {
@@ -4290,7 +4524,7 @@ QtJambiTypeEntry::NativeToJavaResult StringUtilTypeEntry::convertToJava(JNIEnv *
                 break;
             }
         }
-    }else if(typeid_equals(type(), typeid(QUtf8StringView))){
+    }else if constexpr(std::is_same<StringType,QUtf8StringView>::value){
         const QUtf8StringView* sref = reinterpret_cast<const QUtf8StringView*>(qt_object);
         if(sref){
             switch (javaType) {
@@ -4309,7 +4543,7 @@ QtJambiTypeEntry::NativeToJavaResult StringUtilTypeEntry::convertToJava(JNIEnv *
             }
         }
 #endif // QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    }else{
+    }else if constexpr(std::is_same<StringType,QLatin1String>::value){
         const QLatin1String* sref = reinterpret_cast<const QLatin1String*>(qt_object);
         if(sref){
             switch (javaType) {
@@ -4332,8 +4566,9 @@ QtJambiTypeEntry::NativeToJavaResult StringUtilTypeEntry::convertToJava(JNIEnv *
     return true;
 }
 
-bool StringUtilTypeEntry::convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const{
-    if(typeid_equals(type(), typeid(QStringView))){
+template<typename StringType>
+bool StringUtilTypeEntry<StringType>::convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const{
+    if constexpr(std::is_same<StringType,QStringView>::value){
         if(scope){
             QStringView* value = reinterpret_cast<QStringView*>(output);
             if(value){
@@ -4354,7 +4589,7 @@ bool StringUtilTypeEntry::convertToNative(JNIEnv *env, jvalue java_value, jValue
                         QtJambiAPI::checkNullPointer(env, strg);
                         *value = *strg;
                     }else{
-                        PersistentJString2QChars* buffer = new PersistentJString2QChars(env, jstring(java_value.l));
+                        PersistentJString2QChars* buffer = new PersistentJString2QChars(env, static_cast<jstring>(java_value.l));
                         JavaException::check(env QTJAMBI_STACKTRACEINFO );
                         scope->addDeletion(buffer);
                         *value = buffer->toStringView();
@@ -4388,12 +4623,12 @@ bool StringUtilTypeEntry::convertToNative(JNIEnv *env, jvalue java_value, jValue
             JavaException::raiseError(env, "Cannot convert to QStringView" QTJAMBI_STACKTRACEINFO );
         }
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    }else if(typeid_equals(type(), typeid(QStringRef))){
+    }else if constexpr(std::is_same<StringType,QStringRef>::value){
         JavaException::raiseError(env, "Cannot convert to QStringRef" QTJAMBI_STACKTRACEINFO );
-    }else if(typeid_equals(type(), typeid(QXmlStreamStringRef))){
+    }else if constexpr(std::is_same<StringType,QXmlStreamStringRef>::value){
         JavaException::raiseError(env, "Cannot convert to QXmlStreamStringRef" QTJAMBI_STACKTRACEINFO );
 #else
-    }else if(typeid_equals(type(), typeid(QAnyStringView))){
+    }else if constexpr(std::is_same<StringType,QAnyStringView>::value){
         if(scope){
             QAnyStringView* value = reinterpret_cast<QAnyStringView*>(output);
             if(value){
@@ -4414,7 +4649,7 @@ bool StringUtilTypeEntry::convertToNative(JNIEnv *env, jvalue java_value, jValue
                         QtJambiAPI::checkNullPointer(env, strg);
                         *value = *strg;
                     }else{
-                        PersistentJString2QChars* buffer = new PersistentJString2QChars(env, jstring(java_value.l));
+                        PersistentJString2QChars* buffer = new PersistentJString2QChars(env, static_cast<jstring>(java_value.l));
                         JavaException::check(env QTJAMBI_STACKTRACEINFO );
                         scope->addDeletion(buffer);
                         *value = buffer->toAnyStringView();
@@ -4447,7 +4682,7 @@ bool StringUtilTypeEntry::convertToNative(JNIEnv *env, jvalue java_value, jValue
         }else{
             JavaException::raiseError(env, "Cannot convert to QAnyStringView" QTJAMBI_STACKTRACEINFO );
         }
-    }else if(typeid_equals(type(), typeid(QUtf8StringView))){
+    }else if constexpr(std::is_same<StringType,QUtf8StringView>::value){
         if(scope){
             QUtf8StringView* value = reinterpret_cast<QUtf8StringView*>(output);
             if(value){
@@ -4470,7 +4705,7 @@ bool StringUtilTypeEntry::convertToNative(JNIEnv *env, jvalue java_value, jValue
                         scope->addDeletion(ba);
                         *value = *ba;
                     }else{
-                        PersistentJ2CStringBuffer* buffer = new PersistentJ2CStringBuffer(env, jstring(java_value.l));
+                        PersistentJ2CStringBuffer* buffer = new PersistentJ2CStringBuffer(env, static_cast<jstring>(java_value.l));
                         JavaException::check(env QTJAMBI_STACKTRACEINFO );
                         scope->addDeletion(buffer);
                         *value = buffer->toUtf8StringView();
@@ -4504,7 +4739,7 @@ bool StringUtilTypeEntry::convertToNative(JNIEnv *env, jvalue java_value, jValue
             JavaException::raiseError(env, "Cannot convert to QUtf8StringView" QTJAMBI_STACKTRACEINFO );
         }
 #endif // QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    }else {
+    }else if constexpr(std::is_same<StringType,QLatin1String>::value){
         if(scope){
             QLatin1String* value = reinterpret_cast<QLatin1String*>(output);
             if(value){
@@ -4527,7 +4762,7 @@ bool StringUtilTypeEntry::convertToNative(JNIEnv *env, jvalue java_value, jValue
                         scope->addDeletion(ba);
                         *value = QLatin1String(*ba);
                         }else{
-                        PersistentJ2CStringBuffer* buffer = new PersistentJ2CStringBuffer(env, jstring(java_value.l));
+                        PersistentJ2CStringBuffer* buffer = new PersistentJ2CStringBuffer(env, static_cast<jstring>(java_value.l));
                         JavaException::check(env QTJAMBI_STACKTRACEINFO );
                         scope->addDeletion(buffer);
                         *value = buffer->toLatin1String();
@@ -4564,27 +4799,18 @@ bool StringUtilTypeEntry::convertToNative(JNIEnv *env, jvalue java_value, jValue
     return false;
 }
 
-MetaUtilTypeEntry::MetaUtilTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size)
-    : AbstractSimpleTypeEntry(env, typeId, qt_name, java_name, java_class, value_size)
-{
-}
-
-QtJambiTypeEntry::NativeToJavaResult MetaUtilTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType javaType) const{
+template<typename TargetType>
+QtJambiTypeEntry::NativeToJavaResult MetaUtilTypeEntry<TargetType>::convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType javaType) const{
     if(javaType!=jValueType::l)
         JavaException::raiseIllegalArgumentException(env, "Cannot convert to primitive value" QTJAMBI_STACKTRACEINFO );
     if(qt_object){
-        if(typeid_equals(type(), typeid(QMetaObject::Connection))){
+        if constexpr(std::is_same<TargetType,QMetaObject::Connection>::value){
             bool makeCopyOfValues = false;
             switch(mode){
             case NativeToJavaConversionMode::None:
-                for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(qt_object)){
-                    if(link){
-                        jobject obj = link->getJavaObjectLocalRef(env);
-                        if(obj && env->IsInstanceOf(obj, javaClass())){
-                            output.l = obj;
-                            return true;
-                        }
-                    }
+                if(jobject obj = QtJambiLink::findObjectForPointer(env, javaClass(), qt_object)){
+                    output.l = obj;
+                    return true;
                 }
                 break;
             case NativeToJavaConversionMode::MakeCopyOfValues:
@@ -4604,23 +4830,26 @@ QtJambiTypeEntry::NativeToJavaResult MetaUtilTypeEntry::convertToJava(JNIEnv *en
                     false,
                     mode==NativeToJavaConversionMode::None ? QtJambiLink::Ownership::None : QtJambiLink::Ownership::Java
                 );
-        }else if(typeid_equals(type(), typeid(QMetaObject))){
+        }else if constexpr(std::is_same<TargetType,QMetaObject>::value){
             output.l = QtJambiMetaObject::convertToJavaObject(env, reinterpret_cast<const QMetaObject*>(qt_object));
-        }else if(typeid_equals(type(), typeid(JIteratorWrapper))
-                 || typeid_equals(type(), typeid(JCollectionWrapper))
-                 || typeid_equals(type(), typeid(JMapWrapper))
-                 || typeid_equals(type(), typeid(JObjectWrapper))
-                 || typeid_equals(type(), typeid(JEnumWrapper))){
+        }else if constexpr(std::is_same<TargetType,JObjectWrapper>::value){
             output.l = reinterpret_cast<const JObjectWrapper*>(qt_object)->object(env);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+        }else if constexpr(std::is_same<TargetType,JQObjectWrapper>::value){
+            output.l = reinterpret_cast<const JQObjectWrapper*>(qt_object)->javaObject(env);
+        }else if constexpr(std::is_same<TargetType,JObjectValueWrapper>::value){
+            output.l = reinterpret_cast<const JObjectValueWrapper*>(qt_object)->value(env);
+#endif
         }
     }
     return true;
 }
 
-bool MetaUtilTypeEntry::convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void *output, QtJambiScope*) const{
+template<typename TargetType>
+bool MetaUtilTypeEntry<TargetType>::convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void *output, QtJambiScope*) const{
     if(javaType!=jValueType::l)
         JavaException::raiseIllegalArgumentException(env, "Cannot convert to primitive value" QTJAMBI_STACKTRACEINFO );
-    if(typeid_equals(type(), typeid(QMetaObject::Connection))){
+    if constexpr(std::is_same<TargetType,QMetaObject::Connection>::value){
         if(!env->IsSameObject(java_value.l, nullptr)){
             if(!Java::QtCore::QMetaObject$Connection::isInstanceOf(env, java_value.l))
                 return false;
@@ -4633,7 +4862,7 @@ bool MetaUtilTypeEntry::convertToNative(JNIEnv *env, jvalue java_value, jValueTy
         }else{
             *reinterpret_cast<QMetaObject::Connection*>(output) = QMetaObject::Connection();
         }
-    }else if(typeid_equals(type(), typeid(QMetaObject))){
+    }else if constexpr(std::is_same<TargetType,QMetaObject>::value){
         if(!env->IsSameObject(java_value.l, nullptr)){
             if(!Java::QtCore::QMetaObject::isInstanceOf(env, java_value.l))
                 return false;
@@ -4642,19 +4871,19 @@ bool MetaUtilTypeEntry::convertToNative(JNIEnv *env, jvalue java_value, jValueTy
         }else{
             *reinterpret_cast<const QMetaObject**>(output) = nullptr;
         }
-    }else if(typeid_equals(type(), typeid(JIteratorWrapper))
-             || typeid_equals(type(), typeid(JCollectionWrapper))
-             || typeid_equals(type(), typeid(JMapWrapper))
-             || typeid_equals(type(), typeid(JObjectWrapper))
-             || typeid_equals(type(), typeid(JEnumWrapper))){
-        *reinterpret_cast<JObjectWrapper*>(output) = JObjectWrapper(env, java_value.l);
+    }else if constexpr(std::is_same<TargetType,JObjectWrapper>::value){
+        reinterpret_cast<JObjectWrapper*>(output)->assign(env, java_value.l);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    }else if constexpr(std::is_same<TargetType,JQObjectWrapper>::value){
+        QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, java_value.l);
+        if(link && link->isQObject())
+            *reinterpret_cast<JQObjectWrapper*>(output) = JQObjectWrapper(env, std::move(link));
+        else return false;
+    }else if constexpr(std::is_same<TargetType,JObjectValueWrapper>::value){
+        reinterpret_cast<JObjectValueWrapper*>(output)->assign(env, java_value.l);
+#endif
     }
     return true;
-}
-
-QVariantTypeEntry::QVariantTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size)
-    : AbstractSimpleTypeEntry(env, typeId, qt_name, java_name, java_class, value_size)
-{
 }
 
 QtJambiTypeEntry::NativeToJavaResult QVariantTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode, jvalue& output, jValueType javaType) const{
@@ -4739,799 +4968,4 @@ bool QVariantTypeEntry::convertSmartPointerToJava(JNIEnv *env, const QSharedPoin
 
 bool QVariantTypeEntry::convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jvalue& output, jValueType javaType) const{
     return convertSmartPointerToJava<std::shared_ptr>(env, offset==0 ? smartPointer : convertSmartPointer<char>(smartPointer, offset), output, javaType);
-}
-
-QtJambiTypeEntry::NativeToJavaResult JLongTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode, jvalue& output, jValueType javaType) const{
-    const jlong* value = reinterpret_cast<const jlong*>(qt_object);
-    if(value){
-        switch (javaType) {
-        case jValueType::z:
-            output.z = *value!=0;
-            break;
-        case jValueType::b:
-            output.b = jbyte(*value);
-            break;
-        case jValueType::c:
-            output.c = jchar(*value);
-            break;
-        case jValueType::s:
-            output.s = jshort(*value);
-            break;
-        case jValueType::i:
-            output.i = jint(*value);
-            break;
-        case jValueType::j:
-            output.j = *value;
-            break;
-        case jValueType::f:
-            output.f = jfloat(*value);
-            break;
-        case jValueType::d:
-            output.d = jdouble(*value);
-            break;
-        case jValueType::l:
-            output.l = QtJambiAPI::toJavaLongObject(env, *value);
-            break;
-        }
-    }
-    return true;
-}
-
-bool JLongTypeEntry::convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope*) const{
-    jlong* value = reinterpret_cast<jlong*>(output);
-    if(value){
-        switch (javaType) {
-        case jValueType::z:
-            *value = java_value.z;
-            break;
-        case jValueType::b:
-            *value = java_value.b;
-            break;
-        case jValueType::c:
-            *value = java_value.c;
-            break;
-        case jValueType::s:
-            *value = java_value.s;
-            break;
-        case jValueType::i:
-            *value = java_value.i;
-            break;
-        case jValueType::j:
-            *value = java_value.j;
-            break;
-        case jValueType::f:
-            *value = jlong(java_value.f);
-            break;
-        case jValueType::d:
-            *value = jlong(java_value.d);
-            break;
-        case jValueType::l:
-            if(java_value.l && !Java::Runtime::Byte::isInstanceOf(env, java_value.l)
-                     && !Java::Runtime::Short::isInstanceOf(env, java_value.l)
-                     && !Java::Runtime::Integer::isInstanceOf(env, java_value.l)
-                     && !Java::Runtime::Long::isInstanceOf(env, java_value.l))
-                return false;
-            *value = QtJambiAPI::fromJavaLongObject(env, java_value.l);
-            break;
-        }
-    }
-    return true;
-}
-
-JIntTypeEntry::JIntTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size)
-    : AbstractSimpleTypeEntry(env, typeId, qt_name, java_name, java_class, value_size)
-{
-}
-
-QtJambiTypeEntry::NativeToJavaResult JIntTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode, jvalue& output, jValueType javaType) const{
-    const jint* value = reinterpret_cast<const jint*>(qt_object);
-    if(value){
-        switch (javaType) {
-        case jValueType::z:
-            output.z = *value!=0;
-            break;
-        case jValueType::b:
-            output.b = jbyte(*value);
-            break;
-        case jValueType::c:
-            output.c = jchar(*value);
-            break;
-        case jValueType::s:
-            output.s = jshort(*value);
-            break;
-        case jValueType::i:
-            output.i = jint(*value);
-            break;
-        case jValueType::j:
-            output.j = jlong(*value);
-            break;
-        case jValueType::f:
-            output.f = jfloat(*value);
-            break;
-        case jValueType::d:
-            output.d = jdouble(*value);
-            break;
-        case jValueType::l:
-            output.l = QtJambiAPI::toJavaIntegerObject(env, *value);
-            break;
-        }
-    }
-    return true;
-}
-
-bool JIntTypeEntry::convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope*) const{
-    jint* value = reinterpret_cast<jint*>(output);
-    if(value){
-        switch (javaType) {
-        case jValueType::z:
-            *value = java_value.z;
-            break;
-        case jValueType::b:
-            *value = java_value.b;
-            break;
-        case jValueType::c:
-            *value = java_value.c;
-            break;
-        case jValueType::s:
-            *value = java_value.s;
-            break;
-        case jValueType::i:
-            *value = java_value.i;
-            break;
-        case jValueType::j:
-            *value = jint(java_value.j);
-            break;
-        case jValueType::f:
-            *value = jint(java_value.f);
-            break;
-        case jValueType::d:
-            *value = jint(java_value.d);
-            break;
-        case jValueType::l:
-            if(java_value.l && !Java::Runtime::Byte::isInstanceOf(env, java_value.l)
-                     && !Java::Runtime::Short::isInstanceOf(env, java_value.l)
-                     && !Java::Runtime::Integer::isInstanceOf(env, java_value.l))
-                return false;
-            *value = QtJambiAPI::fromJavaIntegerObject(env, java_value.l);
-            break;
-        }
-    }
-    return true;
-}
-
-JShortTypeEntry::JShortTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size)
-    : AbstractSimpleTypeEntry(env, typeId, qt_name, java_name, java_class, value_size)
-{
-}
-
-QtJambiTypeEntry::NativeToJavaResult JShortTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode, jvalue& output, jValueType javaType) const{
-    const jshort* value = reinterpret_cast<const jshort*>(qt_object);
-    if(value){
-        switch (javaType) {
-        case jValueType::z:
-            output.z = *value!=0;
-            break;
-        case jValueType::b:
-            output.b = jbyte(*value);
-            break;
-        case jValueType::c:
-            output.c = jchar(*value);
-            break;
-        case jValueType::s:
-            output.s = jshort(*value);
-            break;
-        case jValueType::i:
-            output.i = jint(*value);
-            break;
-        case jValueType::j:
-            output.j = jlong(*value);
-            break;
-        case jValueType::f:
-            output.f = jfloat(*value);
-            break;
-        case jValueType::d:
-            output.d = jdouble(*value);
-            break;
-        case jValueType::l:
-            output.l = QtJambiAPI::toJavaShortObject(env, *value);
-            break;
-        }
-    }
-    return true;
-}
-
-bool JShortTypeEntry::convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope*) const{
-    jshort* value = reinterpret_cast<jshort*>(output);
-    if(value){
-        switch (javaType) {
-        case jValueType::z:
-            *value = java_value.z;
-            break;
-        case jValueType::b:
-            *value = java_value.b;
-            break;
-        case jValueType::c:
-            *value = jshort(java_value.c);
-            break;
-        case jValueType::s:
-            *value = java_value.s;
-            break;
-        case jValueType::i:
-            *value = jshort(java_value.i);
-            break;
-        case jValueType::j:
-            *value = jshort(java_value.j);
-            break;
-        case jValueType::f:
-            *value = jshort(java_value.f);
-            break;
-        case jValueType::d:
-            *value = jshort(java_value.d);
-            break;
-        case jValueType::l:
-            if(java_value.l && !Java::Runtime::Byte::isInstanceOf(env, java_value.l)
-                     && !Java::Runtime::Short::isInstanceOf(env, java_value.l)
-                     && !Java::Runtime::Integer::isInstanceOf(env, java_value.l))
-                return false;
-            *value = QtJambiAPI::fromJavaShortObject(env, java_value.l);
-            break;
-        }
-    }
-    return true;
-}
-
-JByteTypeEntry::JByteTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size)
-    : AbstractSimpleTypeEntry(env, typeId, qt_name, java_name, java_class, value_size)
-{
-}
-
-QtJambiTypeEntry::NativeToJavaResult JByteTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode, jvalue& output, jValueType javaType) const{
-    const jbyte* value = reinterpret_cast<const jbyte*>(qt_object);
-    if(value){
-        switch (javaType) {
-        case jValueType::z:
-            output.z = *value!=0;
-            break;
-        case jValueType::b:
-            output.b = jbyte(*value);
-            break;
-        case jValueType::c:
-            output.c = jchar(*value);
-            break;
-        case jValueType::s:
-            output.s = jshort(*value);
-            break;
-        case jValueType::i:
-            output.i = jint(*value);
-            break;
-        case jValueType::j:
-            output.j = jlong(*value);
-            break;
-        case jValueType::f:
-            output.f = jfloat(*value);
-            break;
-        case jValueType::d:
-            output.d = jdouble(*value);
-            break;
-        case jValueType::l:
-            output.l = QtJambiAPI::toJavaByteObject(env, *value);
-            break;
-        }
-    }
-    return true;
-}
-
-bool JByteTypeEntry::convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope*) const{
-    jbyte* value = reinterpret_cast<jbyte*>(output);
-    if(value){
-        switch (javaType) {
-        case jValueType::z:
-            *value = jbyte(java_value.z);
-            break;
-        case jValueType::b:
-            *value = java_value.b;
-            break;
-        case jValueType::c:
-            *value = jbyte(java_value.c);
-            break;
-        case jValueType::s:
-            *value = jbyte(java_value.s);
-            break;
-        case jValueType::i:
-            *value = jbyte(java_value.i);
-            break;
-        case jValueType::j:
-            *value = jbyte(java_value.j);
-            break;
-        case jValueType::f:
-            *value = jbyte(java_value.f);
-            break;
-        case jValueType::d:
-            *value = jbyte(java_value.d);
-            break;
-        case jValueType::l:
-            if(java_value.l && !Java::Runtime::Byte::isInstanceOf(env, java_value.l)
-                     && !Java::Runtime::Short::isInstanceOf(env, java_value.l)
-                     && !Java::Runtime::Integer::isInstanceOf(env, java_value.l))
-                return false;
-            *value = QtJambiAPI::fromJavaByteObject(env, java_value.l);
-            break;
-        }
-    }
-    return true;
-}
-
-JCharTypeEntry::JCharTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size)
-    : AbstractSimpleTypeEntry(env, typeId, qt_name, java_name, java_class, value_size)
-{
-}
-
-QtJambiTypeEntry::NativeToJavaResult JCharTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode, jvalue& output, jValueType javaType) const{
-    if(typeid_equals(type(), typeid(wchar_t)) || typeid_equals(type(), typeid(jchar))){
-        const jchar* value = reinterpret_cast<const jchar*>(qt_object);
-        if(value){
-            switch (javaType) {
-            case jValueType::z:
-                output.z = *value!=0;
-                break;
-            case jValueType::b:
-                output.b = jbyte(*value);
-                break;
-            case jValueType::c:
-                output.c = jchar(*value);
-                break;
-            case jValueType::s:
-                output.s = jshort(*value);
-                break;
-            case jValueType::i:
-                output.i = jint(*value);
-                break;
-            case jValueType::j:
-                output.j = jlong(*value);
-                break;
-            case jValueType::f:
-                output.f = jfloat(*value);
-                break;
-            case jValueType::d:
-                output.d = jdouble(*value);
-                break;
-            case jValueType::l:
-                output.l = QtJambiAPI::toJavaCharacterObject(env, *value);
-                break;
-            }
-        }
-    }else if(typeid_equals(type(), typeid(QChar))){
-        const QChar* value = reinterpret_cast<const QChar*>(qt_object);
-        if(value){
-            switch (javaType) {
-            case jValueType::z:
-                output.z = value->cell()!=0;
-                break;
-            case jValueType::b:
-                output.b = jbyte(value->cell());
-                break;
-            case jValueType::c:
-                output.c = jchar(value->cell());
-                break;
-            case jValueType::s:
-                output.s = jshort(value->cell());
-                break;
-            case jValueType::i:
-                output.i = jint(value->cell());
-                break;
-            case jValueType::j:
-                output.j = jlong(value->cell());
-                break;
-            case jValueType::f:
-                output.f = jfloat(value->cell());
-                break;
-            case jValueType::d:
-                output.d = jdouble(value->cell());
-                break;
-            case jValueType::l:
-                output.l = QtJambiAPI::toJavaCharacterObject(env, value->cell());
-                break;
-            }
-        }
-    }else if(typeid_equals(type(), typeid(QLatin1Char))){
-        const QLatin1Char* value = reinterpret_cast<const QLatin1Char*>(qt_object);
-        if(value){
-            switch (javaType) {
-            case jValueType::z:
-                output.z = value->unicode()!=0;
-                break;
-            case jValueType::b:
-                output.b = jbyte(value->unicode());
-                break;
-            case jValueType::c:
-                output.c = jchar(value->unicode());
-                break;
-            case jValueType::s:
-                output.s = jshort(value->unicode());
-                break;
-            case jValueType::i:
-                output.i = jint(value->unicode());
-                break;
-            case jValueType::j:
-                output.j = jlong(value->unicode());
-                break;
-            case jValueType::f:
-                output.f = jfloat(value->unicode());
-                break;
-            case jValueType::d:
-                output.d = jdouble(value->unicode());
-                break;
-            case jValueType::l:
-                output.l = QtJambiAPI::toJavaCharacterObject(env, value->unicode());
-                break;
-            }
-        }
-    }
-    return true;
-}
-
-bool JCharTypeEntry::convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope*) const{
-    if(typeid_equals(type(), typeid(wchar_t)) || typeid_equals(type(), typeid(jchar))){
-        jchar* value = reinterpret_cast<jchar*>(output);
-        if(value){
-            switch (javaType) {
-            case jValueType::z:
-                *value = jchar(java_value.z);
-                break;
-            case jValueType::b:
-                *value = jchar(java_value.b);
-                break;
-            case jValueType::c:
-                *value = jchar(java_value.c);
-                break;
-            case jValueType::s:
-                *value = jchar(java_value.s);
-                break;
-            case jValueType::i:
-                *value = jchar(java_value.i);
-                break;
-            case jValueType::j:
-                *value = jchar(java_value.j);
-                break;
-            case jValueType::f:
-                *value = jchar(java_value.f);
-                break;
-            case jValueType::d:
-                *value = jchar(java_value.d);
-                break;
-            case jValueType::l:
-                if(java_value.l && !Java::Runtime::Character::isInstanceOf(env, java_value.l))
-                    return false;
-                *value = QtJambiAPI::fromJavaCharacterObject(env, java_value.l);
-                break;
-            }
-        }
-    }else if(typeid_equals(type(), typeid(QChar))){
-        QChar* value = reinterpret_cast<QChar*>(output);
-        if(value){
-            switch (javaType) {
-            case jValueType::z:
-                *value = jchar(java_value.z);
-                break;
-            case jValueType::b:
-                *value = jchar(java_value.b);
-                break;
-            case jValueType::c:
-                *value = jchar(java_value.c);
-                break;
-            case jValueType::s:
-                *value = jchar(java_value.s);
-                break;
-            case jValueType::i:
-                *value = jchar(java_value.i);
-                break;
-            case jValueType::j:
-                *value = jchar(java_value.j);
-                break;
-            case jValueType::f:
-                *value = jchar(java_value.f);
-                break;
-            case jValueType::d:
-                *value = jchar(java_value.d);
-                break;
-            case jValueType::l:
-                if(java_value.l && !Java::Runtime::Character::isInstanceOf(env, java_value.l))
-                    return false;
-                *value = QtJambiAPI::fromJavaCharacterObject(env, java_value.l);
-                break;
-            }
-        }
-    }else if(typeid_equals(type(), typeid(QLatin1Char))){
-        QLatin1Char* value = reinterpret_cast<QLatin1Char*>(output);
-        if(value){
-            switch (javaType) {
-            case jValueType::z:
-                *value = QLatin1Char(jbyte(java_value.z));
-                break;
-            case jValueType::b:
-                *value = QLatin1Char(jbyte(java_value.b));
-                break;
-            case jValueType::c:
-                *value = QLatin1Char(jbyte(java_value.c));
-                break;
-            case jValueType::s:
-                *value = QLatin1Char(jbyte(java_value.s));
-                break;
-            case jValueType::i:
-                *value = QLatin1Char(jbyte(java_value.i));
-                break;
-            case jValueType::j:
-                *value = QLatin1Char(jbyte(java_value.j));
-                break;
-            case jValueType::f:
-                *value = QLatin1Char(jbyte(java_value.f));
-                break;
-            case jValueType::d:
-                *value = QLatin1Char(jbyte(java_value.d));
-                break;
-            case jValueType::l:
-                if(java_value.l && !Java::Runtime::Character::isInstanceOf(env, java_value.l))
-                    return false;
-                *value = QLatin1Char(jbyte(QtJambiAPI::fromJavaCharacterObject(env, java_value.l)));
-                break;
-            }
-        }
-    }
-    return true;
-}
-
-JBooleanTypeEntry::JBooleanTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size)
-    : AbstractSimpleTypeEntry(env, typeId, qt_name, java_name, java_class, value_size)
-{
-}
-
-QtJambiTypeEntry::NativeToJavaResult JBooleanTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode, jvalue& output, jValueType javaType) const{
-    const jboolean* value = reinterpret_cast<const jboolean*>(qt_object);
-    if(value){
-        switch (javaType) {
-        case jValueType::z:
-            output.z = *value;
-            break;
-        case jValueType::b:
-            output.b = jbyte(*value);
-            break;
-        case jValueType::c:
-            output.c = jchar(*value);
-            break;
-        case jValueType::s:
-            output.s = jshort(*value);
-            break;
-        case jValueType::i:
-            output.i = jint(*value);
-            break;
-        case jValueType::j:
-            output.j = jlong(*value);
-            break;
-        case jValueType::f:
-            output.f = jfloat(*value);
-            break;
-        case jValueType::d:
-            output.d = jdouble(*value);
-            break;
-        case jValueType::l:
-            output.l = QtJambiAPI::toJavaBooleanObject(env, *value);
-            break;
-        }
-    }
-    return true;
-}
-
-bool JBooleanTypeEntry::convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope*) const{
-    jboolean* value = reinterpret_cast<jboolean*>(output);
-    if(value){
-        switch (javaType) {
-        case jValueType::z:
-            *value = jboolean(java_value.z);
-            break;
-        case jValueType::b:
-            *value = jboolean(java_value.b);
-            break;
-        case jValueType::c:
-            *value = jboolean(java_value.c);
-            break;
-        case jValueType::s:
-            *value = jboolean(java_value.s);
-            break;
-        case jValueType::i:
-            *value = jboolean(java_value.i);
-            break;
-        case jValueType::j:
-            *value = jboolean(java_value.j);
-            break;
-        case jValueType::f:
-            *value = jboolean(java_value.f);
-            break;
-        case jValueType::d:
-            *value = jboolean(java_value.d);
-            break;
-        case jValueType::l:
-            if(java_value.l && !Java::Runtime::Boolean::isInstanceOf(env, java_value.l))
-                return false;
-            *value = QtJambiAPI::fromJavaBooleanObject(env, java_value.l);
-            break;
-        }
-    }
-    return true;
-}
-
-JDoubleTypeEntry::JDoubleTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size)
-    : AbstractSimpleTypeEntry(env, typeId, qt_name, java_name, java_class, value_size)
-{
-}
-
-QtJambiTypeEntry::NativeToJavaResult JDoubleTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode, jvalue& output, jValueType javaType) const{
-    const jdouble* value = reinterpret_cast<const jdouble*>(qt_object);
-    if(value){
-        switch (javaType) {
-        case jValueType::z:
-            output.z = jboolean(*value);
-            break;
-        case jValueType::b:
-            output.b = jbyte(*value);
-            break;
-        case jValueType::c:
-            output.c = jchar(*value);
-            break;
-        case jValueType::s:
-            output.s = jshort(*value);
-            break;
-        case jValueType::i:
-            output.i = jint(*value);
-            break;
-        case jValueType::j:
-            output.j = jlong(*value);
-            break;
-        case jValueType::f:
-            output.f = jfloat(*value);
-            break;
-        case jValueType::d:
-            output.d = jdouble(*value);
-            break;
-        case jValueType::l:
-            output.l = QtJambiAPI::toJavaDoubleObject(env, *value);
-            break;
-        }
-    }
-    return true;
-}
-
-bool JDoubleTypeEntry::convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope*) const{
-    jdouble* value = reinterpret_cast<jdouble*>(output);
-    if(value){
-        switch (javaType) {
-        case jValueType::z:
-            *value = java_value.z;
-            break;
-        case jValueType::b:
-            *value = java_value.b;
-            break;
-        case jValueType::c:
-            *value = java_value.c;
-            break;
-        case jValueType::s:
-            *value = java_value.s;
-            break;
-        case jValueType::i:
-            *value = java_value.i;
-            break;
-        case jValueType::j:
-            *value = jdouble(java_value.j);
-            break;
-        case jValueType::f:
-            *value = jdouble(java_value.f);
-            break;
-        case jValueType::d:
-            *value = jdouble(java_value.d);
-            break;
-        case jValueType::l:
-            if(java_value.l && !Java::Runtime::Number::isInstanceOf(env, java_value.l))
-                return false;
-            *value = QtJambiAPI::fromJavaDoubleObject(env, java_value.l);
-            break;
-        }
-    }
-    return true;
-}
-
-JFloatTypeEntry::JFloatTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size)
-    : AbstractSimpleTypeEntry(env, typeId, qt_name, java_name, java_class, value_size)
-{
-}
-
-QtJambiTypeEntry::NativeToJavaResult JFloatTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode, jvalue& output, jValueType javaType) const{
-    const jfloat* value = reinterpret_cast<const jfloat*>(qt_object);
-    if(value){
-        switch (javaType) {
-        case jValueType::z:
-            output.z = jboolean(*value);
-            break;
-        case jValueType::b:
-            output.b = jbyte(*value);
-            break;
-        case jValueType::c:
-            output.c = jchar(*value);
-            break;
-        case jValueType::s:
-            output.s = jshort(*value);
-            break;
-        case jValueType::i:
-            output.i = jint(*value);
-            break;
-        case jValueType::j:
-            output.j = jlong(*value);
-            break;
-        case jValueType::f:
-            output.f = jfloat(*value);
-            break;
-        case jValueType::d:
-            output.d = jdouble(*value);
-            break;
-        case jValueType::l:
-            output.l = QtJambiAPI::toJavaFloatObject(env, *value);
-            break;
-        }
-    }
-    return true;
-}
-
-bool JFloatTypeEntry::convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope*) const{
-    jfloat* value = reinterpret_cast<jfloat*>(output);
-    if(value){
-        switch (javaType) {
-        case jValueType::z:
-            *value = java_value.z;
-            break;
-        case jValueType::b:
-            *value = java_value.b;
-            break;
-        case jValueType::c:
-            *value = java_value.c;
-            break;
-        case jValueType::s:
-            *value = java_value.s;
-            break;
-        case jValueType::i:
-            *value = jfloat(java_value.i);
-            break;
-        case jValueType::j:
-            *value = jfloat(java_value.j);
-            break;
-        case jValueType::f:
-            *value = java_value.f;
-            break;
-        case jValueType::d:
-            *value = jfloat(java_value.d);
-            break;
-        case jValueType::l:
-            if(java_value.l && !Java::Runtime::Integer::isInstanceOf(env, java_value.l)
-                            && !Java::Runtime::Byte::isInstanceOf(env, java_value.l)
-                            && !Java::Runtime::Short::isInstanceOf(env, java_value.l)
-                            && !Java::Runtime::Float::isInstanceOf(env, java_value.l))
-                return false;
-            *value = QtJambiAPI::fromJavaFloatObject(env, java_value.l);
-            break;
-        }
-    }
-    return true;
-}
-
-NullptrTypeEntry::NullptrTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size)
-    : AbstractSimpleTypeEntry(env, typeId, qt_name, java_name, java_class, value_size)
-{
-}
-
-QtJambiTypeEntry::NativeToJavaResult NullptrTypeEntry::convertToJava(JNIEnv *, const void *, NativeToJavaConversionMode, jvalue& output, jValueType) const{
-    output.l = nullptr;
-    return true;
-}
-
-bool NullptrTypeEntry::convertToNative(JNIEnv *, jvalue, jValueType, void * output, QtJambiScope*) const{
-    if(void** value = reinterpret_cast<void**>(output))
-        *value = nullptr;
-    return true;
 }

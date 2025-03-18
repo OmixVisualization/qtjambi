@@ -32,3 +32,12 @@
 include(../QtJambi/configure.pri)
 
 QT += statemachine
+
+equals(QT_MAJOR_VERSION, 6) | greaterThan(QT_MINOR_VERSION, 8):{
+    INCLUDEPATH += $$[QT_INSTALL_HEADERS]/QtScxmlGlobal
+    macx: INCLUDEPATH += $$[QT_INSTALL_HEADERS]
+}
+greaterThan(QT_MAJOR_VERSION, 6):{
+    INCLUDEPATH += $$[QT_INSTALL_HEADERS]/QtScxmlGlobal
+    macx: INCLUDEPATH += $$[QT_INSTALL_HEADERS]
+}

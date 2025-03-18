@@ -89,7 +89,13 @@ public class TestWebEngineQuickQt6 extends ApplicationInitializer {
 //        webEngineView.metaObject().methods().forEach(m->System.out.println(m.cppMethodSignature()));
         QMetaMethod mtd = webEngineView.metaObject().method("doRunJavaScript", Object.class, Object.class);
         Assert.assertTrue(mtd!=null && mtd.isValid());
-        QMetaObject.AbstractPrivateSignal4<?,?,?,?> javaScriptConsoleMessage = (QMetaObject.AbstractPrivateSignal4<?,?,?,?>)webEngineView.metaObject().method("javaScriptConsoleMessage(JavaScriptConsoleMessageLevel,QString,int,QString)").toSignal(webEngineView);
+        QMetaMethod javaScriptConsoleMessageMtd = webEngineView.metaObject().method("javaScriptConsoleMessage(JavaScriptConsoleMessageLevel,QString,int,QString)");
+        if(javaScriptConsoleMessageMtd==null || !javaScriptConsoleMessageMtd.isValid()) {
+        	javaScriptConsoleMessageMtd = webEngineView.metaObject().method("javaScriptConsoleMessage(QQuickWebEngineView::JavaScriptConsoleMessageLevel,QString,int,QString)");
+        }
+        Assert.assertTrue("javaScriptConsoleMessage method does not exist", javaScriptConsoleMessageMtd!=null && javaScriptConsoleMessageMtd.isValid());
+        QMetaObject.AbstractPrivateSignal4<?,?,?,?> javaScriptConsoleMessage = (QMetaObject.AbstractPrivateSignal4<?,?,?,?>)javaScriptConsoleMessageMtd.toSignal(webEngineView);
+        Assert.assertTrue("javaScriptConsoleMessage signal is null", javaScriptConsoleMessage!=null);
         javaScriptConsoleMessage.connect((a,b,c,d)->{
         	System.out.println(a+" "+b+" "+c+" "+d);
         });

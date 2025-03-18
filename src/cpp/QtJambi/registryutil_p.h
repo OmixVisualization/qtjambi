@@ -103,7 +103,24 @@ bool isPolymorphicBase(const std::type_info& typeId);
 size_t getValueSize(const std::type_info& typeId);
 size_t getValueAlignment(const std::type_info& typeId);
 size_t getShellSize(const std::type_info& typeId);
+
+enum class EntryTypes
+{
+    Unspecific = 0,
+    ObjectTypeInfo,
+    EnumTypeInfo,
+    FlagsTypeInfo,
+    FunctionalTypeInfo,
+    InterfaceValueTypeInfo,
+    InterfaceTypeInfo,
+    QObjectTypeInfo,
+    ValueTypeInfo,
+    SpecialTypeInfo,
+    StringTypeInfo,
+    PrimitiveTypeInfo
+};
 EntryTypes getEntryType(const std::type_info& typeId);
+
 const std::type_info* getEnumForFlag(const std::type_info& flag);
 const std::type_info* getFlagForEnum(const std::type_info& enumerator);
 QVector<RegistryAPI::FunctionInfo> virtualFunctions(const std::type_info& typeId);
@@ -115,9 +132,16 @@ TypeInfoSupplier registeredTypeInfoSupplier(const std::type_info& typeId);
 FunctionalResolver registeredFunctionalResolver(const std::type_info& typeId);
 jmethodID findInternalPrivateConstructor(JNIEnv *env, jclass clazz);
 QList<const std::type_info*> getPolymorphicBases(const std::type_info& typeId);
+
+struct InterfaceOffsetInfo{
+    QMap<size_t,uint> offsets;
+    QSet<size_t> interfaces;
+    QMap<size_t, QSet<const std::type_info*>> inheritedInterfaces;
+};
 void registeredInterfaceOffsets(const std::type_info& qt_type, InterfaceOffsetInfo* info);
 const InterfaceOffsetInfo* getInterfaceOffsets(JNIEnv *env, jclass clazz, const std::type_info& typeId, const SuperTypeInfos* superTypeInfos);
 const InterfaceOffsetInfo* getInterfaceOffsets(JNIEnv *env, jclass clazz);
+
 RegistryAPI::qHashFn registeredHashFunction(const std::type_info& typeId);
 OptionalBool isRegisteredAsPointerType(const std::type_info& typeId);
 jfieldID resolveField(JNIEnv *env, const char *fieldName, const char *signature, jclass clazz, bool isStatic = false, jthrowable* exceptionOccurred = nullptr);
@@ -156,6 +180,16 @@ void registerMetaTypeID(const std::type_info& typeId,
                         int qtMetaType,
                         AbstractContainerAccess* access = nullptr,
                         const QSharedPointer<AbstractContainerAccess>& sharedAccess = {});
+
+struct PolymorphicIdHandler{
+    PolymorphicIdHandler(const std::type_info& targetTypeId, PolymorphyHandler polymorphyHandler)
+        : m_targetTypeId(targetTypeId),
+          m_polymorphyHandler(polymorphyHandler)
+    {
+    }
+    const std::type_info& m_targetTypeId;
+    PolymorphyHandler m_polymorphyHandler;
+};
 QList<const PolymorphicIdHandler*> getPolymorphicIdHandlers(const std::type_info& polymorphicBaseTypeId);
 const char * registeredInterfaceID(const std::type_info& typeId);
 const char * registeredInterfaceIDForClassName(const QString& className);

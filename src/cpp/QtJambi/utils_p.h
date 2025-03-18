@@ -120,7 +120,7 @@ void checkThreadOnQObject(JNIEnv *env, PtrOwnerFunction owner_function, const vo
 
 void containerDisposer(AbstractContainerAccess* _access);
 
-const std::type_info* tryGetTypeInfo(JNIEnv *env, TypeInfoSupplier typeInfoSupplier, const void* ptr);
+const std::type_info* tryGetTypeInfo(TypeInfoSupplier typeInfoSupplier, const void* ptr);
 const std::type_info* checkedGetTypeInfo(TypeInfoSupplier typeInfoSupplier, const void* ptr);
 
 enum class NativeToJavaConversionMode{
@@ -160,7 +160,7 @@ public:
     Printer(const Printer& other) noexcept;
     Printer(Printer&& other) noexcept;
     Printer(FunctionPointer functor) noexcept;
-    inline Printer(nullptr_t) noexcept : Printer(FunctionPointer(nullptr)) {}
+    inline Printer(std::nullptr_t) noexcept : Printer(FunctionPointer(nullptr)) {}
 
     Printer& operator=(const Printer& other) noexcept;
     Printer& operator=(Printer&& other) noexcept;

@@ -401,7 +401,7 @@ int QtJambiLink::dumpLinks(JNIEnv * env)
         if(!sharedPointer)
             continue;
         jobject obj = _link->getJavaObjectLocalRef(env);
-        QString jclassName = obj ? QtJambiAPI::getObjectClassName(env, obj) : QLatin1String("null");
+        QString jclassName = obj ? QtJambiAPI::getObjectClassName(env, obj) : QStringLiteral(u"null");
         jobject nativeLink = _link->nativeLink(env);
         jlong native_link = nativeLink ? Java::QtJambi::NativeUtility$NativeLink::nativeId(env, nativeLink) : 0;
         char buf[24];
@@ -421,7 +421,7 @@ int QtJambiLink::dumpLinks(JNIEnv * env)
                     reinterpret_cast<void*>(_link),
                     static_cast<void*>(obj), qPrintable(jclassName),
                     static_cast<void*>(nativeLink),
-                    nativeLink ? qPrintable(QString("%1").arg((native_link==jlong(_link) ? "attached" : (native_link==0 ? "detached" : "dangled")))) : "detached",
+                    nativeLink ? qPrintable(QStringLiteral(u"%1").arg((native_link==jlong(_link) ? "attached" : (native_link==0 ? "detached" : "dangled")))) : "detached",
                     _link->m_flags.testFlag(Flag::CppOwnership) ? "Cpp" : (_link->m_flags.testFlag(Flag::SplitOwnership) ? "Split" : "Java"),
                     static_cast<void*>(_link->pointer()), _link->isDeleteLater() ? "true" : "false",
                     !_link->m_qtTypeName ? "<unknown>" : _link->m_qtTypeName,
@@ -434,7 +434,7 @@ int QtJambiLink::dumpLinks(JNIEnv * env)
                     reinterpret_cast<void*>(_link),
                     static_cast<void*>(obj), qPrintable(jclassName),
                     static_cast<void*>(nativeLink),
-                    nativeLink ? qPrintable(QString("%1").arg((native_link==jlong(_link) ? "attached" : (native_link==0 ? "detached" : "dangled")))) : "detached",
+                    nativeLink ? qPrintable(QStringLiteral(u"%1").arg((native_link==jlong(_link) ? "attached" : (native_link==0 ? "detached" : "dangled")))) : "detached",
                     _link->m_flags.testFlag(Flag::CppOwnership) ? "Cpp" : (_link->m_flags.testFlag(Flag::SplitOwnership) ? "Split" : "Java"),
                     _link->pointer(), _link->isDeleteLater() ? "true" : "false",
                     !_link->m_qtTypeName ? "<unknown>" : _link->m_qtTypeName,
@@ -661,11 +661,16 @@ QtJambiLinkUserData::~QtJambiLinkUserData()
     }
 }
 
-void QtJambiLinkUserData::clear(){
+void QtJambiLinkUserData::clear(JNIEnv * env){
     QSharedPointer<QtJambiLink> link = m_link.toStrongRef();
     m_link.clear();
-    if (link && link->isQObject()) {
-        QTJAMBI_INCREASE_COUNTER(userDataDestroyedCount, link)
+    if(link){
+        if(env && !link->isShell()){
+            link->invalidate(env);
+        }
+        if (link->isQObject()) {
+            QTJAMBI_INCREASE_COUNTER(userDataDestroyedCount, link)
+        }
     }
 }
 
@@ -3751,19 +3756,38 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
     return qtJambiLink->getStrongPointer();
 }
 
+jobject QtJambiLink::findObjectForPointer(JNIEnv* env, jclass clazz, const void *ptr){
+    jobject result = nullptr;
+    if (ptr && gLinkAccessLock->tryLockForRead(2000)){
+        Q_ASSERT(gUserObjectCache());
+        QList<QWeakPointer<QtJambiLink>> values = gUserObjectCache->values(ptr);
+        gLinkAccessLock->unlock();
+        for(const QWeakPointer<QtJambiLink>& wlink : qAsConst(values)){
+            if(QSharedPointer<QtJambiLink> link = wlink){
+                jobject obj = link->getJavaObjectLocalRef(env);
+                if(obj && env->IsInstanceOf(obj, clazz)){
+                    result = obj;
+                    break;
+                }
+            }
+        }
+    }
+    return result;
+}
+
 QList<QSharedPointer<QtJambiLink>> QtJambiLink::findLinksForPointer(const void *ptr)
 {
-    if (!ptr)
-        return {};
-    QReadLocker locker(gLinkAccessLock());
-    Q_UNUSED(locker)
-    Q_ASSERT(gUserObjectCache());
-    if(!gUserObjectCache->contains(ptr))
-        return {};
-    QList<QWeakPointer<QtJambiLink>> values = gUserObjectCache->values(ptr);
     QList<QSharedPointer<QtJambiLink>> result;
-    for(const QWeakPointer<QtJambiLink>& link : values){
-        result << link;
+    if (ptr && gLinkAccessLock->tryLockForRead(2000)){
+        Q_ASSERT(gUserObjectCache());
+        if(gUserObjectCache->contains(ptr)){
+            const QList<QWeakPointer<QtJambiLink>> values = gUserObjectCache->values(ptr);
+            for(const QWeakPointer<QtJambiLink>& wlink : values){
+                if(QSharedPointer<QtJambiLink> link = wlink)
+                    result << link;
+            }
+        }
+        gLinkAccessLock->unlock();
     }
     return result;
 }
@@ -4456,13 +4480,15 @@ void PointerToContainerLink::deleteNativeObject(JNIEnv *env, bool forced)
                 }
             }
             if(pointer && m_containerAccess){
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                QTJAMBI_DEBUG_PRINT_WITH_ARGS("delete container %p of type %s", pointer, static_cast<const char*>(m_qtTypeName))
-#else
-                QTJAMBI_DEBUG_PRINT_WITH_ARGS("delete container %p", pointer)
-#endif
                 locker.unlock();
-                m_containerAccess->deleteContainer(pointer);
+                {
+#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
+                    QTJAMBI_DEBUG_PRINT_WITH_ARGS("delete container %p of type %s", pointer, static_cast<const char*>(m_qtTypeName))
+#else
+                    QTJAMBI_DEBUG_PRINT_WITH_ARGS("delete container %p", pointer)
+#endif
+                    m_containerAccess->deleteContainer(pointer);
+                }
                 locker.relock();
                 m_containerAccess->dispose();
                 m_containerAccess = nullptr;
@@ -4580,10 +4606,12 @@ void DeletablePointerToContainerLink::deleteNativeObject(JNIEnv *env, bool force
                 }
             }
             if(pointer){
-                QTJAMBI_DEBUG_PRINT_WITH_ARGS("call destructor_function on object %p", pointer)
                 QTJAMBI_INCREASE_COUNTER_THIS(destructorFunctionCalledCount)
                 locker.unlock();
-                m_deleter_function(pointer, isShell());
+                {
+                    QTJAMBI_DEBUG_PRINT_WITH_ARGS("call destructor_function on object %p", pointer)
+                    m_deleter_function(pointer, isShell());
+                }
                 locker.relock();
                 dispose();
             }
@@ -4698,10 +4726,12 @@ void DeletableOwnedPointerToContainerLink::deleteNativeObject(JNIEnv *env, bool 
                 }
             }
             if(pointer){
-                QTJAMBI_DEBUG_PRINT_WITH_ARGS("call destructor_function on object %p", pointer)
                 QTJAMBI_INCREASE_COUNTER_THIS(destructorFunctionCalledCount)
                 locker.unlock();
-                m_deleter_function(pointer, isShell());
+                {
+                    QTJAMBI_DEBUG_PRINT_WITH_ARGS("call destructor_function on object %p", pointer)
+                    m_deleter_function(pointer, isShell());
+                }
                 locker.relock();
                 dispose();
             }
@@ -5602,9 +5632,11 @@ void OwnedMetaTypedPointerToObjectLink::deleteNativeObject(JNIEnv *env, bool for
                 }
             }
             if(pointer){
-                QTJAMBI_DEBUG_PRINT_WITH_ARGS("call QMetaType::destroy() on object %p of type %s", pointer, static_cast<const char*>(m_meta_type.name()))
                 locker.unlock();
-                m_meta_type.destroy(pointer);
+                {
+                    QTJAMBI_DEBUG_PRINT_WITH_ARGS("call QMetaType::destroy() on object %p of type %s", pointer, static_cast<const char*>(m_meta_type.name()))
+                    m_meta_type.destroy(pointer);
+                }
                 locker.relock();
                 dispose();
             }
@@ -5706,10 +5738,12 @@ void DeletableOwnedPointerToObjectLink::deleteNativeObject(JNIEnv *env, bool for
                 }
             }
             if(pointer){
-                QTJAMBI_DEBUG_PRINT_WITH_ARGS("call destructor_function on object %p", pointer)
                 QTJAMBI_INCREASE_COUNTER_THIS(destructorFunctionCalledCount)
                 locker.unlock();
-                m_deleter_function(pointer, isShell());
+                {
+                    QTJAMBI_DEBUG_PRINT_WITH_ARGS("call destructor_function on object %p", pointer)
+                    m_deleter_function(pointer, isShell());
+                }
                 locker.relock();
                 dispose();
             }
@@ -5905,24 +5939,28 @@ QObject *PointerToQObjectLink::qobject() const {
 }
 
 void PointerToQObjectLink::setAsQObjectDeleted() {
-    QWriteLocker locker(QtJambiLinkUserData::lock());
-    Q_UNUSED(locker)
     QTJAMBI_DEBUG_PRINT_WITH_ARGS("PointerToQObjectLink::setAsQObjectDeleted() object %p of link %p", m_pointer, this)
-    m_pointer = nullptr;
+    {
+        QWriteLocker locker(QtJambiLinkUserData::lock());
+        Q_UNUSED(locker)
+        m_pointer = nullptr;
+    }
 }
 
 void PointerToQObjectLink::invalidate(JNIEnv *env) {
     QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(m_this, "PointerToQObjectLink::invalidate(JNIEnv *)")
-    invalidateDependentObjects(env);
-    releaseJavaObject(env);
-    QWriteLocker locker(QtJambiLinkUserData::lock());
-    Q_UNUSED(locker)
-    if(m_pointer) {
-        QTJAMBI_DEBUG_PRINT_WITH_ARGS("invalidate object %p of link %p", m_pointer, this)
-        unregisterOffsets();
-        m_pointer = nullptr;
+    {
+        invalidateDependentObjects(env);
+        releaseJavaObject(env);
+        QWriteLocker locker(QtJambiLinkUserData::lock());
+        Q_UNUSED(locker)
+        if(m_pointer) {
+            QTJAMBI_DEBUG_PRINT_WITH_ARGS("invalidate object %p of link %p", m_pointer, this)
+            unregisterOffsets();
+            m_pointer = nullptr;
+        }
+        dispose();
     }
-    dispose();
 }
 
 void PointerToQObjectLink::deleteNativeObject(JNIEnv *env, bool forced)

@@ -33,6 +33,7 @@ import java.io.Serializable;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -177,6 +178,10 @@ public abstract class CoreUtility {
     
     @SuppressWarnings("deprecation")
 	protected static URL createURL(String url) throws MalformedURLException {
-    	return new URL(url);
+    	try {
+			return new URL(url);
+		} catch (NoSuchMethodError e) {
+			return URI.create(url).toURL();
+		}
     }
 }

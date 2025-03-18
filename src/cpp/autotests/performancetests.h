@@ -34,6 +34,7 @@
 
 #include <chrono>
 #include <QtCore>
+#include <jni.h>
 
 class PerformanceTests
 {
@@ -82,6 +83,13 @@ public:
     static std::chrono::nanoseconds testConvertQModelIndexCopy(int count);
     static std::chrono::nanoseconds testConvertQSize(int count);
     static std::chrono::nanoseconds testConvertQString(int count);
+    static std::chrono::nanoseconds testClassCall(int count, const QByteArray& className, const QByteArray& methodName);
+    static std::chrono::nanoseconds testClassCallGlobalRef(int count, const QByteArray& className, const QByteArray& methodName);
+    static std::chrono::nanoseconds testClassCallLocalRef(int count, const QByteArray& className, const QByteArray& methodName);
+    static std::chrono::nanoseconds testClassCallLocalFromGlobalRef(int count, const QByteArray& className, const QByteArray& methodName);
+    static std::chrono::nanoseconds testClassCallBuffer(int count, const QByteArray& className, const QByteArray& methodName, jobject map);
+    static std::chrono::nanoseconds testClassCallString(int count, const QByteArray& className, const QByteArray& methodName, jobject map);
+    static std::chrono::nanoseconds testClassCallHash(int count, const QByteArray& className, const QByteArray& methodName, jobject map);
     static std::chrono::nanoseconds testPlain(AbstractVirtualHost* host, int count);
     static std::chrono::nanoseconds testQModelIndex(AbstractVirtualHost* host, int count);
     static std::chrono::nanoseconds testQModelIndexInvalid(AbstractVirtualHost* host, int count);

@@ -36,9 +36,16 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.QtInvokable;
+import io.qt.QtObject;
 import io.qt.QtObjectInterface;
+import io.qt.autotests.TestSignalSlotWithCustomTypes.ReceiverObject1;
+import io.qt.autotests.TestSignalSlotWithCustomTypes.ReceiverObject2;
+import io.qt.autotests.TestSignalSlotWithCustomTypes.SenderObject1;
+import io.qt.autotests.TestSignalSlotWithCustomTypes.SenderObject2;
+import io.qt.autotests.TestSignalSlotWithCustomTypes.UnregisteredType1;
 import io.qt.autotests.generated.General;
 import io.qt.core.QMetaObject;
+import io.qt.core.QMetaObject.Connection;
 import io.qt.gui.*;
 import io.qt.widgets.*;
 
@@ -49,6 +56,7 @@ public class TestSignalPerformance extends ApplicationInitializer {
 	
 	@BeforeClass
     public static void testInitialize() throws Exception {
+		Assume.assumeTrue("Performance tests are disabled. Specify -Denable-performance-tests=true to enable them.", Boolean.getBoolean("enable-performance-tests"));
     	ApplicationInitializer.testInitializeWithWidgets();
     	hasSerializableLambdas = General.internalAccess.serializeLambdaExpression((QMetaObject.Slot0)ApplicationInitializer::testInitializeWithWidgets) != null;
     }
@@ -323,6 +331,45 @@ public class TestSignalPerformance extends ApplicationInitializer {
 		action.dispose();
 		connections = null;
 		runGC();
+	}
+	
+	@Test
+    public void testConnectionPerformance() {
+		SenderObject1 o1 = new SenderObject1();
+		ReceiverObject1 r1 = new ReceiverObject1();
+		Connection connection1 = o1.change1.connect(r1::receive);
+		Assert.assertTrue(connection1 instanceof QtObject);
+		SenderObject2 o2 = new SenderObject2();
+		ReceiverObject2 r2 = new ReceiverObject2();
+		Connection connection2 = o2.change1.connect(r2::receive);
+		Assert.assertFalse(connection2 instanceof QtObject);
+		UnregisteredType1 t = new UnregisteredType1();
+		int count = 1000;
+		long time11 = System.currentTimeMillis();
+		o1.change0.disconnect();
+		for(int i=0; i<count; ++i) {
+			o1.change1.emit(t);
+		}
+		long time21 = System.currentTimeMillis();
+		for(int i=0; i<count; ++i) {
+			o2.change1.emit(t);
+		}
+		long time31 = System.currentTimeMillis();
+		o1.change0.connect(r1::receive0);
+		o2.change0.connect(r2::receive0);
+		long time12 = System.currentTimeMillis();
+		for(int i=0; i<count; ++i) {
+			o1.change0.emit();
+		}
+		long time22 = System.currentTimeMillis();
+		for(int i=0; i<count; ++i) {
+			o2.change0.emit();
+		}
+		long time32 = System.currentTimeMillis();
+		System.out.println("    native connection takes "+(time21-time11)+"ms");
+		System.out.println("reflective connection takes "+(time31-time21)+"ms");
+		System.out.println("    native connection takes "+(time22-time12)+"ms");
+		System.out.println("reflective connection takes "+(time32-time22)+"ms");
 	}
 
     public static void main(String args[]) {

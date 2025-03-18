@@ -59,7 +59,7 @@ public:
     TYPEUTILS_EXPORT InternalToExternalConverter(const InternalToExternalConverter& other) noexcept;
     TYPEUTILS_EXPORT InternalToExternalConverter(InternalToExternalConverter&& other) noexcept;
     TYPEUTILS_EXPORT InternalToExternalConverter(FunctionPointer functor) noexcept;
-    inline InternalToExternalConverter(nullptr_t) noexcept : InternalToExternalConverter(FunctionPointer(nullptr)) {}
+    inline InternalToExternalConverter(std::nullptr_t) noexcept : InternalToExternalConverter(FunctionPointer(nullptr)) {}
 
     TYPEUTILS_EXPORT InternalToExternalConverter& operator=(const InternalToExternalConverter& other) noexcept;
     TYPEUTILS_EXPORT InternalToExternalConverter& operator=(InternalToExternalConverter&& other) noexcept;
@@ -107,7 +107,7 @@ public:
     TYPEUTILS_EXPORT ExternalToInternalConverter(const ExternalToInternalConverter& other) noexcept;
     TYPEUTILS_EXPORT ExternalToInternalConverter(ExternalToInternalConverter&& other) noexcept;
     TYPEUTILS_EXPORT ExternalToInternalConverter(FunctionPointer functor) noexcept;
-    inline ExternalToInternalConverter(nullptr_t) noexcept : ExternalToInternalConverter(FunctionPointer(nullptr)) {}
+    inline ExternalToInternalConverter(std::nullptr_t) noexcept : ExternalToInternalConverter(FunctionPointer(nullptr)) {}
 
     TYPEUTILS_EXPORT ExternalToInternalConverter& operator=(const ExternalToInternalConverter& other) noexcept;
     TYPEUTILS_EXPORT ExternalToInternalConverter& operator=(ExternalToInternalConverter&& other) noexcept;
@@ -155,7 +155,7 @@ public:
     TYPEUTILS_EXPORT QHashFunction(const QHashFunction& other) noexcept;
     TYPEUTILS_EXPORT QHashFunction(QHashFunction&& other) noexcept;
     TYPEUTILS_EXPORT QHashFunction(FunctionPointer functor) noexcept;
-    inline QHashFunction(nullptr_t) noexcept : QHashFunction(FunctionPointer(nullptr)) {}
+    inline QHashFunction(std::nullptr_t) noexcept : QHashFunction(FunctionPointer(nullptr)) {}
 
     TYPEUTILS_EXPORT QHashFunction& operator=(const QHashFunction& other) noexcept;
     TYPEUTILS_EXPORT QHashFunction& operator=(QHashFunction&& other) noexcept;

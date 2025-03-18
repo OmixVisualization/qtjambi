@@ -372,9 +372,13 @@ final class ResourceUtility {
 						result = null;
 				} else if(!urlOrFile.url.toString().endsWith("/") && !urlOrFile.url.getPath().isEmpty()){
 					URLConnection urlConn = urlOrFile.url.openConnection();
-					try(InputStream inStream = urlConn.getInputStream()){}
+					if(urlConn!=null && urlConn.getDoInput()) {
+						try(InputStream inStream = urlConn.getInputStream()){}
+					}else{
+						result = null;
+					}
 				}
-			} catch(java.io.FileNotFoundException e) {
+			} catch(java.io.FileNotFoundException | java.net.UnknownServiceException e) {
 				result = null;
 			} catch (Throwable e) {
 				if(!result.getProtocol().equals("jrt") && !result.getProtocol().equals("file"))
@@ -850,6 +854,7 @@ final class ResourceUtility {
                 } catch(IOException eat) {
                 	resource = null;
                 	resourceName = null;
+                	return;
                 }
             }
 

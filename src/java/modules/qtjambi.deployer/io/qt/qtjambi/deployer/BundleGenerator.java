@@ -85,6 +85,7 @@ final class BundleGenerator {
 			_pluginsModules.put("styles", "widgets");
 			_pluginsModules.put("qmltooling", "qml");
 			_pluginsModules.put("qmllint", "qml");
+			_pluginsModules.put("qmlls", "qml");
 			_pluginsModules.put("scenegraph", "quick");
 			_pluginsModules.put("opcua", "opcua");
 			_pluginsModules.put("position", "positioning");
@@ -114,6 +115,7 @@ final class BundleGenerator {
 			_pluginsModules.put("multimedia", "multimedia");
 			_pluginsModules.put("bearer", "network");
 			_pluginsModules.put("qtwebengine", "webenginecore");
+			_pluginsModules.put("help", "help");
 			Map<String,Set<String>> _pluginsByModules = new TreeMap<>();
 			Function<String,Set<String>> containerFactory = key->new TreeSet<>();
 			for(Map.Entry<String,String> entry : _pluginsModules.entrySet()) {
@@ -307,9 +309,8 @@ final class BundleGenerator {
 					qtbase = null;
 				}
 				if(qtbase==null && (version==null || QLibraryInfo.version().equals(version))) {
-					File qtLibraryPath = new File(DeployerUtility.qtLibraryPath());
-					if(qtLibraryPath.isDirectory() && 
-							qtLibraryPath.getName().equals(QOperatingSystemVersion.current().type()==QOperatingSystemVersion.OSType.Windows ? "bin" : "lib")) {
+					File qtLibraryPath = DeployerUtility.qtLibraryPath();
+					if(qtLibraryPath!=null && qtLibraryPath.isDirectory()) {
 						qtdir = qtLibraryPath.getParentFile();
 						isMinGWBuilt = DeployerUtility.isMinGWBuilt();
 						osArchName = DeployerUtility.osArchName();
@@ -370,8 +371,24 @@ final class BundleGenerator {
 							subdir = new File(foundVersionDir, "android_x86");
 						}
 						break;
+					case "windows-mingw-x64":
+						subdir = new File(foundVersionDir, "mingw_64");
+						if(!subdir.isDirectory()) {
+							File _subdir = new File(foundVersionDir, "mingw81_64");
+							if(_subdir.isDirectory())
+								subdir = _subdir;
+						}
+						break;
+					case "windows-llvm-mingw-x64":
+						subdir = new File(foundVersionDir, "llvm-mingw_64");
+						break;
 					case "windows-x64":
 						subdir = new File(foundVersionDir, isMinGWBuilt ? "mingw_64" : "msvc2019_64");
+						if(isMinGWBuilt && !subdir.isDirectory()) {
+							File _subdir = new File(foundVersionDir, "mingw81_64");
+							if(_subdir.isDirectory())
+								subdir = _subdir;
+						}
 						break;
 					case "windows-arm64":
 						subdir = new File(foundVersionDir, "msvc2019_arm64");
@@ -426,9 +443,16 @@ final class BundleGenerator {
 								if(!isMinGWBuilt)
 									continue;
 								if(subdir.getName().endsWith("_64"))
-									osArchName = "windows-x64";
+									osArchName = "windows-mingw-x64";
 								else
-									osArchName = "windows-x86";
+									osArchName = "windows-mingw-x86";
+							}else if(subdir.getName().startsWith("llvm-mingw")) {
+								if(!isMinGWBuilt)
+									continue;
+								if(subdir.getName().endsWith("_64"))
+									osArchName = "windows-llvm-mingw-x64";
+								else
+									continue;
 							}else if(subdir.getName().startsWith("msvc2019")) {
 								if(isMinGWBuilt)
 									continue;
@@ -484,7 +508,21 @@ final class BundleGenerator {
 					osArchName = "android-x64";
 				}else if(qtdir.getName().equals("android_x86")) {
 					osArchName = "android-x86";
-				}else if(qtdir.getName().startsWith("mingw") || qtdir.getName().startsWith("msvc2019")) {
+				}else if(qtdir.getName().startsWith("mingw")) {
+					if(qtdir.getName().endsWith("_64"))
+						osArchName = "windows-mingw-x64";
+					else if(qtdir.getName().endsWith("_arm64"))
+						osArchName = "windows-mingw-arm64";
+					else
+						osArchName = "windows-x86";
+				}else if(qtdir.getName().startsWith("llvm-mingw")) {
+					if(qtdir.getName().endsWith("_64"))
+						osArchName = "windows-llvm-mingw-x64";
+					else if(qtdir.getName().endsWith("_arm64"))
+						osArchName = "windows-llvm-mingw-arm64";
+					else
+						osArchName = "windows-x86";
+				}else if(qtdir.getName().startsWith("msvc20")) {
 					if(qtdir.getName().endsWith("_64"))
 						osArchName = "windows-x64";
 					else if(qtdir.getName().endsWith("_arm64"))
@@ -587,6 +625,8 @@ final class BundleGenerator {
 	private static String findTargetModule(String name) {
 		if(name.equals("xcbqpa") || name.startsWith("eglfs")) {
 			return "gui";
+		}else if(name.startsWith("ffmpegstub")) {
+			return "multimedia";
 		}else if(name.equals("designercomponents")) {
 			return "designer";
 		}else if(name.equals("waylandeglclienthwintegration") || name.equals("wlshellintegration")) {
@@ -607,6 +647,8 @@ final class BundleGenerator {
 			return "qml";
 		}else if(name.startsWith("webenginequick") && !name.equals("webenginequick")) {
 			return "webenginequick";
+		}else if(name.startsWith("protobuf") && !name.startsWith("protobufquick")) {
+			return "protobuf";
 		}else if(name.startsWith("quick3d") && !name.equals("quick3d")) {
 			return "quick3d";
 		}
@@ -666,9 +708,11 @@ final class BundleGenerator {
 			Map<String,File> plugins = new TreeMap<>();
 			Map<String,File> qmllibs = new TreeMap<>();
 			if(osArchName.startsWith("windows-")) {
+				boolean isMingw = osArchName.startsWith("windows-mingw");
+				boolean isLlvmMingw = osArchName.startsWith("windows-llvm-mingw");
 				String prefix = "Qt" + version.majorVersion();
 				if(isDebug) {
-					if(new File(binDir, "libstdc++-6.dll").exists()) {
+					if(isMingw || isLlvmMingw) {
 						for(String lib : binDir.list()) {
 							if(lib.startsWith(prefix) && lib.endsWith(".dll")) {
 								String name = lib.substring(prefix.length(), lib.length()-4).toLowerCase();
@@ -688,11 +732,17 @@ final class BundleGenerator {
 								File debugLib = new File(libDir, lib+".debug");
 								if(debugLib.exists())
 									list.add(debugLib);
-							}else if(lib.equals("libGLESv2.dll") || lib.equals("libEGL.dll")) {
+							}else if(lib.equals("libGLESv2.dll") || lib.equals("libEGL.dll") || lib.equals("opengl32sw.dll")) {
 								List<File> list = libraries.computeIfAbsent("gui", Utility.arrayListFactory());
 								list.add(new File(binDir, lib));
-							}else if(lib.equals("libstdc++-6.dll") || lib.equals("libwinpthread-1.dll") || lib.equals("libgcc_s_seh-1.dll")) { // mingw
+							}else if(isMingw && (lib.equals("libstdc++-6.dll") || lib.equals("libwinpthread-1.dll") || lib.equals("libgcc_s_seh-1.dll"))) {
 								List<File> list = libraries.computeIfAbsent("core", Utility.arrayListFactory());
+								list.add(new File(binDir, lib));
+							}else if(isLlvmMingw && (lib.equals("libc++.dll") || lib.equals("libunwind.dll"))) {
+								List<File> list = libraries.computeIfAbsent("core", Utility.arrayListFactory());
+								list.add(new File(binDir, lib));
+							}else if((lib.startsWith("av") || lib.startsWith("sw")) && lib.endsWith(".dll")) {
+								List<File> list = libraries.computeIfAbsent("multimedia", Utility.arrayListFactory());
 								list.add(new File(binDir, lib));
 							}
 						}
@@ -737,6 +787,9 @@ final class BundleGenerator {
 								if(new File(binDir, libNoSuffix+"dd.dll").exists())
 									continue;
 								List<File> list = libraries.computeIfAbsent("gui", Utility.arrayListFactory());
+								list.add(new File(binDir, lib));
+							}else if((lib.startsWith("av") || lib.startsWith("sw")) && lib.endsWith(".dll")) {
+								List<File> list = libraries.computeIfAbsent("multimedia", Utility.arrayListFactory());
 								list.add(new File(binDir, lib));
 							}
 						}
@@ -785,8 +838,17 @@ final class BundleGenerator {
 								continue;
 							List<File> list = libraries.computeIfAbsent("gui", Utility.arrayListFactory());
 							list.add(new File(binDir, lib));
-						}else if(lib.equals("libstdc++-6.dll") || lib.equals("libwinpthread-1.dll") || lib.equals("libgcc_s_seh-1.dll")) { // mingw
+						}else if(lib.equals("opengl32sw.dll")) {
+							List<File> list = libraries.computeIfAbsent("gui", Utility.arrayListFactory());
+							list.add(new File(binDir, lib));
+						}else if(isMingw && (lib.equals("libstdc++-6.dll") || lib.equals("libwinpthread-1.dll") || lib.equals("libgcc_s_seh-1.dll"))) {
 							List<File> list = libraries.computeIfAbsent("core", Utility.arrayListFactory());
+							list.add(new File(binDir, lib));
+						}else if(isLlvmMingw && (lib.equals("libc++.dll") || lib.equals("libunwind.dll"))) {
+							List<File> list = libraries.computeIfAbsent("core", Utility.arrayListFactory());
+							list.add(new File(binDir, lib));
+						}else if((lib.startsWith("av") || lib.startsWith("sw")) && lib.endsWith(".dll")) {
+							List<File> list = libraries.computeIfAbsent("multimedia", Utility.arrayListFactory());
 							list.add(new File(binDir, lib));
 						}
 					}
@@ -844,6 +906,9 @@ final class BundleGenerator {
 							list.add(0, new File(libDir, lib));
 						else
 							list.add(new File(libDir, lib));
+					}else if((lib.startsWith("libav") || lib.startsWith("libsw")) && lib.endsWith(".so")) {
+						List<File> list = libraries.computeIfAbsent("multimedia", Utility.arrayListFactory());
+						list.add(new File(libDir, lib));
 					}
 				}
 				for(File pluginDir : pluginsDir.listFiles()) {
@@ -907,6 +972,9 @@ final class BundleGenerator {
 						}
 					}else if(lib.startsWith(prefix2) && lib.contains(".so.") && !Files.isSymbolicLink(new File(libDir, lib).toPath())) {
 						libraries.computeIfAbsent("core", Utility.arrayListFactory()).add(new File(libDir, lib));
+					}else if((lib.startsWith("libav") || lib.startsWith("libsw")) && (lib.endsWith(".so") || lib.contains(".so."))) {
+						List<File> list = libraries.computeIfAbsent("multimedia", Utility.arrayListFactory());
+						list.add(new File(libDir, lib));
 					}
 				}
 				for(File pluginDir : pluginsDir.listFiles()) {
@@ -942,6 +1010,9 @@ final class BundleGenerator {
 							list.add(0, lib);
 						else
 							list.add(lib);
+					}else if((lib.getName().startsWith("libav") || lib.getName().startsWith("libsw")) && lib.getName().endsWith(".dylib")) {
+						List<File> list = libraries.computeIfAbsent("multimedia", Utility.arrayListFactory());
+						list.add(lib);
 					}
 				}
 				for(File pluginDir : pluginsDir.listFiles()) {
@@ -1525,6 +1596,7 @@ final class BundleGenerator {
 							copyQmlPaths(qmllibs, Collections.singletonList("QtQuickEffectMaker"), libBundleJarFile, jarUtilFile, libDebugInfoJarFile, osArchName, isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
 						}else if("qml".equals(libPair.getKey())) {
 							copyQmlPaths(qmllibs, Arrays.asList("QtQuick/LocalStorage",
+									"Assets",
 									"QtQml",
 									"QmlTime",
 									"QtQuick/Window",
@@ -2003,11 +2075,8 @@ final class DeployerUtility extends io.qt.internal.DeployerUtility{
 	protected static String getInterfaceIID(Class<?> cls) {
 		return io.qt.internal.DeployerUtility.getInterfaceIID(cls);
 	}
-	protected static String qtLibraryPath() {
+	protected static File qtLibraryPath() {
 		return io.qt.internal.DeployerUtility.qtLibraryPath();
-	}
-	protected static String qtJambiLibraryPath() {
-		return io.qt.internal.DeployerUtility.qtJambiLibraryPath();
 	}
 	protected static String osArchName() {
 		return io.qt.internal.DeployerUtility.osArchName();

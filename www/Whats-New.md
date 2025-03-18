@@ -1,14 +1,33 @@
-# What's new in QtJambi 6.8.2
+# What's new in QtJambi 6.8.3
 
 ## Bugfixes
 
 Solved issue:
-* bugfix: QFutureInterface does not run continuations
+* [Issue 221](../../../issues/221): [BUG] 6.8.2 Memory leak on MacOS Sequoia ARM
+* [Issue 219](../../../issues/219): [BUG] Ant compilation error
+* deadlock during object deletion with enabled cleanup logs
+* QDanglingPointerException thrown unexpectedly during window deletion
+* thread affinity check during QApplication initialization
 
 ## New Feature
+
+* On Windows, QtJambi can now be compiled with MinGW and LLVM-MinGW. Native bundles are named `native-windows-mingw-x64` and `native-windows-llvm-mingw-x64`, respectively.
+* Added API method: `QSpan::chopped`
+* ready for Qt 6.9
+
+# History
+
+## What's new in QtJambi 6.8.2
+
+### Bugfixes
+
+Solved issue:
+* bugfix: QFutureInterface does not run continuations
+
+### New Feature
 * QtJambi resource system got a performance boost.
 
-## Removed Deprecated API
+### Removed Deprecated API
 
 * `QStack` no longer implements Deque due to an incompatibility with JDK 21 and higher.
 * `QtResources` - Use `QResource` instead.
@@ -17,8 +36,6 @@ Solved issue:
 * `QRemoteObjectPendingReply(Class,QRemoteObjectPendingCall)`
 * `QScopedPointer.cleanup(Object,Consumer)` - Use `cleanup(Consumer,Object)` instead.
 * `QtUtilities.jambiTempDir()` - Use `jambiDeploymentDir()` instead.
-
-# History
 
 ## What's new in QtJambi 6.8.1
 

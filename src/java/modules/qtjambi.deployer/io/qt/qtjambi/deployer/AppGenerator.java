@@ -429,6 +429,8 @@ final class AppGenerator {
 				case "windows-arm64":
 				case "windows-x86":
 				case "windows-x64":
+				case "windows-mingw-x64":
+				case "windows-llvm-mingw-x64":
 					newFile = new QFile(dir.absoluteFilePath(appName + ".exe"));
 					switch(url.getProtocol()) {
 					case "file":
@@ -682,6 +684,8 @@ final class AppGenerator {
         						case "windows-amd64":
         						case "windows-x64":
         						case "windows-x86":
+        						case "windows-mingw-x64":
+        						case "windows-llvm-mingw-x64":
                                 	idx = (int)exeData.indexOf(new QByteArray("QTJAMBI_ICO!"));
                                 	if(idx>254) {
                                         if(ico!=null) {

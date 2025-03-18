@@ -403,8 +403,15 @@ public class ForeachVersionTask extends Task {
 										}else switch(compiler) {
 										case MinGW_W64:{
 											java.io.File f = new java.io.File(versionDir, "mingw_64");
-											if(!f.exists())
-												f = new java.io.File(versionDir, "llvm-mingw_64");
+											qtDirs.add(f);
+											if(!f.isDirectory()) {
+												f = new java.io.File(versionDir, "mingw81_64");
+												qtDirs.add(f);
+											}
+										}
+											break;
+										case LLVM_MinGW_W64:{
+											java.io.File f = new java.io.File(versionDir, "llvm-mingw_64");
 											qtDirs.add(f);
 										}
 											break;
@@ -463,8 +470,15 @@ public class ForeachVersionTask extends Task {
 										}else switch(compiler) {
 										case MinGW_W64:
 											qtDir = new java.io.File(versionDir, "mingw_64");
-											if(!qtDir.exists())
-												qtDir = new java.io.File(versionDir, "llvm-mingw_64");
+											if(!qtDir.isDirectory()) {
+												File _qtDir = new java.io.File(versionDir, "mingw81_64");
+												if(_qtDir.isDirectory()) {
+													qtDir = _qtDir;
+												}
+											}
+											break;
+										case LLVM_MinGW_W64:
+											qtDir = new java.io.File(versionDir, "llvm-mingw_64");
 											break;
 										default:
 											if(compiler.name().endsWith("_arm64")) {

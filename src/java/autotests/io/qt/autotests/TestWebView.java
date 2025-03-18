@@ -32,6 +32,7 @@ import static io.qt.QtUtilities.loadQtLibrary;
 import static org.junit.Assume.assumeTrue;
 
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -63,6 +64,7 @@ public class TestWebView extends ApplicationInitializer {
     			&& QLibraryInfo.version().compareTo(new QVersionNumber(6,5,4))>=0) {
     		Assert.assertFalse("env SYSTEM_VERSION_COMPAT=0 required to run WebEngine on macOS x86_64", "10.16".equals(General.stringSysctlByName("kern.osproductversion")));
     	}
+        Assume.assumeFalse("Cannot run on Windows MINGW", QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows) && !QLibraryInfo.build().contains("MSVC"));
 		QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_UseSoftwareOpenGL);
     	General.canVulkan();// making sure it initializes
 		QtWebView.initialize();

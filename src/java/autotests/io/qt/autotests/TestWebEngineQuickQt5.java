@@ -53,8 +53,6 @@ public class TestWebEngineQuickQt5 extends ApplicationInitializer {
     public static void testInitialize() throws Exception {
     	QtUtilities.initializePackage("io.qt.webengine");
         QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts);
-        ApplicationInitializer.testInitializeWithGui();
-    	assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
     	boolean found = false;
     	try {
 			Class<?> cls = Class.forName("io.qt.webengine.QtWebEngine");
@@ -63,8 +61,10 @@ public class TestWebEngineQuickQt5 extends ApplicationInitializer {
 		} catch (ClassNotFoundException e) {
 		}
     	assumeTrue("QtWebEngine not available.", found);
-    	assumeTrue("global share context not available.", QOpenGLContext.globalShareContext()!=null);
         QtWebEngine.initialize();
+        ApplicationInitializer.testInitializeWithGui();
+    	assumeTrue("global share context not available.", QOpenGLContext.globalShareContext()!=null);
+    	assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
         QtUtilities.initializePackage("io.qt.quick");
         QtUtilities.loadQtLibrary("QuickControls2");
     }
@@ -79,11 +79,15 @@ public class TestWebEngineQuickQt5 extends ApplicationInitializer {
     @Test
     public void test1() {
     	QQmlApplicationEngine engine = new QQmlApplicationEngine();
-    	engine.loadData(new QByteArray("import QtWebEngine 1.0\nWebEngineView{}"));
-    	engine.setOutputWarningsToStandardError(true);
-    	engine.warnings.connect(e -> System.out.println(e));
-        QList<QObject> rootObjects = engine.rootObjects();
-        dump(rootObjects, 0);
+    	try {
+	    	engine.loadData(new QByteArray("import QtWebEngine 1.0\nWebEngineView{}"));
+	    	engine.setOutputWarningsToStandardError(true);
+	    	engine.warnings.connect(e -> System.out.println(e));
+	        QList<QObject> rootObjects = engine.rootObjects();
+	        dump(rootObjects, 0);
+    	}finally {
+    		engine.dispose();
+    	}
     }
 
     private static void dump(QList<QObject> objects, int nestedLevel) {

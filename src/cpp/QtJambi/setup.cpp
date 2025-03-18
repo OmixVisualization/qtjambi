@@ -307,6 +307,7 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *){
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
         useHiddenObjectData(env);
 #endif
+        enabledDanglingPointerCheck(env);
 #if defined(Q_OS_ANDROID) && !defined(QT_NO_DEBUG)
         Java::Runtime::System::setProperty(env, env->NewStringUTF("io.qt.debug"), env->NewStringUTF("debug"));
 #endif
@@ -1123,12 +1124,7 @@ void shutdown(JNIEnv * env, bool regular)
                 if(threadData)
                     delete threadData;
                 if(p){
-                    if(QSharedPointer<QtJambiLink> link = p->link()){
-                        if(env && !link->isShell()){
-                            link->invalidate(env);
-                        }
-                    }
-                    p->clear();
+                    p->clear(env);
                     delete p;
                 }
             }

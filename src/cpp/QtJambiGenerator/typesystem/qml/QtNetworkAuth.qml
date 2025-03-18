@@ -253,6 +253,11 @@ TypeSystem{
             }
             since: 6.9
         }
+        ModifyFunction{
+            signature: "refreshTokensImplementation()"
+            access: Modification.NonFinal
+            since: 6.9
+        }
         InjectCode{
             Text{
                 content: String.raw`

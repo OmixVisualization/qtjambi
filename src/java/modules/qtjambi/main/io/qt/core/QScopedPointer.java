@@ -61,7 +61,7 @@ import io.qt.StrictNonNull;
  */
 public final class QScopedPointer<O> implements AutoCloseable, SmartPointer<O> {
 	
-	static final Logger logger = Logger.getLogger("io.qt.core");
+	static final Logger logger = Logger.getLogger("io.qt");
 	
 	static class Data<O>{
 		QScope.AbstractEntry<O> entry;

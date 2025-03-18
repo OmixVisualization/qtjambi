@@ -403,6 +403,15 @@ public abstract class NativeUtility {
 				NativeUtility.CLEANUP_LOGGER.log(Level.FINE, ()->String.format("Cleanup of 0x%1$s@%2$s finished.", Integer.toHexString(hashCode), cls.getName()));
 			}
 		}
+		
+		@Override
+		synchronized void dispose() {
+			if (nativeId() != 0) {
+				NativeUtility.CLEANUP_LOGGER.log(Level.FINE, ()->String.format("Begin dispose of 0x%1$s@%2$s...", Integer.toHexString(hashCode), cls.getName()));
+				super.dispose();
+				NativeUtility.CLEANUP_LOGGER.log(Level.FINE, ()->String.format("Dispose of 0x%1$s@%2$s finished.", Integer.toHexString(hashCode), cls.getName()));
+			}
+		}
 	}
 	
 	static class ReferenceCountingNativeLink extends NativeLink {
@@ -484,6 +493,15 @@ public abstract class NativeUtility {
 				NativeUtility.CLEANUP_LOGGER.log(Level.FINE, ()->String.format("Cleanup of 0x%1$s@%2$s finished.", Integer.toHexString(hashCode), cls.getName()));
 			}
 		}
+		
+		@Override
+		synchronized void dispose() {
+			if (nativeId() != 0) {
+				NativeUtility.CLEANUP_LOGGER.log(Level.FINE, ()->String.format("Begin dispose of 0x%1$s@%2$s...", Integer.toHexString(hashCode), cls.getName()));
+				super.dispose();
+				NativeUtility.CLEANUP_LOGGER.log(Level.FINE, ()->String.format("Dispose of 0x%1$s@%2$s finished.", Integer.toHexString(hashCode), cls.getName()));
+			}
+		}
 	}
 
 	private static class MemberAccessReferenceCountingNativeLink extends ReferenceCountingNativeLink {
@@ -515,6 +533,15 @@ public abstract class NativeUtility {
 				NativeUtility.CLEANUP_LOGGER.log(Level.FINE, ()->String.format("Begin cleanup of 0x%1$s@%2$s...", Integer.toHexString(hashCode), cls.getName()));
 				super.clean();
 				NativeUtility.CLEANUP_LOGGER.log(Level.FINE, ()->String.format("Cleanup of 0x%1$s@%2$s finished.", Integer.toHexString(hashCode), cls.getName()));
+			}
+		}
+		
+		@Override
+		synchronized void dispose() {
+			if (nativeId() != 0) {
+				NativeUtility.CLEANUP_LOGGER.log(Level.FINE, ()->String.format("Begin dispose of 0x%1$s@%2$s...", Integer.toHexString(hashCode), cls.getName()));
+				super.dispose();
+				NativeUtility.CLEANUP_LOGGER.log(Level.FINE, ()->String.format("Dispose of 0x%1$s@%2$s finished.", Integer.toHexString(hashCode), cls.getName()));
 			}
 		}
 	}
@@ -556,6 +583,15 @@ public abstract class NativeUtility {
 				NativeUtility.CLEANUP_LOGGER.log(Level.FINE, ()->String.format("Cleanup of 0x%1$s@%2$s finished.", Integer.toHexString(ownerHashCode), cls.getName()));
 			}
 		}
+		
+		@Override
+		synchronized void dispose() {
+			if (nativeId() != 0) {
+				NativeUtility.CLEANUP_LOGGER.log(Level.FINE, ()->String.format("Begin dispose of 0x%1$s@%2$s...", Integer.toHexString(ownerHashCode), cls.getName()));
+				super.dispose();
+				NativeUtility.CLEANUP_LOGGER.log(Level.FINE, ()->String.format("Dispose of 0x%1$s@%2$s finished.", Integer.toHexString(ownerHashCode), cls.getName()));
+			}
+		}
 	}
 	
 	private static class PureInterfaceNativeLink extends ReferenceCountingNativeLink {
@@ -593,6 +629,15 @@ public abstract class NativeUtility {
 				NativeUtility.CLEANUP_LOGGER.log(Level.FINE, ()->String.format("Begin cleanup of 0x%1$s@%2$s...", Integer.toHexString(ownerHashCode), cls.getName()));
 				super.clean();
 				NativeUtility.CLEANUP_LOGGER.log(Level.FINE, ()->String.format("Cleanup of 0x%1$s@%2$s finished.", Integer.toHexString(ownerHashCode), cls.getName()));
+			}
+		}
+		
+		@Override
+		synchronized void dispose() {
+			if (nativeId() != 0) {
+				NativeUtility.CLEANUP_LOGGER.log(Level.FINE, ()->String.format("Begin dispose of 0x%1$s@%2$s...", Integer.toHexString(ownerHashCode), cls.getName()));
+				super.dispose();
+				NativeUtility.CLEANUP_LOGGER.log(Level.FINE, ()->String.format("Dispose of 0x%1$s@%2$s finished.", Integer.toHexString(ownerHashCode), cls.getName()));
 			}
 		}
 	}

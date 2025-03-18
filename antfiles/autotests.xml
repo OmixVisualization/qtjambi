@@ -978,6 +978,7 @@
 									</classpath>
 									<jvmarg value="-Dio.qt.library-path-override=${qtPath}${psep}${qtJambiPath}${psep}${testLibPath}"/>
 									<jvmarg value="-Dio.qt.debug=${kind}"/><!-- This should not be needed now, it loads default from MANIFEST.MF -->
+									<jvmarg value="-Dqtjambi.osname=${qtjambi.osname}"/>
 									<jvmarg value="-Dio.qt.log-messages=ALL"/>
 									<jvmarg value="${Dqtjambi.log-level}"/>
 									<jvmarg value="-Dio.qt.no-deployment-spec=true"/>

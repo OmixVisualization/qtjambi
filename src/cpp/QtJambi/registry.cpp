@@ -148,7 +148,6 @@ Q_GLOBAL_STATIC(JObjectWrappedMetaTypeHash, gJObjectWrappedMetaTypes)
 typedef SecureContainer<QMap<size_t, PtrOwnerFunction>, gRegistryLock> OwnerFunctionHash;
 Q_GLOBAL_STATIC(OwnerFunctionHash, gOwnerFunctionHash)
 
-struct PolymorphicIdHandler;
 typedef SecureContainer<QMultiHash<size_t, const PolymorphicIdHandler* >, gRegistryLock> PolymorphicIdHash;
 Q_GLOBAL_STATIC(PolymorphicIdHash, g_polymorphic_ids)
 typedef SecureContainer<QMultiMap<size_t, const std::type_info*>, gRegistryLock> PolymorphicBasesHash;
@@ -658,7 +657,7 @@ const std::type_info* getTypeByJavaName(QByteArray javaName)
     const std::type_info* result = nullptr;
     QReadLocker locker(gRegistryLock());
     Q_UNUSED(locker)
-    if(!gJavaNameTypeHash->contains(javaName.data())){
+    if(!gJavaNameTypeHash->contains(javaName)){
         if(javaName.endsWith("$ConcreteWrapper")){
             javaName = javaName.chopped(16);
         }
@@ -666,7 +665,7 @@ const std::type_info* getTypeByJavaName(QByteArray javaName)
             javaName = javaName.chopped(5);
         }
     }
-    if(gJavaNameTypeHash->contains(javaName.data())){
+    if(gJavaNameTypeHash->contains(javaName)){
         const QList<const std::type_info*>& list = (*gJavaNameTypeHash)[javaName];
         if(!list.isEmpty()){
             result = list.first();

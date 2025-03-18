@@ -38,7 +38,6 @@ import io.qt.QThreadAffinityException;
 import io.qt.QtUtilities;
 import io.qt.core.QEventLoop;
 import io.qt.core.QThread;
-import io.qt.core.QUrl;
 import io.qt.quick.widgets.QQuickWidget;
 
 public class TestQuickWidgetsThreadAffinity extends ApplicationInitializer{

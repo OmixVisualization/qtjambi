@@ -52,7 +52,7 @@ public:
     Runnable(const Runnable& other) noexcept;
     Runnable(Runnable&& other) noexcept;
     Runnable(FunctionPointer functor) noexcept;
-    inline Runnable(nullptr_t) noexcept : Runnable(FunctionPointer(nullptr)) {}
+    inline Runnable(std::nullptr_t) noexcept : Runnable(FunctionPointer(nullptr)) {}
 
     Runnable& operator=(const Runnable& other) noexcept;
     Runnable& operator=(Runnable&& other) noexcept;
