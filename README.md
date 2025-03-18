@@ -23,7 +23,7 @@ Most Qt modules are available as QtJambi module as [listed here](www/Modules.md)
 
 **The native components for Windows available on Maven require Qt binaries for MSVC (msvc2022_64). Mingw Qt is not compatible with QtJambi unless you build it from scratch with Mingw.**
 
-**By default, the native components of only essential modules are made available on Maven. Please make a request via [/issues](Issues) if you require native components not yet available.**
+**By default, the native components of only essential modules are made available on Maven. Please make a request via [Issues](/issues) if you require native components not yet available.**
 
 ## Support
 
