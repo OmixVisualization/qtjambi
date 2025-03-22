@@ -55,7 +55,8 @@ public:
         bool m_isAdoptedQThread;
         int m_associationHashcode;
         QWeakPointer<QtJambiLink> m_wlink;
-        QList<QtJambiUtils::Runnable> m_finalActions;
+        QSharedPointer<QMutex> m_mutex;
+        QSharedPointer<QList<QtJambiUtils::Runnable>> m_finalActions{new QList<QtJambiUtils::Runnable>};
         ~Data();
     };
 
@@ -69,7 +70,6 @@ private:
     static QThreadStorage<EventDispatcherCheckPointer> Instance;
     EventDispatcherCheck(Data& data, CleanupFunction _cleaner);
     Data* m_data;
-    QMutex m_mutex;
     CleanupFunction m_cleaner;
     friend EventDispatcherCheckPointer;
 };
@@ -93,7 +93,7 @@ public:
     void doAtThreadEnd(QtJambiUtils::Runnable&& action);
     inline bool isJavaLaunched() const {return m_isJavaLaunched;}
     inline bool purgeOnExit() const {return m_threadType!=ProcessMainThread;}
-    inline QObject* threadDeleter() const {return m_threadDeleter.get();}
+    QObject* threadDeleter() const;
     inline ThreadType threadType() const { return m_threadType; }
     static QThreadUserData* ensureThreadUserData(QThread* thread);
     struct Result{
@@ -105,13 +105,8 @@ public:
     static QBasicAtomicPointer<void> theMainThreadId;
 #endif
 private:
-    void cleanup(bool isInDestructor);
-    QSharedPointer<QObject> m_threadDeleter;
-    QList<QPointer<QObject>> m_objectsForDeletion;
-    QList<QtJambiUtils::Runnable>* m_finalActions;
-    QMutex* m_mutex;
+    QExplicitlySharedDataPointer<struct QThreadUserDataPrivate> p;
     QMetaObject::Connection m_finishedConnection;
-
     ThreadType m_threadType;
     bool m_isJavaLaunched = false;
 

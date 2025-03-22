@@ -378,6 +378,12 @@ void doInPurgeThread(JNIInvokable &&fun){
         instance->push(std::move(fun));
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#define MutexLocker QMutexLocker
+#else
+#define MutexLocker QMutexLocker<QMutex>
+#endif
+
 struct ThreadDetacher : public QtJambiObjectData {
     EventDispatcherCheck::Data* m_threadData;
     ThreadDetacher(EventDispatcherCheck::Data* threadData)
@@ -390,6 +396,11 @@ struct ThreadDetacher : public QtJambiObjectData {
         JavaVM *vm = nullptr;
         if(std::atomic<JavaVM *>* atm = gJavaVM)
             vm = atm->load();
+        QList<QtJambiUtils::Runnable> finalActions;
+        {
+            MutexLocker locker(threadData->m_mutex.data());
+            threadData->m_finalActions->swap(finalActions);
+        }
         if (Q_LIKELY(vm)) {
             QSharedPointer<QtJambiLink> link;
             {
@@ -480,8 +491,8 @@ struct ThreadDetacher : public QtJambiObjectData {
                     }
                 }
             }
-            while(!threadData->m_finalActions.isEmpty()){
-                threadData->m_finalActions.takeFirst()();
+            while(!finalActions.isEmpty()){
+                finalActions.takeFirst()();
             }
             QThreadUserData* data{nullptr};
             if(QThread* thread = threadData->m_thread.data()){
@@ -525,8 +536,8 @@ struct ThreadDetacher : public QtJambiObjectData {
                 delete data;
             vm->DetachCurrentThread();
         }else{
-            while(!threadData->m_finalActions.isEmpty()){
-                threadData->m_finalActions.takeFirst()();
+            while(!finalActions.isEmpty()){
+                finalActions.takeFirst()();
             }
 
             QThreadUserData* data{nullptr};

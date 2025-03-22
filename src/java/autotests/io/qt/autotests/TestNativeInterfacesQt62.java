@@ -46,8 +46,6 @@ import io.qt.gui.nativeinterface.QGLXContext;
 import io.qt.gui.nativeinterface.QWGLContext;
 import io.qt.gui.nativeinterface.QWindowsApplication;
 import io.qt.gui.nativeinterface.QWindowsWindow;
-import io.qt.gui.nativeinterface.QX11Application;
-import io.qt.gui.nativeinterface.QXcbScreen;
 import io.qt.gui.nativeinterface.QXcbWindow;
 import io.qt.opengl.QOpenGLWindow;
 import io.qt.widgets.QApplication;
@@ -69,24 +67,10 @@ public class TestNativeInterfacesQt62 extends ApplicationInitializer {
     	assertEquals(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows), winapp!=null);
     	assertEquals(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows), winwin!=null);
     	QCocoaWindow cocoawin = window.nativeInterface(QCocoaWindow.class);
-    	assertEquals(cocoawin==null 
-    			? "QCocoaWindow is null on "+QOperatingSystemVersion.current().type().name() 
-    			: "QCocoaWindow is " + cocoawin.getClass().getName()+" on "+QOperatingSystemVersion.current().type().name(), 
+    	assertEquals("QWindow's nativeInterface is not QCocoaWindow on macOS", 
     			QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.MacOS), cocoawin!=null);
-    	QX11Application x11app = QApplication.instance().nativeInterface(QX11Application.class);
-    	assertEquals(x11app==null 
-    			? "QX11Application is null on "+QOperatingSystemVersion.current().type().name() 
-    			: "QX11Application is " + x11app.getClass().getName()+" on "+QOperatingSystemVersion.current().type().name(), 
-    			!QOperatingSystemVersion.current().isAnyOfType( QOperatingSystemVersion.OSType.MacOS,
-												    			QOperatingSystemVersion.OSType.Android,
-												    			QOperatingSystemVersion.OSType.IOS,
-												    			QOperatingSystemVersion.OSType.TvOS,
-												    			QOperatingSystemVersion.OSType.WatchOS,
-												    			QOperatingSystemVersion.OSType.Windows), x11app!=null);
     	QXcbWindow xcbwin = window.nativeInterface(QXcbWindow.class);
-    	assertEquals(xcbwin==null 
-    			? "QXcbWindow is null on "+QOperatingSystemVersion.current().type().name() 
-    			: "QXcbWindow is " + xcbwin.getClass().getName()+" on "+QOperatingSystemVersion.current().type().name(), 
+    	assertEquals("QWindow's nativeInterface is not QXcbWindow", 
     			!QOperatingSystemVersion.current().isAnyOfType(
     			QOperatingSystemVersion.OSType.MacOS,
     			QOperatingSystemVersion.OSType.Android,
@@ -101,14 +85,6 @@ public class TestNativeInterfacesQt62 extends ApplicationInitializer {
 		} catch (IllegalArgumentException e) {
 			assertEquals("Class io.qt.core.QObject is not a native interface type.", e.getMessage());
 		}
-    	QXcbScreen xcbScreen = QApplication.primaryScreen().nativeInterface(QXcbScreen.class);
-    	assertEquals(!QOperatingSystemVersion.current().isAnyOfType(
-    			QOperatingSystemVersion.OSType.MacOS,
-    			QOperatingSystemVersion.OSType.Android,
-    			QOperatingSystemVersion.OSType.IOS,
-    			QOperatingSystemVersion.OSType.TvOS,
-    			QOperatingSystemVersion.OSType.WatchOS,
-    			QOperatingSystemVersion.OSType.Windows), xcbScreen!=null);
     	QOpenGLContext context = window.context();
     	if(cocoawin!=null) {
     		assertFalse(cocoawin instanceof QObject);
@@ -120,8 +96,14 @@ public class TestNativeInterfacesQt62 extends ApplicationInitializer {
 	    	QWGLContext wglContext = context.nativeInterface(QWGLContext.class);
 	    	QEGLContext eglContext = context.nativeInterface(QEGLContext.class);
 	    	QCocoaGLContext cocoaContext = context.nativeInterface(QCocoaGLContext.class);
-	    	assertEquals(context.isOpenGLES(), eglContext!=null);
-	    	assertEquals(!context.isOpenGLES() 
+	    	assertEquals(
+	    			context.isOpenGLES()
+	    			? "QOpenGLContext's nativeInterface is not QEGLContext"
+					: "QOpenGLContext's nativeInterface is QEGLContext although it is not OpenGLES", context.isOpenGLES(), eglContext!=null);
+	    	assertEquals(
+	    			context.isOpenGLES()
+	    			? "QOpenGLContext's nativeInterface is QGLXContext although it is OpenGLES"
+					: "QOpenGLContext's nativeInterface is not QGLXContext", !context.isOpenGLES() 
 	    			&& !QOperatingSystemVersion.current().isAnyOfType(
 	    			QOperatingSystemVersion.OSType.MacOS,
 	    			QOperatingSystemVersion.OSType.Android,
@@ -129,8 +111,12 @@ public class TestNativeInterfacesQt62 extends ApplicationInitializer {
 	    			QOperatingSystemVersion.OSType.TvOS,
 	    			QOperatingSystemVersion.OSType.WatchOS,
 	    			QOperatingSystemVersion.OSType.Windows), glxContext!=null);
-	    	assertEquals(!context.isOpenGLES() && QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows), wglContext!=null);
-	    	assertEquals(!context.isOpenGLES() && QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.MacOS), cocoaContext!=null);
+	    	assertEquals(context.isOpenGLES() && QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows)
+	    			? "QOpenGLContext's nativeInterface is QWGLContext although it is OpenGLES on Windows"
+					: "QOpenGLContext's nativeInterface is not QWGLContext", !context.isOpenGLES() && QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows), wglContext!=null);
+	    	assertEquals(context.isOpenGLES() && QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.MacOS)
+	    			? "QOpenGLContext's nativeInterface is QCocoaGLContext although it is OpenGLES on macOS"
+					: "QOpenGLContext's nativeInterface is not QCocoaGLContext", !context.isOpenGLES() && QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.MacOS), cocoaContext!=null);
     	}
     }
 

@@ -21,7 +21,7 @@ Debug info for native debugging is avaiable for Windows, Linux and macOS.
 
 ## Requirements and Compatibility
 
-**The native components for Windows available on Maven require Qt binaries for MSVC (msvc2022_64). Mingw Qt is not compatible with QtJambi unless you build it from scratch with Mingw.**
+**The native components for Windows available on Maven require Qt binaries for MSVC (msvc2022_64). Qt builds based on Mingw pr LLVM-Mingw are not compatible with Maven-published QtJambi binaries `windows-x64`.**
 **The native components for Linux and macOS (Homebrew) might be incompatible with distribution-specific Qt. Maven-published binaries have been compiled with Qt available from Qt installer.**
 
 Search for qtjambi modules by name in Maven repository. Each java module requires the corresponding platform bundle. Therefore search for either 

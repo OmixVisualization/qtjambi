@@ -18702,7 +18702,6 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
         javaName: "QWaylandApplication"
         ppCondition: "defined(Q_OS_UNIX)"
         isNativeInterface: true
-        generate: false
         Rejection{
             className: "TypeInfo"
         }
@@ -18717,7 +18716,31 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 location: Include.Global
             }
         }
-        since: [6, 2]
+        since: [6, 5]
+        until: [6, 7]
+    }
+
+    InterfaceType{
+        name: "QNativeInterface::QWaylandApplication"
+        packageName: "io.qt.gui.nativeinterface"
+        javaName: "QWaylandApplication"
+        ppCondition: "QT_CONFIG(wayland)"
+        isNativeInterface: true
+        Rejection{
+            className: "TypeInfo"
+        }
+
+        ModifyFunction{
+            signature: "QWaylandApplication()"
+            remove: RemoveFlag.All
+        }
+        ExtraIncludes{
+            Include{
+                fileName: "QtGui/QScreen"
+                location: Include.Global
+            }
+        }
+        since: [6, 8]
     }
 
     ObjectType{

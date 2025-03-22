@@ -606,6 +606,14 @@ final class ResourceUtility {
 					}
         		}
         	}
+        	if(entry==null) {
+        		entry = jarFile.getJarEntry(name+"/");
+        	}
+        	if(entry==null && isDirectory(name)) {
+        		if(!name.endsWith("/"))
+        			name += "/";
+        		entry = new JarEntry(name);
+        	}
             return entry;
         }
 

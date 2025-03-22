@@ -47,7 +47,9 @@ from [Maven Central Repository](https://search.maven.org/artifact/io.qtjambi/qtj
 
 Additionally, you need *Qt*. Use the [Qt installer](https://www.qt.io/download-qt-installer) to install Qt on your system.
 Make sure you are using the same Qt version and QtJambi version (the first and second version digit needs to be the same, e.g. 6.5 or 6.8).
-When using Maven artifacts for Windows you need to select MSVC 2022 64-Bit (msvc2022_64), as they are not compatible with Mingw Qt.
+
+On Windows install Qt for MSVC (msvc2022_64), as the Maven-published QtJambi binaries are not compatible with Qt builds based on Mingw pr LLVM-Mingw.
+
 On Linux, you can alternatively use Qt system libraries (correct version provided).
 The required DLLs are to be found in the `bin` folder on Windows and `lib` folder on Linux and macOS, respectively. 
 

@@ -261,7 +261,7 @@ public:
     static constexpr FileTime ModificationTime = FileTime::FileModificationTime;
 #endif
     static QJarEntryEngine* create(JNIEnv* env, const QString& jarFileName, const QString& fileName, const QString& prefix);
-    QJarEntryEngine(JNIEnv* env, jobject myJarFile, const QString& jarFileName, const QString& prefix);
+    QJarEntryEngine(JNIEnv* env, jobject myJarFile, const QString& jarFileName, const QString& name, const QString& prefix);
     QJarEntryEngine(JNIEnv* env, jobject myJarFile, const QString& jarFileName, jobject entry, QString&& name, bool isDirectory, qint64 size, const QString& prefix);
     ~QJarEntryEngine() override;
 
@@ -317,14 +317,14 @@ QJarEntryEngine* QJarEntryEngine::create(JNIEnv* env, const QString& jarFileName
     jobject jarFile = Java::QtJambi::ResourceUtility::resolveFileToJarResource(env, qtjambi_cast<jstring>(env, jarFileName));
     if(jarFile){
         if (fileName.isEmpty()) {
-            return new QJarEntryEngine(env, jarFile, jarFileName, prefix);
+            return new QJarEntryEngine(env, jarFile, jarFileName, fileName, prefix);
         }
 
         jstring entryFileName = qtjambi_cast<jstring>(env, fileName);
         jobject entry = Java::QtJambi::ResourceUtility$JarResource::getJarEntry(env, jarFile, entryFileName);
         if (!entry) {
             if(Java::QtJambi::ResourceUtility$JarResource::isDirectory(env, jarFile, entryFileName))
-                return new QJarEntryEngine(env, jarFile, jarFileName, prefix);
+                return new QJarEntryEngine(env, jarFile, jarFileName, fileName, prefix);
         } else {
             bool directory = Java::QtJambi::ResourceUtility$JarResource::checkIsDirectory(env, jarFile, entry);
             qint64 size = directory ? 0 : Java::Runtime::ZipEntry::getSize(env, entry);
@@ -336,10 +336,10 @@ QJarEntryEngine* QJarEntryEngine::create(JNIEnv* env, const QString& jarFileName
     return nullptr;
 }
 
-QJarEntryEngine::QJarEntryEngine(JNIEnv* env, jobject myJarFile, const QString& jarFileName, const QString& prefix)
+QJarEntryEngine::QJarEntryEngine(JNIEnv* env, jobject myJarFile, const QString& jarFileName, const QString& name, const QString& prefix)
   : QAbstractFileEngine(),
     m_jarFileName(jarFileName),
-    m_entryFileName(),
+    m_entryFileName(name),
     m_entry(),
     m_myJarFile(env, myJarFile),
     m_readChannel(),

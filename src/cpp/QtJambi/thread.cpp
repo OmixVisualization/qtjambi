@@ -205,11 +205,17 @@ bool Deleter::event(QEvent* event) {
     return QObject::event(event);
 }
 
+struct QThreadUserDataPrivate : public QSharedData{
+    QScopedPointer<QObject> m_threadDeleter{new Deleter};
+    QList<QPointer<QObject>> m_objectsForDeletion;
+    QWeakPointer<QList<QtJambiUtils::Runnable>> m_finalActions;
+    QSharedPointer<QMutex> m_mutex{new QMutex()};
+    void cleanup(bool isInDestructor);
+};
+
 QThreadUserData::QThreadUserData():
     QtJambiObjectData(),
-    m_threadDeleter(QSharedPointer<Deleter>::create()),
-    m_finalActions(nullptr),
-    m_mutex(nullptr),
+    p(new QThreadUserDataPrivate),
     m_threadType(DefaultThread)
 {
 }
@@ -218,35 +224,35 @@ QThreadUserData::~QThreadUserData(){
     QTJAMBI_INTERNAL_METHOD_CALL("QThreadUserData::~QThreadUserData()")
     switch(m_threadType){
     case ProcessMainThread:
-        cleanup(true);
+        p->cleanup(true);
         break;
     default:
         if(m_finishedConnection){
             QObject::disconnect(m_finishedConnection);
-            cleanup(true);
+            p->cleanup(true);
         }
         break;
     }
 }
 
+QObject* QThreadUserData::threadDeleter() const {return p->m_threadDeleter.get();}
+
 void QThreadUserData::initializeDefault(QThread* thread){
-    m_threadDeleter->moveToThread(thread);
+    p->m_threadDeleter->moveToThread(thread);
     m_threadType = QThreadData::get2(thread)->isAdopted ? AdoptedThread : DefaultThread;
-    m_finishedConnection = QObject::connect(thread, &QThread::finished, thread, [this]() {
+    m_finishedConnection = QObject::connect(thread, &QThread::finished, thread, [p = this->p]() {
         QTJAMBI_INTERNAL_METHOD_CALL("QThread::finished received")
-        this->cleanup(false);
-        QObject::disconnect(this->m_finishedConnection);
+        p->cleanup(false);
     }, Qt::DirectConnection);
 }
 
 void QThreadUserData::initializeAdopted(QThread* thread){
     m_isJavaLaunched = true;
-    m_threadDeleter->moveToThread(thread);
+    p->m_threadDeleter->moveToThread(thread);
     m_threadType = AdoptedThread;
-    m_finishedConnection = QObject::connect(thread, &QThread::finished, thread, [this]() {
+    m_finishedConnection = QObject::connect(thread, &QThread::finished, thread, [p = this->p]() {
         QTJAMBI_INTERNAL_METHOD_CALL("QThread::finished received")
-        this->cleanup(false);
-        QObject::disconnect(this->m_finishedConnection);
+        p->cleanup(false);
     }, Qt::DirectConnection);
 }
 
@@ -267,7 +273,7 @@ void QThreadUserData::reinitializeMain(QThread* thread){
         }
         break;
     case VirtualMainThread:
-        m_finishedConnection = QObject::connect(thread, &QThread::finished, thread, [this]() {
+        m_finishedConnection = QObject::connect(thread, &QThread::finished, thread, [p = this->p]() {
             QCoreApplicationPrivate::theMainThread.storeRelaxed(nullptr);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
             QCoreApplicationPrivate::theMainThreadId.storeRelaxed(nullptr);
@@ -275,8 +281,7 @@ void QThreadUserData::reinitializeMain(QThread* thread){
             QThreadUserData::theMainThreadId.storeRelaxed(nullptr);
 #endif
             QTJAMBI_INTERNAL_METHOD_CALL("QThread::finished received")
-            this->cleanup(false);
-            QObject::disconnect(this->m_finishedConnection);
+            p->cleanup(false);
         }, Qt::DirectConnection);
         break;
     default:
@@ -284,11 +289,11 @@ void QThreadUserData::reinitializeMain(QThread* thread){
     }
 }
 
-void QThreadUserData::cleanup(bool isInDestructor){
+void QThreadUserDataPrivate::cleanup(bool isInDestructor){
     QTJAMBI_INTERNAL_METHOD_CALL("QThreadUserData::cleanup()")
     QList<QPointer<QObject>> objectsForDeletion;
     {
-        MutexLocker locker(m_mutex);
+        MutexLocker locker(m_mutex.data());
         objectsForDeletion.swap(m_objectsForDeletion);
     }
     for(const QPointer<QObject>& ptr : objectsForDeletion){
@@ -525,10 +530,14 @@ void eventless_thread_cleaner(JNIEnv *env, EventDispatcherCheck::Data* threadDat
             }
         }
     }
-    while(!threadData->m_finalActions.isEmpty()){
-        threadData->m_finalActions.takeFirst()();
+    QList<QtJambiUtils::Runnable> finalActions;
+    {
+        MutexLocker locker(threadData->m_mutex.data());
+        threadData->m_finalActions->swap(finalActions);
     }
-    threadData->m_finalActions.clear();
+    while(!finalActions.isEmpty()){
+        finalActions.takeFirst()();
+    }
     QThreadUserData* data{nullptr};
     if(QThread* thread = threadData->m_thread.data()){
         {
@@ -590,10 +599,14 @@ struct ThreadDataReleaser : public QtJambiObjectData {
                 }
             }
         }
-        while(!m_threadData->m_finalActions.isEmpty()){
-            m_threadData->m_finalActions.takeFirst()();
+        QList<QtJambiUtils::Runnable> finalActions;
+        {
+            MutexLocker locker(m_threadData->m_mutex.data());
+            m_threadData->m_finalActions->swap(finalActions);
         }
-        m_threadData->m_finalActions.clear();
+        while(!finalActions.isEmpty()){
+            finalActions.takeFirst()();
+        }
         QThreadUserData* data{nullptr};
         if(QThread* thread = m_threadData->m_thread.data()){
             {
@@ -771,8 +784,10 @@ void EventDispatcherCheck::adoptThread(JNIEnv *env, jobject jthreadObject, QThre
         tdata = QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, thread);
     }
     if(tdata){
-        tdata->m_finalActions = &instance->m_data->m_finalActions;
-        tdata->m_mutex = &instance->m_mutex;
+        tdata->p->m_finalActions = instance->m_data->m_finalActions;
+        instance->m_data->m_mutex = tdata->p->m_mutex;
+    }else{
+        instance->m_data->m_mutex.reset(new QMutex());
     }
     EventDispatcherCheck::Instance.localData() = instance;
 }
@@ -812,18 +827,22 @@ void EventDispatcherCheck::finalize(JNIEnv *env){
             QReadLocker locker(QtJambiLinkUserData::lock());
             threadUserData = QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, thread);
         }
-        if(threadUserData){
-            threadUserData->m_finalActions = nullptr;
-            threadUserData->m_mutex = nullptr;
-        }
         try{
             if(!QCoreApplicationPrivate::is_app_closing && cleaner){
+                if(threadUserData)
+                    threadUserData->p->m_finalActions.clear();
                 cleaner(env, data);
             }else if(data){
-                while(!data->m_finalActions.isEmpty()){
-                    data->m_finalActions.takeFirst()();
+                QList<QtJambiUtils::Runnable> finalActions;
+                if(threadUserData)
+                    threadUserData->p->m_finalActions.clear();
+                {
+                    MutexLocker locker(data->m_mutex.data());
+                    data->m_finalActions->swap(finalActions);
                 }
-                data->m_finalActions.clear();
+                while(!finalActions.isEmpty()){
+                    finalActions.takeFirst()();
+                }
                 if(threadUserData && !threadUserData->purgeOnExit()){
                     if(QThread* thread = data->m_thread.data()){
                         QWriteLocker locker(QtJambiLinkUserData::lock());
@@ -854,17 +873,16 @@ void LinkInvalidator::execute() {
 }
 
 void QThreadUserData::deleteAtThreadEnd(QObject* object){
-    MutexLocker locker(m_mutex);
+    MutexLocker locker(p->m_mutex.data());
     Q_UNUSED(locker)
-    m_objectsForDeletion.append(QPointer<QObject>(object));
+    p->m_objectsForDeletion.append(QPointer<QObject>(object));
 }
 
 
 void QThreadUserData::doAtThreadEnd(QtJambiUtils::Runnable&& action){
-    if(m_finalActions){
-        MutexLocker locker(m_mutex);
-        Q_UNUSED(locker)
-        m_finalActions->append(std::move(action));
+    if(QSharedPointer<QList<QtJambiUtils::Runnable>> finalActions = p->m_finalActions){
+        MutexLocker locker(p->m_mutex.data());
+        finalActions->append(std::move(action));
     }
 }
 
