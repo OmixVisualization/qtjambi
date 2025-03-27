@@ -49,8 +49,7 @@ The necessary JNI (Java Native Interface) code and `.java` files are automatical
                                     Omix Visualization GmbH & Co. KG. 
                                     All rights reserved.
 
- You may use, distribute and copy QtJambi under the terms of
- [GNU Lesser General Public License version 2.1](LICENSE.LGPLv21).
+ You may use, distribute and copy QtJambi under the terms of GNU Lesser General Public License version 2.1.
 ```
 
 ```
@@ -63,6 +62,9 @@ The necessary JNI (Java Native Interface) code and `.java` files are automatical
 
  You may use, distribute and copy QtJambi under the terms of
  GNU Lesser General Public License version 3. That license references
- the [General Public License version 3](LICENSE.GPLv3). Other
+ the General Public License version 3. Other
  portions of the QtJambi may be licensed directly under this license.
 ```
+
+* [GNU Lesser General Public License version 2.1](LICENSE.LGPLv21)
+* [General Public License version 3](LICENSE.GPLv3)
