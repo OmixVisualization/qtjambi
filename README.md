@@ -49,7 +49,8 @@ The necessary JNI (Java Native Interface) code and `.java` files are automatical
                                     Omix Visualization GmbH & Co. KG. 
                                     All rights reserved.
 
- You may use, distribute and copy QtJambi under the terms of GNU Lesser General Public License version 2.1.
+ You may use, distribute and copy QtJambi under the terms of 
+ GNU Lesser General Public License version 2.1.
 ```
 
 ```
