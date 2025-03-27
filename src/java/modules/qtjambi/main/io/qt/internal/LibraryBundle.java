@@ -145,7 +145,21 @@ final class LibraryBundle {
         return url;
     }
     
-    public static LibraryBundle read(URL sourceUrl, String osArchName) throws ParserConfigurationException, IOException, SAXException {
+    String origin() {
+    	String origin = ""+url;
+		if(origin.startsWith("jar:file:") && origin.endsWith(LibraryUtility.DEPLOY_XML_IN_JAR)) {
+			origin = origin.substring(4);
+			origin = origin.substring(0, origin.length() - LibraryUtility.DEPLOY_XML_IN_JAR.length());
+			try {
+				URL url = CoreUtility.createURL(origin);
+				origin = new File(url.toURI()).getAbsolutePath();
+			} catch (Exception e) {
+			}
+		}
+		return origin;
+    }
+    
+    static LibraryBundle read(URL sourceUrl) throws ParserConfigurationException, IOException, SAXException {
     	LibraryBundle depl = new LibraryBundle();
     	depl.url = sourceUrl;
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -159,8 +173,8 @@ final class LibraryBundle {
         depl.system = doc.getDocumentElement().getAttribute("system");
         if (depl.system == null || depl.system.length() == 0) {
             throw new SpecificationException("<qtjambi-deploy> element missing required attribute 'system'");
-        } else if (osArchName!=null && !depl.system.equals(osArchName)) {
-            throw new WrongSystemException(String.format("Expected version: %1$s, found: %2$s.", osArchName, depl.system));
+        } else if (!depl.system.equals(LibraryUtility.osArchName)) {
+            throw new WrongSystemException(String.format("Expected version: %1$s, found: %2$s.", LibraryUtility.osArchName, depl.system));
         }
         depl.version = doc.getDocumentElement().getAttribute("version");
         if (depl.version == null || depl.version.isEmpty())
@@ -234,7 +248,7 @@ final class LibraryBundle {
 						throw new SpecificationException("<symlink> element missing required attribute \"target\"");
 	                libraryEntry = new Symlink(name, target, depl);
 	                depl.addLibrary(libraryEntry);
-                	if(name.startsWith("lib/") || name.startsWith("bin/"))
+	                if(name.startsWith("lib/") || name.startsWith("bin/"))
                 		name = name.substring(4);
 	                if (libraryMap.get(name)==null)
 		                libraryMap.put(name, libraryEntry);

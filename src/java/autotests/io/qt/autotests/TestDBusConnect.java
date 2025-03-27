@@ -53,6 +53,7 @@ import io.qt.core.QRectF;
 import io.qt.core.QThread;
 import io.qt.core.Qt;
 import io.qt.dbus.QDBusConnection;
+import io.qt.dbus.QDBusError.ErrorType;
 import io.qt.dbus.QDBusInterface;
 import io.qt.dbus.QDBusMessage;
 import io.qt.dbus.QDBusPendingCall;
@@ -114,8 +115,12 @@ public class TestDBusConnect {
 		}
 		System.out.println("TestDBusConnect: Get bus interface...");
 		iface = new QDBusInterface(QtDBusPong.PONG_SERVICE, "/", QtDBusPong.PONG_INTERFACE_NAME, sb);
-		if(!iface.isValid())
-			fail(sb.lastError().message());
+		if(!iface.isValid() || iface.lastError().type()!=ErrorType.NoError) {
+			String msg = iface.lastError().message();
+			iface.dispose();
+			iface = null;
+			fail(msg);
+		}
 		System.out.println("TestDBusConnect::testInitialize() finished");
 	}
 	

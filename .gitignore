@@ -6,7 +6,5 @@ buildlogs
 5.*
 6.*
 7.*
-src/cpp/QtJambiGenerator/QtJambiGenerator.pro.user
-src/cpp/autotests/autotests.pro.user
-src/cpp/QtJambi.pro.user
-src/cpp/QtJambiGenerator/.qmake.stash
+**/*.pro.user*
+**/.qmake.stash

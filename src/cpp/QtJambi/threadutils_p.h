@@ -106,7 +106,6 @@ public:
 #endif
 private:
     QExplicitlySharedDataPointer<struct QThreadUserDataPrivate> p;
-    QMetaObject::Connection m_finishedConnection;
     ThreadType m_threadType;
     bool m_isJavaLaunched = false;
 

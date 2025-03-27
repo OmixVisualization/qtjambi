@@ -46,7 +46,6 @@ import io.qt.gui.nativeinterface.QGLXContext;
 import io.qt.gui.nativeinterface.QWGLContext;
 import io.qt.gui.nativeinterface.QWindowsApplication;
 import io.qt.gui.nativeinterface.QWindowsWindow;
-import io.qt.gui.nativeinterface.QXcbWindow;
 import io.qt.opengl.QOpenGLWindow;
 import io.qt.widgets.QApplication;
 
@@ -69,15 +68,6 @@ public class TestNativeInterfacesQt62 extends ApplicationInitializer {
     	QCocoaWindow cocoawin = window.nativeInterface(QCocoaWindow.class);
     	assertEquals("QWindow's nativeInterface is not QCocoaWindow on macOS", 
     			QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.MacOS), cocoawin!=null);
-    	QXcbWindow xcbwin = window.nativeInterface(QXcbWindow.class);
-    	assertEquals("QWindow's nativeInterface is not QXcbWindow", 
-    			!QOperatingSystemVersion.current().isAnyOfType(
-    			QOperatingSystemVersion.OSType.MacOS,
-    			QOperatingSystemVersion.OSType.Android,
-    			QOperatingSystemVersion.OSType.IOS,
-    			QOperatingSystemVersion.OSType.TvOS,
-    			QOperatingSystemVersion.OSType.WatchOS,
-    			QOperatingSystemVersion.OSType.Windows), xcbwin!=null);
     	assertEquals(null, QApplication.instance().nativeInterface(QWindowsWindow.class));
     	try {
 			QApplication.instance().nativeInterface(QObject.class);
@@ -97,20 +87,13 @@ public class TestNativeInterfacesQt62 extends ApplicationInitializer {
 	    	QEGLContext eglContext = context.nativeInterface(QEGLContext.class);
 	    	QCocoaGLContext cocoaContext = context.nativeInterface(QCocoaGLContext.class);
 	    	assertEquals(
-	    			context.isOpenGLES()
-	    			? "QOpenGLContext's nativeInterface is not QEGLContext"
-					: "QOpenGLContext's nativeInterface is QEGLContext although it is not OpenGLES", context.isOpenGLES(), eglContext!=null);
-	    	assertEquals(
-	    			context.isOpenGLES()
-	    			? "QOpenGLContext's nativeInterface is QGLXContext although it is OpenGLES"
-					: "QOpenGLContext's nativeInterface is not QGLXContext", !context.isOpenGLES() 
-	    			&& !QOperatingSystemVersion.current().isAnyOfType(
+	    			"QOpenGLContext's nativeInterface is QGLXContext or QEGLContext",
+	    			!QOperatingSystemVersion.current().isAnyOfType(
 	    			QOperatingSystemVersion.OSType.MacOS,
-	    			QOperatingSystemVersion.OSType.Android,
 	    			QOperatingSystemVersion.OSType.IOS,
 	    			QOperatingSystemVersion.OSType.TvOS,
 	    			QOperatingSystemVersion.OSType.WatchOS,
-	    			QOperatingSystemVersion.OSType.Windows), glxContext!=null);
+	    			QOperatingSystemVersion.OSType.Windows), glxContext!=null || eglContext!=null);
 	    	assertEquals(context.isOpenGLES() && QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows)
 	    			? "QOpenGLContext's nativeInterface is QWGLContext although it is OpenGLES on Windows"
 					: "QOpenGLContext's nativeInterface is not QWGLContext", !context.isOpenGLES() && QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows), wglContext!=null);

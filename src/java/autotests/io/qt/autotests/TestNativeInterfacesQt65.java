@@ -37,6 +37,7 @@ import io.qt.core.QCoreApplication;
 import io.qt.core.QOperatingSystemVersion;
 import io.qt.gui.nativeinterface.QWaylandApplication;
 import io.qt.gui.nativeinterface.QX11Application;
+import io.qt.gui.nativeinterface.QXcbWindow;
 import io.qt.opengl.QOpenGLWindow;
 import io.qt.widgets.QApplication;
 
@@ -60,7 +61,16 @@ public class TestNativeInterfacesQt65 extends ApplicationInitializer {
 												    			QOperatingSystemVersion.OSType.IOS,
 												    			QOperatingSystemVersion.OSType.TvOS,
 												    			QOperatingSystemVersion.OSType.WatchOS,
-												    			QOperatingSystemVersion.OSType.Windows), x11app!=null && waylandapp!=null);
+												    			QOperatingSystemVersion.OSType.Windows), x11app!=null || waylandapp!=null);
+    	QXcbWindow xcbwin = window.nativeInterface(QXcbWindow.class);
+    	assertEquals("QWindow's nativeInterface is not QXcbWindow", 
+    			!QOperatingSystemVersion.current().isAnyOfType(
+    			QOperatingSystemVersion.OSType.MacOS,
+    			QOperatingSystemVersion.OSType.Android,
+    			QOperatingSystemVersion.OSType.IOS,
+    			QOperatingSystemVersion.OSType.TvOS,
+    			QOperatingSystemVersion.OSType.WatchOS,
+    			QOperatingSystemVersion.OSType.Windows), xcbwin!=null || waylandapp!=null);
     }
 
     public static void main(String args[]) {

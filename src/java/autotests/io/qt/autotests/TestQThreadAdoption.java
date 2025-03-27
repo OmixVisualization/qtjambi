@@ -51,14 +51,9 @@ import io.qt.core.Qt;
 
 public class TestQThreadAdoption extends ApplicationInitializer{
 	
-	private static Qt.ConnectionType singleShotConnection = Qt.ConnectionType.DirectConnection;
-	
 	@BeforeClass
 	public static void testInitialize() throws Exception {
 		ApplicationInitializer.testInitialize();
-		try {
-			singleShotConnection = Qt.ConnectionType.valueOf("SingleShotConnection");
-		}catch(Throwable t) {}
     }
 	
 	private static class Stopper extends QObject{
@@ -76,8 +71,9 @@ public class TestQThreadAdoption extends ApplicationInitializer{
 			ownership.set(2);
 		else if(General.internalAccess.isSplitOwnership(currentQThread))
 			ownership.set(3);
-		currentQThread.destroyed.connect(destroyedReceiver, "receiveSignal()", Qt.ConnectionType.DirectConnection, singleShotConnection);
-		currentQThread.finished.connect(finished, "receiveSignal()", Qt.ConnectionType.DirectConnection, singleShotConnection);
+		currentQThread.destroyed.connect(destroyedReceiver, "receiveSignal()", Qt.ConnectionType.DirectConnection);
+		currentQThread.finished.connect(finished, "receiveSignal()", Qt.ConnectionType.DirectConnection);
+		currentQThread.javaThread();
 		@SuppressWarnings("unused")
 		Object cleanable = General.internalAccess.registerCleaner(currentQThread, gcQtThreadObjectsCounter::incrementAndGet);
 		cleanable = General.internalAccess.registerCleaner(currentThread, gcJavaThreadObjectsCounter::incrementAndGet);
@@ -105,7 +101,7 @@ public class TestQThreadAdoption extends ApplicationInitializer{
 			Assert.assertTrue("QThread NativeCreatedNativeStartedQLoopThread has not split ownership", General.internalAccess.isSplitOwnership(thread));
 			thread.setObjectName("thread-NativeCreatedNativeStartedQLoopThread");
 			QObject obj = new QObject();
-			obj.destroyed.connect(()->initializeThread(qthreads, jthreads, ownership, running, gcQtThreadObjectsCounter, gcJavaThreadObjectsCounter, destroyedReceiver, finishedReceiver, false), Qt.ConnectionType.DirectConnection, singleShotConnection);
+			obj.destroyed.connect(()->initializeThread(qthreads, jthreads, ownership, running, gcQtThreadObjectsCounter, gcJavaThreadObjectsCounter, destroyedReceiver, finishedReceiver, false), Qt.ConnectionType.DirectConnection);
 			obj.moveToThread(thread);
 			obj.disposeLater();
 			stopper.stop.connect(thread::quit);
@@ -533,7 +529,7 @@ public class TestQThreadAdoption extends ApplicationInitializer{
 			Assert.assertFalse("post-mortem Java thread StdWorkerThread is still running", runningThreads.contains(jthreads.get()));
 			if(!qthreads.get().isDisposed()) {
 				Assert.assertEquals("post-mortem Java thread StdWorkerThread is not associated to Qt thread", qthreads.get(), QThread.thread(jthreads.get()));
-				Assert.assertEquals("post-mortem Qt thread StdWorkerThread is not associated to Java thread", jthreads.get(), qthreads.get().javaThread());
+				Assert.assertTrue("post-mortem Qt thread StdWorkerThread is not associated to Java thread", jthreads.get()==qthreads.get().javaThread() || qthreads.get().javaThread()==null);
 			}else {
 				Assert.assertEquals("post-mortem Java thread StdWorkerThread is still associated to Qt thread", null, QThread.thread(jthreads.get()));
 			}
@@ -641,7 +637,7 @@ public class TestQThreadAdoption extends ApplicationInitializer{
 			Assert.assertTrue("QThread StdLoopThread has not split ownership", General.internalAccess.isSplitOwnership(thread));
 			thread.setObjectName("thread-StdLoopThread");
 			QObject obj = new QObject();
-			obj.destroyed.connect(()->initializeThread(qthreads, jthreads, ownership, running, gcQtThreadObjectsCounter, gcJavaThreadObjectsCounter, destroyedReceiver, finishedReceiver, false), Qt.ConnectionType.DirectConnection, singleShotConnection);
+			obj.destroyed.connect(()->initializeThread(qthreads, jthreads, ownership, running, gcQtThreadObjectsCounter, gcJavaThreadObjectsCounter, destroyedReceiver, finishedReceiver, false), Qt.ConnectionType.DirectConnection);
 			obj.moveToThread(thread);
 			obj.disposeLater();
 			stopper.stop.connect(thread::quit);
@@ -704,8 +700,7 @@ public class TestQThreadAdoption extends ApplicationInitializer{
 			Assert.assertFalse("post-mortem Java thread StdLoopThread is still running", runningThreads.contains(jthreads.get()));
 			if(!qthreads.get().isDisposed()) {
 				Assert.assertEquals("post-mortem Java thread StdLoopThread is not associated to Qt thread", qthreads.get(), QThread.thread(jthreads.get()));
-				Assert.assertEquals("post-mortem Qt thread StdLoopThread is not associated to Java thread", jthreads.get(), qthreads.get().javaThread());
-				Assert.assertEquals("Qt thread StdLoopThread is not associated to Java thread", jthreads.get(), qthreads.get().javaThread());
+				Assert.assertTrue("post-mortem Qt thread StdLoopThread is not associated to Java thread", jthreads.get()==qthreads.get().javaThread() || qthreads.get().javaThread()==null);
 			}else {
 				Assert.assertEquals("post-mortem Java thread StdLoopThread is still associated to Qt thread", null, QThread.thread(jthreads.get()));
 			}

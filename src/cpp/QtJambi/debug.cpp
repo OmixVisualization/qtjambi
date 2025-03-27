@@ -88,6 +88,18 @@ Q_LOGGING_CATEGORY(debugAPIDestructorCallsCategory, "io.qtjambi.debugapi.desctru
 Q_LOGGING_CATEGORY(debugAPIEventsCategory, "io.qtjambi.debugapi.events")
 Q_LOGGING_CATEGORY(debugAPICleanupCallsCategory, "io.qtjambi.debugapi.cleanup-calls")
 
+void initialize(){
+    internalCategory();
+    debugAPICategory();
+    debugAPIInternalMethodsCategory();
+    debugAPIJavaOverloadsCategory();
+    debugAPINativeCallsCategory();
+    debugAPIConstructorCallsCategory();
+    debugAPIDestructorCallsCategory();
+    debugAPIEventsCategory();
+    debugAPICleanupCallsCategory();
+}
+
 /*
 #if QT_VERSION < QT_VERSION_CHECK(6, 4, 0)
 #define QTJAMBI_DEBUG_MESSAGE_LOGGER(category) \
@@ -495,38 +507,46 @@ public:
     }
     static void print(const char *message, const char *file, int line, const char *function)
     {
-        const QLoggingCategory& category = debugAPICategory();
-        if (enabledMethodTracePrints() && category.isDebugEnabled()) {
-            printImpl(message, file, line, function, category);
+        if (enabledMethodTracePrints()){
+            const QLoggingCategory& category = debugAPICategory();
+            if (category.isDebugEnabled()) {
+                printImpl(message, file, line, function, category);
+            }
         }
     }
     static void print(const char *file, int line, const char *function, Printer&& printer)
     {
-        const QLoggingCategory& category = internalCategory();
-        if (enabledMethodTracePrints() && category.isDebugEnabled()) {
-            printImpl(std::move(printer), file, line, function, category);
+        if (enabledMethodTracePrints()){
+            const QLoggingCategory& category = internalCategory();
+            if (category.isDebugEnabled()) {
+                printImpl(std::move(printer), file, line, function, category);
+            }
         }
     }
     static void printCleanupArgs(const char *file, int line, const char *function, const char *format,...)
     {
-        const QLoggingCategory& category = debugAPICleanupCallsCategory();
-        if (enabledMethodTracePrints() && category.isDebugEnabled()) {
-            va_list args;
-            va_start(args, format);
-            QString string = QString::vasprintf(format, args);
-            va_end(args);
-            printImpl(string, file, line, function, category);
+        if (enabledMethodTracePrints()){
+            const QLoggingCategory& category = debugAPICleanupCallsCategory();
+            if (category.isDebugEnabled()) {
+                va_list args;
+                va_start(args, format);
+                QString string = QString::vasprintf(format, args);
+                va_end(args);
+                printImpl(string, file, line, function, category);
+            }
         }
     }
     static void printArgs(const char *file, int line, const char *function, const char *format,...)
     {
-        const QLoggingCategory& category = internalCategory();
-        if (enabledMethodTracePrints() && category.isDebugEnabled()) {
-            va_list args;
-            va_start(args, format);
-            QString string = QString::vasprintf(format, args);
-            va_end(args);
-            printImpl(string, file, line, function, category);
+        if (enabledMethodTracePrints()){
+            const QLoggingCategory& category = internalCategory();
+            if (category.isDebugEnabled()) {
+                va_list args;
+                va_start(args, format);
+                QString string = QString::vasprintf(format, args);
+                va_end(args);
+                printImpl(string, file, line, function, category);
+            }
         }
     }
 

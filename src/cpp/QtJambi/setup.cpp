@@ -119,6 +119,10 @@ void reinitializeResettableFlags(JNIEnv * env);
 std::atomic<bool>* getJVMLoaded();
 std::atomic<JavaVM *>* getJVM();
 
+namespace DebugAPI{
+void initialize();
+}
+
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 
 namespace QtJambiVariant {
@@ -291,6 +295,7 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *){
     }else{
         return JNI_VERSION_1_8;
     }
+    DebugAPI::initialize();
     //::atexit([]{shutdown(nullptr, true);});
     QThread* currentThread = ThreadPrivate::currentThread();
     bool requiresDetach = false;

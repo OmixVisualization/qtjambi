@@ -210,6 +210,7 @@ struct QThreadUserDataPrivate : public QSharedData{
     QList<QPointer<QObject>> m_objectsForDeletion;
     QWeakPointer<QList<QtJambiUtils::Runnable>> m_finalActions;
     QSharedPointer<QMutex> m_mutex{new QMutex()};
+    QMetaObject::Connection m_finishedConnection;
     void cleanup(bool isInDestructor);
 };
 
@@ -227,8 +228,8 @@ QThreadUserData::~QThreadUserData(){
         p->cleanup(true);
         break;
     default:
-        if(m_finishedConnection){
-            QObject::disconnect(m_finishedConnection);
+        if(p->m_finishedConnection){
+            QObject::disconnect(p->m_finishedConnection);
             p->cleanup(true);
         }
         break;
@@ -240,8 +241,10 @@ QObject* QThreadUserData::threadDeleter() const {return p->m_threadDeleter.get()
 void QThreadUserData::initializeDefault(QThread* thread){
     p->m_threadDeleter->moveToThread(thread);
     m_threadType = QThreadData::get2(thread)->isAdopted ? AdoptedThread : DefaultThread;
-    m_finishedConnection = QObject::connect(thread, &QThread::finished, thread, [p = this->p]() {
+    p->m_finishedConnection = QObject::connect(thread, &QThread::finished, thread, [p{this->p}]() {
         QTJAMBI_INTERNAL_METHOD_CALL("QThread::finished received")
+        QObject::disconnect(p->m_finishedConnection);
+        p->m_finishedConnection = QMetaObject::Connection();
         p->cleanup(false);
     }, Qt::DirectConnection);
 }
@@ -250,8 +253,10 @@ void QThreadUserData::initializeAdopted(QThread* thread){
     m_isJavaLaunched = true;
     p->m_threadDeleter->moveToThread(thread);
     m_threadType = AdoptedThread;
-    m_finishedConnection = QObject::connect(thread, &QThread::finished, thread, [p = this->p]() {
+    p->m_finishedConnection = QObject::connect(thread, &QThread::finished, thread, [p{this->p}]() mutable {
         QTJAMBI_INTERNAL_METHOD_CALL("QThread::finished received")
+        QObject::disconnect(p->m_finishedConnection);
+        p->m_finishedConnection = QMetaObject::Connection();
         p->cleanup(false);
     }, Qt::DirectConnection);
 }
@@ -264,16 +269,16 @@ void QThreadUserData::reinitializeMain(QThread* thread){
 #elif defined(Q_OS_WIN)
     m_threadType = ProcessMainThread;
 #endif
-    QObject::disconnect(m_finishedConnection);
+    QObject::disconnect(p->m_finishedConnection);
     switch(m_threadType){
     case ProcessMainThread:
-        if(m_finishedConnection){
-            QObject::disconnect(m_finishedConnection);
-            m_finishedConnection = QMetaObject::Connection();
+        if(p->m_finishedConnection){
+            QObject::disconnect(p->m_finishedConnection);
+            p->m_finishedConnection = QMetaObject::Connection();
         }
         break;
     case VirtualMainThread:
-        m_finishedConnection = QObject::connect(thread, &QThread::finished, thread, [p = this->p]() {
+        p->m_finishedConnection = QObject::connect(thread, &QThread::finished, thread, [p{this->p}]() mutable {
             QCoreApplicationPrivate::theMainThread.storeRelaxed(nullptr);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
             QCoreApplicationPrivate::theMainThreadId.storeRelaxed(nullptr);
@@ -281,6 +286,8 @@ void QThreadUserData::reinitializeMain(QThread* thread){
             QThreadUserData::theMainThreadId.storeRelaxed(nullptr);
 #endif
             QTJAMBI_INTERNAL_METHOD_CALL("QThread::finished received")
+            QObject::disconnect(p->m_finishedConnection);
+            p->m_finishedConnection = QMetaObject::Connection();
             p->cleanup(false);
         }, Qt::DirectConnection);
         break;
@@ -564,7 +571,7 @@ struct ThreadDataReleaser : public QtJambiObjectData {
     typedef void(*Finisher)(EventDispatcherCheck::Data* threadData, Qt::HANDLE currentThread);
     ~ThreadDataReleaser() override {
         Qt::HANDLE currentThread = QThread::currentThreadId();
-        bool noDeletion = false;
+        QPointer<QObject> threadDeleter;
         QTJAMBI_INTERNAL_METHOD_CALL("ThreadDataReleaser::~ThreadDataReleaser()")
         if(m_threadData->m_threadId==currentThread){
             if(JniEnvironment env{200}){
@@ -577,10 +584,8 @@ struct ThreadDataReleaser : public QtJambiObjectData {
                     QReadLocker locker(QtJambiLinkUserData::lock());
                     mainThreadData = QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, thread);
                 }
-                if(mainThreadData){
-                    QCoreApplication::postEvent(mainThreadData->threadDeleter(), new ThreadPurger(m_threadData));
-                    noDeletion = true;
-                }
+                if(mainThreadData)
+                    threadDeleter = mainThreadData->threadDeleter();
             }
         }else{
             if(DefaultJniEnvironment env{200})
@@ -593,10 +598,8 @@ struct ThreadDataReleaser : public QtJambiObjectData {
                     QReadLocker locker(QtJambiLinkUserData::lock());
                     mainThreadData = QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, thread);
                 }
-                if(mainThreadData){
-                    QCoreApplication::postEvent(mainThreadData->threadDeleter(), new ThreadPurger(m_threadData));
-                    noDeletion = true;
-                }
+                if(mainThreadData)
+                    threadDeleter = mainThreadData->threadDeleter();
             }
         }
         QList<QtJambiUtils::Runnable> finalActions;
@@ -620,8 +623,11 @@ struct ThreadDataReleaser : public QtJambiObjectData {
         }
         if(data && data->purgeOnExit())
             delete data;
-        if(!noDeletion)
+        if(threadDeleter){
+            QCoreApplication::postEvent(threadDeleter.data(), new ThreadPurger(m_threadData));
+        }else{
             delete m_threadData;
+        }
     }
     QTJAMBI_OBJECTUSERDATA_ID_IMPL(static,)
 };
