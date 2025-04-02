@@ -476,7 +476,7 @@
 			<manifest>
 				<attribute name="Built-By"                value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
 				<attribute name="Bundle-Description"      value="QtJambi Plugin ${module}"/>
-				<attribute name="Bundle-License"          value="GNU LESSER GENERAL PUBLIC LICENSE Version 2.1 February 1999 with Nokia Qt LGPL Exception version 1.0"/>
+				<attribute name="Bundle-License"          value="GNU LESSER GENERAL PUBLIC LICENSE Version 2.1"/>
 				<attribute name="Bundle-ManifestVersion"  value="2"/>
 				<attribute name="Bundle-Name"             value="QtJambi Plugin ${module}"/>
 				<attribute name="Bundle-RequiredExecutionEnvironment" value="${minimum.java.version}"/>

@@ -331,41 +331,44 @@ public class ForeachVersionTask extends Task {
 						}
 						Collection<int[]> sortedVersions = sortVersions ? new TreeSet<>(Arrays::compare) : new ArrayList<>();
 						while(!_versions.isEmpty()) {
-							String v = _versions.remove(0);
-							if(!v.isEmpty()) {
-								String[] _v = v.split("\\.");
-								if(_v.length>=1) {
-									int[] iVersion = new int[3];
-									for (int i = 0; i < _v.length && i < 3; i++) {
-										iVersion[i] = Integer.parseInt(_v[i]);
-									}
-									if(_v.length<=2) {
-										if(_v.length==1) {
-											for(java.io.File vdir : qtBaseDir.listFiles()) {
-												if(vdir.getName().startsWith(v+".")) {
-													String[] _dirV = vdir.getName().split("\\.");
-													if(_dirV.length==3) {
-														try {
-															Integer.parseInt(_dirV[1]);
-															_versions.add(0, v += "." + _dirV[1]);
-														} catch (NumberFormatException e) {
+							try {
+								String v = _versions.remove(0);
+								if(!v.isEmpty()) {
+									String[] _v = v.split("\\.");
+									if(_v.length>=1) {
+										int[] iVersion = new int[3];
+										for (int i = 0; i < _v.length && i < 3; i++) {
+											iVersion[i] = Integer.parseInt(_v[i]);
+										}
+										if(_v.length<=2) {
+											if(_v.length==1) {
+												for(java.io.File vdir : qtBaseDir.listFiles()) {
+													if(vdir.getName().startsWith(v+".")) {
+														String[] _dirV = vdir.getName().split("\\.");
+														if(_dirV.length==3) {
+															try {
+																Integer.parseInt(_dirV[1]);
+																_versions.add(0, v += "." + _dirV[1]);
+															} catch (NumberFormatException e) {
+															}
 														}
 													}
 												}
+												continue;
 											}
-											continue;
-										}
-										iVersion[2] = -1;
-										for(java.io.File vdir : qtBaseDir.listFiles()) {
-											if(vdir.getName().startsWith(v)) {
-												int patchVersion = Integer.parseInt(vdir.getName().substring(v.length()+1));
-												if(patchVersion>iVersion[2])
-													iVersion[2] = patchVersion;
+											iVersion[2] = -1;
+											for(java.io.File vdir : qtBaseDir.listFiles()) {
+												if(vdir.getName().startsWith(v)) {
+													int patchVersion = Integer.parseInt(vdir.getName().substring(v.length()+1));
+													if(patchVersion>iVersion[2])
+														iVersion[2] = patchVersion;
+												}
 											}
 										}
+										sortedVersions.add(iVersion);
 									}
-									sortedVersions.add(iVersion);
 								}
+							}catch(NumberFormatException e) {
 							}
 						}
 						for(int[] iVersion : sortedVersions) {

@@ -265,4 +265,7 @@ final class RetroHelper {
 		}
 		return true; //...because unknown
 	}
+	
+	static void enableNativeAccessOnModule(Class<?> callerClass) {
+	}
 }

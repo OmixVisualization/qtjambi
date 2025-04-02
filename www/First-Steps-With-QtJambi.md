@@ -13,7 +13,7 @@ to your project:
   <version>$VERSION</version>
 </dependency>
 ```
-(exchange `$VERSION` either by `6.8.3` or any other published version).
+(exchange `$VERSION` either by `6.8.3`, `6.9.0` or any other published version).
 
 Otherwise, download QtJambi JAR file from [Maven Central Repository](https://search.maven.org/artifact/io.qtjambi/qtjambi/).
 Find the [list of all available QtJambi modules](www/Modules.md).
@@ -46,7 +46,7 @@ For instance, if you are working on Windows download the *windows-x64* binaries 
 from [Maven Central Repository](https://search.maven.org/artifact/io.qtjambi/qtjambi-native-windows-x64/) and add it to java class path. 
 
 Additionally, you need *Qt*. Use the [Qt installer](https://www.qt.io/download-qt-installer) to install Qt on your system.
-Make sure you are using the same Qt version and QtJambi version (the first and second version digit needs to be the same, e.g. 6.5 or 6.8).
+Make sure you are using the same Qt version and QtJambi version (the first and second version digit needs to be the same, e.g. 6.8 or 6.9).
 
 On Windows install Qt for MSVC (msvc2022_64), as the Maven-published QtJambi binaries are not compatible with Qt builds based on Mingw pr LLVM-Mingw.
 

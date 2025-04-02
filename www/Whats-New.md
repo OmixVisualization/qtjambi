@@ -1,6 +1,12 @@
-# What's new in QtJambi 6.8.3
+# What's new in QtJambi 6.9.0
 
-## Bugfixes
+* Compatible to Java 24.
+
+# History
+
+## What's new in QtJambi 6.8.3
+
+### Bugfixes
 
 Solved issue:
 * [Issue 221](../../../issues/221): [BUG] 6.8.2 Memory leak on MacOS Sequoia ARM
@@ -10,13 +16,11 @@ Solved issue:
 * QDanglingPointerException thrown unexpectedly during window deletion
 * thread affinity check during QApplication initialization
 
-## New Feature
+### New Feature
 
 * On Windows, QtJambi can now be compiled with MinGW and LLVM-MinGW. Native bundles are named `native-windows-mingw-x64` and `native-windows-llvm-mingw-x64`, respectively.
 * Added API method: `QSpan::chopped`, `QWaylandApplication`
 * ready for Qt 6.9
-
-# History
 
 ## What's new in QtJambi 6.8.2
 

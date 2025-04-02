@@ -518,6 +518,10 @@ abstract class ReflectionUtility {
 			}
 		}
 	}
+	
+	static <T,V> BiConsumer<T,V> getFieldSetter(Field f){
+		return methodInvocationHandler.getFieldSetter(f);
+	}
 
 	private static native boolean writeField(Object owner, Field field, boolean isStatic, Object newValue);
 	

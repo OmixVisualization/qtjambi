@@ -1968,6 +1968,7 @@ final class LibraryUtility {
     private static native int qtJambiVersion();
 
     static void loadQtJambiLibrary(Class<?> callerClass, String library) {
+    	RetroHelper.enableNativeAccessOnModule(callerClass);
     	LibVersion libVersion = getLibVersion(callerClass);
     	try {
     		loadQtJambiLibrary(callerClass, "QtJambi", library, null, libVersion.qtMajorVersion, libVersion.qtMinorVersion, libVersion.qtJambiPatch);
@@ -2238,7 +2239,7 @@ final class LibraryUtility {
 			try {
 				loadNativeLibrary(Object.class, availability, null);
 			}catch(RuntimeException | Error t){
-				logger.log(Level.WARNING, "Unable to load library "+library, t);
+				logger.log(Level.FINEST, "Unable to load optional library "+library, t);
 			}
 			break;
 		default:
@@ -2615,7 +2616,7 @@ final class LibraryUtility {
         	}
         } catch (RuntimeException | Error e) {
         	if(availability.entry!=null) {
-    			throw new QLibraryNotLoadedError(String.format(e.getMessage()!=null && !e.getMessage().isEmpty() 
+    			throw new QLibraryNotLoadedError(String.format(e instanceof LinkageError && e.getMessage()!=null && !e.getMessage().isEmpty() 
 						    					? "%1$s extracted from %2$s" 
 												: "Unable to load %3$s extracted from %2$s", 
 												e.getMessage(), availability.entry.bundle().origin(), availability.file.getAbsolutePath()), e);

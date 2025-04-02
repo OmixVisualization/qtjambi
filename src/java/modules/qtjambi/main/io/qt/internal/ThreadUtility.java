@@ -52,7 +52,7 @@ abstract class ThreadUtility {
 	private static Object interruptible;
 	
 	private static Object interruptibleInvoke(Object proxy, Method method, Object[] args){
-		if(args.length==1 && args[0] instanceof Thread) {
+		if(args!=null && args.length==1 && args[0] instanceof Thread) {
             Thread _thread = (Thread)args[0];
             if(_thread.isAlive()) {
             	try {

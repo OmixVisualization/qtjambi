@@ -388,4 +388,39 @@ final class RetroHelper {
 	static boolean isProcessAlive(String pid) {
 		return implementor.isProcessAlive(pid);
 	}
+	
+	static class NativeAccessHolder{
+		final static boolean enabled;
+		final static Function<Module,Boolean> isImpl;
+		final static Function<Module,Module> enableImpl;
+		static {
+			Function<Module,Boolean> _isImpl;
+			Function<Module,Module> _enableImpl;
+			try {
+				if(Runtime.version().feature()>=22) {
+					_isImpl = ReflectionUtility.functionFromMethod(Module.class.getMethod("isNativeAccessEnabled"));
+					_enableImpl = ReflectionUtility.functionFromMethod(Module.class.getDeclaredMethod("implAddEnableNativeAccess"));
+				}else {
+					_isImpl = null;
+					_enableImpl = null;
+				}
+			} catch (Throwable e) {
+				_isImpl = null;
+				_enableImpl = null;
+			}
+			enabled = _isImpl!=null;
+			enableImpl = _enableImpl;
+			isImpl = _isImpl;
+		}
+	}
+
+	static void enableNativeAccessOnModule(Class<?> callerClass) {
+		if(NativeAccessHolder.enabled) {
+			try {
+				if(!NativeAccessHolder.isImpl.apply(callerClass.getModule()))
+					NativeAccessHolder.enableImpl.apply(callerClass.getModule());
+			} catch (Throwable e) {
+			}
+		}
+	}
 }

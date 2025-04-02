@@ -263,7 +263,7 @@
                         <attribute name="Main-Class" value="${application.mainclass}"/>
                         <attribute name="Built-By"                value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
                         <attribute name="Bundle-Description"      value="${application.name}"/>
-                        <attribute name="Bundle-License"          value="GNU LESSER GENERAL PUBLIC LICENSE Version 2.1 February 1999 with Nokia Qt LGPL Exception version 1.0"/>
+                        <attribute name="Bundle-License"          value="GNU LESSER GENERAL PUBLIC LICENSE Version 2.1"/>
                         <attribute name="Bundle-ManifestVersion"  value="2"/>
                         <attribute name="Bundle-Name"             value="${application.name}"/>
                         <attribute name="Bundle-RequiredExecutionEnvironment" value="${minimum.java.version}"/>
@@ -293,7 +293,7 @@
                     <manifest>
                         <attribute name="Built-By"                value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
                         <attribute name="Bundle-Description"      value="${module} API"/>
-                        <attribute name="Bundle-License"          value="GNU LESSER GENERAL PUBLIC LICENSE Version 2.1 February 1999 with Nokia Qt LGPL Exception version 1.0"/>
+                        <attribute name="Bundle-License"          value="GNU LESSER GENERAL PUBLIC LICENSE Version 2.1"/>
                         <attribute name="Bundle-ManifestVersion"  value="2"/>
                         <attribute name="Bundle-Name"             value="${module} API"/>
                         <attribute name="Bundle-RequiredExecutionEnvironment" value="${minimum.java.version}"/>
@@ -604,7 +604,7 @@
 						<attribute name="Built-By" value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
 						<attribute name="Bundle-Name"      value="${module} native library"/>
 						<attribute name="Bundle-Description"      value="${module} native library"/>
-						<attribute name="Bundle-License"         value="GNU LESSER GENERAL PUBLIC LICENSE Version 2.1 February 1999"/>
+						<attribute name="Bundle-License"         value="GNU LESSER GENERAL PUBLIC LICENSE Version 2.1"/>
 						<attribute name="Bundle-Version"          value="${qtjambi.jar.version}"/>
 						<attribute name="Bundle-ManifestVersion" value="2"/>
 					</manifest>
@@ -633,7 +633,7 @@
 										<attribute name="Built-By" value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
 										<attribute name="Bundle-Name"      value="${module} debuginfo"/>
 										<attribute name="Bundle-Description"      value="${module} debuginfo"/>
-										<attribute name="Bundle-License"         value="GNU LESSER GENERAL PUBLIC LICENSE Version 2.1 February 1999"/>
+										<attribute name="Bundle-License"         value="GNU LESSER GENERAL PUBLIC LICENSE Version 2.1"/>
 										<attribute name="Bundle-Version"          value="${qtjambi.jar.version}"/>
 										<attribute name="Bundle-ManifestVersion" value="2"/>
 									</manifest>
@@ -654,7 +654,7 @@
 										<attribute name="Built-By" value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
 										<attribute name="Bundle-Name"      value="Sources of ${module} sources"/>
 										<attribute name="Bundle-Description"      value="Sources of ${module} sources"/>
-										<attribute name="Bundle-License"         value="GNU LESSER GENERAL PUBLIC LICENSE Version 2.1 February 1999"/>
+										<attribute name="Bundle-License"         value="GNU LESSER GENERAL PUBLIC LICENSE Version 2.1"/>
 										<attribute name="Bundle-Version"          value="${qtjambi.jar.version}"/>
 										<attribute name="Bundle-ManifestVersion" value="2"/>
 										<attribute name="Original-Source-Paths"          value="${sources.paths}"/>
