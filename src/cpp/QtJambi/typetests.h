@@ -551,6 +551,11 @@ std::true_type  supports_intersect_test(const T&);
 std::false_type supports_intersect_test(...);
 template<typename T> struct supports_intersect : decltype(supports_intersect_test(std::declval<T>())){};
 
+template<typename T, class = decltype(std::declval<T>().isDetached() )>
+std::true_type  is_shared_data_test(const T&);
+std::false_type is_shared_data_test(...);
+template<typename T> struct is_shared_data : decltype(is_shared_data_test(std::declval<T>())){};
+
 template<template<typename K, typename T> class Container, typename K, typename T>
 struct supports_map_sort : supports_less_than<K>{};
 

@@ -229,9 +229,8 @@ public:
             default: break;
             }
             const QLoggingCategory& category = MethodPrintPrivate::category(callType);
-            if(!category.isDebugEnabled())
-                return nullptr;
-            return new MethodPrintPrivate(category, callType, pointer, message, file, line, function);
+            if(category.isDebugEnabled())
+                return new MethodPrintPrivate(category, callType, pointer, message, file, line, function);
         }
         return nullptr;
     }
@@ -243,22 +242,21 @@ public:
             default: break;
             }
             const QLoggingCategory& category = MethodPrintPrivate::category(callType);
-            if(!category.isDebugEnabled())
-                return nullptr;
-            const void* pointer = nullptr;
-            OPTIONAL_LINK_NAME(const char* type = nullptr;)
-            if(QSharedPointer<QtJambiLink> link = reinterpret_cast<const QtJambiShellImpl*>(shell)->link()){
-                if(link->isDebugMessagingDisabled())
-                    return nullptr;
-                pointer = link->pointer();
-                OPTIONAL_LINK_NAME(type = link->qtTypeName();)
+            if(category.isDebugEnabled()){
+                const void* pointer = nullptr;
+                OPTIONAL_LINK_NAME(const char* type = nullptr;)
+                if(QSharedPointer<QtJambiLink> link = reinterpret_cast<const QtJambiShellImpl*>(shell)->link()){
+                    if(link->isDebugMessagingDisabled())
+                        return nullptr;
+                    pointer = link->pointer();
+                    OPTIONAL_LINK_NAME(type = link->qtTypeName();)
+                }
+                return new MethodPrintPrivate(category, callType, pointer, method,
+                                                   OPTIONAL_LINK_NAME_K(type)
+                                                   file, line, function);
             }
-            return new MethodPrintPrivate(category, callType, pointer, method,
-                                               OPTIONAL_LINK_NAME_K(type)
-                                               file, line, function);
-        }else{
-            return nullptr;
         }
+        return nullptr;
     }
     static MethodPrintPrivate* create(MethodPrint::Type callType, QtJambiNativeID nativeID, const char* method, const char* file, int line, const char *function){
         if(Q_UNLIKELY(enabledMethodTracePrints())){
@@ -268,22 +266,21 @@ public:
             default: break;
             }
             const QLoggingCategory& category = MethodPrintPrivate::category(callType);
-            if(!category.isDebugEnabled())
-                return nullptr;
-            const void* pointer = nullptr;
-            OPTIONAL_LINK_NAME(const char* type = nullptr;)
-            if(QSharedPointer<QtJambiLink> link = QtJambiLink::fromNativeId(nativeID)){
-                if(link->isDebugMessagingDisabled())
-                    return nullptr;
-                pointer = link->pointer();
-                OPTIONAL_LINK_NAME(type = link->qtTypeName();)
+            if(category.isDebugEnabled()){
+                const void* pointer = nullptr;
+                OPTIONAL_LINK_NAME(const char* type = nullptr;)
+                if(QSharedPointer<QtJambiLink> link = QtJambiLink::fromNativeId(nativeID)){
+                    if(link->isDebugMessagingDisabled())
+                        return nullptr;
+                    pointer = link->pointer();
+                    OPTIONAL_LINK_NAME(type = link->qtTypeName();)
+                }
+                return new MethodPrintPrivate(category, callType, pointer, method,
+                                                   OPTIONAL_LINK_NAME_K(type)
+                                                   file, line, function);
             }
-            return new MethodPrintPrivate(category, callType, pointer, method,
-                                               OPTIONAL_LINK_NAME_K(type)
-                                               file, line, function);
-        }else{
-            return nullptr;
         }
+        return nullptr;
     }
     static MethodPrintPrivate* create(MethodPrint::Type callType, const QtJambiShellInterface* shellInterface, const char* method, const char* file, int line, const char *function){
         if(Q_UNLIKELY(enabledMethodTracePrints())){
@@ -293,20 +290,20 @@ public:
             default: break;
             }
             const QLoggingCategory& category = MethodPrintPrivate::category(callType);
-            if(!category.isDebugEnabled())
-                return nullptr;
-            const void* pointer = nullptr;
-            OPTIONAL_LINK_NAME(const char* type = nullptr;)
-            if(shellInterface){
-                if(QSharedPointer<QtJambiLink> link = QtJambiShellImpl::get(shellInterface)->link()){
-                    if(link->isDebugMessagingDisabled())
-                        return nullptr;
-                    pointer = link->pointer();
-                    OPTIONAL_LINK_NAME(type = link->qtTypeName();)
+            if(category.isDebugEnabled()){
+                const void* pointer = nullptr;
+                OPTIONAL_LINK_NAME(const char* type = nullptr;)
+                if(shellInterface){
+                    if(QSharedPointer<QtJambiLink> link = QtJambiShellImpl::get(shellInterface)->link()){
+                        if(link->isDebugMessagingDisabled())
+                            return nullptr;
+                        pointer = link->pointer();
+                        OPTIONAL_LINK_NAME(type = link->qtTypeName();)
+                    }
+                    return new MethodPrintPrivate(category, callType, pointer, method,
+                                                       OPTIONAL_LINK_NAME_K(type)
+                                                        file, line, function);
                 }
-                return new MethodPrintPrivate(category, callType, pointer, method,
-                                                   OPTIONAL_LINK_NAME_K(type)
-                                                    file, line, function);
             }
         }
         return nullptr;
@@ -314,9 +311,7 @@ public:
     static MethodPrintPrivate* create(const QSharedPointer<QtJambiLink>& link, const char* method, const char* file, int line, const char *function){
         if(Q_UNLIKELY(enabledMethodTracePrints())){
             const QLoggingCategory& category = debugAPICleanupCallsCategory();
-            if(!category.isDebugEnabled())
-                return nullptr;
-            if(link && !link->isDebugMessagingDisabled()){
+            if(category.isDebugEnabled() && link && !link->isDebugMessagingDisabled()){
                 const void* pointer = link->pointer();
                 if(!pointer)
                     pointer = link.data();
@@ -331,18 +326,33 @@ public:
     static MethodPrintPrivate* create(const QWeakPointer<QtJambiLink>& wlink, const char* method, const char* file, int line, const char *function){
         if(Q_UNLIKELY(enabledMethodTracePrints())){
             const QLoggingCategory& category = debugAPICleanupCallsCategory();
-            if(!category.isDebugEnabled())
-                return nullptr;
-            if(QSharedPointer<QtJambiLink> link = wlink){
-                if(!link->isDebugMessagingDisabled()){
-                    const void* pointer = link->pointer();
-                    if(!pointer)
-                        pointer = link.data();
-                    OPTIONAL_LINK_NAME(const char* type = link->qtTypeName();)
-                    return new MethodPrintPrivate(category, MethodPrint::Internal, pointer, method,
-                                                       OPTIONAL_LINK_NAME_K(type)
-                                                        file, line, function);
+            if(category.isDebugEnabled()){
+                if(QSharedPointer<QtJambiLink> link = wlink){
+                    if(!link->isDebugMessagingDisabled()){
+                        const void* pointer = link->pointer();
+                        if(!pointer)
+                            pointer = link.data();
+                        OPTIONAL_LINK_NAME(const char* type = link->qtTypeName();)
+                        return new MethodPrintPrivate(category, MethodPrint::Internal, pointer, method,
+                                                      OPTIONAL_LINK_NAME_K(type)
+                                                      file, line, function);
+                    }
                 }
+            }
+        }
+        return nullptr;
+    }
+    static MethodPrintPrivate* create(const QtJambiLink* link, const char* method, const char* file, int line, const char *function){
+        if(Q_UNLIKELY(enabledMethodTracePrints())){
+            const QLoggingCategory& category = debugAPICleanupCallsCategory();
+            if(category.isDebugEnabled() && link && !link->isDebugMessagingDisabled()){
+                const void* pointer = link->pointer();
+                if(!pointer)
+                    pointer = link;
+                OPTIONAL_LINK_NAME(const char* type = link->qtTypeName();)
+                return new MethodPrintPrivate(category, MethodPrint::Internal, pointer, method,
+                                                   OPTIONAL_LINK_NAME_K(type)
+                                                    file, line, function);
             }
         }
         return nullptr;
@@ -355,21 +365,19 @@ public:
             default: break;
             }
             const QLoggingCategory& category = MethodPrintPrivate::category(callType);
-            if(!category.isDebugEnabled())
-                return nullptr;
-            return new MethodPrintPrivate(category, file, line, function, [data = QString::asprintf(message)](QDebug& dbg) -> QDebug& {
-                return dbg << data;
-            });
+            if(category.isDebugEnabled())
+                return new MethodPrintPrivate(category, file, line, function, [data = QString::asprintf(message)](QDebug& dbg) -> QDebug& {
+                    return dbg << data;
+                });
         }
         return nullptr;
     }
     static MethodPrintPrivate* create(const QLoggingCategory& category, const char* file, int line, const char *function, const char* message,...){
         if(Q_UNLIKELY(enabledMethodTracePrints())){
-            if(!category.isDebugEnabled())
-                return nullptr;
-            return new MethodPrintPrivate(category, file, line, function, [data = QString::asprintf(message)](QDebug& dbg) -> QDebug& {
-                return dbg << data;
-            });
+            if(category.isDebugEnabled())
+                return new MethodPrintPrivate(category, file, line, function, [data = QString::asprintf(message)](QDebug& dbg) -> QDebug& {
+                    return dbg << data;
+                });
         }
         return nullptr;
     }
@@ -381,47 +389,45 @@ public:
             default: break;
             }
             const QLoggingCategory& category = MethodPrintPrivate::category(callType);
-            if(!category.isDebugEnabled())
-                return nullptr;
-            return new MethodPrintPrivate(category, file, line, function, std::move(printer));
+            if(category.isDebugEnabled())
+                return new MethodPrintPrivate(category, file, line, function, std::move(printer));
         }
         return nullptr;
     }
     static MethodPrintPrivate* create(const QLoggingCategory& category, const char* file, int line, const char *function, Printer&& printer){
         if(Q_UNLIKELY(enabledMethodTracePrints())){
-            if(!category.isDebugEnabled())
-                return nullptr;
-            return new MethodPrintPrivate(category, file, line, function, std::move(printer));
+            if(category.isDebugEnabled())
+                return new MethodPrintPrivate(category, file, line, function, std::move(printer));
         }
         return nullptr;
     }
     static MethodPrintPrivate* createEventPrint(const char* file, int line, const char *function, QObject *receiver, QEvent *event){
         if(enabledEventPrints()){
             const QLoggingCategory& category = debugAPIEventsCategory();
-            if(!category.isDebugEnabled())
-                return nullptr;
-            QString receiverDbg;
-            QDebug(&receiverDbg).nospace().noquote() << receiver;
+            if(category.isDebugEnabled()){
+                QString receiverDbg;
+                QDebug(&receiverDbg).nospace().noquote() << receiver;
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-            const char* enumValue = QEvent::staticMetaObject.enumerator(0).valueToKey(event->type());
-            if(enumValue){
-                return new MethodPrintPrivate(category, file, line, function, [enumValue, receiverDbg, receiver, event](QDebug& dbg){
-                    dbg << "QCoreApplication::notify(QObject *receiver, QEvent *event) with receiver: " << reinterpret_cast<void*>(receiver) << "=" << receiverDbg << ", event: " << reinterpret_cast<void*>(event) << "=QEvent::" << enumValue;
-                });
-            }
+                const char* enumValue = QEvent::staticMetaObject.enumerator(0).valueToKey(event->type());
+                if(enumValue){
+                    return new MethodPrintPrivate(category, file, line, function, [enumValue, receiverDbg, receiver, event](QDebug& dbg){
+                        dbg << "QCoreApplication::notify(QObject *receiver, QEvent *event) with receiver: " << reinterpret_cast<void*>(receiver) << "=" << receiverDbg << ", event: " << reinterpret_cast<void*>(event) << "=QEvent::" << enumValue;
+                    });
+                }
 #endif
-            const std::type_info* eventType = nullptr;
-            try{
-                eventType = &typeid(*event);
-            }catch(...){}
-            if(eventType){
-                return new MethodPrintPrivate(category, file, line, function, [receiverDbg, receiver, event, type = event->type(), eventTypeName = QtJambiAPI::typeName(*eventType)](QDebug& dbg){
-                    dbg << "QCoreApplication::notify(QObject *receiver, QEvent *event) with receiver: " << reinterpret_cast<void*>(receiver) << "=" << receiverDbg << ", event: " << reinterpret_cast<void*>(event) << "=QEvent::Type(type: " << int(type) << ", class: " << eventTypeName.constData() << ")";
-                });
-            }else{
-                return new MethodPrintPrivate(category, file, line, function, [receiverDbg, receiver, event, type = event->type()](QDebug& dbg){
-                    dbg << "QCoreApplication::notify(QObject *receiver, QEvent *event) with receiver: " << reinterpret_cast<void*>(receiver) << "=" << receiverDbg << ", event: " << reinterpret_cast<void*>(event) << "=QEvent::Type(" << int(type) << ")";
-                });
+                const std::type_info* eventType = nullptr;
+                try{
+                    eventType = &typeid(*event);
+                }catch(...){}
+                if(eventType){
+                    return new MethodPrintPrivate(category, file, line, function, [receiverDbg, receiver, event, type = event->type(), eventTypeName = QtJambiAPI::typeName(*eventType)](QDebug& dbg){
+                        dbg << "QCoreApplication::notify(QObject *receiver, QEvent *event) with receiver: " << reinterpret_cast<void*>(receiver) << "=" << receiverDbg << ", event: " << reinterpret_cast<void*>(event) << "=QEvent::Type(type: " << int(type) << ", class: " << eventTypeName.constData() << ")";
+                    });
+                }else{
+                    return new MethodPrintPrivate(category, file, line, function, [receiverDbg, receiver, event, type = event->type()](QDebug& dbg){
+                        dbg << "QCoreApplication::notify(QObject *receiver, QEvent *event) with receiver: " << reinterpret_cast<void*>(receiver) << "=" << receiverDbg << ", event: " << reinterpret_cast<void*>(event) << "=QEvent::Type(" << int(type) << ")";
+                    });
+                }
             }
         }
         return nullptr;
@@ -635,6 +641,11 @@ MethodPrintFromLink::MethodPrintFromLink(const QSharedPointer<QtJambiLink>& link
 }
 
 MethodPrintFromLink::MethodPrintFromLink(const QWeakPointer<QtJambiLink>& link, const char* method, const char* file, int line, const char *function)
+    : MethodPrint(MethodPrintPrivate::create(link, method, file, line, function))
+{
+}
+
+MethodPrintFromLink::MethodPrintFromLink(const QtJambiLink* link, const char* method, const char* file, int line, const char *function)
     : MethodPrint(MethodPrintPrivate::create(link, method, file, line, function))
 {
 }

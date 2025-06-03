@@ -43,6 +43,7 @@ QT_WARNING_DISABLE_DEPRECATED
 #include "supertypeinfo_p.h"
 #include "qtjambimetaobject_p.h"
 #include "threadutils_p.h"
+#include "testapi.h"
 #include "utils_p.h"
 #include "modelapi.h"
 #include "threadapi.h"

@@ -1142,6 +1142,7 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                                 stream << "#include \"version.h\"" << Qt::endl;
                             }
                             {
+                                priGenerator->addHeader(qtJambiLibrary + "/generated.pri", "version.h");
                                 BufferedOutputStream stream(QFileInfo(cppOutputDirectory() + "/" + qtJambiLibrary + "/version.h"));
                                 uint v = ((0x0FF & m_qtVersionMajor) << 16) | ((0x0FF & m_qtVersionMinor) << 8) | (0x0FF & m_qtjambiVersionPatch);
                                 QString version = QString::number(v, 16);
@@ -1195,6 +1196,7 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                         stream << "#include \"version.h\"" << Qt::endl;
                     }
                     {
+                        priGenerator->addHeader("QtJambi/generated.pri", "version.h");
                         BufferedOutputStream stream(QFileInfo(cppOutputDirectory() + "/QtJambi/version.h"));
                         uint v = ((0x0FF & m_qtVersionMajor) << 16) | ((0x0FF & m_qtVersionMinor) << 8) | (0x0FF & m_qtjambiVersionPatch);
                         QString version = QString::number(v, 16);

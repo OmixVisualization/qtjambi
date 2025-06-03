@@ -780,6 +780,7 @@ public class TestInjectedCode extends ApplicationInitializer {
     	assertEquals(0, result.error.offset());
     }
 
+    @SuppressWarnings("removal")
     @Test
     @Deprecated
     public void testQClipboard_text() {

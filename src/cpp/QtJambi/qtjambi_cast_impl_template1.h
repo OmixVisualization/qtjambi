@@ -919,6 +919,7 @@ QTJAMBI_CONTAINER1_CASTER(QStack,QList,append)
                             _watcher->setFuture(_futureInterface.future());
                             return _watcher;
                         }else if(QFutureInterface<void>* futureInterface = dynamic_cast<QFutureInterface<void>*>(base)){
+                            Q_UNUSED(futureInterface)
                             JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast QFutureWatcher<void> to %1.").arg(QLatin1String(QtJambiAPI::typeName(typeid(NativeType)))) QTJAMBI_STACKTRACEINFO );
                         }else{
                             QString baseType = QLatin1String(QtJambiAPI::typeName(typeid(*base)));

@@ -220,6 +220,9 @@
                     <property name="XstartOnFirstThread" value="-Dx" />
                 </else>
             </if>
+			<condition property="JVMArg.enable.native.access" value="-Dx" else="--enable-native-access=qtjambi">
+				<less arg1="${target.java.version}" arg2="21"/>
+			</condition>
             <pathconvert property="librarypath">
                 <path>
                     <pathelement location="${tools.qt.bindir}"/>
@@ -234,24 +237,50 @@
             </pathconvert>
 			<trycatch>
 				<try>
-					<java fork="true" classname="io.qt.uic.Main" failonerror="true">
-						<jvmarg value="-Djava.library.path=${librarypath}"/>
-						<jvmarg value="-Dio.qt.deploymentdir=${outputDir}/${qtjambi.osname}/tmp"/>
-						<jvmarg value="-Dio.qt.verbose-loading=true"/>
-						<jvmarg value="${XstartOnFirstThread}"/>
-						<arg value="-f" />
-						<arg value="-o" />
-						<arg value="@{targetdirectory}" />
-						<arg value="-p" />
-						<arg value="@{targetpackage}" />
-						<arg value="-c" />
-						<arg value="@{connections}" />
-						<arg value="@{uifile}" />
-						<env key="DYLD_LIBRARY_PATH" value="${librarypath}" />
-						<classpath>
-							<fileset dir="${deploymentdir}" includes="qtjambi-${qtjambi.jar.version}.jar,qtjambi-uic-${qtjambi.jar.version}.jar,@{libfiles}"/>
-						</classpath>
-					</java>
+					<if>
+						<istrue value="${java.module.based}"/>
+						<then>
+							<java fork="true" module="qtjambi.uic" failonerror="true">
+								<jvmarg value="-Djava.library.path=${librarypath}"/>
+								<jvmarg value="-Dio.qt.deploymentdir=${outputDir}/${qtjambi.osname}/tmp"/>
+								<jvmarg value="-Dio.qt.verbose-loading=true"/>
+								<jvmarg value="${XstartOnFirstThread}"/>
+								<jvmarg value="${JVMArg.enable.native.access}"/>
+								<arg value="-f" />
+								<arg value="-o" />
+								<arg value="@{targetdirectory}" />
+								<arg value="-p" />
+								<arg value="@{targetpackage}" />
+								<arg value="-c" />
+								<arg value="@{connections}" />
+								<arg value="@{uifile}" />
+								<env key="DYLD_LIBRARY_PATH" value="${librarypath}" />
+								<modulepath>
+									<fileset dir="${deploymentdir}" includes="qtjambi-${qtjambi.jar.version}.jar,qtjambi-uic-${qtjambi.jar.version}.jar,@{libfiles}"/>
+								</modulepath>
+							</java>
+						</then>
+						<else>
+							<java fork="true" classname="io.qt.uic.Main" failonerror="true">
+								<jvmarg value="-Djava.library.path=${librarypath}"/>
+								<jvmarg value="-Dio.qt.deploymentdir=${outputDir}/${qtjambi.osname}/tmp"/>
+								<jvmarg value="-Dio.qt.verbose-loading=true"/>
+								<jvmarg value="${XstartOnFirstThread}"/>
+								<arg value="-f" />
+								<arg value="-o" />
+								<arg value="@{targetdirectory}" />
+								<arg value="-p" />
+								<arg value="@{targetpackage}" />
+								<arg value="-c" />
+								<arg value="@{connections}" />
+								<arg value="@{uifile}" />
+								<env key="DYLD_LIBRARY_PATH" value="${librarypath}" />
+								<classpath>
+									<fileset dir="${deploymentdir}" includes="qtjambi-${qtjambi.jar.version}.jar,qtjambi-uic-${qtjambi.jar.version}.jar,@{libfiles}"/>
+								</classpath>
+							</java>
+						</else>
+					</if>
 				</try>
 				<finally>
 					<delete dir="${outputDir}/${qtjambi.osname}/tmp" failonerror="false"/>

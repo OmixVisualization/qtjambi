@@ -31,9 +31,7 @@
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 
-#include "coreapi.h"
 #include "qtjambilink_p.h"
-#include "java_p.h"
 
 namespace QtJambiPrivate{
 

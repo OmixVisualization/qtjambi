@@ -30,7 +30,7 @@
 #ifndef QTJAMBI_GUIAPI_H
 #define QTJAMBI_GUIAPI_H
 
-#include "qtjambiapi.h"
+#include "global.h"
 
 class QPaintDevice;
 

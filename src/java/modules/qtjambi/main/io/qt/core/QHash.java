@@ -1699,7 +1699,6 @@ public class QHash<Key,T> extends AbstractAssociativeContainer<Key,T> implements
     /**
      * Returns a QHash containing keys and values extracted from the given entries.
      *
-     * @apiNote
      * It is convenient to create the map entries using the {@link Map#entry Map.entry()} method.
      * For example,
      *
@@ -1735,7 +1734,6 @@ public class QHash<Key,T> extends AbstractAssociativeContainer<Key,T> implements
     /**
      * Returns a QHash containing keys and values extracted from the given pairs.
      *
-     * @apiNote
      * It is convenient to create the pair using the {@link QPair#pair(Object, Object)} method.
      * For example,
      *
@@ -1771,7 +1769,6 @@ public class QHash<Key,T> extends AbstractAssociativeContainer<Key,T> implements
     /**
      * Returns a QHash containing keys and values extracted from the given pairs.
      *
-     * @apiNote
      * It is convenient to create the pair using the {@link QPair#pair(Object, Object)} method.
      * For example,
      *
@@ -1806,7 +1803,6 @@ public class QHash<Key,T> extends AbstractAssociativeContainer<Key,T> implements
     /**
      * Returns a QHash containing keys and values extracted from the given pairs.
      *
-     * @apiNote
      * It is convenient to create the pair using the {@link QPair#pair(Object, Object)} method.
      * For example,
      *
@@ -1842,7 +1838,6 @@ public class QHash<Key,T> extends AbstractAssociativeContainer<Key,T> implements
     /**
      * Returns a QHash containing keys and values extracted from the given entries.
      *
-     * @apiNote
      * It is convenient to create the map entries using the {@link Map#entry Map.entry()} method.
      * For example,
      *
@@ -1877,7 +1872,6 @@ public class QHash<Key,T> extends AbstractAssociativeContainer<Key,T> implements
     /**
      * Returns a QHash containing keys and values extracted from the given entries.
      *
-     * @apiNote
      * It is convenient to create the map entries using the {@link Map#entry Map.entry()} method.
      * For example,
      *

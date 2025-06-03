@@ -63,6 +63,10 @@ QT_WARNING_DISABLE_DEPRECATED
 #include <QtCore/QSemaphore>
 #include <stdio.h>
 #include <string.h>
+#if defined(Q_OS_LINUX)
+#include <sys/syscall.h>
+#include <unistd.h>
+#endif
 
 #define QTJAMBI_INTERNAL_METHOD_CALL(methodname)\
 DebugAPI::MethodPrint __debug_method_print(DebugAPI::MethodPrint::Internal, methodname, __FILE__, __LINE__, Q_FUNC_INFO);

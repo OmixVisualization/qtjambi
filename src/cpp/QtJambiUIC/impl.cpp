@@ -28,6 +28,7 @@
 ****************************************************************************/
 
 #include <QtDesigner/private/ui4_p.h>
+#include <QtJambi/QtJambiAPI>
 #include <QtJambi/CoreAPI>
 #include <QtJambi/RegistryAPI>
 #include <QtJambi/qtjambi_cast.h>

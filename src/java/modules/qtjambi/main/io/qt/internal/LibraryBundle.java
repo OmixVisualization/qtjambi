@@ -37,6 +37,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -57,6 +58,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import io.qt.QLibraryNotLoadedError;
+import io.qt.QtUtilities;
 import io.qt.core.QPair;
 
 /**
@@ -64,23 +66,44 @@ import io.qt.core.QPair;
  */
 final class LibraryBundle {
 	private final static Logger logger = Logger.getLogger("io.qt.internal");
-    private static final Map<String, Library> libraryMap = Collections.synchronizedMap(new HashMap<String, Library>());
+    private static final Map<String, Library> libraryMap = Collections.synchronizedMap(new HashMap<>());
     
     private LibraryBundle(){}
     
     static void deployQml() {
+    	List<String> paths = new ArrayList<>();
     	for(Library e : new ArrayList<>(libraryMap.values())) {
-        	if(e.isLoaded() && e.isQmlExtracting()) {
+        	if((e.isLoaded() || !e.isExtracting()) && e.isQmlExtracting()) {
         		try {
 					e.extractQml();
 				} catch (Throwable e1) {
 					throw new QLibraryNotLoadedError("Unable to extract library "+e.getName(), e1);
 				}
         	}
+    		try {
+				if((e.bundle().module()==null || !e.bundle().module().startsWith("qt.")) && e.bundle().hasQmlPaths()) {
+	        		File root = e.bundle().extractionDir();
+	            	String p = new File(root, "qml").getAbsolutePath();
+	            	if(!paths.contains(p))
+	            		paths.add(p);
+	            }
+    		} catch (Throwable e1) {}
 		}
+    	if(!paths.isEmpty()) {
+			try {
+	    		List<String> allPaths = new ArrayList<>();
+		    	String importPath = System.getenv("QML_IMPORT_PATH");
+		    	if(importPath!=null && !importPath.isEmpty()) {
+		    		String[] ipaths = importPath.split(File.pathSeparator);
+		    		allPaths.addAll(Arrays.asList(ipaths));
+		    	}
+		    	allPaths.addAll(paths);
+		    	QtUtilities.putenv("QML_IMPORT_PATH", String.join(File.pathSeparator, paths));
+			} catch (Throwable e1) {}
+    	}
     }
     
-    static Library findLibrary(String lib) {
+    static Library findLibrary(String libPath, String lib) {
     	Library entry = libraryMap.get(lib);
     	while(entry instanceof Symlink) {
         	String target = ((Symlink)entry).getTarget();
@@ -206,15 +229,21 @@ final class LibraryBundle {
 				String name = element.getAttribute("name");
 				if (name==null || name.isEmpty())
                     throw new SpecificationException(String.format("<%1$s> element missing required attribute \"name\"", elementName));
-				if(name.startsWith("qml/")) {
-					depl.hasQmlPaths = true;
-                }else if(name.startsWith("plugins/")) {
-                	depl.hasPluginPaths = true;
-                }else if(name.startsWith("translations/")) {
-                	depl.hasTrPaths = true;
-                }else if(name.startsWith("sources/")) {
-                	depl.hasSourcePaths = true;
-                }
+				switch(elementName) {
+				case "qmllib": // this is only a reference
+					break;
+					default:
+					if(name.startsWith("qml/")) {
+						depl.hasQmlPaths = true;
+	                }else if(name.startsWith("plugins/")) {
+	                	depl.hasPluginPaths = true;
+	                }else if(name.startsWith("translations/")) {
+	                	depl.hasTrPaths = true;
+	                }else if(name.startsWith("sources/")) {
+	                	depl.hasSourcePaths = true;
+	                }
+					break;
+				}
 				Library libraryEntry;
 				switch(elementName) {
 				case "library":
@@ -379,20 +408,24 @@ final class LibraryBundle {
 		}
 		
 		void addExtractionFunctions(Collection<ExtractionFunction> loadFunctions) {
-			synchronized(this.extractionFunctions) {
-				if(this.extractionFunctions.isEmpty()) {
-					this.extractionFunctions.add(()->logger.log(Level.FINEST, ()->String.format("extracting %1$s", name)));
+			if(!loadFunctions.isEmpty()) {
+				synchronized(this.extractionFunctions) {
+					if(this.extractionFunctions.isEmpty()) {
+						this.extractionFunctions.add(()->logger.log(Level.FINEST, ()->String.format("extracting %1$s", name)));
+					}
+					this.extractionFunctions.addAll(loadFunctions);
 				}
-				this.extractionFunctions.addAll(loadFunctions);
 			}
 		}
 		
 		void addQmlExtractionFunctions(Collection<ExtractionFunction> loadFunctions) {
-			synchronized(this.qmlExtractionFunctions) {
-				if(this.qmlExtractionFunctions.isEmpty()) {
-					this.qmlExtractionFunctions.add(()->logger.log(Level.FINEST, ()->String.format("extracting qml of %1$s", name)));
+			if(!loadFunctions.isEmpty()) {
+				synchronized(this.qmlExtractionFunctions) {
+					if(this.qmlExtractionFunctions.isEmpty()) {
+						this.qmlExtractionFunctions.add(()->logger.log(Level.FINEST, ()->String.format("extracting qml of %1$s", name)));
+					}
+					this.qmlExtractionFunctions.addAll(loadFunctions);
 				}
-				this.qmlExtractionFunctions.addAll(loadFunctions);
 			}
 		}
 		

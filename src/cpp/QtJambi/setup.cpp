@@ -28,10 +28,37 @@
 ****************************************************************************/
 
 #include <QtCore/qcompilerdetection.h>
-QT_WARNING_DISABLE_GCC("-Wdeprecated-declarations")
-QT_WARNING_DISABLE_CLANG("-Wdeprecated-declarations")
+
 QT_WARNING_DISABLE_DEPRECATED
 
+#if !defined(QT_NO_DATASTREAM) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+namespace QTypeTraits {
+template <>
+struct has_ostream_operator<QDataStream,QVariant::Type,void> : std::true_type {};
+template <>
+struct has_istream_operator<QDataStream,QVariant::Type,void> : std::true_type {};
+template <>
+struct has_ostream_operator<QDebug,QVariant::Type,void> : std::true_type {};
+}
+namespace QtPrivate {
+template<>
+struct QDataStreamOperatorForType <QVariant::Type, true>
+{
+    static void dataStreamOut(const QMetaTypeInterface *, QDataStream &ds, const void *a)
+    { ds << *reinterpret_cast<const QVariant::Type *>(a); }
+    static void dataStreamIn(const QMetaTypeInterface *, QDataStream &ds, void *a)
+    { ds >> *reinterpret_cast<QVariant::Type *>(a); }
+};
+template<>
+struct QDebugStreamOperatorForType<QVariant::Type, true>
+{
+    static void debugStream(const QMetaTypeInterface *, QDebug &dbg, const void *a)
+    { dbg << *reinterpret_cast<const QVariant::Type *>(a); }
+};
+}
+#endif
+
+#include <QtCore/QMetaType>
 #include <QtCore/QWriteLocker>
 #include <QtCore/QCoreApplication>
 #include <QtCore/QQueue>

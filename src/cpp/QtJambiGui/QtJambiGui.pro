@@ -48,8 +48,11 @@ SOURCES += \
     impl.cpp
 
 HEADERS += \
+    classes_p.h \
     hashes.h \
     utils_p.h
+
+OBJECTIVE_SOURCES += utils.mm
 
 !ios:{
     PRECOMPILED_HEADER = \

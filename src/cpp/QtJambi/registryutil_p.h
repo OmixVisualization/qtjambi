@@ -37,9 +37,6 @@
 #include "registryapi.h"
 #include "jobjectwrapper.h"
 #include "typeentry_p.h"
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-#include "jobjectwrapper.h"
-#endif
 #include "utils_p.h"
 
 class SuperTypeInfos;

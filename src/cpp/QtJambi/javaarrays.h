@@ -189,465 +189,465 @@ protected:
     CType* m_pointer;
 };
 
-class QTJAMBI_EXPORT CharPointerArray : public PointerArray<jbyteArray,char>
+class CharPointerArray : public PointerArray<jbyteArray,char>
 {
 public:
-    CharPointerArray(JNIEnv *env, char* pointer, jsize size);
-    ~CharPointerArray() override;
+    QTJAMBI_EXPORT CharPointerArray(JNIEnv *env, char* pointer, jsize size);
+    QTJAMBI_EXPORT ~CharPointerArray() override;
 };
 
-class QTJAMBI_EXPORT Int8PointerArray : public PointerArray<jbyteArray,qint8>
+class Int8PointerArray : public PointerArray<jbyteArray,qint8>
 {
 public:
-    Int8PointerArray(JNIEnv *env, qint8* pointer, jsize size);
-    ~Int8PointerArray() override;
+    QTJAMBI_EXPORT Int8PointerArray(JNIEnv *env, qint8* pointer, jsize size);
+    QTJAMBI_EXPORT ~Int8PointerArray() override;
 };
 
-class QTJAMBI_EXPORT Int16PointerArray : public PointerArray<jshortArray,qint16>
+class Int16PointerArray : public PointerArray<jshortArray,qint16>
 {
 public:
-    Int16PointerArray(JNIEnv *env, qint16* pointer, jsize size);
-    ~Int16PointerArray() override;
+    QTJAMBI_EXPORT Int16PointerArray(JNIEnv *env, qint16* pointer, jsize size);
+    QTJAMBI_EXPORT ~Int16PointerArray() override;
 };
 
-class QTJAMBI_EXPORT Int32PointerArray : public PointerArray<jintArray,qint32>
+class Int32PointerArray : public PointerArray<jintArray,qint32>
 {
 public:
-    Int32PointerArray(JNIEnv *env, qint32* pointer, jsize size);
-    ~Int32PointerArray() override;
+    QTJAMBI_EXPORT Int32PointerArray(JNIEnv *env, qint32* pointer, jsize size);
+    QTJAMBI_EXPORT ~Int32PointerArray() override;
 };
 
-class QTJAMBI_EXPORT Int64PointerArray : public PointerArray<jlongArray,qint64>
+class Int64PointerArray : public PointerArray<jlongArray,qint64>
 {
 public:
-    Int64PointerArray(JNIEnv *env, qint64* pointer, jsize size);
-    ~Int64PointerArray() override;
+    QTJAMBI_EXPORT Int64PointerArray(JNIEnv *env, qint64* pointer, jsize size);
+    QTJAMBI_EXPORT ~Int64PointerArray() override;
 };
 
-class QTJAMBI_EXPORT UCharPointerArray : public PointerArray<jbyteArray,uchar>
+class UCharPointerArray : public PointerArray<jbyteArray,uchar>
 {
 public:
-    UCharPointerArray(JNIEnv *env, uchar* pointer, jsize size);
-    ~UCharPointerArray() override;
+    QTJAMBI_EXPORT UCharPointerArray(JNIEnv *env, uchar* pointer, jsize size);
+    QTJAMBI_EXPORT ~UCharPointerArray() override;
 };
 
-class QTJAMBI_EXPORT UInt8PointerArray : public PointerArray<jbyteArray,quint8>
+class UInt8PointerArray : public PointerArray<jbyteArray,quint8>
 {
 public:
-    UInt8PointerArray(JNIEnv *env, quint8* pointer, jsize size);
-    ~UInt8PointerArray() override;
+    QTJAMBI_EXPORT UInt8PointerArray(JNIEnv *env, quint8* pointer, jsize size);
+    QTJAMBI_EXPORT ~UInt8PointerArray() override;
 };
 
-class QTJAMBI_EXPORT UInt16PointerArray : public PointerArray<jshortArray,quint16>
+class UInt16PointerArray : public PointerArray<jshortArray,quint16>
 {
 public:
-    UInt16PointerArray(JNIEnv *env, quint16* pointer, jsize size);
-    ~UInt16PointerArray() override;
+    QTJAMBI_EXPORT UInt16PointerArray(JNIEnv *env, quint16* pointer, jsize size);
+    QTJAMBI_EXPORT ~UInt16PointerArray() override;
 };
 
-class QTJAMBI_EXPORT UInt32PointerArray : public PointerArray<jintArray,quint32>
+class UInt32PointerArray : public PointerArray<jintArray,quint32>
 {
 public:
-    UInt32PointerArray(JNIEnv *env, quint32* pointer, jsize size);
-    ~UInt32PointerArray() override;
+    QTJAMBI_EXPORT UInt32PointerArray(JNIEnv *env, quint32* pointer, jsize size);
+    QTJAMBI_EXPORT ~UInt32PointerArray() override;
 };
 
-class QTJAMBI_EXPORT UInt64PointerArray : public PointerArray<jlongArray,quint64>
+class UInt64PointerArray : public PointerArray<jlongArray,quint64>
 {
 public:
-    UInt64PointerArray(JNIEnv *env, quint64* pointer, jsize size);
-    ~UInt64PointerArray() override;
+    QTJAMBI_EXPORT UInt64PointerArray(JNIEnv *env, quint64* pointer, jsize size);
+    QTJAMBI_EXPORT ~UInt64PointerArray() override;
 };
 
-class QTJAMBI_EXPORT BoolPointerArray : public PointerArray<jbooleanArray,bool>
+class BoolPointerArray : public PointerArray<jbooleanArray,bool>
 {
 public:
-    BoolPointerArray(JNIEnv *env, bool* pointer, jsize size);
-    ~BoolPointerArray() override;
+    QTJAMBI_EXPORT BoolPointerArray(JNIEnv *env, bool* pointer, jsize size);
+    QTJAMBI_EXPORT ~BoolPointerArray() override;
 };
 
-class QTJAMBI_EXPORT Bool2PointerArray : public PointerArray<jbooleanArray,uchar>
+class Bool2PointerArray : public PointerArray<jbooleanArray,uchar>
 {
 public:
-    Bool2PointerArray(JNIEnv *env, uchar* pointer, jsize size);
-    ~Bool2PointerArray() override;
+    QTJAMBI_EXPORT Bool2PointerArray(JNIEnv *env, uchar* pointer, jsize size);
+    QTJAMBI_EXPORT ~Bool2PointerArray() override;
 };
 
-class QTJAMBI_EXPORT DoublePointerArray : public PointerArray<jdoubleArray,double>
+class DoublePointerArray : public PointerArray<jdoubleArray,double>
 {
 public:
-    DoublePointerArray(JNIEnv *env, double* pointer, jsize size);
-    ~DoublePointerArray() override;
+    QTJAMBI_EXPORT DoublePointerArray(JNIEnv *env, double* pointer, jsize size);
+    QTJAMBI_EXPORT ~DoublePointerArray() override;
 };
 
-class QTJAMBI_EXPORT FloatPointerArray : public PointerArray<jfloatArray,float>
+class FloatPointerArray : public PointerArray<jfloatArray,float>
 {
 public:
-    FloatPointerArray(JNIEnv *env, float* pointer, jsize size);
-    ~FloatPointerArray() override;
+    QTJAMBI_EXPORT FloatPointerArray(JNIEnv *env, float* pointer, jsize size);
+    QTJAMBI_EXPORT ~FloatPointerArray() override;
 };
 
-class QTJAMBI_EXPORT WCharPointerArray : public PointerArray<jcharArray,ushort>
+class WCharPointerArray : public PointerArray<jcharArray,ushort>
 {
 public:
-    WCharPointerArray(JNIEnv *env, ushort* pointer, jsize size);
-    ~WCharPointerArray() override;
+    QTJAMBI_EXPORT WCharPointerArray(JNIEnv *env, ushort* pointer, jsize size);
+    QTJAMBI_EXPORT ~WCharPointerArray() override;
 };
 
-class QTJAMBI_EXPORT QCharPointerArray : public PointerArray<jcharArray,QChar>
+class QCharPointerArray : public PointerArray<jcharArray,QChar>
 {
 public:
-    QCharPointerArray(JNIEnv *env, QChar* pointer, jsize size);
-    ~QCharPointerArray() override;
+    QTJAMBI_EXPORT QCharPointerArray(JNIEnv *env, QChar* pointer, jsize size);
+    QTJAMBI_EXPORT ~QCharPointerArray() override;
 };
 
-class QTJAMBI_EXPORT ConstCharPointerArray : public PointerArray<jbyteArray,const char>
+class ConstCharPointerArray : public PointerArray<jbyteArray,const char>
 {
 public:
-    ConstCharPointerArray(JNIEnv *env, const char* pointer, jsize size);
-    ConstCharPointerArray(JNIEnv *env, const uchar* pointer, jsize size);
+    QTJAMBI_EXPORT ConstCharPointerArray(JNIEnv *env, const char* pointer, jsize size);
+    QTJAMBI_EXPORT ConstCharPointerArray(JNIEnv *env, const uchar* pointer, jsize size);
 };
 
-class QTJAMBI_EXPORT ConstInt8PointerArray : public PointerArray<jbyteArray,const qint8>
+class ConstInt8PointerArray : public PointerArray<jbyteArray,const qint8>
 {
 public:
-    ConstInt8PointerArray(JNIEnv *env, const qint8* pointer, jsize size);
+    QTJAMBI_EXPORT ConstInt8PointerArray(JNIEnv *env, const qint8* pointer, jsize size);
 };
 
-class QTJAMBI_EXPORT ConstInt16PointerArray : public PointerArray<jshortArray,const qint16>
+class ConstInt16PointerArray : public PointerArray<jshortArray,const qint16>
 {
 public:
-    ConstInt16PointerArray(JNIEnv *env, const qint16* pointer, jsize size);
+    QTJAMBI_EXPORT ConstInt16PointerArray(JNIEnv *env, const qint16* pointer, jsize size);
 };
 
-class QTJAMBI_EXPORT ConstInt32PointerArray : public PointerArray<jintArray,const qint32>
+class ConstInt32PointerArray : public PointerArray<jintArray,const qint32>
 {
 public:
-    ConstInt32PointerArray(JNIEnv *env, const qint32* pointer, jsize size);
+    QTJAMBI_EXPORT ConstInt32PointerArray(JNIEnv *env, const qint32* pointer, jsize size);
 };
 
-class QTJAMBI_EXPORT ConstInt64PointerArray : public PointerArray<jlongArray,const qint64>
+class ConstInt64PointerArray : public PointerArray<jlongArray,const qint64>
 {
 public:
-    ConstInt64PointerArray(JNIEnv *env, const qint64* pointer, jsize size);
+    QTJAMBI_EXPORT ConstInt64PointerArray(JNIEnv *env, const qint64* pointer, jsize size);
 };
 
-class QTJAMBI_EXPORT ConstUInt8PointerArray : public PointerArray<jbyteArray,const quint8>
+class ConstUInt8PointerArray : public PointerArray<jbyteArray,const quint8>
 {
 public:
-    ConstUInt8PointerArray(JNIEnv *env, const quint8* pointer, jsize size);
+    QTJAMBI_EXPORT ConstUInt8PointerArray(JNIEnv *env, const quint8* pointer, jsize size);
 };
 
-class QTJAMBI_EXPORT ConstUInt16PointerArray : public PointerArray<jshortArray,const quint16>
+class ConstUInt16PointerArray : public PointerArray<jshortArray,const quint16>
 {
 public:
-    ConstUInt16PointerArray(JNIEnv *env, const quint16* pointer, jsize size);
+    QTJAMBI_EXPORT ConstUInt16PointerArray(JNIEnv *env, const quint16* pointer, jsize size);
 };
 
-class QTJAMBI_EXPORT ConstUInt32PointerArray : public PointerArray<jintArray,const quint32>
+class ConstUInt32PointerArray : public PointerArray<jintArray,const quint32>
 {
 public:
-    ConstUInt32PointerArray(JNIEnv *env, const quint32* pointer, jsize size);
+    QTJAMBI_EXPORT ConstUInt32PointerArray(JNIEnv *env, const quint32* pointer, jsize size);
 };
 
-class QTJAMBI_EXPORT ConstUInt64PointerArray : public PointerArray<jlongArray,const quint64>
+class ConstUInt64PointerArray : public PointerArray<jlongArray,const quint64>
 {
 public:
-    ConstUInt64PointerArray(JNIEnv *env, const quint64* pointer, jsize size);
+    QTJAMBI_EXPORT ConstUInt64PointerArray(JNIEnv *env, const quint64* pointer, jsize size);
 };
 
-class QTJAMBI_EXPORT ConstBoolPointerArray : public PointerArray<jbooleanArray,const bool>
+class ConstBoolPointerArray : public PointerArray<jbooleanArray,const bool>
 {
 public:
-    ConstBoolPointerArray(JNIEnv *env, const bool* pointer, jsize size);
+    QTJAMBI_EXPORT ConstBoolPointerArray(JNIEnv *env, const bool* pointer, jsize size);
 };
 
-class QTJAMBI_EXPORT ConstBool2PointerArray : public PointerArray<jbooleanArray,const uchar>
+class ConstBool2PointerArray : public PointerArray<jbooleanArray,const uchar>
 {
 public:
-    ConstBool2PointerArray(JNIEnv *env, const uchar* pointer, jsize size);
+    QTJAMBI_EXPORT ConstBool2PointerArray(JNIEnv *env, const uchar* pointer, jsize size);
 };
 
-class QTJAMBI_EXPORT ConstDoublePointerArray : public PointerArray<jdoubleArray,const double>
+class ConstDoublePointerArray : public PointerArray<jdoubleArray,const double>
 {
 public:
-    ConstDoublePointerArray(JNIEnv *env, const double* pointer, jsize size);
+    QTJAMBI_EXPORT ConstDoublePointerArray(JNIEnv *env, const double* pointer, jsize size);
 };
 
-class QTJAMBI_EXPORT ConstFloatPointerArray : public PointerArray<jfloatArray,const float>
+class ConstFloatPointerArray : public PointerArray<jfloatArray,const float>
 {
 public:
-    ConstFloatPointerArray(JNIEnv *env, const float* pointer, jsize size);
+    QTJAMBI_EXPORT ConstFloatPointerArray(JNIEnv *env, const float* pointer, jsize size);
 };
 
-class QTJAMBI_EXPORT ConstWCharPointerArray : public PointerArray<jcharArray,const ushort>
+class ConstWCharPointerArray : public PointerArray<jcharArray,const ushort>
 {
 public:
-    ConstWCharPointerArray(JNIEnv *env, const ushort* pointer, jsize size);
+    QTJAMBI_EXPORT ConstWCharPointerArray(JNIEnv *env, const ushort* pointer, jsize size);
 };
 
-class QTJAMBI_EXPORT ConstQCharPointerArray : public PointerArray<jcharArray,const QChar>
+class ConstQCharPointerArray : public PointerArray<jcharArray,const QChar>
 {
 public:
-    ConstQCharPointerArray(JNIEnv *env, const QChar* pointer, jsize size);
+    QTJAMBI_EXPORT ConstQCharPointerArray(JNIEnv *env, const QChar* pointer, jsize size);
 };
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-class QTJAMBI_EXPORT Char16PointerArray : public PointerArray<jcharArray,char16_t>
+class Char16PointerArray : public PointerArray<jcharArray,char16_t>
 {
 public:
-    Char16PointerArray(JNIEnv *env, char16_t* pointer, jsize size);
-    ~Char16PointerArray() override;
+    QTJAMBI_EXPORT Char16PointerArray(JNIEnv *env, char16_t* pointer, jsize size);
+    QTJAMBI_EXPORT ~Char16PointerArray() override;
 };
 
-class QTJAMBI_EXPORT ConstChar16PointerArray : public PointerArray<jcharArray,const char16_t>
+class ConstChar16PointerArray : public PointerArray<jcharArray,const char16_t>
 {
 public:
-    ConstChar16PointerArray(JNIEnv *env, const char16_t* pointer, jsize size);
+    QTJAMBI_EXPORT ConstChar16PointerArray(JNIEnv *env, const char16_t* pointer, jsize size);
 };
 
-class QTJAMBI_EXPORT Char32PointerArray : public PointerArray<jintArray,char32_t>
+class Char32PointerArray : public PointerArray<jintArray,char32_t>
 {
 public:
-    Char32PointerArray(JNIEnv *env, char32_t* pointer, jsize size);
-    ~Char32PointerArray() override;
+    QTJAMBI_EXPORT Char32PointerArray(JNIEnv *env, char32_t* pointer, jsize size);
+    QTJAMBI_EXPORT ~Char32PointerArray() override;
 };
 
-class QTJAMBI_EXPORT ConstChar32PointerArray : public PointerArray<jintArray,const char32_t>
+class ConstChar32PointerArray : public PointerArray<jintArray,const char32_t>
 {
 public:
-    ConstChar32PointerArray(JNIEnv *env, const char32_t* pointer, jsize size);
+    QTJAMBI_EXPORT ConstChar32PointerArray(JNIEnv *env, const char32_t* pointer, jsize size);
 };
 #endif
 
-class QTJAMBI_EXPORT PersistentCharPointerArray : public PersistentPointerArray<jbyteArray,char>
+class PersistentCharPointerArray : public PersistentPointerArray<jbyteArray,char>
 {
 public:
-    PersistentCharPointerArray(JNIEnv *env, char* pointer, jsize size);
-    ~PersistentCharPointerArray() override;
+    QTJAMBI_EXPORT PersistentCharPointerArray(JNIEnv *env, char* pointer, jsize size);
+    QTJAMBI_EXPORT ~PersistentCharPointerArray() override;
 };
 
-class QTJAMBI_EXPORT PersistentInt8PointerArray : public PersistentPointerArray<jbyteArray,qint8>
+class PersistentInt8PointerArray : public PersistentPointerArray<jbyteArray,qint8>
 {
 public:
-    PersistentInt8PointerArray(JNIEnv *env, qint8* pointer, jsize size);
-    ~PersistentInt8PointerArray() override;
+    QTJAMBI_EXPORT PersistentInt8PointerArray(JNIEnv *env, qint8* pointer, jsize size);
+    QTJAMBI_EXPORT ~PersistentInt8PointerArray() override;
 };
 
-class QTJAMBI_EXPORT PersistentInt16PointerArray : public PersistentPointerArray<jshortArray,qint16>
+class PersistentInt16PointerArray : public PersistentPointerArray<jshortArray,qint16>
 {
 public:
-    PersistentInt16PointerArray(JNIEnv *env, qint16* pointer, jsize size);
-    ~PersistentInt16PointerArray() override;
+    QTJAMBI_EXPORT PersistentInt16PointerArray(JNIEnv *env, qint16* pointer, jsize size);
+    QTJAMBI_EXPORT ~PersistentInt16PointerArray() override;
 };
 
-class QTJAMBI_EXPORT PersistentInt32PointerArray : public PersistentPointerArray<jintArray,qint32>
+class PersistentInt32PointerArray : public PersistentPointerArray<jintArray,qint32>
 {
 public:
-    PersistentInt32PointerArray(JNIEnv *env, qint32* pointer, jsize size);
-    ~PersistentInt32PointerArray() override;
+    QTJAMBI_EXPORT PersistentInt32PointerArray(JNIEnv *env, qint32* pointer, jsize size);
+    QTJAMBI_EXPORT ~PersistentInt32PointerArray() override;
 };
 
-class QTJAMBI_EXPORT PersistentInt64PointerArray : public PersistentPointerArray<jlongArray,qint64>
+class PersistentInt64PointerArray : public PersistentPointerArray<jlongArray,qint64>
 {
 public:
-    PersistentInt64PointerArray(JNIEnv *env, qint64* pointer, jsize size);
-    ~PersistentInt64PointerArray() override;
+    QTJAMBI_EXPORT PersistentInt64PointerArray(JNIEnv *env, qint64* pointer, jsize size);
+    QTJAMBI_EXPORT ~PersistentInt64PointerArray() override;
 };
 
-class QTJAMBI_EXPORT PersistentUCharPointerArray : public PersistentPointerArray<jbyteArray,uchar>
+class PersistentUCharPointerArray : public PersistentPointerArray<jbyteArray,uchar>
 {
 public:
-    PersistentUCharPointerArray(JNIEnv *env, uchar* pointer, jsize size);
-    ~PersistentUCharPointerArray() override;
+    QTJAMBI_EXPORT PersistentUCharPointerArray(JNIEnv *env, uchar* pointer, jsize size);
+    QTJAMBI_EXPORT ~PersistentUCharPointerArray() override;
 };
 
-class QTJAMBI_EXPORT PersistentUInt8PointerArray : public PersistentPointerArray<jbyteArray,quint8>
+class PersistentUInt8PointerArray : public PersistentPointerArray<jbyteArray,quint8>
 {
 public:
-    PersistentUInt8PointerArray(JNIEnv *env, quint8* pointer, jsize size);
-    ~PersistentUInt8PointerArray() override;
+    QTJAMBI_EXPORT PersistentUInt8PointerArray(JNIEnv *env, quint8* pointer, jsize size);
+    QTJAMBI_EXPORT ~PersistentUInt8PointerArray() override;
 };
 
-class QTJAMBI_EXPORT PersistentUInt16PointerArray : public PersistentPointerArray<jshortArray,quint16>
+class PersistentUInt16PointerArray : public PersistentPointerArray<jshortArray,quint16>
 {
 public:
-    PersistentUInt16PointerArray(JNIEnv *env, quint16* pointer, jsize size);
-    ~PersistentUInt16PointerArray() override;
+    QTJAMBI_EXPORT PersistentUInt16PointerArray(JNIEnv *env, quint16* pointer, jsize size);
+    QTJAMBI_EXPORT ~PersistentUInt16PointerArray() override;
 };
 
-class QTJAMBI_EXPORT PersistentUInt32PointerArray : public PersistentPointerArray<jintArray,quint32>
+class PersistentUInt32PointerArray : public PersistentPointerArray<jintArray,quint32>
 {
 public:
-    PersistentUInt32PointerArray(JNIEnv *env, quint32* pointer, jsize size);
-    ~PersistentUInt32PointerArray() override;
+    QTJAMBI_EXPORT PersistentUInt32PointerArray(JNIEnv *env, quint32* pointer, jsize size);
+    QTJAMBI_EXPORT ~PersistentUInt32PointerArray() override;
 };
 
-class QTJAMBI_EXPORT PersistentUInt64PointerArray : public PersistentPointerArray<jlongArray,quint64>
+class PersistentUInt64PointerArray : public PersistentPointerArray<jlongArray,quint64>
 {
 public:
-    PersistentUInt64PointerArray(JNIEnv *env, quint64* pointer, jsize size);
-    ~PersistentUInt64PointerArray() override;
+    QTJAMBI_EXPORT PersistentUInt64PointerArray(JNIEnv *env, quint64* pointer, jsize size);
+    QTJAMBI_EXPORT ~PersistentUInt64PointerArray() override;
 };
 
-class QTJAMBI_EXPORT PersistentBoolPointerArray : public PersistentPointerArray<jbooleanArray,bool>
+class PersistentBoolPointerArray : public PersistentPointerArray<jbooleanArray,bool>
 {
 public:
-    PersistentBoolPointerArray(JNIEnv *env, bool* pointer, jsize size);
-    ~PersistentBoolPointerArray() override;
+    QTJAMBI_EXPORT PersistentBoolPointerArray(JNIEnv *env, bool* pointer, jsize size);
+    QTJAMBI_EXPORT ~PersistentBoolPointerArray() override;
 };
 
-class QTJAMBI_EXPORT PersistentBool2PointerArray : public PersistentPointerArray<jbooleanArray,uchar>
+class PersistentBool2PointerArray : public PersistentPointerArray<jbooleanArray,uchar>
 {
 public:
-    PersistentBool2PointerArray(JNIEnv *env, uchar* pointer, jsize size);
-    ~PersistentBool2PointerArray() override;
+    QTJAMBI_EXPORT PersistentBool2PointerArray(JNIEnv *env, uchar* pointer, jsize size);
+    QTJAMBI_EXPORT ~PersistentBool2PointerArray() override;
 };
 
-class QTJAMBI_EXPORT PersistentDoublePointerArray : public PersistentPointerArray<jdoubleArray,double>
+class PersistentDoublePointerArray : public PersistentPointerArray<jdoubleArray,double>
 {
 public:
-    PersistentDoublePointerArray(JNIEnv *env, double* pointer, jsize size);
-    ~PersistentDoublePointerArray() override;
+    QTJAMBI_EXPORT PersistentDoublePointerArray(JNIEnv *env, double* pointer, jsize size);
+    QTJAMBI_EXPORT ~PersistentDoublePointerArray() override;
 };
 
-class QTJAMBI_EXPORT PersistentFloatPointerArray : public PersistentPointerArray<jfloatArray,float>
+class PersistentFloatPointerArray : public PersistentPointerArray<jfloatArray,float>
 {
 public:
-    PersistentFloatPointerArray(JNIEnv *env, float* pointer, jsize size);
-    ~PersistentFloatPointerArray() override;
+    QTJAMBI_EXPORT PersistentFloatPointerArray(JNIEnv *env, float* pointer, jsize size);
+    QTJAMBI_EXPORT ~PersistentFloatPointerArray() override;
 };
 
-class QTJAMBI_EXPORT PersistentWCharPointerArray : public PersistentPointerArray<jcharArray,ushort>
+class PersistentWCharPointerArray : public PersistentPointerArray<jcharArray,ushort>
 {
 public:
-    PersistentWCharPointerArray(JNIEnv *env, ushort* pointer, jsize size);
-    ~PersistentWCharPointerArray() override;
+    QTJAMBI_EXPORT PersistentWCharPointerArray(JNIEnv *env, ushort* pointer, jsize size);
+    QTJAMBI_EXPORT ~PersistentWCharPointerArray() override;
 };
 
-class QTJAMBI_EXPORT PersistentQCharPointerArray : public PersistentPointerArray<jcharArray,QChar>
+class PersistentQCharPointerArray : public PersistentPointerArray<jcharArray,QChar>
 {
 public:
-    PersistentQCharPointerArray(JNIEnv *env, QChar* pointer, jsize size);
-    ~PersistentQCharPointerArray() override;
+    QTJAMBI_EXPORT PersistentQCharPointerArray(JNIEnv *env, QChar* pointer, jsize size);
+    QTJAMBI_EXPORT ~PersistentQCharPointerArray() override;
 };
 
-class QTJAMBI_EXPORT PersistentConstCharPointerArray : public PersistentPointerArray<jbyteArray,const char>
+class PersistentConstCharPointerArray : public PersistentPointerArray<jbyteArray,const char>
 {
 public:
-    PersistentConstCharPointerArray(JNIEnv *env, const char* pointer, jsize size);
-    PersistentConstCharPointerArray(JNIEnv *env, const uchar* pointer, jsize size);
+    QTJAMBI_EXPORT PersistentConstCharPointerArray(JNIEnv *env, const char* pointer, jsize size);
+    QTJAMBI_EXPORT PersistentConstCharPointerArray(JNIEnv *env, const uchar* pointer, jsize size);
 };
 
-class QTJAMBI_EXPORT PersistentConstInt8PointerArray : public PersistentPointerArray<jbyteArray,const qint8>
+class PersistentConstInt8PointerArray : public PersistentPointerArray<jbyteArray,const qint8>
 {
 public:
-    PersistentConstInt8PointerArray(JNIEnv *env, const qint8* pointer, jsize size);
+    QTJAMBI_EXPORT PersistentConstInt8PointerArray(JNIEnv *env, const qint8* pointer, jsize size);
 };
 
-class QTJAMBI_EXPORT PersistentConstInt16PointerArray : public PersistentPointerArray<jshortArray,const qint16>
+class PersistentConstInt16PointerArray : public PersistentPointerArray<jshortArray,const qint16>
 {
 public:
-    PersistentConstInt16PointerArray(JNIEnv *env, const qint16* pointer, jsize size);
+    QTJAMBI_EXPORT PersistentConstInt16PointerArray(JNIEnv *env, const qint16* pointer, jsize size);
 };
 
-class QTJAMBI_EXPORT PersistentConstInt32PointerArray : public PersistentPointerArray<jintArray,const qint32>
+class PersistentConstInt32PointerArray : public PersistentPointerArray<jintArray,const qint32>
 {
 public:
-    PersistentConstInt32PointerArray(JNIEnv *env, const qint32* pointer, jsize size);
+    QTJAMBI_EXPORT PersistentConstInt32PointerArray(JNIEnv *env, const qint32* pointer, jsize size);
 };
 
-class QTJAMBI_EXPORT PersistentConstInt64PointerArray : public PersistentPointerArray<jlongArray,const qint64>
+class PersistentConstInt64PointerArray : public PersistentPointerArray<jlongArray,const qint64>
 {
 public:
-    PersistentConstInt64PointerArray(JNIEnv *env, const qint64* pointer, jsize size);
+    QTJAMBI_EXPORT PersistentConstInt64PointerArray(JNIEnv *env, const qint64* pointer, jsize size);
 };
 
-class QTJAMBI_EXPORT PersistentConstUInt8PointerArray : public PersistentPointerArray<jbyteArray,const quint8>
+class PersistentConstUInt8PointerArray : public PersistentPointerArray<jbyteArray,const quint8>
 {
 public:
-    PersistentConstUInt8PointerArray(JNIEnv *env, const quint8* pointer, jsize size);
+    QTJAMBI_EXPORT PersistentConstUInt8PointerArray(JNIEnv *env, const quint8* pointer, jsize size);
 };
 
-class QTJAMBI_EXPORT PersistentConstUInt16PointerArray : public PersistentPointerArray<jshortArray,const quint16>
+class PersistentConstUInt16PointerArray : public PersistentPointerArray<jshortArray,const quint16>
 {
 public:
-    PersistentConstUInt16PointerArray(JNIEnv *env, const quint16* pointer, jsize size);
+    QTJAMBI_EXPORT PersistentConstUInt16PointerArray(JNIEnv *env, const quint16* pointer, jsize size);
 };
 
-class QTJAMBI_EXPORT PersistentConstUInt32PointerArray : public PersistentPointerArray<jintArray,const quint32>
+class PersistentConstUInt32PointerArray : public PersistentPointerArray<jintArray,const quint32>
 {
 public:
-    PersistentConstUInt32PointerArray(JNIEnv *env, const quint32* pointer, jsize size);
+    QTJAMBI_EXPORT PersistentConstUInt32PointerArray(JNIEnv *env, const quint32* pointer, jsize size);
 };
 
-class QTJAMBI_EXPORT PersistentConstUInt64PointerArray : public PersistentPointerArray<jlongArray,const quint64>
+class PersistentConstUInt64PointerArray : public PersistentPointerArray<jlongArray,const quint64>
 {
 public:
-    PersistentConstUInt64PointerArray(JNIEnv *env, const quint64* pointer, jsize size);
+    QTJAMBI_EXPORT PersistentConstUInt64PointerArray(JNIEnv *env, const quint64* pointer, jsize size);
 };
 
-class QTJAMBI_EXPORT PersistentConstBoolPointerArray : public PersistentPointerArray<jbooleanArray,const bool>
+class PersistentConstBoolPointerArray : public PersistentPointerArray<jbooleanArray,const bool>
 {
 public:
-    PersistentConstBoolPointerArray(JNIEnv *env, const bool* pointer, jsize size);
+    QTJAMBI_EXPORT PersistentConstBoolPointerArray(JNIEnv *env, const bool* pointer, jsize size);
 };
 
-class QTJAMBI_EXPORT PersistentConstBool2PointerArray : public PersistentPointerArray<jbooleanArray,const uchar>
+class PersistentConstBool2PointerArray : public PersistentPointerArray<jbooleanArray,const uchar>
 {
 public:
-    PersistentConstBool2PointerArray(JNIEnv *env, const uchar* pointer, jsize size);
+    QTJAMBI_EXPORT PersistentConstBool2PointerArray(JNIEnv *env, const uchar* pointer, jsize size);
 };
 
-class QTJAMBI_EXPORT PersistentConstDoublePointerArray : public PersistentPointerArray<jdoubleArray,const double>
+class PersistentConstDoublePointerArray : public PersistentPointerArray<jdoubleArray,const double>
 {
 public:
-    PersistentConstDoublePointerArray(JNIEnv *env, const double* pointer, jsize size);
+    QTJAMBI_EXPORT PersistentConstDoublePointerArray(JNIEnv *env, const double* pointer, jsize size);
 };
 
-class QTJAMBI_EXPORT PersistentConstFloatPointerArray : public PersistentPointerArray<jfloatArray,const float>
+class PersistentConstFloatPointerArray : public PersistentPointerArray<jfloatArray,const float>
 {
 public:
-    PersistentConstFloatPointerArray(JNIEnv *env, const float* pointer, jsize size);
+    QTJAMBI_EXPORT PersistentConstFloatPointerArray(JNIEnv *env, const float* pointer, jsize size);
 };
 
-class QTJAMBI_EXPORT PersistentConstWCharPointerArray : public PersistentPointerArray<jcharArray,const ushort>
+class PersistentConstWCharPointerArray : public PersistentPointerArray<jcharArray,const ushort>
 {
 public:
-    PersistentConstWCharPointerArray(JNIEnv *env, const ushort* pointer, jsize size);
+    QTJAMBI_EXPORT PersistentConstWCharPointerArray(JNIEnv *env, const ushort* pointer, jsize size);
 };
 
-class QTJAMBI_EXPORT PersistentConstQCharPointerArray : public PersistentPointerArray<jcharArray,const QChar>
+class PersistentConstQCharPointerArray : public PersistentPointerArray<jcharArray,const QChar>
 {
 public:
-    PersistentConstQCharPointerArray(JNIEnv *env, const QChar* pointer, jsize size);
+    QTJAMBI_EXPORT PersistentConstQCharPointerArray(JNIEnv *env, const QChar* pointer, jsize size);
 };
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-class QTJAMBI_EXPORT PersistentChar16PointerArray : public PersistentPointerArray<jcharArray,char16_t>
+class PersistentChar16PointerArray : public PersistentPointerArray<jcharArray,char16_t>
 {
 public:
-    PersistentChar16PointerArray(JNIEnv *env, char16_t* pointer, jsize size);
-    ~PersistentChar16PointerArray() override;
+    QTJAMBI_EXPORT PersistentChar16PointerArray(JNIEnv *env, char16_t* pointer, jsize size);
+    QTJAMBI_EXPORT ~PersistentChar16PointerArray() override;
 };
 
-class QTJAMBI_EXPORT PersistentConstChar16PointerArray : public PersistentPointerArray<jcharArray,const char16_t>
+class PersistentConstChar16PointerArray : public PersistentPointerArray<jcharArray,const char16_t>
 {
 public:
-    PersistentConstChar16PointerArray(JNIEnv *env, const char16_t* pointer, jsize size);
+    QTJAMBI_EXPORT PersistentConstChar16PointerArray(JNIEnv *env, const char16_t* pointer, jsize size);
 };
 
-class QTJAMBI_EXPORT PersistentChar32PointerArray : public PersistentPointerArray<jintArray,char32_t>
+class PersistentChar32PointerArray : public PersistentPointerArray<jintArray,char32_t>
 {
 public:
-    PersistentChar32PointerArray(JNIEnv *env, char32_t* pointer, jsize size);
-    ~PersistentChar32PointerArray() override;
+    QTJAMBI_EXPORT PersistentChar32PointerArray(JNIEnv *env, char32_t* pointer, jsize size);
+    QTJAMBI_EXPORT ~PersistentChar32PointerArray() override;
 };
 
-class QTJAMBI_EXPORT PersistentConstChar32PointerArray : public PersistentPointerArray<jintArray,const char32_t>
+class PersistentConstChar32PointerArray : public PersistentPointerArray<jintArray,const char32_t>
 {
 public:
-    PersistentConstChar32PointerArray(JNIEnv *env, const char32_t* pointer, jsize size);
+    QTJAMBI_EXPORT PersistentConstChar32PointerArray(JNIEnv *env, const char32_t* pointer, jsize size);
 };
 #endif
 
@@ -977,32 +977,32 @@ protected:
 
 #if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
 #define QTJAMBI_POINTER_ARRAY_CONST_OPERATOR(type)\
-operator QSpan<const type> () const;\
-operator const type* () const;\
-operator std::initializer_list<type> () const;\
-operator std::initializer_list<const type> () const;
+QTJAMBI_EXPORT operator QSpan<const type> () const;\
+QTJAMBI_EXPORT operator const type* () const;\
+QTJAMBI_EXPORT operator std::initializer_list<type> () const;\
+QTJAMBI_EXPORT operator std::initializer_list<const type> () const;
 #define QTJAMBI_POINTER_ARRAY_OPERATOR(type)\
-operator QSpan<type> ();\
-operator type* ();
+QTJAMBI_EXPORT operator QSpan<type> ();\
+QTJAMBI_EXPORT operator type* ();
 #else
 #define QTJAMBI_POINTER_ARRAY_CONST_OPERATOR(type)\
-operator const type* () const;\
-operator std::initializer_list<type> () const;\
-operator std::initializer_list<const type> () const;
+QTJAMBI_EXPORT operator const type* () const;\
+QTJAMBI_EXPORT operator std::initializer_list<type> () const;\
+QTJAMBI_EXPORT operator std::initializer_list<const type> () const;
 #define QTJAMBI_POINTER_ARRAY_OPERATOR(type)\
-operator type* ();
+QTJAMBI_EXPORT operator type* ();
 #endif
 
 #define QTJAMBI_TYPED_ARRAY_POINTER(Type,jArray,const_operators,operators)\
-class QTJAMBI_EXPORT JConst##Type##ArrayPointer : public JArrayPointer<jArray>\
+class JConst##Type##ArrayPointer : public JArrayPointer<jArray>\
 {\
 public:\
-    JConst##Type##ArrayPointer(JNIEnv *env, jArray array);\
-    ~JConst##Type##ArrayPointer() override;\
-    const ElementType& operator[](int index) const;\
-    const ElementType* pointer() const;\
+    QTJAMBI_EXPORT JConst##Type##ArrayPointer(JNIEnv *env, jArray array);\
+    QTJAMBI_EXPORT ~JConst##Type##ArrayPointer() override;\
+    QTJAMBI_EXPORT const ElementType& operator[](int index) const;\
+    QTJAMBI_EXPORT const ElementType* pointer() const;\
     const_operators\
-    static bool isValidArray(JNIEnv *env, jobject object);\
+    QTJAMBI_EXPORT static bool isValidArray(JNIEnv *env, jobject object);\
 private:\
     using JArrayPointer<jArray>::JArrayType;\
     using JArrayPointer<jArray>::ElementType;\
@@ -1010,19 +1010,19 @@ private:\
     void* operator new[](size_t) = delete;\
 };\
 \
-class QTJAMBI_EXPORT J##Type##ArrayPointer : public JArrayPointer<jArray>\
+class J##Type##ArrayPointer : public JArrayPointer<jArray>\
 {\
 public:\
-    J##Type##ArrayPointer(JNIEnv *env, jArray array);\
-    ~J##Type##ArrayPointer() override;\
-    void commit() override;\
-    const ElementType& operator[](int index) const;\
-    ElementType& operator[](int index);\
-    ElementType* pointer();\
-    const ElementType* pointer() const;\
+    QTJAMBI_EXPORT J##Type##ArrayPointer(JNIEnv *env, jArray array);\
+    QTJAMBI_EXPORT ~J##Type##ArrayPointer() override;\
+    QTJAMBI_EXPORT void commit() override;\
+    QTJAMBI_EXPORT const ElementType& operator[](int index) const;\
+    QTJAMBI_EXPORT ElementType& operator[](int index);\
+    QTJAMBI_EXPORT ElementType* pointer();\
+    QTJAMBI_EXPORT const ElementType* pointer() const;\
     const_operators\
     operators\
-    static bool isValidArray(JNIEnv *env, jobject object);\
+    QTJAMBI_EXPORT static bool isValidArray(JNIEnv *env, jobject object);\
 private:\
     using JArrayPointer<jArray>::JArrayType;\
     using JArrayPointer<jArray>::ElementType;\
@@ -1030,33 +1030,33 @@ private:\
     void* operator new[](size_t) = delete;\
 };\
 \
-class QTJAMBI_EXPORT PersistentJConst##Type##ArrayPointer : public PersistentJArrayPointer<jArray>\
+class PersistentJConst##Type##ArrayPointer : public PersistentJArrayPointer<jArray>\
 {\
 public:\
-    PersistentJConst##Type##ArrayPointer(JNIEnv *env, jArray array);\
-    ~PersistentJConst##Type##ArrayPointer() override;\
-    const ElementType& operator[](int index) const;\
-    const ElementType* pointer() const;\
+    QTJAMBI_EXPORT PersistentJConst##Type##ArrayPointer(JNIEnv *env, jArray array);\
+    QTJAMBI_EXPORT ~PersistentJConst##Type##ArrayPointer() override;\
+    QTJAMBI_EXPORT const ElementType& operator[](int index) const;\
+    QTJAMBI_EXPORT const ElementType* pointer() const;\
     const_operators\
-    static bool isValidArray(JNIEnv *env, jobject object);\
+    QTJAMBI_EXPORT static bool isValidArray(JNIEnv *env, jobject object);\
 private:\
     using PersistentJArrayPointer<jArray>::JArrayType;\
     using PersistentJArrayPointer<jArray>::ElementType;\
 };\
 \
-class QTJAMBI_EXPORT PersistentJ##Type##ArrayPointer : public PersistentJArrayPointer<jArray>\
+class PersistentJ##Type##ArrayPointer : public PersistentJArrayPointer<jArray>\
 {\
 public:\
-    PersistentJ##Type##ArrayPointer(JNIEnv *env, jArray array);\
-    ~PersistentJ##Type##ArrayPointer() override;\
-    void commit(JNIEnv *env) override;\
-    const ElementType& operator[](int index) const;\
-    ElementType& operator[](int index);\
-    ElementType* pointer();\
-    const ElementType* pointer() const;\
+    QTJAMBI_EXPORT PersistentJ##Type##ArrayPointer(JNIEnv *env, jArray array);\
+    QTJAMBI_EXPORT ~PersistentJ##Type##ArrayPointer() override;\
+    QTJAMBI_EXPORT void commit(JNIEnv *env) override;\
+    QTJAMBI_EXPORT const ElementType& operator[](int index) const;\
+    QTJAMBI_EXPORT ElementType& operator[](int index);\
+    QTJAMBI_EXPORT ElementType* pointer();\
+    QTJAMBI_EXPORT const ElementType* pointer() const;\
     const_operators\
     operators\
-    static bool isValidArray(JNIEnv *env, jobject object);\
+    QTJAMBI_EXPORT static bool isValidArray(JNIEnv *env, jobject object);\
 private:\
     using PersistentJArrayPointer<jArray>::JArrayType;\
     using PersistentJArrayPointer<jArray>::ElementType;\
@@ -1064,16 +1064,16 @@ private:\
 
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 #define QTJAMBI_BYTEARRAY_OPERATOR() \
-    operator QByteArrayView() const;\
-    operator QByteArray() const;
+    QTJAMBI_EXPORT operator QByteArrayView() const;\
+    QTJAMBI_EXPORT operator QByteArray() const;
 #define QTJAMBI_STRING_OPERATOR() \
-operator QStringView() const;\
-operator QString() const;
+    QTJAMBI_EXPORT operator QStringView() const;\
+    QTJAMBI_EXPORT operator QString() const;
 #else
 #define QTJAMBI_BYTEARRAY_OPERATOR() \
-    operator QByteArray() const;
+    QTJAMBI_EXPORT operator QByteArray() const;
 #define QTJAMBI_STRING_OPERATOR() \
-    operator QString() const;
+    QTJAMBI_EXPORT operator QString() const;
 #endif
 
 QTJAMBI_TYPED_ARRAY_POINTER(Byte,
@@ -1143,9 +1143,9 @@ QTJAMBI_TYPED_ARRAY_POINTER(Char,
                             );
 
 #define QTJAMBI_BOOLEAN_ARRAY() \
-    jboolean* booleanArray();
+    QTJAMBI_EXPORT jboolean* booleanArray();
 #define QTJAMBI_CONST_BOOLEAN_ARRAY() \
-    const jboolean* booleanArray() const;
+    QTJAMBI_EXPORT const jboolean* booleanArray() const;
 
 QTJAMBI_TYPED_ARRAY_POINTER(Boolean,
                             jbooleanArray,

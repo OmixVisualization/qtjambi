@@ -166,6 +166,10 @@ public class OSInfo
     		switch (os()) {
             case Windows:
             	switch(compiler) {
+            	case MSVC2019_arm64:
+            	case MSVC2022_arm64:
+            	case MSVC20XX_arm64:
+            		return os().name().toLowerCase()+"-arm64";
             	case MinGW:
             	case MinGW_W64:
 	            	switch(arch()) {

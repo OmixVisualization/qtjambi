@@ -27,10 +27,13 @@
 **
 ****************************************************************************/
 
+#include "qtjambiapi.h"
+#include "javaarrays.h"
 #include "typemanager_p.h"
 #include "exception.h"
 #include "java_p.h"
 #include "qtjambilink_p.h"
+#include "coreapi.h"
 #include <QThreadStorage>
 #include <QScopeGuard>
 #include <cstring>
@@ -607,12 +610,20 @@ QtJambiNativeID QtJambiAPI::javaInterfaceToNativeId(JNIEnv *env, jobject object)
 
 void *QtJambiAPI::fromNativeId(QtJambiNativeID nativeId)
 {
-    return !!nativeId ? reinterpret_cast<QtJambiLink *>(nativeId)->pointer() : nullptr;
+    if(!nativeId)
+        return nullptr;
+    QtJambiLink * link = reinterpret_cast<QtJambiLink *>(nativeId);
+    QtJambiAPI::checkDanglingPointer(nullptr, link);
+    return link->pointer();
 }
 
 void *QtJambiAPI::fromNativeId(QtJambiNativeID nativeId, const std::type_info& typeId)
 {
-    return !!nativeId ? reinterpret_cast<QtJambiLink *>(nativeId)->typedPointer(typeId) : nullptr;
+    if(!nativeId)
+        return nullptr;
+    QtJambiLink * link = reinterpret_cast<QtJambiLink *>(nativeId);
+    QtJambiAPI::checkDanglingPointer(nullptr, link);
+    return link->typedPointer(typeId);
 }
 
 uint QtJambiAPI::getJavaObjectIdentity(JNIEnv *env, jobject object){
@@ -754,7 +765,11 @@ void QtJambiAPI::checkDanglingPointer(JNIEnv *env, const void* ptr, const std::t
                     msg = msg.arg(QLatin1String(QtJambiAPI::typeName(typeId)));
                 }
             }
-            Java::QtJambi::QDanglingPointerException::throwNew(env, msg QTJAMBI_STACKTRACEINFO );
+            if(env){
+                Java::QtJambi::QDanglingPointerException::throwNew(env, msg QTJAMBI_STACKTRACEINFO );
+            }else if(JniEnvironment _env{16}){
+                Java::QtJambi::QDanglingPointerException::throwNew(_env, msg QTJAMBI_STACKTRACEINFO );
+            }
         }
     }
 }
@@ -1098,14 +1113,16 @@ jdouble QtJambiAPI::readJavaOptionalDouble(JNIEnv *env, jobject object, bool& is
 }
 
 // Boxing functions
-jobject QtJambiAPI::toJavaIntegerObject(JNIEnv *env, jint int_value) {
-    return Java::Runtime::Integer::valueOf(env, int_value);
-}
 
 
 jint QtJambiAPI::fromJavaIntegerObject(JNIEnv *env, jobject int_object)
 {
     return int_object ? Java::Runtime::Number::intValue(env, int_object) : 0;
+}
+
+jobject QtJambiAPI::toJavaIntegerObject(JNIEnv *env, jint int_value)
+{
+    return Java::Runtime::Integer::valueOf(env, int_value);
 }
 
 

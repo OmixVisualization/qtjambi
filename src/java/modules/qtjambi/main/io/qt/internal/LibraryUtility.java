@@ -319,17 +319,18 @@ final class LibraryUtility {
         default:
         	switch(architecture) {
         	case x86_64:
-        		_osArchName = operatingSystem.name().toLowerCase()+"-x64"; break;
+        		_osArchName = operatingSystem.name().toLowerCase()+"-x64"; 
+        		switch (operatingSystem) {
+                case Windows:
+    	            	if((isOSNameSpecified = System.getProperty("qtjambi.osname", "").endsWith("mingw-x64")))
+    	            		_osArchName = System.getProperty("qtjambi.osname", "");
+    	            break;
+    	            default:
+                }
+        		break;
         	default:
         		_osArchName = operatingSystem.name().toLowerCase()+"-"+architecture.name().toLowerCase(); break;
         	}
-        	switch (operatingSystem) {
-            case Windows:
-            	if((isOSNameSpecified = System.getProperty("qtjambi.osname", "").startsWith("windows-")))
-            		_osArchName = System.getProperty("qtjambi.osname", "");
-	            break;
-	            default:
-            }
             break;
         }
         
@@ -1632,8 +1633,8 @@ final class LibraryUtility {
         List<String> paths = new ArrayList<String>();
         synchronized(loadedNativeDeploymentUrls) {
 	        for (LibraryBundle spec : nativeDeployments) {
-	            File root = spec.extractionDir();
 	            if(spec.hasPluginPaths()) {
+		            File root = spec.extractionDir();
 	            	String p = new File(root, "plugins").getAbsolutePath();
 	            	if(!paths.contains(p))
 	            		paths.add(p);
@@ -1644,6 +1645,12 @@ final class LibraryUtility {
     }
 
     static void loadLibrary(String library) {
+    	int idx = library.lastIndexOf('/');
+    	String libPath = "";
+    	if(idx>0) {
+    		libPath = library.substring(0, idx+1);
+    		library = library.substring(idx+1);
+    	}
     	String libraryPlatformName;
     	if(useStaticLibs) {
     		libraryPlatformName = library;
@@ -1655,11 +1662,11 @@ final class LibraryUtility {
 	        case IOS: 
 	        case MacOS: 
 	        	{
-	        		Availability availability = getLibraryAvailability(library, library + ".framework/" + library, Collections.emptyList(), null);
+	        		Availability availability = getLibraryAvailability(libPath, library, library + ".framework/" + library, Collections.emptyList(), null);
 	        		if(availability.isAvailable()) {
 	        			libraryPlatformName = library + ".framework/" + library;
 	        		}else {
-	        			availability = getLibraryAvailability(library, "lib" + library + ".dylib", Collections.emptyList(), null);
+	        			availability = getLibraryAvailability(libPath, library, "lib" + library + ".dylib", Collections.emptyList(), null);
 	        			if(availability.isAvailable()) {
 	        				libraryPlatformName = "lib" + library + ".dylib";
 	        			}else {
@@ -1696,7 +1703,7 @@ final class LibraryUtility {
 				return;
 	        }
     	}
-    	loadNativeLibrary(Object.class, getLibraryAvailability(library, libraryPlatformName, Collections.emptyList(), null), null);
+    	loadNativeLibrary(Object.class, getLibraryAvailability(libPath, library, libraryPlatformName, Collections.emptyList(), null), null);
     }
     
     static void loadQtJambiLibrary() {
@@ -2379,11 +2386,17 @@ final class LibraryUtility {
 
     private static Availability getQtJambiLibraryAvailability(String qtprefix, String library, String libInfix, String versionStrg, LibraryBundle.Configuration configuration, String expectedModuleName, int... version) {
     	List<String> replacements = new ArrayList<>();
+    	int idx = library.lastIndexOf('/');
+    	String libPath = "";
+    	if(idx>0) {
+    		libPath = library.substring(0, idx+1);
+    		library = library.substring(idx+1);
+    	}
     	String libFormat = qtjambiLibraryName(qtprefix, library, dontUseQtJambiFrameworks!=null && dontUseQtJambiFrameworks, configuration, replacements, version);
-    	Availability av = getLibraryAvailability(qtprefix==null ? library : qtprefix+library, libFormat, replacements, expectedModuleName);
+    	Availability av = getLibraryAvailability(libPath, qtprefix==null ? library : qtprefix+library, libFormat, replacements, expectedModuleName);
     	if(!av.isAvailable() && operatingSystem==OperatingSystem.MacOS && dontUseQtJambiFrameworks!=null && dontUseQtJambiFrameworks) {
 			libFormat = qtjambiLibraryName(qtprefix, library, false, configuration, replacements, version);
-			Availability av2 = getLibraryAvailability(qtprefix==null ? library : qtprefix+library, libFormat, replacements, expectedModuleName);
+			Availability av2 = getLibraryAvailability(libPath, qtprefix==null ? library : qtprefix+library, libFormat, replacements, expectedModuleName);
 			if(av2.isAvailable())
 				av = av2;
     	}
@@ -2392,8 +2405,14 @@ final class LibraryUtility {
 
     private static Availability getLibraryAvailability(String qtprefix, String library, String libInfix, String versionStrg, LibraryBundle.Configuration configuration, String expectedModuleName, int... version) {
     	List<String> replacements = new ArrayList<>();
+    	int idx = library.lastIndexOf('/');
+    	String libPath = "";
+    	if(idx>0) {
+    		libPath = library.substring(0, idx+1);
+    		library = library.substring(idx+1);
+    	}
     	String libFormat = qtLibraryName(qtprefix, library, libInfix, versionStrg, configuration, replacements, version);  // "QtDBus" => "libQtDBus.so.4"
-    	return getLibraryAvailability(qtprefix==null ? library : qtprefix+library, libFormat, replacements, expectedModuleName);
+    	return getLibraryAvailability(libPath, qtprefix==null ? library : qtprefix+library, libFormat, replacements, expectedModuleName);
     }
     
     private static List<String> computeLibraryPaths(){
@@ -2448,7 +2467,7 @@ final class LibraryUtility {
         return mergeJniLibdir(libraryPaths);
     }
     
-    private static Availability getLibraryAvailability(String libraryRawName, String libFormat, List<String> replacements, String expectedModuleName) {
+    private static Availability getLibraryAvailability(String libPath, String libraryRawName, String libFormat, List<String> replacements, String expectedModuleName) {
     	if(operatingSystem!=OperatingSystem.Android
     			&& !useStaticLibs) {
 	    	List<String> libraryPaths = null;
@@ -2462,7 +2481,7 @@ final class LibraryUtility {
 	        		lib = String.format(libFormat, iter.next());
 	        	}
 	        	if(!noNativeDeployment) {
-		        	Library entry = LibraryBundle.findLibrary(lib);
+		        	Library entry = LibraryBundle.findLibrary(libPath, lib);
 		        	if(entry!=null) {
 		        		return new Availability(libraryRawName, entry, entry.extractionPath(), libFormat, replacements, expectedModuleName);
 		        	}
@@ -2470,15 +2489,24 @@ final class LibraryUtility {
 	        	if(libraryPaths==null)
 	        		libraryPaths = computeLibraryPaths();
 		        for (String path : libraryPaths) {
-		            File f = new File(path, lib);
+		        	File dir;
+		        	if(!libPath.isEmpty()) {
+		        		dir = new File(path, File.separatorChar=='/' ? libPath : libPath.replace('/', '\\'));
+		        	}else {
+		        		dir = new File(path);
+		        	}
+		            File f = new File(dir, lib);
 		            if (f.exists()) {
 		            	return new Availability(libraryRawName, f, libFormat, replacements, expectedModuleName);
 		            }
 		        }
 	        }while(iter.hasNext());
-    	}else {
+    	}else if(operatingSystem==OperatingSystem.Android){
     		String libraryFilePath = libraryFilePath();
     		File dir = new File(libraryFilePath).getParentFile();
+    		if(!libPath.isEmpty()) {
+    			dir = new File(dir, libPath);
+    		}
 	        Iterator<String> iter = replacements.iterator();
 	        do {
 	        	String lib;
@@ -2794,7 +2822,7 @@ final class LibraryUtility {
         		        	}else {
         		        		library = String.format(libFormat, iter.next());
         		        	}
-        		        	Library qmlLibrary = LibraryBundle.findLibrary(library);
+        		        	Library qmlLibrary = LibraryBundle.findLibrary("", library);
         					if(qmlLibrary!=null) {
         						if(!qmlLibrary.isLoaded() && qmlLibrary.isExtracting()) {
 	        						qmlLibrary.extract();
@@ -2842,6 +2870,7 @@ final class LibraryUtility {
         boolean isQtLib = spec.module()!=null && spec.module().startsWith("qt.lib.");
         boolean isQtQml = spec.module()!=null && spec.module().startsWith("qt.qml.");
         boolean isQtPlugin = spec.module()!=null && spec.module().startsWith("qt.plugin.");
+        boolean isQtJambiPlugin = spec.module()!=null && spec.module().startsWith("qtjambi.plugin.");
         
         final File tmpDir;
         if((isQtLib || isQtQml || isQtPlugin) && !deleteTmpDeployment) {
@@ -3075,7 +3104,7 @@ final class LibraryUtility {
                     				for(String lib : qmlLibraries) {
                                     	if(lib.startsWith("lib/") || lib.startsWith("bin/"))
                                     		lib = lib.substring(4);
-                    					Library qmlLibrary = LibraryBundle.findLibrary(lib);
+                    					Library qmlLibrary = LibraryBundle.findLibrary("", lib);
                     					if(qmlLibrary!=null && !qmlLibrary.isLoaded() && qmlLibrary.isExtracting()) {
                     						qmlLibrary.extract();
                     						if(qmlLibrary.isQmlExtracting()) {
@@ -3136,11 +3165,10 @@ final class LibraryUtility {
 	                		outFile = new File(tmpDir, libName.replace('/', File.separatorChar));
 	                	}
 	                    if(!outFile.exists()) {
-	                    	boolean isQtJambiPlugin = e.bundle().module()!=null && e.bundle().module().startsWith("qtjambi.plugin.") && libName.startsWith("plugins/");
-	                		if(isQtJambiPlugin || isQtPlugin || isQtQml) {
-	                			outFile.getParentFile().mkdirs();
+	                		if(isQtJambiPlugin || isQtPlugin) {
 	                			pluginLibraries.add(e);
 	                		}
+                			outFile.getParentFile().mkdirs();
 	                		String urlBase = e.source().toString();
 		                    int idx = urlBase.indexOf("!/");
 		                    if(idx>0) {
@@ -3191,8 +3219,13 @@ final class LibraryUtility {
 	                        			throw exn;
 	                        	});
 	                    	}else {
-	                    		e.addExtractionFunction(extractLibrary);
-                    			e.addExtractionFunctions(utilExtractionFunctions);
+	                    		if(libName.startsWith("qml/")) {
+	                    			qmlExtractionFunctions.add(extractLibrary);
+	                    			qmlExtractionFunctions.addAll(utilExtractionFunctions);
+	                			}else {
+	                				e.addExtractionFunction(extractLibrary);
+	                    			e.addExtractionFunctions(utilExtractionFunctions);
+	                			}
 	                    	}
                 			e.addQmlExtractionFunctions(qmlExtractionFunctions);
 		            	}

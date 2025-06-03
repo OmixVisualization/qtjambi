@@ -31,6 +31,7 @@
 
 #include <QtCore/private/qcoreapplication_p.h>
 #include <QtCore/private/qthread_p.h>
+#include "qtjambiapi.h"
 #include "exception.h"
 #include "java_p.h"
 #include "registryutil_p.h"

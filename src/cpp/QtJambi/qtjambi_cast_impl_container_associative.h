@@ -1240,6 +1240,7 @@ public:
         reinterpret_cast<QMap<K,T> *>(container.container)->swap(*reinterpret_cast<QMap<K,T> *>(container2.container));
         if constexpr ((ContainerContentType<K>::type & AbstractContainerAccess::PointersMask)!=0 && (ContainerContentType<T>::type & AbstractContainerAccess::PointersMask)!=0){
             if(ReferenceCountingMapContainer* access = dynamic_cast<ReferenceCountingMapContainer*>(container2.access)){
+                Q_UNUSED(access)
                 if(container2.access!=this)
                     Super::swapRC(env, container, container2);
             }else{
@@ -1247,6 +1248,7 @@ public:
             }
         }else if constexpr(ContainerContentType<QMap<K,T>>::needsReferenceCounting){
             if(ReferenceCountingSetContainer* access = dynamic_cast<ReferenceCountingSetContainer*>(container2.access)){
+                Q_UNUSED(access)
                 if(container2.access!=this)
                     Super::swapRC(env, container, container2);
             }else{
@@ -1302,6 +1304,7 @@ public:
         (*reinterpret_cast<QMap<K,T>*>(container.container)) = (*reinterpret_cast<const QMap<K,T>*>(other.container));
         if constexpr ((ContainerContentType<K>::type & AbstractContainerAccess::PointersMask)!=0 && (ContainerContentType<T>::type & AbstractContainerAccess::PointersMask)!=0){
             if(ReferenceCountingMapContainer* access = dynamic_cast<ReferenceCountingMapContainer*>(other.access)){
+                Q_UNUSED(access)
                 if(other.access!=this)
                     Super::assignRC(env, container.object, other.object);
             }else{
@@ -1309,6 +1312,7 @@ public:
             }
         }else if constexpr(ContainerContentType<QMap<K,T>>::needsReferenceCounting){
             if(ReferenceCountingSetContainer* access = dynamic_cast<ReferenceCountingSetContainer*>(other.access)){
+                Q_UNUSED(access)
                 if(other.access!=this)
                     Super::assignRC(env, container.object, other.object);
             }else{
@@ -1597,6 +1601,7 @@ public:
         reinterpret_cast<QMultiMap<K,T> *>(container.container)->swap(*reinterpret_cast<QMultiMap<K,T> *>(container2.container));
         if constexpr ((ContainerContentType<K>::type & AbstractContainerAccess::PointersMask)!=0 && (ContainerContentType<T>::type & AbstractContainerAccess::PointersMask)!=0){
             if(ReferenceCountingMultiMapContainer* access = dynamic_cast<ReferenceCountingMultiMapContainer*>(container2.access)){
+                Q_UNUSED(access)
                 if(container2.access!=this)
                     Super::swapRC(env, container, container2);
             }else{
@@ -1604,6 +1609,7 @@ public:
             }
         }else if constexpr(ContainerContentType<QMultiMap<K,T>>::needsReferenceCounting){
             if(ReferenceCountingSetContainer* access = dynamic_cast<ReferenceCountingSetContainer*>(container2.access)){
+                Q_UNUSED(access)
                 if(container2.access!=this)
                     Super::swapRC(env, container, container2);
             }else{
@@ -1688,6 +1694,7 @@ public:
         (*reinterpret_cast<QMultiMap<K,T>*>(container.container)) = (*reinterpret_cast<const QMultiMap<K,T>*>(other.container));
         if constexpr ((ContainerContentType<K>::type & AbstractContainerAccess::PointersMask)!=0 && (ContainerContentType<T>::type & AbstractContainerAccess::PointersMask)!=0){
             if(ReferenceCountingMapContainer* access = dynamic_cast<ReferenceCountingMapContainer*>(other.access)){
+                Q_UNUSED(access)
                 if(other.access!=this)
                     Super::assignRC(env, container.object, other.object);
             }else{
@@ -1695,6 +1702,7 @@ public:
             }
         }else if constexpr(ContainerContentType<QMultiMap<K,T>>::needsReferenceCounting){
             if(ReferenceCountingSetContainer* access = dynamic_cast<ReferenceCountingSetContainer*>(other.access)){
+                Q_UNUSED(access)
                 if(other.access!=this)
                     Super::assignRC(env, container.object, other.object);
             }else{
@@ -2057,6 +2065,7 @@ public:
         reinterpret_cast<QHash<K,T> *>(container.container)->swap(*reinterpret_cast<QHash<K,T> *>(container2.container));
         if constexpr ((ContainerContentType<K>::type & AbstractContainerAccess::PointersMask)!=0 && (ContainerContentType<T>::type & AbstractContainerAccess::PointersMask)!=0){
             if(ReferenceCountingMapContainer* access = dynamic_cast<ReferenceCountingMapContainer*>(container2.access)){
+                Q_UNUSED(access)
                 if(container2.access!=this)
                     Super::swapRC(env, container, container2);
             }else{
@@ -2064,6 +2073,7 @@ public:
             }
         }else if constexpr(ContainerContentType<QHash<K,T>>::needsReferenceCounting){
             if(ReferenceCountingSetContainer* access = dynamic_cast<ReferenceCountingSetContainer*>(container2.access)){
+                Q_UNUSED(access)
                 if(container2.access!=this)
                     Super::swapRC(env, container, container2);
             }else{
@@ -2121,6 +2131,7 @@ public:
         (*reinterpret_cast<QHash<K,T>*>(container.container)) = (*reinterpret_cast<const QHash<K,T>*>(other.container));
         if constexpr ((ContainerContentType<K>::type & AbstractContainerAccess::PointersMask)!=0 && (ContainerContentType<T>::type & AbstractContainerAccess::PointersMask)!=0){
             if(ReferenceCountingMapContainer* access = dynamic_cast<ReferenceCountingMapContainer*>(other.access)){
+                Q_UNUSED(access)
                 if(other.access!=this)
                     Super::assignRC(env, container.object, other.object);
             }else{
@@ -2128,6 +2139,7 @@ public:
             }
         }else if constexpr(ContainerContentType<QHash<K,T>>::needsReferenceCounting){
             if(ReferenceCountingSetContainer* access = dynamic_cast<ReferenceCountingSetContainer*>(other.access)){
+                Q_UNUSED(access)
                 if(other.access!=this)
                     Super::assignRC(env, container.object, other.object);
             }else{
@@ -2388,6 +2400,7 @@ public:
         reinterpret_cast<QMultiHash<K,T> *>(container.container)->swap(*reinterpret_cast<QMultiHash<K,T> *>(container2.container));
         if constexpr ((ContainerContentType<K>::type & AbstractContainerAccess::PointersMask)!=0 && (ContainerContentType<T>::type & AbstractContainerAccess::PointersMask)!=0){
             if(ReferenceCountingMultiMapContainer* access = dynamic_cast<ReferenceCountingMultiMapContainer*>(container2.access)){
+                Q_UNUSED(access)
                 if(container2.access!=this)
                     Super::swapRC(env, container, container2);
             }else{
@@ -2395,6 +2408,7 @@ public:
             }
         }else if constexpr(ContainerContentType<QMultiHash<K,T>>::needsReferenceCounting){
             if(ReferenceCountingSetContainer* access = dynamic_cast<ReferenceCountingSetContainer*>(container2.access)){
+                Q_UNUSED(access)
                 if(container2.access!=this)
                     Super::swapRC(env, container, container2);
             }else{
@@ -2451,6 +2465,7 @@ public:
         (*reinterpret_cast<QMultiHash<K,T>*>(container.container)) = (*reinterpret_cast<const QMultiHash<K,T>*>(other.container));
         if constexpr ((ContainerContentType<K>::type & AbstractContainerAccess::PointersMask)!=0 && (ContainerContentType<T>::type & AbstractContainerAccess::PointersMask)!=0){
             if(ReferenceCountingMapContainer* access = dynamic_cast<ReferenceCountingMapContainer*>(other.access)){
+                Q_UNUSED(access)
                 if(other.access!=this)
                     Super::assignRC(env, container.object, other.object);
             }else{
@@ -2458,6 +2473,7 @@ public:
             }
         }else if constexpr(ContainerContentType<QMultiHash<K,T>>::needsReferenceCounting){
             if(ReferenceCountingSetContainer* access = dynamic_cast<ReferenceCountingSetContainer*>(other.access)){
+                Q_UNUSED(access)
                 if(other.access!=this)
                     Super::assignRC(env, container.object, other.object);
             }else{

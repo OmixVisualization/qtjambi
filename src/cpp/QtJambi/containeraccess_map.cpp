@@ -43,6 +43,9 @@
 #include "java_p.h"
 #include "coreapi.h"
 
+QT_WARNING_DISABLE_GCC("-Winaccessible-base")
+QT_WARNING_DISABLE_CLANG("-Winaccessible-base")
+
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 #else
 QReadWriteLock* containerAccessLock();
@@ -253,7 +256,7 @@ AutoMapAccess::TreeNode* AutoMapAccess::node_iterator::next(TreeNode* node){
     }
     return node;
 #elif defined(_LIBCPP_VERSION)
-    return reinterpret_cast<TreeNode*>(_VSTD::__tree_next_iter<std::__tree_node_base<void*>*>(reinterpret_cast<std::__tree_node_base<void*>*>(node)));
+    return reinterpret_cast<TreeNode*>(std::__tree_next_iter<std::__tree_node_base<void*>*>(reinterpret_cast<std::__tree_node_base<void*>*>(node)));
 #elif defined(__GLIBCXX__)
     return reinterpret_cast<TreeNode*>(std::_Rb_tree_increment(reinterpret_cast<std::_Rb_tree_node_base*>(node)));
 #endif
@@ -277,7 +280,7 @@ AutoMapAccess::TreeNode* AutoMapAccess::node_iterator::prev(TreeNode* node){
     }
     return node;
 #elif defined(_LIBCPP_VERSION)
-    return reinterpret_cast<TreeNode*>(_VSTD::__tree_prev_iter<std::__tree_node_base<void*>*>(reinterpret_cast<std::__tree_node_base<void*>*>(node)));
+    return reinterpret_cast<TreeNode*>(std::__tree_prev_iter<std::__tree_node_base<void*>*>(reinterpret_cast<std::__tree_node_base<void*>*>(node)));
 #elif defined(__GLIBCXX__)
     return reinterpret_cast<TreeNode*>(std::_Rb_tree_decrement(reinterpret_cast<std::_Rb_tree_node_base*>(node)));
 #endif
@@ -468,7 +471,7 @@ AutoMapAccess::TreeNode* AutoMapAccess::extract(MapData& data, node_iterator whe
     if (data.begin == where.data())
         data.begin = __r.data();
     --data.size;
-    _VSTD::__tree_remove(reinterpret_cast<std::__tree_node_base<void*>*>(data.header.left),
+    std::__tree_remove(reinterpret_cast<std::__tree_node_base<void*>*>(data.header.left),
                          reinterpret_cast<std::__tree_node_base<void*>*>(where.data()));
     erasednode = where.data();
 #elif defined(__GLIBCXX__)
@@ -690,7 +693,7 @@ AutoMapAccess::TreeNode*& AutoMapAccess::findEqual(MapData& data, TreeEndNode*& 
             else if (m_keyMetaType.compare(__nd->data(m_offset1), key)<0)
             {
                 if (__nd->right != nullptr) {
-                    __nd_ptr = _VSTD::addressof(__nd->right);
+                    __nd_ptr = std::addressof(__nd->right);
                     __nd = static_cast<TreeNode*>(__nd->right);
                 } else {
                     parent = static_cast<TreeEndNode*>(__nd);
@@ -735,10 +738,10 @@ AutoMapAccess::TreeNode*& AutoMapAccess::findEqualHint(MapData& data, node_itera
     else if (m_keyMetaType.compare(node->data(m_offset1), key)<0)  // check after
     {
         // *node < key
-        node_iterator __next = _VSTD::next(node);
+        node_iterator __next = std::next(node);
         if (__next == data.end() || m_keyMetaType.compare(key, __next->data(m_offset1))<0)
         {
-            // *node < key < *_VSTD::next(node)
+            // *node < key < *std::next(node)
             if (node.data()->right == nullptr)
             {
                 parent = node.data();
@@ -1379,7 +1382,7 @@ void AutoMapAccess::insertOrAssign(MapData& data, const void* key, const void* v
             __child = newNode;
             if (data.begin->left != nullptr)
                 data.begin = data.begin->left;
-            _VSTD::__tree_balance_after_insert(reinterpret_cast<std::__tree_node_base<void*>*>(data.header.left), reinterpret_cast<std::__tree_node_base<void*>*>(__child));
+            std::__tree_balance_after_insert(reinterpret_cast<std::__tree_node_base<void*>*>(data.header.left), reinterpret_cast<std::__tree_node_base<void*>*>(__child));
             ++data.size;
         }
 #elif defined(__GLIBCXX__)
@@ -1450,7 +1453,7 @@ void AutoMapAccess::insertOrAssign(MapData& data, const void* key, JNIEnv *env, 
             __child = newNode;
             if (data.begin->left != nullptr)
                 data.begin = data.begin->left;
-            _VSTD::__tree_balance_after_insert(reinterpret_cast<std::__tree_node_base<void*>*>(data.header.left), reinterpret_cast<std::__tree_node_base<void*>*>(__child));
+            std::__tree_balance_after_insert(reinterpret_cast<std::__tree_node_base<void*>*>(data.header.left), reinterpret_cast<std::__tree_node_base<void*>*>(__child));
             ++data.size;
         }
 #elif defined(__GLIBCXX__)

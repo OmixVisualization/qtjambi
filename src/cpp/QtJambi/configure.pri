@@ -215,6 +215,10 @@ linux-clang* | linux-g++* | freebsd-clang* | freebsd-g++* | netbsd-clang* | netb
     }
 }
 
+linux-* {
+    INCLUDEPATH += $$clean_path($$GENERATED_SOURCES_BASE/$$QTJAMBI_PROJECT)
+}
+
 macx{
     PREFIXMAP += -fdebug-prefix-map=$$SOURCES_BASE/=
     PREFIXMAP += -fdebug-prefix-map=$$QTJAMBI_PLATFORM_BUILDDIR/$$QTJAMBI_PROJECT=../../../../../sources/

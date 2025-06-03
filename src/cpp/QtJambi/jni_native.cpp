@@ -81,7 +81,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_internal_NativeUtility_00024NativeL
 
 extern "C" JNIEXPORT void JNICALL Java_io_qt_internal_NativeUtility_00024NativeLink_assignNativeId(JNIEnv *, jclass, QtJambiNativeID native_id, jlong ptr){
     if(!!native_id)
-        *reinterpret_cast<QSharedPointer<QtJambiLink>*>(ptr) = reinterpret_cast<QtJambiLink*>(native_id)->getStrongPointer();
+        *reinterpret_cast<QSharedPointer<QtJambiLink>*>(ptr) = *reinterpret_cast<QtJambiLink*>(native_id);
 }
 
 extern "C" JNIEXPORT void JNICALL Java_io_qt_internal_NativeUtility_00024NativeLink_dispose(JNIEnv *env, jclass, QtJambiNativeID native_id){

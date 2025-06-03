@@ -190,7 +190,9 @@ struct qtjambi_sequential_iterator_caster<Iterator,true>{
     }
 };
 
-template<template<typename T> class Container, typename T, bool isPointer, bool = is_copy_constructible<T>::value && is_default_constructible<T>::value && is_copy_constructible<Container<T>>::value>
+template<template<typename T> class Container, typename T, bool isPointer, bool = ((is_copy_constructible<T>::value && is_default_constructible<T>::value)
+                                                                                   || std::is_trivially_copyable<T>::value
+                                                                                   || is_shared_data<Container<T>>::value) && is_copy_constructible<Container<T>>::value>
 struct CloneContainer{
     static constexpr CopyFunction function = nullptr;
 };
@@ -1189,6 +1191,7 @@ public:
         reinterpret_cast<QList<T> *>(container.container)->swap(*reinterpret_cast<QList<T> *>(container2.container));
         if constexpr(ContainerContentType<T>::needsReferenceCounting){
             if(ReferenceCountingSetContainer* access = dynamic_cast<ReferenceCountingSetContainer*>(container2.access)){
+                Q_UNUSED(access)
                 if(container2.access!=this)
                     Super::swapRC(env, container, container2);
             }else{
@@ -1254,6 +1257,7 @@ public:
         (*reinterpret_cast<QList<T>*>(container.container)) = (*reinterpret_cast<const QList<T>*>(other.container));
         if constexpr(ContainerContentType<T>::needsReferenceCounting){
             if(ReferenceCountingSetContainer* access = dynamic_cast<ReferenceCountingSetContainer*>(other.access)){
+                Q_UNUSED(access)
                 if(other.access!=this)
                     ReferenceCountingSetContainer::assignRC(env, container.object, other.object);
             }else{
@@ -1549,6 +1553,7 @@ public:
         reinterpret_cast<QVector<T> *>(container.container)->swap(*reinterpret_cast<QVector<T> *>(container2.container));
         if constexpr(ContainerContentType<T>::needsReferenceCounting){
             if(ReferenceCountingSetContainer* access = dynamic_cast<ReferenceCountingSetContainer*>(container2.access)){
+                Q_UNUSED(access)
                 if(container2.access!=this)
                     Super::swapRC(env, container, container2);
             }else{
@@ -1585,6 +1590,7 @@ public:
         (*reinterpret_cast<QVector<T>*>(container.container)) = (*reinterpret_cast<const QVector<T>*>(other.container));
         if constexpr(ContainerContentType<T>::needsReferenceCounting){
             if(ReferenceCountingSetContainer* access = dynamic_cast<ReferenceCountingSetContainer*>(other.access)){
+                Q_UNUSED(access)
                 if(other.access!=this)
                     ReferenceCountingSetContainer::assignRC(env, container.object, other.object);
             }else{
@@ -1867,6 +1873,7 @@ public:
         reinterpret_cast<QLinkedList<T> *>(container.container)->swap(*reinterpret_cast<QLinkedList<T> *>(container2.container));
         if constexpr(ContainerContentType<T>::needsReferenceCounting){
             if(ReferenceCountingSetContainer* access = dynamic_cast<ReferenceCountingSetContainer*>(container2.access)){
+                Q_UNUSED(access)
                 if(container2.access!=this)
                     Super::swapRC(env, container, container2);
             }else{
@@ -1903,6 +1910,7 @@ public:
         (*reinterpret_cast<QLinkedList<T>*>(container.container)) = (*reinterpret_cast<const QLinkedList<T>*>(other.container));
         if constexpr(ContainerContentType<T>::needsReferenceCounting){
             if(ReferenceCountingSetContainer* access = dynamic_cast<ReferenceCountingSetContainer*>(other.access)){
+                Q_UNUSED(access)
                 if(other.access!=this)
                     ReferenceCountingSetContainer::assignRC(env, container.object, other.object);
             }else{
@@ -2163,6 +2171,7 @@ public:
         reinterpret_cast<QSet<T> *>(container.container)->swap(*reinterpret_cast<QSet<T> *>(container2.container));
         if constexpr(ContainerContentType<T>::needsReferenceCounting){
             if(ReferenceCountingSetContainer* access = dynamic_cast<ReferenceCountingSetContainer*>(container2.access)){
+                Q_UNUSED(access)
                 if(container2.access!=this)
                     Super::swapRC(env, container, container2);
             }else{
@@ -2199,6 +2208,7 @@ public:
         (*reinterpret_cast<QSet<T>*>(container.container)) = (*reinterpret_cast<const QSet<T>*>(other.container));
         if constexpr(ContainerContentType<T>::needsReferenceCounting){
             if(ReferenceCountingSetContainer* access = dynamic_cast<ReferenceCountingSetContainer*>(other.access)){
+                Q_UNUSED(access)
                 if(other.access!=this)
                     ReferenceCountingSetContainer::assignRC(env, container.object, other.object);
             }else{
@@ -2394,6 +2404,7 @@ public:
         (*reinterpret_cast<QSpan<T,E>*>(container.container)) = (*reinterpret_cast<const QSpan<T,E>*>(other.container));
         if constexpr(ContainerContentType<T>::needsReferenceCounting){
             if(ReferenceCountingSetContainer* access = dynamic_cast<ReferenceCountingSetContainer*>(other.access)){
+                Q_UNUSED(access)
                 if(other.access!=this)
                     ReferenceCountingSetContainer::assignRC(env, container.object, other.object);
             }else{

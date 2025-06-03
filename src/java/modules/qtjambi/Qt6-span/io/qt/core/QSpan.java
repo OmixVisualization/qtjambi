@@ -151,34 +151,42 @@ public final class QSpan<T> extends QConstSpan<T>{
 		return new QSpan<>(buffer, 'D');
 	}
 	
+	@SuppressWarnings("overrides")
 	public static @NonNull QSpan<@NonNull@QtPrimitiveType Byte> ofByte(byte[] array){
 		return new QSpan<>(array);
 	}
 	
+	@SuppressWarnings("overrides")
 	public static @NonNull QSpan<@NonNull@QtPrimitiveType Short> ofShort(short[] array){
 		return new QSpan<>(array);
 	}
 	
+	@SuppressWarnings("overrides")
 	public static @NonNull QSpan<@NonNull@QtPrimitiveType Integer> ofInt(int[] array){
 		return new QSpan<>(array);
 	}
 	
+	@SuppressWarnings("overrides")
 	public static @NonNull QSpan<@NonNull@QtPrimitiveType Long> ofLong(long[] array){
 		return new QSpan<>(array);
 	}
 	
+	@SuppressWarnings("overrides")
 	public static @NonNull QSpan<@NonNull@QtPrimitiveType Character> ofChar(char[] array){
 		return new QSpan<>(array);
 	}
 	
+	@SuppressWarnings("overrides")
 	public static @NonNull QSpan<@NonNull@QtPrimitiveType Float> ofFloat(float[] array){
 		return new QSpan<>(array);
 	}
 	
+	@SuppressWarnings("overrides")
 	public static @NonNull QSpan<@NonNull@QtPrimitiveType Double> ofDouble(double[] array){
 		return new QSpan<>(array);
 	}
 	
+	@SuppressWarnings("overrides")
 	public static @NonNull QSpan<@NonNull@QtPrimitiveType Boolean> ofBoolean(boolean[] array){
 		return new QSpan<>(array);
 	}

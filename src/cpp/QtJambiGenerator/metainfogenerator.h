@@ -43,6 +43,9 @@
 #include "cppgenerator.h"
 #include "typedatabase.h"
 
+QT_WARNING_DISABLE_GCC("-Woverloaded-virtual")
+QT_WARNING_DISABLE_CLANG("-Woverloaded-virtual")
+
 class MetaInfoGenerator : public AbstractGenerator {
     public:
         MetaInfoGenerator(PriGenerator *pri);

@@ -33,23 +33,34 @@ import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import io.qt.NonNull;
 import io.qt.QtUtilities;
+import io.qt.autotests.generated.General;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QFileInfo;
 import io.qt.core.QIODevice;
+import io.qt.core.QJsonValue;
 import io.qt.core.QLibrary;
+import io.qt.core.QList;
+import io.qt.core.QMetaMethod;
 import io.qt.core.QMetaObject;
 import io.qt.core.QObject;
 import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QOperatingSystemVersion.OSType;
 import io.qt.core.QPluginLoader;
+import io.qt.core.QStaticPlugin;
+import io.qt.core.QTimer;
+import io.qt.core.Qt;
 import io.qt.core.internal.QFactoryLoader;
 import io.qt.core.internal.QtPluginMetaData;
 import io.qt.gui.QGenericPlugin;
+import io.qt.gui.QGenericPluginFactory;
 import io.qt.gui.QIconEngine;
 import io.qt.gui.QIconEnginePlugin;
 import io.qt.gui.QImageIOHandler;
 import io.qt.gui.QImageIOPlugin;
+import io.qt.gui.QWindow;
+import io.qt.widgets.QApplication;
 import io.qt.widgets.QGraphicsItem;
 import io.qt.widgets.QGraphicsObject;
 import io.qt.widgets.QGraphicsWidget;
@@ -144,6 +155,31 @@ public class TestPlugin extends ApplicationInitializer {
 			}
 		}
 	}
+    
+    @Test
+    public void testMacOSUtilsPlugins() {
+    	Assume.assumeTrue("macos only", QOperatingSystemVersion.current().isAnyOfType(OSType.MacOS));
+    	QFactoryLoader fl = new QFactoryLoader(QGenericPlugin.class);
+    	QObject macOSUtils = fl.loadPlugin(QGenericPlugin::create, "NSWindowUtils", "");
+		Assert.assertTrue(macOSUtils!=null);
+		Assert.assertTrue(General.internalAccess.isJavaOwnership(macOSUtils));
+    	QMetaMethod isOnActiveSpace = macOSUtils.metaObject().method("isOnActiveSpace", QWindow.class);
+		Assert.assertTrue(isOnActiveSpace.isValid());
+		QWindow window = new QWindow();
+		window.show();
+		Object[] result = {null};
+		QTimer.singleShot(100, ()->{
+			try {
+				result[0] = isOnActiveSpace.invoke(macOSUtils, window);
+			}catch(Throwable t) {
+				result[0] = t;
+			}finally {
+				QApplication.quit();
+			}
+		});
+		QApplication.exec();
+		Assert.assertEquals("Window is not on current space", Boolean.TRUE, result[0]);
+    }
     
     public static void main(String args[]) {
         org.junit.runner.JUnitCore.main(TestPlugin.class.getName());

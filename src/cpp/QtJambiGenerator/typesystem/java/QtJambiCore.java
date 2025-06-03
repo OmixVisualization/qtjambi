@@ -20086,7 +20086,11 @@ class QStaticPlugin_java__{
      * <p>See <a href="@docRoot/qstaticplugin.html#instance-var"><code>QStaticPlugin::instance</code></a></p>
      */
     @QtUninvokable
-    public final native QObject instance();
+    public final QObject instance(){
+        return instance(QtJambi_LibraryUtilities.internal.nativeId(this));
+    }
+    @QtUninvokable
+    private native QObject instance(long __this__nativeId);
 }// class
 
 class QThread_67__{

@@ -167,6 +167,19 @@ public boolean event(QEvent event){
 }
 ```
 
+Since Java 24, an `ArrayIndexOutOfBoundsException` is thrown if there is a `case null` in switch over extensible enum: 
+
+```
+@Override
+public boolean event(QEvent event){
+	return switch(event.type()){ // throws ArrayIndexOutOfBoundsException in Java 24
+		case null -> false;
+		case MouseButtonPress -> true;
+		default -> super.event(event);
+	}
+}
+```
+
 #### Flags
 
 There are enums in Qt used as flags. This is also availale in Java by
@@ -218,8 +231,6 @@ Qt provides following container types:
   - `QMap`
   - `QMultiHash`
   - `QMultiMap`
-  - `QVector` (Qt5 only)
-  - `QLinkedList` (Qt5 only)
 
 These types are all available as Java class in QtJambi. However, when
 instantiating such a container class, you need to specify the element
@@ -1176,7 +1187,7 @@ device.close();
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.8.3.jar:qtjambi-uic-6.8.3.jar
+     -p qtjambi-6.8.4.jar:qtjambi-uic-6.8.4.jar
      -m qtjambi.uic --output=src --package=com.myapplication.widgets com/myapplication/widgets/mainwindow.ui
 ```
 
@@ -1184,7 +1195,7 @@ Alternative way to call it:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -cp qtjambi-6.8.3.jar:qtjambi-uic-6.8.3.jar
+     -cp qtjambi-6.8.4.jar:qtjambi-uic-6.8.4.jar
      io.qt.uic.Main --output=src --package=com.myapplication.widgets com/myapplication/widgets/mainwindow.ui
 ```
 
@@ -1505,7 +1516,7 @@ and *QtJambi* libraries:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.8.3.jar:qtjambi-deployer-6.8.3.jar
+     -p qtjambi-6.8.4.jar:qtjambi-deployer-6.8.4.jar
      -m qtjambi.deployer plugin
      --class-name=my.company.CustomImageIOPlugin
      --class-path=my-company-library.jar
@@ -1517,7 +1528,7 @@ Alternative way to call it:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -cp qtjambi-6.8.3.jar:qtjambi-deployer-6.8.3.jar
+     -cp qtjambi-6.8.4.jar:qtjambi-deployer-6.8.4.jar
      io.qt.qtjambi.deployer.Main plugin
      --class-name=my.company.CustomImageIOPlugin
      --class-path=my-company-library.jar
@@ -1544,7 +1555,7 @@ This is especially necessary on macOS (arm64).
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.8.3.jar:qtjambi-deployer-6.8.3.jar
+     -p qtjambi-6.8.4.jar:qtjambi-deployer-6.8.4.jar
      -m qtjambi.deployer plugin
      --class-name=my.company.CustomImageIOPlugin
      --class-path=my-company-library.jar

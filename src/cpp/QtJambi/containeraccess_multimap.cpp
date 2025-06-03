@@ -39,6 +39,9 @@
 #include "qtjambilink_p.h"
 #include "java_p.h"
 
+QT_WARNING_DISABLE_GCC("-Winaccessible-base")
+QT_WARNING_DISABLE_CLANG("-Winaccessible-base")
+
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 bool isEquals(const QMetaType& keyMetaType, const void * ptr, const void* ptr2);
 #else

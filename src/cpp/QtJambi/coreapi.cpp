@@ -178,14 +178,14 @@ jobject invokeMetaMethodImpl(JNIEnv * env, const QMetaMethod& method,
     result.l = nullptr;
     if(method.isValid()){
         env->EnsureLocalCapacity(500);
-        if(connection==Qt::BlockingQueuedConnection && object->thread()==QThread::currentThread()) {
+        if(connection==Qt::BlockingQueuedConnection && object->thread() && object->thread()==QThread::currentThread()) {
             Java::QtJambi::QUnsuccessfulInvocationException::throwNew(env, QLatin1String("Blocking-queued invocation on object whose thread is the current thread is not allowed.") QTJAMBI_STACKTRACEINFO );
         }
         if(method.returnType()!=QMetaType::UnknownType && method.returnType()!=QMetaType::Void) {
             if(connection==Qt::QueuedConnection) {
                 Java::QtJambi::QUnsuccessfulInvocationException::throwNew(env, QLatin1String("Unable to invoke method with return value in queued connections.") QTJAMBI_STACKTRACEINFO );
             }else if(connection==Qt::AutoConnection) {
-                if(QThread::currentThread() != object->thread()) {
+                if(object->thread() && QThread::currentThread() != object->thread()) {
                     Java::QtJambi::QUnsuccessfulInvocationException::throwNew(env, QLatin1String("Unable to invoke method with return value in queued connections (auto connection with different threads).") QTJAMBI_STACKTRACEINFO );
                 }
             }

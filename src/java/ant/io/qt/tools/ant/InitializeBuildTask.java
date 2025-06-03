@@ -586,6 +586,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 						OSInfo.setCrossCompilation(null, null);
 					}
 				}
+			}else if(OSInfo.crossArch()!=null){
 			}else {
 				OSInfo.setCrossCompilation(null, null);
 			}

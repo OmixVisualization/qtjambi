@@ -435,16 +435,36 @@ public class ForeachVersionTask extends Task {
 										break;
 									default:
 										if(OSInfo.crossOS().isUnixLike()){
-											qtDirs.add(new java.io.File(versionDir, "gcc_arm64"));
-											qtDirs.add(new java.io.File(versionDir, "gcc_64"));
+											if(OSInfo.arch()==Architecture.arm64) {
+												qtDirs.add(new java.io.File(versionDir, "gcc_arm64"));
+												qtDirs.add(new java.io.File(versionDir, "gcc_64"));
+											}else {
+												qtDirs.add(new java.io.File(versionDir, "gcc_64"));
+												qtDirs.add(new java.io.File(versionDir, "gcc_arm64"));
+											}
 										}
 										break;
 									}
 								}
 								
 								if("true".equalsIgnoreCase(createAndroid) || "only".equalsIgnoreCase(createAndroid)) {
-									for(java.io.File adir : versionDir.listFiles()) {
-										if(adir.getName().toLowerCase().startsWith("android") && adir.isDirectory()) {
+									String androidAbi = AntUtil.getPropertyAsString(propertyHelper, "abi");
+									if("all".equals(androidAbi)){
+										for(java.io.File adir : versionDir.listFiles()) {
+											if(adir.getName().toLowerCase().startsWith("android") && adir.isDirectory()) {
+												qtDirs.add(adir);
+											}
+										}
+									}else if(androidAbi==null || androidAbi.isEmpty()) {
+										androidAbi = "arm64_v8a,x86_64";
+									}
+									for(String abi : androidAbi.split(",")) {
+										if("x64".equals(abi))
+											abi = "x86_64";
+										else if("arm64".equals(abi) || "aarch64".equals(abi))
+											abi = "arm64_v8a";
+										java.io.File adir = new java.io.File(versionDir, "android_"+abi);
+										if(adir.isDirectory()) {
 											qtDirs.add(adir);
 										}
 									}
@@ -538,6 +558,19 @@ public class ForeachVersionTask extends Task {
 												specProperties.setProperty(Constants.QMAKE, qmake);
 												specProperties.setProperty(Constants.QMAKE_ABSPATH, new java.io.File(new java.io.File(qtDir, "bin"), qmake).getAbsolutePath());
 											}
+										}
+										switch(OSInfo.os()) {
+										case Windows:
+											if(!new java.io.File(new java.io.File(qtDir, "bin"), "qmake.exe").exists()
+													&& !new java.io.File(new java.io.File(qtDir, "bin"), "qmake.bat").exists()) {
+												continue;
+											}
+											break;
+										default:
+											if(!new java.io.File(new java.io.File(qtDir, "bin"), "qmake").exists()) {
+												continue;
+											}
+											break;
 										}
 										specProperties.setProperty("QTDIR", dir);
 										specProperties.setProperty("qtjambi.qtdir", dir);

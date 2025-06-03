@@ -37,6 +37,8 @@
 QT_WARNING_DISABLE_DEPRECATED
 QT_WARNING_DISABLE_GCC("-Wextra")
 QT_WARNING_DISABLE_CLANG("-Wextra")
+QT_WARNING_DISABLE_GCC("-Winaccessible-base")
+QT_WARNING_DISABLE_CLANG("-Winaccessible-base")
 
 #include "containeraccess.h"
 #include "jobjectwrapper.h"

@@ -121,6 +121,7 @@ HEADERS += \
     jobjectwrapper.h \
     metainfo.h \
     modelapi.h \
+    objectdata.h \
     paint.h \
     qmlapi.h \
     qtjambi_cast_array.h \

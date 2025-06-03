@@ -44,6 +44,10 @@ TypeSystem{
     RequiredLibrary{
         name: "QtWidgets"
     }
+
+    RequiredPackage{
+        name: "io.qt.qml"
+    }
     
     NamespaceType{
         name: "QQuickTest"

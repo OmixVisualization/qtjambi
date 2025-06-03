@@ -341,8 +341,8 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
         		qtBinariesPath = qtLibraryPath.getAbsolutePath();
         	}
     	}
-    	File utilitiesDir = new File(new File(testsDir.getParentFile(), "qtjambi"), "bin");
     	String macosPrefix = "";
+    	File utilitiesDir = new File(macosPrefix + "../../../../deployment/platforms/" + TestUtility.osArchName() + (isDebug ? "/debug/utilities" : "/release/utilities"));
 		final File tmpDir = new File(System.getProperty("java.io.tmpdir"));
 		String processName = "";
     	File jambiDeploymentDir = null;

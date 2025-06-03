@@ -31,7 +31,12 @@
 
 #include <QtCore/QtGlobal>
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+
 QT_WARNING_DISABLE_DEPRECATED
+QT_WARNING_DISABLE_GCC("-Winaccessible-base")
+QT_WARNING_DISABLE_CLANG("-Winaccessible-base")
+
 
 #include "qtjambiapi.h"
 #include <QtCore/QReadWriteLock>
@@ -1240,3 +1245,5 @@ jobject NestedPointersRCAutoLinkedListAccess::takeLast(JNIEnv * env, const Conta
     updateRC(env, container);
     return result;
 }
+
+#endif

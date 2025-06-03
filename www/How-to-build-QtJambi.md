@@ -9,8 +9,8 @@ Therefore, download [QtJambi source code from Github](https://github.com/OmixVis
 
 ## Requirements
 * [Apache Ant](https://ant.apache.org/) (min. 1.10.x)
-* Java Development Kit (e.g. [OpenJDK](https://adoptopenjdk.net/), tested with Java 1.8, 11 and 21)
-* Qt 5.15 or 6.x (using the Qt Online Installer)
+* Java Development Kit (e.g. [OpenJDK](https://adoptopenjdk.net/), tested with Java 11 and 21)
+* Qt 6.x (using the Qt Online Installer)
 * Minimum required Qt modules: QtCore, QtQml, QtNetwork, QtConcurrent and QtXml
 * C++ compiler and make (Gcc, Clang, MSVC2022)
 * XCode command line tools (macOS only)

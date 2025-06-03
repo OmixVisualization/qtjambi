@@ -39,6 +39,8 @@ QT_WARNING_DISABLE_DEPRECATED
 #include "typemanager_p.h"
 #include "qtjambi_cast.h"
 
+QT_WARNING_DISABLE_GCC("-Wattributes")
+
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 QT_WARNING_DISABLE_GCC("-Wdeprecated-declarations")
 QT_WARNING_DISABLE_DEPRECATED

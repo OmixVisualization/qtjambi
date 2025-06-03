@@ -261,7 +261,8 @@
             <exclude name="io/qt/**/TestBluetooth*.java" unless="${qtjambi.bluetooth.any.true}"/>
             <exclude name="io/qt/**/TestScript*.java" unless="${qtjambi.script.any.true}"/>
             <exclude name="io/qt/**/TestQScript*.java" unless="${qtjambi.script.any.true}"/>
-            <exclude name="io/qt/**/TestWebEngineQ*.java" unless="${qtjambi.webengine.any.true}"/>
+            <exclude name="io/qt/**/TestWebEngineQuickQt5.java" unless="${qtjambi.webengine.any.true}"/>
+            <exclude name="io/qt/**/TestWebEngineQ*.java" unless="${qtjambi.webenginequick.any.true}"/>
             <exclude name="io/qt/**/TestWebView*.java" unless="${qtjambi.webview.any.true}"/>
             <exclude name="io/qt/**/TestConcurrent*.java" unless="${qtjambi.concurrent.any.true}"/>
             <exclude name="io/qt/**/TestNetwork*.java" unless="${qtjambi.network.any.true}"/>
@@ -521,6 +522,8 @@
             <property name="module.suffix" value=""/>
             <property name="test.javaext.outdir" location="${outputDir}/${qtjambi.osname}/tests/javaext"/>
             <property name="test.javaext.srcoutdir" location="${outputDir}/${qtjambi.osname}/tests/javaext-src"/>
+            <property name="test.javamd.outdir" location="${outputDir}/${qtjambi.osname}/tests/javamd"/>
+            <property name="test.javamd.srcoutdir" location="${outputDir}/${qtjambi.osname}/tests/javamd-src"/>
             <property name="test.java.outdir" location="${outputDir}/${qtjambi.osname}/tests/java"/>
             <property name="test.java.srcoutdir" location="${outputDir}/${qtjambi.osname}/tests/java-src"/>
         </ant>
@@ -569,21 +572,61 @@
         <copy todir="${test.javaext.srcoutdir}">
             <fileset refid="qtjambi.autotest.jdkextended.classes"/>
         </copy>
-        <javac destdir="${test.java.outdir}" debug="true" srcdir="${test.java.srcoutdir}"
-                includeantruntime="false" excludes="module-info.java"
-                source="8" target="8" encoding="UTF-8">
-            <compilerarg value="-Xlint:deprecation" />
-            <compilerarg value="-Xlint:unchecked" />
-            <compilerarg value="-Xlint:-options" />
-            <classpath>
-				<fileset dir="${deploymentdir}">
-					<include name="qtjambi*-${qtjambi.jar.version}.jar"/>
-					<exclude name="qtjambi-*native-*.jar"/>
-				</fileset>
-				<pathelement location="${resourcesdir}/junit.jar" />
-				<pathelement location="${resourcesdir}/hamcrest.jar" />
-            </classpath>
-        </javac>
+        <delete dir="${test.javamd.srcoutdir}" failonerror="false"/>
+        <mkdir dir="${test.javamd.srcoutdir}"/>
+        <copy todir="${test.javamd.srcoutdir}">
+			<fileset dir="${java.srcdir}/autotests">
+				<include name="module-info.java"/>
+			</fileset>
+        </copy>
+		<if>
+            <istrue value="${java.module.based}"/>
+            <then>
+				<javac destdir="${test.java.outdir}" debug="true" srcdir="${test.java.srcoutdir}"
+						includeantruntime="false"
+						source="${source.java.version}" target="${minimum.java.version}" encoding="UTF-8">
+					<compilerarg value="-Xlint:-deprecation,-unchecked,-module,-options" />
+					<classpath>
+						<fileset dir="${deploymentdir}">
+							<include name="qtjambi*-${qtjambi.jar.version}.jar"/>
+							<exclude name="qtjambi-*native-*.jar"/>
+						</fileset>
+						<pathelement location="${resourcesdir}/junit.jar" />
+						<pathelement location="${resourcesdir}/hamcrest.jar" />
+						<pathelement location="${resourcesdir}/jsr305.jar"/>
+						<pathelement location="${resourcesdir}/kotlin-annotations-jvm.jar"/>
+					</classpath>
+				</javac>
+				<javac destdir="${test.java.outdir}" debug="true" srcdir="${test.javamd.srcoutdir}"
+						includeantruntime="false"
+						source="${source.java.version}" target="${minimum.java.version}" encoding="UTF-8">
+					<compilerarg value="-Xlint:-deprecation,-unchecked,-module,-options" />
+					<modulepath>
+						<fileset dir="${deploymentdir}">
+							<include name="qtjambi*-${qtjambi.jar.version}.jar"/>
+							<exclude name="qtjambi-*native-*.jar"/>
+						</fileset>
+					</modulepath>
+				</javac>
+            </then>
+			<else>
+				<javac destdir="${test.java.outdir}" debug="true" srcdir="${test.java.srcoutdir}"
+						includeantruntime="false" excludes="module-info.java"
+						source="${source.java.version}" target="${minimum.java.version}" encoding="UTF-8">
+					<compilerarg value="-Xlint:-deprecation,-unchecked,-options" />
+					<classpath>
+						<fileset dir="${deploymentdir}">
+							<include name="qtjambi*-${qtjambi.jar.version}.jar"/>
+							<exclude name="qtjambi-*native-*.jar"/>
+						</fileset>
+						<pathelement location="${resourcesdir}/junit.jar" />
+						<pathelement location="${resourcesdir}/hamcrest.jar" />
+						<pathelement location="${resourcesdir}/jsr305.jar"/>
+						<pathelement location="${resourcesdir}/kotlin-annotations-jvm.jar"/>
+					</classpath>
+				</javac>
+			</else>
+        </if>
 		<if>
 			<not>
 				<or>
@@ -597,11 +640,8 @@
 			</not>
 			<then>
 				<javac destdir="${test.javaext.outdir}" debug="true" srcdir="${test.javaext.srcoutdir}"
-						includeantruntime="false" encoding="UTF-8" source="${target.java.version}">
-					<compilerarg value="-Xlint:deprecation" />
-					<compilerarg value="-Xlint:unchecked" />
-					<compilerarg value="-Xlint:-options" />
-					<compilerarg value="-Xlint:-preview" />
+						includeantruntime="false" encoding="UTF-8" source="${target.java.version}" target="${target.java.version}">
+					<compilerarg value="-Xlint:-deprecation,-unchecked,-options,-preview" />
 					<compilerarg value="--enable-preview" />
 					<classpath>
 						<fileset dir="${deploymentdir}">
@@ -610,6 +650,8 @@
 						</fileset>
 						<pathelement location="${resourcesdir}/junit.jar" />
 						<pathelement location="${resourcesdir}/hamcrest.jar" />
+						<pathelement location="${resourcesdir}/jsr305.jar"/>
+						<pathelement location="${resourcesdir}/kotlin-annotations-jvm.jar"/>
 						<pathelement location="${test.java.outdir}" />
 					</classpath>
 				</javac>
@@ -786,9 +828,101 @@
 							<os family="windows"/>
 							<then>
 								<property name="test.jvm" location="${java.home.target}/bin/java.exe"/>
+								<if>
+									<equals arg1="${qtjambi.osname}" arg2="windows-arm64"/>
+									<then>
+										<loadproperties srcFile="${java.home.target}/release" prefix="fork-jvm">
+											<filterchain>
+												<linecontains>
+													<contains value="OS_ARCH"/>
+												</linecontains>
+											</filterchain>
+										</loadproperties>
+										<if>
+											<not>
+												<equals arg1="${fork-jvm.OS_ARCH}" arg2="&quot;aarch64&quot;"/>
+											</not>
+											<then>
+												<property name="skip-unittests" value="true"/>
+											</then>
+										</if>
+									</then>
+									<else>
+										<if>
+											<or>
+												<equals arg1="${qtjambi.osname}" arg2="windows-x64"/>
+												<equals arg1="${qtjambi.osname}" arg2="windows-llvm-mingw-x64"/>
+												<equals arg1="${qtjambi.osname}" arg2="windows-mingw-x64"/>
+											</or>
+											<then>
+												<loadproperties srcFile="${java.home.target}/release" prefix="fork-jvm">
+													<filterchain>
+														<linecontains>
+															<contains value="OS_ARCH"/>
+														</linecontains>
+													</filterchain>
+												</loadproperties>
+												<if>
+													<not>
+														<equals arg1="${fork-jvm.OS_ARCH}" arg2="&quot;x86_64&quot;"/>
+													</not>
+													<then>
+														<property name="skip-unittests" value="true"/>
+													</then>
+												</if>
+											</then>
+											<else>
+											</else>
+										</if>
+									</else>
+								</if>
 							</then>
 							<else>
 								<property name="test.jvm" location="${java.home.target}/bin/java"/>
+								<if>
+									<equals arg1="${qtjambi.osname}" arg2="linux-arm64"/>
+									<then>
+										<loadproperties srcFile="${java.home.target}/release" prefix="fork-jvm">
+											<filterchain>
+												<linecontains>
+													<contains value="OS_ARCH"/>
+												</linecontains>
+											</filterchain>
+										</loadproperties>
+										<if>
+											<not>
+												<equals arg1="${fork-jvm.OS_ARCH}" arg2="&quot;aarch64&quot;"/>
+											</not>
+											<then>
+												<property name="skip-unittests" value="true"/>
+											</then>
+										</if>
+									</then>
+									<else>
+										<if>
+											<equals arg1="${qtjambi.osname}" arg2="linux-x64"/>
+											<then>
+												<loadproperties srcFile="${java.home.target}/release" prefix="fork-jvm">
+													<filterchain>
+														<linecontains>
+															<contains value="OS_ARCH"/>
+														</linecontains>
+													</filterchain>
+												</loadproperties>
+												<if>
+													<not>
+														<equals arg1="${fork-jvm.OS_ARCH}" arg2="&quot;x86_64&quot;"/>
+													</not>
+													<then>
+														<property name="skip-unittests" value="true"/>
+													</then>
+												</if>
+											</then>
+											<else>
+											</else>
+										</if>
+									</else>
+								</if>
 							</else>
 						</if>
 						<if>
@@ -803,10 +937,15 @@
 				</if>
 				
 				<if>
-					<or>
-						<equals arg1="${jdk-exec-version}" arg2=""/>
-						<available file="${test.jvm}" type="file"/>
-					</or>
+					<and>
+						<not>
+							<istrue value="${skip-unittests}"/>
+						</not>
+						<or>
+							<equals arg1="${jdk-exec-version}" arg2=""/>
+							<available file="${test.jvm}" type="file"/>
+						</or>
+					</and>
 					<then>
 						<if>
 							<os family="windows"/>
@@ -906,6 +1045,7 @@
 							</then>
 							<else>
 								<property name="XstartOnFirstThread" value="-Dx" />
+								<property name="SYSTEM_VERSION_COMPAT" value="_" />
 							</else>
 						</if>
 						<if>
@@ -961,6 +1101,9 @@
 						<condition property="Dio.qt.enable-metaobject-logs" value="-Dio.qt.enable-metaobject-logs=${io.qt.enable-metaobject-logs}" else="-Dx">
 							<isset property="io.qt.enable-metaobject-logs"/>
 						</condition>
+						<condition property="JVMArg.enable.native.access" value="-Dx" else="--enable-native-access=ALL-UNNAMED">
+							<less arg1="${target.java.version}" arg2="21"/>
+						</condition>
 						<trycatch>
 							<try>
 								<mkdir dir="${outputDir}/${qtjambi.osname}/tests/junitxml-${kind}${jdk-exec-version}"/>
@@ -992,8 +1135,8 @@
 									<jvmarg value="-Dio.qt.qml-imports=${testQmlPath}"/>
 									<jvmarg value="-Dio.qt.pluginpath=${qtjambiPluginPath}${psep}${testPluginPath}"/>
 									<jvmarg value="${XstartOnFirstThread}"/>
+									<jvmarg value="${JVMArg.enable.native.access}"/>
 									<jvmarg value="-Dqtjambi.deployer.test.jdbc=${testJdbcPath}"/>
-									<jvmarg value="-Dqtjambi.antcontrib=${ant.library.dir}/ant.jar"/>
 									<!--jvmarg value="-Xrs"/-->
 									<!-- This stops JVM intercepting SIGSEGV
 									from native code (so we can see where/why it crashed) otherwise
@@ -1037,7 +1180,7 @@
             </then>
             <else>
                 <if>
-                    <available file="${deploymentdir}/platforms/${qtjambi.osname}/release" type="dir"/>
+                    <available file="${deploymentdir}/native/qtjambi-native-${qtjambi.osname}-${qtjambi.jar.version}.jar" type="file"/>
                     <then>
                         <antcall target="release.run"/>
                     </then>
@@ -1051,7 +1194,7 @@
     
     <target name="release.run">
         <if>
-            <available file="${deploymentdir}/platforms/${qtjambi.osname}/release" type="dir"/>
+            <available file="${deploymentdir}/native/qtjambi-native-${qtjambi.osname}-${qtjambi.jar.version}.jar" type="file"/>
             <then>
                 <if>
                     <os family="mac"/>
@@ -1232,14 +1375,12 @@
 					<available file="${deploymentdir}/platforms/${qtjambi.osname}/release" type="dir"/>
 					<then>
 						<antcall target="release.run"/>
-						<antcall target="release.run8"/>
 					</then>
 				</if>
 				<if>
 					<available file="${deploymentdir}/platforms/${qtjambi.osname}/debug" type="dir"/>
 					<then>
 						<antcall target="debug.run"/>
-						<antcall target="debug.run8"/>
 					</then>
 				</if>
             </try>
@@ -1341,9 +1482,6 @@
         <trycatch>
             <try>
                 <antcall target="release.run"/>
-                <antcall target="release.run8">
-                    <param name="check.jdk8" value="true"/>
-                </antcall>
             </try>
             <finally>
                 <if>
@@ -1363,9 +1501,6 @@
         <trycatch>
             <try>
                 <antcall target="debug.run"/>
-                <antcall target="debug.run8">
-                    <param name="check.jdk8" value="true"/>
-                </antcall>
             </try>
             <finally>
                 <if>

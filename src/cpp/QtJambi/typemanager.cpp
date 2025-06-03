@@ -60,6 +60,7 @@ QT_WARNING_DISABLE_GCC("-Winit-list-lifetime")
 #include "jobjectwrapper.h"
 #include "typemanager_p.h"
 #include "qtjambilink_p.h"
+#include "coreapi.h"
 #include "registryutil_p.h"
 #include "containeraccess.h"
 #include "containeraccess_p.h"

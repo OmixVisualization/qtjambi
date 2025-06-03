@@ -416,7 +416,6 @@ namespace Java{
                                      QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(initialize)
                                      QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(detach)
                                      QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(reset)
-                                     QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(assignNativeId)
                                      QTJAMBI_REPOSITORY_DECLARE_LONG_METHOD(nativeId)
                                      QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(get)
                                      QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(takeOwnership)

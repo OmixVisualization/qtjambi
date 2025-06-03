@@ -245,7 +245,7 @@ ${javac.extra.excludes}"/>
                             as published by the Free Software Foundation. 
                             Qt and respective logos are trademarks of The Qt Company Ltd. in Finland and/or other countries worldwide. 
                             All other trademarks are property of their respective owners.]]></bottom>
-				<header><![CDATA[<div style="margin-top: 14px;"><strong>QtJambi ${qtjambi.jar.version}</strong></div>]]></header>
+				<header><![CDATA[<div id="qtjambidocheader" style="display: grid; place-items: center; height: 100%;"><strong>QtJambi ${qtjambi.jar.version}</strong></div>]]></header>
             </javadoc>
         </then>
         <else>
@@ -284,16 +284,10 @@ ${javac.extra.excludes}"/>
                             as published by the Free Software Foundation. 
                             Qt and respective logos are trademarks of The Qt Company Ltd. in Finland and/or other countries worldwide. 
                             All other trademarks are property of their respective owners.]]></bottom>
-				<header><![CDATA[<div style="margin-top: 14px;"><strong>QtJambi ${qtjambi.jar.version}</strong></div>]]></header>
+				<header><![CDATA[<div id="qtjambidocheader" style="display: grid; place-items: center; height: 100%;"><strong>QtJambi ${qtjambi.jar.version}</strong></div>]]></header>
             </javadoc>
         </else>
     </if>
-    <replace file="${outputDir}/javadocs/all/stylesheet.css" token="#4A6782;" value="#174e1a;"/>
-    <replace file="${outputDir}/javadocs/all/stylesheet.css" token="#bb7a2a;" value="#17a81a;"/>
-    <replace file="${outputDir}/javadocs/all/stylesheet.css" token="#4D7A97;" value="#4f9d08;"/>
-    <replace file="${outputDir}/javadocs/all/stylesheet.css" token="#bb7a2a;" value="#41cd52;"/>
-    <replace file="${outputDir}/javadocs/all/stylesheet.css" token="#F8981D;" value="#41cd52;"/>
-    <replace file="${outputDir}/javadocs/all/stylesheet.css" token="#2c4557;" value="#000000;"/>
     <echo>creating ${deploymentdir}/qtjambi-${qtjambi.jar.version}-javadocs.zip</echo>
     <delete file="${deploymentdir}/qtjambi-${qtjambi.jar.version}-javadocs.zip"/>
     <zip destfile="${deploymentdir}/qtjambi-${qtjambi.jar.version}-javadocs.zip">

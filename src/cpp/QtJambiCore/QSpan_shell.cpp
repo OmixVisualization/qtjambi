@@ -780,7 +780,7 @@ extern "C" JNIEXPORT jstring JNICALL Java_io_qt_core_AbstractSpan_toString
             bool isConst = containerAccess->isConst();
             QtJambiSpan* span = reinterpret_cast<QtJambiSpan*>(container.first);
             if(span->size && span->begin)
-                result = qtjambi_cast<jstring>(env, QString::asprintf("QSpan<%s%s>(%p,%lld)", isConst ? "const " : "", containerAccess->elementMetaType().name(), span->begin, span->size));
+                result = qtjambi_cast<jstring>(env, QString::asprintf("QSpan<%s%s>(%p,%lld)", isConst ? "const " : "", containerAccess->elementMetaType().name(), span->begin, quint64(span->size)));
             else
                 result = qtjambi_cast<jstring>(env, QString::asprintf("QSpan<%s%s>()", isConst ? "const " : "", containerAccess->elementMetaType().name()));
         }

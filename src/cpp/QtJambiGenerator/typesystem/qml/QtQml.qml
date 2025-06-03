@@ -70,7 +70,7 @@ TypeSystem{
     
     InjectCode{
         target: CodeClass.ModuleInfo
-        Text{content: "exports io.qt.qml.util;"}
+        Text{content: "exports io.qt.qml.util;\nrequires java.logging;"}
     }
     
     Rejection{

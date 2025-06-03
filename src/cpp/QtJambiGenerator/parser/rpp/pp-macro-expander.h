@@ -44,6 +44,8 @@
 #include "pp-internal.h"
 #include "pp-iterator.h"
 
+QT_WARNING_DISABLE_DEPRECATED
+
 namespace rpp {
 
     struct pp_frame {

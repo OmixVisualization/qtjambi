@@ -204,6 +204,7 @@ class MethodPrintFromLink : public MethodPrint
 public:
     MethodPrintFromLink(const QSharedPointer<QtJambiLink>& link, const char* method, const char* file, int line, const char *function);
     MethodPrintFromLink(const QWeakPointer<QtJambiLink>& link, const char* method, const char* file, int line, const char *function);
+    MethodPrintFromLink(const QtJambiLink* link, const char* method, const char* file, int line, const char *function);
 };
 
 class MethodPrintFromArgs : public MethodPrint

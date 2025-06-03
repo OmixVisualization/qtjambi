@@ -7,7 +7,7 @@ along with platform-dependent **qtjambi-deployer-native-X.jar** for all platform
 
 In the examples below, we assume you created an application in a jar
 file `my-company-app.jar` with main class `my.company.app.Main`
-depending on `qtjambi-6.8.3.jar`.
+depending on `qtjambi-6.8.4.jar`.
 
 Call the app deployer as shown below. Make sure the library path points
 to the *Qt* libraries being `bin` on *Windows* and `lib`
@@ -15,7 +15,7 @@ on *Linux* and *macOS*.
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.8.3.jar:qtjambi-deployer-6.8.3.jar
+     -p qtjambi-6.8.4.jar:qtjambi-deployer-6.8.4.jar
      -m qtjambi.deployer app
 ```
 
@@ -23,7 +23,7 @@ Alternative way to call it:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -cp qtjambi-6.8.3.jar:qtjambi-deployer-6.8.3.jar
+     -cp qtjambi-6.8.4.jar:qtjambi-deployer-6.8.4.jar
      io.qt.qtjambi.deployer.Main app
 ```
 
@@ -76,8 +76,8 @@ installation directory
 	| qml (only when using QtQml)
 	| resources (only when using QtWebEngine)
     | lib
-        | qtjambi-6.8.3.jar
-        | qtjambi-native-windows-x64-6.8.3.jar
+        | qtjambi-6.8.4.jar
+        | qtjambi-native-windows-x64-6.8.4.jar
         | my-company-app.jar
     | jre
         | ... (Java Runtime Environment)
@@ -88,11 +88,11 @@ append the following commands to the above listed *QtJambi deployer* command:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.8.3.jar;qtjambi-deployer-6.8.3.jar
+     -p qtjambi-6.8.4.jar;qtjambi-deployer-6.8.4.jar
      -m qtjambi.deployer app
      --application=MyCompanyApp
      --executable=utilities/QtJambiLauncher.exe
-     --class-path=../lib/my-company-app.jar;../lib/qtjambi-6.8.3.jar;../lib/qtjambi-native-windows-x64-6.8.3.jar
+     --class-path=../lib/my-company-app.jar;../lib/qtjambi-6.8.4.jar;../lib/qtjambi-native-windows-x64-6.8.4.jar
      --library-path=.
      --jvm-path=../jre
      --main-class=my.company.app.Main
@@ -116,11 +116,11 @@ installation directory
 	| resources (only when using QtWebEngine)
 	| libexec (only when using QtWebEngine)
     | lib
-        | libQt6Core.so[.6.8.3]
-        | libQt6Gui.so[.6.8.3]
-        | libQt6Widgets.so[.6.8.3]
-        | qtjambi-6.8.3.jar
-        | qtjambi-native-linux-x64-6.8.3.jar
+        | libQt6Core.so[.6.8.4]
+        | libQt6Gui.so[.6.8.4]
+        | libQt6Widgets.so[.6.8.4]
+        | qtjambi-6.8.4.jar
+        | qtjambi-native-linux-x64-6.8.4.jar
         | my-company-app.jar
     | jre
         | ... (Java Runtime Environment)
@@ -131,11 +131,11 @@ the following commands to the above listed *QtJambi deployer* command:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.8.3.jar:qtjambi-deployer-6.8.3.jar
+     -p qtjambi-6.8.4.jar:qtjambi-deployer-6.8.4.jar
      -m qtjambi.deployer app
      --application=MyCompanyApp
      --executable=utilities/QtJambiLauncher
-     --class-path=lib/my-company-app.jar:lib/qtjambi-6.8.3.jar:lib/qtjambi-native-linux-x64-6.8.3.jar
+     --class-path=lib/my-company-app.jar:lib/qtjambi-6.8.4.jar:lib/qtjambi-native-linux-x64-6.8.4.jar
      --library-path=lib
      --jvm-path=jre
      --main-class=my.company.app.Main
@@ -164,8 +164,8 @@ installation directory
                 | QtGui.framework
                 | QtWidgets.framework
              | lib
-                | qtjambi-6.8.3.jar
-                | qtjambi-native-macos-6.8.3.jar
+                | qtjambi-6.8.4.jar
+                | qtjambi-native-macos-6.8.4.jar
                 | my-company-app.jar
             | jre
                 | ... (Java Runtime Environment)
@@ -179,11 +179,11 @@ append the following commands to the above listed *QtJambi deployer* command:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.8.3.jar:qtjambi-deployer-6.8.3.jar
+     -p qtjambi-6.8.4.jar:qtjambi-deployer-6.8.4.jar
      -m qtjambi.deployer app
      --application=MyCompanyApp
      --executable=utilities/QtJambiLauncher.app
-     --class-path=MyCompanyApp.app/Contents/lib/my-company-app.jar:MyCompanyApp.app/Contents/lib/qtjambi-6.8.3.jar:MyCompanyApp.app/Contents/lib/qtjambi-native-macos-6.8.3.jar
+     --class-path=MyCompanyApp.app/Contents/lib/my-company-app.jar:MyCompanyApp.app/Contents/lib/qtjambi-6.8.4.jar:MyCompanyApp.app/Contents/lib/qtjambi-native-macos-6.8.4.jar
      --library-path=MyCompanyApp.app/Contents/Frameworks
      --jvm-path=MyCompanyApp.app/Contents/jre
      --main-class=my.company.app.Main

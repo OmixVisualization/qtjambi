@@ -13721,48 +13721,35 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                     action: ReferenceCount.Set
                 }
             }
-            since: 6
         }
-        since: 6
-    }
-    
-    EnumType{
-        name: "QFileSystemModel::Roles"
-        since: 6
-    }
-    
-    EnumType{
-        name: "QFileSystemModel::Option"
-        since: 6
-    }
-    
-    EnumType{
-        name: "QInputDevice::DeviceType"
-        since: 6
-    }
-    
-    EnumType{
-        name: "QInputDevice::Capability"
+        EnumType{
+            name: "Roles"
+        }
+        EnumType{
+            name: "Option"
+        }
         since: 6
     }
     
     ObjectType{
         name: "QInputDevice"
-        since: 6
-    }
-    
-    EnumType{
-        name: "QPointingDevice::PointerType"
-        since: 6
-    }
-    
-    EnumType{
-        name: "QPointingDevice::GrabTransition"
+        EnumType{
+            name: "DeviceType"
+        }
+        EnumType{
+            name: "Capability"
+        }
         since: 6
     }
     
     ObjectType{
         name: "QPointingDevice"
+        EnumType{
+            name: "PointerType"
+        }
+        EnumType{
+            name: "GrabTransition"
+        }
         ModifyFunction{
             signature: "setType(QInputDevice::DeviceType)"
             remove: RemoveFlag.All

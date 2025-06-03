@@ -854,9 +854,9 @@ public class QList<T> extends AbstractList<T> implements Cloneable
     	else if(expectedClass==boolean.class)
     		c = 'Z';
     	else
-    		c = expectedClass.getSimpleName().toUpperCase().charAt(0);
+    		c = Character.toUpperCase(expectedClass.getSimpleName().charAt(0));
     	QMetaType elementMetaType = list.elementMetaType();
-    	if(elementMetaType.javaType()!=expectedClass)
+    	if(elementMetaType.javaType()!=expectedClass || !expectedClass.isPrimitive())
     		throw new IllegalArgumentException(String.format("Cannot convert QSpan<%1$s> to %2$s[]", elementMetaType.name(), expectedClass.getTypeName()));
     	return arrayClass.cast(asArray(QtJambi_LibraryUtilities.internal.nativeId(list), c));
     }

@@ -43,8 +43,8 @@ QT_WARNING_DISABLE_DEPRECATED
 #include <QtCore/QtEndian>
 #include <QtCore/QVariant>
 #include <QtCore/QCalendar>
-#include <QtJambi/CoreAPI>
 #include <QtJambi/QtJambiAPI>
+#include <QtJambi/CoreAPI>
 #include <QtJambi/RegistryAPI>
 #include <QtJambi/ThreadAPI>
 #include <QtJambi/JObjectWrapper>
@@ -1972,11 +1972,11 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QtJambi_1LibraryUtilities_init
 }
 
 // QStaticPlugin::instance()
-extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QStaticPlugin_instance(JNIEnv *__jni_env, jobject __this){
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QStaticPlugin_instance(JNIEnv *__jni_env, jclass, QtJambiNativeID __this_nativeId){
     jobject _result{nullptr};
     QTJAMBI_NATIVE_METHOD_CALL("QStaticPlugin::instance()")
     QTJAMBI_TRY{
-        QStaticPlugin *__qt_this = QtJambiAPI::convertJavaObjectToQObject<QStaticPlugin>(__jni_env, __this);
+        const QStaticPlugin *__qt_this = QtJambiAPI::objectFromNativeId<QStaticPlugin>(__this_nativeId);
         QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
         _result = qtjambi_cast<jobject>(__jni_env, __qt_this->instance());
     }QTJAMBI_CATCH(const JavaException& exn){

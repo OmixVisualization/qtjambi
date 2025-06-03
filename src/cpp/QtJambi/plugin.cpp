@@ -42,6 +42,7 @@
 #include "java_p.h"
 #include "exception.h"
 #include "qtjambilink_p.h"
+#include "coreapi.h"
 #include "qtjambi_cast.h"
 
 #if defined(Q_OS_WIN32)

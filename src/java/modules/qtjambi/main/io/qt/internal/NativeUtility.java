@@ -325,8 +325,7 @@ public abstract class NativeUtility {
 			return native__id;
 		}
 		
-		@NativeAccess
-		public final synchronized void assignNativeId(long ptr) {
+		private final synchronized void assignNativeId(long ptr) {
 			assignNativeId(native__id, ptr);
 		}
 		

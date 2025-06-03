@@ -44,6 +44,9 @@
 #include <QHash>
 #include "typedatabase.h"
 
+QT_WARNING_DISABLE_GCC("-Woverloaded-virtual")
+QT_WARNING_DISABLE_CLANG("-Woverloaded-virtual")
+
 struct Pri {
     QStringList headers;
     QStringList sources;

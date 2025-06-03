@@ -29,6 +29,10 @@
 **
 ****************************************************************************/
 
+#include <QtCore/QtGlobal>
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+
 #include "qtjambiapi.h"
 #include <QtCore/QMap>
 #include <QtCore/QSharedPointer>
@@ -39,6 +43,9 @@
 #include "qtjambilink_p.h"
 #include "java_p.h"
 #include "coreapi.h"
+
+QT_WARNING_DISABLE_GCC("-Winaccessible-base")
+QT_WARNING_DISABLE_CLANG("-Winaccessible-base")
 
 AutoVectorAccess::AutoVectorAccess(
         int elementMetaType,
@@ -1481,3 +1488,5 @@ void NestedPointersRCAutoVectorAccess::replace(JNIEnv * env, const ContainerInfo
     AutoVectorAccess::replace(env, container, index, value);
     updateRC(env, container);
 }
+
+#endif

@@ -42,6 +42,9 @@
 #include "java_p.h"
 #include "coreapi.h"
 
+QT_WARNING_DISABLE_GCC("-Winaccessible-base")
+QT_WARNING_DISABLE_CLANG("-Winaccessible-base")
+
 #if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
 
 AutoSpanAccess::AutoSpanAccess(
@@ -181,7 +184,7 @@ void AutoSpanAccess::debugStream(QDebug &dbg, const void *ptr)
 {
     const QtJambiSpan* span = reinterpret_cast<const QtJambiSpan*>(ptr);
     if(span->size && span->begin)
-        dbg << QString::asprintf("QSpan<%s%s>(%p,%lld)", isConst() ? "const " : "", elementMetaType().name(), span->begin, span->size);
+        dbg << QString::asprintf("QSpan<%s%s>(%p,%lld)", isConst() ? "const " : "", elementMetaType().name(), span->begin, quint64(span->size));
     else
         dbg << QString::asprintf("QSpan<%s%s>()", isConst() ? "const " : "", elementMetaType().name());
 }

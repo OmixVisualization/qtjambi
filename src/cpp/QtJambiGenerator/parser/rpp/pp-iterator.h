@@ -39,7 +39,11 @@
 #ifndef PP_ITERATOR_H
 #define PP_ITERATOR_H
 
+#include <string>
 #include <iterator>
+#include <QtCore/QtGlobal>
+
+QT_WARNING_DISABLE_DEPRECATED
 
 namespace rpp {
 

@@ -41,6 +41,9 @@
 #include "java_p.h"
 #include "coreapi.h"
 
+QT_WARNING_DISABLE_GCC("-Winaccessible-base")
+QT_WARNING_DISABLE_CLANG("-Winaccessible-base")
+
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 QSharedPointer<class AutoPairAccess> getPairAccess(const QtPrivate::QMetaTypeInterface *iface){
     return findContainerAccess(iface->typeId.loadAcquire()).dynamicCast<AutoPairAccess>();

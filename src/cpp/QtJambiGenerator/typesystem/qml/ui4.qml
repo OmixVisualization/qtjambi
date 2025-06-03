@@ -42,6 +42,11 @@ TypeSystem{
         position: Position.Position1
         Text{content: "void initialize_meta_info_UIC();"}
     }
+
+    InjectCode{
+        target: CodeClass.ModuleInfo
+        Text{content: "requires java.logging;"}
+    }
     
     InjectCode{
         target: CodeClass.MetaInfo

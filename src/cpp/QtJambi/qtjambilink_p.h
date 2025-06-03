@@ -36,19 +36,18 @@
 #include <QtCore/QEvent>
 #include <QtCore/QList>
 #include <QtCore/QRunnable>
-#include "testapi.h"
 #include "registryutil_p.h"
-#include "qtjambiapi.h"
-#include "jobjectwrapper.h"
-#include "coreapi.h"
-#include <typeindex>
+#include "objectdata.h"
+
+enum class QtJambiNativeID : jlong;
 
 #if defined(QTJAMBI_DEBUG_TOOLS) || !defined(QT_NO_DEBUG)
 #define QTJAMBI_INCREASE_COUNTER_THIS(counter) TestAPI::increaseDebugCounter(TestAPI::DebugCounters::counter, QtJambiLink::qtTypeName());
 #define QTJAMBI_INCREASE_COUNTER(counter, _this) if(_this) TestAPI::increaseDebugCounter(TestAPI::DebugCounters::counter, _this->qtTypeName());
 #define QTJAMBI_INCREASE_COUNTER2(counter, qtTypeName) TestAPI::increaseDebugCounter(TestAPI::DebugCounters::counter, qtTypeName);
 namespace TestAPI{
-void increaseDebugCounter(TestAPI::DebugCounters debugCounter, const char*className);
+enum class DebugCounters;
+void increaseDebugCounter(DebugCounters debugCounter, const char*className);
 }
 #else
 #define QTJAMBI_INCREASE_COUNTER_THIS(counter)
@@ -192,10 +191,10 @@ private:
 class QtJambiLink{
 public:
     enum class Ownership : quint8 {
-        None = 0,
-        Java = 0x001,   // Weak ref to java object, deleteNativeObject deletes c++ object
-        Cpp = 0x002,    // Strong ref to java object until c++ object is deleted, deleteNativeObject does *not* delete c++ obj.
-        Split = 0x004  // Weak ref to java object, deleteNativeObject does *not* delete c++ object. Only for objects not created by Java.
+        None =                      0x00000000,
+        Java =                      0x00000001,   // Weak ref to java object, deleteNativeObject deletes c++ object
+        Cpp =                       0x00000002,    // Strong ref to java object until c++ object is deleted, deleteNativeObject does *not* delete c++ obj.
+        Split =                     0x00000004  // Weak ref to java object, deleteNativeObject does *not* delete c++ object. Only for objects not created by Java.
     };
 
     enum class Flag : quint32{
@@ -204,38 +203,38 @@ public:
         CppOwnership = quint32(Ownership::Cpp),    // Strong ref to java object until c++ object is deleted, deleteNativeObject does *not* delete c++ obj.
         SplitOwnership = quint32(Ownership::Split),  // Weak ref to java object, deleteNativeObject does *not* delete c++ object. Only for objects not created by Java.
         OwnershipMask = JavaOwnership | CppOwnership | SplitOwnership,
-        JavaObjectIsReleased = 0x0008,
-        IsInitialized = 0x0010,
-        IsOffsetsUnregistered = 0x0020,
-        HasBeenCleaned = 0x0040,
-        CreatedByJava = 0x0080,
-        IsShell = 0x0100,
-        IsJavaLinkDetached = 0x0200,
-        BlockDeletion = 0x0400,
-        IsDependent = 0x0800,
-        HasDependencies = 0x080000,
-        IsInDestructor = 0x1000,
-        IsDeleteLater = 0x2000,
-        IsQThread = 0x4000,
-        CreatedByQml = 0x8000,
+        IsInitialized =             0x00000008,
+        JavaObjectIsReleased =      0x00000010,
+        IsOffsetsUnregistered =     0x00000020,
+        CreatedByJava =             0x00000040,
+        CreatedByQml =              0x00000080,
+        IsShell =                   0x00000100,
+        IsJavaLinkDetached =        0x00000200,
+        HasBeenCleaned =            0x00000400,
+        BlockDeletion =             0x00000800,
+        IsDisposed =                0x00001000,
+        IsInDestructor =            0x00002000,
+        IsDeleteLater =             0x00004000,
+        NoNativeDeletion =          0x00008000,
+        IsDependent =               0x00010000,
+        HasDependencies =           0x00020000,
+        IsManaged =                 0x00040000,
+        HasDisposedSignal =         0x00080000,
+        IsPendingValueOwner =       0x00100000,
+        NoDebugMessaging =          0x00200000,
+        IsPointerRegistered =       0x00400000,
+        NeedsReferenceCounting =    0x00800000,
+        shared_ptr =                0x01000000,
+        QSharedPointer =            0x02000000,
+        weak_ptr =                  0x04000000,
+        QWeakPointer =              0x08000000,
+        SmartPointerMask =          0x0f000000,
+        IsQThread =                 0x10000000,
+        IsAdoptedThread =           0x20000000,
+        NoGlobalRef =               0x40000000,
 #if defined(QTJAMBI_DEBUG_TOOLS)
-        IsListed = 0x010000,   // Weak ref to java object, deleteNativeObject deletes c++ object
+        IsListed =                  0x80000000,
 #endif
-        HasDisposedSignal = 0x020000,
-        IsPendingObjectResolved = 0x040000,
-        IsPendingValueOwner = 0x080000,
-        NoNativeDeletion = 0x100000,
-        NoDebugMessaging = 0x200000,
-        IsPointerRegistered = 0x400000,
-        NeedsReferenceCounting = 0x800000,
-        shared_ptr = 0x1000000,
-        QSharedPointer = 0x2000000,
-        weak_ptr = 0x4000000,
-        QWeakPointer = 0x8000000,
-        SmartPointerMask = 0xf000000,
-        IsManaged = 0x10000000,
-        IsAdoptedThread = 0x20000000,
-        NoGlobalRef = 0x80000000,
     };
     typedef QFlags<Flag> Flags;
 
@@ -722,8 +721,9 @@ public:
     QtJambiLink(JNIEnv *env, jobject nativeLink,
                     LINK_NAME_ARG(const char* qt_name)
                     bool created_by_java, bool isDeclarativeCall, bool is_shell, JavaException& ocurredException);
+protected:
     virtual ~QtJambiLink();
-
+public:
     bool hasDisposedSignal() const;
     void setHasDisposedSignal();
     jobject getJavaObjectLocalRef(JNIEnv *env) const;
@@ -740,8 +740,6 @@ public:
     virtual void setDefaultOwnership(JNIEnv *env);
     virtual Ownership ownership() const;
     void reset(JNIEnv *env);
-    QWeakPointer<QtJambiLink> getWeakPointer() const;
-    QSharedPointer<QtJambiLink> getStrongPointer() const;
     void detachJavaLink(JNIEnv *env);
     virtual void invalidate(JNIEnv *env) = 0;
     virtual QObject *qobject() const = 0;
@@ -823,12 +821,16 @@ public:
 #endif
 public:
     bool isInitialized() const;
-    bool isDeleteLater() const { return m_flags.testFlag(Flag::IsDeleteLater); }
-    bool isCleanedUp() const { return m_flags.testFlag(Flag::HasBeenCleaned); }
+    bool isDeleteLater() const;
+    bool isCleanedUp() const;
+    QSharedPointer<QtJambiLink> getStrongPointer() const;
+    inline QWeakPointer<QtJambiLink> getWeakPointer() const { return getStrongPointer(); }
+    inline operator QSharedPointer<QtJambiLink>() const { return getStrongPointer(); }
+    inline operator QWeakPointer<QtJambiLink>() const { return getStrongPointer(); }
 protected:
     void resetDataLink(QtJambiLinkUserData* data);
     void dispose();
-    void setDeleteLater(){ m_flags.setFlag(Flag::IsDeleteLater); }
+    void setDeleteLater();
     void invalidateDependentObjects(JNIEnv *env);
     void clearAllDependencies(JNIEnv *env);
     void clearAllDependencies();
@@ -837,10 +839,14 @@ protected:
     void registerPointer(void*);
     void unregisterPointer(void*);
     void unregisterPointers(const QVector<void*>& pointers);
-
-    QSharedPointer<QtJambiLink> m_this;
+private:
+    struct LinkDeleter{
+        void operator()(QtJambiLink*);
+    };
+    typedef QtSharedPointer::ExternalRefCountWithCustomDeleter<QtJambiLink, LinkDeleter> ExternalRefCountData;
+    QtSharedPointer::ExternalRefCountData *const m_refCount;
+protected:
     jobject m_nativeLink;
-
     Flags m_flags;
 #if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
     const char* m_qtTypeName;
@@ -853,6 +859,20 @@ private:
     friend struct DependencyManagerUserData;
     friend class PointerToQObjectLink;
     friend class PointerContainerWithPendingExtraSignals;
+    friend QtSharedPointer::ExternalRefCountWithCustomDeleter<QtJambiLink, QtSharedPointer::NormalDeleter>;
+};
+
+template<>
+struct QtSharedPointer::ExternalRefCountWithCustomDeleter<QtJambiLink, QtSharedPointer::NormalDeleter>{
+    typedef const void* DestroyerFn;
+    static constexpr char safetyCheckDeleter = 0;
+    static constexpr char deleter = 0;
+    template<typename... Args>
+    static inline ExternalRefCountData* create(QtJambiLink* link, Args...){
+        Q_STATIC_ASSERT_X(sizeof...(Args)!=2, "Cannot create QSharedPointer<QtJambiLink>");
+        return fromLink(link);
+    }
+    static ExternalRefCountData* fromLink(QtJambiLink*);
 };
 
 class PointerToObjectLink : public QtJambiLink{
@@ -860,8 +880,8 @@ protected:
     PointerToObjectLink(JNIEnv *env, jobject nativeLink,
                         LINK_NAME_ARG(const char* qt_name)
                         void *ptr, bool created_by_java, bool is_shell, JavaException& ocurredException);
-public:
     ~PointerToObjectLink() override;
+public:
     void removeInterface(const std::type_info&) override;
     void *pointer() const override;
     QObject *qobject() const override;
@@ -1062,8 +1082,9 @@ private:
 };
 
 #define INTERFACE_DECL(LINKTYPE)\
-public:\
+protected:\
     ~LINKTYPE() override;\
+public:\
     void unregisterOffsets() override;\
     void addInterface(const std::type_info& qtInterfaceType) override;\
     void removeInterface(const std::type_info& qtInterfaceType) override;\
@@ -1173,8 +1194,8 @@ protected:
 class PointerToQObjectLink : public QtJambiLink{
 protected:
     PointerToQObjectLink(JNIEnv *env, jobject nativeLink, jobject jobj, const QMetaObject* metaObject, QObject *ptr, bool isQThread, bool created_by_java, bool isDeclarativeCall, bool is_shell, JavaException& ocurredException);
-public:
     ~PointerToQObjectLink() override;
+public:
     void *pointer() const override;
     QObject *qobject() const override;
     bool isQObject() const override;
@@ -1197,8 +1218,8 @@ private:
 class PointerToQObjectWithExtraSignalsLink : public PointerToQObjectLink{
 protected:
     PointerToQObjectWithExtraSignalsLink(JNIEnv *env, jobject nativeLink, jobject jobj, const QMetaObject* metaObject, QObject *ptr, bool isQThread, bool created_by_java, bool isDeclarativeCall, bool is_shell, JavaException& ocurredException);
-public:
     ~PointerToQObjectWithExtraSignalsLink() override = default;
+public:
     jobject getExtraSignal(JNIEnv * env, const QMetaMethod& method) const override;
 private:
     mutable QHash<int,JObjectWrapper> m_extraSignals;
@@ -1208,8 +1229,8 @@ private:
 class PointerToPendingQObjectLink : public PointerToQObjectLink{
 protected:
     PointerToPendingQObjectLink(JNIEnv *env, jobject nativeLink, jobject jobj, const QMetaObject* metaObject, QObject *ptr, bool isQThread, bool created_by_java, bool isDeclarativeCall, bool is_shell, JavaException& ocurredException);
-public:
     ~PointerToPendingQObjectLink() override = default;
+public:
     jobject getExtraSignal(JNIEnv * env, const QMetaMethod& method) const override;
     using PointerToQObjectLink::init;
     void init(JNIEnv* env, QSharedPointer<QtJambiLink>* replacement) override;
@@ -1231,8 +1252,8 @@ protected:
                                   bool isDeclarativeCall,
                                   bool is_shell,
                                   JavaException& ocurredException);
-public:
     ~PointerToQObjectInterfaceLink() override;
+public:
     void unregisterOffsets() override;
     void addInterface(const std::type_info& qtInterfaceType) override;
     void removeInterface(const std::type_info& qtInterfaceType) override;
@@ -1249,8 +1270,8 @@ private:
 class PointerToPendingQObjectInterfaceLink : public PointerToQObjectInterfaceLink{
 protected:
     PointerToPendingQObjectInterfaceLink(JNIEnv *env, jobject nativeLink, jobject jobj, const InterfaceOffsetInfo& interfaceOffsetInfo, const QMetaObject* metaObject, QObject *ptr, bool isQThread, bool created_by_java, bool isDeclarativeCall, bool is_shell, JavaException& ocurredException);
-public:
     ~PointerToPendingQObjectInterfaceLink() override = default;
+public:
     jobject getExtraSignal(JNIEnv * env, const QMetaMethod& method) const override;
     using PointerToQObjectLink::init;
     void init(JNIEnv* env, QSharedPointer<QtJambiLink>* replacement) override;
@@ -1262,8 +1283,8 @@ private:
 class PointerToQObjectInterfaceWithExtraSignalsLink : public PointerToQObjectInterfaceLink{
 protected:
     PointerToQObjectInterfaceWithExtraSignalsLink(JNIEnv *env, jobject nativeLink, jobject jobj, const InterfaceOffsetInfo& interfaceOffsetInfo, const QMetaObject* metaObject, QObject *ptr, bool isQThread, bool created_by_java, bool isDeclarativeCall, bool is_shell, JavaException& ocurredException);
-public:
     ~PointerToQObjectInterfaceWithExtraSignalsLink() override = default;
+public:
     jobject getExtraSignal(JNIEnv * env, const QMetaMethod& method) const override;
 private:
     friend QtJambiLink;
@@ -1302,11 +1323,18 @@ protected:
                      bool created_by_java, QtJambiLink::Ownership ownership, bool is_shell,
                      SmartPointer<T>*& smartPointer,
                      JavaException& ocurredException);
+    ~SmartPointerLink() override{}
+    template<typename Link>
+    inline operator QSharedPointer<Link>() const {
+        return QtJambiLink::getStrongPointer().template staticCast<Link>();
+    }
+    template<typename Link>
+    inline operator QWeakPointer<Link>() const {
+        return QtJambiLink::getStrongPointer().template staticCast<Link>();
+    }
 public:
     typedef typename std::conditional<std::is_same<SmartPointer<T>,QWeakPointer<T>>::value, QSharedPointer<T>,
                                       typename std::conditional<std::is_same<SmartPointer<T>,std::weak_ptr<T>>::value, std::shared_ptr<T>, SmartPointer<T>>::type>::type SharedPointerT;
-    ~SmartPointerLink() override{}
-
     void setCppOwnership(JNIEnv *env) override final;
     void setSplitOwnership(JNIEnv *env) override final;
     void setJavaOwnership(JNIEnv *env) override final;
@@ -1336,9 +1364,8 @@ protected:
                              void* pointer,
                              SmartPointer<char>*& smartPointer,
                              JavaException& ocurredException);
-    friend QtJambiLink;
-public:
     ~SmartPointerToObjectLink() override;
+public:
     virtual QObject *qobject() const override { Q_ASSERT_X(false, "QtJambiLink", "Pointer is not QObject"); return nullptr; }
     virtual bool isQObject() const override{
         return false;
@@ -1398,11 +1425,11 @@ protected:
                                      void* pointer,
                                      SmartPointer<char>*& smartPointer,
                                      JavaException& ocurredException);
-    friend QtJambiLink;
 public:
     inline bool hasExtension()const override{return !m_extension.isNull(); }
 private:
     QPointer<const QObject> m_extension;
+    friend QtJambiLink;
 };
 
 template<template<typename> class SmartPointer>
@@ -1437,8 +1464,8 @@ protected:
                               QObject* pointer,
                               SmartPointer<QObject>*& smartPointer,
                               JavaException& ocurredException);
-public:
     ~SmartPointerToQObjectLink() override;
+public:
     virtual QObject *qobject() const override {
         return m_pointer;
     }
@@ -1482,7 +1509,6 @@ protected:
                                    bool isQThread,
                                    SmartPointer<QObject>*& smartPointer,
                                    JavaException& ocurredException);
-public:
     ~SmartPointerToPlainQObjectLink() override = default;
 private:
     friend QtJambiLink;
@@ -1505,8 +1531,8 @@ protected:
                                                      SmartPointer<QObject>*& smartPointer,
                                                      const QMetaObject* superTypeForCustomMetaObject,
                                                      JavaException& ocurredException);
-public:
     ~SmartPointerToQObjectWithPendingExtraSignalsLink() override = default;
+public:
     jobject getExtraSignal(JNIEnv * env, const QMetaMethod& method) const override;
 private:
     mutable QHash<int,JObjectWrapper> m_extraSignals;
@@ -1527,7 +1553,6 @@ protected:
                                               bool isQThread,
                                               SmartPointer<QObject>*& smartPointer,
                                               JavaException& ocurredException);
-public:
     ~SmartPointerToQObjectWithExtraSignalsLink() override = default;
 private:
     friend QtJambiLink;

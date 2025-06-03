@@ -10,7 +10,7 @@ on *Linux* and *macOS*.
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.8.3.jar:qtjambi-deployer-6.8.3.jar
+     -p qtjambi-6.8.4.jar:qtjambi-deployer-6.8.4.jar
      -m qtjambi.deployer qt
 ```
 
@@ -18,16 +18,16 @@ Alternative way to call it:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -cp qtjambi-6.8.3.jar:qtjambi-deployer-6.8.3.jar
+     -cp qtjambi-6.8.4.jar:qtjambi-deployer-6.8.4.jar
      io.qt.qtjambi.deployer.Main qt
 ```
 
 *QtJambi deployer* autodetects Qt installation on your computer and creates jar bundles for each of the Qt libraries along with their specific plugins.
 E.g. the output files for Windows look this way:
 
-- `qt-lib-core-native-windows-x64-6.8.3.jar`
-- `qt-lib-gui-native-windows-x64-6.8.3.jar`
-- `qt-lib-qml-native-windows-x64-6.8.3.jar`
+- `qt-lib-core-native-windows-x64-6.8.4.jar`
+- `qt-lib-gui-native-windows-x64-6.8.4.jar`
+- `qt-lib-qml-native-windows-x64-6.8.4.jar`
 - ...
 
 Place these libraries next to the **qtjambi-native-X.jar** files.

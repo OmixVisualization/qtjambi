@@ -33,7 +33,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Test;
 
 import io.qt.QLibraryNotFoundError;
@@ -41,11 +40,6 @@ import io.qt.QtUtilities;
 import io.qt.autotests.generated.General;
 
 public class TestUtilities extends UnitTestInitializer {
-
-	@org.junit.BeforeClass
-	public static void setUpClass() {
-		Assume.assumeTrue(io.qt.QtUtilities.initializePackage("io.qt.internal"));
-	}
 
 	private static boolean loadQtJambiLibrary(String lib) {
         try {

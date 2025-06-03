@@ -63,6 +63,8 @@
 #include <jni.h>
 #include <QtCore/QCommandLineOption>
 
+QT_WARNING_DISABLE_DEPRECATED
+
 #if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
 #define qAsConst std::as_const
 #endif

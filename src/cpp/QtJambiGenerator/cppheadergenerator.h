@@ -41,6 +41,9 @@
 #include "cppgenerator.h"
 #include "metalang.h"
 
+QT_WARNING_DISABLE_GCC("-Woverloaded-virtual")
+QT_WARNING_DISABLE_CLANG("-Woverloaded-virtual")
+
 class CppHeaderGenerator : public CppGenerator {
     public:
         CppHeaderGenerator(PriGenerator *pri);

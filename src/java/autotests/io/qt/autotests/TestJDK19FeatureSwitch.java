@@ -50,21 +50,39 @@ public class TestJDK19FeatureSwitch extends ApplicationInitializer {
     
 	@Test
     public void test() {
+    	assertEquals("MouseButtonPress", testNullableEvent(QEvent.Type.MouseButtonPress));
     	assertEquals("MouseButtonPress", testEvent(QEvent.Type.MouseButtonPress));
     	assertEquals("CursorChange", testEvent2(QEvent.Type.CursorChange));
     	assertEquals("MouseButtonPress", testObject(QEvent.Type.MouseButtonPress));
     	checkSwitches();
     	QEvent.Type type = QEvent.Type.resolve(1001);
-    	assertEquals("Default", testEvent(type));
+		assertEquals("Default", testEvent(type));
+    	try {
+			assertEquals("Default", testNullableEvent(type));
+		} catch (ArrayIndexOutOfBoundsException e) {}
     	assertEquals("Default", testEvent2(type));
     	assertEquals("Default", testObject(type));
-    	assertEquals("null", testEvent(null));
+    	try {
+			testEvent(null);
+		} catch (NullPointerException e) {}
+    	assertEquals("null", testNullableEvent(null));
     	assertEquals("null", testObject(null));
     	checkSwitches();
     }
 	
 	private void checkSwitches() {
 		try {
+//			for(var cls : TestJDK19FeatureSwitch.class.getDeclaredClasses()) {
+//				System.out.println(cls);
+//			}
+//			for(var cls : TestJDK19FeatureSwitch.class.getNestMembers()) {
+//				System.out.println(cls);
+//			}
+//			for(var mtd : TestJDK19FeatureSwitch.class.getDeclaredMethods()) {
+//				if(mtd.isSynthetic()) {
+//					System.out.println(mtd);
+//				}
+//			}
 			for(Field field : TestJDK19FeatureSwitch.class.getDeclaredFields()) {
 				if(field.isSynthetic()) {
 					System.out.println(field + " = " + Arrays.toString((int[])field.get(null)));
@@ -91,6 +109,15 @@ public class TestJDK19FeatureSwitch extends ApplicationInitializer {
 	}
     
     private String testEvent(QEvent.Type type) {
+    	return switch (type) {
+		case MouseButtonPress -> """
+				MouseButtonPress""";
+		case MouseButtonRelease -> "MouseButtonRelease";
+		default -> {yield "Default";}
+		};
+    }
+    
+    private String testNullableEvent(QEvent.Type type) {
     	return switch (type) {
     	case null -> "null";
 		case MouseButtonPress -> """

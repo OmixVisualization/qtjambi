@@ -28,13 +28,19 @@
 ****************************************************************************/
 package io.qt.autotests;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 
-import org.junit.*;
-import io.qt.*;
-import io.qt.core.*;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import io.qt.QtUtilities;
+import io.qt.core.QCoreApplication;
+import io.qt.core.QResource;
+import io.qt.core.QThread;
 
 public class TestApplicationArgs extends UnitTestInitializer {
 	

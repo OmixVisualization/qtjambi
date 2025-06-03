@@ -151,34 +151,67 @@
 		</if>
     </target>
     <target name="create-native-plugin-deployment-impl">
+        <condition property="JVMArg.enable.native.access" value="-Dx" else="--enable-native-access=qtjambi,ALL-UNNAMED">
+			<less arg1="${target.java.version}" arg2="21"/>
+        </condition>
 		<if>
 			<istrue value="${qtjambi.pluginloader.build.from.source}"/>
 			<then>
 				<trycatch>
 					<try>
 						<delete dir="${outputDir}/${qtjambi.osname}/tmp" failonerror="false"/>
-						<java fork="true" jvm="${tools.jvm}" classname="io.qt.qtjambi.deployer.Main" failonerror="true">
-							<jvmarg value="-Djava.library.path=${librarypath}"/>
-							<jvmarg value="-Dio.qt.deploymentdir=${outputDir}/${qtjambi.osname}/tmp"/>
-							<jvmarg value="${XstartOnFirstThread}"/>
-							<!--jvmarg value="-Xint"/>
-							<jvmarg value="-Xrs"/>
-							<jvmarg value="-Xcheck:jni"/-->
-							<jvmarg value="-Dio.qt.log-messages=ALL"/>
-							<jvmarg value="-Djava.util.logging.config.file=${basedir}/logging.properties"/>
-							<arg value="plugin" />
-							<arg value="--source" />
-							<arg value="--configuration=${debug.conf}" />
-							<arg value="--dir=${plugins.builddir}" />
-							<arg value="--subdir=${plugin-subdir}" />
-							<arg value="--class-path=${plugindeploymentdir}/${module}.jar" />
-							<arg value="--platform=${qtjambi.osname}" />
-							<arg value="--plugin-library-location=${qtjambi.builddir}/lib/" />
-							<env key="DYLD_LIBRARY_PATH" value="${librarypath}" />
-							<classpath>
-								<fileset dir="${deploymentdir}" includes="qtjambi-${qtjambi.jar.version}.jar,qtjambi-deployer-${qtjambi.jar.version}.jar,${qtjambi-libfiles}"/>
-							</classpath>
-						</java>
+						<if>
+							<istrue value="${java.module.based}"/>
+							<then>
+								<java fork="true" jvm="${tools.jvm}" module="qtjambi.deployer" failonerror="true">
+									<jvmarg value="-Djava.library.path=${librarypath}"/>
+									<jvmarg value="-Dio.qt.deploymentdir=${outputDir}/${qtjambi.osname}/tmp"/>
+									<jvmarg value="${XstartOnFirstThread}"/>
+									<jvmarg value="${JVMArg.enable.native.access}"/>
+									<!--jvmarg value="-Xint"/>
+									<jvmarg value="-Xrs"/>
+									<jvmarg value="-Xcheck:jni"/-->
+									<jvmarg value="-Dio.qt.log-messages=ALL"/>
+									<jvmarg value="-Djava.util.logging.config.file=${basedir}/logging.properties"/>
+									<arg value="plugin" />
+									<arg value="--source" />
+									<arg value="--configuration=${debug.conf}" />
+									<arg value="--dir=${plugins.builddir}" />
+									<arg value="--subdir=${plugin-subdir}" />
+									<arg value="--class-path=${plugindeploymentdir}/${module}.jar" />
+									<arg value="--platform=${qtjambi.osname}" />
+									<arg value="--plugin-library-location=${qtjambi.builddir}/lib/" />
+									<env key="DYLD_FRAMEWORK_PATH" value="${librarypath}" />
+									<modulepath>
+										<fileset dir="${deploymentdir}" includes="qtjambi-${qtjambi.jar.version}.jar,qtjambi-deployer-${qtjambi.jar.version}.jar,${qtjambi-libfiles}"/>
+									</modulepath>
+								</java>
+							</then>
+							<else>
+								<java fork="true" jvm="${tools.jvm}" classname="io.qt.qtjambi.deployer.Main" failonerror="true">
+									<jvmarg value="-Djava.library.path=${librarypath}"/>
+									<jvmarg value="-Dio.qt.deploymentdir=${outputDir}/${qtjambi.osname}/tmp"/>
+									<jvmarg value="${XstartOnFirstThread}"/>
+									<!--jvmarg value="-Xint"/>
+									<jvmarg value="-Xrs"/>
+									<jvmarg value="-Xcheck:jni"/-->
+									<jvmarg value="-Dio.qt.log-messages=ALL"/>
+									<jvmarg value="-Djava.util.logging.config.file=${basedir}/logging.properties"/>
+									<arg value="plugin" />
+									<arg value="--source" />
+									<arg value="--configuration=${debug.conf}" />
+									<arg value="--dir=${plugins.builddir}" />
+									<arg value="--subdir=${plugin-subdir}" />
+									<arg value="--class-path=${plugindeploymentdir}/${module}.jar" />
+									<arg value="--platform=${qtjambi.osname}" />
+									<arg value="--plugin-library-location=${qtjambi.builddir}/lib/" />
+									<env key="DYLD_FRAMEWORK_PATH" value="${librarypath}" />
+									<classpath>
+										<fileset dir="${deploymentdir}" includes="qtjambi-${qtjambi.jar.version}.jar,qtjambi-deployer-${qtjambi.jar.version}.jar,${qtjambi-libfiles}"/>
+									</classpath>
+								</java>
+							</else>
+						</if>
 					</try>
 					<finally>
 						<delete dir="${outputDir}/${qtjambi.osname}/tmp" failonerror="false"/>
@@ -231,28 +264,58 @@
 				<trycatch>
 					<try>
 						<delete dir="${outputDir}/${qtjambi.osname}/tmp" failonerror="false"/>
-						<java fork="true" jvm="${tools.jvm}" classname="io.qt.qtjambi.deployer.Main" failonerror="true">
-							<jvmarg value="-Djava.library.path=${librarypath}"/>
-							<jvmarg value="-Dio.qt.deploymentdir=${outputDir}/${qtjambi.osname}/tmp"/>
-							<jvmarg value="${XstartOnFirstThread}"/>
-							<!--jvmarg value="-Dqtjambi.log-level=ALL"/-->
-							<!--jvmarg value="-Xint"/>
-							<jvmarg value="-Xrs"/>
-							<jvmarg value="-Xcheck:jni"/-->
-							<jvmarg value="-Dio.qt.log-messages=ALL"/>
-							<jvmarg value="-Djava.util.logging.config.file=${basedir}/logging.properties"/>
-							<arg value="plugin" />
-							<arg value="--configuration=${debug.conf}" />
-							<arg value="--dir=${plugindestdir}" />
-							<arg value="--subdir=${plugin-subdir}" />
-							<arg value="--class-path=${plugindeploymentdir}/${module}.jar" />
-							<arg value="--platform=${qtjambi.osname}" />
-							<arg value="--plugin-library-location=${qtjambi.builddir}/lib/" />
-							<env key="DYLD_LIBRARY_PATH" value="${librarypath}" />
-							<classpath>
-								<fileset dir="${deploymentdir}" includes="qtjambi-${qtjambi.jar.version}.jar,qtjambi-deployer-${qtjambi.jar.version}.jar,${qtjambi-libfiles}"/>
-							</classpath>
-						</java>
+						<if>
+							<istrue value="${java.module.based}"/>
+							<then>
+								<java fork="true" jvm="${tools.jvm}" module="qtjambi.deployer" failonerror="true">
+									<jvmarg value="-Djava.library.path=${librarypath}"/>
+									<jvmarg value="-Dio.qt.deploymentdir=${outputDir}/${qtjambi.osname}/tmp"/>
+									<jvmarg value="${XstartOnFirstThread}"/>
+									<jvmarg value="${JVMArg.enable.native.access}"/>
+									<!--jvmarg value="-Dqtjambi.log-level=ALL"/-->
+									<!--jvmarg value="-Xint"/>
+									<jvmarg value="-Xrs"/>
+									<jvmarg value="-Xcheck:jni"/-->
+									<jvmarg value="-Dio.qt.log-messages=ALL"/>
+									<jvmarg value="-Djava.util.logging.config.file=${basedir}/logging.properties"/>
+									<arg value="plugin" />
+									<arg value="--configuration=${debug.conf}" />
+									<arg value="--dir=${plugindestdir}" />
+									<arg value="--subdir=${plugin-subdir}" />
+									<arg value="--class-path=${plugindeploymentdir}/${module}.jar" />
+									<arg value="--platform=${qtjambi.osname}" />
+									<arg value="--plugin-library-location=${qtjambi.builddir}/lib/" />
+									<env key="DYLD_FRAMEWORK_PATH" value="${librarypath}" />
+									<modulepath>
+										<fileset dir="${deploymentdir}" includes="qtjambi-${qtjambi.jar.version}.jar,qtjambi-deployer-${qtjambi.jar.version}.jar,${qtjambi-libfiles}"/>
+									</modulepath>
+								</java>
+							</then>
+							<else>
+								<java fork="true" jvm="${tools.jvm}" classname="io.qt.qtjambi.deployer.Main" failonerror="true">
+									<jvmarg value="-Djava.library.path=${librarypath}"/>
+									<jvmarg value="-Dio.qt.deploymentdir=${outputDir}/${qtjambi.osname}/tmp"/>
+									<jvmarg value="${XstartOnFirstThread}"/>
+									<!--jvmarg value="-Dqtjambi.log-level=ALL"/-->
+									<!--jvmarg value="-Xint"/>
+									<jvmarg value="-Xrs"/>
+									<jvmarg value="-Xcheck:jni"/-->
+									<jvmarg value="-Dio.qt.log-messages=ALL"/>
+									<jvmarg value="-Djava.util.logging.config.file=${basedir}/logging.properties"/>
+									<arg value="plugin" />
+									<arg value="--configuration=${debug.conf}" />
+									<arg value="--dir=${plugindestdir}" />
+									<arg value="--subdir=${plugin-subdir}" />
+									<arg value="--class-path=${plugindeploymentdir}/${module}.jar" />
+									<arg value="--platform=${qtjambi.osname}" />
+									<arg value="--plugin-library-location=${qtjambi.builddir}/lib/" />
+									<env key="DYLD_FRAMEWORK_PATH" value="${librarypath}" />
+									<classpath>
+										<fileset dir="${deploymentdir}" includes="qtjambi-${qtjambi.jar.version}.jar,qtjambi-deployer-${qtjambi.jar.version}.jar,${qtjambi-libfiles}"/>
+									</classpath>
+								</java>
+							</else>
+						</if>
 					</try>
 					<finally>
 						<delete dir="${outputDir}/${qtjambi.osname}/tmp" failonerror="false"/>
@@ -421,25 +484,11 @@
         <if>
             <istrue value="${java.module.based}"/>
             <then>
-                <javac source="8" target="8" debug="true" deprecation="true"
-                        executable="${tools.javac}" fork="true" 
-						memorymaximumsize="1024m" verbose="false"
-                        includeantruntime="false"
-                        excludes="${module.excludes},module-info.java"
-                        srcdir="${sourcedirs2}"
-                        destdir="${java.outdir}/plugins/${module}">
-                    <compilerarg value="-Xlint:deprecation" />
-                    <compilerarg value="-Xlint:unchecked" />
-                    <compilerarg value="-Xlint:-module,-options" />
-                    <classpath>
-                        <fileset dir="${deploymentdir}" includes="${qtjambi.dependencies}"/>
-                    </classpath>
-                </javac>
                 <javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
                         executable="${tools.javac}" fork="true" 
 						memorymaximumsize="1024m" verbose="false"
                         includeantruntime="false"
-                        includes="module-info.java"
+                        excludes="${module.excludes}"
                         srcdir="${sourcedirs2}"
                         destdir="${java.outdir}/plugins/${module}">
                     <compilerarg value="-Xlint:deprecation" />

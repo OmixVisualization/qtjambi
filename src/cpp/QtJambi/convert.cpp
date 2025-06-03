@@ -27,6 +27,7 @@
 **
 ****************************************************************************/
 
+#include "coreapi.h"
 #include "typemanager_p.h"
 #include "exception.h"
 #include "java_p.h"

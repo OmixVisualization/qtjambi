@@ -114,7 +114,7 @@ LibraryUtility.clear();`
         target: CodeClass.ModuleInfo
         position: Position.End
         Text{content: String.raw
-`requires transitive java.logging;
+`requires java.logging;
 requires java.xml;
 requires java.prefs;
 opens io.qt.internal to qtjambi.autotests;
@@ -21389,6 +21389,12 @@ Enum entries for string comparison.
                                   "if(!%out){\n"+
                                   "    Java::Runtime::IllegalArgumentException::throwNew(%env, QStringLiteral(\"Class %\"\"1 is not registered as plugin interface.\").arg(QtJambiAPI::getClassName(%env, jclass(%in))) QTJAMBI_STACKTRACEINFO);\n"+
                                   "}"}
+                }
+            }
+            ModifyArgument{
+                index: 2
+                ReplaceDefaultExpression{
+                    expression: String.raw`"/"`
                 }
             }
             InjectCode{

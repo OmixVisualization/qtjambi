@@ -29,7 +29,6 @@
 **
 ****************************************************************************/
 
-#include "qtjambiapi.h"
 #include "javaarrays.h"
 #include "java_p.h"
 #include "utils_p.h"

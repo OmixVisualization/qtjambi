@@ -37,6 +37,9 @@
 #include "functionpointer.h"
 #include "registryutil_p.h"
 
+QT_WARNING_DISABLE_GCC("-Winaccessible-base")
+QT_WARNING_DISABLE_CLANG("-Winaccessible-base")
+
 AutoSequentialConstIteratorAccess::~AutoSequentialConstIteratorAccess() = default;
 AutoSequentialConstIteratorAccess::AutoSequentialConstIteratorAccess(
         const QtJambiUtils::InternalToExternalConverter& internalToExternalConverter,

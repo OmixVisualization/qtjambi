@@ -31,6 +31,7 @@
 #include "qtjambiapi.h"
 #include "java_p.h"
 #include "qtjambilink_p.h"
+#include "coreapi.h"
 
 #include "qtjambi_cast.h"
 

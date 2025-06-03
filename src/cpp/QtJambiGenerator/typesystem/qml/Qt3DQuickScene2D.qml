@@ -36,6 +36,10 @@ TypeSystem{
     module: "qtjambi.qt3dquickscene2d"
     description: "Qt 3D Scene2D Module"
 
+    RequiredPackage{
+        name: "io.qt.qml"
+    }
+
     NamespacePrefix{
         prefix: "Qt3DRender::Quick"
         namespace: "Qt3DRender::Quick"

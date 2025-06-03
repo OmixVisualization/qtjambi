@@ -1,8 +1,19 @@
-# What's new in QtJambi 6.9.0
+# What's new in QtJambi 6.9.1
 
-* Compatible to Java 24.
+* End of support for Java 8.
+* End of support for Qt 5.
+* Compatible with Java 24.
+
+## Bugfixes
+
+Solved issue:
+* [Issue 223](../../../issues/223): ant javadocs fails
 
 # History
+
+## What's new in QtJambi 6.9.0
+
+* Compatible to Java 24.
 
 ## What's new in QtJambi 6.8.3
 

@@ -75,22 +75,49 @@
 		</pathconvert>
 		<trycatch>
 			<try>
-				<java fork="true" jvm="${tools.jvm}" classname="io.qt.qtjambi.deployer.Main" failonerror="true">
-					<jvmarg value="-Djava.library.path=${librarypath}"/>
-					<jvmarg value="-Dio.qt.deploymentdir=${outputDir}/tmp"/>
-					<!--jvmarg value="-Dio.qt.verbose-loading=true"/-->
-					<jvmarg value="${XstartOnFirstThread}"/>
-					<!--jvmarg value="-Xint"/>
-					<jvmarg value="-Xrs"/>
-					<jvmarg value="-Xcheck:jni"/-->
-					<arg value="containeraccess" />
-					<arg value="--dir=${plugins.builddir}" />
-					<arg value="--specifications=analyze" />
-					<env key="DYLD_LIBRARY_PATH" value="${librarypath}" />
-					<classpath>
-						<fileset dir="${deploymentdir}" includes="qtjambi-${qtjambi.jar.version}.jar,qtjambi-*-${qtjambi.jar.version}.jar" excludes="*-native-*"/>
-					</classpath>
-				</java>
+				<condition property="JVMArg.enable.native.access" value="-Dx" else="--enable-native-access=qtjambi,ALL-UNNAMED">
+					<less arg1="${target.java.version}" arg2="21"/>
+				</condition>
+				<if>
+					<istrue value="${java.module.based}"/>
+					<then>
+						<java fork="true" jvm="${tools.jvm}" module="qtjambi.deployer" failonerror="true">
+							<jvmarg value="-Djava.library.path=${librarypath}"/>
+							<jvmarg value="-Dio.qt.deploymentdir=${outputDir}/tmp"/>
+							<!--jvmarg value="-Dio.qt.verbose-loading=true"/-->
+							<jvmarg value="${XstartOnFirstThread}"/>
+							<jvmarg value="${JVMArg.enable.native.access}"/>
+							<!--jvmarg value="-Xint"/>
+							<jvmarg value="-Xrs"/>
+							<jvmarg value="-Xcheck:jni"/-->
+							<arg value="containeraccess" />
+							<arg value="--dir=${plugins.builddir}" />
+							<arg value="--specifications=analyze" />
+							<env key="DYLD_FRAMEWORK_PATH" value="${librarypath}" />
+							<modulepath>
+								<fileset dir="${deploymentdir}" includes="qtjambi-${qtjambi.jar.version}.jar,qtjambi-*-${qtjambi.jar.version}.jar" excludes="*-native-*"/>
+							</modulepath>
+						</java>
+					</then>
+					<else>
+						<java fork="true" jvm="${tools.jvm}" classname="io.qt.qtjambi.deployer.Main" failonerror="true">
+							<jvmarg value="-Djava.library.path=${librarypath}"/>
+							<jvmarg value="-Dio.qt.deploymentdir=${outputDir}/tmp"/>
+							<!--jvmarg value="-Dio.qt.verbose-loading=true"/-->
+							<jvmarg value="${XstartOnFirstThread}"/>
+							<!--jvmarg value="-Xint"/>
+							<jvmarg value="-Xrs"/>
+							<jvmarg value="-Xcheck:jni"/-->
+							<arg value="containeraccess" />
+							<arg value="--dir=${plugins.builddir}" />
+							<arg value="--specifications=analyze" />
+							<env key="DYLD_LIBRARY_PATH" value="${librarypath}" />
+							<classpath>
+								<fileset dir="${deploymentdir}" includes="qtjambi-${qtjambi.jar.version}.jar,qtjambi-*-${qtjambi.jar.version}.jar" excludes="*-native-*"/>
+							</classpath>
+						</java>
+					</else>
+				</if>
 			</try>
 			<finally>
 				<delete dir="${outputDir}/tmp"/>
@@ -454,31 +481,67 @@
 						<condition property="force" value="--force-debug-info" else="--">
 							<istrue value="${qtjambi.force.debug.info}"/>
 						</condition>
-						<java fork="true" jvm="${tools.jvm}" classname="io.qt.qtjambi.deployer.Main" failonerror="true">
-							<jvmarg value="-Djava.library.path=${librarypath}"/>
-                                                        <jvmarg value="-Dio.qt.deploymentdir=${outputDir}/${qtjambi.osname}/tmp"/>
-							<jvmarg value="${XstartOnFirstThread}"/>
-							<jvmarg value="-Dqtjambi.verbose-loading=false"/>
-							<!--jvmarg value="-Xint"/>
-							<jvmarg value="-Xrs"/>
-							<jvmarg value="-Xcheck:jni"/-->
-							<arg value="qt" />
-							<arg value="--configuration=${debug.conf}" />
-							<arg value="--dir=${deploymentdir}/native" />
-							<arg value="--platform=${qtjambi.osname}" />
-							<arg value="--bins=${qtjambi.qt.bindir}" />
-							<arg value="--libs=${qtjambi.qt.libdir}" />
-							<arg value="--libexecs=${qtjambi.qt.libexecdir}" />
-							<arg value="--plugins=${qtjambi.qt.pluginsdir}" />
-							<arg value="--resources=${qtjambi.qt.resourcesdir}" />
-							<arg value="--translations=${qtjambi.qt.translationsdir}" />
-							<arg value="--qml=${qtjambi.qt.qmlmodulesdir}" />
-							<arg value="${force}" />
-							<env key="DYLD_LIBRARY_PATH" value="${librarypath}" />
-							<classpath>
-								<fileset dir="${deploymentdir}" includes="qtjambi-${qtjambi.jar.version}.jar,qtjambi-deployer-${qtjambi.jar.version}.jar"/>
-                                                        </classpath>
-						</java>
+						<condition property="JVMArg.enable.native.access" value="-Dx" else="--enable-native-access=qtjambi">
+							<less arg1="${target.java.version}" arg2="21"/>
+						</condition>
+						<if>
+							<istrue value="${java.module.based}"/>
+							<then>
+								<java fork="true" jvm="${tools.jvm}" module="qtjambi.deployer" failonerror="true">
+									<jvmarg value="-Djava.library.path=${librarypath}"/>
+									<jvmarg value="-Dio.qt.deploymentdir=${outputDir}/${qtjambi.osname}/tmp"/>
+									<jvmarg value="${XstartOnFirstThread}"/>
+									<jvmarg value="${JVMArg.enable.native.access}"/>
+									<jvmarg value="-Dqtjambi.verbose-loading=false"/>
+									<!--jvmarg value="-Xint"/>
+									<jvmarg value="-Xrs"/>
+									<jvmarg value="-Xcheck:jni"/-->
+									<arg value="qt" />
+									<arg value="--configuration=${debug.conf}" />
+									<arg value="--dir=${deploymentdir}/native" />
+									<arg value="--platform=${qtjambi.osname}" />
+									<arg value="--bins=${qtjambi.qt.bindir}" />
+									<arg value="--libs=${qtjambi.qt.libdir}" />
+									<arg value="--libexecs=${qtjambi.qt.libexecdir}" />
+									<arg value="--plugins=${qtjambi.qt.pluginsdir}" />
+									<arg value="--resources=${qtjambi.qt.resourcesdir}" />
+									<arg value="--translations=${qtjambi.qt.translationsdir}" />
+									<arg value="--qml=${qtjambi.qt.qmlmodulesdir}" />
+									<arg value="${force}" />
+									<env key="DYLD_FRAMEWORK_PATH" value="${librarypath}" />
+									<modulepath>
+										<fileset dir="${deploymentdir}" includes="qtjambi-${qtjambi.jar.version}.jar,qtjambi-deployer-${qtjambi.jar.version}.jar"/>
+									</modulepath>
+								</java>
+							</then>
+							<else>
+								<java fork="true" jvm="${tools.jvm}" classname="io.qt.qtjambi.deployer.Main" failonerror="true">
+									<jvmarg value="-Djava.library.path=${librarypath}"/>
+																<jvmarg value="-Dio.qt.deploymentdir=${outputDir}/${qtjambi.osname}/tmp"/>
+									<jvmarg value="${XstartOnFirstThread}"/>
+									<jvmarg value="${JVMArg.enable.native.access}"/>
+									<!--jvmarg value="-Xint"/>
+									<jvmarg value="-Xrs"/>
+									<jvmarg value="-Xcheck:jni"/-->
+									<arg value="qt" />
+									<arg value="--configuration=${debug.conf}" />
+									<arg value="--dir=${deploymentdir}/native" />
+									<arg value="--platform=${qtjambi.osname}" />
+									<arg value="--bins=${qtjambi.qt.bindir}" />
+									<arg value="--libs=${qtjambi.qt.libdir}" />
+									<arg value="--libexecs=${qtjambi.qt.libexecdir}" />
+									<arg value="--plugins=${qtjambi.qt.pluginsdir}" />
+									<arg value="--resources=${qtjambi.qt.resourcesdir}" />
+									<arg value="--translations=${qtjambi.qt.translationsdir}" />
+									<arg value="--qml=${qtjambi.qt.qmlmodulesdir}" />
+									<arg value="${force}" />
+									<env key="DYLD_LIBRARY_PATH" value="${librarypath}" />
+									<classpath>
+										<fileset dir="${deploymentdir}" includes="qtjambi-${qtjambi.jar.version}.jar,qtjambi-deployer-${qtjambi.jar.version}.jar"/>
+									</classpath>
+								</java>
+							</else>
+						</if>
 						<if>
 							<istrue value="${qtjambi.force.debug.info}"/>
 							<then>
@@ -493,6 +556,9 @@
 					</finally>
 				</trycatch>
 			</then>
+			<!--else>
+				<echo>${deploymentdir}/native/qt-lib-core-native-${qtjambi.osname}${platformjar.debug.suffix}-${qtjambi.version.bundle}.jar available, skipping.</echo>
+			</else-->
 		</if>
   </target>
 </project>

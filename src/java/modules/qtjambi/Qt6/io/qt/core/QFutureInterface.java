@@ -30,7 +30,6 @@
 package io.qt.core;
 
 import io.qt.*;
-import io.qt.core.QtJambi_LibraryUtilities;
 
 /**
  * <p>Java wrapper for Qt class QFutureInterface</p>

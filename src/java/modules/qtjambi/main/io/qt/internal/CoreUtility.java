@@ -92,7 +92,7 @@ public abstract class CoreUtility {
         SignalUtility.checkConnectionToDisposedSignalImpl(signal, receiver, slotObject);
     }
     
-    protected static void emitNativeSignal(QObject sender, int methodIndex, long metaObjectId, Object args[]) {
+    protected static void emitNativeSignal(QObject sender, int methodIndex, long metaObjectId, Object... args) {
     	SignalUtility.emitNativeSignal(null, NativeUtility.checkedNativeId(sender), methodIndex, metaObjectId, 0, args);
     }
     
