@@ -486,7 +486,7 @@ public final class QtUtilities {
      * Install a handler for signal emit thread checks. The handler is executed
      * every time an event is emitted from a thread different than the object's thread.
      * The handler may throw {@code QThreadAffinityException} if necessary.
-     * Call this method with {@Code null} to remove the installed handler.
+     * Call this method with {@code null} to remove the installed handler.
      * @param handler
      */
     public static native void installSignalEmitThreadCheckHandler(@Nullable BiConsumer<@NonNull QObject,QMetaObject.@NonNull AbstractSignal> handler);
