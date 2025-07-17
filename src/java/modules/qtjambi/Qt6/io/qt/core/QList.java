@@ -1566,24 +1566,24 @@ public class QList<T> extends AbstractList<T> implements Cloneable
     	if(obj==null)
             return new QMetaType(QMetaType.Type.Nullptr);
     	Class<?> objClass = QtJambi_LibraryUtilities.internal.getClass(obj);
-        if(objClass==QList.class) {
-            return QMetaType.fromType(QList.class, ((QList<?>)obj).elementMetaType());
-        }else if(objClass==QQueue.class) {
-            return QMetaType.fromType(QQueue.class, ((QQueue<?>)obj).elementMetaType());
-        }else if(objClass==QStack.class) {
-            return QMetaType.fromType(QStack.class, ((QStack<?>)obj).elementMetaType());
-        }else if(objClass==QSet.class) {
-            return QMetaType.fromType(QSet.class, ((QSet<?>)obj).elementMetaType());
-        }else if(objClass==QMultiMap.class) {
-            return QMetaType.fromType(QMultiMap.class, ((QMultiMap<?,?>)obj).keyMetaType(), ((QMultiMap<?,?>)obj).valueMetaType());
-        }else if(objClass==QMap.class) {
-            return QMetaType.fromType(QMap.class, ((QMap<?,?>)obj).keyMetaType(), ((QMap<?,?>)obj).valueMetaType());
-        }else if(objClass==QMultiHash.class) {
-            return QMetaType.fromType(QMultiHash.class, ((QMultiHash<?,?>)obj).keyMetaType(), ((QMultiHash<?,?>)obj).valueMetaType());
-        }else if(objClass==QHash.class) {
-            return QMetaType.fromType(QHash.class, ((QHash<?,?>)obj).keyMetaType(), ((QHash<?,?>)obj).valueMetaType());
-        }else if(objClass==QPair.class) {
-            return QMetaType.fromType(QPair.class, getMetaType(((QPair<?,?>)obj).first), getMetaType(((QPair<?,?>)obj).second));
+        if(QList.class.isAssignableFrom(objClass)) {
+            return QMetaType.fromType(objClass, ((QList<?>)obj).elementMetaType());
+        }else if(QQueue.class.isAssignableFrom(objClass)) {
+            return QMetaType.fromType(objClass, ((QQueue<?>)obj).elementMetaType());
+        }else if(QStack.class.isAssignableFrom(objClass)) {
+            return QMetaType.fromType(objClass, ((QStack<?>)obj).elementMetaType());
+        }else if(QSet.class.isAssignableFrom(objClass)) {
+            return QMetaType.fromType(objClass, ((QSet<?>)obj).elementMetaType());
+        }else if(QMultiMap.class.isAssignableFrom(objClass)) {
+            return QMetaType.fromType(objClass, ((QMultiMap<?,?>)obj).keyMetaType(), ((QMultiMap<?,?>)obj).valueMetaType());
+        }else if(QMap.class.isAssignableFrom(objClass)) {
+            return QMetaType.fromType(objClass, ((QMap<?,?>)obj).keyMetaType(), ((QMap<?,?>)obj).valueMetaType());
+        }else if(QMultiHash.class.isAssignableFrom(objClass)) {
+            return QMetaType.fromType(objClass, ((QMultiHash<?,?>)obj).keyMetaType(), ((QMultiHash<?,?>)obj).valueMetaType());
+        }else if(QHash.class.isAssignableFrom(objClass)) {
+            return QMetaType.fromType(objClass, ((QHash<?,?>)obj).keyMetaType(), ((QHash<?,?>)obj).valueMetaType());
+        }else if(QPair.class.isAssignableFrom(objClass)) {
+            return QMetaType.fromType(objClass, getMetaType(((QPair<?,?>)obj).first), getMetaType(((QPair<?,?>)obj).second));
         }else if(obj instanceof java.util.List) {
         	java.util.List<?> list = (java.util.List<?>)obj;
         	QMetaType elementMetaType = findElementMetaType(list);

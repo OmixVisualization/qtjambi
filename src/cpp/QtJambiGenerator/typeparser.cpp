@@ -254,6 +254,7 @@ TypeParser::Info TypeParser::parse(const QString &str) {
                             && !stack.top()->arguments.last()){
                         stack.top()->arguments.takeLast();
                     }
+                    stack.pop();
                     break;
                 default:
                     break;

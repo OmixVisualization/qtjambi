@@ -288,6 +288,15 @@ namespace Internal
                                      QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(unregisterFactory)
                                      QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(createByFactory))
 }
+#if QT_VERSION >= QT_VERSION_CHECK(6,10,0)
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QRangeModel$ConstTreeRowInterface,
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(parentRow)
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(childRows)
+                                     )
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QRangeModel$TreeRowInterface,
+                                     QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(setParentRow)
+                                     )
+#endif
 }
 
 #if QT_VERSION >= QT_VERSION_CHECK(6,2,0)

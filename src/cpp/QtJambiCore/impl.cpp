@@ -64,6 +64,7 @@ QT_WARNING_DISABLE_DEPRECATED
 #if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
 #if QT_CONFIG(permissions)
 #include <QtCore/QPermission>
+
 #endif
 #endif
 
@@ -104,7 +105,11 @@ extern "C" JNIEXPORT hash_type JNICALL Java_io_qt_core_QtGlobal_qHash(JNIEnv * e
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 extern "C" JNIEXPORT hash_type JNICALL Java_io_qt_core_QtGlobal_qHashMulti(JNIEnv * env, jclass, hash_type seed, jobjectArray objects){
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     jobject object;
     for(jsize i=0, length = env->GetArrayLength(objects); i<length;  ++i){
         object = env->GetObjectArrayElement(objects, i);
@@ -119,7 +124,11 @@ extern "C" JNIEXPORT hash_type JNICALL Java_io_qt_core_QtGlobal_qHashMulti(JNIEn
 }
 
 extern "C" JNIEXPORT hash_type JNICALL Java_io_qt_core_QtGlobal_qHashMultiCommutative(JNIEnv * env, jclass, hash_type seed, jobjectArray objects){
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombineCommutative hash;
+#else
+    QtPrivate::QHashCombineCommutative hash(seed);
+#endif
     jobject object;
     for(jsize i=0, length = env->GetArrayLength(objects); i<length;  ++i){
         object = env->GetObjectArrayElement(objects, i);
@@ -5217,7 +5226,7 @@ inline auto future_createExceptionHandlerFunction(JNIEnv * env, jobject function
         if(JniEnvironment env{300}){
             jthrowable _exception = nullptr;
             const std::exception* exceptionPtr = &exception;
-            const std::type_info* ti = &typeid(*exceptionPtr);// avoids crash when RTTI is missing
+            const std::type_info* ti = QtJambiPrivate::CheckPointer<std::exception>::trySupplyType(exceptionPtr);// avoids crash when RTTI is missing
             if(ti){
                 if(const JavaException* javaException = dynamic_cast<const JavaException*>(&exception)){
                     _exception = javaException->throwable(env);
@@ -5249,7 +5258,7 @@ inline auto futurevoid_createExceptionHandlerConsumer(JNIEnv * env, jobject func
         if(JniEnvironment env{300}){
             jthrowable _exception = nullptr;
             const std::exception* exceptionPtr = &exception;
-            const std::type_info* ti = &typeid(*exceptionPtr);// avoids crash when RTTI is missing
+            const std::type_info* ti = QtJambiPrivate::CheckPointer<std::exception>::trySupplyType(exceptionPtr);// avoids crash when RTTI is missing
             if(ti){
                 if(const JavaException* javaException = dynamic_cast<const JavaException*>(&exception)){
                     _exception = javaException->throwable(env);
@@ -5287,7 +5296,7 @@ inline auto futurevoid_createExceptionHandlerFunction(JNIEnv * env, jobject func
         if(JniEnvironment env{300}){
             jthrowable _exception = nullptr;
             const std::exception* exceptionPtr = &exception;
-            const std::type_info* ti = &typeid(*exceptionPtr);// avoids crash when RTTI is missing
+            const std::type_info* ti = QtJambiPrivate::CheckPointer<std::exception>::trySupplyType(exceptionPtr);// avoids crash when RTTI is missing
             if(ti){
                 if(const JavaException* javaException = dynamic_cast<const JavaException*>(&exception)){
                     _exception = javaException->throwable(env);
@@ -6653,7 +6662,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QFunctionPointerUtil_dispose
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
 }
-
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
 #if QT_CONFIG(permissions)

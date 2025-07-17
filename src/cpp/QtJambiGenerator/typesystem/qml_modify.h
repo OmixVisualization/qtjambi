@@ -600,6 +600,9 @@ public:
     const QString &getTargetType() const;
     void setTargetType(const QString &newTargetType);
 
+    bool getNoImplicitArguments() const;
+    void setNoImplicitArguments(bool newNoImplicitArguments);
+
 signals:
     void accessChanged();
 
@@ -631,6 +634,8 @@ signals:
 
     void targetTypeChanged();
 
+    void noImplicitArgumentsChanged();
+
 private:
     AccessModifications access;
     QString rename;
@@ -647,6 +652,7 @@ private:
     QString throwing;
     QString proxyCall;
     QString targetType;
+    bool noImplicitArguments = false;
     Q_PROPERTY(AccessModifications access READ getAccess WRITE setAccess NOTIFY accessChanged)
     Q_PROPERTY(QString rename READ getRename WRITE setRename NOTIFY renameChanged)
     Q_PROPERTY(bool noExcept READ getNoExcept WRITE setNoExcept NOTIFY noExceptChanged)
@@ -662,6 +668,7 @@ private:
     Q_PROPERTY(QString throwing READ getThrowing WRITE setThrowing NOTIFY throwingChanged)
     Q_PROPERTY(QString proxyCall READ getProxyCall WRITE setProxyCall NOTIFY proxyCallChanged)
     Q_PROPERTY(QString targetType READ getTargetType WRITE setTargetType NOTIFY targetTypeChanged)
+    Q_PROPERTY(bool noImplicitArguments READ getNoImplicitArguments WRITE setNoImplicitArguments NOTIFY noImplicitArgumentsChanged FINAL)
 };
 
 class Argument : public AbstractObject

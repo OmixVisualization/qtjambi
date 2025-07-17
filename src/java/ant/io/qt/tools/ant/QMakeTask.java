@@ -194,6 +194,11 @@ public class QMakeTask extends Task {
         parameters.add("QTJAMBI_PATCH_VERSION=" + getProject().getProperty("qtjambi.patchversion"));
         parameters.add("QTJAMBI_PLATFORM_BUILDDIR=" + getProject().getProperty("qtjambi.builddir"));
         parameters.add("QTJAMBI_GENERATOR_OUTPUT_DIR=" + getProject().getProperty("generator.outputdir"));
+//        parameters.add("QMAKE_CXXFLAGS+=--sysroot=/opt/x86_64-sysroot-focal");
+//        parameters.add("QMAKE_LFLAGS+=--sysroot=/opt/x86_64-sysroot-focal");
+//        parameters.add("QMAKE_CC=/opt/x86_64-sysroot-focal/usr/bin/gcc");
+//        parameters.add("QMAKE_CXX=/opt/x86_64-sysroot-focal/usr/bin/g++");
+//        parameters.add("QMAKE_LINK=/opt/x86_64-sysroot-focal/usr/bin/g++");
 
         String macSdk = getProject().getProperty(Constants.QTJAMBI_MACOSX_MAC_SDK);
         if(macSdk != null && macSdk.length() > 0)

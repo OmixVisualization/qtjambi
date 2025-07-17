@@ -188,6 +188,7 @@ void AutoMultiHashAccess::assign(void* container, const void* other) {
 }
 
 std::unique_ptr<AbstractHashAccess::KeyValueIterator> AutoMultiHashAccess::keyValueIterator(const void* container) { return AutoHashAccess::keyValueIterator(container); }
+std::unique_ptr<AbstractHashAccess::KeyValueIterator> AutoMultiHashAccess::keyValueIterator(void* container) { return AutoHashAccess::keyValueIterator(container); }
 int AutoMultiHashAccess::registerContainer(const QByteArray& containerTypeName) {return AutoHashAccess::registerContainer(containerTypeName);}
 void AutoMultiHashAccess::dispose() {delete this;}
 const QMetaType& AutoMultiHashAccess::keyMetaType() {return AutoHashAccess::keyMetaType();}
@@ -204,6 +205,7 @@ bool AutoMultiHashAccess::hasValueNestedContainerAccess() {return AutoHashAccess
 bool AutoMultiHashAccess::hasValueNestedPointers() {return AutoHashAccess::hasValueNestedPointers();}
 void AutoMultiHashAccess::clear(JNIEnv *env, const ContainerInfo& container) {AutoHashAccess::clear(env, container);}
 jboolean AutoMultiHashAccess::contains(JNIEnv *env, const void* container, jobject key) {return AutoHashAccess::contains(env, container, key);}
+bool AutoMultiHashAccess::contains(const void* container, const void* key) {return AutoHashAccess::contains(container, key);}
 jint AutoMultiHashAccess::count(JNIEnv *env, const void* container, jobject key) {return AutoHashAccess::count(env, container, key);}
 jobject AutoMultiHashAccess::begin(JNIEnv *env, const ExtendedContainerInfo& container) {return AutoHashAccess::begin(env, container);}
 jobject AutoMultiHashAccess::end(JNIEnv *env, const ExtendedContainerInfo& container) {return AutoHashAccess::end(env, container);}
@@ -239,6 +241,20 @@ void AutoMultiHashAccess::swap(JNIEnv *, const ContainerInfo& container, const C
     }
 }
 #endif
+
+void AutoMultiHashAccess::insert(void* container, const void* key, const void* value){
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    detach(container);
+    QHashData ** map = reinterpret_cast<QHashData **>(container.container);
+    QHashData*& d = *map;
+    d->willGrow();
+    uint h;
+    Node **nextNode = findNode(map, key, &h);
+    createNode(d, h, key, value, nextNode);
+#else
+    AutoHashAccess::insert(container, key, value);
+#endif
+}
 
 void AutoMultiHashAccess::insert(JNIEnv *env, const ContainerInfo& container, jobject key, jobject value){
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
@@ -321,6 +337,7 @@ qsizetype AutoMultiHashAccess::size(const void* container){
 
 jobject AutoMultiHashAccess::take(JNIEnv *env, const ContainerInfo& container, jobject key) {return AutoHashAccess::take(env, container, key);}
 jobject AutoMultiHashAccess::value(JNIEnv *env, const void* container, jobject key,jobject defaultValue) {return AutoHashAccess::value(env, container, key, defaultValue);}
+const void* AutoMultiHashAccess::value(const void* container, const void* key,const void* defaultValue) {return AutoHashAccess::value(container, key, defaultValue);}
 ContainerAndAccessInfo AutoMultiHashAccess::values(JNIEnv *env, const ConstContainerInfo& container) {return AutoHashAccess::values(env, container);}
 AbstractMultiHashAccess* AutoMultiHashAccess::clone() {return new AutoMultiHashAccess(*this);}
 
@@ -987,7 +1004,7 @@ AbstractMultiHashAccess* KeyPointerRCAutoMultiHashAccess::clone(){
 void KeyPointerRCAutoMultiHashAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
     JniLocalFrame frame(env, 200);
     jobject set = Java::Runtime::HashSet::newInstance(env);
-    auto iterator = keyValueIterator(container.container);
+    auto iterator = AbstractMultiHashAccess::constKeyValueIterator(container.container);
     while(iterator->hasNext()){
         auto content = iterator->next();
         jobject obj{nullptr};
@@ -1088,7 +1105,7 @@ AbstractMultiHashAccess* ValuePointerRCAutoMultiHashAccess::clone(){
 void ValuePointerRCAutoMultiHashAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
     JniLocalFrame frame(env, 200);
     jobject set = Java::Runtime::HashSet::newInstance(env);
-    auto iterator = keyValueIterator(container.container);
+    auto iterator = AbstractMultiHashAccess::constKeyValueIterator(container.container);
     while(iterator->hasNext()){
         auto content = iterator->next();
         jobject obj{nullptr};
@@ -1200,7 +1217,7 @@ AbstractMultiHashAccess* PointersRCAutoMultiHashAccess::clone(){
 void PointersRCAutoMultiHashAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
     JniLocalFrame frame(env, 200);
     jobject map = Java::QtJambi::ReferenceUtility$RCMap::newInstance(env);
-    auto iterator = keyValueIterator(container.container);
+    auto iterator = AbstractMultiHashAccess::constKeyValueIterator(container.container);
     while(iterator->hasNext()){
         auto content = iterator->next();
         jobject key{nullptr};
@@ -1327,7 +1344,7 @@ void NestedPointersRCAutoMultiHashAccess::updateRC(JNIEnv * env, const Container
         jobject set = Java::Runtime::HashSet::newInstance(env);
         auto access1 = keyNestedContainerAccess();
         auto access2 = valueNestedContainerAccess();
-        auto iterator = keyValueIterator(container.container);
+        auto iterator = AbstractMultiHashAccess::constKeyValueIterator(container.container);
         while(iterator->hasNext()){
             auto current = iterator->next();
             unfoldAndAddContainer(env, set, current.first, keyType(), keyMetaType(), access1);

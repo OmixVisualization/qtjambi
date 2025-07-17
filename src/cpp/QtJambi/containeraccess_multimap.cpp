@@ -143,6 +143,7 @@ const QSharedPointer<AbstractContainerAccess>& AutoMultiMapAccess::sharedKeyNest
 const QSharedPointer<AbstractContainerAccess>& AutoMultiMapAccess::sharedValueNestedContainerAccess() {return AutoMapAccess::sharedValueNestedContainerAccess();}
 void AutoMultiMapAccess::clear(JNIEnv *env, const ContainerInfo& container) {AutoMapAccess::clear(env, container);}
 jboolean AutoMultiMapAccess::contains(JNIEnv *env, const void* container, jobject key) {return AutoMapAccess::contains(env, container, key);}
+bool AutoMultiMapAccess::contains(const void* container, const void* key) {return AutoMapAccess::contains(container, key);}
 jint AutoMultiMapAccess::count(JNIEnv *env, const void* container, jobject key) {return AutoMapAccess::count(env, container, key);}
 jobject AutoMultiMapAccess::begin(JNIEnv *env, const ExtendedContainerInfo& container) {return AutoMapAccess::begin(env, container);}
 jobject AutoMultiMapAccess::end(JNIEnv *env, const ExtendedContainerInfo& container) {return AutoMapAccess::end(env, container);}
@@ -190,6 +191,30 @@ void AutoMultiMapAccess::insert(JNIEnv *env, const ContainerInfo& container, job
     }
 }
 
+void AutoMultiMapAccess::insert(void* container, const void* key, const void* value){
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    detach(container);
+    QMapDataBase ** map = reinterpret_cast<QMapDataBase **>(container.container);
+    QMapDataBase*& d = *map;
+
+
+    Node *n = rootNode(map);
+    Node *y = endNode(map);
+    bool  left = true;
+    while (n) {
+        y = n;
+        left = !qMapLessThanKey(*n, key);
+        n = left ? n->left : n->right;
+    }
+    Node* newNode = d->createNode(int(m_size), int(m_align), y, left);
+    char* newNodeData = reinterpret_cast<char*>(newNode);
+    m_keyMetaType.construct(newNodeData + m_offset1, key);
+    m_valueMetaType.construct(newNodeData + m_offset2, value);
+#else
+    insertOrAssign(AutoMapAccess::detach(*reinterpret_cast<MapDataPointer*>(container)), key, value);
+#endif
+}
+
 IsBiContainerFunction AutoMultiMapAccess::getIsBiContainerFunction(){
     return ContainerAPI::getAsQMultiMap;
 }
@@ -199,6 +224,7 @@ bool AutoMultiMapAccess::isMulti() const{
 }
 
 std::unique_ptr<AbstractMapAccess::KeyValueIterator> AutoMultiMapAccess::keyValueIterator(const void* container) { return AutoMapAccess::keyValueIterator(container); }
+std::unique_ptr<AbstractMapAccess::KeyValueIterator> AutoMultiMapAccess::keyValueIterator(void* container) { return AutoMapAccess::keyValueIterator(container); }
 jobject AutoMultiMapAccess::key(JNIEnv *env, const void* container, jobject value, jobject defaultKey) { return AutoMapAccess::key(env, container, value, defaultKey); }
 ContainerAndAccessInfo AutoMultiMapAccess::keys(JNIEnv *env, const ConstContainerInfo& container) {return AutoMapAccess::keys(env, container);}
 ContainerAndAccessInfo AutoMultiMapAccess::keys(JNIEnv *env, const ConstContainerInfo& container, jobject value) {return AutoMapAccess::keys(env, container, value);}
@@ -207,10 +233,12 @@ jobject AutoMultiMapAccess::lastKey(JNIEnv *env, const void* container) {return 
 jboolean AutoMultiMapAccess::equal(JNIEnv *env, const void* container, jobject other) {return AutoMapAccess::equal(env, container, other);}
 jint AutoMultiMapAccess::remove(JNIEnv *env, const ContainerInfo& container, jobject key) {return AutoMapAccess::remove(env, container, key);}
 jint AutoMultiMapAccess::size(JNIEnv *env, const void* container) {return AutoMapAccess::size(env, container);}
+qsizetype AutoMultiMapAccess::size(const void* container)  {return AutoMapAccess::size(container);}
 jobject AutoMultiMapAccess::take(JNIEnv *env, const ContainerInfo& container, jobject key) {return AutoMapAccess::take(env, container, key);}
 jobject AutoMultiMapAccess::constLowerBound(JNIEnv *env, const ConstExtendedContainerInfo& container, jobject key) {return AutoMapAccess::constLowerBound(env, container, key);}
 jobject AutoMultiMapAccess::constUpperBound(JNIEnv *env, const ConstExtendedContainerInfo& container, jobject key) {return AutoMapAccess::constUpperBound(env, container, key);}
 jobject AutoMultiMapAccess::value(JNIEnv *env, const void* container, jobject key,jobject defaultValue) {return AutoMapAccess::value(env, container, key, defaultValue);}
+const void* AutoMultiMapAccess::value(const void* container, const void* key,const void* defaultValue) {return AutoMapAccess::value(container, key, defaultValue);}
 ContainerAndAccessInfo AutoMultiMapAccess::values(JNIEnv *env, const ConstContainerInfo& container) {return AutoMapAccess::values(env, container);}
 bool AutoMultiMapAccess::keyLessThan(JNIEnv *env, jobject k1, jobject k2) {return AutoMapAccess::keyLessThan(env, k1, k2);}
 AbstractMultiMapAccess* AutoMultiMapAccess::clone() {return new AutoMultiMapAccess(*this);}
@@ -710,7 +738,7 @@ AbstractMultiMapAccess* KeyPointerRCAutoMultiMapAccess::clone(){
 void KeyPointerRCAutoMultiMapAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
     JniLocalFrame frame(env, 200);
     jobject set = Java::Runtime::HashSet::newInstance(env);
-    auto iterator = keyValueIterator(container.container);
+    auto iterator = AbstractMultiMapAccess::constKeyValueIterator(container.container);
     while(iterator->hasNext()){
         auto content = iterator->next();
         jobject obj{nullptr};
@@ -813,7 +841,7 @@ AbstractMultiMapAccess* ValuePointerRCAutoMultiMapAccess::clone(){
 void ValuePointerRCAutoMultiMapAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
     JniLocalFrame frame(env, 200);
     jobject set = Java::Runtime::HashSet::newInstance(env);
-    auto iterator = keyValueIterator(container.container);
+    auto iterator = AbstractMultiMapAccess::constKeyValueIterator(container.container);
     while(iterator->hasNext()){
         auto content = iterator->next();
         jobject obj{nullptr};
@@ -929,7 +957,7 @@ AbstractMultiMapAccess* PointersRCAutoMultiMapAccess::clone(){
 void PointersRCAutoMultiMapAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
     JniLocalFrame frame(env, 200);
     jobject map = Java::QtJambi::ReferenceUtility$RCMap::newInstance(env);
-    auto iterator = keyValueIterator(container.container);
+    auto iterator = AbstractMultiMapAccess::constKeyValueIterator(container.container);
     while(iterator->hasNext()){
         auto content = iterator->next();
         jobject key{nullptr};
@@ -1062,7 +1090,7 @@ void NestedPointersRCAutoMultiMapAccess::updateRC(JNIEnv * env, const ContainerI
         jobject set = Java::Runtime::HashSet::newInstance(env);
         auto access1 = keyNestedContainerAccess();
         auto access2 = valueNestedContainerAccess();
-        auto iterator = keyValueIterator(container.container);
+        auto iterator = AbstractMultiMapAccess::constKeyValueIterator(container.container);
         while(iterator->hasNext()){
             auto current = iterator->next();
             unfoldAndAddContainer(env, set, current.first, keyType(), keyMetaType(), access1);

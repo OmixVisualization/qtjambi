@@ -289,6 +289,12 @@ public:
         return result;
     }
 
+    qsizetype size(const void* container) override {
+        QTJAMBI_ELEMENT_LOCKER(this);
+        jint result = reinterpret_cast<const QLinkedList<T> *>(container)->size();
+        return result;
+    }
+
     void removeFirst(JNIEnv *, const ContainerInfo& container) override {
         QTJAMBI_ELEMENT_LOCKER(this);
         reinterpret_cast<QLinkedList<T> *>(container.container)->removeFirst();
@@ -429,16 +435,23 @@ public:
             reinterpret_cast<QLinkedList<T> *>(container.container)->swap(*reinterpret_cast<QLinkedList<T> *>(container2.container));
     }
 
+    template<bool is_const>
     class ElementIterator : public AbstractLinkedListAccess::ElementIterator{
-    public:
+        using Container = std::conditional_t<is_const, const QLinkedList<T>, QLinkedList<T>>;
+        using iterator = decltype(std::declval<Container>().begin());
         GenericLinkedListAccess* access;
-        typename QLinkedList<T>::ConstIterator current;
-        typename QLinkedList<T>::ConstIterator end;
+        iterator current;
+        iterator end;
+        ElementIterator(const ElementIterator& other)
+            :access(other.access),
+            current(other.current),
+            end(other.end) {}
+    public:
         ElementIterator(GenericLinkedListAccess* _access, const void* container)
             : access(_access){
             QTJAMBI_ELEMENT_LOCKER(access);
-            current = reinterpret_cast<const QLinkedList<T>*>(container)->constBegin();
-            end = reinterpret_cast<const QLinkedList<T>*>(container)->constEnd();
+            current = reinterpret_cast<Container*>(container)->begin();
+            end = reinterpret_cast<Container*>(container)->end();
         }
         ~ElementIterator() override {};
         bool hasNext() override {return current!=end;};
@@ -456,9 +469,36 @@ public:
             ++current;
             return pointer;
         }
+        bool isConst() override{
+            return is_const;
+        }
+        const void* constNext() override {
+            void* pointer = *current;
+            ++current;
+            return result;
+        }
+        void* mutableNext() override {
+            if constexpr(is_const){
+                return nullptr;
+            }else{
+                void* pointer = *current;
+                ++current;
+                return result;
+            }
+        }
+
+        bool operator==(const AbstractSequentialAccess::ElementIterator& other) const override {
+            return current==reinterpret_cast<const ElementIterator&>(other).current;
+        }
+        std::unique_ptr<AbstractSequentialAccess::ElementIterator> clone() const override {
+            return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(*this));
+        }
     };
     std::unique_ptr<AbstractLinkedListAccess::ElementIterator> elementIterator(const void* container) override {
-        return std::unique_ptr<AbstractLinkedListAccess::ElementIterator>(new ElementIterator(this, container));
+        return std::unique_ptr<AbstractLinkedListAccess::ElementIterator>(new ElementIterator<true>(this, container));
+    }
+    std::unique_ptr<AbstractLinkedListAccess::ElementIterator> elementIterator(void* container) override {
+        return std::unique_ptr<AbstractLinkedListAccess::ElementIterator>(new ElementIterator<false>(this, container));
     }
 };
 

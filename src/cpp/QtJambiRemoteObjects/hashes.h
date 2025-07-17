@@ -38,7 +38,11 @@
 #endif
 
 inline hash_type qHash(const QRemoteObjectSourceLocationInfo& info, hash_type seed = 0){
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, info.typeName);
     seed = hash(seed, info.hostUrl);
     return seed;

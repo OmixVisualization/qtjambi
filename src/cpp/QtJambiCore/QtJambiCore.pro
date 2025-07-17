@@ -33,6 +33,8 @@ include(../QtJambi/configure.pri)
 
 HEADERS += \
     hashes.h \
+    range_p.h \
+    range_p_p.h \
     utils.h \
     utils_p.h
 
@@ -48,6 +50,9 @@ SOURCES +=\
     future.cpp \
     plugins.cpp \
     impl.cpp \
+    range.cpp \
+    rangetree.cpp \
+    rangetable.cpp \
     utils.cpp
 
 lessThan(QT_MAJOR_VERSION, 6):{
@@ -69,7 +74,7 @@ win32-arm64-msvc* | win32-msvc*: {
 }
 
 win32-g++* {
-    QMAKE_CXXFLAGS += -Wa,-mbig-obj
+    QMAKE_CXXFLAGS += -Wa,-mbig-obj -g0
     CONFIG(debug, debug|release) {
         QMAKE_CXXFLAGS += -O3
     }

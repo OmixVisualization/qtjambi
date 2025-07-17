@@ -64,7 +64,11 @@ inline hash_type qHash(const QJSPrimitiveValue &value, hash_type seed = 0)
 
 inline hash_type qHash(const QQmlScriptString &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.isEmpty());
     seed = hash(seed, value.isNullLiteral());
     seed = hash(seed, value.isUndefinedLiteral());
@@ -80,7 +84,11 @@ inline hash_type qHash(const QQmlScriptString &value, hash_type seed = 0)
 
 inline hash_type qHash(const QQmlError &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.url());
     seed = hash(seed, value.description());
     seed = hash(seed, value.line());

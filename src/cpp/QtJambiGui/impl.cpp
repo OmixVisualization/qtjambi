@@ -278,7 +278,11 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_gui_QGradient_create(JNIEnv *__j
 
 hash_type qHash(const QColorVector &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     if(!value.isNull()){
         seed = hash(seed, value.x);
         seed = hash(seed, value.y);
@@ -289,7 +293,11 @@ hash_type qHash(const QColorVector &value, hash_type seed = 0)
 
 hash_type qHash(const QColorMatrix &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.r);
     seed = hash(seed, value.g);
     seed = hash(seed, value.b);
@@ -304,7 +312,11 @@ hash_type qHash(const QColorTransform &value, hash_type seed)
 #else
     QColorTransformPrivate* p = QColorTransformPrivate::get(value);
 #endif
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     if(p){
         seed = hash(seed, p->colorMatrix);
         seed = hash(seed, bool(p->colorSpaceIn));

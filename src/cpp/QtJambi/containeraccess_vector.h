@@ -294,6 +294,14 @@ public:
         return result;
     }
 
+    qsizetype size(const void* container) override {
+
+        QTJAMBI_ELEMENT_LOCKER(this);
+        jint result = reinterpret_cast<const QVector<T> *>(container)->size();
+
+        return result;
+    }
+
     void reserve(JNIEnv *, const ContainerInfo& container, jint size) override {
 
         QTJAMBI_ELEMENT_LOCKER(this);
@@ -535,16 +543,23 @@ public:
         reinterpret_cast<QVector<T> *>(container.container)->swap(*reinterpret_cast<QVector<T> *>(container2.container));
     }
 
+    template<bool is_const>
     class ElementIterator : public AbstractVectorAccess::ElementIterator{
-    public:
+        using Container = std::conditional_t<is_const, const QVector<T>, QVector<T>>;
+        using iterator = decltype(std::declval<Container>().begin());
         GenericVectorAccess* access;
-        typename QVector<T>::ConstIterator current;
-        typename QVector<T>::ConstIterator end;
-        ElementIterator(GenericVectorAccess* _access, const void* container)
+        typename iterator current;
+        typename iterator end;
+        ElementIterator(const ElementIterator& other)
+            :access(other.access),
+            current(other.current),
+            end(other.end) {}
+    public:
+        ElementIterator(GenericVectorAccess* _access, typename std::conditional_t<is_const, const void*, void*> container)
             : access(_access){
             QTJAMBI_ELEMENT_LOCKER(access);
-            current = reinterpret_cast<const QVector<T>*>(container)->constBegin();
-            end = reinterpret_cast<const QVector<T>*>(container)->constEnd();
+            current = reinterpret_cast<Container*>(container)->begin();
+            end = reinterpret_cast<Container*>(container)->end();
         }
         ~ElementIterator() override {};
         bool hasNext() override {return current!=end;};
@@ -562,9 +577,37 @@ public:
             ++current;
             return pointer;
         }
+        const void* constNext() override {
+            QTJAMBI_ELEMENT_LOCKER(access);
+            const void* pointer = *current;
+            ++current;
+            return pointer;
+        }
+        bool isConst() override{
+            return is_const;
+        }
+        void* mutableNext() override {
+            if constexpr(is_const){
+                return nullptr;
+            }else{
+                void* pointer = *current;
+                ++current;
+                return result;
+            }
+        }
+
+        bool operator==(const AbstractSequentialAccess::ElementIterator& other) const override {
+            return current==reinterpret_cast<const ElementIterator&>(other).current;
+        }
+        std::unique_ptr<AbstractSequentialAccess::ElementIterator> clone() const override {
+            return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(*this));
+        }
     };
     std::unique_ptr<AbstractVectorAccess::ElementIterator> elementIterator(const void* container) override {
         return std::unique_ptr<AbstractVectorAccess::ElementIterator>(new ElementIterator(this, container));
+    }
+    std::unique_ptr<AbstractVectorAccess::ElementIterator> elementIterator(void* container) override {
+        return std::unique_ptr<AbstractVectorAccess::ElementIterator>(new ElementIterator<false>(this, container));
     }
 };
 

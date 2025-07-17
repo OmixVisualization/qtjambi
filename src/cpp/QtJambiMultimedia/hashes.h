@@ -118,13 +118,23 @@ inline hash_type qHash(const QMediaTimeRange::Interval& value, hash_type seed = 
 inline hash_type qHash(const QMediaFormat& value, hash_type seed = 0){
     return qHashMulti(seed, value.fileFormat(), int(value.audioCodec()), int(value.videoCodec()));
 }
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
+inline hash_type qHash(const QPlaybackOptions& value, hash_type seed = 0){
+    return qHashMulti(seed, value.networkTimeout().count(), int(value.playbackIntent()), value.probeSize());
+}
+#endif
 #endif
 
 
 inline hash_type qHash(const QVideoFrame& value, hash_type seed = 0){
     if(!value.isValid())
         return seed;
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombineCommutative hash;
+#else
+    QtPrivate::QHashCombineCommutative hash(seed);
+#endif
     seed = hash(seed, value.size());
     seed = hash(seed, value.width());
     seed = hash(seed, value.height());
@@ -199,7 +209,11 @@ inline hash_type qHash(const QCameraViewfinderSettings& value, hash_type seed = 
 #endif
 
 inline hash_type qHash(const QMediaTimeRange& value, hash_type seed = 0){
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.isEmpty());
     seed = hash(seed, value.intervals());
     seed = hash(seed, value.latestTime());
@@ -314,7 +328,11 @@ inline hash_type qHash(const QAudioDeviceInfo& value, hash_type seed = 0){
 #endif
 
 inline hash_type qHash(const QAudioFormat& value, hash_type seed){
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.sampleRate());
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     seed = hash(seed, value.byteOrder());
@@ -330,7 +348,11 @@ inline hash_type qHash(const QAudioFormat& value, hash_type seed){
 #if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
 inline hash_type qHash(const QCapturableWindow &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.isValid());
     seed = hash(seed, value.description());
     return seed;
@@ -346,7 +368,11 @@ using QtAudio::State = QAudio::State;
 #if QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
 inline hash_type qHash(const QMediaMetaData &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     for(QMediaMetaData::Key key : value.keys()){
         QVariant v = value.value(key);
         seed = hash(seed, CoreAPI::computeHash(v.metaType(), v.constData(), 0));

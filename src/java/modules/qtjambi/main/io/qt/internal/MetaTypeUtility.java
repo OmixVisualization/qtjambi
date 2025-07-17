@@ -951,6 +951,17 @@ public final class MetaTypeUtility {
 	private static Object analyzeExpectedTemplateName(java.lang.Class<?> clazz, io.qt.core.QMetaType... instantiations) {
 		QtUtilities.initializePackage(clazz);
 		Object[] typeParameters = clazz.getTypeParameters();
+		if(typeParameters.length==0 && instantiations!=null && instantiations.length>0) {
+			if((QList.class.isAssignableFrom(clazz) && clazz!=QList.class)
+					|| (QSet.class.isAssignableFrom(clazz) && clazz!=QSet.class)
+					|| (QMap.class.isAssignableFrom(clazz) && clazz!=QMap.class)
+					|| (QHash.class.isAssignableFrom(clazz) && clazz!=QHash.class)
+					|| (QMultiMap.class.isAssignableFrom(clazz) && clazz!=QMultiMap.class)
+					|| (QMultiHash.class.isAssignableFrom(clazz) && clazz!=QMultiHash.class)) {
+				analyzeExpectedTemplateName(clazz.getSuperclass(), instantiations);
+				return null;
+			}
+		}
         if(typeParameters.length>0) {
         	if(typeParameters.length!=(instantiations!=null ? instantiations.length : 0)) {
         		if(instantiations==null || instantiations.length==0) {
@@ -1035,4 +1046,68 @@ public final class MetaTypeUtility {
         }
         return null;
 	}
+    
+    public static QMetaType[] findSuperInstantiations(Class<?> clazz){
+    	if(clazz!=null && ((QList.class.isAssignableFrom(clazz) && clazz!=QList.class)
+							|| (QSet.class.isAssignableFrom(clazz) && clazz!=QSet.class)
+							|| (QMap.class.isAssignableFrom(clazz) && clazz!=QMap.class)
+							|| (QHash.class.isAssignableFrom(clazz) && clazz!=QHash.class)
+							|| (QMultiMap.class.isAssignableFrom(clazz) && clazz!=QMultiMap.class)
+							|| (QMultiHash.class.isAssignableFrom(clazz) && clazz!=QMultiHash.class))) {
+    		if(clazz.getTypeParameters().length==0) {
+    			Type superclass = clazz.getGenericSuperclass();
+    			AnnotatedElement annotatedSuperclass = null;
+    	    	if(ClassAnalyzerUtility.useAnnotatedType)
+    	    		annotatedSuperclass = clazz.getAnnotatedSuperclass();
+    			while(superclass!=null){
+    				if(superclass instanceof Class) {
+    					if(ClassAnalyzerUtility.useAnnotatedType)
+    						annotatedSuperclass = ((Class<?>) superclass).getAnnotatedSuperclass();
+    					superclass = ((Class<?>) superclass).getGenericSuperclass();
+    				}else if(superclass instanceof ParameterizedType) {
+	    				ParameterizedType p = (ParameterizedType)superclass;
+	    				java.lang.reflect.Type praw = p.getRawType();
+	    				if(praw==QList.class
+	    						|| praw==QSet.class
+	    						|| praw==QMap.class
+	    						|| praw==QHash.class
+	    						|| praw==QMultiMap.class
+	    						|| praw==QMultiHash.class) {
+	    					AnnotatedElement[] actualAnnotatedTypeArguments = null;
+	    					if(ClassAnalyzerUtility.useAnnotatedType) {
+	    						if(annotatedSuperclass instanceof java.lang.reflect.AnnotatedParameterizedType) {
+	    							actualAnnotatedTypeArguments = ((java.lang.reflect.AnnotatedParameterizedType)annotatedSuperclass).getAnnotatedActualTypeArguments();
+	    						}
+	    					}
+	    					Type[] actualTypeArguments = p.getActualTypeArguments();
+	    					QMetaType[] result = new QMetaType[actualTypeArguments.length];
+	    					for (int i = 0; i < actualTypeArguments.length; i++) {
+								Class<?> actualClassArgument = null;
+	    						if(actualTypeArguments[i] instanceof Class) {
+									actualClassArgument = (Class<?>)actualTypeArguments[i];
+								}else if(actualTypeArguments[i] instanceof ParameterizedType) {
+									java.lang.reflect.Type raw = ((ParameterizedType)actualTypeArguments[i]).getRawType();
+									if(raw instanceof Class)
+										actualClassArgument = (Class<?>)raw;
+								}
+		    					int mt = registerMetaType(actualClassArgument, actualTypeArguments[i], actualAnnotatedTypeArguments==null ? null : actualAnnotatedTypeArguments[i], false, false);
+		    					result[i] = new QMetaType(mt);
+							}
+	    					return result;
+	    				}else if(praw instanceof Class) {
+	    					superclass = ((Class<?>) praw).getGenericSuperclass();
+	    					if(ClassAnalyzerUtility.useAnnotatedType) {
+    							annotatedSuperclass = ((Class<?>) praw).getAnnotatedSuperclass();
+	    					}
+	    				}else {
+	    					break;
+	    				}
+	    			}else {
+	    				break;
+	    			}
+    			}
+    		}
+    	}
+        return new QMetaType[0];
+    }
 }

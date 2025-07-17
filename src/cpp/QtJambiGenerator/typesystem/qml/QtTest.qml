@@ -513,6 +513,46 @@ TypeSystem{
             since: 6.7
         }
         ModifyFunction{
+            signature: "qWaitForWindowActive(QWindow*,int)"
+            ModifyArgument{
+                index: 2
+                ReplaceDefaultExpression{
+                    expression: "5000"
+                }
+            }
+            since: [6,10]
+        }
+        ModifyFunction{
+            signature: "qWaitForWindowActive(QWidget*,int)"
+            ModifyArgument{
+                index: 2
+                ReplaceDefaultExpression{
+                    expression: "5000"
+                }
+            }
+            since: [6,10]
+        }
+        ModifyFunction{
+            signature: "qWaitForWindowExposed(QWindow*,int)"
+            ModifyArgument{
+                index: 2
+                ReplaceDefaultExpression{
+                    expression: "5000"
+                }
+            }
+            since: [6,10]
+        }
+        ModifyFunction{
+            signature: "qWaitForWindowExposed(QWidget*,int)"
+            ModifyArgument{
+                index: 2
+                ReplaceDefaultExpression{
+                    expression: "5000"
+                }
+            }
+            since: [6,10]
+        }
+        ModifyFunction{
             signature: "addColumn<T>(const char *, T *)"
             Instantiation{
                 Argument{

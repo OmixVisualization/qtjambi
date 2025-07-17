@@ -113,7 +113,7 @@ public:
     void writeExtraFunctions(QTextStream &s, const MetaFunctional *java_class, bool inInterface);
     void writeToStringFunction(QTextStream &s, const MetaClass *java_class);
     void writeCloneFunction(QTextStream &s, const MetaClass *java_class);
-    void writeFunctionAttributes(QTextStream &s, const MetaFunction *java_function, int arg_count = -1,
+    void writeFunctionAttributes(QTextStream &s, const MetaFunction *java_function, int arg_count = -1, const QMap<int,Replacement>& replacedArguments = {},
                                  uint included_attributes = 0, uint excluded_attributes = 0,
                                  Option options = NoOption);
     void writeConstructorContents(QTextStream &s, const MetaFunction *java_function);

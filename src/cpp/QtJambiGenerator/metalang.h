@@ -584,6 +584,7 @@ class MetaFunction : public MetaAttributes {
     QString marshalledArguments(int count = -1) const;
 
     static QString marshalledArguments(const QList<MetaArgument *>& arguments, bool isConst, int count = -1);
+    static QString marshalledArguments(const QList<const MetaType *>& arguments);
 
     // true if one or more of the arguments are of QtObject subclasses
     bool argumentsHaveNativeId() const;

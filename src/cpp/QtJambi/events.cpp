@@ -181,20 +181,29 @@ void UIInitialCheck::trivial(JNIEnv *, const char*, const std::type_info&, const
 bool UIInitialCheck::trivial(QObject *, QEvent *, bool*){return false;}
 bool UIInitialCheck::trivial(QObject *){return true;}
 
+bool dontUseEventNotify(JNIEnv *env = nullptr){
+    static ResettableBoolFlag b(env, "io.qt.no-exception-inhibition-during-events");
+    return b;
+}
+
 bool UIInitialCheck::initialEventNotify(QObject *receiver, QEvent *event, bool* result){
-    QCoreApplication* instance = QCoreApplication::instance();
-    if(Q_LIKELY(instance)) {
-        if(QtJambiShellInterface* shellInterface = dynamic_cast<QtJambiShellInterface*>(instance)){
-            QtJambiShellImpl* shellImpl = QtJambiShellImpl::get(shellInterface);
-            if(!shellImpl->hasEmptyVTable()){
-                UIInitialCheck::eventNotify = &UIInitialCheck::trivial;
+    if(dontUseEventNotify()){
+        UIInitialCheck::eventNotify = &UIInitialCheck::trivial;
+    }else{
+        QCoreApplication* instance = QCoreApplication::instance();
+        if(Q_LIKELY(instance)) {
+            if(QtJambiShellInterface* shellInterface = dynamic_cast<QtJambiShellInterface*>(instance)){
+                QtJambiShellImpl* shellImpl = QtJambiShellImpl::get(shellInterface);
+                if(!shellImpl->hasEmptyVTable()){
+                    UIInitialCheck::eventNotify = &UIInitialCheck::trivial;
+                }else{
+                    UIInitialCheck::eventNotify = &UIInitialCheck::enabledEventNotify;
+                    return enabledEventNotify(receiver, event, result);
+                }
             }else{
                 UIInitialCheck::eventNotify = &UIInitialCheck::enabledEventNotify;
                 return enabledEventNotify(receiver, event, result);
             }
-        }else{
-            UIInitialCheck::eventNotify = &UIInitialCheck::enabledEventNotify;
-            return enabledEventNotify(receiver, event, result);
         }
     }
     return false;
@@ -821,7 +830,7 @@ bool eventNotifier(QObject *receiver, QEvent *event, bool* result)
         break;
     }
     QThreadData *threadData = d->threadData;
-    if (!(threadData && threadData->requiresCoreApplication)){
+    if (!(threadData && threadData->requiresCoreApplication) && !dontUseEventNotify()){
         ScopedScopeLevelCounter scopeLevelCounter(threadData);
 #ifndef QT_NO_DEBUG
         QCoreApplicationPrivate::checkReceiverThread(receiver);

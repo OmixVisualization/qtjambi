@@ -39,7 +39,11 @@ inline hash_type qHash(const QDomNode &value, hash_type seed = 0)
 {
     if(value.parentNode().isNull())
         return 0;
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, int(value.nodeType()));
     seed = hash(seed, value.nodeName());
     seed = hash(seed, value.nodeValue());
@@ -51,7 +55,11 @@ inline hash_type qHash(const QDomNode &value, hash_type seed = 0)
 
 inline hash_type qHash(const QDomNamedNodeMap &value, hash_type seed)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombineCommutative hash;
+#else
+    QtPrivate::QHashCombineCommutative hash(seed);
+#endif
     seed = hash(seed, value.count());
     for (int i=0; i< value.count(); ++i) {
         seed = hash(seed, value.item(i));
@@ -61,7 +69,11 @@ inline hash_type qHash(const QDomNamedNodeMap &value, hash_type seed)
 
 inline hash_type qHash(const QDomNodeList &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombineCommutative hash;
+#else
+    QtPrivate::QHashCombineCommutative hash(seed);
+#endif
     seed = hash(seed, value.count());
     for (int i=0; i< value.count(); ++i) {
         seed = hash(seed, value.item(i));
@@ -111,7 +123,11 @@ inline bool operator==(const QXmlAttributes& arg1, const QXmlAttributes& arg2){
 
 inline hash_type qHash(const QXmlAttributes &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombineCommutative hash;
+#else
+    QtPrivate::QHashCombineCommutative hash(seed);
+#endif
     seed = hash(seed, value.count());
     for (int i=0; i< value.count(); ++i) {
         seed = hash(seed, value.localName(i));

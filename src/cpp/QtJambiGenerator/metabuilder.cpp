@@ -4979,6 +4979,20 @@ void MetaBuilder::traverseFunctions(ScopeModelItem scope_item) {
                                             cls->typeEntry()->setHasEquals();
                                         }
                                     }
+                                    if(targetClass){
+                                        FunctionModificationList functionMods = targetClass->typeEntry()->functionModifications();
+                                        bool modified = false;
+                                        for(FunctionModification& mod : functionMods){
+                                            if(mod.signature==oldMinimalSignature
+                                                    || mod.signature==meta_function->originalSignature()){
+                                                mod.signature = meta_function->minimalSignature();
+                                                modified = true;
+                                            }
+                                        }
+                                        if(modified){
+                                            targetClass->typeEntry()->setFunctionModifications(functionMods);
+                                        }
+                                    }
                                 }else if(arguments[0]->type()->getReferenceType()!=MetaType::RReference && !targetClassGlobalSet){
                                     targetClass = nullptr;
                                     skip = true;
@@ -5127,6 +5141,20 @@ void MetaBuilder::traverseFunctions(ScopeModelItem scope_item) {
                                             }
                                         }
                                     }
+                                    if(targetClass){
+                                        FunctionModificationList functionMods = targetClass->typeEntry()->functionModifications();
+                                        bool modified = false;
+                                        for(FunctionModification& mod : functionMods){
+                                            if(mod.signature==oldMinimalSignature
+                                                    || mod.signature==meta_function->originalSignature()){
+                                                mod.signature = meta_function->minimalSignature();
+                                                modified = true;
+                                            }
+                                        }
+                                        if(modified){
+                                            targetClass->typeEntry()->setFunctionModifications(functionMods);
+                                        }
+                                    }
 //                                }else if(!targetClass){
 //                                    skip = true;
                                 }
@@ -5210,6 +5238,20 @@ void MetaBuilder::traverseFunctions(ScopeModelItem scope_item) {
                                             delete meta_function;
                                             meta_function = nullptr;
                                             continue;
+                                        }
+                                        if(targetClass){
+                                            FunctionModificationList functionMods = targetClass->typeEntry()->functionModifications();
+                                            bool modified = false;
+                                            for(FunctionModification& mod : functionMods){
+                                                if(mod.signature==oldMinimalSignature
+                                                        || mod.signature==meta_function->originalSignature()){
+                                                    mod.signature = meta_function->minimalSignature();
+                                                    modified = true;
+                                                }
+                                            }
+                                            if(modified){
+                                                targetClass->typeEntry()->setFunctionModifications(functionMods);
+                                            }
                                         }
                                     }else if(!targetClassGlobalSet){
                                         targetClass = nullptr;
@@ -5826,6 +5868,20 @@ void MetaBuilder::checkHashAndSwapFunctions(){
                         }
                     }
                 }
+                if(cls){
+                    FunctionModificationList functionMods = cls->typeEntry()->functionModifications();
+                    bool modified = false;
+                    for(FunctionModification& mod : functionMods){
+                        if(mod.signature==oldMinimalSignature
+                                || mod.signature==meta_function->originalSignature()){
+                            mod.signature = meta_function->minimalSignature();
+                            modified = true;
+                        }
+                    }
+                    if(modified){
+                        cls->typeEntry()->setFunctionModifications(functionMods);
+                    }
+                }
                 skip = true;
             }
         }
@@ -5895,8 +5951,12 @@ MetaType* MetaBuilder::exchangeTemplateTypes(const MetaType* type, bool isReturn
                 rtype->setTypeUsagePattern(MetaType::ObjectPattern);
             }
             QList<const MetaType *> instantiations;
-            for(auto instantiation : rtype->instantiations()){
-                instantiations << exchangeTemplateTypes(instantiation, false, templateTypes);
+            if(!rtype->instantiations().isEmpty()){
+                for(auto instantiation : rtype->instantiations()){
+                    instantiations << exchangeTemplateTypes(instantiation, false, templateTypes);
+                }
+            }else if(!instantiation.first->instantiations().isEmpty()){
+                instantiations = instantiation.first->instantiations();
             }
             rtype->setInstantiations(instantiations);
             return rtype;
@@ -5977,16 +6037,20 @@ bool MetaBuilder::setupFunctionTemplateInstantiations(MetaClass *meta_class){
                         if(tparam->instantiation().isEmpty()){
                             if(tparam->type() && tparam->type()->typeUsagePattern()==MetaType::TemplateArgumentPattern){
                                 if(template_instantiation.arguments[k].name.isEmpty()){
-                                    TypeInfo info = analyzeTypeInfo(meta_class, template_instantiation.arguments[k].type);
+                                    QString arg = template_instantiation.arguments[k].type;
+                                    TypeInfo info = analyzeTypeInfo(meta_class, arg);
                                     MetaClass * tmp_current_class = m_current_class;
                                     m_current_class = meta_class;
                                     bool ok = false;
-                                    MetaType* ttype = translateType(info, &ok, QString("traverseTemplateInstantiation <%1>").arg(template_instantiation.arguments[k].type), true, true, false);
+                                    MetaType* ttype = translateType(info, &ok, QString("traverseTemplateInstantiation <%1>").arg(arg), true, true, false);
                                     m_current_class = tmp_current_class;
                                     if(ok && ttype){
                                         decideUsagePattern(ttype);
+                                        if(ttype->typeEntry()->isQSpan() || ttype->typeEntry()->isInitializerList()){
+                                            Q_ASSERT(ttype->instantiations().size()>=1);
+                                        }
                                         templateTypes[tparam->name()] = {ttype,{}};
-                                        tparam->setInstantiation(template_instantiation.arguments[k].implicit, template_instantiation.arguments[k].type, ttype);
+                                        tparam->setInstantiation(template_instantiation.arguments[k].implicit, arg, ttype);
                                         untreatedTemplateParameters.removeOne(tparam);
                                     }
                                 }else if(!tparam->name().isEmpty() && template_instantiation.arguments[k].name==tparam->name()){
@@ -6034,8 +6098,12 @@ bool MetaBuilder::setupFunctionTemplateInstantiations(MetaClass *meta_class){
                             }
                         }else{
                             MetaType* rtype = exchangeTemplateTypes(func2->type(), true, templateTypes);
-                            if(rtype!=func2->type())
+                            if(rtype!=func2->type()){
+                                if(rtype && (rtype->typeEntry()->isQSpan() || rtype->typeEntry()->isInitializerList())){
+                                    Q_ASSERT(rtype->instantiations().size()>=1);
+                                }
                                 func2->setType(rtype);
+                            }
                         }
                     }
 
@@ -6044,12 +6112,8 @@ bool MetaBuilder::setupFunctionTemplateInstantiations(MetaClass *meta_class){
                         MetaType* rtype = exchangeTemplateTypes(arg->type(), false, templateTypes);
                         if(rtype!=ttype){
                             arg->setType(rtype);
-                            if(!arg->defaultValueExpression().isEmpty()){
-                                QString exp = arg->defaultValueExpression();
-                                arg->setOriginalDefaultValueExpression(exp);
-                                exp = exp.replace(ttype->typeEntry()->qualifiedCppName(), rtype->typeEntry()->qualifiedCppName());
-                                exp = translateDefaultValue(exp, rtype, func2.get(), meta_class, int(func2->arguments().size()));
-                                arg->setDefaultValueExpression(exp);
+                            if(rtype->typeEntry()->isQSpan() || rtype->typeEntry()->isInitializerList()){
+                                Q_ASSERT(rtype->instantiations().size()>=1);
                             }
                         }
                     }
@@ -6080,12 +6144,14 @@ bool MetaBuilder::setupFunctionTemplateInstantiations(MetaClass *meta_class){
                     if(add){
                         {
                             FunctionModification mod = *templateInstantiationPair.second;
+                            if(!template_instantiation.renamedToName.isEmpty())
+                                mod.renamedToName = template_instantiation.renamedToName;
                             if(mod.ppCondition.isEmpty())
                                 mod.ppCondition = template_instantiation.ppCondition;
                             if(mod.throws.isEmpty())
                                 mod.throws = template_instantiation.throws;
                             if(mod.association.isEmpty())
-                                mod.association = template_instantiation.throws;
+                                mod.association = template_instantiation.association;
                             mod.snips << template_instantiation.snips;
                             if(mod.targetType.isEmpty())
                                 mod.targetType = template_instantiation.targetType;
@@ -6097,11 +6163,37 @@ bool MetaBuilder::setupFunctionTemplateInstantiations(MetaClass *meta_class){
                             mod.signature = func2->minimalSignature();
                             mod.originalSignature = mod.signature;
                             mod.removal = TS::NoLanguage;
+                            if(mod.accessModifier()==0)
+                                mod.modifiers = template_instantiation.modifiers;
                             func2->setFunctionTemplate(func, mod);
+//                            meta_class->typeEntry()->addFunctionModification(mod);
                         }
+                        /*{
+                            FunctionModification mod = *templateInstantiationPair.second;
+                            mod.template_instantiations.clear();
+                            mod.signature = func2->minimalSignature();
+                            mod.originalSignature = mod.signature;
+                            mod.removal = TS::NoLanguage;
+                            meta_class->typeEntry()->addFunctionModification(mod);
+                        }
+                        {
+                            FunctionModification mod;
+                            static_cast<AbstractFunctionModification&>(mod) = template_instantiation;
+                            mod.signature = func2->minimalSignature();
+                            mod.originalSignature = mod.signature;
+                            mod.removal = TS::NoLanguage;
+                            meta_class->typeEntry()->addFunctionModification(mod);
+                        }*/
                         func2->setDeclaringClass(meta_class);
                         func2->setOwnerClass(meta_class);
                         func2->setImplementingClass(meta_class);
+                        for(MetaArgument* arg : func2->arguments()){
+                            if(!arg->defaultValueExpression().isEmpty()){
+                                QString exp = arg->defaultValueExpression();
+                                exp = translateDefaultValue(exp, arg->type(), func2.get(), meta_class, int(arg->argumentIndex()));
+                                arg->setDefaultValueExpression(exp);
+                            }
+                        }
                         //if(!meta_class->hasFunction(func2.get()))
                         {
                             functions << func2.release();
@@ -9407,7 +9499,6 @@ void MetaBuilder::inheritHiddenBaseType(MetaClass *subclass, const MetaClass *hi
 
                 if(!arg->defaultValueExpression().isEmpty() && argument->type()->typeEntry()->isTemplateArgument()){
                     QString exp = arg->defaultValueExpression();
-                    arg->setOriginalDefaultValueExpression(exp);
                     exp = exp.replace(argument->type()->typeEntry()->qualifiedCppName(), arg->type()->typeEntry()->qualifiedCppName());
                     exp = translateDefaultValue(exp, arg->type(), f, subclass, int(f->arguments().size()));
                     arg->setDefaultValueExpression(exp);
@@ -10246,37 +10337,39 @@ void MetaBuilder::setupConstructorAvailability(MetaClass *meta_class){
                 *fieldsConstructor += MetaAttributes::BracketCall;
                 MetaArgumentList arguments;
                 for(MetaField* field : meta_class->fields()){
-                    MetaArgument* arg = new MetaArgument();
-                    arg->setArgumentIndex(int(arguments.size()));
-                    arg->setName(field->name());
-                    MetaType* type = field->type()->copy();
-                    arg->setType(type);
-                    arguments << arg;
-                    FieldModification fmod = meta_class->typeEntry()->fieldModification(field->name());
-                    ArgumentModification amod(arg->argumentIndex()+1);
-                    bool modified = false;
-                    if(!fmod.modified_type.isEmpty()){
-                        modified = true;
-                        amod.modified_type = fmod.modified_type;
-                        amod.modified_jni_type = fmod.modified_jni_type;
-                        for(const CodeSnip& snip : fmod.conversion_rules){
-                            if((snip.language == TS::Language(TS::Setter | TS::NativeCode))){
-                                CodeSnip _snip = snip;
-                                _snip.language = TS::NativeCode;
-                                amod.conversion_rules << _snip;
+                    if(!field->isStatic()){
+                        MetaArgument* arg = new MetaArgument();
+                        arg->setArgumentIndex(int(arguments.size()));
+                        arg->setName(field->name());
+                        MetaType* type = field->type()->copy();
+                        arg->setType(type);
+                        arguments << arg;
+                        FieldModification fmod = meta_class->typeEntry()->fieldModification(field->name());
+                        ArgumentModification amod(arg->argumentIndex()+1);
+                        bool modified = false;
+                        if(!fmod.modified_type.isEmpty()){
+                            modified = true;
+                            amod.modified_type = fmod.modified_type;
+                            amod.modified_jni_type = fmod.modified_jni_type;
+                            for(const CodeSnip& snip : fmod.conversion_rules){
+                                if((snip.language == TS::Language(TS::Setter | TS::NativeCode))){
+                                    CodeSnip _snip = snip;
+                                    _snip.language = TS::NativeCode;
+                                    amod.conversion_rules << _snip;
+                                }
                             }
                         }
-                    }
-                    if(!fmod.renamedToName.isEmpty()){
-                        modified = true;
-                        amod.modified_name = fmod.renamedToName;
-                    }
-                    if(fmod.no_null_pointers){
-                        modified = true;
-                        amod.no_null_pointers = true;
-                    }
-                    if(modified){
-                        mod.argument_mods << amod;
+                        if(!fmod.renamedToName.isEmpty()){
+                            modified = true;
+                            amod.modified_name = fmod.renamedToName;
+                        }
+                        if(fmod.no_null_pointers){
+                            modified = true;
+                            amod.no_null_pointers = true;
+                        }
+                        if(modified){
+                            mod.argument_mods << amod;
+                        }
                     }
                 }
                 if(!arguments.isEmpty()){

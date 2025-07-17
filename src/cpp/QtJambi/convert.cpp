@@ -1050,6 +1050,11 @@ void registerConverterVariant(JNIEnv *env, QMetaType metaType, QString qtName, c
 #endif
 
 bool hasReferenceCounts(JNIEnv * env, jobject container);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+QList<int> registeredCustomMetaTypesForJavaClass(const QByteArray& javaClass);
+#else
+QList<QMetaType> registeredCustomMetaTypesForJavaClass(const QByteArray& javaClass);
+#endif
 
 QVariant internal_convertJavaObjectToQVariant(JNIEnv *env, jobject java_object, bool convert){
     static ResettableBoolFlag nullAsNull(env, "io.qt.experimental.javanull-as-nullvariant");
@@ -1319,8 +1324,53 @@ QVariant internal_convertJavaObjectToQVariant(JNIEnv *env, jobject java_object, 
         if (Java::QtCore::QList::isInstanceOf(env, java_object)) {
             if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, java_object)){
                 if(AbstractListAccess* containerAccess = dynamic_cast<AbstractListAccess*>(link->containerAccess())){
-                    QString qtName = QLatin1String("QList<%1>");
-                    qtName = qtName.arg(QLatin1String(containerAccess->elementMetaType().name()));
+                    QString qtName;
+                    if (Java::QtCore::QList::isSameClass(env, object_class)
+                        || Java::QtCore::QQueue::isSameClass(env, object_class)
+                        || Java::QtCore::QStack::isSameClass(env, object_class)) {
+                        qtName = QLatin1String("QList<%1>");
+                        qtName = qtName.arg(QLatin1String(containerAccess->elementMetaType().name()));
+                    }else{
+                        QString javaClassName = QtJambiAPI::getClassName(env, object_class).replace('.', '/');
+                        if(const std::type_info* typeId = getTypeByJavaName(javaClassName)){
+                            int id = registeredMetaTypeID(*typeId);
+                            if(id==QMetaType::UnknownType){
+                                QByteArray qtType = getQtName(*typeId);
+                                EntryTypes entryType = getEntryType(*typeId);
+                                switch(entryType){
+                                case EntryTypes::ObjectTypeInfo:
+                                case EntryTypes::QObjectTypeInfo:
+                                case EntryTypes::InterfaceTypeInfo:
+                                {
+                                    qtType += "*";
+                                }
+                                break;
+                                default: break;
+                                }
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                                id = QMetaType::type(qtType);
+#else
+                                id = QMetaType::fromName(qtType).id();
+#endif
+                            }
+                            if(id!=QMetaType::UnknownType){
+                                if(hasReferenceCounts(env, link->getJavaObjectLocalRef(env))){
+                                    return QVariant::fromValue(JCollectionWrapper(env, java_object));
+                                }else{
+                                    return QVariant(META_TYPE(id), link->pointer());
+                                }
+                            }
+                        }else{
+                            const auto types = registeredCustomMetaTypesForJavaClass(javaClassName.toUtf8());
+                            if(!types.isEmpty()){
+                                if(hasReferenceCounts(env, link->getJavaObjectLocalRef(env))){
+                                    return QVariant::fromValue(JCollectionWrapper(env, java_object));
+                                }else{
+                                    return QVariant(types[0], link->pointer());
+                                }
+                            }
+                        }
+                    }
                     QMetaType containerMetaType(containerAccess->registerContainer(qtName.toLatin1()));
                     if(hasReferenceCounts(env, link->getJavaObjectLocalRef(env))){
                         registerContainerConverter(SequentialContainerType::QList, containerMetaType, containerAccess->elementMetaType());
@@ -1335,8 +1385,51 @@ QVariant internal_convertJavaObjectToQVariant(JNIEnv *env, jobject java_object, 
         }else if (Java::QtCore::QSet::isInstanceOf(env, java_object)) {
             if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, java_object)){
                 if(AbstractSetAccess* containerAccess = dynamic_cast<AbstractSetAccess*>(link->containerAccess())){
-                    QString qtName = QLatin1String("QSet<%1>");
-                    qtName = qtName.arg(QLatin1String(containerAccess->elementMetaType().name()));
+                    QString qtName;
+                    if (Java::QtCore::QSet::isSameClass(env, object_class)) {
+                        qtName = QLatin1String("QSet<%1>");
+                        qtName = qtName.arg(QLatin1String(containerAccess->elementMetaType().name()));
+                    }else{
+                        QString javaClassName = QtJambiAPI::getClassName(env, object_class).replace('.', '/');
+                        if(const std::type_info* typeId = getTypeByJavaName(javaClassName)){
+                            int id = registeredMetaTypeID(*typeId);
+                            if(id==QMetaType::UnknownType){
+                                QByteArray qtType = getQtName(*typeId);
+                                EntryTypes entryType = getEntryType(*typeId);
+                                switch(entryType){
+                                case EntryTypes::ObjectTypeInfo:
+                                case EntryTypes::QObjectTypeInfo:
+                                case EntryTypes::InterfaceTypeInfo:
+                                {
+                                    qtType += "*";
+                                }
+                                break;
+                                default: break;
+                                }
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                                id = QMetaType::type(qtType);
+#else
+                                id = QMetaType::fromName(qtType).id();
+#endif
+                            }
+                            if(id!=QMetaType::UnknownType){
+                                if(hasReferenceCounts(env, link->getJavaObjectLocalRef(env))){
+                                    return QVariant::fromValue(JCollectionWrapper(env, java_object));
+                                }else{
+                                    return QVariant(META_TYPE(id), link->pointer());
+                                }
+                            }
+                        }else{
+                            const auto types = registeredCustomMetaTypesForJavaClass(javaClassName.toUtf8());
+                            if(!types.isEmpty()){
+                                if(hasReferenceCounts(env, link->getJavaObjectLocalRef(env))){
+                                    return QVariant::fromValue(JCollectionWrapper(env, java_object));
+                                }else{
+                                    return QVariant(types[0], link->pointer());
+                                }
+                            }
+                        }
+                    }
                     QMetaType containerMetaType(containerAccess->registerContainer(qtName.toLatin1()));
                     if(hasReferenceCounts(env, link->getJavaObjectLocalRef(env))){
                         registerContainerConverter(SequentialContainerType::QSet, containerMetaType, containerAccess->elementMetaType());
@@ -1352,8 +1445,51 @@ QVariant internal_convertJavaObjectToQVariant(JNIEnv *env, jobject java_object, 
         }else if (Java::QtCore::QLinkedList::isInstanceOf(env, java_object)) {
             if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, java_object)){
                 if(AbstractLinkedListAccess* containerAccess = dynamic_cast<AbstractLinkedListAccess*>(link->containerAccess())){
-                    QString qtName = QLatin1String("QLinkedList<%1>");
-                    qtName = qtName.arg(QLatin1String(containerAccess->elementMetaType().name()));
+                    QString qtName;
+                    if (Java::QtCore::QLinkedList::isSameClass(env, object_class)) {
+                        qtName = QLatin1String("QLinkedList<%1>");
+                        qtName = qtName.arg(QLatin1String(containerAccess->elementMetaType().name()));
+                    }else{
+                        QString javaClassName = QtJambiAPI::getClassName(env, object_class).replace('.', '/');
+                        if(const std::type_info* typeId = getTypeByJavaName(javaClassName)){
+                            int id = registeredMetaTypeID(*typeId);
+                            if(id==QMetaType::UnknownType){
+                                QByteArray qtType = getQtName(*typeId);
+                                EntryTypes entryType = getEntryType(*typeId);
+                                switch(entryType){
+                                case EntryTypes::ObjectTypeInfo:
+                                case EntryTypes::QObjectTypeInfo:
+                                case EntryTypes::InterfaceTypeInfo:
+                                {
+                                    qtType += "*";
+                                }
+                                break;
+                                default: break;
+                                }
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                                id = QMetaType::type(qtType);
+#else
+                                id = QMetaType::fromName(qtType).id();
+#endif
+                            }
+                            if(id!=QMetaType::UnknownType){
+                                if(hasReferenceCounts(env, link->getJavaObjectLocalRef(env))){
+                                    return QVariant::fromValue(JCollectionWrapper(env, java_object));
+                                }else{
+                                    return QVariant(META_TYPE(id), link->pointer());
+                                }
+                            }
+                        }else{
+                            const auto types = registeredCustomMetaTypesForJavaClass(javaClassName.toUtf8());
+                            if(!types.isEmpty()){
+                                if(hasReferenceCounts(env, link->getJavaObjectLocalRef(env))){
+                                    return QVariant::fromValue(JCollectionWrapper(env, java_object));
+                                }else{
+                                    return QVariant(types[0], link->pointer());
+                                }
+                            }
+                        }
+                    }
                     QMetaType containerMetaType(containerAccess->registerContainer(qtName.toLatin1()));
                     registerContainerConverter(SequentialContainerType::QLinkedList, containerMetaType, containerAccess->elementMetaType());
                     if(hasReferenceCounts(env, link->getJavaObjectLocalRef(env))){
@@ -1368,8 +1504,52 @@ QVariant internal_convertJavaObjectToQVariant(JNIEnv *env, jobject java_object, 
         }else if (Java::QtCore::QVector::isInstanceOf(env, java_object)) {
             if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, java_object)){
                 if(AbstractVectorAccess* containerAccess = dynamic_cast<AbstractVectorAccess*>(link->containerAccess())){
-                    QString qtName = QLatin1String("QVector<%1>");
-                    qtName = qtName.arg(QLatin1String(containerAccess->elementMetaType().name()));
+                    QString qtName;
+                    if (Java::QtCore::QVector::isSameClass(env, object_class)
+                        || Java::QtCore::QStack::isSameClass(env, object_class)) {
+                        qtName = QLatin1String("QVector<%1>");
+                        qtName = qtName.arg(QLatin1String(containerAccess->elementMetaType().name()));
+                    }else{
+                        QString javaClassName = QtJambiAPI::getClassName(env, object_class).replace('.', '/');
+                        if(const std::type_info* typeId = getTypeByJavaName(javaClassName)){
+                            int id = registeredMetaTypeID(*typeId);
+                            if(id==QMetaType::UnknownType){
+                                QByteArray qtType = getQtName(*typeId);
+                                EntryTypes entryType = getEntryType(*typeId);
+                                switch(entryType){
+                                case EntryTypes::ObjectTypeInfo:
+                                case EntryTypes::QObjectTypeInfo:
+                                case EntryTypes::InterfaceTypeInfo:
+                                {
+                                    qtType += "*";
+                                }
+                                break;
+                                default: break;
+                                }
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                                id = QMetaType::type(qtType);
+#else
+                                id = QMetaType::fromName(qtType).id();
+#endif
+                            }
+                            if(id!=QMetaType::UnknownType){
+                                if(hasReferenceCounts(env, link->getJavaObjectLocalRef(env))){
+                                    return QVariant::fromValue(JCollectionWrapper(env, java_object));
+                                }else{
+                                    return QVariant(META_TYPE(id), link->pointer());
+                                }
+                            }
+                        }else{
+                            const auto types = registeredCustomMetaTypesForJavaClass(javaClassName.toUtf8());
+                            if(!types.isEmpty()){
+                                if(hasReferenceCounts(env, link->getJavaObjectLocalRef(env))){
+                                    return QVariant::fromValue(JCollectionWrapper(env, java_object));
+                                }else{
+                                    return QVariant(types[0], link->pointer());
+                                }
+                            }
+                        }
+                    }
                     QMetaType containerMetaType(containerAccess->registerContainer(qtName.toLatin1()));
                     registerContainerConverter(SequentialContainerType::QVector, containerMetaType, containerAccess->elementMetaType());
                     if(hasReferenceCounts(env, link->getJavaObjectLocalRef(env))){
@@ -1434,9 +1614,52 @@ QVariant internal_convertJavaObjectToQVariant(JNIEnv *env, jobject java_object, 
         if (Java::QtCore::QMap::isInstanceOf(env, java_object)) {
             if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, java_object)){
                 if(AbstractMapAccess* containerAccess = dynamic_cast<AbstractMapAccess*>(link->containerAccess())){
-                    QString qtName = QLatin1String("QMap<%1,%2>");
-                    qtName = qtName.arg(QLatin1String(containerAccess->keyMetaType().name()))
-                                   .arg(QLatin1String(containerAccess->valueMetaType().name()));
+                    QString qtName;
+                    if (Java::QtCore::QMap::isSameClass(env, object_class)) {
+                        qtName = QLatin1String("QMap<%1,%2>");
+                        qtName = qtName.arg(QLatin1String(containerAccess->keyMetaType().name()))
+                                       .arg(QLatin1String(containerAccess->valueMetaType().name()));
+                    }else{
+                        QString javaClassName = QtJambiAPI::getClassName(env, object_class).replace('.', '/');
+                        if(const std::type_info* typeId = getTypeByJavaName(javaClassName)){
+                            int id = registeredMetaTypeID(*typeId);
+                            if(id==QMetaType::UnknownType){
+                                QByteArray qtType = getQtName(*typeId);
+                                EntryTypes entryType = getEntryType(*typeId);
+                                switch(entryType){
+                                case EntryTypes::ObjectTypeInfo:
+                                case EntryTypes::QObjectTypeInfo:
+                                case EntryTypes::InterfaceTypeInfo:
+                                {
+                                    qtType += "*";
+                                }
+                                break;
+                                default: break;
+                                }
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                                id = QMetaType::type(qtType);
+#else
+                                id = QMetaType::fromName(qtType).id();
+#endif
+                            }
+                            if(id!=QMetaType::UnknownType){
+                                if(hasReferenceCounts(env, link->getJavaObjectLocalRef(env))){
+                                    return QVariant::fromValue(JCollectionWrapper(env, java_object));
+                                }else{
+                                    return QVariant(META_TYPE(id), link->pointer());
+                                }
+                            }
+                        }else{
+                            const auto types = registeredCustomMetaTypesForJavaClass(javaClassName.toUtf8());
+                            if(!types.isEmpty()){
+                                if(hasReferenceCounts(env, link->getJavaObjectLocalRef(env))){
+                                    return QVariant::fromValue(JCollectionWrapper(env, java_object));
+                                }else{
+                                    return QVariant(types[0], link->pointer());
+                                }
+                            }
+                        }
+                    }
                     QMetaType containerMetaType(containerAccess->registerContainer(qtName.toLatin1()));
                     if(hasReferenceCounts(env, link->getJavaObjectLocalRef(env))){
                         registerContainerConverter(AssociativeContainerType::QMap, containerMetaType, containerAccess->keyMetaType(), containerAccess->valueMetaType());
@@ -1451,9 +1674,52 @@ QVariant internal_convertJavaObjectToQVariant(JNIEnv *env, jobject java_object, 
         }else if (Java::QtCore::QHash::isInstanceOf(env, java_object)) {
             if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, java_object)){
                 if(AbstractHashAccess* containerAccess = dynamic_cast<AbstractHashAccess*>(link->containerAccess())){
-                    QString qtName = QLatin1String("QHash<%1,%2>");
-                    qtName = qtName.arg(QLatin1String(containerAccess->keyMetaType().name()))
-                                   .arg(QLatin1String(containerAccess->valueMetaType().name()));
+                    QString qtName;
+                    if (Java::QtCore::QHash::isSameClass(env, object_class)) {
+                        qtName = QLatin1String("QHash<%1,%2>");
+                        qtName = qtName.arg(QLatin1String(containerAccess->keyMetaType().name()))
+                                       .arg(QLatin1String(containerAccess->valueMetaType().name()));
+                    }else{
+                        QString javaClassName = QtJambiAPI::getClassName(env, object_class).replace('.', '/');
+                        if(const std::type_info* typeId = getTypeByJavaName(javaClassName)){
+                            int id = registeredMetaTypeID(*typeId);
+                            if(id==QMetaType::UnknownType){
+                                QByteArray qtType = getQtName(*typeId);
+                                EntryTypes entryType = getEntryType(*typeId);
+                                switch(entryType){
+                                case EntryTypes::ObjectTypeInfo:
+                                case EntryTypes::QObjectTypeInfo:
+                                case EntryTypes::InterfaceTypeInfo:
+                                {
+                                    qtType += "*";
+                                }
+                                break;
+                                default: break;
+                                }
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                                id = QMetaType::type(qtType);
+#else
+                                id = QMetaType::fromName(qtType).id();
+#endif
+                            }
+                            if(id!=QMetaType::UnknownType){
+                                if(hasReferenceCounts(env, link->getJavaObjectLocalRef(env))){
+                                    return QVariant::fromValue(JCollectionWrapper(env, java_object));
+                                }else{
+                                    return QVariant(META_TYPE(id), link->pointer());
+                                }
+                            }
+                        }else{
+                            const auto types = registeredCustomMetaTypesForJavaClass(javaClassName.toUtf8());
+                            if(!types.isEmpty()){
+                                if(hasReferenceCounts(env, link->getJavaObjectLocalRef(env))){
+                                    return QVariant::fromValue(JCollectionWrapper(env, java_object));
+                                }else{
+                                    return QVariant(types[0], link->pointer());
+                                }
+                            }
+                        }
+                    }
                     QMetaType containerMetaType(containerAccess->registerContainer(qtName.toLatin1()));
                     if(hasReferenceCounts(env, link->getJavaObjectLocalRef(env))){
                         registerContainerConverter(AssociativeContainerType::QHash, containerMetaType, containerAccess->keyMetaType(), containerAccess->valueMetaType());
@@ -1468,9 +1734,52 @@ QVariant internal_convertJavaObjectToQVariant(JNIEnv *env, jobject java_object, 
         }else if (Java::QtCore::QMultiMap::isInstanceOf(env, java_object)) {
             if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, java_object)){
                 if(AbstractMultiMapAccess* containerAccess = dynamic_cast<AbstractMultiMapAccess*>(link->containerAccess())){
-                    QString qtName = QLatin1String("QMultiMap<%1,%2>");
-                    qtName = qtName.arg(QLatin1String(containerAccess->keyMetaType().name()))
-                                   .arg(QLatin1String(containerAccess->valueMetaType().name()));
+                    QString qtName;
+                    if (Java::QtCore::QMultiMap::isSameClass(env, object_class)) {
+                        qtName = QLatin1String("QMultiMap<%1,%2>");
+                        qtName = qtName.arg(QLatin1String(containerAccess->keyMetaType().name()))
+                                       .arg(QLatin1String(containerAccess->valueMetaType().name()));
+                    }else{
+                        QString javaClassName = QtJambiAPI::getClassName(env, object_class).replace('.', '/');
+                        if(const std::type_info* typeId = getTypeByJavaName(javaClassName)){
+                            int id = registeredMetaTypeID(*typeId);
+                            if(id==QMetaType::UnknownType){
+                                QByteArray qtType = getQtName(*typeId);
+                                EntryTypes entryType = getEntryType(*typeId);
+                                switch(entryType){
+                                case EntryTypes::ObjectTypeInfo:
+                                case EntryTypes::QObjectTypeInfo:
+                                case EntryTypes::InterfaceTypeInfo:
+                                {
+                                    qtType += "*";
+                                }
+                                break;
+                                default: break;
+                                }
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                                id = QMetaType::type(qtType);
+#else
+                                id = QMetaType::fromName(qtType).id();
+#endif
+                            }
+                            if(id!=QMetaType::UnknownType){
+                                if(hasReferenceCounts(env, link->getJavaObjectLocalRef(env))){
+                                    return QVariant::fromValue(JCollectionWrapper(env, java_object));
+                                }else{
+                                    return QVariant(META_TYPE(id), link->pointer());
+                                }
+                            }
+                        }else{
+                            const auto types = registeredCustomMetaTypesForJavaClass(javaClassName.toUtf8());
+                            if(!types.isEmpty()){
+                                if(hasReferenceCounts(env, link->getJavaObjectLocalRef(env))){
+                                    return QVariant::fromValue(JCollectionWrapper(env, java_object));
+                                }else{
+                                    return QVariant(types[0], link->pointer());
+                                }
+                            }
+                        }
+                    }
                     QMetaType containerMetaType(containerAccess->registerContainer(qtName.toLatin1()));
                     if(hasReferenceCounts(env, link->getJavaObjectLocalRef(env))){
                         registerContainerConverter(AssociativeContainerType::QMultiMap, containerMetaType, containerAccess->keyMetaType(), containerAccess->valueMetaType());
@@ -1485,9 +1794,52 @@ QVariant internal_convertJavaObjectToQVariant(JNIEnv *env, jobject java_object, 
         }else if (Java::QtCore::QMultiHash::isInstanceOf(env, java_object)) {
             if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, java_object)){
                 if(AbstractMultiHashAccess* containerAccess = dynamic_cast<AbstractMultiHashAccess*>(link->containerAccess())){
-                    QString qtName = QLatin1String("QMultiHash<%1,%2>");
-                    qtName = qtName.arg(QLatin1String(containerAccess->keyMetaType().name()))
-                                   .arg(QLatin1String(containerAccess->valueMetaType().name()));
+                    QString qtName;
+                    if (Java::QtCore::QMultiHash::isSameClass(env, object_class)) {
+                        qtName = QLatin1String("QMultiHash<%1,%2>");
+                        qtName = qtName.arg(QLatin1String(containerAccess->keyMetaType().name()))
+                                       .arg(QLatin1String(containerAccess->valueMetaType().name()));
+                    }else{
+                        QString javaClassName = QtJambiAPI::getClassName(env, object_class).replace('.', '/');
+                        if(const std::type_info* typeId = getTypeByJavaName(javaClassName)){
+                            int id = registeredMetaTypeID(*typeId);
+                            if(id==QMetaType::UnknownType){
+                                QByteArray qtType = getQtName(*typeId);
+                                EntryTypes entryType = getEntryType(*typeId);
+                                switch(entryType){
+                                case EntryTypes::ObjectTypeInfo:
+                                case EntryTypes::QObjectTypeInfo:
+                                case EntryTypes::InterfaceTypeInfo:
+                                {
+                                    qtType += "*";
+                                }
+                                break;
+                                default: break;
+                                }
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                                id = QMetaType::type(qtType);
+#else
+                                id = QMetaType::fromName(qtType).id();
+#endif
+                            }
+                            if(id!=QMetaType::UnknownType){
+                                if(hasReferenceCounts(env, link->getJavaObjectLocalRef(env))){
+                                    return QVariant::fromValue(JCollectionWrapper(env, java_object));
+                                }else{
+                                    return QVariant(META_TYPE(id), link->pointer());
+                                }
+                            }
+                        }else{
+                            const auto types = registeredCustomMetaTypesForJavaClass(javaClassName.toUtf8());
+                            if(!types.isEmpty()){
+                                if(hasReferenceCounts(env, link->getJavaObjectLocalRef(env))){
+                                    return QVariant::fromValue(JCollectionWrapper(env, java_object));
+                                }else{
+                                    return QVariant(types[0], link->pointer());
+                                }
+                            }
+                        }
+                        }
                     QMetaType containerMetaType(containerAccess->registerContainer(qtName.toLatin1()));
                     if(hasReferenceCounts(env, link->getJavaObjectLocalRef(env))){
                         registerContainerConverter(AssociativeContainerType::QMultiHash, containerMetaType, containerAccess->keyMetaType(), containerAccess->valueMetaType());

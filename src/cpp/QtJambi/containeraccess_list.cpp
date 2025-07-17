@@ -117,7 +117,7 @@ void AutoListAccess::dispose(){
 
 std::unique_ptr<AbstractListAccess::ElementIterator> AutoListAccess::elementIterator(const void* container) {
     class ElementIterator : public AbstractListAccess::ElementIterator{
-        AutoListAccess* access;
+        AutoListAccess* m_access;
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
         void** current;
         void** end;
@@ -125,51 +125,171 @@ std::unique_ptr<AbstractListAccess::ElementIterator> AutoListAccess::elementIter
         char* current;
         char* end;
 #endif
+        ElementIterator(const ElementIterator& other)
+            :m_access(other.m_access),
+            current(other.current),
+            end(other.end) {}
+    protected:
+        AbstractSequentialAccess* access() override { return m_access; }
     public:
         ElementIterator(AutoListAccess* _access, const QListData* p)
             : AbstractListAccess::ElementIterator(),
-            access(_access),
+            m_access(_access),
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
             current(p->begin()),
             end(p->end())
 #else
             current(p->ptr),
-            end(p->ptr + p->listSize() * access->m_offset)
+            end(p->ptr + p->listSize() * m_access->m_offset)
 #endif
         {
         }
         bool hasNext() override{
             return current!=end;
         }
+        bool isConst() override{
+            return true;
+        }
         jobject next(JNIEnv * env) override{
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-            void* data = access->m_isLargeOrStaticType ? reinterpret_cast<Node*>(current)->v : current;
+            void* data = m_access->m_isLargeOrStaticType ? reinterpret_cast<Node*>(current)->v : current;
             ++current;
 #else
             void* data = current;
-            current += access->m_offset;
+            current += m_access->m_offset;
 #endif
             jvalue _value;
             _value.l = nullptr;
-            access->m_internalToExternalConverter(env, nullptr, data, _value, true);
+            m_access->m_internalToExternalConverter(env, nullptr, data, _value, true);
             return _value.l;
         }
         const void* next() override {
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-            void* data = access->m_isLargeOrStaticType ? reinterpret_cast<Node*>(current)->v : current;
+            void* data = m_access->m_isLargeOrStaticType ? reinterpret_cast<Node*>(current)->v : current;
             ++current;
 #else
             void* data = current;
-            current += access->m_offset;
+            current += m_access->m_offset;
 #endif
-            if(access->m_elementDataType & AbstractContainerAccess::PointersMask){
+            if(m_access->m_elementDataType & AbstractContainerAccess::PointersMask){
                 return *reinterpret_cast<void**>(data);
             }else{
                 return data;
             }
         }
+        const void* constNext() override {
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+            void* data = m_access->m_isLargeOrStaticType ? reinterpret_cast<Node*>(current)->v : current;
+            ++current;
+#else
+            void* data = current;
+            current += m_access->m_offset;
+#endif
+            return data;
+        }
+        void* mutableNext() override {
+            return nullptr;
+        }
+        bool operator==(const AbstractSequentialAccess::ElementIterator& other) const override {
+            return current==reinterpret_cast<const ElementIterator&>(other).current;
+        }
+        std::unique_ptr<AbstractSequentialAccess::ElementIterator> clone() const override {
+            return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(*this));
+        }
     };
     return std::unique_ptr<AbstractListAccess::ElementIterator>(new ElementIterator(this, reinterpret_cast<const QListData*>(container)));
+}
+
+std::unique_ptr<AbstractListAccess::ElementIterator> AutoListAccess::elementIterator(void* container) {
+    class ElementIterator : public AbstractListAccess::ElementIterator{
+        AutoListAccess* m_access;
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+        void** current;
+        void** end;
+#else
+        char* current;
+        char* end;
+#endif
+        ElementIterator(const ElementIterator& other)
+            :m_access(other.m_access),
+            current(other.current),
+            end(other.end) {}
+    protected:
+        AbstractSequentialAccess* access() override { return m_access; }
+    public:
+        ElementIterator(AutoListAccess* _access, QListData* p)
+            : AbstractListAccess::ElementIterator(),
+            m_access(_access),
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+            current(p->begin()),
+            end(p->end())
+#else
+            current(p->ptr),
+            end(p->ptr + p->listSize() * m_access->m_offset)
+#endif
+        {
+        }
+        bool hasNext() override{
+            return current!=end;
+        }
+        bool isConst() override{
+            return false;
+        }
+        jobject next(JNIEnv * env) override{
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+            void* data = m_access->m_isLargeOrStaticType ? reinterpret_cast<Node*>(current)->v : current;
+            ++current;
+#else
+            void* data = current;
+            current += m_access->m_offset;
+#endif
+            jvalue _value;
+            _value.l = nullptr;
+            m_access->m_internalToExternalConverter(env, nullptr, data, _value, true);
+            return _value.l;
+        }
+        const void* next() override {
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+            void* data = m_access->m_isLargeOrStaticType ? reinterpret_cast<Node*>(current)->v : current;
+            ++current;
+#else
+            void* data = current;
+            current += m_access->m_offset;
+#endif
+            if(m_access->m_elementDataType & AbstractContainerAccess::PointersMask){
+                return *reinterpret_cast<void**>(data);
+            }else{
+                return data;
+            }
+        }
+        const void* constNext() override {
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+            void* data = m_access->m_isLargeOrStaticType ? reinterpret_cast<Node*>(current)->v : current;
+            ++current;
+#else
+            void* data = current;
+            current += m_access->m_offset;
+#endif
+            return data;
+        }
+        void* mutableNext() override {
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+            void* data = m_access->m_isLargeOrStaticType ? reinterpret_cast<Node*>(current)->v : current;
+            ++current;
+#else
+            void* data = current;
+            current += m_access->m_offset;
+#endif
+            return data;
+        }
+        bool operator==(const AbstractSequentialAccess::ElementIterator& other) const override {
+            return current==reinterpret_cast<const ElementIterator&>(other).current;
+        }
+        std::unique_ptr<AbstractSequentialAccess::ElementIterator> clone() const override {
+            return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(*this));
+        }
+    };
+    return std::unique_ptr<AbstractListAccess::ElementIterator>(new ElementIterator(this, reinterpret_cast<QListData*>(container)));
 }
 
 AutoListAccess* AutoListAccess::clone(){
@@ -1252,6 +1372,42 @@ void AutoListAccess::appendList(JNIEnv * env, const ContainerInfo& container, Co
     }
 }
 
+const void* AutoListAccess::at(const void* container, qsizetype index)
+{
+    jvalue _value;
+    _value.l = nullptr;
+    const QListData* p = reinterpret_cast<const QListData*>(container);
+    Q_ASSERT_X(index >= 0 && index < p->listSize(), "QList<T>::at", "index out of range");
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    void** v = p->at(index);
+    if(m_isLargeOrStaticType){
+        return reinterpret_cast<Node*>(v)->v;
+    }else{
+        return v;
+    }
+#else
+    return p->ptr+index*m_offset;
+#endif
+}
+
+void* AutoListAccess::at(void* container, qsizetype index)
+{
+    jvalue _value;
+    _value.l = nullptr;
+    QListData* p = reinterpret_cast<QListData*>(container);
+    Q_ASSERT_X(index >= 0 && index < p->listSize(), "QList<T>::at", "index out of range");
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    void** v = p->at(index);
+    if(m_isLargeOrStaticType){
+        return reinterpret_cast<Node*>(v)->v;
+    }else{
+        return v;
+    }
+#else
+    return p->ptr+index*m_offset;
+#endif
+}
+
 jobject AutoListAccess::at(JNIEnv * env, const void* container, jint index)
 {
     jvalue _value;
@@ -1450,6 +1606,25 @@ void AutoListAccess::reserve(void* container, qsizetype asize)
 }
 #endif
 
+void AutoListAccess::replace(void* container, qsizetype index, const void* value)
+{
+    QListData* p = reinterpret_cast<QListData*>(container);
+    Q_ASSERT_X(index >= 0 && index < p->listSize(), "QList<T>::replace", "index out of range");
+    detach(p);
+    void* target;
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    if(m_isLargeOrStaticType){
+        target = reinterpret_cast<Node *>(p->at(index))->v;
+    }else{
+        target = p->at(index);
+    }
+#else
+    target = p->ptr + index * m_offset;
+#endif
+    m_elementMetaType.destruct(target);
+    m_elementMetaType.construct(target, value);
+}
+
 void AutoListAccess::replace(JNIEnv * env, const ContainerInfo& container, jint index, jobject value)
 {
     QListData* p = reinterpret_cast<QListData*>(container.container);
@@ -1477,16 +1652,16 @@ void AutoListAccess::replace(JNIEnv * env, const ContainerInfo& container, jint 
 void AutoListAccess::remove(JNIEnv *, const ContainerInfo& container, jint index, jint n){
     remove(container.container, index, n);
 }
-void AutoListAccess::remove(void* container, jint index, jint n)
+void AutoListAccess::remove(void* container, qsizetype index, qsizetype n)
 {
     QListData* p = reinterpret_cast<QListData*>(container);
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     Q_ASSERT(n==1);
-    if (index < 0 || index >= p->listSize()) {
+    if (index < 0 || jint(index) >= p->listSize()) {
         return;
     }
     detach(p);
-    node_destruct(reinterpret_cast<Node *>(p->at(index))); p->remove(index);
+    node_destruct(reinterpret_cast<Node *>(p->at(jint(index)))); p->remove(jint(index));
 #else
     if(n==0)
         return;
@@ -1495,6 +1670,7 @@ void AutoListAccess::remove(void* container, jint index, jint n)
     for(qsizetype i = 0; i<nmb; ++i){
         m_elementMetaType.destruct(p->ptr + (index+i) * m_offset);
     }
+    p->listSize() -= nmb;
     if(index>p->listSize()/2.){
         if(auto moveCtr = m_elementMetaType.iface()->moveCtr){
             for(qsizetype i = index; i<p->listSize(); ++i){
@@ -1529,7 +1705,6 @@ void AutoListAccess::remove(void* container, jint index, jint n)
         }
         p->ptr += nmb*m_offset;
     }
-    p->listSize() -= nmb;
 #endif
 }
 
@@ -1885,6 +2060,49 @@ void AutoListAccess::insert(JNIEnv * env, const ContainerInfo& container, jint i
     }
 #else
     emplace(p, env, index, value, n);
+#endif
+}
+
+void AutoListAccess::insert(void* container, qsizetype index, qsizetype n, const void* value)
+{
+    QListData* p = reinterpret_cast<QListData*>(container);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    Q_ASSERT(n==1);
+    if (p->d->ref.isShared()) {
+        Node *n = detach_helper_grow(p, index, 1);
+        QT_TRY {
+            if (m_isLargeOrStaticType) {
+                n->v = m_elementMetaType.create(value);
+            }else{
+                m_elementMetaType.construct(n, value);
+            }
+        } QT_CATCH(...) {
+            p->remove(index);
+            QT_RETHROW;
+        }
+    } else {
+        if (m_isLargeOrStaticType) {
+            Node *n = reinterpret_cast<Node *>(p->insert(index));
+            QT_TRY {
+                n->v = m_elementMetaType.create(value);
+            } QT_CATCH(...) {
+                p->remove(index);
+                QT_RETHROW;
+            }
+        } else {
+            Node *n, copy;
+            m_elementMetaType.construct(&copy, value);
+            QT_TRY {
+                n = reinterpret_cast<Node *>(p->insert(index));
+            } QT_CATCH(...) {
+                node_destruct(&copy);
+                QT_RETHROW;
+            }
+            *n = copy;
+        }
+    }
+#else
+    emplace(p, index, value, n);
 #endif
 }
 
@@ -2409,13 +2627,34 @@ void AutoListAccess::fill(JNIEnv * env, const ContainerInfo& container, jobject 
     }
 }
 
+void AutoListAccess::resize(void* container, qsizetype newSize)
+{
+    QListData* p = reinterpret_cast<QListData*>(container);
+    if (p->needsDetach() || newSize > p->constAllocatedCapacity() - freeSpaceAtBegin(p)) {
+        detachAndGrow(p, QArrayData::GrowsAtEnd, newSize - p->listSize(), nullptr, nullptr);
+        if (newSize > p->listSize()){
+            for(size_t i=p->listSize(); i<size_t(newSize); ++i){
+                void* source = p->ptr+i*m_offset;
+                m_elementMetaType.construct(source);
+            }
+            p->listSize() = newSize;
+        }
+    } else if (newSize < p->listSize()) {
+        for(size_t i=p->listSize(); i>=size_t(newSize); --i){
+            void* source = p->ptr+(i-1)*m_offset;
+            m_elementMetaType.destruct(source);
+        }
+        p->listSize() = newSize;
+    }
+}
+
 void AutoListAccess::resize(JNIEnv * env, const ContainerInfo& container, jint newSize)
 {
     QListData* p = reinterpret_cast<QListData*>(container.container);
     if (p->needsDetach() || newSize > capacity(env, container.container) - freeSpaceAtBegin(p)) {
         detachAndGrow(p, QArrayData::GrowsAtEnd, newSize - p->listSize(), nullptr, nullptr);
         if (newSize > p->listSize()){
-            for(size_t i=0; i<size_t(newSize); ++i){
+            for(size_t i=p->listSize(); i<size_t(newSize); ++i){
                 void* source = p->ptr+i*m_offset;
                 m_elementMetaType.construct(source);
             }

@@ -108,7 +108,8 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_QtJambi_1LibraryUtilities_intern
 extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_ExceptionUtility_convertNativeException(JNIEnv *env, jclass, jlong exception){
     if(exception){
         const std::exception* exn = reinterpret_cast<const std::exception*>(exception);
-        if(typeid_equals(typeid(*exn), typeid(JavaException))){
+        const std::type_info* ti = QtJambiPrivate::CheckPointer<std::exception>::trySupplyType(exn);
+        if(ti && typeid_equals(*ti, typeid(JavaException))){
             const JavaException* jexn = reinterpret_cast<const JavaException*>(exception);
             return jexn->throwable(env);
         }else{

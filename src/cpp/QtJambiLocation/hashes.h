@@ -36,7 +36,11 @@
 
 inline hash_type qHash(const QPlaceUser &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.name());
     seed = hash(seed, value.userId());
     return seed;
@@ -44,7 +48,11 @@ inline hash_type qHash(const QPlaceUser &value, hash_type seed = 0)
 
 inline hash_type qHash(const QPlaceContentRequest &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.placeId());
     seed = hash(seed, value.limit());
     seed = hash(seed, value.contentType());
@@ -53,7 +61,11 @@ inline hash_type qHash(const QPlaceContentRequest &value, hash_type seed = 0)
 
 inline hash_type qHash(const QPlaceRatings &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.isEmpty());
     seed = hash(seed, value.count());
     seed = hash(seed, value.average());
@@ -63,7 +75,11 @@ inline hash_type qHash(const QPlaceRatings &value, hash_type seed = 0)
 
 inline hash_type qHash(const QPlaceIcon &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.isEmpty());
     seed = hash(seed, value.url());
     return seed;
@@ -71,7 +87,11 @@ inline hash_type qHash(const QPlaceIcon &value, hash_type seed = 0)
 
 inline hash_type qHash(const QPlaceSearchResult &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.icon());
     seed = hash(seed, value.type());
     seed = hash(seed, value.title());
@@ -80,7 +100,11 @@ inline hash_type qHash(const QPlaceSearchResult &value, hash_type seed = 0)
 
 inline hash_type qHash(const QPlaceContactDetail &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.label());
     seed = hash(seed, value.value());
     return seed;
@@ -88,7 +112,11 @@ inline hash_type qHash(const QPlaceContactDetail &value, hash_type seed = 0)
 
 inline hash_type qHash(const QPlaceCategory &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.icon());
     seed = hash(seed, value.name());
     seed = hash(seed, value.isEmpty());
@@ -99,7 +127,11 @@ inline hash_type qHash(const QPlaceCategory &value, hash_type seed = 0)
 
 inline hash_type qHash(const QPlaceAttribute &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.text());
     seed = hash(seed, value.label());
     seed = hash(seed, value.isEmpty());
@@ -108,7 +140,11 @@ inline hash_type qHash(const QPlaceAttribute &value, hash_type seed = 0)
 
 inline hash_type qHash(const QPlaceSupplier &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.url());
     seed = hash(seed, value.icon());
     seed = hash(seed, value.name());
@@ -119,7 +155,11 @@ inline hash_type qHash(const QPlaceSupplier &value, hash_type seed = 0)
 
 inline hash_type qHash(const QGeoRouteRequest &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.waypoints());
     seed = hash(seed, value.travelModes());
     seed = hash(seed, value.excludeAreas());
@@ -134,7 +174,11 @@ inline hash_type qHash(const QGeoRouteRequest &value, hash_type seed = 0)
 
 inline hash_type qHash(const QPlace &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.icon());
     seed = hash(seed, value.name());
     seed = hash(seed, value.isEmpty());
@@ -157,14 +201,22 @@ inline hash_type qHash(const QPlace &value, hash_type seed = 0)
 
 inline hash_type qHash(const QPlaceMatchRequest &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.places());
     return seed;
 }
 
 inline hash_type qHash(const QPlaceSearchRequest &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.limit());
     seed = hash(seed, value.categories());
     seed = hash(seed, value.searchArea());
@@ -183,7 +235,11 @@ hash_type variantHash(const QVariant& v, hash_type seed = 0);
 
 inline hash_type qHash(const QPlaceContent &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.type());
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     seed = hash(seed, value.user());
@@ -265,7 +321,11 @@ inline hash_type qHash(const QGeoManeuver &value, hash_type seed = 0)
 {
     if(!value.isValid())
         return seed;
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.position());
     seed = hash(seed, value.waypoint());
     seed = hash(seed, value.instructionText());
@@ -278,7 +338,11 @@ inline hash_type qHash(const QGeoRouteSegment &value, hash_type seed = 0)
 {
     if(!value.isValid())
         return seed;
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.path());
     seed = hash(seed, value.maneuver());
     seed = hash(seed, value.travelTime());
@@ -289,7 +353,11 @@ inline hash_type qHash(const QGeoRouteSegment &value, hash_type seed = 0)
 
 inline hash_type qHash(const QGeoRoute &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.path());
     seed = hash(seed, value.bounds());
     seed = hash(seed, value.request());

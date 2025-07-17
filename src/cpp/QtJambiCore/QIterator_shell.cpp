@@ -289,7 +289,11 @@ extern "C" JNIEXPORT jint JNICALL Java_io_qt_core_AbstractIterator_hashCode
             bool isConst = dynamic_cast<AbstractSequentialIteratorAccess*>(container.second)==nullptr
                             && dynamic_cast<AbstractAssociativeIteratorAccess*>(container.second)==nullptr;
             bool isAssociative = dynamic_cast<AbstractAssociativeConstIteratorAccess*>(container.second)!=nullptr;
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
             QtPrivate::QHashCombine hash;
+#else
+            QtPrivate::QHashCombine hash(0);
+#endif
             hash_type hashValue = 0;
             hashValue = hash(hashValue, container.first);
             hashValue = hash(hashValue, isConst);

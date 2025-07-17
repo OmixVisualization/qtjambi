@@ -17,6 +17,8 @@
 
 #define __STDC__
 
+#define Q_STL_LIBCPP
+
 //#define __has_cpp_attribute(macro) 1
 
 #define QT_WARN_DEPRECATED_UP_TO 0x8FFFFF

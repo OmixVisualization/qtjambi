@@ -40,25 +40,26 @@ import org.junit.Test;
 import io.qt.core.QEvent;
 import io.qt.core.QMetaObject;
 
-public class TestJDK19FeatureSwitch extends ApplicationInitializer {
+public class TestJDK21FeatureSwitch extends ApplicationInitializer {
 	
 	@BeforeClass
 	public static void testInitialize() throws Exception {
 		ApplicationInitializer.testInitializeWithWidgets();
-		QMetaObject.forType(TestJDK19FeatureSwitch.class);
+		QMetaObject.forType(TestJDK21FeatureSwitch.class);
     }
     
 	@Test
     public void test() {
-    	assertEquals("MouseButtonPress", testEvent(QEvent.Type.MouseButtonPress));
-    	assertEquals("CursorChange", testEvent2(QEvent.Type.CursorChange));
+    	assertEquals("MouseButtonPress", testNullableEvent(QEvent.Type.MouseButtonPress));
+    	assertEquals("MouseButtonPress", testObject(QEvent.Type.MouseButtonPress));
     	checkSwitches();
     	QEvent.Type type = QEvent.Type.resolve(1001);
-		assertEquals("Default", testEvent(type));
-    	assertEquals("Default", testEvent2(type));
     	try {
-			testEvent(null);
-		} catch (NullPointerException e) {}
+			assertEquals("Default", testNullableEvent(type));
+		} catch (ArrayIndexOutOfBoundsException e) {}
+    	assertEquals("Default", testObject(type));
+    	assertEquals("null", testNullableEvent(null));
+    	assertEquals("null", testObject(null));
     	checkSwitches();
     }
 	
@@ -75,7 +76,7 @@ public class TestJDK19FeatureSwitch extends ApplicationInitializer {
 //					System.out.println(mtd);
 //				}
 //			}
-			for(Field field : TestJDK19FeatureSwitch.class.getDeclaredFields()) {
+			for(Field field : TestJDK21FeatureSwitch.class.getDeclaredFields()) {
 				if(field.isSynthetic()) {
 					System.out.println(field + " = " + Arrays.toString((int[])field.get(null)));
 				}
@@ -84,7 +85,7 @@ public class TestJDK19FeatureSwitch extends ApplicationInitializer {
 		}
 		for(int i=1;;++i) {
     		try {
-				Class<?> syntheticClass = Class.forName(TestJDK19FeatureSwitch.class.getName()+"$"+i, false, TestJDK19FeatureSwitch.class.getClassLoader());
+				Class<?> syntheticClass = Class.forName(TestJDK21FeatureSwitch.class.getName()+"$"+i, false, TestJDK21FeatureSwitch.class.getClassLoader());
 				if(syntheticClass.isSynthetic()) {
 					for(Field declaredField : syntheticClass.getDeclaredFields()) {
 						if(Modifier.isStatic(declaredField.getModifiers()) 
@@ -100,8 +101,9 @@ public class TestJDK19FeatureSwitch extends ApplicationInitializer {
     	}
 	}
     
-    private String testEvent(QEvent.Type type) {
+    private String testNullableEvent(QEvent.Type type) {
     	return switch (type) {
+    	case null -> "null";
 		case MouseButtonPress -> """
 				MouseButtonPress""";
 		case MouseButtonRelease -> "MouseButtonRelease";
@@ -109,20 +111,22 @@ public class TestJDK19FeatureSwitch extends ApplicationInitializer {
 		};
     }
     
-    private String testEvent2(QEvent.Type type) {
-    	switch (type) {
-		case KeyRelease:
-			return "KeyRelease";
-		case KeyPress:
-			return "KeyPress";
-		case CursorChange:
-			return "CursorChange";
-		default:
-			return "Default";
-		}
+    private String testObject(Object type) {
+    	if(type instanceof QEvent.Type t) {
+    		System.out.println(t);
+    	}
+    	return switch (type) {
+    	case null -> "null";
+		case QEvent.Type t when t==QEvent.Type.MouseButtonPress -> "MouseButtonPress";
+		case QEvent.Type t -> 
+							switch(t) { case MouseButtonRelease -> "MouseButtonRelease";
+								default -> "Default";
+							};
+		default -> "Unknown";
+		};
     }
     
     public static void main(String args[]) {
-        org.junit.runner.JUnitCore.main(TestJDK19FeatureSwitch.class.getName());
+        org.junit.runner.JUnitCore.main(TestJDK21FeatureSwitch.class.getName());
     }
 }

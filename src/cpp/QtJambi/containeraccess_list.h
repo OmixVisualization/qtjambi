@@ -234,6 +234,18 @@ public:
         return nullptr;
     }
 
+    const void* at(const void* container, qsizetype index) override {
+
+        QTJAMBI_ELEMENT_LOCKER(this);
+        return &reinterpret_cast<const QList<T> *>(container)->at(index);
+    }
+
+    void* at(void* container, qsizetype index) override {
+
+        QTJAMBI_ELEMENT_LOCKER(this);
+        return &reinterpret_cast<QList<T> *>(container)->at(index);
+    }
+
     jobject value(JNIEnv * env, const void* container, jint index) override {
         jvalue _result;
         _result.l = nullptr;
@@ -305,6 +317,14 @@ public:
         return result;
     }
 
+    qsizetype size(const void* container) override {
+
+        QTJAMBI_ELEMENT_LOCKER(this);
+        jint result = reinterpret_cast<const QList<T> *>(container)->size();
+
+        return result;
+    }
+
     void reserve(JNIEnv *, const ContainerInfo& container, jint size) override {
 
         QTJAMBI_ELEMENT_LOCKER(this);
@@ -323,7 +343,13 @@ public:
             if(m_externalToInternalConverter(env, nullptr, _value, _qvaluePtr, jValueType::l))
                 reinterpret_cast<QList<T> *>(container.container)->replace(index, _qvalue);
         }
+    }
 
+    void replace(void* container, qsizetype index, const void* value) override {
+        QTJAMBI_ELEMENT_LOCKER(this);
+        {
+            reinterpret_cast<QList<T> *>(container.container)->replace(index, *reinterpret_cast<const T *>(value));
+        }
     }
 
     void remove(JNIEnv *, const ContainerInfo& container, jint index, jint n) override {
@@ -564,16 +590,23 @@ public:
     }
 #endif
 
+    template<bool is_const>
     class ElementIterator : public AbstractListAccess::ElementIterator{
-    public:
+        using Container = std::conditional_t<is_const, const QList<T>, QList<T>>;
+        using iterator = decltype(std::declval<Container>().begin());
         GenericListAccess* access;
-        typename QList<T>::ConstIterator current;
-        typename QList<T>::ConstIterator end;
-        ElementIterator(GenericListAccess* _access, const void* container)
+        typename iterator current;
+        typename iterator end;
+        ElementIterator(const ElementIterator& other)
+            :access(other.access),
+            current(other.current),
+            end(other.end) {}
+    public:
+        ElementIterator(GenericListAccess* _access, typename std::conditional_t<is_const, const void*, void*> container)
             : access(_access){
             QTJAMBI_ELEMENT_LOCKER(access);
-            current = reinterpret_cast<const QList<T>*>(container)->constBegin();
-            end = reinterpret_cast<const QList<T>*>(container)->constEnd();
+            current = reinterpret_cast<Container*>(container)->begin();
+            end = reinterpret_cast<Container*>(container)->end();
         }
         ~ElementIterator() override {};
         bool hasNext() override {return current!=end;};
@@ -591,9 +624,35 @@ public:
             ++current;
             return pointer;
         }
+        bool isConst() override{
+            return is_const;
+        }
+        const void* constNext() override {
+            void* pointer = *current;
+            ++current;
+            return result;
+        }
+        void* mutableNext() override {
+            if constexpr(is_const){
+                return nullptr;
+            }else{
+                void* pointer = *current;
+                ++current;
+                return result;
+            }
+        }
+        bool operator==(const AbstractSequentialAccess::ElementIterator& other) const override {
+            return current==reinterpret_cast<const ElementIterator&>(other).current;
+        }
+        std::unique_ptr<AbstractSequentialAccess::ElementIterator> clone() const override {
+            return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(*this));
+        }
     };
     std::unique_ptr<AbstractListAccess::ElementIterator> elementIterator(const void* container) override {
-        return std::unique_ptr<AbstractListAccess::ElementIterator>(new ElementIterator(this, container));
+        return std::unique_ptr<AbstractListAccess::ElementIterator>(new ElementIterator<true>(this, container));
+    }
+    std::unique_ptr<AbstractListAccess::ElementIterator> elementIterator(void* container) override {
+        return std::unique_ptr<AbstractListAccess::ElementIterator>(new ElementIterator<false>(this, container));
     }
 };
 

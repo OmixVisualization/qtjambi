@@ -155,7 +155,7 @@ QMetaType getNativeWrapperType(const QMetaType& metaType);
 bool isNativeWrapperMetaType(QMetaType metaType);
 #endif
 
-int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isReference);
+int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isReference, int superId = QMetaType::UnknownType);
 const QVector<const RegistryAPI::ConstructorInfo>* registeredConstructorInfos(const std::type_info& typeId);
 uint returnScopes(const std::type_info& typeId);
 jclass getArrayClass(JNIEnv *env, jclass cls, int arrayDepth);

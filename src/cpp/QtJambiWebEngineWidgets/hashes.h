@@ -37,7 +37,11 @@
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 inline hash_type qHash(const QWebEngineScript &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.name());
     seed = hash(seed, value.isNull());
     seed = hash(seed, value.worldId());
@@ -64,7 +68,11 @@ inline bool operator==(const QWebEngineContextMenuData& arg1, const QWebEngineCo
 
 inline hash_type qHash(const QWebEngineContextMenuData &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.isValid());
     seed = hash(seed, value.position());
     seed = hash(seed, value.selectedText());
@@ -90,7 +98,11 @@ inline bool operator==(const QWebEngineCertificateError& arg1, const QWebEngineC
 
 inline hash_type qHash(const QWebEngineCertificateError &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.certificateChain());
     seed = hash(seed, value.errorDescription());
     seed = hash(seed, value.isOverridable());
@@ -106,7 +118,11 @@ inline bool operator==(const QWebEngineFindTextResult& arg1, const QWebEngineFin
 
 inline hash_type qHash(const QWebEngineFindTextResult &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.numberOfMatches());
     seed = hash(seed, value.activeMatch());
     return seed;
@@ -123,7 +139,11 @@ inline bool operator==(const QWebEngineHistoryItem& arg1, const QWebEngineHistor
 
 inline hash_type qHash(const QWebEngineHistoryItem &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.originalUrl());
     seed = hash(seed, value.url());
     seed = hash(seed, value.title());
@@ -141,7 +161,11 @@ inline bool operator==(const QWebEngineCookieStore::FilterRequest& arg1, const Q
 
 inline hash_type qHash(const QWebEngineCookieStore::FilterRequest &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.thirdParty);
     seed = hash(seed, value.origin);
     seed = hash(seed, value.firstPartyUrl);

@@ -36,7 +36,11 @@
 
 inline hash_type qHash(const QWebEngineHttpRequest &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.url());
     seed = hash(seed, value.headers());
     seed = hash(seed, qint32(value.method()));
@@ -46,7 +50,11 @@ inline hash_type qHash(const QWebEngineHttpRequest &value, hash_type seed = 0)
 
 inline hash_type qHash(const QWebEngineUrlScheme &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.name());
     seed = hash(seed, value.flags());
     seed = hash(seed, qint32(value.syntax()));
@@ -56,7 +64,11 @@ inline hash_type qHash(const QWebEngineUrlScheme &value, hash_type seed = 0)
 
 inline hash_type qHash(const QWebEngineRegisterProtocolHandlerRequest &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.origin());
     seed = hash(seed, value.scheme());
     return seed;
@@ -64,7 +76,11 @@ inline hash_type qHash(const QWebEngineRegisterProtocolHandlerRequest &value, ha
 
 inline hash_type qHash(const QWebEngineQuotaRequest &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.origin());
     seed = hash(seed, value.requestedSize());
     return seed;

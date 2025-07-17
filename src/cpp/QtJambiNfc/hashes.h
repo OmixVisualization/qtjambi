@@ -36,7 +36,11 @@
 
 inline hash_type qHash(const QNearFieldTarget::RequestId &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.isValid());
     seed = hash(seed, value.refCount());
     return seed;
@@ -44,7 +48,11 @@ inline hash_type qHash(const QNearFieldTarget::RequestId &value, hash_type seed 
 
 inline hash_type qHash(const QNdefMessage &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.size());
     for(const QNdefRecord& record : value){
         seed = hash(seed, record);

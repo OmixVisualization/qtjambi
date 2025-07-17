@@ -196,7 +196,7 @@ AutoHashAccess::~AutoHashAccess(){
 
 std::unique_ptr<AbstractHashAccess::KeyValueIterator> AutoHashAccess::keyValueIterator(const void* container) {
     class KeyValueIterator : public AbstractHashAccess::KeyValueIterator{
-        AutoHashAccess* access;
+        AutoHashAccess* m_access;
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         Node* current;
         Node* end;
@@ -204,9 +204,15 @@ std::unique_ptr<AbstractHashAccess::KeyValueIterator> AutoHashAccess::keyValueIt
         iterator current;
         iterator end;
 #endif
+        KeyValueIterator(const KeyValueIterator& other)
+            :m_access(other.m_access),
+            current(other.current),
+            end(other.end) {}
+    protected:
+        AbstractAssociativeAccess* access() override {return m_access;}
     public:
         KeyValueIterator(AutoHashAccess* _access, QHashData* container)
-            :access(_access),
+            :m_access(_access),
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
             current(container ? container->firstNode() : reinterpret_cast<Node*>(container)), end(reinterpret_cast<Node*>(container))
 #else
@@ -222,38 +228,163 @@ std::unique_ptr<AbstractHashAccess::KeyValueIterator> AutoHashAccess::keyValueIt
             jvalue v;
             v.l = nullptr;
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            access->m_keyInternalToExternalConverter(env, nullptr, reinterpret_cast<char*>(current)+access->m_offset1, k, true);
-            if(access->m_offset2!=0)
-                access->m_valueInternalToExternalConverter(env, nullptr, reinterpret_cast<char*>(current)+access->m_offset2, v, true);
+            m_access->m_keyInternalToExternalConverter(env, nullptr, reinterpret_cast<char*>(current)+m_access->m_offset1, k, true);
+            if(m_access->m_offset2!=0)
+                m_access->m_valueInternalToExternalConverter(env, nullptr, reinterpret_cast<char*>(current)+m_access->m_offset2, v, true);
             current = QHashData::nextNode(current);
 #else
-            access->m_keyInternalToExternalConverter(env, nullptr, current.key(), k, true);
-            if(access->m_offset2!=0)
-                access->m_valueInternalToExternalConverter(env, nullptr, current.value(), v, true);
+            m_access->m_keyInternalToExternalConverter(env, nullptr, current.key(), k, true);
+            if(m_access->m_offset2!=0)
+                m_access->m_valueInternalToExternalConverter(env, nullptr, current.value(), v, true);
             ++current;
 #endif
             return {k.l, v.l};
         }
         QPair<const void*,const void*> next() override {
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            void* key = reinterpret_cast<char*>(current)+access->m_offset1;
-            void* value = reinterpret_cast<char*>(current)+access->m_offset2;
+            void* key = reinterpret_cast<char*>(current)+m_access->m_offset1;
+            void* value = reinterpret_cast<char*>(current)+m_access->m_offset2;
             current = QHashData::nextNode(current);
 #else
             void* key = current.key();
             void* value = current.value();
             ++current;
 #endif
-            if(access->m_keyDataType & AbstractContainerAccess::PointersMask){
+            if(m_access->m_keyDataType & AbstractContainerAccess::PointersMask){
                 key = *reinterpret_cast<void**>(key);
             }
-            if(access->m_valueDataType & AbstractContainerAccess::PointersMask){
+            if(m_access->m_valueDataType & AbstractContainerAccess::PointersMask){
                 value = *reinterpret_cast<void**>(value);
             }
             return {key, value};
         }
+        bool operator==(const AbstractMapAccess::KeyValueIterator& other) const override {
+            return current==reinterpret_cast<const KeyValueIterator&>(other).current;
+        }
+        std::unique_ptr<AbstractAssociativeAccess::KeyValueIterator> clone() const override {
+            return std::unique_ptr<AbstractAssociativeAccess::KeyValueIterator>(new KeyValueIterator(*this));
+        }
+        bool isConst() override{
+            return true;
+        }
+        QPair<const void*,const void*> constNext() override {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+            void* key = reinterpret_cast<char*>(current)+m_access->m_offset1;
+            void* value = reinterpret_cast<char*>(current)+m_access->m_offset2;
+            current = QHashData::nextNode(current);
+#else
+            void* key = current.key();
+            void* value = current.value();
+            ++current;
+#endif
+            return {key, value};
+        }
+        QPair<const void*,void*> mutableNext() override {
+            return {nullptr, nullptr};
+        }
     };
     return std::unique_ptr<AbstractHashAccess::KeyValueIterator>(new KeyValueIterator(this, *reinterpret_cast<QHashData *const*>(container)));
+}
+
+std::unique_ptr<AbstractHashAccess::KeyValueIterator> AutoHashAccess::keyValueIterator(void* container) {
+    class KeyValueIterator : public AbstractHashAccess::KeyValueIterator{
+        AutoHashAccess* m_access;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+        Node* current;
+        Node* end;
+#else
+        iterator current;
+        iterator end;
+#endif
+        KeyValueIterator(const KeyValueIterator& other)
+            :m_access(other.m_access),
+            current(other.current),
+            end(other.end) {}
+    protected:
+        AbstractAssociativeAccess* access() override {return m_access;}
+    public:
+        KeyValueIterator(AutoHashAccess* _access, QHashData* container)
+            :m_access(_access),
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+            current(container ? container->firstNode() : reinterpret_cast<Node*>(container)), end(reinterpret_cast<Node*>(container))
+#else
+            current(container ? container->begin(*_access) : iterator(*_access)), end(container ? container->end(*_access) : iterator(*_access))
+#endif
+        {}
+        bool hasNext() override{
+            return current!=end;
+        }
+        QPair<jobject,jobject> next(JNIEnv * env) override{
+            jvalue k;
+            k.l = nullptr;
+            jvalue v;
+            v.l = nullptr;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+            m_access->m_keyInternalToExternalConverter(env, nullptr, reinterpret_cast<char*>(current)+m_access->m_offset1, k, true);
+            if(m_access->m_offset2!=0)
+                m_access->m_valueInternalToExternalConverter(env, nullptr, reinterpret_cast<char*>(current)+m_access->m_offset2, v, true);
+            current = QHashData::nextNode(current);
+#else
+            m_access->m_keyInternalToExternalConverter(env, nullptr, current.key(), k, true);
+            if(m_access->m_offset2!=0)
+                m_access->m_valueInternalToExternalConverter(env, nullptr, current.value(), v, true);
+            ++current;
+#endif
+            return {k.l, v.l};
+        }
+        QPair<const void*,const void*> next() override {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+            void* key = reinterpret_cast<char*>(current)+m_access->m_offset1;
+            void* value = reinterpret_cast<char*>(current)+m_access->m_offset2;
+            current = QHashData::nextNode(current);
+#else
+            void* key = current.key();
+            void* value = current.value();
+            ++current;
+#endif
+            if(m_access->m_keyDataType & AbstractContainerAccess::PointersMask){
+                key = *reinterpret_cast<void**>(key);
+            }
+            if(m_access->m_valueDataType & AbstractContainerAccess::PointersMask){
+                value = *reinterpret_cast<void**>(value);
+            }
+            return {key, value};
+        }
+        bool operator==(const AbstractMapAccess::KeyValueIterator& other) const override {
+            return current==reinterpret_cast<const KeyValueIterator&>(other).current;
+        }
+        std::unique_ptr<AbstractAssociativeAccess::KeyValueIterator> clone() const override {
+            return std::unique_ptr<AbstractAssociativeAccess::KeyValueIterator>(new KeyValueIterator(*this));
+        }
+        bool isConst() override{
+            return false;
+        }
+        QPair<const void*,const void*> constNext() override {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+            void* key = reinterpret_cast<char*>(current)+m_access->m_offset1;
+            void* value = reinterpret_cast<char*>(current)+m_access->m_offset2;
+            current = QHashData::nextNode(current);
+#else
+            void* key = current.key();
+            void* value = current.value();
+            ++current;
+#endif
+            return {key, value};
+        }
+        QPair<const void*,void*> mutableNext() override {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+            void* key = reinterpret_cast<char*>(current)+m_access->m_offset1;
+            void* value = reinterpret_cast<char*>(current)+m_access->m_offset2;
+            current = QHashData::nextNode(current);
+#else
+            void* key = current.key();
+            void* value = current.value();
+            ++current;
+#endif
+            return {key, value};
+        }
+    };
+    return std::unique_ptr<AbstractHashAccess::KeyValueIterator>(new KeyValueIterator(this, *reinterpret_cast<QHashData **>(container)));
 }
 
 AutoHashAccess::AutoHashAccess(
@@ -362,7 +493,7 @@ AbstractHashAccess* AutoHashAccess::clone(){ return new AutoHashAccess(*this); }
 
 const QObject* AutoHashAccess::getOwner(const void* container){
     if(hasOwnerFunction() && size(container)>0){
-        auto iter = keyValueIterator(container);
+        auto iter = constKeyValueIterator(container);
         while(iter->hasNext()){
             auto current = iter->next();
             if(m_keyOwnerFunction){
@@ -1184,6 +1315,21 @@ void AutoHashAccess::insert(JNIEnv *env, const ContainerInfo& container, jobject
     }
 }
 
+bool AutoHashAccess::contains(const void* container, const void* key)
+{
+    QHashData *const* map = reinterpret_cast<QHashData *const*>(container);
+    QHashData* d = *map;
+    if(d && d->size>0){
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+        Node* e = reinterpret_cast<Node*>(d);
+        return *findNode(map, key) != e;
+#else
+        return d->findNode(*this, key) != nullptr;
+#endif
+    }
+    return false;
+}
+
 jboolean AutoHashAccess::contains(JNIEnv *env, const void* container, jobject key)
 {
     QHashData *const* map = reinterpret_cast<QHashData *const*>(container);
@@ -1459,6 +1605,25 @@ jobject AutoHashAccess::key(JNIEnv *env, const void* container, jobject value, j
 #endif
     }
     return defaultKey;
+}
+
+const void* AutoHashAccess::value(const void* container, const void* key, const void* defaultValue)
+{
+    QHashData *const* map = reinterpret_cast<QHashData *const*>(container);
+    QHashData* d = *map;
+    if(!d || d->size==0)
+        return defaultValue;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    Node* e = reinterpret_cast<Node*>(d);
+    Node *n = *findNode(map, key);
+    return n!=e ? reinterpret_cast<char*>(n)+m_offset2 : defaultValue;
+#else
+    QHashData::iterator iter = d->find(*this, key);
+    if (!iter.isUnused()){
+        return iterator(iter).value();
+    }
+#endif
+    return defaultValue;
 }
 
 jobject AutoHashAccess::value(JNIEnv *env, const void* container, jobject key, jobject defaultValue)
@@ -2775,7 +2940,7 @@ KeyPointerRCAutoHashAccess* KeyPointerRCAutoHashAccess::clone(){
 void KeyPointerRCAutoHashAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
     JniLocalFrame frame(env, 200);
     jobject set = Java::Runtime::HashSet::newInstance(env);
-    auto iterator = keyValueIterator(container.container);
+    auto iterator = constKeyValueIterator(container.container);
     while(iterator->hasNext()){
         auto content = iterator->next();
         jobject obj{nullptr};
@@ -2862,7 +3027,7 @@ ValuePointerRCAutoHashAccess* ValuePointerRCAutoHashAccess::clone(){
 void ValuePointerRCAutoHashAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
     JniLocalFrame frame(env, 200);
     jobject set = Java::Runtime::HashSet::newInstance(env);
-    auto iterator = keyValueIterator(container.container);
+    auto iterator = constKeyValueIterator(container.container);
     while(iterator->hasNext()){
         auto content = iterator->next();
         jobject obj{nullptr};
@@ -2954,7 +3119,7 @@ PointersRCAutoHashAccess* PointersRCAutoHashAccess::clone(){
 void PointersRCAutoHashAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
     JniLocalFrame frame(env, 200);
     jobject map = Java::QtJambi::ReferenceUtility$RCMap::newInstance(env);
-    auto iterator = keyValueIterator(container.container);
+    auto iterator = constKeyValueIterator(container.container);
     while(iterator->hasNext()){
         auto content = iterator->next();
         jobject key{nullptr};
@@ -3072,7 +3237,7 @@ void NestedPointersRCAutoHashAccess::updateRC(JNIEnv * env, const ContainerInfo&
         jobject set = Java::Runtime::HashSet::newInstance(env);
         auto access1 = keyNestedContainerAccess();
         auto access2 = valueNestedContainerAccess();
-        auto iterator = keyValueIterator(container.container);
+        auto iterator = constKeyValueIterator(container.container);
         while(iterator->hasNext()){
             auto current = iterator->next();
             unfoldAndAddContainer(env, set, current.first, keyType(), keyMetaType(), access1);

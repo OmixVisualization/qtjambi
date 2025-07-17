@@ -117,6 +117,20 @@ TypeSystem{
     InterfaceType{
         name: "QSqlDriverFactoryInterface"
     }
+
+    ObjectType{
+        name: "QSqlDatabaseDefaultConnectionName"
+        forceFriendly: true
+        ModifyFunction{
+            signature: "QSqlDatabaseDefaultConnectionName()"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "QSqlDatabaseDefaultConnectionName(QSqlDatabaseDefaultConnectionName)"
+            remove: RemoveFlag.All
+        }
+        since: [6,10]
+    }
     
     ValueType{
         name: "QSqlDatabase"
@@ -145,6 +159,15 @@ TypeSystem{
                 fileName: "QSize"
                 location: Include.Global
             }
+        }
+        InjectCode{
+            target: CodeClass.Java
+            Text{content: String`
+public static java.lang.@NonNull String defaultConnection() {
+    return QSqlDatabaseDefaultConnectionName.defaultConnection;
+}`
+            }
+            since: [6,10]
         }
         ModifyFunction{
             signature: "registerSqlDriver(QString, QSqlDriverCreatorBase *)"
@@ -557,4 +580,5 @@ TypeSystem{
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: visibility of function '*' modified in class '*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: hiding of function '*' in class '*'"}
     SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type QSql*."}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'QSqlDatabaseDefaultConnectionName(*)' for function modification in 'QSqlDatabaseDefaultConnectionName' not found. Possible candidates: *"}
 }

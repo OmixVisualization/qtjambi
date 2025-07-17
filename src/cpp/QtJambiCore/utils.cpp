@@ -234,6 +234,15 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QFuture$FutureConsumer,
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QFuture$FutureFunction,
                                 QTJAMBI_REPOSITORY_DEFINE_METHOD(apply,(Lio/qt/core/QFuture;)Ljava/lang/Object;)
                                 )
+#if QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QRangeModel$ConstTreeRowInterface,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(parentRow,()Lio/qt/core/QRangeModel$ConstTreeRowInterface;)
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(childRows,()Ljava/util/List;)
+                                )
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QRangeModel$TreeRowInterface,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(setParentRow,(Lio/qt/core/QRangeModel$TreeRowInterface;)V)
+                                )
+#endif
 namespace Internal
 {
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core/internal,QAbstractFileEngineHandler,
@@ -339,3 +348,4 @@ jobject toBigInteger(JNIEnv* env, quint64 value, bool isNegative)
     object = Java::Runtime::BigInteger::newInstance(env, value==0 ? 0 : (isNegative ? -1 : 1), data);
     return object;
 }
+

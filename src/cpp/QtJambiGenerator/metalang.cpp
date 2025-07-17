@@ -337,7 +337,11 @@ bool MetaFunction::needsCallThrough() const {
 
     const MetaClass *cls = implementingClass();
     while (cls) {
-        for(const FunctionModification& mod : this->modifications(cls)) {
+        auto mods = this->modifications(cls);
+        if(m_functionTemplate.first && !m_functionTemplate.second.signature.isEmpty()){
+            mods.prepend(m_functionTemplate.second);
+        }
+        for(const FunctionModification& mod : mods) {
             if (mod.snips.count() <= 0)
                 continue ;
             for(const CodeSnip& snip : mod.snips) {
@@ -409,6 +413,57 @@ QString MetaFunction::marshalledArguments(int count) const {
     return MetaFunction::marshalledArguments(m_arguments, isConstant(), count);
 }
 
+QString MetaFunction::marshalledArguments(const QList<const MetaType *>& arguments){
+    QString returned;
+    for(const MetaType *arg : arguments) {
+        if(!arg)
+            continue;
+        if(arg->getReferenceType()==MetaType::Reference){
+            if(arg->isConstant()){
+                returned += "_cref";
+            }else{
+                returned += "_ref";
+            }
+        }else if(arg->getReferenceType()==MetaType::RReference){
+            if(arg->isConstant()){
+                returned += "_crval";
+            }else{
+                returned += "_rval";
+            }
+        }else{
+            if(arg->isConstant()){
+                returned += "_const";
+            }
+        }
+        QString qualifiedCppName;
+        if(arg->typeEntry()->isFunctional()){
+            qualifiedCppName = arg->typeEntry()->name();
+        }else{
+            qualifiedCppName = arg->typeEntry()->qualifiedCppName();
+        }
+        if(qualifiedCppName=="qtjamireal")
+            qualifiedCppName = "double";
+        returned += "_" + qualifiedCppName
+                              .replace("::", "_")
+                              .replace("(*)", "_fptr")
+                              .replace("<", "_")
+                              .replace(">", "_")
+                              .replace("[", "_")
+                              .replace("]", "_")
+                              .replace("(", "_")
+                              .replace(")", "_")
+                              .replace(",", "_")
+                              .replace(".", "_")
+                              .replace("*", "_ptr")
+                              .replace("&", "_ref")
+                              .replace(" ", "_");
+        if (!arg->instantiations().isEmpty()) {
+            returned += marshalledArguments(arg->instantiations());
+        }
+    }
+    return returned;
+}
+
 QString MetaFunction::marshalledArguments(const QList<MetaArgument *>& arguments, bool isConst, int count){
     QString returned;
     if(count<0)
@@ -457,6 +512,9 @@ QString MetaFunction::marshalledArguments(const QList<MetaArgument *>& arguments
                               .replace("*", "_ptr")
                               .replace("&", "_ref")
                               .replace(" ", "_");
+        if (!arg->type()->instantiations().isEmpty()) {
+            returned += marshalledArguments(arg->type()->instantiations());
+        }
         for(bool ind : arg->type()->indirections()){
             returned += ind ? "_cptr" : "_ptr";
         }
@@ -774,6 +832,9 @@ QList<ReferenceCount> MetaFunction::referenceCounts(const MetaClass *cls, int id
         }
     }else{
         FunctionModificationList mods = this->modifications(cls);
+        if(m_functionTemplate.first && !m_functionTemplate.second.signature.isEmpty()){
+            mods.prepend(m_functionTemplate.second);
+        }
         for(const FunctionModification& mod : mods) {
             for(const ArgumentModification& argument_mod : mod.argument_mods) {
                 if(argument_mod.type!=ArgumentModification::Default)
@@ -818,6 +879,9 @@ QList<TemplateInstantiation> MetaFunction::templateInstantiations(const MetaClas
 
 QString MetaFunction::replacedDefaultExpression(const MetaClass *cls, int key) const {
     FunctionModificationList modifications = this->modifications(cls);
+    if(m_functionTemplate.first && !m_functionTemplate.second.signature.isEmpty()){
+        modifications.prepend(m_functionTemplate.second);
+    }
     for(const FunctionModification& modification : modifications) {
         for(const ArgumentModification& argument_modification : modification.argument_mods) {
             if(argument_modification.type!=ArgumentModification::Default)
@@ -834,6 +898,9 @@ QString MetaFunction::replacedDefaultExpression(const MetaClass *cls, int key) c
 
 bool MetaFunction::removedDefaultExpression(const MetaClass *cls, int key) const {
     FunctionModificationList modifications = this->modifications(cls);
+    if(m_functionTemplate.first && !m_functionTemplate.second.signature.isEmpty()){
+        modifications.prepend(m_functionTemplate.second);
+    }
     for(const FunctionModification& modification : modifications) {
         for(const ArgumentModification& argument_modification : modification.argument_mods) {
             if(argument_modification.type!=ArgumentModification::Default)
@@ -923,6 +990,9 @@ QString MetaFunction::nullPointerDefaultValue(const MetaClass *mainClass, int ar
 
     do {
         FunctionModificationList modifications = this->modifications(cls);
+        if(m_functionTemplate.first && !m_functionTemplate.second.signature.isEmpty()){
+            modifications.prepend(m_functionTemplate.second);
+        }
         for(const FunctionModification& modification : modifications) {
             for(const ArgumentModification& argument_modification : modification.argument_mods) {
                 if(argument_modification.type!=ArgumentModification::Default)
@@ -996,6 +1066,9 @@ bool MetaFunction::nullPointersDisabled(const MetaClass *mainClass, int argument
 
         do {
             FunctionModificationList modifications = this->modifications(cls);
+            if(m_functionTemplate.first && !m_functionTemplate.second.signature.isEmpty()){
+                modifications.prepend(m_functionTemplate.second);
+            }
             for(const FunctionModification& modification : modifications) {
                 for(const ArgumentModification& argument_modification : modification.argument_mods) {
                     if(argument_modification.type!=ArgumentModification::Default)
@@ -1560,6 +1633,9 @@ OwnershipRule MetaFunction::ownership(const MetaClass *cls, TS::Language languag
         }
     }else{
         FunctionModificationList modifications = this->modifications(cls);
+        if(m_functionTemplate.first && !m_functionTemplate.second.signature.isEmpty()){
+            modifications.prepend(m_functionTemplate.second);
+        }
         for(const FunctionModification& modification : modifications) {
             for(const ArgumentModification& argument_modification : modification.argument_mods) {
                 if(argument_modification.type!=ArgumentModification::Default)
@@ -2230,9 +2306,11 @@ FunctionModificationList MetaFunction::modifications(const ComplexTypeEntry *ent
         result = entry->functionModifications(minimalSignature());
         if(result.isEmpty() && minimalSignature()!=originalSignature())
             result = entry->functionModifications(originalSignature());
-        if(m_functionTemplate.first && !m_functionTemplate.second.signature.isEmpty()){
-            if(entry==m_implementing_class->typeEntry()){
-                result.prepend(m_functionTemplate.second);
+        if(m_functionTemplate.first){
+            if(m_functionTemplate.first && !m_functionTemplate.second.signature.isEmpty()){
+                if(entry==m_implementing_class->typeEntry()){
+                    result.prepend(m_functionTemplate.second);
+                }
             }
         }
         if(result.isEmpty() && (entry->qualifiedCppName().startsWith("QOpenGLFunctions") || entry->qualifiedCppName()=="QOpenGLExtraFunctions")){

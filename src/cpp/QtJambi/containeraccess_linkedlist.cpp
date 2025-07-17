@@ -93,13 +93,19 @@ AutoLinkedListAccess::AutoLinkedListAccess(const AutoLinkedListAccess& other)
 
 std::unique_ptr<AbstractLinkedListAccess::ElementIterator> AutoLinkedListAccess::elementIterator(const void* container) {
     class ElementIterator : public AbstractLinkedListAccess::ElementIterator{
-        AutoLinkedListAccess* access;
+        AutoLinkedListAccess* m_access;
         Node* current;
         Node* end;
+        ElementIterator(const ElementIterator& other)
+            :m_access(other.m_access),
+            current(other.current),
+            end(other.end) {}
+    protected:
+        AbstractSequentialAccess* access() override { return m_access; }
     public:
         ElementIterator(AutoLinkedListAccess* _access, QLinkedListData* d)
             : AbstractLinkedListAccess::ElementIterator(),
-            access(_access),
+            m_access(_access),
             current(reinterpret_cast<Node*>(d)->n),
             end(reinterpret_cast<Node*>(d))
         {}
@@ -111,20 +117,100 @@ std::unique_ptr<AbstractLinkedListAccess::ElementIterator> AutoLinkedListAccess:
             current = current->n;
             jvalue _value;
             _value.l = nullptr;
-            access->m_internalToExternalConverter(env, nullptr, data, _value, true);
+            m_access->m_internalToExternalConverter(env, nullptr, data, _value, true);
             return _value.l;
         }
         const void* next() override {
             void* data = &current->t;
             current = current->n;
-            if(access->elementType() & AbstractLinkedListAccess::PointersMask){
+            if(m_access->elementType() & AbstractLinkedListAccess::PointersMask){
                 return *reinterpret_cast<void**>(data);
             }else{
                 return data;
             }
         }
+        bool isConst() override{
+            return true;
+        }
+        const void* constNext() override {
+            void* data = &current->t;
+            current = current->n;
+            return data;
+        }
+        void* mutableNext() override {
+            return nullptr;
+        }
+
+        bool operator==(const AbstractSequentialAccess::ElementIterator& other) const override {
+            return current==reinterpret_cast<const ElementIterator&>(other).current;
+        }
+        std::unique_ptr<AbstractSequentialAccess::ElementIterator> clone() const override {
+            return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(*this));
+        }
     };
     return std::unique_ptr<AbstractLinkedListAccess::ElementIterator>(new ElementIterator(this, *reinterpret_cast<QLinkedListData*const*>(container)));
+}
+
+std::unique_ptr<AbstractLinkedListAccess::ElementIterator> AutoLinkedListAccess::elementIterator(void* container) {
+    class ElementIterator : public AbstractLinkedListAccess::ElementIterator{
+        AutoLinkedListAccess* m_access;
+        Node* current;
+        Node* end;
+        ElementIterator(const ElementIterator& other)
+            :m_access(other.m_access),
+            current(other.current),
+            end(other.end) {}
+    protected:
+        AbstractSequentialAccess* access() override { return m_access; }
+    public:
+        ElementIterator(AutoLinkedListAccess* _access, QLinkedListData* d)
+            : AbstractLinkedListAccess::ElementIterator(),
+            m_access(_access),
+            current(reinterpret_cast<Node*>(d)->n),
+            end(reinterpret_cast<Node*>(d))
+        {}
+        bool hasNext() override{
+            return current!=end;
+        }
+        jobject next(JNIEnv * env) override{
+            void* data = &current->t;
+            current = current->n;
+            jvalue _value;
+            _value.l = nullptr;
+            m_access->m_internalToExternalConverter(env, nullptr, data, _value, true);
+            return _value.l;
+        }
+        const void* next() override {
+            void* data = &current->t;
+            current = current->n;
+            if(m_access->elementType() & AbstractLinkedListAccess::PointersMask){
+                return *reinterpret_cast<void**>(data);
+            }else{
+                return data;
+            }
+        }
+        bool isConst() override{
+            return false;
+        }
+        const void* constNext() override {
+            void* data = &current->t;
+            current = current->n;
+            return data;
+        }
+        void* mutableNext() override {
+            void* data = &current->t;
+            current = current->n;
+            return data;
+        }
+
+        bool operator==(const AbstractSequentialAccess::ElementIterator& other) const override {
+            return current==reinterpret_cast<const ElementIterator&>(other).current;
+        }
+        std::unique_ptr<AbstractSequentialAccess::ElementIterator> clone() const override {
+            return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(*this));
+        }
+    };
+    return std::unique_ptr<AbstractLinkedListAccess::ElementIterator>(new ElementIterator(this, *reinterpret_cast<QLinkedListData**>(container)));
 }
 
 AutoLinkedListAccess* AutoLinkedListAccess::clone(){
@@ -1007,7 +1093,7 @@ jint AutoLinkedListAccess::size(JNIEnv *, const void* container){
     return d->size;
 }
 
-jint AutoLinkedListAccess::size(const void* container){
+qsizetype AutoLinkedListAccess::size(const void* container){
     QLinkedListData*const* linkedList = reinterpret_cast<QLinkedListData*const*>(container);
     QLinkedListData* d = *linkedList;
     return d->size;

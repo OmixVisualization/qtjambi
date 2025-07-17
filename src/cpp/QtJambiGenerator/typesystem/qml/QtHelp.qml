@@ -82,7 +82,11 @@ TypeSystem{
             Text{
                 until: 5
                 content: String.raw`inline hash_type qHash(const QMap<QString, QUrl> &value, hash_type seed = 0){
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombineCommutative hash;
+#else
+    QtPrivate::QHashCombineCommutative hash(seed);
+#endif
     seed = hash(seed, value.size());
     for(const QString& key : value.keys()){
         seed = hash(seed, key);
@@ -94,7 +98,11 @@ TypeSystem{
                 since: 6
                 until: 6.7
                 content: String.raw`inline hash_type qHash(const QMultiMap<QString, QUrl> &value, hash_type seed = 0){
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombineCommutative hash;
+#else
+    QtPrivate::QHashCombineCommutative hash(seed);
+#endif
     seed = hash(seed, value.keys().size());
     for(const QString& key : value.keys()){
         seed = hash(seed, key);

@@ -637,16 +637,23 @@ public:
         reinterpret_cast<QHash<K,T> *>(container.container)->swap(*reinterpret_cast<QHash<K,T> *>(container2.container));
     }
 
+    template<bool _isConst>
     class KeyValueIterator : public AbstractHashAccess::KeyValueIterator{
-    public:
+        using Container = std::conditional_t<_isConst, const QHash<K,T>, QHash<K,T>>;
+        using iterator = decltype(std::declval<Container>().begin());
         GenericHashAccess* access;
-        typename QHash<K,T>::ConstIterator current;
-        typename QHash<K,T>::ConstIterator end;
-        KeyValueIterator(GenericHashAccess* _access, const void* container)
+        iterator current;
+        iterator end;
+        KeyValueIterator(const KeyValueIterator& other)
+            :access(other.access),
+            current(other.current),
+            end(other.end) {}
+    public:
+        KeyValueIterator(GenericHashAccess* _access, Container& container)
             : access(_access){
             QTJAMBI_KEY_VALUE_LOCKER(access);
-            current = reinterpret_cast<const QHash<K,T>*>(container)->constBegin();
-            end = reinterpret_cast<const QHash<K,T>*>(container)->constEnd();
+            current = container.begin();
+            end = container.end();
         }
         ~KeyValueIterator() override {};
         bool hasNext() override {return current!=end;};
@@ -670,9 +677,18 @@ public:
             ++current;
             return {key, value};
         }
+        bool operator==(const AbstractHashAccess::KeyValueIterator& other) const override {
+            return current==reinterpret_cast<const KeyValueIterator&>(other).current;
+        }
+        std::unique_ptr<AbstractAssociativeAccess::KeyValueIterator> clone() const override {
+            return std::unique_ptr<AbstractAssociativeAccess::KeyValueIterator>(new KeyValueIterator(*this));
+        }
     };
     std::unique_ptr<AbstractHashAccess::KeyValueIterator> keyValueIterator(const void* container) override {
-        return std::unique_ptr<AbstractHashAccess::KeyValueIterator>(new KeyValueIterator(this, container));
+        return std::unique_ptr<AbstractHashAccess::KeyValueIterator>(new KeyValueIterator<true>(this, *reinterpret_cast<const QHash<K,T>*>(container)));
+    }
+    std::unique_ptr<AbstractHashAccess::KeyValueIterator> keyValueIterator(void* container) override {
+        return std::unique_ptr<AbstractHashAccess::KeyValueIterator>(new KeyValueIterator<false>(this, *reinterpret_cast<QHash<K,T>*>(container)));
     }
 };
 

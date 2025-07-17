@@ -1188,6 +1188,16 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/webengine/core,QWebEngineProfile$IconAvail
 
         since: 6.8
     }
+
+    ObjectType{
+        name: "QWebEngineExtensionInfo"
+        since: [6,10]
+    }
+
+    ObjectType{
+        name: "QWebEngineExtensionManager"
+        since: [6,10]
+    }
     
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QWebEngineClientCertificateStore::QWebEngineClientCertificateStore', unmatched parameter type 'QtWebEngineCore::ClientCertificateStoreData*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QWebEngineNotification::QWebEngineNotification', unmatched parameter type 'const QSharedPointer<QtWebEngineCore::UserNotificationController>&'"}

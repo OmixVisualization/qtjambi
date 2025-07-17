@@ -276,6 +276,9 @@ struct AssociativeContainerContains{
         JavaException::raiseUnsupportedOperationException(env, "contains(key)" QTJAMBI_STACKTRACEINFO );
         return false;
     }
+    static bool function(const void*, ...) {
+        return false;
+    }
 };
 
 template<template<typename K, typename T> class Container, typename K, typename T>
@@ -283,6 +286,10 @@ struct AssociativeContainerContains<Container, K, T, true>{
     static jboolean function(JNIEnv * env, const void* ptr, jobject object) {
         const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
         return container->contains(qtjambi_scoped_cast<false,K,jobject>::cast(env, object, nullptr, nullptr));
+    }
+    static bool function(const void* ptr, const void* object) {
+        const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
+        return container->contains(*reinterpret_cast<const K*>(object));
     }
 };
 
@@ -583,11 +590,18 @@ struct AssociativeContainerSize{
         JavaException::raiseUnsupportedOperationException(env, "size()" QTJAMBI_STACKTRACEINFO );
         return 0;
     }
+    static qsizetype function(const void*) {
+        return 0;
+    }
 };
 
 template<template<typename K, typename T> class Container, typename K, typename T>
 struct AssociativeContainerSize<Container, K, T, true>{
     static jint function(JNIEnv *, const void* ptr) {
+        const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
+        return container->size();
+    }
+    static qsizetype function(const void* ptr) {
         const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
         return container->size();
     }
@@ -619,6 +633,9 @@ struct AssociativeContainerValue{
         JavaException::raiseUnsupportedOperationException(env, "value(key)" QTJAMBI_STACKTRACEINFO );
         return nullptr;
     }
+    static const void* function(const void*, ...) {
+        return nullptr;
+    }
 };
 
 template<template<typename K, typename T> class Container, typename K, typename T>
@@ -626,6 +643,16 @@ struct AssociativeContainerValue<Container, K, T, true>{
     static jobject function(JNIEnv * env, const void* ptr, jobject key, jobject defaultValue) {
             const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
             return qtjambi_scoped_cast<false,jobject,const T>::cast(env, container->value(qtjambi_scoped_cast<false,K,jobject>::cast(env, key, nullptr, nullptr), qtjambi_scoped_cast<false,T,jobject>::cast(env, defaultValue, nullptr, nullptr)), nullptr, nullptr);
+    }
+    static const void* function(const void* ptr, const void* key, const void* defaultValue) {
+        const Container<K,T> &container = *static_cast<const Container<K,T> *>(ptr);
+        const K& _key = *reinterpret_cast<const K*>(key);
+        auto iter = container.find(_key);
+        if(iter != container.end()){
+            return &iter.value();
+        }else{
+            return defaultValue;
+        }
     }
 };
 
@@ -705,6 +732,8 @@ struct AssociativeContainerInsert{
     static void function(JNIEnv *env, ...) {
         JavaException::raiseUnsupportedOperationException(env, "insert(key,value)" QTJAMBI_STACKTRACEINFO );
     }
+    static void function(void*, ...) {
+    }
 };
 
 template<template<typename K, typename T> class Container, typename K, typename T>
@@ -712,6 +741,10 @@ struct AssociativeContainerInsert<Container, K, T, true>{
     static void function(JNIEnv * __jni_env, const ContainerInfo& ptr, jobject key, jobject value) {
         Container<K,T> *container = static_cast<Container<K,T> *>(ptr.container);
         container->insert(qtjambi_scoped_cast<false,K,jobject>::cast(__jni_env, key, nullptr, nullptr), qtjambi_scoped_cast<false,T,jobject>::cast(__jni_env, value, nullptr, nullptr));
+    }
+    static void function(void* ptr, const void* key, const void* value) {
+        Container<K,T> *container = static_cast<Container<K,T> *>(ptr);
+        container->insert(*reinterpret_cast<const K*>(key), *reinterpret_cast<const T*>(value));
     }
 };
 
@@ -908,7 +941,7 @@ public:
         const QObject* owner = nullptr;
         if constexpr(ContainerContentType<K>::isContainer){
             if(AbstractContainerAccess* elementNestedContainerAccess = ContainerContentType<K>::accessFactory()){
-                auto iter = _this->keyValueIterator(container);
+                auto iter = _this->constKeyValueIterator(container);
                 while(iter->hasNext()){
                     auto current = iter->next();
                     owner = elementNestedContainerAccess->getOwner(current.first);
@@ -919,7 +952,7 @@ public:
             }
         }else{
             if(PtrOwnerFunction ownerFunctionK = registeredOwnerFunction<K>()){
-                auto iter = _this->keyValueIterator(container);
+                auto iter = _this->constKeyValueIterator(container);
                 while(iter->hasNext()){
                     auto current = iter->next();
                     if((owner = ownerFunctionK(current.first)))
@@ -930,7 +963,7 @@ public:
         if(!owner){
             if constexpr(ContainerContentType<T>::isContainer){
                 if(AbstractContainerAccess* elementNestedContainerAccess = ContainerContentType<T>::accessFactory()){
-                    auto iter = _this->keyValueIterator(container);
+                    auto iter = _this->constKeyValueIterator(container);
                     while(iter->hasNext()){
                         auto current = iter->next();
                         owner = elementNestedContainerAccess->getOwner(current.second);
@@ -941,7 +974,7 @@ public:
                 }
             }else{
                 if(PtrOwnerFunction ownerFunctionT = registeredOwnerFunction<T>()){
-                    auto iter = _this->keyValueIterator(container);
+                    auto iter = _this->constKeyValueIterator(container);
                     while(iter->hasNext()){
                         auto current = iter->next();
                         if((owner = ownerFunctionT(current.second)))
@@ -990,7 +1023,7 @@ public:
             set = QtJambiAPI::newJavaHashSet(env);
             auto access1 = _this->keyNestedContainerAccess();
             auto access2 = _this->valueNestedContainerAccess();
-            auto iterator = _this->keyValueIterator(container.container);
+            auto iterator = _this->constKeyValueIterator(container.container);
             while(iterator->hasNext()){
                 auto current = iterator->next();
                 unfoldAndAddContainer(env, set, current.first, ContainerContentType<K>::type, _this->keyMetaType(), access1);
@@ -1003,7 +1036,7 @@ public:
         }else if constexpr(ContainerContentType<K>::type==AbstractContainerAccess::PointerToQObject){
             Q_STATIC_ASSERT_X(ContainerContentType<T>::type==AbstractContainerAccess::Value, "Associative reference counting required");
             set = QtJambiAPI::newJavaArrayList(env);
-            auto iterator = _this->keyValueIterator(container.container);
+            auto iterator = _this->constKeyValueIterator(container.container);
             while(iterator->hasNext()){
                 auto content = iterator->next();
                 if(jobject obj = QtJambiAPI::findObject(env, reinterpret_cast<const QObject*>(content.first)))
@@ -1012,7 +1045,7 @@ public:
         }else if constexpr(ContainerContentType<K>::type==AbstractContainerAccess::FunctionPointer){
             Q_STATIC_ASSERT_X(ContainerContentType<T>::type==AbstractContainerAccess::Value, "Associative reference counting required");
             set = QtJambiAPI::newJavaArrayList(env);
-            auto iterator = _this->keyValueIterator(container.container);
+            auto iterator = _this->constKeyValueIterator(container.container);
             while(iterator->hasNext()){
                 auto content = iterator->next();
                 if(jobject obj = QtJambiAPI::findFunctionPointerObject(env, content.first, typeid(K)))
@@ -1021,7 +1054,7 @@ public:
         }else if constexpr(ContainerContentType<K>::type==AbstractContainerAccess::Pointer){
             Q_STATIC_ASSERT_X(ContainerContentType<T>::type==AbstractContainerAccess::Value, "Associative reference counting required");
             set = QtJambiAPI::newJavaArrayList(env);
-            auto iterator = _this->keyValueIterator(container.container);
+            auto iterator = _this->constKeyValueIterator(container.container);
             while(iterator->hasNext()){
                 auto content = iterator->next();
                 if(jobject obj = QtJambiAPI::findObject(env, content.first))
@@ -1030,7 +1063,7 @@ public:
         }else if constexpr(ContainerContentType<T>::type==AbstractContainerAccess::PointerToQObject){
             Q_STATIC_ASSERT_X(ContainerContentType<K>::type==AbstractContainerAccess::Value, "Associative reference counting required");
             set = QtJambiAPI::newJavaArrayList(env);
-            auto iterator = _this->keyValueIterator(container.container);
+            auto iterator = _this->constKeyValueIterator(container.container);
             while(iterator->hasNext()){
                 auto content = iterator->next();
                 if(jobject obj = QtJambiAPI::findObject(env, reinterpret_cast<const QObject*>(content.second)))
@@ -1039,7 +1072,7 @@ public:
         }else if constexpr(ContainerContentType<T>::type==AbstractContainerAccess::FunctionPointer){
             Q_STATIC_ASSERT_X(ContainerContentType<K>::type==AbstractContainerAccess::Value, "Associative reference counting required");
             set = QtJambiAPI::newJavaArrayList(env);
-            auto iterator = _this->keyValueIterator(container.container);
+            auto iterator = _this->constKeyValueIterator(container.container);
             while(iterator->hasNext()){
                 auto content = iterator->next();
                 if(jobject obj = QtJambiAPI::findFunctionPointerObject(env, content.second, typeid(T)))
@@ -1048,7 +1081,7 @@ public:
         }else if constexpr(ContainerContentType<T>::type==AbstractContainerAccess::Pointer){
             Q_STATIC_ASSERT_X(ContainerContentType<K>::type==AbstractContainerAccess::Value, "Associative reference counting required");
             set = QtJambiAPI::newJavaArrayList(env);
-            auto iterator = _this->keyValueIterator(container.container);
+            auto iterator = _this->constKeyValueIterator(container.container);
             while(iterator->hasNext()){
                 auto content = iterator->next();
                 if(jobject obj = QtJambiAPI::findObject(env, content.second))
@@ -1076,7 +1109,7 @@ public:
         jobject map = QtJambiAPI::newJavaHashMap(env);
         jobject key{nullptr};
         jobject value{nullptr};
-        auto iterator = _this->keyValueIterator(container.container);
+        auto iterator = _this->constKeyValueIterator(container.container);
         while(iterator->hasNext()){
             auto content = iterator->next();
             if constexpr(ContainerContentType<K>::type==AbstractContainerAccess::PointerToQObject){
@@ -1113,7 +1146,7 @@ public:
         jobject map = ReferenceCountingMultiMapContainer::newRCMultiMap(env);
         jobject key{nullptr};
         jobject value{nullptr};
-        auto iterator = _this->keyValueIterator(container.container);
+        auto iterator = _this->constKeyValueIterator(container.container);
         while(iterator->hasNext()){
             auto content = iterator->next();
             if constexpr(ContainerContentType<K>::type==AbstractContainerAccess::PointerToQObject){
@@ -1356,6 +1389,10 @@ public:
         return AssociativeContainerContains<QMap, K, T>::function(env, container, key);
     }
 
+    bool contains(const void* container, const void* key) override {
+        return AssociativeContainerContains<QMap, K, T>::function(container, key);
+    }
+
     jint count(JNIEnv * env, const void* container, jobject key) override {
         return AssociativeContainerCountObject<QMap, K, T>::function(env, container, key);
     }
@@ -1412,12 +1449,20 @@ public:
         return AssociativeContainerSize<QMap, K, T>::function(env, container);
     }
 
+    qsizetype size(const void* container) override {
+        return AssociativeContainerSize<QMap, K, T>::function(container);
+    }
+
     jobject constUpperBound(JNIEnv * env, const ConstExtendedContainerInfo& container, jobject key) override {
         return AssociativeContainerUpperBound<QMap, K, T>::function(env, container, key);
     }
 
     jobject value(JNIEnv * env, const void* container, jobject key, jobject defaultValue) override {
         return AssociativeContainerValue<QMap, K, T>::function(env, container, key, defaultValue);
+    }
+
+    const void* value(const void* container, const void* key, const void* defaultValue) override {
+        return AssociativeContainerValue<QMap, K, T>::function(container, key, defaultValue);
     }
 
     ContainerAndAccessInfo values(JNIEnv * env, const ConstContainerInfo& container) override {
@@ -1478,6 +1523,88 @@ public:
             Super::addNestedValueRC(env, container.object, valueType(), hasValueNestedPointers(), _value);
         }else{
             AssociativeContainerInsert<QMap, K, T>::function(env, container, key, _value);
+        }
+    }
+
+    void insert(void* container,const void* key,const void* _value) override {
+        if constexpr((ContainerContentType<K>::type & AbstractContainerAccess::PointersMask)!=0
+                      && (ContainerContentType<T>::type & AbstractContainerAccess::PointersMask)!=0){
+            AssociativeContainerInsert<QMap, K, T>::function(container, key, _value);
+            if(JniEnvironment env{100}){
+                if(jobject object = QtJambiAPI::findObject(env, container)){
+                    if(jobject _key = QtJambiAPI::findObject(env, *reinterpret_cast<void*const*>(key))){
+                        if(jobject __value = QtJambiAPI::findObject(env, *reinterpret_cast<void*const*>(_value))){
+                            Super::putRC(env, object, _key, __value);
+                        }
+                    }
+                }
+            }
+        }else if constexpr((ContainerContentType<K>::type & AbstractContainerAccess::PointersMask)!=0){
+            if constexpr(ContainerContentType<T>::needsReferenceCounting){
+                AssociativeContainerInsert<QMap, K, T>::function(container, key, _value);
+                if(JniEnvironment env{100}){
+                    if(jobject object = QtJambiAPI::findObject(env, container)){
+                        if(jobject _key = QtJambiAPI::findObject(env, *reinterpret_cast<void*const*>(key))){
+                            Super::addNestedValueRC(env, object, keyType(), hasKeyNestedPointers(), _key);
+                        }
+                        if(jobject __value = QtJambiAPI::findObject(env, *reinterpret_cast<void*const*>(_value))){
+                            Super::addNestedValueRC(env, object, valueType(), hasValueNestedPointers(), __value);
+                        }
+                    }
+                }
+            }else{
+                AssociativeContainerInsert<QMap, K, T>::function(container, key, _value);
+                if(JniEnvironment env{100}){
+                    if(jobject object = QtJambiAPI::findObject(env, container)){
+                        if(jobject _key = QtJambiAPI::findObject(env, *reinterpret_cast<void*const*>(key))){
+                            Super::addUniqueRC(env, object, _key);
+                        }
+                    }
+                }
+            }
+        }else if constexpr((ContainerContentType<T>::type & AbstractContainerAccess::PointersMask)!=0){
+            if constexpr(ContainerContentType<T>::needsReferenceCounting){
+                AssociativeContainerInsert<QMap, K, T>::function(container, key, _value);
+                if(JniEnvironment env{100}){
+                    if(jobject object = QtJambiAPI::findObject(env, container)){
+                        if(jobject _key = QtJambiAPI::findObject(env, *reinterpret_cast<void*const*>(key))){
+                            if(jobject __value = QtJambiAPI::findObject(env, *reinterpret_cast<void*const*>(_value))){
+                                Super::addNestedValueRC(env, object, keyType(), hasKeyNestedPointers(), _key);
+                                Super::addNestedValueRC(env, object, valueType(), hasValueNestedPointers(), __value);
+                            }
+                        }
+                    }
+                }
+            }else{
+                const void* oldValue = value(container, key, nullptr);
+                AssociativeContainerInsert<QMap, K, T>::function(container, key, _value);
+                if(JniEnvironment env{100}){
+                    if(jobject object = QtJambiAPI::findObject(env, container)){
+                        if(oldValue){
+                            if(jobject __value = QtJambiAPI::findObject(env, *reinterpret_cast<void*const*>(oldValue))){
+                                Super::removeRC(env, object, __value);
+                            }
+                        }
+                        if(jobject __value = QtJambiAPI::findObject(env, *reinterpret_cast<void*const*>(_value))){
+                            Super::addRC(env, object, __value);
+                        }
+                    }
+                }
+            }
+        }else if constexpr(ContainerContentType<K>::needsReferenceCounting || ContainerContentType<T>::needsReferenceCounting){
+            AssociativeContainerInsert<QMap, K, T>::function(container, key, _value);
+            if(JniEnvironment env{100}){
+                if(jobject object = QtJambiAPI::findObject(env, container)){
+                    if(jobject _key = QtJambiAPI::findObject(env, *reinterpret_cast<void*const*>(key))){
+                        Super::addNestedValueRC(env, object, keyType(), hasKeyNestedPointers(), _key);
+                    }
+                    if(jobject __value = QtJambiAPI::findObject(env, *reinterpret_cast<void*const*>(_value))){
+                        Super::addNestedValueRC(env, object, valueType(), hasValueNestedPointers(), __value);
+                    }
+                }
+            }
+        }else{
+            AssociativeContainerInsert<QMap, K, T>::function(container, key, _value);
         }
     }
 
@@ -1542,15 +1669,24 @@ public:
         return result;
     }
 private:
+    template<bool _isConst>
     class KeyValueIterator : public AbstractMapAccess::KeyValueIterator{
+        using Container = std::conditional_t<_isConst, const QMap<K,T>, QMap<K,T>>;
+        using iterator = decltype(std::declval<Container>().begin());
+        QMapAccess<K,T>* m_access;
+        iterator current;
+        iterator end;
+        KeyValueIterator(const KeyValueIterator& other)
+            :m_access(other.m_access),
+            current(other.current),
+            end(other.end) {}
+    protected:
+        AbstractAssociativeAccess* access() override {return m_access;}
     public:
-        QMapAccess<K,T>* access;
-        typename QMap<K,T>::ConstIterator current;
-        typename QMap<K,T>::ConstIterator end;
-        KeyValueIterator(QMapAccess<K,T>* _access, const QMap<K,T>& container)
-            : access(_access),
-            current(container.constBegin()),
-            end(container.constEnd()) {}
+        KeyValueIterator(QMapAccess<K,T>* _access, Container& container)
+            : m_access(_access),
+            current(container.begin()),
+            end(container.end()) {}
         ~KeyValueIterator() override {};
         bool hasNext() override {return current!=end;};
         QPair<jobject,jobject> next(JNIEnv * env) override {
@@ -1563,10 +1699,36 @@ private:
             ++current;
             return result;
         }
+        bool isConst() override{
+            return _isConst;
+        }
+        QPair<const void*,const void*> constNext() override {
+            QPair<const void*,const void*> result{&current.key(), &current.value()};
+            ++current;
+            return result;
+        }
+        QPair<const void*,void*> mutableNext() override {
+            if constexpr(!_isConst){
+                QPair<const void*,void*> result{&current.key(), &current.value()};
+                ++current;
+                return result;
+            }else{
+                return {nullptr,nullptr};
+            }
+        }
+        bool operator==(const AbstractMapAccess::KeyValueIterator& other) const override {
+            return current==reinterpret_cast<const KeyValueIterator&>(other).current;
+        }
+        std::unique_ptr<AbstractAssociativeAccess::KeyValueIterator> clone() const override {
+            return std::unique_ptr<AbstractAssociativeAccess::KeyValueIterator>(new KeyValueIterator(*this));
+        }
     };
 public:
     std::unique_ptr<AbstractMapAccess::KeyValueIterator> keyValueIterator(const void* container) override {
-        return std::unique_ptr<AbstractMapAccess::KeyValueIterator>(new KeyValueIterator(this, *reinterpret_cast<const QMap<K,T>*>(container)));
+        return std::unique_ptr<AbstractMapAccess::KeyValueIterator>(new KeyValueIterator<true>(this, *reinterpret_cast<const QMap<K,T>*>(container)));
+    }
+    std::unique_ptr<AbstractMapAccess::KeyValueIterator> keyValueIterator(void* container) override {
+        return std::unique_ptr<AbstractMapAccess::KeyValueIterator>(new KeyValueIterator<false>(this, *reinterpret_cast<QMap<K,T>*>(container)));
     }
 };
 
@@ -1721,6 +1883,10 @@ public:
         return AssociativeContainerContains<QMultiMap, K, T>::function(env, container, key);
     }
 
+    bool contains(const void* container, const void* key) override {
+        return AssociativeContainerContains<QMultiMap, K, T>::function(container, key);
+    }
+
     jint count(JNIEnv * env, const void* container, jobject key) override {
         return AssociativeContainerCountObject<QMultiMap, K, T>::function(env, container, key);
     }
@@ -1780,6 +1946,10 @@ public:
         return AssociativeContainerSize<QMultiMap, K, T>::function(env, container);
     }
 
+    qsizetype size(const void* container) override {
+        return AssociativeContainerSize<QMultiMap, K, T>::function(container);
+    }
+
     ContainerAndAccessInfo uniqueKeys(JNIEnv * env, const ConstContainerInfo& container) override {
         return AssociativeContainerUniqueKeys<QMultiMap, K, T>::function(env, container);
     }
@@ -1794,6 +1964,10 @@ public:
 
     jobject value(JNIEnv * env, const void* container, jobject key, jobject defaultValue) override {
         return AssociativeContainerValue<QMultiMap, K, T>::function(env, container, key, defaultValue);
+    }
+
+    const void* value(const void* container, const void* key, const void* defaultValue) override {
+        return AssociativeContainerValue<QMultiMap, K, T>::function(container, key, defaultValue);
     }
 
     ContainerAndAccessInfo values(JNIEnv * env, const ConstContainerInfo& container) override {
@@ -1936,6 +2110,88 @@ public:
         }
     }
 
+    void insert(void* container,const void* key,const void* _value) override {
+        if constexpr((ContainerContentType<K>::type & AbstractContainerAccess::PointersMask)!=0
+                      && (ContainerContentType<T>::type & AbstractContainerAccess::PointersMask)!=0){
+            AssociativeContainerInsert<QMultiMap, K, T>::function(container, key, _value);
+            if(JniEnvironment env{100}){
+                if(jobject object = QtJambiAPI::findObject(env, container)){
+                    if(jobject _key = QtJambiAPI::findObject(env, *reinterpret_cast<void*const*>(key))){
+                        if(jobject __value = QtJambiAPI::findObject(env, *reinterpret_cast<void*const*>(_value))){
+                            Super::putRC(env, object, _key, __value);
+                        }
+                    }
+                }
+            }
+        }else if constexpr((ContainerContentType<K>::type & AbstractContainerAccess::PointersMask)!=0){
+            if constexpr(ContainerContentType<T>::needsReferenceCounting){
+                AssociativeContainerInsert<QMultiMap, K, T>::function(container, key, _value);
+                if(JniEnvironment env{100}){
+                    if(jobject object = QtJambiAPI::findObject(env, container)){
+                        if(jobject _key = QtJambiAPI::findObject(env, *reinterpret_cast<void*const*>(key))){
+                            Super::addNestedValueRC(env, object, keyType(), hasKeyNestedPointers(), _key);
+                        }
+                        if(jobject __value = QtJambiAPI::findObject(env, *reinterpret_cast<void*const*>(_value))){
+                            Super::addNestedValueRC(env, object, valueType(), hasValueNestedPointers(), __value);
+                        }
+                    }
+                }
+            }else{
+                AssociativeContainerInsert<QMultiMap, K, T>::function(container, key, _value);
+                if(JniEnvironment env{100}){
+                    if(jobject object = QtJambiAPI::findObject(env, container)){
+                        if(jobject _key = QtJambiAPI::findObject(env, *reinterpret_cast<void*const*>(key))){
+                            Super::addUniqueRC(env, object, _key);
+                        }
+                    }
+                }
+            }
+        }else if constexpr((ContainerContentType<T>::type & AbstractContainerAccess::PointersMask)!=0){
+            if constexpr(ContainerContentType<T>::needsReferenceCounting){
+                AssociativeContainerInsert<QMultiMap, K, T>::function(container, key, _value);
+                if(JniEnvironment env{100}){
+                    if(jobject object = QtJambiAPI::findObject(env, container)){
+                        if(jobject _key = QtJambiAPI::findObject(env, *reinterpret_cast<void*const*>(key))){
+                            if(jobject __value = QtJambiAPI::findObject(env, *reinterpret_cast<void*const*>(_value))){
+                                Super::addNestedValueRC(env, object, keyType(), hasKeyNestedPointers(), _key);
+                                Super::addNestedValueRC(env, object, valueType(), hasValueNestedPointers(), __value);
+                            }
+                        }
+                    }
+                }
+            }else{
+                const void* oldValue = value(container, key, nullptr);
+                AssociativeContainerInsert<QMultiMap, K, T>::function(container, key, _value);
+                if(JniEnvironment env{100}){
+                    if(jobject object = QtJambiAPI::findObject(env, container)){
+                        if(oldValue){
+                            if(jobject __value = QtJambiAPI::findObject(env, *reinterpret_cast<void*const*>(oldValue))){
+                                Super::removeRC(env, object, __value);
+                            }
+                        }
+                        if(jobject __value = QtJambiAPI::findObject(env, *reinterpret_cast<void*const*>(_value))){
+                            Super::addRC(env, object, __value);
+                        }
+                    }
+                }
+            }
+        }else if constexpr(ContainerContentType<K>::needsReferenceCounting || ContainerContentType<T>::needsReferenceCounting){
+            AssociativeContainerInsert<QMultiMap, K, T>::function(container, key, _value);
+            if(JniEnvironment env{100}){
+                if(jobject object = QtJambiAPI::findObject(env, container)){
+                    if(jobject _key = QtJambiAPI::findObject(env, *reinterpret_cast<void*const*>(key))){
+                        Super::addNestedValueRC(env, object, keyType(), hasKeyNestedPointers(), _key);
+                    }
+                    if(jobject __value = QtJambiAPI::findObject(env, *reinterpret_cast<void*const*>(_value))){
+                        Super::addNestedValueRC(env, object, valueType(), hasValueNestedPointers(), __value);
+                    }
+                }
+            }
+        }else{
+            AssociativeContainerInsert<QMultiMap, K, T>::function(container, key, _value);
+        }
+    }
+
     jint remove(JNIEnv * env, const ContainerInfo& container,jobject key) override {
         jint result;
         if constexpr((ContainerContentType<K>::type & AbstractContainerAccess::PointersMask)!=0
@@ -2004,15 +2260,24 @@ public:
         }
     }
 private:
+    template<bool _isConst>
     class KeyValueIterator : public AbstractMapAccess::KeyValueIterator{
+        using Container = std::conditional_t<_isConst, const QMultiMap<K,T>, QMultiMap<K,T>>;
+        using iterator = decltype(std::declval<Container>().begin());
+        QMultiMapAccess* m_access;
+        iterator current;
+        iterator end;
+        KeyValueIterator(const KeyValueIterator& other)
+            :m_access(other.m_access),
+            current(other.current),
+            end(other.end) {}
+    protected:
+        AbstractAssociativeAccess* access() override {return m_access;}
     public:
-        QMultiMapAccess* access;
-        typename QMultiMap<K,T>::ConstIterator current;
-        typename QMultiMap<K,T>::ConstIterator end;
-        KeyValueIterator(QMultiMapAccess* _access, const void* container)
-            : access(_access){
-            current = reinterpret_cast<const QMultiMap<K,T>*>(container)->constBegin();
-            end = reinterpret_cast<const QMultiMap<K,T>*>(container)->constEnd();
+        KeyValueIterator(QMultiMapAccess* _access, Container& container)
+            : m_access(_access){
+            current = container.begin();
+            end = container.end();
         }
         ~KeyValueIterator() override {};
         bool hasNext() override {return current!=end;};
@@ -2027,10 +2292,36 @@ private:
             ++current;
             return result;
         }
+        bool isConst() override{
+            return _isConst;
+        }
+        QPair<const void*,const void*> constNext() override {
+            QPair<const void*,const void*> result{&current.key(), &current.value()};
+            ++current;
+            return result;
+        }
+        QPair<const void*,void*> mutableNext() override {
+            if constexpr(!_isConst){
+                QPair<const void*,void*> result{&current.key(), &current.value()};
+                ++current;
+                return result;
+            }else{
+                return {nullptr,nullptr};
+            }
+        }
+        bool operator==(const AbstractMapAccess::KeyValueIterator& other) const override {
+            return current==reinterpret_cast<const KeyValueIterator&>(other).current;
+        }
+        std::unique_ptr<AbstractAssociativeAccess::KeyValueIterator> clone() const override {
+            return std::unique_ptr<AbstractAssociativeAccess::KeyValueIterator>(new KeyValueIterator(*this));
+        }
     };
 public:
     std::unique_ptr<AbstractMapAccess::KeyValueIterator> keyValueIterator(const void* container) override {
-        return std::unique_ptr<AbstractMapAccess::KeyValueIterator>(new KeyValueIterator(this, container));
+        return std::unique_ptr<AbstractMapAccess::KeyValueIterator>(new KeyValueIterator<true>(this, *reinterpret_cast<const QMultiMap<K,T>*>(container)));
+    }
+    std::unique_ptr<AbstractMapAccess::KeyValueIterator> keyValueIterator(void* container) override {
+        return std::unique_ptr<AbstractMapAccess::KeyValueIterator>(new KeyValueIterator<false>(this, *reinterpret_cast<QMultiMap<K,T>*>(container)));
     }
 };
 
@@ -2187,6 +2478,10 @@ public:
         return AssociativeContainerContains<QHash, K, T>::function(env, container, key);
     }
 
+    bool contains(const void* container, const void* key) override {
+        return AssociativeContainerContains<QHash, K, T>::function(container, key);
+    }
+
     jint count(JNIEnv * env, const void* container, jobject key) override {
         return AssociativeContainerCountObject<QHash, K, T>::function(env, container, key);
     }
@@ -2223,8 +2518,16 @@ public:
         return AssociativeContainerSize<QHash, K, T>::function(env, container);
     }
 
+    qsizetype size(const void* container) override {
+        return AssociativeContainerSize<QHash, K, T>::function(container);
+    }
+
     jobject value(JNIEnv * env, const void* container, jobject key, jobject defaultValue) override {
         return AssociativeContainerValue<QHash, K, T>::function(env, container, key, defaultValue);
+    }
+
+    const void* value(const void* container, const void* key, const void* defaultValue) override {
+        return AssociativeContainerValue<QHash, K, T>::function(container, key, defaultValue);
     }
 
     ContainerAndAccessInfo values(JNIEnv * env, const ConstContainerInfo& container) override {
@@ -2279,6 +2582,89 @@ public:
             AssociativeContainerInsert<QHash, K, T>::function(env, container, key, _value);
         }
     }
+
+    void insert(void* container,const void* key,const void* _value) override {
+        if constexpr((ContainerContentType<K>::type & AbstractContainerAccess::PointersMask)!=0
+                      && (ContainerContentType<T>::type & AbstractContainerAccess::PointersMask)!=0){
+            AssociativeContainerInsert<QHash, K, T>::function(container, key, _value);
+            if(JniEnvironment env{100}){
+                if(jobject object = QtJambiAPI::findObject(env, container)){
+                    if(jobject _key = QtJambiAPI::findObject(env, *reinterpret_cast<void*const*>(key))){
+                        if(jobject __value = QtJambiAPI::findObject(env, *reinterpret_cast<void*const*>(_value))){
+                            Super::putRC(env, object, _key, __value);
+                        }
+                    }
+                }
+            }
+        }else if constexpr((ContainerContentType<K>::type & AbstractContainerAccess::PointersMask)!=0){
+            if constexpr(ContainerContentType<T>::needsReferenceCounting){
+                AssociativeContainerInsert<QHash, K, T>::function(container, key, _value);
+                if(JniEnvironment env{100}){
+                    if(jobject object = QtJambiAPI::findObject(env, container)){
+                        if(jobject _key = QtJambiAPI::findObject(env, *reinterpret_cast<void*const*>(key))){
+                            Super::addNestedValueRC(env, object, keyType(), hasKeyNestedPointers(), _key);
+                        }
+                        if(jobject __value = QtJambiAPI::findObject(env, *reinterpret_cast<void*const*>(_value))){
+                            Super::addNestedValueRC(env, object, valueType(), hasValueNestedPointers(), __value);
+                        }
+                    }
+                }
+            }else{
+                AssociativeContainerInsert<QHash, K, T>::function(container, key, _value);
+                if(JniEnvironment env{100}){
+                    if(jobject object = QtJambiAPI::findObject(env, container)){
+                        if(jobject _key = QtJambiAPI::findObject(env, *reinterpret_cast<void*const*>(key))){
+                            Super::addUniqueRC(env, object, _key);
+                        }
+                    }
+                }
+            }
+        }else if constexpr((ContainerContentType<T>::type & AbstractContainerAccess::PointersMask)!=0){
+            if constexpr(ContainerContentType<T>::needsReferenceCounting){
+                AssociativeContainerInsert<QHash, K, T>::function(container, key, _value);
+                if(JniEnvironment env{100}){
+                    if(jobject object = QtJambiAPI::findObject(env, container)){
+                        if(jobject _key = QtJambiAPI::findObject(env, *reinterpret_cast<void*const*>(key))){
+                            if(jobject __value = QtJambiAPI::findObject(env, *reinterpret_cast<void*const*>(_value))){
+                                Super::addNestedValueRC(env, object, keyType(), hasKeyNestedPointers(), _key);
+                                Super::addNestedValueRC(env, object, valueType(), hasValueNestedPointers(), __value);
+                            }
+                        }
+                    }
+                }
+            }else{
+                const void* oldValue = value(container, key, nullptr);
+                AssociativeContainerInsert<QHash, K, T>::function(container, key, _value);
+                if(JniEnvironment env{100}){
+                    if(jobject object = QtJambiAPI::findObject(env, container)){
+                        if(oldValue){
+                            if(jobject __value = QtJambiAPI::findObject(env, *reinterpret_cast<void*const*>(oldValue))){
+                                Super::removeRC(env, object, __value);
+                            }
+                        }
+                        if(jobject __value = QtJambiAPI::findObject(env, *reinterpret_cast<void*const*>(_value))){
+                            Super::addRC(env, object, __value);
+                        }
+                    }
+                }
+            }
+        }else if constexpr(ContainerContentType<K>::needsReferenceCounting || ContainerContentType<T>::needsReferenceCounting){
+            AssociativeContainerInsert<QHash, K, T>::function(container, key, _value);
+            if(JniEnvironment env{100}){
+                if(jobject object = QtJambiAPI::findObject(env, container)){
+                    if(jobject _key = QtJambiAPI::findObject(env, *reinterpret_cast<void*const*>(key))){
+                        Super::addNestedValueRC(env, object, keyType(), hasKeyNestedPointers(), _key);
+                    }
+                    if(jobject __value = QtJambiAPI::findObject(env, *reinterpret_cast<void*const*>(_value))){
+                        Super::addNestedValueRC(env, object, valueType(), hasValueNestedPointers(), __value);
+                    }
+                }
+            }
+        }else{
+            AssociativeContainerInsert<QHash, K, T>::function(container, key, _value);
+        }
+    }
+
     jint remove(JNIEnv * env, const ContainerInfo& container,jobject key) override {
         jint result;
         if constexpr((ContainerContentType<K>::type & AbstractContainerAccess::PointersMask)!=0
@@ -2342,14 +2728,23 @@ public:
         AssociativeContainerReserve<QHash, K, T>::function(env, container, newSize);
     }
 private:
+    template<bool _isConst>
     class KeyValueIterator : public AbstractHashAccess::KeyValueIterator{
+        using Container = std::conditional_t<_isConst, const QHash<K,T>, QHash<K,T>>;
+        using iterator = decltype(std::declval<Container>().begin());
+        QHashAccess<K,T>* m_access;
+        iterator current;
+        iterator end;
+        KeyValueIterator(const KeyValueIterator& other)
+            :m_access(other.m_access),
+            current(other.current),
+            end(other.end) {}
+    protected:
+        AbstractAssociativeAccess* access() override {return m_access;}
     public:
-        QHashAccess<K,T>* access;
-        typename QHash<K,T>::ConstIterator current;
-        typename QHash<K,T>::ConstIterator end;
-        KeyValueIterator(QHashAccess<K,T>* _access, const QHash<K,T>& container)
-            : access(_access), current(container.constBegin()),
-              end(container.constEnd()) {}
+        KeyValueIterator(QHashAccess<K,T>* _access, Container& container)
+            : m_access(_access), current(container.begin()),
+              end(container.end()) {}
         ~KeyValueIterator() override {};
         bool hasNext() override {return current!=end;};
         QPair<jobject,jobject> next(JNIEnv * env) override {
@@ -2362,10 +2757,36 @@ private:
             ++current;
             return result;
         }
+        bool isConst() override{
+            return _isConst;
+        }
+        QPair<const void*,const void*> constNext() override {
+            QPair<const void*,const void*> result{&current.key(), &current.value()};
+            ++current;
+            return result;
+        }
+        QPair<const void*,void*> mutableNext() override {
+            if constexpr(!_isConst){
+                QPair<const void*,void*> result{&current.key(), &current.value()};
+                ++current;
+                return result;
+            }else{
+                return {nullptr,nullptr};
+            }
+        }
+        bool operator==(const AbstractMapAccess::KeyValueIterator& other) const override {
+            return current==reinterpret_cast<const KeyValueIterator&>(other).current;
+        }
+        std::unique_ptr<AbstractAssociativeAccess::KeyValueIterator> clone() const override {
+            return std::unique_ptr<AbstractAssociativeAccess::KeyValueIterator>(new KeyValueIterator(*this));
+        }
     };
 public:
     std::unique_ptr<AbstractHashAccess::KeyValueIterator> keyValueIterator(const void* container) override {
-        return std::unique_ptr<AbstractHashAccess::KeyValueIterator>(new KeyValueIterator(this, *reinterpret_cast<const QHash<K,T>*>(container)));
+        return std::unique_ptr<AbstractHashAccess::KeyValueIterator>(new KeyValueIterator<true>(this, *reinterpret_cast<const QHash<K,T>*>(container)));
+    }
+    std::unique_ptr<AbstractHashAccess::KeyValueIterator> keyValueIterator(void* container) override {
+        return std::unique_ptr<AbstractHashAccess::KeyValueIterator>(new KeyValueIterator<false>(this, *reinterpret_cast<QHash<K,T>*>(container)));
     }
  };
 
@@ -2517,6 +2938,9 @@ public:
     jboolean contains(JNIEnv * env, const void* container, jobject key) override {
         return AssociativeContainerContains<QMultiHash, K, T>::function(env, container, key);
     }
+    bool contains(const void* container, const void* key) override {
+        return AssociativeContainerContains<QMultiHash, K, T>::function(container, key);
+    }
     jint count(JNIEnv * env, const void* container, jobject key) override {
         return AssociativeContainerCountObject<QMultiHash, K, T>::function(env, container, key);
     }
@@ -2550,6 +2974,9 @@ public:
     jint size(JNIEnv * env, const void* container) override {
         return AssociativeContainerSize<QMultiHash, K, T>::function(env, container);
     }
+    qsizetype size(const void* container) override {
+        return AssociativeContainerSize<QMultiHash, K, T>::function(container);
+    }
     ContainerAndAccessInfo uniqueKeys(JNIEnv * env, const ConstContainerInfo& container) override {
         return AssociativeContainerUniqueKeys<QMultiHash, K, T>::function(env, container);
     }
@@ -2558,6 +2985,10 @@ public:
     }
     jobject value(JNIEnv * env, const void* container, jobject key, jobject defaultValue) override {
         return AssociativeContainerValue<QMultiHash, K, T>::function(env, container, key, defaultValue);
+    }
+
+    const void* value(const void* container, const void* key, const void* defaultValue) override {
+        return AssociativeContainerValue<QMultiHash, K, T>::function(container, key, defaultValue);
     }
     ContainerAndAccessInfo values(JNIEnv * env, const ConstContainerInfo& container) override {
         return AssociativeContainerValues<QMultiHash, K, T>::function(env, container);
@@ -2619,6 +3050,89 @@ public:
             AssociativeContainerInsert<QMultiHash, K, T>::function(env, container, key, _value);
         }
     }
+
+    void insert(void* container,const void* key,const void* _value) override {
+        if constexpr((ContainerContentType<K>::type & AbstractContainerAccess::PointersMask)!=0
+                      && (ContainerContentType<T>::type & AbstractContainerAccess::PointersMask)!=0){
+            AssociativeContainerInsert<QMultiHash, K, T>::function(container, key, _value);
+            if(JniEnvironment env{100}){
+                if(jobject object = QtJambiAPI::findObject(env, container)){
+                    if(jobject _key = QtJambiAPI::findObject(env, *reinterpret_cast<void*const*>(key))){
+                        if(jobject __value = QtJambiAPI::findObject(env, *reinterpret_cast<void*const*>(_value))){
+                            Super::putRC(env, object, _key, __value);
+                        }
+                    }
+                }
+            }
+        }else if constexpr((ContainerContentType<K>::type & AbstractContainerAccess::PointersMask)!=0){
+            if constexpr(ContainerContentType<T>::needsReferenceCounting){
+                AssociativeContainerInsert<QMultiHash, K, T>::function(container, key, _value);
+                if(JniEnvironment env{100}){
+                    if(jobject object = QtJambiAPI::findObject(env, container)){
+                        if(jobject _key = QtJambiAPI::findObject(env, *reinterpret_cast<void*const*>(key))){
+                            Super::addNestedValueRC(env, object, keyType(), hasKeyNestedPointers(), _key);
+                        }
+                        if(jobject __value = QtJambiAPI::findObject(env, *reinterpret_cast<void*const*>(_value))){
+                            Super::addNestedValueRC(env, object, valueType(), hasValueNestedPointers(), __value);
+                        }
+                    }
+                }
+            }else{
+                AssociativeContainerInsert<QMultiHash, K, T>::function(container, key, _value);
+                if(JniEnvironment env{100}){
+                    if(jobject object = QtJambiAPI::findObject(env, container)){
+                        if(jobject _key = QtJambiAPI::findObject(env, *reinterpret_cast<void*const*>(key))){
+                            Super::addUniqueRC(env, object, _key);
+                        }
+                    }
+                }
+            }
+        }else if constexpr((ContainerContentType<T>::type & AbstractContainerAccess::PointersMask)!=0){
+            if constexpr(ContainerContentType<T>::needsReferenceCounting){
+                AssociativeContainerInsert<QMultiHash, K, T>::function(container, key, _value);
+                if(JniEnvironment env{100}){
+                    if(jobject object = QtJambiAPI::findObject(env, container)){
+                        if(jobject _key = QtJambiAPI::findObject(env, *reinterpret_cast<void*const*>(key))){
+                            if(jobject __value = QtJambiAPI::findObject(env, *reinterpret_cast<void*const*>(_value))){
+                                Super::addNestedValueRC(env, object, keyType(), hasKeyNestedPointers(), _key);
+                                Super::addNestedValueRC(env, object, valueType(), hasValueNestedPointers(), __value);
+                            }
+                        }
+                    }
+                }
+            }else{
+                const void* oldValue = value(container, key, nullptr);
+                AssociativeContainerInsert<QMultiHash, K, T>::function(container, key, _value);
+                if(JniEnvironment env{100}){
+                    if(jobject object = QtJambiAPI::findObject(env, container)){
+                        if(oldValue){
+                            if(jobject __value = QtJambiAPI::findObject(env, *reinterpret_cast<void*const*>(oldValue))){
+                                Super::removeRC(env, object, __value);
+                            }
+                        }
+                        if(jobject __value = QtJambiAPI::findObject(env, *reinterpret_cast<void*const*>(_value))){
+                            Super::addRC(env, object, __value);
+                        }
+                    }
+                }
+            }
+        }else if constexpr(ContainerContentType<K>::needsReferenceCounting || ContainerContentType<T>::needsReferenceCounting){
+            AssociativeContainerInsert<QMultiHash, K, T>::function(container, key, _value);
+            if(JniEnvironment env{100}){
+                if(jobject object = QtJambiAPI::findObject(env, container)){
+                    if(jobject _key = QtJambiAPI::findObject(env, *reinterpret_cast<void*const*>(key))){
+                        Super::addNestedValueRC(env, object, keyType(), hasKeyNestedPointers(), _key);
+                    }
+                    if(jobject __value = QtJambiAPI::findObject(env, *reinterpret_cast<void*const*>(_value))){
+                        Super::addNestedValueRC(env, object, valueType(), hasValueNestedPointers(), __value);
+                    }
+                }
+            }
+        }else{
+            AssociativeContainerInsert<QMultiHash, K, T>::function(container, key, _value);
+        }
+    }
+
     jint remove(JNIEnv * env, const ContainerInfo& container,jobject key) override {
         jint result;
         if constexpr((ContainerContentType<K>::type & AbstractContainerAccess::PointersMask)!=0
@@ -2750,15 +3264,25 @@ public:
         }
     }
 private:
+    template<bool _isConst>
     class KeyValueIterator : public AbstractHashAccess::KeyValueIterator{
+        using Container = std::conditional_t<_isConst, const QMultiHash<K,T>, QMultiHash<K,T>>;
+        using iterator = decltype(std::declval<Container>().begin());
+        QMultiHashAccess* m_access;
+        iterator current;
+        iterator end;
+        KeyValueIterator(const KeyValueIterator& other)
+            :m_access(other.m_access),
+            current(other.current),
+            end(other.end) {}
+    protected:
+        AbstractAssociativeAccess* access() override {return m_access;}
     public:
-        QMultiHashAccess* access;
-        typename QMultiHash<K,T>::ConstIterator current;
-        typename QMultiHash<K,T>::ConstIterator end;
-        KeyValueIterator(QMultiHashAccess* _access, const void* container)
-            : access(_access){
-            current = reinterpret_cast<const QMultiHash<K,T>*>(container)->constBegin();
-            end = reinterpret_cast<const QMultiHash<K,T>*>(container)->constEnd();
+        KeyValueIterator(QMultiHashAccess* _access, Container& container)
+            : m_access(_access),
+              current(container.begin()),
+              end(container.end())
+        {
         }
         bool hasNext() override {return current!=end;};
             QPair<jobject,jobject> next(JNIEnv * env) override {
@@ -2772,10 +3296,36 @@ private:
             ++current;
             return result;
         }
+        bool isConst() override{
+            return _isConst;
+        }
+        QPair<const void*,const void*> constNext() override {
+            QPair<const void*,const void*> result{&current.key(), &current.value()};
+            ++current;
+            return result;
+        }
+        QPair<const void*,void*> mutableNext() override {
+            if constexpr(!_isConst){
+                QPair<const void*,void*> result{&current.key(), &current.value()};
+                ++current;
+                return result;
+            }else{
+                return {nullptr,nullptr};
+            }
+        }
+        bool operator==(const AbstractMapAccess::KeyValueIterator& other) const override {
+            return current==reinterpret_cast<const KeyValueIterator&>(other).current;
+        }
+        std::unique_ptr<AbstractAssociativeAccess::KeyValueIterator> clone() const override {
+            return std::unique_ptr<AbstractAssociativeAccess::KeyValueIterator>(new KeyValueIterator(*this));
+        }
     };
 public:
     std::unique_ptr<AbstractHashAccess::KeyValueIterator> keyValueIterator(const void* container) override {
-        return std::unique_ptr<AbstractHashAccess::KeyValueIterator>(new KeyValueIterator(this, container));
+        return std::unique_ptr<AbstractHashAccess::KeyValueIterator>(new KeyValueIterator<true>(this, *reinterpret_cast<const QMultiHash<K,T>*>(container)));
+    }
+    std::unique_ptr<AbstractHashAccess::KeyValueIterator> keyValueIterator(void* container) override {
+        return std::unique_ptr<AbstractHashAccess::KeyValueIterator>(new KeyValueIterator<false>(this, *reinterpret_cast<QMultiHash<K,T>*>(container)));
     }
 };
 
@@ -2895,6 +3445,215 @@ public:
     QPair<const void*,const void*> elements(const void* container) override {
         const QPair<K,T> *pair = static_cast<const QPair<K,T> *>(container);
         return {ContainerContentDeref<K>::deref(pair->first), ContainerContentDeref<T>::deref(pair->second)};
+    }
+private:
+    template<bool _isConst>
+    class KeyValueIterator : public AbstractHashAccess::KeyValueIterator{
+        using Container = std::conditional_t<_isConst, const QPair<K,T>, QPair<K,T>>;
+        QPairAccess* m_access;
+        Container* container;
+        KeyValueIterator(const KeyValueIterator& other)
+            :m_access(other.m_access),
+            container(other.container) {}
+    protected:
+        AbstractAssociativeAccess* access() override {return nullptr;}
+    public:
+        KeyValueIterator(QPairAccess* _access, Container& container)
+            : m_access(_access),
+            container(&container)
+        {
+        }
+        const QMetaType& keyMetaType() override {return m_access->firstMetaType();}
+        const QMetaType& valueMetaType() override {return m_access->secondMetaType();}
+        DataType keyType() override {return m_access->firstType();}
+        DataType valueType() override {return m_access->secondType();}
+        AbstractContainerAccess* keyNestedContainerAccess() override {return m_access->firstNestedContainerAccess();}
+        AbstractContainerAccess* valueNestedContainerAccess() override {return m_access->secondNestedContainerAccess();}
+        bool hasKeyNestedContainerAccess() override {return m_access->hasFirstNestedContainerAccess();}
+        bool hasValueNestedContainerAccess() override {return m_access->hasSecondNestedContainerAccess();}
+        bool hasKeyNestedPointers() override {return m_access->hasFirstNestedPointers();}
+        bool hasValueNestedPointers() override {return m_access->hasSecondNestedPointers();}
+        bool hasNext() override {return container;};
+        QPair<jobject,jobject> next(JNIEnv * env) override {
+            QPair<jobject,jobject> result;
+            if(container){
+                result.first = m_access->first(env, container);
+                result.second = m_access->second(env, container);
+                container = nullptr;
+            }
+            return result;
+        }
+        QPair<const void*,const void*> next() override {
+            QPair<const void*,const void*> result;
+            if(container){
+                result.first = ContainerContentDeref<K>::deref(container->first);
+                result.second = ContainerContentDeref<T>::deref(container->second);
+                container = nullptr;
+            }
+            return result;
+        }
+        bool isConst() override{
+            return _isConst;
+        }
+        QPair<const void*,const void*> constNext() override {
+            QPair<const void*,const void*> result;
+            if(container){
+                result.first = &container->first;
+                result.second = &container->second;
+                container = nullptr;
+            }
+            return result;
+        }
+        QPair<const void*,void*> mutableNext() override {
+            if constexpr(!_isConst){
+                QPair<const void*,void*> result;
+                if(container){
+                    result.first = &container->first;
+                    result.second = &container->second;
+                    container = nullptr;
+                }
+                return result;
+            }else{
+                return {nullptr,nullptr};
+            }
+        }
+        bool operator==(const AbstractMapAccess::KeyValueIterator& other) const override {
+            return container==reinterpret_cast<const KeyValueIterator&>(other).container;
+        }
+        std::unique_ptr<AbstractAssociativeAccess::KeyValueIterator> clone() const override {
+            return std::unique_ptr<AbstractAssociativeAccess::KeyValueIterator>(new KeyValueIterator(*this));
+        }
+    };
+public:
+    std::unique_ptr<AbstractHashAccess::KeyValueIterator> keyValueIterator(const void* container) override {
+        return std::unique_ptr<AbstractHashAccess::KeyValueIterator>(new KeyValueIterator<true>(this, *reinterpret_cast<const QPair<K,T>*>(container)));
+    }
+    std::unique_ptr<AbstractHashAccess::KeyValueIterator> keyValueIterator(void* container) override {
+        return std::unique_ptr<AbstractHashAccess::KeyValueIterator>(new KeyValueIterator<false>(this, *reinterpret_cast<QPair<K,T>*>(container)));
+    }
+private:
+    template<bool is_const>
+    class ElementIterator : public AbstractSpanAccess::ElementIterator{
+        using Container = std::conditional_t<is_const, const QPair<K,T>, QPair<K,T>>;
+        QPairAccess* m_access;
+        Container* container;
+        uint index = 0;
+        ElementIterator(const ElementIterator& other)
+            :m_access(other.m_access),
+            container(other.container) {}
+    protected:
+        AbstractSequentialAccess* access() override { return nullptr; }
+    public:
+        ElementIterator(QPairAccess* _access, Container& container)
+            :m_access(_access),
+            container(&container) {}
+        ~ElementIterator() override {};
+        const QMetaType& elementMetaType() override {
+            switch(index){
+            case 0:
+                return m_access->firstMetaType();
+            default:
+                return m_access->secondMetaType();
+            }
+        }
+        DataType elementType() override {
+            switch(index){
+            case 0:
+                return m_access->firstType();
+            default:
+                return m_access->secondType();
+            }
+        }
+        AbstractContainerAccess* elementNestedContainerAccess() override {
+            switch(index){
+            case 0:
+                return m_access->firstNestedContainerAccess();
+            case 1:
+                return m_access->secondNestedContainerAccess();
+            default:
+                return nullptr;
+            }
+        }
+        bool hasNestedContainerAccess() override {
+            return elementNestedContainerAccess();
+        }
+        bool hasNestedPointers() override {
+            switch(index){
+            case 0:
+                return m_access->hasFirstNestedPointers();
+            default:
+                return m_access->hasSecondNestedPointers();
+            }
+        }
+        bool hasNext() override {return index<2;};
+        jobject next(JNIEnv * env) override {
+            switch(index){
+            case 0:
+                ++index;
+                return m_access->first(env, container);
+            case 1:
+                ++index;
+                return m_access->second(env, container);
+            default:
+                return nullptr;
+            }
+        }
+        const void* next() override {
+            switch(index){
+            case 0:
+                ++index;
+                return ContainerContentDeref<K>::deref(container->first);
+            case 1:
+                ++index;
+                return ContainerContentDeref<T>::deref(container->second);
+            default:
+                return nullptr;
+            }
+        };
+        const void* constNext() override {
+            switch(index){
+            case 0:
+                ++index;
+                return &container->first;
+            case 1:
+                ++index;
+                return &container->second;
+            default:
+                return nullptr;
+            }
+        };
+        bool isConst() override{
+            return is_const;
+        }
+        void* mutableNext() override {
+            if constexpr(!is_const){
+                switch(index){
+                case 0:
+                    ++index;
+                    return &container->first;
+                case 1:
+                    ++index;
+                    return &container->second;
+                default:
+                    return nullptr;
+                }
+            }else{
+                return nullptr;
+            }
+        }
+        bool operator==(const AbstractSequentialAccess::ElementIterator& other) const override {
+            return container==reinterpret_cast<const ElementIterator&>(other).container && index==reinterpret_cast<const ElementIterator&>(other).index;
+        }
+        std::unique_ptr<AbstractSequentialAccess::ElementIterator> clone() const override {
+            return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(*this));
+        }
+    };
+public:
+    std::unique_ptr<AbstractSpanAccess::ElementIterator> elementIterator(const void* container) override {
+        return std::unique_ptr<AbstractSpanAccess::ElementIterator>(new ElementIterator<true>(this, *reinterpret_cast<const QPair<K,T>*>(container)));
+    }
+    std::unique_ptr<AbstractSpanAccess::ElementIterator> elementIterator(void* container) override {
+        return std::unique_ptr<AbstractSpanAccess::ElementIterator>(new ElementIterator<false>(this, *reinterpret_cast<QPair<K,T>*>(container)));
     }
 };
 

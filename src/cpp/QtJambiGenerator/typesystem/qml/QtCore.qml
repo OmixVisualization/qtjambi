@@ -2767,6 +2767,11 @@ Q_UNUSED(__qt_return_value)
         }
 
         EnumType{
+            name: "ContrastPreference"
+            since: [6, 10]
+        }
+
+        EnumType{
             name: "DockWidgetArea"
             RejectEnumValue{
                 name: "AllDockWidgetAreas"
@@ -4316,6 +4321,7 @@ private static native boolean isEnd(long __iter);
         Rejection{className: "sentinel"}
         EnumType{
             name: "IteratorFlag"
+            RejectEnumValue{name: "ExcludeSpecial"; since: [6,10]}
         }
         ObjectType{
             name: "DirEntry"
@@ -5723,6 +5729,31 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
             since: [5, 10]
         }
         ModifyFunction{
+            signature: "toString(qulonglong,int,char32_t) const"
+            remove: RemoveFlag.All
+            since: [6, 10]
+        }
+        ModifyFunction{
+            signature: "toString(long,int,char32_t) const"
+            remove: RemoveFlag.All
+            since: [6, 10]
+        }
+        ModifyFunction{
+            signature: "toString(ulong,int,char32_t) const"
+            remove: RemoveFlag.All
+            since: [6, 10]
+        }
+        ModifyFunction{
+            signature: "toString(ushort,int,char32_t) const"
+            remove: RemoveFlag.All
+            since: [6, 10]
+        }
+        ModifyFunction{
+            signature: "toString(uint,int,char32_t) const"
+            remove: RemoveFlag.All
+            since: [6, 10]
+        }
+        ModifyFunction{
             signature: "formattedDataSize(qint64, int, QLocale::DataSizeFormats)"
             remove: RemoveFlag.All
             since: [5, 12]
@@ -6348,6 +6379,26 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
         Rejection{
             className: "Iterator"
         }
+        Rejection{
+            functionName: "keyValueBegin"
+            since: "6.10"
+        }
+        Rejection{
+            functionName: "keyValueEnd"
+            since: "6.10"
+        }
+        Rejection{
+            functionName: "constKeyValueBegin"
+            since: "6.10"
+        }
+        Rejection{
+            functionName: "constKeyValueEnd"
+            since: "6.10"
+        }
+        Rejection{
+            functionName: "asKeyValueRange"
+            since: "6.10"
+        }
         ModifyFunction{
             signature: "erase(QCborMap::Iterator)"
             remove: RemoveFlag.All
@@ -6848,6 +6899,11 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
             until: [6, 3]
         }
         ModifyFunction{
+            signature: "append(QUtf8StringView)"
+            remove: RemoveFlag.All
+            since: [6, 10]
+        }
+        ModifyFunction{
             signature: "append(uint)"
             remove: RemoveFlag.All
         }
@@ -6862,6 +6918,20 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
         ModifyFunction{
             signature: "append(QByteArray)"
             noImplicitArguments: true
+            until: 6.9
+        }
+        ModifyFunction{
+            signature: "append<>(QByteArray)"
+            noImplicitArguments: true
+            since: [6,10]
+        }
+        ModifyFunction{
+            signature: "append(QByteArrayView)"
+            ModifyArgument{
+                index: 1
+                noImplicitCalls: true
+            }
+            since: [6,10]
         }
         ModifyFunction{
             signature: "appendTextString(const char *, qsizetype)"
@@ -7145,6 +7215,26 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
         name: "QJsonObject"
         Rejection{
             functionName: "empty"
+        }
+        Rejection{
+            functionName: "keyValueBegin"
+            since: "6.10"
+        }
+        Rejection{
+            functionName: "keyValueEnd"
+            since: "6.10"
+        }
+        Rejection{
+            functionName: "constKeyValueBegin"
+            since: "6.10"
+        }
+        Rejection{
+            functionName: "constKeyValueEnd"
+            since: "6.10"
+        }
+        Rejection{
+            functionName: "asKeyValueRange"
+            since: "6.10"
         }
         ModifyFunction{
             signature: "insert(QLatin1String,QJsonValue)"
@@ -8715,31 +8805,37 @@ if(destinationChildV<0)
             signature: "operator==(QByteArrayView,const char*)"
             remove: RemoveFlag.All
             since: 6.8
+            until: 6.9
         }
         ModifyFunction{
             signature: "operator!=(QByteArrayView,const char*)"
             remove: RemoveFlag.All
             since: 6.8
+            until: 6.9
         }
         ModifyFunction{
             signature: "operator<(QByteArrayView,const char*)"
             remove: RemoveFlag.All
             since: 6.8
+            until: 6.9
         }
         ModifyFunction{
             signature: "operator>(QByteArrayView,const char*)"
             remove: RemoveFlag.All
             since: 6.8
+            until: 6.9
         }
         ModifyFunction{
             signature: "operator<=(QByteArrayView,const char*)"
             remove: RemoveFlag.All
             since: 6.8
+            until: 6.9
         }
         ModifyFunction{
             signature: "operator>=(QByteArrayView,const char*)"
             remove: RemoveFlag.All
             since: 6.8
+            until: 6.9
         }
         ModifyFunction{
             signature: "operator==(QByteArrayView,char16_t)"
@@ -8946,11 +9042,6 @@ if(destinationChildV<0)
             until: 5
         }
         ModifyFunction{
-            signature: "operator<(QByteArray,const char*)"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
             signature: "operator==(QByteArray,std::nullptr_t)"
             access: Modification.Private
             since: 6
@@ -8970,7 +9061,13 @@ if(destinationChildV<0)
                     Text{content: "const QByteArrayView& %out = qtjambi_cast<const QByteArrayView&>(%env, %in);"}
                 }
             }
-            since: 6
+            Remove{
+                since: 6.8
+                until: 6.9
+            }
+            Remove{
+                until: 5
+            }
         }
         ModifyFunction{
             signature: "operator<(QByteArray,QByteArray)"
@@ -9278,6 +9375,7 @@ if(destinationChildV<0)
             }
             Remove{
                 since: 6.8
+                until: 6.9
             }
             since: 6
         }
@@ -9290,6 +9388,7 @@ if(destinationChildV<0)
                 }
             }
             since: 6.8
+            until: 6.9
         }
         ModifyFunction{
             signature: "operator!=(QByteArray,const char*)"
@@ -9302,24 +9401,22 @@ if(destinationChildV<0)
             until: 5
         }
         ModifyFunction{
-            signature: "operator<(QByteArray,const char*)"
-            remove: RemoveFlag.All
-            since: 6.8
-        }
-        ModifyFunction{
             signature: "operator>(QByteArray,const char*)"
             remove: RemoveFlag.All
             since: 6.8
+            until: 6.9
         }
         ModifyFunction{
             signature: "operator<=(QByteArray,const char*)"
             remove: RemoveFlag.All
             since: 6.8
+            until: 6.9
         }
         ModifyFunction{
             signature: "operator>=(QByteArray,const char*)"
             remove: RemoveFlag.All
             since: 6.8
+            until: 6.9
         }
         ModifyFunction{
             signature: "operator!=(const char*)"
@@ -16519,6 +16616,11 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
             }
         }
         ModifyFunction{
+            signature: "operator bool()const"
+            remove: RemoveFlag.All
+            since: "6.10"
+        }
+        ModifyFunction{
             signature: "operator<<(char)"
             remove: RemoveFlag.All
             since: 6
@@ -17608,6 +17710,11 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
         }
 
         EnumType{
+            name: "ContinuationType"
+            since: [6, 10]
+        }
+
+        EnumType{
             name: "State"
             extensible: true
         }
@@ -17645,6 +17752,7 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
                 ReplaceType{
                     modifiedType: "java.util.function.Consumer<QFutureInterfaceBase>"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     InsertTemplate{
@@ -17657,6 +17765,65 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
                 }
             }
             since: 6
+            until: 6.9
+        }
+        ModifyFunction{
+            signature: "setContinuation(std::function<void(const QFutureInterfaceBase&)>,void*,QFutureInterfaceBase::ContinuationType)"
+            ModifyArgument{
+                index: 1
+                ReplaceType{
+                    modifiedType: "java.util.function.Consumer<QFutureInterfaceBase>"
+                }
+                NoNullPointer{}
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    InsertTemplate{
+                        name: "core.comsumer.function"
+                        Replace{
+                            from: "%TYPE"
+                            to: "const QFutureInterfaceBase &"
+                        }
+                    }
+                }
+            }
+            ModifyArgument{
+                index: 2
+                ReplaceType{
+                    modifiedType: "java.lang.@Nullable Object"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: String.raw`
+                        QVariant continuationFuture = qtjambi_cast<QVariant>(%env, %in);
+                        void *%out = nullptr;
+                        if (continuationFuture.isValid()) {
+                            Q_ASSERT(QLatin1StringView(continuationFuture.typeName())
+                                             .startsWith(QLatin1StringView("QFutureInterface")));
+                            const auto continuationPtr =
+                                    static_cast<const QFutureInterfaceBase *>(continuationFuture.constData());
+                            %out = CoreAPI::futurePrivate(continuationPtr);
+                        }
+                        `}
+                }
+            }
+            since: [6,10]
+        }
+        ModifyFunction{
+            signature: "setContinuation(const QObject*,std::function<void()>,QVariant,QFutureInterfaceBase::ContinuationType)"
+            ModifyArgument{
+                index: 2
+                ReplaceType{
+                    modifiedType: "java.lang.Runnable"
+                }
+                NoNullPointer{}
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    InsertTemplate{
+                        name: "core.runnable.function"
+                    }
+                }
+            }
+            since: [6,10]
         }
         ModifyFunction{
             signature: "setThreadPool(QThreadPool*)"
@@ -19899,6 +20066,11 @@ else`}
             remove: RemoveFlag.All
         }
         ModifyFunction{
+            signature: "fromRawData(const char16_t*,qsizetype)"
+            remove: RemoveFlag.All
+            until: [6, 10]
+        }
+        ModifyFunction{
             signature: "data() const"
             ModifyArgument{
                 index: 0
@@ -21376,6 +21548,11 @@ Enum entries for string comparison.
             }
         }
         ModifyFunction{
+            signature: "QFactoryLoader(QFactoryLoader)"
+            remove: RemoveFlag.All
+            since: [6,10]
+        }
+        ModifyFunction{
             signature: "QFactoryLoader(const char *, const QString &, Qt::CaseSensitivity)"
             ModifyArgument{
                 index: 1
@@ -21724,6 +21901,12 @@ Enum entries for string comparison.
                         Text{content: "%out = qtjambi_cast<jobject>(%env, QMetaType(%in));"}
                     }
                     comment: "meta type instance representing the class"
+                }
+                InjectCode{
+                    target: CodeClass.Java
+                    Text{content: String.raw`if(instantiations==null || instantiations.length==0){
+    instantiations = io.qt.internal.MetaTypeUtility.findSuperInstantiations(clazz);
+}`}
                 }
             }
             since: [5, 15]
@@ -22365,6 +22548,12 @@ Enum entries for string comparison.
                 index: 0
                 comment: "found meta type id"
             }
+            InjectCode{
+                target: CodeClass.Java
+                Text{content: String.raw`if(instantiations==null || instantiations.length==0){
+    instantiations = io.qt.internal.MetaTypeUtility.findSuperInstantiations(clazz);
+}`}
+            }
         }
     }
 
@@ -22395,6 +22584,12 @@ Enum entries for string comparison.
             ModifyArgument{
                 index: 0
                 comment: "found meta type id"
+            }
+            InjectCode{
+                target: CodeClass.Java
+                Text{content: String.raw`if(instantiations==null || instantiations.length==0){
+    instantiations = io.qt.internal.MetaTypeUtility.findSuperInstantiations(clazz);
+}`}
             }
         }
     }
@@ -23004,6 +23199,9 @@ else
                                         || clazz==QScopedPointer.class
                                         || clazz==QScopedArrayPointer.class)
                                     throw new IllegalArgumentException("Cannot convert variant to smart pointer class "+clazz.getSimpleName());
+                        if(instantiations==null || instantiations.length==0){
+                            instantiations = io.qt.internal.MetaTypeUtility.findSuperInstantiations(clazz);
+                        }
                         `}
                 }
             }
@@ -26769,6 +26967,211 @@ static FilterResetter resetter(%0);
         remove: RemoveFlag.All
     }
 
+    ObjectType{
+        name: "QRangeModel"
+        ExtraIncludes{
+            Include{
+                fileName: "range_p.h"
+                location: Include.Local
+            }
+        }
+        Rejection{
+            className: "MultiColumn"
+            since: [6,10]
+        }
+        InjectCode{
+            target: CodeClass.ShellDeclaration
+            Text{
+                content: "public:\n    using QRangeModel::QRangeModel;"
+            }
+        }
+        InjectCode{
+            target: CodeClass.Native
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class QRangeModel_cpp__"
+                quoteBeforeLine: "}// class"
+            }
+        }
+        InjectCode{
+            target: CodeClass.Java
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class QRangeModel__"
+                quoteBeforeLine: "}// class"
+            }
+        }
+        ModifyFunction{
+            signature: "QRangeModel<Range,true>(Range&&,QObject*)"
+            Instantiation{
+                Argument{
+                    type: "QSpan<QVariant>"
+                    isImplicit: true
+                }
+                AddTypeParameter{
+                    name: "T"
+                }
+                AddArgument{
+                    type: "boolean"
+                    name: "asSingleColumn"
+                    defaultExpression: "false"
+                    index: 2
+                }
+                ModifyArgument{
+                    index: 1
+                    replaceType: "io.qt.core.QSpan<T>"
+                    NoNullPointer{}
+                    ReferenceCount{
+                        action: ReferenceCount.Set
+                        variableName: "__rcRange"
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`QSpan<QVariant>* %out{nullptr};`}
+                    }
+                }
+                ModifyArgument{
+                    index: 2
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+QObject* %out = qtjambi_cast<QObject*>(%env, %in);
+QtJambiAPI::checkThreadOnParent(%env, %out);
+if(initializeModelBySpanPointer(__qtjambi_ptr, %env, __jni_object, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, %1, false, asSingleColumn, %out))
+    return;
+ContainerAPI::getAsQSpan(%env, %1, QMetaType::fromType<QVariant>(), *reinterpret_cast<void**>(&__qt_%1));
+                            `}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Native
+                    position: Position.End
+                    Text{content: String.raw`Q_UNUSED(asSingleColumn)`}
+                }
+                noImplicitArguments: true
+            }
+            Instantiation{
+                Argument{
+                    type: "QSpan<const QVariant>"
+                    isImplicit: true
+                }
+                AddTypeParameter{
+                    name: "T"
+                }
+                AddArgument{
+                    type: "boolean"
+                    name: "asSingleColumn"
+                    defaultExpression: "false"
+                    index: 2
+                }
+                ModifyArgument{
+                    index: 1
+                    replaceType: "io.qt.core.QConstSpan<T>"
+                    NoNullPointer{}
+                    ReferenceCount{
+                        action: ReferenceCount.Set
+                        variableName: "__rcRange"
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`QSpan<const QVariant>* %out{nullptr};`}
+                    }
+                }
+                ModifyArgument{
+                    index: 2
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+QObject* %out = qtjambi_cast<QObject*>(%env, %in);
+QtJambiAPI::checkThreadOnParent(%env, %out);
+if(initializeModelBySpanPointer(__qtjambi_ptr, %env, __jni_object, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, %1, true, asSingleColumn, %out))
+    return;
+ContainerAPI::getAsQSpan(%env, %1, QMetaType::fromType<QVariant>(), *reinterpret_cast<void**>(&__qt_%1));
+                            `}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Native
+                    position: Position.End
+                    Text{content: String.raw`Q_UNUSED(asSingleColumn)`}
+                }
+                noImplicitArguments: true
+            }
+            Instantiation{
+                Argument{
+                    type: "QList<QVariant>"
+                    isImplicit: true
+                }
+                AddTypeParameter{
+                    name: "T"
+                }
+                AddArgument{
+                    type: "boolean"
+                    name: "asSingleColumn"
+                    defaultExpression: "false"
+                    index: 2
+                }
+                ModifyArgument{
+                    index: 1
+                    replaceType: "io.qt.core.QList<T>"
+                    NoNullPointer{}
+                    ReferenceCount{
+                        action: ReferenceCount.Set
+                        variableName: "__rcRange"
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`QList<QVariant> %out;`}
+                    }
+                }
+                ModifyArgument{
+                    index: 2
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+QObject* %out = qtjambi_cast<QObject*>(%env, %in);
+QtJambiAPI::checkThreadOnParent(%env, %out);
+if(initializeModelByListPointer(__qtjambi_ptr, %env, __jni_object, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, %1, asSingleColumn, %out))
+    return;
+__qt_%1 = qtjambi_cast<QList<QVariant>>(%env, %1);
+                            `}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Native
+                    position: Position.End
+                    Text{content: String.raw`Q_UNUSED(asSingleColumn)`}
+                }
+                noImplicitArguments: true
+            }
+        }
+        ModifyFunction{
+            signature: "QRangeModel<Range,Protocol,true>(Range&&,Protocol&&,QObject*)"
+            remove: RemoveFlag.All
+        }
+        since: [6,10]
+    }
+    Rejection{
+        className: "QGenericTableItemModelImpl"
+        since: [6,10]
+    }
+    Rejection{
+        className: "QGenericTreeItemModelImpl"
+        since: [6,10]
+    }
+    Rejection{
+        className: "QRangeModelImpl"
+        since: [6,10]
+    }
+    Rejection{
+        className: "QRangeModelImplBase"
+        since: [6,10]
+    }
+    Rejection{
+        className: "QThreadStorageTraits"
+        since: [6,10]
+    }
+
     SuppressedWarning{text: "WARNING(Preprocessor) :: No such file or directory: *"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'operator<<(char16_t)' for function modification in 'QDebug' not found.*"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'operator<<(char32_t)' for function modification in 'QDebug' not found.*"}
@@ -27032,4 +27435,5 @@ static FilterResetter resetter(%0);
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: template baseclass 'QtPrivate::ContextTypeForFunctor::ContextType<Functor>' of '' is not known"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: class '' inherits from unknown base class 'objc_object'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QDebug::operator<<<Ts...,true>(const std::tuple<Ts>&)*"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'QFactoryLoader(QFactoryLoader)' for function modification in 'QFactoryLoader' not found.*"}
 }

@@ -857,3 +857,375 @@ bool AutoPairAccess::hasOwnerFunction(){
         return true;
     return false;
 }
+
+std::unique_ptr<AbstractSequentialAccess::ElementIterator> AutoPairAccess::elementIterator(const void* container) {
+    class ElementIterator : public AbstractSequentialAccess::ElementIterator{
+        AutoPairAccess* m_access;
+        const void* container;
+        uint index = 0;
+        ElementIterator(const ElementIterator& other)
+            :m_access(other.m_access),
+            container(other.container) {}
+    protected:
+        AbstractSequentialAccess* access() override { return nullptr; }
+    public:
+        ElementIterator(AutoPairAccess* _access, const void* p)
+            : AbstractListAccess::ElementIterator(),
+            m_access(_access),
+            container(p)
+        {
+        }
+        const QMetaType& elementMetaType() override {
+            switch(index){
+            case 0:
+                return m_access->firstMetaType();
+            default:
+                return m_access->secondMetaType();
+            }
+        }
+        DataType elementType() override {
+            switch(index){
+            case 0:
+                return m_access->firstType();
+            default:
+                return m_access->secondType();
+            }
+        }
+        AbstractContainerAccess* elementNestedContainerAccess() override {
+            switch(index){
+            case 0:
+                return m_access->firstNestedContainerAccess();
+            case 1:
+                return m_access->secondNestedContainerAccess();
+            default:
+                return nullptr;
+            }
+        }
+        bool hasNestedContainerAccess() override {
+            return elementNestedContainerAccess();
+        }
+        bool hasNestedPointers() override {
+            switch(index){
+            case 0:
+                return m_access->hasFirstNestedPointers();
+            default:
+                return m_access->hasSecondNestedPointers();
+            }
+        }
+        bool hasNext() override {return index<2;};
+        bool isConst() override{
+            return true;
+        }
+        jobject next(JNIEnv * env) override{
+            switch(index){
+            case 0:
+                ++index;
+                return m_access->first(env, container);
+            case 1:
+                ++index;
+                return m_access->second(env, container);
+            default:
+                return nullptr;
+            }
+        }
+        const void* next() override {
+            if(elementType() & AbstractContainerAccess::PointersMask){
+                return *reinterpret_cast<void*const*>(constNext());
+            }else{
+                return constNext();
+            }
+        }
+        const void* constNext() override {
+            switch(index){
+            case 0:
+                ++index;
+                return container;
+            case 1:
+                ++index;
+                return reinterpret_cast<const char*>(container)+m_access->m_offset;
+            default:
+                return nullptr;
+            }
+        }
+        void* mutableNext() override {
+            return nullptr;
+        }
+        bool operator==(const AbstractSequentialAccess::ElementIterator& other) const override {
+            return container==reinterpret_cast<const ElementIterator&>(other).container && index==reinterpret_cast<const ElementIterator&>(other).index;
+        }
+        std::unique_ptr<AbstractSequentialAccess::ElementIterator> clone() const override {
+            return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(*this));
+        }
+    };
+    return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(this, container));
+}
+
+std::unique_ptr<AbstractSequentialAccess::ElementIterator> AutoPairAccess::elementIterator(void* container) {
+    class ElementIterator : public AbstractSequentialAccess::ElementIterator{
+        AutoPairAccess* m_access;
+        void* container;
+        uint index = 0;
+        ElementIterator(const ElementIterator& other)
+            :m_access(other.m_access),
+            container(other.container) {}
+    protected:
+        AbstractSequentialAccess* access() override { return nullptr; }
+    public:
+        ElementIterator(AutoPairAccess* _access, void* p)
+            : AbstractListAccess::ElementIterator(),
+            m_access(_access),
+            container(p)
+        {
+        }
+        const QMetaType& elementMetaType() override {
+            switch(index){
+            case 0:
+                return m_access->firstMetaType();
+            default:
+                return m_access->secondMetaType();
+            }
+        }
+        DataType elementType() override {
+            switch(index){
+            case 0:
+                return m_access->firstType();
+            default:
+                return m_access->secondType();
+            }
+        }
+        AbstractContainerAccess* elementNestedContainerAccess() override {
+            switch(index){
+            case 0:
+                return m_access->firstNestedContainerAccess();
+            case 1:
+                return m_access->secondNestedContainerAccess();
+            default:
+                return nullptr;
+            }
+        }
+        bool hasNestedContainerAccess() override {
+            return elementNestedContainerAccess();
+        }
+        bool hasNestedPointers() override {
+            switch(index){
+            case 0:
+                return m_access->hasFirstNestedPointers();
+            default:
+                return m_access->hasSecondNestedPointers();
+            }
+        }
+        bool hasNext() override {return index<2;};
+        bool isConst() override{
+            return false;
+        }
+        jobject next(JNIEnv * env) override{
+            switch(index){
+            case 0:
+                ++index;
+                return m_access->first(env, container);
+            case 1:
+                ++index;
+                return m_access->second(env, container);
+            default:
+                return nullptr;
+            }
+        }
+        const void* next() override {
+            if(elementType() & AbstractContainerAccess::PointersMask){
+                return *reinterpret_cast<void*const*>(constNext());
+            }else{
+                return constNext();
+            }
+        }
+        const void* constNext() override {
+            switch(index){
+            case 0:
+                ++index;
+                return container;
+            case 1:
+                ++index;
+                return reinterpret_cast<const char*>(container)+m_access->m_offset;
+            default:
+                return nullptr;
+            }
+        }
+        void* mutableNext() override {
+            switch(index){
+            case 0:
+                ++index;
+                return container;
+            case 1:
+                ++index;
+                return reinterpret_cast<char*>(container)+m_access->m_offset;
+            default:
+                return nullptr;
+            }
+        }
+        bool operator==(const AbstractSequentialAccess::ElementIterator& other) const override {
+            return container==reinterpret_cast<const ElementIterator&>(other).container && index==reinterpret_cast<const ElementIterator&>(other).index;
+        }
+        std::unique_ptr<AbstractSequentialAccess::ElementIterator> clone() const override {
+            return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(*this));
+        }
+    };
+    return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(this, container));
+}
+
+std::unique_ptr<AbstractHashAccess::KeyValueIterator> AutoPairAccess::keyValueIterator(void* container) {
+    class KeyValueIterator : public AbstractHashAccess::KeyValueIterator{
+        AutoPairAccess* m_access;
+        void* container;
+        KeyValueIterator(const KeyValueIterator& other)
+            :m_access(other.m_access),
+            container(other.container) {}
+    protected:
+        AbstractAssociativeAccess* access() override {return nullptr;}
+    public:
+        KeyValueIterator(AutoPairAccess* _access, void* _container)
+            :m_access(_access), container(_container)
+        {}
+        const QMetaType& keyMetaType() override {return m_access->firstMetaType();}
+        const QMetaType& valueMetaType() override {return m_access->secondMetaType();}
+        DataType keyType() override {return m_access->firstType();}
+        DataType valueType() override {return m_access->secondType();}
+        AbstractContainerAccess* keyNestedContainerAccess() override {return m_access->firstNestedContainerAccess();}
+        AbstractContainerAccess* valueNestedContainerAccess() override {return m_access->secondNestedContainerAccess();}
+        bool hasKeyNestedContainerAccess() override {return m_access->hasFirstNestedContainerAccess();}
+        bool hasValueNestedContainerAccess() override {return m_access->hasSecondNestedContainerAccess();}
+        bool hasKeyNestedPointers() override {return m_access->hasFirstNestedPointers();}
+        bool hasValueNestedPointers() override {return m_access->hasSecondNestedPointers();}
+        bool hasNext() override{
+            return container;
+        }
+        QPair<jobject,jobject> next(JNIEnv * env) override{
+            QPair<jobject,jobject> result;
+            if(container){
+                result.first = m_access->first(env, container);
+                result.second = m_access->second(env, container);
+                container = nullptr;
+            }
+            return result;
+        }
+        QPair<const void*,const void*> next() override {
+            if(container){
+                QPair<const void*,const void*> result = constNext();
+                if(keyType() & AbstractContainerAccess::PointersMask){
+                    result.first = *reinterpret_cast<void*const*>(result.first);
+                }
+                if(valueType() & AbstractContainerAccess::PointersMask){
+                    result.second = *reinterpret_cast<void*const*>(result.second);
+                }
+                return result;
+            }else{
+                return {nullptr, nullptr};
+            }
+        }
+        bool operator==(const AbstractMapAccess::KeyValueIterator& other) const override {
+            return container==reinterpret_cast<const KeyValueIterator&>(other).container;
+        }
+        std::unique_ptr<AbstractAssociativeAccess::KeyValueIterator> clone() const override {
+            return std::unique_ptr<AbstractAssociativeAccess::KeyValueIterator>(new KeyValueIterator(*this));
+        }
+        bool isConst() override{
+            return false;
+        }
+        QPair<const void*,const void*> constNext() override {
+            QPair<const void*,const void*> result;
+            if(container){
+                result.first = &container;
+                const char* snd = reinterpret_cast<const char*>(container);
+                result.second = &snd[m_access->m_offset];
+                container = nullptr;
+            }
+            return result;
+        }
+        QPair<const void*,void*> mutableNext() override {
+            QPair<const void*,void*> result;
+            if(container){
+                result.first = &container;
+                char* snd = reinterpret_cast<char*>(container);
+                result.second = &snd[m_access->m_offset];
+                container = nullptr;
+            }
+            return result;
+        }
+    };
+    return std::unique_ptr<AbstractHashAccess::KeyValueIterator>(new KeyValueIterator(this, container));
+}
+
+std::unique_ptr<AbstractHashAccess::KeyValueIterator> AutoPairAccess::keyValueIterator(const void* container) {
+    class KeyValueIterator : public AbstractHashAccess::KeyValueIterator{
+        AutoPairAccess* m_access;
+        const void* container;
+        KeyValueIterator(const KeyValueIterator& other)
+            :m_access(other.m_access),
+            container(other.container) {}
+    protected:
+        AbstractAssociativeAccess* access() override {return nullptr;}
+    public:
+        KeyValueIterator(AutoPairAccess* _access, const void* _container)
+            :m_access(_access), container(_container)
+        {}
+        const QMetaType& keyMetaType() override {return m_access->firstMetaType();}
+        const QMetaType& valueMetaType() override {return m_access->secondMetaType();}
+        DataType keyType() override {return m_access->firstType();}
+        DataType valueType() override {return m_access->secondType();}
+        AbstractContainerAccess* keyNestedContainerAccess() override {return m_access->firstNestedContainerAccess();}
+        AbstractContainerAccess* valueNestedContainerAccess() override {return m_access->secondNestedContainerAccess();}
+        bool hasKeyNestedContainerAccess() override {return m_access->hasFirstNestedContainerAccess();}
+        bool hasValueNestedContainerAccess() override {return m_access->hasSecondNestedContainerAccess();}
+        bool hasKeyNestedPointers() override {return m_access->hasFirstNestedPointers();}
+        bool hasValueNestedPointers() override {return m_access->hasSecondNestedPointers();}
+        bool hasNext() override{
+            return container;
+        }
+        QPair<jobject,jobject> next(JNIEnv * env) override{
+            QPair<jobject,jobject> result;
+            if(container){
+                result.first = m_access->first(env, container);
+                result.second = m_access->second(env, container);
+                container = nullptr;
+            }
+            return result;
+        }
+        QPair<const void*,const void*> next() override {
+            if(container){
+                QPair<const void*,const void*> result = constNext();
+                if(keyType() & AbstractContainerAccess::PointersMask){
+                    result.first = *reinterpret_cast<void*const*>(result.first);
+                }
+                if(valueType() & AbstractContainerAccess::PointersMask){
+                    result.second = *reinterpret_cast<void*const*>(result.second);
+                }
+                return result;
+            }else{
+                return {nullptr, nullptr};
+            }
+        }
+        bool operator==(const AbstractMapAccess::KeyValueIterator& other) const override {
+            return container==reinterpret_cast<const KeyValueIterator&>(other).container;
+        }
+        std::unique_ptr<AbstractAssociativeAccess::KeyValueIterator> clone() const override {
+            return std::unique_ptr<AbstractAssociativeAccess::KeyValueIterator>(new KeyValueIterator(*this));
+        }
+        bool isConst() override{
+            return true;
+        }
+        QPair<const void*,const void*> constNext() override {
+            QPair<const void*,const void*> result;
+            if(container){
+                result.first = &container;
+                const char* snd = reinterpret_cast<const char*>(container);
+                result.second = &snd[m_access->m_offset];
+                container = nullptr;
+            }
+            return result;
+        }
+        QPair<const void*,void*> mutableNext() override {
+            return {nullptr, nullptr};
+        }
+    };
+    return std::unique_ptr<AbstractHashAccess::KeyValueIterator>(new KeyValueIterator(this, container));
+}
+
+

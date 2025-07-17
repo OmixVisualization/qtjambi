@@ -1494,8 +1494,8 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
         }
         ModifyFunction{
             signature: "singletonInstance<T>(int)"
-            threadAffinity: true
             Instantiation{
+                threadAffinity: true
                 Argument{
                     type: "QJSValue"
                     isImplicit: false
@@ -1509,8 +1509,8 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
         }
         ModifyFunction{
             signature: "singletonInstance<T>(QAnyStringView,QAnyStringView)"
-            threadAffinity: true
             Instantiation{
+                threadAffinity: true
                 Argument{
                     type: "QJSValue"
                     isImplicit: false

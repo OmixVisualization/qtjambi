@@ -153,7 +153,7 @@ public class TestQmlThreadAffinity extends ApplicationInitializer{
 	}
 	
 	@Test
-    public void testQJSValue() throws Throwable{
+    public void testQQmlEngine() throws Throwable{
 		Throwable[] exn = {null};
 		QtQml.qmlClearTypeRegistrations();
 		QQmlEngine engine = new QQmlEngine();
@@ -161,17 +161,8 @@ public class TestQmlThreadAffinity extends ApplicationInitializer{
 			QQmlComponent component = new QQmlComponent(engine);
 			component.setData(new QByteArray("import QtQuick 2.0\n Item {property var array: [1,2,3,4,5]}"), (QUrl)null);
 			QObject object = component.create();
-			Object array = object.property("array");
-			Assert.assertTrue(array instanceof QJSValue);
-			QJSValue myObject = (QJSValue)array;
-			Assert.assertTrue(myObject.isArray());
 			Runnable r = ()->{
 				try {
-					try {
-						object.property("array");
-						Assert.fail("QThreadAffinityException expected to be thrown");
-					} catch (QThreadAffinityException e) {
-					}
 					try {
 						engine.evaluate("");
 						Assert.fail("QThreadAffinityException expected to be thrown");
@@ -218,11 +209,6 @@ public class TestQmlThreadAffinity extends ApplicationInitializer{
 					} catch (QThreadAffinityException e) {
 					}
 					try {
-						engine.singletonInstance(0);
-						Assert.fail("QThreadAffinityException expected to be thrown");
-					} catch (QThreadAffinityException e) {
-					}
-					try {
 						engine.throwError("");
 						Assert.fail("QThreadAffinityException expected to be thrown");
 					} catch (QThreadAffinityException e) {
@@ -232,7 +218,46 @@ public class TestQmlThreadAffinity extends ApplicationInitializer{
 						Assert.fail("QThreadAffinityException expected to be thrown");
 					} catch (QThreadAffinityException e) {
 					}
+					try {
+						engine.singletonInstance(0);
+						Assert.fail("QThreadAffinityException expected to be thrown");
+					} catch (QThreadAffinityException e) {
+					}
 					engine.collectGarbage();
+				}catch(Throwable e){
+					exn[0] = e;
+				}
+			};
+			QThread thread1 = QThread.create(r);
+			thread1.start();
+			thread1.join(5000);
+			if(exn[0]!=null)
+				throw exn[0];
+		}finally {
+			engine.dispose();
+		}
+	}
+	
+	@Test
+    public void testQJSValue() throws Throwable{
+		Throwable[] exn = {null};
+		QtQml.qmlClearTypeRegistrations();
+		QQmlEngine engine = new QQmlEngine();
+		try {
+			QQmlComponent component = new QQmlComponent(engine);
+			component.setData(new QByteArray("import QtQuick 2.0\n Item {property var array: [1,2,3,4,5]}"), (QUrl)null);
+			QObject object = component.create();
+			Object array = object.property("array");
+			Assert.assertTrue(array instanceof QJSValue);
+			QJSValue myObject = (QJSValue)array;
+			Assert.assertTrue(myObject.isArray());
+			Runnable r = ()->{
+				try {
+					try {
+						object.property("array");
+						Assert.fail("QThreadAffinityException expected to be thrown");
+					} catch (QThreadAffinityException e) {
+					}
 				}catch(Throwable e){
 					exn[0] = e;
 				}

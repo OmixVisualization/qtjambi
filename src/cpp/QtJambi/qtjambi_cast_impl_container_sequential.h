@@ -222,14 +222,14 @@ struct ContainerContentType{
 
 template<typename T, bool isPointer = (ContainerContentType<T>::type & AbstractContainerAccess::PointersMask)!=0>
 struct ContainerContentDeref{
-    static const void* deref(const T& value){
+    static auto deref(const T& value){
         return &value;
     }
 };
 
 template<typename T>
 struct ContainerContentDeref<T, true>{
-    static const void* deref(T value){
+    static auto deref(T value){
         return value;
     }
 };
@@ -270,6 +270,12 @@ struct ContainerAt{
         JavaException::raiseUnsupportedOperationException(env, "at(i)" QTJAMBI_STACKTRACEINFO );
         return nullptr;
     }
+    static const void* function(const void*, qsizetype) {
+        return nullptr;
+    }
+    static void* function(void*, qsizetype) {
+        return nullptr;
+    }
 };
 
 template<template<typename T> class Container, typename T>
@@ -277,6 +283,14 @@ struct ContainerAt<Container,T,true>{
     static jobject function(JNIEnv * env, const void* ptr, jint idx) {
         const Container<T> *container = static_cast<const Container<T> *>(ptr);
         return qtjambi_scoped_cast<false,jobject,const T>::cast(env, container->at(int(idx)), nullptr, nullptr);
+    }
+    static const void* function(const void* ptr, qsizetype idx) {
+        const Container<T> *container = static_cast<const Container<T> *>(ptr);
+        return &container->at(decltype(container->size())(idx));
+    }
+    static void* function(void* ptr, qsizetype idx) {
+        Container<T> *container = static_cast<Container<T> *>(ptr);
+        return &(*container)[decltype(container->size())(idx)];
     }
 };
 
@@ -582,6 +596,10 @@ struct ContainerSize{
         const Container<T> *container = static_cast<const Container<T> *>(ptr);
         return container->size();
     }
+    static qsizetype function(const void* ptr) {
+        const Container<T> *container = static_cast<const Container<T> *>(ptr);
+        return container->size();
+    }
 };
 
 template<template<typename T> class Container, typename T, bool = supports_equal<T>::value>
@@ -758,6 +776,8 @@ struct ContainerInsertN{
     static void function(JNIEnv * env, const ContainerInfo&, jint, jint, jobject) {
         JavaException::raiseUnsupportedOperationException(env, "insert(i,n,value)" QTJAMBI_STACKTRACEINFO );
     }
+    static void function(void*, qsizetype, qsizetype, const void*) {
+    }
 };
 
 template<template<typename T> class Container, typename T>
@@ -765,6 +785,10 @@ struct ContainerInsertN<Container, T, true>{
     static void function(JNIEnv * env, const ContainerInfo& ptr, jint i, jint n, jobject value) {
         Container<T> *container = static_cast<Container<T> *>(ptr.container);
         container->insert(i, n, qtjambi_scoped_cast<false,T,jobject>::cast(env, value, nullptr, nullptr));
+    }
+    static void function(void* ptr, qsizetype index, qsizetype n, const void* entry) {
+        Container<T> *container = static_cast<Container<T> *>(ptr);
+        container->insert(index, n, *reinterpret_cast<const T*>(entry));
     }
 };
 
@@ -866,6 +890,10 @@ struct ContainerRemoveAt{
         Container<T> *container = static_cast<Container<T> *>(ptr.container);
         container->removeAt(idx);
     }
+    static void function(void* ptr, qsizetype idx) {
+        Container<T> *container = static_cast<Container<T> *>(ptr);
+        container->removeAt(idx);
+    }
 };
 
 template<template<typename T> class Container, typename T, bool = is_default_constructible<T>::value>
@@ -889,6 +917,7 @@ struct ContainerRemoveN{
     static void function(JNIEnv * env, const ContainerInfo&, jint, jint) {
         JavaException::raiseUnsupportedOperationException(env, "remove(index,n)" QTJAMBI_STACKTRACEINFO );
     }
+    static void function(void*, qsizetype, qsizetype) {}
 };
 
 template<template<typename T> class Container, typename T>
@@ -896,6 +925,10 @@ struct ContainerRemoveN<Container, T, true>{
     static void function(JNIEnv * env, const ContainerInfo& ptr, jint idx, jint n) {
         Q_UNUSED(env)
         Container<T> *container = static_cast<Container<T> *>(ptr.container);
+        container->remove(idx, n);
+    }
+    static void function(void* ptr, qsizetype idx, qsizetype n) {
+        Container<T> *container = static_cast<Container<T> *>(ptr);
         container->remove(idx, n);
     }
 };
@@ -937,6 +970,7 @@ struct ContainerReplace{
     static void function(JNIEnv * env, const ContainerInfo&, jint,jobject) {
         JavaException::raiseUnsupportedOperationException(env, "replace(index,value)" QTJAMBI_STACKTRACEINFO );
     }
+    static void function(void*, qsizetype, const void*) {}
 };
 
 template<template<typename T> class Container, typename T>
@@ -944,6 +978,11 @@ struct ContainerReplace<Container, T, true>{
     static void function(JNIEnv * env, const ContainerInfo& ptr, jint idx,jobject newObject) {
         Container<T> *container = static_cast<Container<T> *>(ptr.container);
         container->replace(idx, qtjambi_scoped_cast<false,T,jobject>::cast(env, newObject, nullptr, nullptr));
+    }
+
+    static void function(void* ptr, qsizetype idx, const void* newObject) {
+        Container<T> *container = static_cast<Container<T> *>(ptr);
+        container->replace(idx, *reinterpret_cast<const T*>(newObject));
     }
 };
 
@@ -968,6 +1007,8 @@ struct ContainerResize{
     static void function(JNIEnv * env, const ContainerInfo&, jint) {
         JavaException::raiseUnsupportedOperationException(env, "resize(size)" QTJAMBI_STACKTRACEINFO );
     }
+    static void function(void*, qsizetype) {
+    }
 };
 
 template<template<typename T> class Container, typename T>
@@ -975,6 +1016,10 @@ struct ContainerResize<Container, T, true>{
     static void function(JNIEnv * env, const ContainerInfo& ptr, jint size) {
         Q_UNUSED(env)
         Container<T> *container = static_cast<Container<T> *>(ptr.container);
+        container->resize(size);
+    }
+    static void function(void* ptr, qsizetype size) {
+        Container<T> *container = static_cast<Container<T> *>(ptr);
         container->resize(size);
     }
 };
@@ -1025,7 +1070,7 @@ public:
         jobject set{nullptr};
         if constexpr(ContainerContentType<T>::type==AbstractContainerAccess::PointerToQObject){
             set = QtJambiAPI::newJavaArrayList(env);
-            auto iterator = _this->elementIterator(container.container);
+            auto iterator = _this->constElementIterator(container.container);
             while(iterator->hasNext()){
                 const void* content = iterator->next();
                 if(jobject obj = QtJambiAPI::findObject(env, reinterpret_cast<const QObject*>(content)))
@@ -1033,7 +1078,7 @@ public:
             }
         }else if constexpr(ContainerContentType<T>::type==AbstractContainerAccess::FunctionPointer){
             set = QtJambiAPI::newJavaArrayList(env);
-            auto iterator = _this->elementIterator(container.container);
+            auto iterator = _this->constElementIterator(container.container);
             while(iterator->hasNext()){
                 const void* content = iterator->next();
                 if(jobject obj = QtJambiAPI::findFunctionPointerObject(env, content, typeid(T)))
@@ -1041,7 +1086,7 @@ public:
             }
         }else if constexpr(ContainerContentType<T>::type==AbstractContainerAccess::Pointer){
             set = QtJambiAPI::newJavaArrayList(env);
-            auto iterator = _this->elementIterator(container.container);
+            auto iterator = _this->constElementIterator(container.container);
             while(iterator->hasNext()){
                 const void* content = iterator->next();
                 if(jobject obj = QtJambiAPI::findObject(env, content))
@@ -1050,7 +1095,7 @@ public:
         }else if constexpr(ContainerContentType<T>::isContainer && ContainerContentType<T>::needsReferenceCounting){
             set = QtJambiAPI::newJavaHashSet(env);
             if(AbstractContainerAccess* access = ContainerContentType<T>::accessFactory()){
-                auto iterator = _this->elementIterator(container.container);
+                auto iterator = _this->constElementIterator(container.container);
                 while(iterator->hasNext()){
                     AbstractReferenceCountingContainer::unfoldAndAddContainer(env, set, iterator->next(), ContainerContentType<T>::type, _this->elementMetaType(), access);
                 }
@@ -1074,7 +1119,7 @@ public:
         Super* _this = this;
         if constexpr(ContainerContentType<T>::isContainer){
             const QObject* owner = nullptr;
-            auto iter = _this->elementIterator(container);
+            auto iter = _this->constElementIterator(container);
             if(iter->hasNext()){
                 if(AbstractContainerAccess* elementNestedContainerAccess = ContainerContentType<T>::accessFactory()){
                     while(iter->hasNext()){
@@ -1090,7 +1135,7 @@ public:
         }else{
             PtrOwnerFunction ownerFunction = registeredOwnerFunction<T>();
             if(ownerFunction){
-                auto iter = _this->elementIterator(container);
+                auto iter = _this->constElementIterator(container);
                 while(iter->hasNext()){
                     const void* current = iter->next();
                     if(const QObject* owner = ownerFunction(current))
@@ -1204,6 +1249,21 @@ public:
 
     bool append(void* container, const void* entry) override{
         reinterpret_cast<QList<T> *>(container)->append(*reinterpret_cast<const T*>(entry));
+        if constexpr(ContainerContentType<T>::needsReferenceCounting){
+            if constexpr(ContainerContentType<T>::isContainer){
+                if(JniEnvironment env{100}){
+                    if(jobject object = QtJambiAPI::findObject(env, container))
+                        Super::updateRC(env, {object, container});
+                }
+            }else{
+                if(JniEnvironment env{100}){
+                    if(jobject object = QtJambiAPI::findObject(env, container)){
+                        if(jobject valueObj = QtJambiAPI::findObject(env, entry))
+                            Super::addRC(env, object, valueObj);
+                    }
+                }
+            }
+        }
         return true;
     }
 
@@ -1252,6 +1312,12 @@ public:
     }
     void assign(void* container, const void* other) override {
         (*reinterpret_cast<QList<T>*>(container)) = (*reinterpret_cast<const QList<T>*>(other));
+        if constexpr(ContainerContentType<T>::needsReferenceCounting){
+            if(JniEnvironment env{100}){
+                if(jobject object = QtJambiAPI::findObject(env, container))
+                    Super::updateRC(env, {object, container});
+            }
+        }
     }
     void assign(JNIEnv *env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override {
         (*reinterpret_cast<QList<T>*>(container.container)) = (*reinterpret_cast<const QList<T>*>(other.container));
@@ -1275,6 +1341,14 @@ public:
         return ContainerAt<QList, T>::function(env, container, index);
     }
 
+    const void* at(const void* container, qsizetype index) override {
+        return ContainerAt<QList, T>::function(container, index);
+    }
+
+    void* at(void* container, qsizetype index) override {
+        return ContainerAt<QList, T>::function(container, index);
+    }
+
     jobject value(JNIEnv * env, const void* container, jint index) override {
         return SequentialContainerValue<QList, T>::function(env, container, index);
     }
@@ -1289,6 +1363,10 @@ public:
 
     jint size(JNIEnv * env, const void* container) override {
         return ContainerSize<QList, T>::function(env, container);
+    }
+
+    qsizetype size(const void* container) override {
+        return ContainerSize<QList, T>::function(container);
     }
 
     jboolean equal(JNIEnv * env, const void* container, jobject other) override {
@@ -1317,6 +1395,10 @@ public:
 
     jboolean contains(JNIEnv * env, const void* container, jobject value) override {
         return ContainerContains<QList, T>::function(env, container, value);
+    }
+
+    bool contains(const void* container, const void* value) {
+        return ContainerContains<QList, T>::function(container, value);
     }
 
     jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) override {
@@ -1354,6 +1436,33 @@ public:
         ContainerReserve<QList, T>::function(env, container, size);
     }
 
+    void replace(void* container, qsizetype index, const void* value) override {
+        if constexpr(ContainerContentType<T>::needsReferenceCounting){
+            if constexpr(ContainerContentType<T>::isContainer){
+                ContainerReplace<QList, T>::function(container, index, value);
+                if(JniEnvironment env{100}){
+                    if(jobject object = QtJambiAPI::findObject(env, container))
+                        Super::updateRC(env, {object, container});
+                }
+            }else{
+                if(JniEnvironment env{100}){
+                    jobject oldValue = at(env, container, jint(index));
+                    ContainerReplace<QList, T>::function(container, index, value);
+                    if(jobject object = QtJambiAPI::findObject(env, container)){
+                        if(oldValue && !contains(env, container, oldValue))
+                            Super::removeRC(env, object, oldValue);
+                        if(jobject valueObj = QtJambiAPI::findObject(env, *reinterpret_cast<void*const*>(value)))
+                            Super::addRC(env, object, valueObj);
+                    }
+                }else{
+                    ContainerReplace<QList, T>::function(container, index, value);
+                }
+            }
+        }else{
+            ContainerReplace<QList, T>::function(container, index, value);
+        }
+    }
+
     void replace(JNIEnv * env, const ContainerInfo& container, jint index, jobject value) override {
         if constexpr(ContainerContentType<T>::needsReferenceCounting){
             if constexpr(ContainerContentType<T>::isContainer){
@@ -1369,6 +1478,62 @@ public:
             }
         }else{
             ContainerReplace<QList, T>::function(env, container, index, value);
+        }
+    }
+
+    void remove(void* container, qsizetype index, qsizetype n) override {
+        if constexpr(ContainerContentType<T>::needsReferenceCounting){
+            if constexpr(ContainerContentType<T>::isContainer){
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+                ContainerRemoveN<QList, T>::function(container, index, n);
+#else
+                Q_ASSERT(n==1);
+                ContainerRemoveAt<QList, T>::function(container, index);
+#endif
+                if(JniEnvironment env{100}){
+                    if(jobject object = QtJambiAPI::findObject(env, container))
+                        Super::updateRC(env, {object,container});
+                }
+            }else{
+                if(JniEnvironment env{100}){
+                    if(jobject object = QtJambiAPI::findObject(env, container)){
+                        if(n==1){
+                            jobject oldValue = at(env, container, index);
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+                           ContainerRemoveN<QList, T>::function(container, index, n);
+#else
+                            Q_ASSERT(n==1);
+                            ContainerRemoveAt<QList, T>::function(container, index);
+#endif
+                            Super::removeRC(env, object, oldValue);
+                        }else{
+                            jint _size = size(env, container);
+                            jobject removedValues = QtJambiAPI::newJavaArrayList(env);
+                            for(jint i = index; i<=index+n && i<_size; ++i){
+                                Java::Runtime::Collection::add(env, removedValues, at(env, container, i));
+                            }
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+                           ContainerRemoveN<QList, T>::function(container, index, n);
+#else
+                            Q_ASSERT(n==1);
+                            ContainerRemoveAt<QList, T>::function(container, index);
+#endif
+                            jobject iter = Java::Runtime::Collection::iterator(env, removedValues);
+                            while(Java::Runtime::Iterator::hasNext(env, iter)){
+                                jobject value = Java::Runtime::Iterator::next(env, iter);
+                                Super::removeRC(env, object, value);
+                            }
+                        }
+                    }
+                }
+            }
+        }else{
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+            ContainerRemoveN<QList, T>::function(container, index, n);
+#else
+            Q_ASSERT(n==1);
+            ContainerRemoveAt<QList, T>::function(container, index);
+#endif
         }
     }
 
@@ -1454,6 +1619,30 @@ public:
         }
     }
 
+    void insert(void* container, qsizetype index, qsizetype n, const void* value) override {
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+        ContainerInsertN<QList, T>::function(container, index, n, value);
+#else
+        Q_ASSERT(n==1);
+        ContainerInsertAt<QList, T>::function(container, index, value);
+#endif
+        if constexpr(ContainerContentType<T>::needsReferenceCounting){
+            if constexpr(ContainerContentType<T>::isContainer){
+                if(JniEnvironment env{100}){
+                    if(jobject object = QtJambiAPI::findObject(env, container))
+                        Super::updateRC(env, {object, container});
+                }
+            }else{
+                if(JniEnvironment env{100}){
+                    if(jobject object = QtJambiAPI::findObject(env, container)){
+                        if(jobject valueObj = QtJambiAPI::findObject(env, *reinterpret_cast<void*const*>(value)))
+                            Super::addRC(env, object, valueObj);
+                    }
+                }
+            }
+        }
+    }
+
     void clear(JNIEnv * env, const ContainerInfo& container) override {
         ContainerClear<QList, T>::function(env, container);
         if constexpr(ContainerContentType<QList<T>>::needsReferenceCounting){
@@ -1487,20 +1676,33 @@ public:
         ContainerResize<QList, T>::function(env, container, newSize);
     }
 
+    void resize(void* container, qsizetype newSize) override {
+        ContainerResize<QList, T>::function(container, newSize);
+    }
+
     void squeeze(JNIEnv * env, const ContainerInfo& container) override {
         ContainerSqueeze<QList, T>::function(env, container);
     }
 #endif
 private:
+    template<bool is_const>
     class ElementIterator : public AbstractListAccess::ElementIterator{
+        using Container = std::conditional_t<is_const, const QList<T>, QList<T>>;
+        using iterator = decltype(std::declval<Container>().begin());
+        QListAccess<T>* m_access;
+        iterator current;
+        iterator end;
+        ElementIterator(const ElementIterator& other)
+            :m_access(other.m_access),
+            current(other.current),
+            end(other.end) {}
+    protected:
+        AbstractSequentialAccess* access() override { return m_access; }
     public:
-        QListAccess<T>* access;
-        typename QList<T>::ConstIterator current;
-        typename QList<T>::ConstIterator end;
-        ElementIterator(QListAccess<T>* _access, const QList<T>& container)
-            : access(_access),
-            current(container.constBegin()),
-            end(container.constEnd()) {}
+        ElementIterator(QListAccess<T>* _access, Container& container)
+            : m_access(_access),
+            current(container.begin()),
+            end(container.end()) {}
         ~ElementIterator() override {};
         bool hasNext() override {return current!=end;};
         jobject next(JNIEnv * env) override {
@@ -1513,10 +1715,37 @@ private:
             ++current;
             return result;
         }
+        const void* constNext() override {
+            const void* result = &*current;
+            ++current;
+            return result;
+        };
+        bool isConst() override{
+            return is_const;
+        }
+        void* mutableNext() override {
+            if constexpr(!is_const){
+                void* result = &*current;
+                ++current;
+                return result;
+            }else{
+                return nullptr;
+            }
+        }
+
+        bool operator==(const AbstractSequentialAccess::ElementIterator& other) const override {
+            return current==reinterpret_cast<const ElementIterator&>(other).current;
+        }
+        std::unique_ptr<AbstractSequentialAccess::ElementIterator> clone() const override {
+            return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(*this));
+        }
     };
 public:
     std::unique_ptr<AbstractListAccess::ElementIterator> elementIterator(const void* container) override {
-        return std::unique_ptr<AbstractListAccess::ElementIterator>(new ElementIterator(this, *reinterpret_cast<const QList<T>*>(container)));
+        return std::unique_ptr<AbstractListAccess::ElementIterator>(new ElementIterator<true>(this, *reinterpret_cast<const QList<T>*>(container)));
+    }
+    std::unique_ptr<AbstractListAccess::ElementIterator> elementIterator(void* container) override {
+        return std::unique_ptr<AbstractListAccess::ElementIterator>(new ElementIterator<false>(this, *reinterpret_cast<QList<T>*>(container)));
     }
 };
 
@@ -1638,6 +1867,10 @@ public:
 
     jint size(JNIEnv * env, const void* container) override {
         return ContainerSize<QVector, T>::function(env, container);
+    }
+
+    qsizetype size(const void* container) override {
+        return ContainerSize<QVector, T>::function(container);
     }
 
     jboolean equal(JNIEnv * env, const void* container, jobject other) override {
@@ -1812,15 +2045,24 @@ public:
         return ContainerEnd<QVector, T>::function(env, container);
     }
 private:
+    template<bool is_const>
     class ElementIterator : public AbstractVectorAccess::ElementIterator{
+        using Container = std::conditional_t<is_const, const QVector<T>, QVector<T>>;
+        using iterator = decltype(std::declval<Container>().begin());
+        QVectorAccess<T>* m_access;
+        iterator current;
+        iterator end;
+        ElementIterator(const ElementIterator& other)
+            :m_access(other.m_access),
+            current(other.current),
+            end(other.end) {}
+    protected:
+        AbstractSequentialAccess* access() override { return m_access; }
     public:
-        QVectorAccess<T>* access;
-        typename QVector<T>::ConstIterator current;
-        typename QVector<T>::ConstIterator end;
-        ElementIterator(QVectorAccess<T>* _access, const QVector<T>& container)
-            : access(_access),
-            current(container.constBegin()),
-            end(container.constEnd()) {}
+        ElementIterator(QVectorAccess<T>* _access, Container& container)
+            : m_access(_access),
+            current(container.begin()),
+            end(container.end()) {}
         ~ElementIterator() override {};
         bool hasNext() override {return current!=end;};
         jobject next(JNIEnv * env) override {
@@ -1833,10 +2075,37 @@ private:
             ++current;
             return result;
         };
+        const void* constNext() override {
+            const void* result = &*current;
+            ++current;
+            return result;
+        };
+        bool isConst() override{
+            return is_const;
+        }
+        void* mutableNext() override {
+            if constexpr(!is_const){
+                void* result = &*current;
+                ++current;
+                return result;
+            }else{
+                return nullptr;
+            }
+        }
+
+        bool operator==(const AbstractSequentialAccess::ElementIterator& other) const override {
+            return current==reinterpret_cast<const ElementIterator&>(other).current;
+        }
+        std::unique_ptr<AbstractSequentialAccess::ElementIterator> clone() const override {
+            return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(*this));
+        }
     };
 public:
     std::unique_ptr<AbstractVectorAccess::ElementIterator> elementIterator(const void* container) override {
-        return std::unique_ptr<AbstractVectorAccess::ElementIterator>(new ElementIterator(this, *reinterpret_cast<const QVector<T>*>(container)));
+        return std::unique_ptr<AbstractVectorAccess::ElementIterator>(new ElementIterator<true>(this, *reinterpret_cast<const QVector<T>*>(container)));
+    }
+    std::unique_ptr<AbstractVectorAccess::ElementIterator> elementIterator(void* container) override {
+        return std::unique_ptr<AbstractVectorAccess::ElementIterator>(new ElementIterator<false>(this, *reinterpret_cast<QVector<T>*>(container)));
     }
 };
 #endif // def QVECTOR_H
@@ -1976,6 +2245,10 @@ public:
         return ContainerSize<QLinkedList, T>::function(env, container);
     }
 
+    qsizetype size(const void* container) override {
+        return ContainerSize<QLinkedList, T>::function(container);
+    }
+
     jboolean startsWith(JNIEnv * env, const void* container, jobject value) override {
         return ContainerStartsWith<QLinkedList, T>::function(env, container, value);
     }
@@ -2099,12 +2372,18 @@ public:
     }
 private:
     class ElementIterator : public AbstractLinkedListAccess::ElementIterator{
-    public:
-        QLinkedListAccess<T>* access;
+        QLinkedListAccess<T>* m_access;
         typename QLinkedList<T>::ConstIterator current;
         typename QLinkedList<T>::ConstIterator end;
+        ElementIterator(const ElementIterator& other)
+            :m_access(other.m_access),
+            current(other.current),
+            end(other.end) {}
+    protected:
+        AbstractSequentialAccess* access() override { return m_access; }
+    public:
         ElementIterator(QLinkedListAccess<T>* _access, const QLinkedList<T>& container)
-            : access(_access),
+            : m_access(_access),
             current(container.constBegin()),
             end(container.constEnd()) {}
         ~ElementIterator() override {};
@@ -2119,10 +2398,31 @@ private:
             ++current;
             return result;
         };
+        const void* constNext() override {
+            const void* result = &*current;
+            ++current;
+            return result;
+        };
+        bool isConst() override{
+            return true;
+        }
+        void* mutableNext() override {
+            return nullptr;
+        }
+
+        bool operator==(const AbstractSequentialAccess::ElementIterator& other) const override {
+            return current==reinterpret_cast<const ElementIterator&>(other).current;
+        }
+        std::unique_ptr<AbstractSequentialAccess::ElementIterator> clone() const override {
+            return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(*this));
+        }
     };
 public:
     std::unique_ptr<AbstractLinkedListAccess::ElementIterator> elementIterator(const void* container) override {
         return std::unique_ptr<AbstractLinkedListAccess::ElementIterator>(new ElementIterator(this, *reinterpret_cast<const QLinkedList<T>*>(container)));
+    }
+    std::unique_ptr<AbstractLinkedListAccess::ElementIterator> elementIterator(void* container) override {
+        return std::unique_ptr<AbstractLinkedListAccess::ElementIterator>(new ElementIterator(this, *reinterpret_cast<QLinkedList<T>*>(container)));
     }
 };
 #endif
@@ -2275,6 +2575,10 @@ public:
         return ContainerSize<QSet, T>::function(env, container);
     }
 
+    qsizetype size(const void* container) override {
+        return ContainerSize<QSet, T>::function(container);
+    }
+
     ContainerAndAccessInfo values(JNIEnv * env, const ConstContainerInfo& container) override {
         return ContainerValues<QSet, T>::function(env, container.container);
     }
@@ -2331,14 +2635,20 @@ public:
     }
 private:
     class ElementIterator : public AbstractSetAccess::ElementIterator{
-    public:
-        QSetAccess<T>* access;
+        QSetAccess<T>* m_access;
         typename QSet<T>::ConstIterator current;
         typename QSet<T>::ConstIterator end;
+        ElementIterator(const ElementIterator& other)
+            :m_access(other.m_access),
+            current(other.current),
+            end(other.end) {}
+    protected:
+        AbstractSequentialAccess* access() override { return m_access; }
+    public:
         ElementIterator(QSetAccess<T>* _access, const QSet<T>& container)
-            :access(_access),
-            current(container.constBegin()),
-            end(container.constEnd()) {}
+            :m_access(_access),
+            current(container.begin()),
+            end(container.end()) {}
         ~ElementIterator() override {};
         bool hasNext() override {return current!=end;};
         jobject next(JNIEnv * env) override {
@@ -2351,10 +2661,30 @@ private:
             ++current;
             return result;
         };
+        const void* constNext() override {
+            const void* result = &*current;
+            ++current;
+            return result;
+        };
+        bool isConst() override{
+            return true;
+        }
+        void* mutableNext() override {
+            return nullptr;
+        }
+        bool operator==(const AbstractSequentialAccess::ElementIterator& other) const override {
+            return current==reinterpret_cast<const ElementIterator&>(other).current;
+        }
+        std::unique_ptr<AbstractSequentialAccess::ElementIterator> clone() const override {
+            return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(*this));
+        }
     };
 public:
     std::unique_ptr<AbstractSetAccess::ElementIterator> elementIterator(const void* container) override {
         return std::unique_ptr<AbstractSetAccess::ElementIterator>(new ElementIterator(this, *reinterpret_cast<const QSet<T>*>(container)));
+    }
+    std::unique_ptr<AbstractSetAccess::ElementIterator> elementIterator(void* container) override {
+        return std::unique_ptr<AbstractSetAccess::ElementIterator>(new ElementIterator(this, *reinterpret_cast<QSet<T>*>(container)));
     }
 };
 
@@ -2448,6 +2778,11 @@ public:
         return jint(span->size());
     }
 
+    qsizetype size(const void* container) override {
+        const QSpan<T,E> *span = static_cast<const QSpan<T,E> *>(container);
+        return span->size();
+    }
+
     jint size_bytes(JNIEnv *, const void* container) override {
         const QSpan<T,E> *span = static_cast<const QSpan<T,E> *>(container);
         return jint(span->size_bytes());
@@ -2478,6 +2813,11 @@ public:
         return qtjambi_scoped_cast<false,jobject,const T>::cast(env, span[index], nullptr, nullptr);
     }
 
+    const void* get(const void* container, qsizetype index) override {
+        const QSpan<T,E> &span = *static_cast<const QSpan<T,E> *>(container);
+        return &span[index];
+    }
+
     bool set(JNIEnv * env, const ContainerInfo& container, jint index, jobject value) override {
         if constexpr(std::is_const_v<T>){
             Q_UNUSED(container);
@@ -2503,16 +2843,56 @@ public:
             return true;
         }
     }
+    bool set(void* container, qsizetype index, const void* value) override {
+        if constexpr(std::is_const_v<T>){
+            Q_UNUSED(container);
+            Q_UNUSED(index);
+            Q_UNUSED(value);
+            return false;
+        }else{
+            const QSpan<T,E> &span = *static_cast<const QSpan<T,E> *>(container);
+            if constexpr(ContainerContentType<T>::needsReferenceCounting){
+                if(JniEnvironment env{100}){
+                    if(jobject object = QtJambiAPI::findObject(env, container)){
+                        if constexpr(ContainerContentType<T>::isContainer){
+                            span[index] = *static_cast<const T *>(value);
+                            Super::updateRC(env, ContainerInfo{object, container});
+                            return true;
+                        }else{
+                            const T& replace = *static_cast<const T *>(value);
+                            jobject oldValue = qtjambi_scoped_cast<false,jobject,const T>::cast(env, span[index], nullptr, nullptr);
+                            jobject newValue = qtjambi_scoped_cast<false,jobject,const T>::cast(env, replace, nullptr, nullptr);
+                            span[index] = replace;
+                            Super::removeRC(env, object, oldValue);
+                            Super::addRC(env, object, newValue);
+                            return true;
+                        }
+                    }
+                }
+            }
+            span[index] = *static_cast<const T *>(value);
+            return true;
+        }
+    }
 private:
+    template<bool is_const>
     class ElementIterator : public AbstractSpanAccess::ElementIterator{
+        using Container = std::conditional_t<is_const, const QSpan<T,E>, QSpan<T,E>>;
+        using iterator = decltype(std::declval<Container>().begin());
+        QSpanAccess<T,E>* m_access;
+        iterator current;
+        iterator end;
+        ElementIterator(const ElementIterator& other)
+            :m_access(other.m_access),
+            current(other.current),
+            end(other.end) {}
+    protected:
+        AbstractSequentialAccess* access() override { return m_access; }
     public:
-        QSpanAccess<T,E>* access;
-        typename QSpan<T,E>::const_iterator current;
-        typename QSpan<T,E>::const_iterator end;
-        ElementIterator(QSpanAccess<T,E>* _access, const QSpan<T,E>& container)
-            :access(_access),
-            current(container.cbegin()),
-            end(container.cend()) {}
+        ElementIterator(QSpanAccess<T,E>* _access, Container& container)
+            :m_access(_access),
+            current(container.begin()),
+            end(container.end()) {}
         ~ElementIterator() override {};
         bool hasNext() override {return current!=end;};
         jobject next(JNIEnv * env) override {
@@ -2525,10 +2905,36 @@ private:
             ++current;
             return result;
         };
+        const void* constNext() override {
+            const void* result = &*current;
+            ++current;
+            return result;
+        };
+        bool isConst() override{
+            return is_const && m_access->isConst();
+        }
+        void* mutableNext() override {
+            if constexpr(!is_const && !std::is_const_v<T>){
+                void* result = &*current;
+                ++current;
+                return result;
+            }else{
+                return nullptr;
+            }
+        }
+        bool operator==(const AbstractSequentialAccess::ElementIterator& other) const override {
+            return current==reinterpret_cast<const ElementIterator&>(other).current;
+        }
+        std::unique_ptr<AbstractSequentialAccess::ElementIterator> clone() const override {
+            return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(*this));
+        }
     };
 public:
     std::unique_ptr<AbstractSpanAccess::ElementIterator> elementIterator(const void* container) override {
-        return std::unique_ptr<AbstractSpanAccess::ElementIterator>(new ElementIterator(this, *reinterpret_cast<const QSpan<T,E>*>(container)));
+        return std::unique_ptr<AbstractSpanAccess::ElementIterator>(new ElementIterator<true>(this, *reinterpret_cast<const QSpan<T,E>*>(container)));
+    }
+    std::unique_ptr<AbstractSpanAccess::ElementIterator> elementIterator(void* container) override {
+        return std::unique_ptr<AbstractSpanAccess::ElementIterator>(new ElementIterator<false>(this, *reinterpret_cast<QSpan<T,E>*>(container)));
     }
 };
 

@@ -49,7 +49,11 @@ inline hash_type qHash(const QGeoCircle &value, hash_type seed)
 {
     if(!value.isValid())
         return 0;
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.radius());
     seed = hash(seed, value.isEmpty());
     seed = hash(seed, value.center());
@@ -60,7 +64,11 @@ inline hash_type qHash(const QGeoPath &value, hash_type seed)
 {
     if(!value.isValid())
         return 0;
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.path());
     seed = hash(seed, value.isEmpty());
     seed = hash(seed, value.center());
@@ -71,7 +79,11 @@ inline hash_type qHash(const QGeoPolygon &value, hash_type seed)
 {
     if(!value.isValid())
         return 0;
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed,
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         value.path());
@@ -87,7 +99,11 @@ inline hash_type qHash(const QGeoRectangle &value, hash_type seed)
 {
     if(!value.isValid())
         return 0;
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.width());
     seed = hash(seed, value.isEmpty());
     seed = hash(seed, value.center());

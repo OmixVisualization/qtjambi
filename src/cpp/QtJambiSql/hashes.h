@@ -35,7 +35,11 @@
 
 inline hash_type qHash(const QSqlError &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, int(value.type()));
     seed = hash(seed, value.driverText());
     seed = hash(seed, value.databaseText());
@@ -47,7 +51,11 @@ inline hash_type qHash(const QSqlError &value, hash_type seed = 0)
 
 inline hash_type qHash(const QSqlField &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     seed = hash(seed, QMetaType::typeName(value.type()));
 #else
@@ -71,7 +79,11 @@ inline hash_type qHash(const QSqlField &value, hash_type seed = 0)
 
 inline hash_type qHash(const QSqlRecord &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombineCommutative hash;
+#else
+    QtPrivate::QHashCombineCommutative hash(seed);
+#endif
     seed = hash(seed, value.count());
     for(int i=0; i<value.count(); ++i){
         seed = hash(seed, value.field(i));

@@ -866,6 +866,11 @@ jint AutoSetAccess::size(JNIEnv * env, const void* container)
     return m_hashAccess.size(env, container);
 }
 
+qsizetype AutoSetAccess::size(const void* container)
+{
+    return m_hashAccess.size(container);
+}
+
 void AutoSetAccess::subtract(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other)
 {
     void* ptr{nullptr};
@@ -981,10 +986,28 @@ ContainerAndAccessInfo AutoSetAccess::values(JNIEnv * env, const ConstContainerI
 std::unique_ptr<AbstractSetAccess::ElementIterator> AutoSetAccess::elementIterator(const void* container) {
     class ElementIterator : public AbstractSetAccess::ElementIterator{
         std::unique_ptr<AbstractHashAccess::KeyValueIterator> iter;
+        ElementIterator(const ElementIterator& other)
+            :iter(other.iter->clone()) {}
+    protected:
+        AbstractSequentialAccess* access() override { return nullptr; }
     public:
+        const QMetaType& elementMetaType() override { return iter->keyMetaType(); }
+        DataType elementType() override { return iter->keyType(); }
+        AbstractContainerAccess* elementNestedContainerAccess() override { return iter->keyNestedContainerAccess(); }
+        bool hasNestedContainerAccess() override { return iter->hasKeyNestedContainerAccess(); }
+        bool hasNestedPointers() override { return iter->hasKeyNestedPointers(); }
         ElementIterator(std::unique_ptr<AbstractHashAccess::KeyValueIterator>&& _iter) : iter(std::move(_iter)) {}
         bool hasNext() override{
             return iter->hasNext();
+        }
+        bool isConst() override{
+            return true;
+        }
+        const void* constNext() override {
+            return iter->constNext().first;
+        }
+        void* mutableNext() override {
+            return nullptr;
         }
         jobject next(JNIEnv * env) override{
             return iter->next(env).first;
@@ -992,8 +1015,18 @@ std::unique_ptr<AbstractSetAccess::ElementIterator> AutoSetAccess::elementIterat
         const void* next() override {
             return iter->next().first;
         }
+        bool operator==(const AbstractSequentialAccess::ElementIterator& other) const override {
+            return iter==reinterpret_cast<const ElementIterator&>(other).iter;
+        }
+        std::unique_ptr<AbstractSequentialAccess::ElementIterator> clone() const override {
+            return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(*this));
+        }
     };
     return std::unique_ptr<AbstractSetAccess::ElementIterator>(new ElementIterator(m_hashAccess.keyValueIterator(container)));
+}
+
+std::unique_ptr<AbstractSetAccess::ElementIterator> AutoSetAccess::elementIterator(void* container) {
+    return constElementIterator(container);
 }
 
 PointerRCAutoSetAccess::PointerRCAutoSetAccess(PointerRCAutoSetAccess& other)

@@ -84,6 +84,7 @@ TypeSystem{
                 ReferenceCount{
                     action: ReferenceCount.Ignore
                 }
+                until: 6.9
             }
         }
         ModifyFunction{
@@ -96,6 +97,7 @@ TypeSystem{
                     variableName: "__rcInsertedSets"
                     action: ReferenceCount.Take
                 }
+                until: 6.9
             }
         }
         ModifyFunction{
@@ -108,6 +110,7 @@ TypeSystem{
                     variableName: "__rcInsertedSets"
                     action: ReferenceCount.Take
                 }
+                until: 6.9
             }
         }
         ModifyFunction{
@@ -120,6 +123,7 @@ TypeSystem{
                     variableName: "__rcInsertedSets"
                     action: ReferenceCount.Add
                 }
+                until: 6.9
             }
         }
         ModifyFunction{
@@ -131,6 +135,7 @@ TypeSystem{
                 ReferenceCount{
                     action: ReferenceCount.Ignore
                 }
+                until: 6.9
             }
         }
     }

@@ -97,7 +97,11 @@ inline bool operator==(const QAnimationClipData &lhs, const QAnimationClipData &
 #ifndef QTJAMBI_GENERATOR_RUNNING
 inline hash_type qHash(const QKeyFrame &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.coordinates());
     seed = hash(seed, value.interpolationType());
     seed = hash(seed, value.leftControlPoint());
@@ -107,7 +111,11 @@ inline hash_type qHash(const QKeyFrame &value, hash_type seed = 0)
 
 inline hash_type qHash(const QChannelComponent &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombineCommutative hash;
+#else
+    QtPrivate::QHashCombineCommutative hash(seed);
+#endif
     seed = hash(seed, value.name());
     seed = hash(seed, value.keyFrameCount());
     for(const QKeyFrame & f : value){
@@ -118,7 +126,11 @@ inline hash_type qHash(const QChannelComponent &value, hash_type seed = 0)
 
 inline hash_type qHash(const QChannel &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     hash_type hashCode = seed;
     seed = hash(seed, value.name());
     hashCode = hashCode * 31 + ::qHash(value.channelComponentCount());
@@ -130,7 +142,11 @@ inline hash_type qHash(const QChannel &value, hash_type seed = 0)
 
 inline hash_type qHash(const QAnimationClipData &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombineCommutative hash;
+#else
+    QtPrivate::QHashCombineCommutative hash(seed);
+#endif
     seed = hash(seed, value.name());
     seed = hash(seed, value.channelCount());
     for(const QChannel & c : value){

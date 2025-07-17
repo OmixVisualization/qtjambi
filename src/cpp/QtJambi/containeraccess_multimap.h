@@ -987,42 +987,60 @@ public:
         reinterpret_cast<QMultiMap<K,T> *>(container.container)->swap(*reinterpret_cast<QMultiMap<K,T> *>(container2.container));
     }
 
+    template<bool _isConst>
     class KeyValueIterator : public AbstractMapAccess::KeyValueIterator{
+        using Container = std::conditional_t<_isConst, const QMultiMap<K,T>, QMultiMap<K,T>>;
+        using iterator = decltype(std::declval<Container>().begin());
+        GenericMultiMapAccess* m_access;
+        iterator current;
+        iterator end;
+        KeyValueIterator(const KeyValueIterator& other)
+            :m_access(other.m_access),
+            current(other.current),
+            end(other.end) {}
+    protected:
+        auto access() override {return m_access;}
     public:
-        GenericMultiMapAccess* access;
-        typename QMultiMap<K,T>::ConstIterator current;
-        typename QMultiMap<K,T>::ConstIterator end;
-        KeyValueIterator(GenericMultiMapAccess* _access, const void* container)
-            : access(_access){
-            QTJAMBI_KEY_VALUE_LOCKER(access);
-            current = reinterpret_cast<const QMultiMap<K,T>*>(container)->constBegin();
-            end = reinterpret_cast<const QMultiMap<K,T>*>(container)->constEnd();
+        KeyValueIterator(GenericMultiMapAccess* _access, Container& container)
+            : m_access(_access){
+            QTJAMBI_KEY_VALUE_LOCKER(m_access);
+            current = container.begin();
+            end = container.end();
         }
         ~KeyValueIterator() override {};
         bool hasNext() override {return current!=end;};
         QPair<jobject,jobject> next(JNIEnv * env) override {
-            QTJAMBI_KEY_VALUE_LOCKER(access);
+            QTJAMBI_KEY_VALUE_LOCKER(m_access);
             jvalue k;
             k.l = nullptr;
             jvalue v;
             v.l = nullptr;
-            access->m_keyInternalToExternalConverter(env, nullptr, &current.key(), k, true);
-            access->m_valueInternalToExternalConverter(env, nullptr, &current.value(), v, true);
+            m_access->m_keyInternalToExternalConverter(env, nullptr, &current.key(), k, true);
+            m_access->m_valueInternalToExternalConverter(env, nullptr, &current.value(), v, true);
             ++current;
             return {k.l, v.l};
         };
         QPair<const void*,const void*> next() override {
-            QTJAMBI_KEY_VALUE_LOCKER(access);
-            const void* key = access->m_keyDataType==AbstractContainerAccess::Value ? nullptr :
+            QTJAMBI_KEY_VALUE_LOCKER(m_access);
+            const void* key = m_access->m_keyDataType==AbstractContainerAccess::Value ? nullptr :
                                   QtJambiPrivate::ContainerContentDeref<K, size1==0>::deref(current.key());
-            const void* value = access->m_valueDataType==AbstractContainerAccess::Value ? nullptr :
+            const void* value = m_access->m_valueDataType==AbstractContainerAccess::Value ? nullptr :
                                     QtJambiPrivate::ContainerContentDeref<T, size2==0>::deref(current.value());
             ++current;
             return {key, value};
         }
+        bool operator==(const AbstractMapAccess::KeyValueIterator& other) const override {
+            return current==reinterpret_cast<const KeyValueIterator&>(other).current;
+        }
+        std::unique_ptr<AbstractAssociativeAccess::KeyValueIterator> clone() const override {
+            return std::unique_ptr<AbstractAssociativeAccess::KeyValueIterator>(new KeyValueIterator(*this));
+        }
     };
     std::unique_ptr<AbstractMapAccess::KeyValueIterator> keyValueIterator(const void* container) override {
-        return std::unique_ptr<AbstractMapAccess::KeyValueIterator>(new KeyValueIterator(this, container));
+        return std::unique_ptr<AbstractMapAccess::KeyValueIterator>(new KeyValueIterator<true>(this, *reinterpret_cast<const QMultiMap<K,T>*>(container)));
+    }
+    std::unique_ptr<AbstractMapAccess::KeyValueIterator> keyValueIterator(void* container) override {
+        return std::unique_ptr<AbstractMapAccess::KeyValueIterator>(new KeyValueIterator<false>(this, *reinterpret_cast<QMultiMap<K,T>*>(container)));
     }
 };
 

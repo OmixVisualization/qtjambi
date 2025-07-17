@@ -55,7 +55,11 @@ inline hash_type qHash(const QBluetoothAddress &value, hash_type seed = 0)
 
 inline hash_type qHash(const QBluetoothDeviceInfo &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.name());
     seed = hash(seed, value.rssi());
     seed = hash(seed, value.address());
@@ -78,7 +82,11 @@ inline hash_type qHash(const QBluetoothDeviceInfo &value, hash_type seed = 0)
 
 inline hash_type qHash(const QBluetoothHostInfo &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.name());
     seed = hash(seed, value.address());
     return seed;
@@ -86,7 +94,11 @@ inline hash_type qHash(const QBluetoothHostInfo &value, hash_type seed = 0)
 
 inline hash_type qHash(const QLowEnergyDescriptor &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.name());
     seed = hash(seed, value.type());
     seed = hash(seed, value.uuid());
@@ -100,7 +112,11 @@ inline hash_type qHash(const QLowEnergyDescriptor &value, hash_type seed = 0)
 
 inline hash_type qHash(const QLowEnergyAdvertisingData &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.rawData());
     seed = hash(seed, value.services());
     seed = hash(seed, value.localName());
@@ -114,7 +130,11 @@ inline hash_type qHash(const QLowEnergyAdvertisingData &value, hash_type seed = 
 
 inline hash_type qHash(const QLowEnergyServiceData &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.type());
     seed = hash(seed, value.uuid());
     seed = hash(seed, value.isValid());
@@ -132,7 +152,11 @@ inline hash_type qHash(const QBluetoothTransferRequest &value, hash_type seed = 
 
 inline hash_type qHash(const QLowEnergyAdvertisingParameters::AddressInfo &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.type);
     seed = hash(seed, value.address);
     return seed;
@@ -140,7 +164,11 @@ inline hash_type qHash(const QLowEnergyAdvertisingParameters::AddressInfo &value
 
 inline hash_type qHash(const QLowEnergyAdvertisingParameters &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.mode());
     seed = hash(seed, value.filterPolicy());
     seed = hash(seed, value.maximumInterval());
@@ -151,7 +179,11 @@ inline hash_type qHash(const QLowEnergyAdvertisingParameters &value, hash_type s
 
 inline hash_type qHash(const QLowEnergyDescriptorData &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.uuid());
     seed = hash(seed, value.value());
     seed = hash(seed, int(value.readConstraints()));
@@ -164,7 +196,11 @@ inline hash_type qHash(const QLowEnergyDescriptorData &value, hash_type seed = 0
 
 inline hash_type qHash(const QLowEnergyCharacteristicData &value, hash_type seed)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.uuid());
     seed = hash(seed, value.value());
     seed = hash(seed, int(value.properties()));
@@ -179,7 +215,11 @@ inline hash_type qHash(const QLowEnergyCharacteristicData &value, hash_type seed
 
 inline hash_type qHash(const QLowEnergyCharacteristic &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.uuid());
     seed = hash(seed, value.value());
     seed = hash(seed, int(value.properties()));
@@ -195,7 +235,11 @@ inline hash_type qHash(const QLowEnergyCharacteristic &value, hash_type seed = 0
 
 inline hash_type qHash(const QLowEnergyConnectionParameters &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.minimumInterval());
     seed = hash(seed, value.maximumInterval());
     seed = hash(seed, value.latency());
@@ -205,7 +249,11 @@ inline hash_type qHash(const QLowEnergyConnectionParameters &value, hash_type se
 
 inline hash_type qHash(const QBluetoothServiceInfo &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.serviceName());
     seed = hash(seed, value.serviceDescription());
     seed = hash(seed, value.serviceProvider());

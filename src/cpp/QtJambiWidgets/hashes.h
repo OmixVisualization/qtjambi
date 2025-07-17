@@ -49,7 +49,11 @@ inline hash_type qHash(const QScrollerProperties & value, hash_type seed = 0)
 
 inline hash_type qHash(const QTableWidgetSelectionRange& value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.topRow());
     seed = hash(seed, value.leftColumn());
     seed = hash(seed, value.bottomRow());

@@ -48,7 +48,11 @@ inline bool operator==(const QCanBusDeviceInfo &value1, const QCanBusDeviceInfo 
 
 inline hash_type qHash(const QCanBusDeviceInfo &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.name());
     seed = hash(seed, value.description());
     seed = hash(seed, value.serialNumber());
@@ -69,7 +73,11 @@ inline bool operator==(const QCanBusFrame::TimeStamp &value1, const QCanBusFrame
 
 inline hash_type qHash(const QCanBusFrame::TimeStamp &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.seconds());
     seed = hash(seed, value.microSeconds());
     return seed;
@@ -91,7 +99,11 @@ inline bool operator==(const QCanBusFrame &value1, const QCanBusFrame &value2){
 
 inline hash_type qHash(const QCanBusFrame &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.isValid());
     seed = hash(seed, value.frameType());
     seed = hash(seed, value.hasExtendedFrameFormat());
@@ -108,7 +120,11 @@ inline hash_type qHash(const QCanBusFrame &value, hash_type seed = 0)
 
 inline hash_type qHash(const QCanBusDevice::Filter &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, int(value.format));
     seed = hash(seed, value.frameId);
     seed = hash(seed, value.frameIdMask);
@@ -125,7 +141,11 @@ inline bool operator==(const QModbusDataUnit &value1, const QModbusDataUnit &val
 
 inline hash_type qHash(const QModbusDataUnit &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.registerType());
     seed = hash(seed, value.startAddress());
     seed = hash(seed, value.values());
@@ -149,7 +169,11 @@ inline bool operator==(const QModbusDeviceIdentification &value1, const QModbusD
 
 inline hash_type qHash(const QModbusDeviceIdentification &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.conformityLevel());
     QList<int> objectIds = value.objectIds();
     seed = hash(seed, objectIds);
@@ -167,7 +191,11 @@ inline bool operator==(const QModbusPdu &value1, const QModbusPdu &value2){
 
 inline hash_type qHash(const QModbusPdu &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.isException());
     seed = hash(seed, value.functionCode());
     seed = hash(seed, value.data());

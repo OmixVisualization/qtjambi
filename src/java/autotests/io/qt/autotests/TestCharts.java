@@ -62,8 +62,12 @@ public class TestCharts extends ApplicationInitializer {
     	series.append(QList.of(_set));
     	assertEquals(series, _set.parent());
     	set = new QBarSet("D", initialParent);
-    	series.insert(0, set);
     	assertEquals(initialParent, set.parent());
+    	series.insert(0, set);
+    	if(QLibraryInfo.version().compareTo(new QVersionNumber(6,10,0))<0)
+    		assertEquals(initialParent, set.parent());
+    	else
+    		assertEquals(series, set.parent());
     	assertTrue("not cpp ownership", General.internalAccess.isCppOwnership(set));
     	chart.addSeries(series);
     	QBarCategoryAxis axis = new QBarCategoryAxis();

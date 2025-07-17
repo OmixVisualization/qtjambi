@@ -36,7 +36,11 @@
 
 inline hash_type qHash(const QHelpFilterData &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.components());
     seed = hash(seed, value.versions());
     return seed;

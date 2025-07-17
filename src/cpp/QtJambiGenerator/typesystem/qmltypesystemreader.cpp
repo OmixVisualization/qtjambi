@@ -1875,6 +1875,9 @@ TemplateInstantiation QmlTypeSystemReaderPrivate::parseInstantiation(Instantiati
         mod.proxyCall = element->getProxyCall();
         mod.targetType = element->getTargetType();
 
+        if (element->getNoImplicitArguments()) {
+            mod.modifiers |= TS::Modification::NoImplicitArguments;
+        }
         if (element->getDeprecated()) {
             mod.modifiers |= TS::Modification::Deprecated;
         }

@@ -152,7 +152,7 @@ public class TestContainers extends ApplicationInitializer {
         gradient.setStops(write_stops);
 
         // Read back...
-        List<QPair<Double, QColor>> read_stops = gradient.stops();
+        QList<QPair<Double, QColor>> read_stops = gradient.stops();
 
         assertEquals(write_stops.size(), read_stops.size());
         for (int i = 0; i < write_stops.size(); ++i) {

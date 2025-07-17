@@ -193,7 +193,7 @@ void CppGenerator::writeTypeInfo(QTextStream &s, const MetaType *type, Option op
                 break;
             default: break;
             }
-            if (!(options & SkipName))
+            if (!(options & SkipName) && !(options & NoSpace))
                 s << ' ';
             return;
         }
@@ -207,7 +207,7 @@ void CppGenerator::writeTypeInfo(QTextStream &s, const MetaType *type, Option op
         }
         if (originalTypeDescription.contains(QStringLiteral(u"qreal"))){ // map generator type to qreal type
             s << originalTypeDescription;
-            if (!(options & SkipName))
+            if (!(options & SkipName) && !(options & NoSpace))
                 s << ' ';
             return;
         }else{
@@ -223,7 +223,7 @@ void CppGenerator::writeTypeInfo(QTextStream &s, const MetaType *type, Option op
             }
 #endif
             s << originalTypeDescription;
-            if (!(options & SkipName))
+            if (!(options & SkipName) && !(options & NoSpace))
                 s << ' ';
             return;
         }
@@ -292,11 +292,11 @@ void CppGenerator::writeTypeInfo(QTextStream &s, const MetaType *type, Option op
         bool nested_template = false;
         for (int i = 0; i < args.size(); ++i) {
             if (i != 0)
-                s << ", ";
+                s << ((options & NoSpace) ? "," : ", ");
             nested_template |= args.at(i)->isContainer();
-            writeTypeInfo(s, args.at(i), SkipName);
+            writeTypeInfo(s, args.at(i), Option(NoSpace));
         }
-        if (nested_template)
+        if (nested_template && !(options & NoSpace))
             s << ' ';
         s << '>';
     } else {
@@ -309,7 +309,9 @@ void CppGenerator::writeTypeInfo(QTextStream &s, const MetaType *type, Option op
 
     for(int i=0; i<type->indirections().size(); i++){
         if(type->indirections()[i]){
-            s << "*const ";
+            s << "*const";
+            if (!(options & NoSpace))
+                s << ' ';
         }else{
             s << '*';
         }
@@ -349,7 +351,7 @@ void CppGenerator::writeTypeInfo(QTextStream &s, const MetaType *type, Option op
         }
     }
 
-    if (!(options & SkipName))
+    if (!(options & SkipName) && !(options & NoSpace))
         s << ' ';
 }
 

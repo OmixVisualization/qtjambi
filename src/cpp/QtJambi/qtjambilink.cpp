@@ -6057,7 +6057,7 @@ void PointerToQObjectLink::deleteNativeObject(JNIEnv *env, bool forced)
                         __qt_exceptionBlocker.release(env);
                     }
                 }else if (currentThread == objectThread || !objectThread->isRunning() || objectThread==m_pointer) {
-                    QTJAMBI_DEBUG_PRINT_WITH_ARGS("call delete on object %p of type %s", m_pointer, QtJambiAPI::typeName(typeid(*m_pointer)).constData())
+                    QTJAMBI_DEBUG_PRINT_WITH_ARGS("call delete on object %p of type %s", m_pointer, QtJambiAPI::typeName(QtJambiPrivate::CheckPointer<QObject>::trySupplyType(m_pointer)).constData())
                     if(m_pointer==objectThread || qobject_cast<QThread*>(m_pointer)){
                         QThread* myThread;
                         if(m_pointer==objectThread){
@@ -6072,7 +6072,7 @@ void PointerToQObjectLink::deleteNativeObject(JNIEnv *env, bool forced)
                         }
                         if(static_cast<SelfDeletingThread*>(myThread)->deleteLaterIfIsInFinish()){
                             setDeleteLater();
-                            QTJAMBI_DEBUG_PRINT_WITH_ARGS("call deleteLater() on object %p of type %s", m_pointer, QtJambiAPI::typeName(typeid(*m_pointer)).constData())
+                            QTJAMBI_DEBUG_PRINT_WITH_ARGS("call deleteLater() on object %p of type %s", m_pointer, QtJambiAPI::typeName(QtJambiPrivate::CheckPointer<QObject>::trySupplyType(m_pointer)).constData())
                             return;
                         }
                     }
@@ -6119,7 +6119,7 @@ void PointerToQObjectLink::deleteNativeObject(JNIEnv *env, bool forced)
                 // running, so its safe to call delete later.
                 } else if (QAbstractEventDispatcher::instance(objectThread)) {
                     setDeleteLater();
-                    QTJAMBI_DEBUG_PRINT_WITH_ARGS("call deleteLater() on object %p of type %s", m_pointer, QtJambiAPI::typeName(typeid(*m_pointer)).constData())
+                    QTJAMBI_DEBUG_PRINT_WITH_ARGS("call deleteLater() on object %p of type %s", m_pointer, QtJambiAPI::typeName(QtJambiPrivate::CheckPointer<QObject>::trySupplyType(m_pointer)).constData())
                     QObjectInDeletion::disposeQObject(m_pointer);
                     m_pointer->deleteLater();
 

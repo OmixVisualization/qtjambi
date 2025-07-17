@@ -130,6 +130,26 @@ TypeSystem{
                               "    __qt_return_value.__rc_importDevice = importDevice;\n"+
                               "}"}
             }
+            until: 6.9
+        }
+        ModifyFunction{
+            signature: "create(QRhi::Implementation,QRhiInitParams*,QRhi::Flags,QRhiNativeHandles*,QRhiAdapter*)"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.End
+                Text{content: "if(__qt_return_value!=null){\n"+
+                              "    __qt_return_value.__rc_params = params;\n"+
+                              "    __qt_return_value.__rc_importDevice = importDevice;\n"+
+                              "}"}
+            }
+            since: [6,10]
         }
         ModifyFunction{
             signature: "newBuffer(QRhiBuffer::Type,QRhiBuffer::UsageFlags,quint32)"
@@ -1385,5 +1405,10 @@ public final void setLuminanceInNits(float minLuminance, float maxLuminance) {
     ObjectType{
         name: "QRhiVulkanQueueSubmitParams"
         since: 6.9
+    }
+
+    ObjectType{
+        name: "QRhiAdapter"
+        since: [6,10]
     }
 }

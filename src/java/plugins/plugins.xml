@@ -565,6 +565,8 @@
             <istrue value="${qtjambi-deploy}"/>
             <then>
                 <create-pom outputDirectory="${deploymentdir}" description="${qtjambi.module.description}" dependencies="${qtjambi.required.modules}" libraries="${qtjambi.bundle.libraries}" module="qtjambi-plugin-${module}"/>
+				<checksum algorithm="MD5" file="${deploymentdir}/qtjambi-plugin-${module}-${qtjambi.jar.version}${snap}.pom"/>
+				<checksum algorithm="SHA-1" file="${deploymentdir}/qtjambi-plugin-${module}-${qtjambi.jar.version}${snap}.pom"/>
                 <antcall inheritrefs="true" target="deploy-impl"/>
             </then>
         </if>
@@ -593,6 +595,8 @@
             </not>
             <then>
                 <create-pom outputDirectory="${deploymentdir}" description="${qtjambi.module.description}" dependencies="${qtjambi.required.modules}" libraries="${qtjambi.bundle.libraries}" module="qtjambi-plugin-${module}"/>
+				<checksum algorithm="MD5" file="${deploymentdir}/qtjambi-plugin-${module}-${qtjambi.jar.version}${snap}.pom"/>
+				<checksum algorithm="SHA-1" file="${deploymentdir}/qtjambi-plugin-${module}-${qtjambi.jar.version}${snap}.pom"/>
             </then>
         </if>
         <if>
@@ -611,11 +615,21 @@
             <fileset dir="${deploymentdir}/sources/" includes="${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}*" followsymlinks="false"/>
             <fileset dir="${deploymentdir}/javadocs/" includes="${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}*" followsymlinks="false"/>
         </gpg>
-        <jar destfile="${deploymentdir}/bundles/${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}-bundle.jar">
-            <fileset dir="${deploymentdir}/native/" includes="${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}*" followsymlinks="false"/>
-            <fileset dir="${deploymentdir}/sources/" includes="${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}*" followsymlinks="false"/>
-            <fileset dir="${deploymentdir}/javadocs/" includes="${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}*" followsymlinks="false"/>
-        </jar>
+		<checksum algorithm="MD5">
+            <fileset dir="${deploymentdir}/native/" includes="${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}*.jar" followsymlinks="false"/>
+            <fileset dir="${deploymentdir}/sources/" includes="${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}*.jar" followsymlinks="false"/>
+            <fileset dir="${deploymentdir}/javadocs/" includes="${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}*.jar" followsymlinks="false"/>
+		</checksum>
+		<checksum algorithm="SHA-1">
+            <fileset dir="${deploymentdir}/native/" includes="${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}*.jar" followsymlinks="false"/>
+            <fileset dir="${deploymentdir}/sources/" includes="${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}*.jar" followsymlinks="false"/>
+            <fileset dir="${deploymentdir}/javadocs/" includes="${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}*.jar" followsymlinks="false"/>
+		</checksum>
+       <zip destfile="${deploymentdir}/bundles/${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}-bundle.zip">
+            <zipfileset dir="${deploymentdir}/native/" includes="${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}*" followsymlinks="false" prefix="io/qtjambi/${moduledash}-native-${native-spec}/${qtjambi.jar.version}${snap}"/>
+            <zipfileset dir="${deploymentdir}/sources/" includes="${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}*" followsymlinks="false" prefix="io/qtjambi/${moduledash}-native-${native-spec}/${qtjambi.jar.version}${snap}"/>
+            <zipfileset dir="${deploymentdir}/javadocs/" includes="${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}*" followsymlinks="false" prefix="io/qtjambi/${moduledash}-native-${native-spec}/${qtjambi.jar.version}${snap}"/>
+        </zip>
     </target>
     <target name="deploy-impl">
         <if>

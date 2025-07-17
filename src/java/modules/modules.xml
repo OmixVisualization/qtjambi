@@ -55,6 +55,8 @@
             <istrue value="${qtjambi-deploy}"/>
             <then>
                 <create-pom outputDirectory="${deploymentdir}" module="parent"/>
+				<checksum algorithm="MD5" file="${deploymentdir}/qtjambi-parent-${qtjambi.jar.version}${snap}.pom"/>
+				<checksum algorithm="SHA-1" file="${deploymentdir}/qtjambi-parent-${qtjambi.jar.version}${snap}.pom"/>
             </then>
         </if>
         <if>
@@ -70,14 +72,18 @@
                     </not>
                     <then>
                         <create-pom outputDirectory="${deploymentdir}" module="parent"/>
+						<checksum algorithm="MD5" file="${deploymentdir}/qtjambi-parent-${qtjambi.jar.version}${snap}.pom"/>
+						<checksum algorithm="SHA-1" file="${deploymentdir}/qtjambi-parent-${qtjambi.jar.version}${snap}.pom"/>
                     </then>
                 </if>
                 <gpg>
                     <fileset dir="${deploymentdir}/" includes="qtjambi-parent-${qtjambi.jar.version}${snap}.pom" followsymlinks="false"/>
                 </gpg>
-                <jar destfile="${deploymentdir}/bundles/qtjambi-parent-${qtjambi.jar.version}${snap}-bundle.jar">
-                    <fileset dir="${deploymentdir}/" includes="qtjambi-parent-${qtjambi.jar.version}${snap}*" excludes="*-javadocs.zip" followsymlinks="false"/>
-                </jar>
+				<checksum algorithm="MD5" file="${deploymentdir}/qtjambi-parent-${qtjambi.jar.version}${snap}.jar"/>
+				<checksum algorithm="SHA-1" file="${deploymentdir}/qtjambi-parent-${qtjambi.jar.version}${snap}.jar"/>
+                <zip destfile="${deploymentdir}/bundles/qtjambi-parent-${qtjambi.jar.version}${snap}-bundle.zip">
+                    <zipfileset dir="${deploymentdir}/" includes="qtjambi-parent-${qtjambi.jar.version}${snap}*" excludes="*-javadocs.zip" followsymlinks="false" prefix="io/qtjambi/qtjambi-parent/${qtjambi.jar.version}${snap}"/>
+                </zip>
             </then>
         </if>
     </target>
@@ -120,6 +126,8 @@
             <istrue value="${qtjambi-deploy}"/>
             <then>
                 <create-pom outputDirectory="${deploymentdir}" description="${qtjambi.module.description}" dependencies="${qtjambi.required.modules}" libraries="${qtjambi.bundle.libraries}" module="${module}"/>
+				<checksum algorithm="MD5" file="${deploymentdir}/qtjambi-${module}-${qtjambi.jar.version}${snap}.pom"/>
+				<checksum algorithm="SHA-1" file="${deploymentdir}/qtjambi-${module}-${qtjambi.jar.version}${snap}.pom"/>
                 <antcall inheritrefs="true" target="deploy-impl"/>
             </then>
         </if>
@@ -713,6 +721,8 @@
                     </not>
                     <then>
                         <create-pom outputDirectory="${deploymentdir}" description="${qtjambi.module.description}" dependencies="${qtjambi.required.modules}" libraries="${qtjambi.bundle.libraries}" module="${module}"/>
+						<checksum algorithm="MD5" file="${deploymentdir}/qtjambi-${module}-${qtjambi.jar.version}${snap}.pom"/>
+						<checksum algorithm="SHA-1" file="${deploymentdir}/qtjambi-${module}-${qtjambi.jar.version}${snap}.pom"/>
                     </then>
                 </if>
                 <if>
@@ -733,11 +743,21 @@
                     <fileset dir="${deploymentdir}/sources/" includes="${moduledash}-${qtjambi.jar.version}${snap}*" excludes="*-javadocs.zip" followsymlinks="false"/>
                     <fileset dir="${deploymentdir}/javadocs/" includes="${moduledash}-${qtjambi.jar.version}${snap}*" excludes="*-javadocs.zip" followsymlinks="false"/>
                 </gpg>
-                <jar destfile="${deploymentdir}/bundles/${moduledash}-${qtjambi.jar.version}${snap}-bundle.jar">
-                    <fileset dir="${deploymentdir}/" includes="${moduledash}-${qtjambi.jar.version}${snap}*" excludes="*-javadocs.zip" followsymlinks="false"/>
-                    <fileset dir="${deploymentdir}/sources/" includes="${moduledash}-${qtjambi.jar.version}${snap}*" excludes="*-javadocs.zip" followsymlinks="false"/>
-                    <fileset dir="${deploymentdir}/javadocs/" includes="${moduledash}-${qtjambi.jar.version}${snap}*" excludes="*-javadocs.zip" followsymlinks="false"/>
-                </jar>
+				<checksum algorithm="MD5">
+                    <fileset dir="${deploymentdir}/" includes="${moduledash}-${qtjambi.jar.version}${snap}*.jar" followsymlinks="false"/>
+                    <fileset dir="${deploymentdir}/sources/" includes="${moduledash}-${qtjambi.jar.version}${snap}*.jar" followsymlinks="false"/>
+                    <fileset dir="${deploymentdir}/javadocs/" includes="${moduledash}-${qtjambi.jar.version}${snap}*.jar" followsymlinks="false"/>
+				</checksum>
+				<checksum algorithm="SHA-1">
+                    <fileset dir="${deploymentdir}/" includes="${moduledash}-${qtjambi.jar.version}${snap}*.jar" followsymlinks="false"/>
+                    <fileset dir="${deploymentdir}/sources/" includes="${moduledash}-${qtjambi.jar.version}${snap}*.jar" followsymlinks="false"/>
+                    <fileset dir="${deploymentdir}/javadocs/" includes="${moduledash}-${qtjambi.jar.version}${snap}*.jar" followsymlinks="false"/>
+				</checksum>
+                <zip destfile="${deploymentdir}/bundles/${moduledash}-${qtjambi.jar.version}${snap}-bundle.zip">
+                    <zipfileset dir="${deploymentdir}/" includes="${moduledash}-${qtjambi.jar.version}${snap}*" excludes="*-javadocs.zip" followsymlinks="false" prefix="io/qtjambi/${moduledash}/${qtjambi.jar.version}${snap}"/>
+                    <zipfileset dir="${deploymentdir}/sources/" includes="${moduledash}-${qtjambi.jar.version}${snap}*" excludes="*-javadocs.zip" followsymlinks="false" prefix="io/qtjambi/${moduledash}/${qtjambi.jar.version}${snap}"/>
+                    <zipfileset dir="${deploymentdir}/javadocs/" includes="${moduledash}-${qtjambi.jar.version}${snap}*" excludes="*-javadocs.zip" followsymlinks="false" prefix="io/qtjambi/${moduledash}/${qtjambi.jar.version}${snap}"/>
+                </zip>
             </then>
         </if>
         <foreach-native dir="${deploymentdir}/native" module="${moduledash}" version="${qtjambi.jar.version}" target="deploy-impl-bundle-native"/>
@@ -750,7 +770,9 @@
             </not>
             <then>
                 <create-pom outputDirectory="${deploymentdir}" description="${qtjambi.module.description}" dependencies="${qtjambi.required.modules}" libraries="${qtjambi.bundle.libraries}" module="${module}"/>
-            </then>
+				<checksum algorithm="MD5" file="${deploymentdir}/qtjambi-${module}-${qtjambi.jar.version}${snap}.pom"/>
+				<checksum algorithm="SHA-1" file="${deploymentdir}/qtjambi-${module}-${qtjambi.jar.version}${snap}.pom"/>
+			</then>
         </if>
         <if>
 			<istrue value="${qtjambi-deploy-snapshot}"/>
@@ -777,19 +799,39 @@
             <fileset dir="${deploymentdir}/native/" includes="${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}*" followsymlinks="false"/>
             <fileset dir="${deploymentdir}/debuginfo/" includes="${moduledash}-debuginfo-${native-spec}-${qtjambi.jar.version}${snap}*" followsymlinks="false"/>
         </gpg>
-        <jar destfile="${deploymentdir}/bundles/${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}-bundle.jar">
-            <fileset dir="${deploymentdir}/native/" includes="${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}*" followsymlinks="false"/>
-            <fileset dir="${deploymentdir}/sources/" includes="${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}*" followsymlinks="false"/>
-            <fileset dir="${deploymentdir}/javadocs/" includes="${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}*" followsymlinks="false"/>
-        </jar>
+		<checksum algorithm="MD5">
+            <fileset dir="${deploymentdir}/native/" includes="${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}*.jar" followsymlinks="false"/>
+            <fileset dir="${deploymentdir}/sources/" includes="${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}*.jar" followsymlinks="false"/>
+            <fileset dir="${deploymentdir}/javadocs/" includes="${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}*.jar" followsymlinks="false"/>
+		</checksum>
+		<checksum algorithm="SHA-1">
+            <fileset dir="${deploymentdir}/native/" includes="${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}*.jar" followsymlinks="false"/>
+            <fileset dir="${deploymentdir}/sources/" includes="${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}*.jar" followsymlinks="false"/>
+            <fileset dir="${deploymentdir}/javadocs/" includes="${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}*.jar" followsymlinks="false"/>
+		</checksum>
+        <zip destfile="${deploymentdir}/bundles/${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}-bundle.zip">
+            <zipfileset dir="${deploymentdir}/native/" includes="${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}*" followsymlinks="false" prefix="io/qtjambi/${moduledash}-native-${native-spec}/${qtjambi.jar.version}${snap}"/>
+            <zipfileset dir="${deploymentdir}/sources/" includes="${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}*" followsymlinks="false" prefix="io/qtjambi/${moduledash}-native-${native-spec}/${qtjambi.jar.version}${snap}"/>
+            <zipfileset dir="${deploymentdir}/javadocs/" includes="${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}*" followsymlinks="false" prefix="io/qtjambi/${moduledash}-native-${native-spec}/${qtjambi.jar.version}${snap}"/>
+        </zip>
         <if>
 			<available file="${deploymentdir}/debuginfo/${moduledash}-debuginfo-${native-spec}-${qtjambi.jar.version}${snap}.jar"/>
             <then>
-				<jar destfile="${deploymentdir}/bundles/${moduledash}-debuginfo-${native-spec}-${qtjambi.jar.version}${snap}-bundle.jar">
-					<fileset dir="${deploymentdir}/debuginfo/" includes="${moduledash}-debuginfo-${native-spec}-${qtjambi.jar.version}${snap}*" followsymlinks="false"/>
-					<fileset dir="${deploymentdir}/sources/" includes="${moduledash}-debuginfo-${native-spec}-${qtjambi.jar.version}${snap}*" followsymlinks="false"/>
-					<fileset dir="${deploymentdir}/javadocs/" includes="${moduledash}-debuginfo-${native-spec}-${qtjambi.jar.version}${snap}*" followsymlinks="false"/>
-				</jar>
+				<checksum algorithm="MD5">
+					<fileset dir="${deploymentdir}/debuginfo/" includes="${moduledash}-debuginfo-${native-spec}-${qtjambi.jar.version}${snap}*.jar" followsymlinks="false"/>
+					<fileset dir="${deploymentdir}/sources/" includes="${moduledash}-debuginfo-${native-spec}-${qtjambi.jar.version}${snap}*.jar" followsymlinks="false"/>
+					<fileset dir="${deploymentdir}/javadocs/" includes="${moduledash}-debuginfo-${native-spec}-${qtjambi.jar.version}${snap}*.jar" followsymlinks="false"/>
+				</checksum>
+				<checksum algorithm="SHA-1">
+					<fileset dir="${deploymentdir}/debuginfo/" includes="${moduledash}-debuginfo-${native-spec}-${qtjambi.jar.version}${snap}*.jar" followsymlinks="false"/>
+					<fileset dir="${deploymentdir}/sources/" includes="${moduledash}-debuginfo-${native-spec}-${qtjambi.jar.version}${snap}*.jar" followsymlinks="false"/>
+					<fileset dir="${deploymentdir}/javadocs/" includes="${moduledash}-debuginfo-${native-spec}-${qtjambi.jar.version}${snap}*.jar" followsymlinks="false"/>
+				</checksum>
+				<zip destfile="${deploymentdir}/bundles/${moduledash}-debuginfo-${native-spec}-${qtjambi.jar.version}${snap}-bundle.zip">
+					<zipfileset dir="${deploymentdir}/debuginfo/" includes="${moduledash}-debuginfo-${native-spec}-${qtjambi.jar.version}${snap}*" followsymlinks="false" prefix="io/qtjambi/${moduledash}-debuginfo-${native-spec}/${qtjambi.jar.version}${snap}"/>
+					<zipfileset dir="${deploymentdir}/sources/" includes="${moduledash}-debuginfo-${native-spec}-${qtjambi.jar.version}${snap}*" followsymlinks="false" prefix="io/qtjambi/${moduledash}-debuginfo-${native-spec}/${qtjambi.jar.version}${snap}"/>
+					<zipfileset dir="${deploymentdir}/javadocs/" includes="${moduledash}-debuginfo-${native-spec}-${qtjambi.jar.version}${snap}*" followsymlinks="false" prefix="io/qtjambi/${moduledash}-debuginfo-${native-spec}/${qtjambi.jar.version}${snap}"/>
+				</zip>
             </then>
         </if>
     </target>

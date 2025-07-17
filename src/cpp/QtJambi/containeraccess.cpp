@@ -322,6 +322,8 @@ AbstractContainerAccess::DataType dataType(const QMetaType& metaType, const QSha
         if(dynamic_cast<AbstractSpanAccess*>(access.data()))
             return AbstractContainerAccess::Pointer;
 #endif
+        if(metaType.flags().testFlag(QMetaType::IsPointer))
+            return AbstractContainerAccess::Pointer;
         return AbstractContainerAccess::Value;
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     }else if(metaType.metaObject() && metaType.metaObject()->inherits(&QObject::staticMetaObject)){
@@ -552,6 +554,10 @@ std::unique_ptr<AbstractListAccess::ElementIterator> WrapperListAccess::elementI
     return m_containerAccess->elementIterator(container);
 }
 
+std::unique_ptr<AbstractListAccess::ElementIterator> WrapperListAccess::elementIterator(void* container) {
+    return m_containerAccess->elementIterator(container);
+}
+
 void WrapperListAccess::detach(const ContainerInfo& container) {
     return m_containerAccess->detach(container);
 }
@@ -640,6 +646,14 @@ jobject WrapperListAccess::at(JNIEnv * env, const void* container, jint index) {
     return m_containerAccess->at(env, container, index);
 }
 
+const void* WrapperListAccess::at(const void* container, qsizetype index) {
+    return m_containerAccess->at(container, index);
+}
+
+void* WrapperListAccess::at(void* container, qsizetype index) {
+    return m_containerAccess->at(container, index);
+}
+
 jobject WrapperListAccess::value(JNIEnv * env, const void* container, jint index) {
     return m_containerAccess->value(env, container, index);
 }
@@ -656,6 +670,10 @@ jboolean WrapperListAccess::startsWith(JNIEnv * env, const void* container, jobj
     return m_containerAccess->startsWith(env, container, value);
 }
 
+qsizetype WrapperListAccess::size(const void* container) {
+    return m_containerAccess->size(container);
+}
+
 jint WrapperListAccess::size(JNIEnv * env, const void* container) {
     return m_containerAccess->size(env, container);
 }
@@ -668,8 +686,16 @@ void WrapperListAccess::replace(JNIEnv * env, const ContainerInfo& container, ji
     m_containerAccess->replace(env, container, index, value);
 }
 
+void WrapperListAccess::replace(void* container, qsizetype index, const void* value) {
+    m_containerAccess->replace(container, index, value);
+}
+
 void WrapperListAccess::remove(JNIEnv * env, const ContainerInfo& container, jint index, jint n) {
     m_containerAccess->remove(env, container, index, n);
+}
+
+void WrapperListAccess::remove(void* container, qsizetype index, qsizetype n) {
+    m_containerAccess->remove(container, index, n);
 }
 
 jint WrapperListAccess::removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) {
@@ -694,6 +720,10 @@ jint WrapperListAccess::lastIndexOf(JNIEnv * env, const void* container, jobject
 
 void WrapperListAccess::insert(JNIEnv * env, const ContainerInfo& container, jint index, jint n, jobject value) {
     m_containerAccess->insert(env, container, index, n, value);
+}
+
+void WrapperListAccess::insert(void* container, qsizetype index, qsizetype n, const void* value) {
+    m_containerAccess->insert(container, index, n, value);
 }
 
 jint WrapperListAccess::indexOf(JNIEnv * env, const void* container, jobject value, jint index) {
@@ -745,6 +775,10 @@ void WrapperListAccess::resize(JNIEnv * env, const ContainerInfo& container, jin
     return m_containerAccess->resize(env, container, newSize);
 }
 
+void WrapperListAccess::resize(void* container, qsizetype newSize) {
+    return m_containerAccess->resize(container, newSize);
+}
+
 void WrapperListAccess::squeeze(JNIEnv * env, const ContainerInfo& container) {
     return m_containerAccess->squeeze(env, container);
 }
@@ -788,6 +822,10 @@ bool WrapperVectorAccess::isSharedWith(const void* container, const void* contai
 }
 
 std::unique_ptr<AbstractVectorAccess::ElementIterator> WrapperVectorAccess::elementIterator(const void* container) {
+    return m_containerAccess->elementIterator(container);
+}
+
+std::unique_ptr<AbstractVectorAccess::ElementIterator> WrapperVectorAccess::elementIterator(void* container) {
     return m_containerAccess->elementIterator(container);
 }
 
@@ -1040,6 +1078,10 @@ int WrapperLinkedListAccess::registerContainer(const QByteArray& containerTypeNa
 }
 
 std::unique_ptr<AbstractLinkedListAccess::ElementIterator> WrapperLinkedListAccess::elementIterator(const void* container) {
+    return m_containerAccess->elementIterator(container);
+}
+
+std::unique_ptr<AbstractLinkedListAccess::ElementIterator> WrapperLinkedListAccess::elementIterator(void* container) {
     return m_containerAccess->elementIterator(container);
 }
 
@@ -1300,6 +1342,10 @@ jint WrapperSetAccess::size(JNIEnv * env, const void* container) {
     return m_containerAccess->size(env, container);
 }
 
+qsizetype WrapperSetAccess::size(const void* container) {
+    return m_containerAccess->size(container);
+}
+
 void WrapperSetAccess::subtract(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) {
     m_containerAccess->subtract(env, container, other);
 }
@@ -1313,6 +1359,10 @@ ContainerAndAccessInfo WrapperSetAccess::values(JNIEnv * env, const ConstContain
 }
 
 std::unique_ptr<AbstractSetAccess::ElementIterator> WrapperSetAccess::elementIterator(const void* container) {
+    return m_containerAccess->elementIterator(container);
+}
+
+std::unique_ptr<AbstractSetAccess::ElementIterator> WrapperSetAccess::elementIterator(void* container) {
     return m_containerAccess->elementIterator(container);
 }
 
@@ -1341,6 +1391,9 @@ AbstractMapAccess* WrapperMapAccess::wrappedAccess(){
 }
 
 std::unique_ptr<AbstractMapAccess::KeyValueIterator> WrapperMapAccess::keyValueIterator(const void* container) {
+    return m_containerAccess->keyValueIterator(container);
+}
+std::unique_ptr<AbstractMapAccess::KeyValueIterator> WrapperMapAccess::keyValueIterator(void* container) {
     return m_containerAccess->keyValueIterator(container);
 }
 
@@ -1525,6 +1578,10 @@ jint WrapperMapAccess::size(JNIEnv * env, const void* container)  {
      return m_containerAccess->size(env, container);
 }
 
+qsizetype WrapperMapAccess::size(const void* container){
+    return m_containerAccess->size(container);
+}
+
 jobject WrapperMapAccess::take(JNIEnv *env, const ContainerInfo& container,jobject key)  {
     return m_containerAccess->take(env, container, key);
 }
@@ -1545,6 +1602,18 @@ bool WrapperMapAccess::keyLessThan(JNIEnv *env, jobject key1, jobject key2)  {
     return m_containerAccess->keyLessThan(env, key1, key2);
 }
 
+bool WrapperMapAccess::contains(const void* container, const void* key) {
+    return m_containerAccess->contains(container, key);
+}
+
+void WrapperMapAccess::insert(void* container,const void* key, const void* value) {
+    m_containerAccess->insert(container, key, value);
+}
+
+const void* WrapperMapAccess::value(const void* container, const void* key, const void* defaultValue) {
+    return m_containerAccess->value(container, key, defaultValue);
+}
+
 WrapperMultiMapAccess::WrapperMultiMapAccess(AbstractMultiMapAccess* containerAccess)
     : AbstractMultiMapAccess(), m_containerAccess(containerAccess) {}
 
@@ -1554,6 +1623,7 @@ WrapperMultiMapAccess::~WrapperMultiMapAccess() {
 }
 
 std::unique_ptr<AbstractMapAccess::KeyValueIterator> WrapperMultiMapAccess::keyValueIterator(const void* container) { return m_containerAccess->keyValueIterator(container); }
+std::unique_ptr<AbstractMapAccess::KeyValueIterator> WrapperMultiMapAccess::keyValueIterator(void* container) { return m_containerAccess->keyValueIterator(container); }
 
 AbstractMultiMapAccess* WrapperMultiMapAccess::clone() {
     return m_containerAccess->clone();
@@ -1752,6 +1822,10 @@ jint WrapperMultiMapAccess::size(JNIEnv * env, const void* container)  {
      return m_containerAccess->size(env, container);
 }
 
+qsizetype WrapperMultiMapAccess::size(const void* container){
+    return m_containerAccess->size(container);
+}
+
 jobject WrapperMultiMapAccess::take(JNIEnv *env, const ContainerInfo& container,jobject key)  {
     return m_containerAccess->take(env, container, key);
 }
@@ -1808,6 +1882,18 @@ void WrapperMultiMapAccess::replace(JNIEnv * env, const ContainerInfo& container
     m_containerAccess->replace(env, container, key, value);
 }
 
+bool WrapperMultiMapAccess::contains(const void* container, const void* key) {
+    return m_containerAccess->contains(container, key);
+}
+
+void WrapperMultiMapAccess::insert(void* container,const void* key, const void* value) {
+    m_containerAccess->insert(container, key, value);
+}
+
+const void* WrapperMultiMapAccess::value(const void* container, const void* key, const void* defaultValue) {
+    return m_containerAccess->value(container, key, defaultValue);
+}
+
 WrapperHashAccess::WrapperHashAccess(AbstractHashAccess* containerAccess)
     : AbstractHashAccess(), m_containerAccess(containerAccess) {}
 
@@ -1837,6 +1923,10 @@ bool WrapperHashAccess::isDetached(const void* container) {
 }
 
 std::unique_ptr<AbstractHashAccess::KeyValueIterator> WrapperHashAccess::keyValueIterator(const void* container) {
+    return m_containerAccess->keyValueIterator(container);
+}
+
+std::unique_ptr<AbstractHashAccess::KeyValueIterator> WrapperHashAccess::keyValueIterator(void* container) {
     return m_containerAccess->keyValueIterator(container);
 }
 
@@ -2005,6 +2095,10 @@ jint WrapperHashAccess::size(JNIEnv * env, const void* container)  {
     return m_containerAccess->size(env, container);
 }
 
+qsizetype WrapperHashAccess::size(const void* container){
+    return m_containerAccess->size(container);
+}
+
 jobject WrapperHashAccess::take(JNIEnv *env, const ContainerInfo& container, jobject key)  {
     return m_containerAccess->take(env, container, key);
 }
@@ -2015,6 +2109,18 @@ jobject WrapperHashAccess::value(JNIEnv * env, const void* container, jobject ke
 
 ContainerAndAccessInfo WrapperHashAccess::values(JNIEnv * env, const ConstContainerInfo& container)  {
     return m_containerAccess->values(env, container);
+}
+
+bool WrapperHashAccess::contains(const void* container, const void* key) {
+    return m_containerAccess->contains(container, key);
+}
+
+void WrapperHashAccess::insert(void* container,const void* key, const void* value) {
+    m_containerAccess->insert(container, key, value);
+}
+
+const void* WrapperHashAccess::value(const void* container, const void* key, const void* defaultValue) {
+    return m_containerAccess->value(container, key, defaultValue);
 }
 
 WrapperMultiHashAccess::WrapperMultiHashAccess(AbstractMultiHashAccess* containerAccess)
@@ -2207,9 +2313,14 @@ void WrapperMultiHashAccess::reserve(JNIEnv * env, const ContainerInfo& containe
 }
 
 std::unique_ptr<AbstractHashAccess::KeyValueIterator> WrapperMultiHashAccess::keyValueIterator(const void* container) { return m_containerAccess->keyValueIterator(container); }
+std::unique_ptr<AbstractHashAccess::KeyValueIterator> WrapperMultiHashAccess::keyValueIterator(void* container) { return m_containerAccess->keyValueIterator(container); }
 
 jint WrapperMultiHashAccess::size(JNIEnv * env, const void* container)  {
     return m_containerAccess->size(env, container);
+}
+
+qsizetype WrapperMultiHashAccess::size(const void* container){
+    return m_containerAccess->size(container);
 }
 
 jobject WrapperMultiHashAccess::take(JNIEnv *env, const ContainerInfo& container, jobject key)  {
@@ -2258,6 +2369,18 @@ ContainerAndAccessInfo WrapperMultiHashAccess::uniqueKeys(JNIEnv * env, const Co
 
 void WrapperMultiHashAccess::unite(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other)  {
     m_containerAccess->unite(env, container, other);
+}
+
+bool WrapperMultiHashAccess::contains(const void* container, const void* key) {
+    return m_containerAccess->contains(container, key);
+}
+
+void WrapperMultiHashAccess::insert(void* container,const void* key, const void* value) {
+    m_containerAccess->insert(container, key, value);
+}
+
+const void* WrapperMultiHashAccess::value(const void* container, const void* key, const void* defaultValue) {
+    return m_containerAccess->value(container, key, defaultValue);
 }
 
 bool AbstractContainerAccess::isPointerType(const QMetaType& metaType){
@@ -4338,6 +4461,12 @@ AbstractSequentialAccess::~AbstractSequentialAccess(){}
 AbstractSequentialAccess::AbstractSequentialAccess(){}
 AbstractSequentialAccess::ElementIterator::~ElementIterator(){}
 
+const QMetaType& AbstractSequentialAccess::ElementIterator::elementMetaType() { return access()->elementMetaType(); }
+AbstractContainerAccess::DataType AbstractSequentialAccess::ElementIterator::elementType() { return access()->elementType(); }
+AbstractContainerAccess* AbstractSequentialAccess::ElementIterator::elementNestedContainerAccess() { return access()->elementNestedContainerAccess(); }
+bool AbstractSequentialAccess::ElementIterator::hasNestedContainerAccess() { return access()->hasNestedContainerAccess(); }
+bool AbstractSequentialAccess::ElementIterator::hasNestedPointers() { return access()->hasNestedPointers(); }
+
 #if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
 AbstractSpanAccess::~AbstractSpanAccess(){}
 AbstractSpanAccess::AbstractSpanAccess(){}
@@ -4371,6 +4500,235 @@ AbstractSetAccess::AbstractSetAccess(){}
 AbstractAssociativeAccess::~AbstractAssociativeAccess(){}
 AbstractAssociativeAccess::AbstractAssociativeAccess(){}
 AbstractAssociativeAccess::KeyValueIterator::~KeyValueIterator(){}
+const QMetaType& AbstractAssociativeAccess::KeyValueIterator::keyMetaType() { return access()->keyMetaType(); }
+const QMetaType& AbstractAssociativeAccess::KeyValueIterator::valueMetaType() { return access()->valueMetaType(); }
+AbstractContainerAccess::DataType AbstractAssociativeAccess::KeyValueIterator::keyType() { return access()->keyType(); }
+AbstractContainerAccess::DataType AbstractAssociativeAccess::KeyValueIterator::valueType() { return access()->valueType(); }
+AbstractContainerAccess* AbstractAssociativeAccess::KeyValueIterator::keyNestedContainerAccess() { return access()->keyNestedContainerAccess(); }
+AbstractContainerAccess* AbstractAssociativeAccess::KeyValueIterator::valueNestedContainerAccess() { return access()->valueNestedContainerAccess(); }
+bool AbstractAssociativeAccess::KeyValueIterator::hasKeyNestedContainerAccess() { return access()->hasKeyNestedContainerAccess(); }
+bool AbstractAssociativeAccess::KeyValueIterator::hasValueNestedContainerAccess() { return access()->hasValueNestedContainerAccess(); }
+bool AbstractAssociativeAccess::KeyValueIterator::hasKeyNestedPointers() { return access()->hasKeyNestedPointers(); }
+bool AbstractAssociativeAccess::KeyValueIterator::hasValueNestedPointers() { return access()->hasValueNestedPointers(); }
+
+std::unique_ptr<AbstractSequentialAccess::ElementIterator> AbstractAssociativeAccess::KeyValueIterator::nextAsIterator(){
+    if(hasNext()){
+        class ElementIterator : public AbstractSequentialAccess::ElementIterator{
+            QMetaType m_keyMetaType;
+            QMetaType m_valueMetaType;
+            DataType m_keyType;
+            DataType m_valueType;
+            AbstractContainerAccess* m_keyNestedContainerAccess;
+            AbstractContainerAccess* m_valueNestedContainerAccess;
+            bool m_hasKeyNestedPointers;
+            bool m_hasValueNestedPointers;
+            QPair<const void*,const void*> pair;
+            uint index = 0;
+            ElementIterator(const ElementIterator& other) :
+                m_keyMetaType(other.m_keyMetaType),
+                m_valueMetaType(other.m_valueMetaType),
+                m_keyType(other.m_keyType),
+                m_valueType(other.m_valueType),
+                m_keyNestedContainerAccess(other.m_keyNestedContainerAccess),
+                m_valueNestedContainerAccess(other.m_valueNestedContainerAccess),
+                m_hasKeyNestedPointers(other.m_hasKeyNestedPointers),
+                m_hasValueNestedPointers(other.m_hasValueNestedPointers),
+                pair(other.pair), index(other.index) {}
+        public:
+            ElementIterator(AbstractAssociativeAccess::KeyValueIterator* _iter) :
+                m_keyMetaType(_iter->keyMetaType()),
+                m_valueMetaType(_iter->valueMetaType()),
+                m_keyType(_iter->keyType()),
+                m_valueType(_iter->valueType()),
+                m_keyNestedContainerAccess(_iter->keyNestedContainerAccess()),
+                m_valueNestedContainerAccess(_iter->valueNestedContainerAccess()),
+                m_hasKeyNestedPointers(_iter->hasKeyNestedPointers()),
+                m_hasValueNestedPointers(_iter->hasValueNestedPointers()),
+                pair(_iter->constNext()) {}
+        protected:
+            AbstractSequentialAccess* access() override { return nullptr; }
+        public:
+            const QMetaType& elementMetaType() override {
+                switch(index){
+                case 0:
+                    return m_keyMetaType;
+                default:
+                    return m_valueMetaType;
+                }
+            }
+            DataType elementType() override {
+                switch(index){
+                case 0:
+                    return m_keyType;
+                default:
+                    return m_valueType;
+                }
+            }
+            AbstractContainerAccess* elementNestedContainerAccess() override {
+                switch(index){
+                case 0:
+                    return m_keyNestedContainerAccess;
+                case 1:
+                    return m_valueNestedContainerAccess;
+                default:
+                    return nullptr;
+                }
+            }
+            bool hasNestedContainerAccess() override {
+                return elementNestedContainerAccess();
+            }
+            bool hasNestedPointers() override {
+                switch(index){
+                case 0:
+                    return m_hasKeyNestedPointers;
+                default:
+                    return m_hasValueNestedPointers;
+                }
+            }
+            bool hasNext() override{
+                return index<2;
+            }
+            bool isConst() override{
+                return true;
+            }
+            const void* constNext() override {
+                switch(index){
+                case 0:
+                    ++index;
+                    return pair.first;
+                case 1:
+                    ++index;
+                    return pair.second;
+                default:
+                    return nullptr;
+                }
+            }
+            void* mutableNext() override {
+                return nullptr;
+            }
+            jobject next(JNIEnv *) override{
+                return nullptr;
+            }
+            const void* next() override {
+                switch(index){
+                case 0:
+                    if(elementType() & AbstractContainerAccess::PointersMask){
+                        ++index;
+                        return *reinterpret_cast<void*const*>(pair.first);
+                    }else{
+                        ++index;
+                        return pair.first;
+                    }
+                    return pair.first;
+                case 1:
+                    if(elementType() & AbstractContainerAccess::PointersMask){
+                        ++index;
+                        return *reinterpret_cast<void*const*>(pair.second);
+                    }else{
+                        ++index;
+                        return pair.second;
+                    }
+                default:
+                    return nullptr;
+                }
+            }
+            bool operator==(const AbstractSequentialAccess::ElementIterator& other) const override {
+                return pair==reinterpret_cast<const ElementIterator&>(other).pair && index==reinterpret_cast<const ElementIterator&>(other).index;
+            }
+            std::unique_ptr<AbstractSequentialAccess::ElementIterator> clone() const override {
+                return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(*this));
+            }
+        };
+        return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(this));
+    }
+    return {};
+}
+
+std::unique_ptr<AbstractSequentialAccess::ElementIterator> AbstractAssociativeAccess::asKeyIterator(std::unique_ptr<KeyValueIterator>&& iter){
+    class ElementIterator : public AbstractSequentialAccess::ElementIterator{
+        std::unique_ptr<KeyValueIterator> iter;
+        ElementIterator(const ElementIterator& other)
+            :iter(other.iter->clone()) {}
+    public:
+        ElementIterator(std::unique_ptr<KeyValueIterator>&& _iter) : iter(std::move(_iter)) {}
+    protected:
+        AbstractSequentialAccess* access() override { return nullptr; }
+    public:
+        const QMetaType& elementMetaType() override { return iter->keyMetaType(); }
+        DataType elementType() override { return iter->keyType(); }
+        AbstractContainerAccess* elementNestedContainerAccess() override { return iter->keyNestedContainerAccess(); }
+        bool hasNestedContainerAccess() override { return iter->hasKeyNestedContainerAccess(); }
+        bool hasNestedPointers() override { return iter->hasKeyNestedPointers(); }
+        bool hasNext() override{
+            return iter->hasNext();
+        }
+        bool isConst() override{
+            return true;
+        }
+        const void* constNext() override {
+            return iter->constNext().first;
+        }
+        void* mutableNext() override {
+            return nullptr;
+        }
+        jobject next(JNIEnv * env) override{
+            return iter->next(env).first;
+        }
+        const void* next() override {
+            return iter->next().first;
+        }
+        bool operator==(const AbstractSequentialAccess::ElementIterator& other) const override {
+            return iter==reinterpret_cast<const ElementIterator&>(other).iter;
+        }
+        std::unique_ptr<AbstractSequentialAccess::ElementIterator> clone() const override {
+            return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(*this));
+        }
+    };
+    return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(std::move(iter)));
+}
+
+std::unique_ptr<AbstractSequentialAccess::ElementIterator> AbstractAssociativeAccess::asValueIterator(std::unique_ptr<KeyValueIterator>&& iter){
+    class ElementIterator : public AbstractSequentialAccess::ElementIterator{
+        std::unique_ptr<KeyValueIterator> iter;
+        ElementIterator(const ElementIterator& other)
+            :iter(other.iter->clone()) {}
+    public:
+        ElementIterator(std::unique_ptr<KeyValueIterator>&& _iter) : iter(std::move(_iter)) {}
+    protected:
+        AbstractSequentialAccess* access() override { return nullptr; }
+    public:
+        const QMetaType& elementMetaType() override { return iter->valueMetaType(); }
+        DataType elementType() override { return iter->valueType(); }
+        AbstractContainerAccess* elementNestedContainerAccess() override { return iter->valueNestedContainerAccess(); }
+        bool hasNestedContainerAccess() override { return iter->hasValueNestedContainerAccess(); }
+        bool hasNestedPointers() override { return iter->hasValueNestedPointers(); }
+        bool hasNext() override{
+            return iter->hasNext();
+        }
+        bool isConst() override{
+            return iter->isConst();
+        }
+        const void* constNext() override {
+            return iter->constNext().second;
+        }
+        void* mutableNext() override {
+            return iter->mutableNext().second;
+        }
+        jobject next(JNIEnv * env) override{
+            return iter->next(env).second;
+        }
+        const void* next() override {
+            return iter->next().second;
+        }
+        bool operator==(const AbstractSequentialAccess::ElementIterator& other) const override {
+            return iter==reinterpret_cast<const ElementIterator&>(other).iter;
+        }
+        std::unique_ptr<AbstractSequentialAccess::ElementIterator> clone() const override {
+            return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(*this));
+        }
+    };
+    return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(std::move(iter)));
+}
 
 AbstractMapAccess::~AbstractMapAccess(){}
 AbstractMapAccess::AbstractMapAccess(){}
@@ -4432,7 +4790,7 @@ void AbstractReferenceCountingContainer::unfoldAndAddContainer(JNIEnv * env, job
                 secondAccess->dispose();
         }else if(auto _access = dynamic_cast<AbstractSequentialAccess*>(access)){
             auto elementAccess = _access->elementNestedContainerAccess();
-            auto iterator = _access->elementIterator(data);
+            auto iterator = _access->constElementIterator(data);
             while(iterator->hasNext()){
                 auto content = iterator->next();
                 unfoldAndAddContainer(env, set, content, _access->elementType(), _access->elementMetaType(), elementAccess);
@@ -4442,7 +4800,7 @@ void AbstractReferenceCountingContainer::unfoldAndAddContainer(JNIEnv * env, job
         }else if(auto _access = dynamic_cast<AbstractAssociativeAccess*>(access)){
             auto keyAccess = _access->keyNestedContainerAccess();
             auto valueAccess = _access->valueNestedContainerAccess();
-            auto iterator = _access->keyValueIterator(data);
+            auto iterator = _access->constKeyValueIterator(data);
             while(iterator->hasNext()){
                 auto content = iterator->next();
                 unfoldAndAddContainer(env, set, content.first, _access->keyType(), _access->keyMetaType(), keyAccess);
@@ -5297,7 +5655,7 @@ KeyPointerRCMapAccess* KeyPointerRCMapAccess::clone(){
 void KeyPointerRCMapAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
     JniLocalFrame frame(env, 200);
     jobject set = Java::Runtime::HashSet::newInstance(env);
-    auto iterator = keyValueIterator(container.container);
+    auto iterator = constKeyValueIterator(container.container);
     while(iterator->hasNext()){
         const void* content = iterator->next().first;
         jobject obj{nullptr};
@@ -5383,7 +5741,7 @@ ValuePointerRCMapAccess* ValuePointerRCMapAccess::clone(){
 void ValuePointerRCMapAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
     JniLocalFrame frame(env, 200);
     jobject set = Java::Runtime::HashSet::newInstance(env);
-    auto iterator = keyValueIterator(container.container);
+    auto iterator = constKeyValueIterator(container.container);
     while(iterator->hasNext()){
         const void* content = iterator->next().second;
         jobject obj{nullptr};
@@ -5470,7 +5828,7 @@ PointersRCMapAccess* PointersRCMapAccess::clone(){
 void PointersRCMapAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
     JniLocalFrame frame(env, 200);
     jobject map = Java::Runtime::HashMap::newInstance(env, 0);
-    auto iterator = keyValueIterator(container.container);
+    auto iterator = constKeyValueIterator(container.container);
     while(iterator->hasNext()){
         auto content = iterator->next();
         jobject key{nullptr};
@@ -5570,7 +5928,7 @@ KeyPointerRCMultiMapAccess* KeyPointerRCMultiMapAccess::clone(){
 void KeyPointerRCMultiMapAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
     JniLocalFrame frame(env, 200);
     jobject set = Java::Runtime::HashSet::newInstance(env);
-    auto iterator = keyValueIterator(container.container);
+    auto iterator = constKeyValueIterator(container.container);
     while(iterator->hasNext()){
         auto content = iterator->next();
         jobject obj{nullptr};
@@ -5673,7 +6031,7 @@ ValuePointerRCMultiMapAccess* ValuePointerRCMultiMapAccess::clone(){
 void ValuePointerRCMultiMapAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
     JniLocalFrame frame(env, 200);
     jobject set = Java::Runtime::HashSet::newInstance(env);
-    auto iterator = keyValueIterator(container.container);
+    auto iterator = constKeyValueIterator(container.container);
     while(iterator->hasNext()){
         auto content = iterator->next();
         jobject obj{nullptr};
@@ -5789,7 +6147,7 @@ PointersRCMultiMapAccess* PointersRCMultiMapAccess::clone(){
 void PointersRCMultiMapAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
     JniLocalFrame frame(env, 200);
     jobject map = Java::QtJambi::ReferenceUtility$RCMap::newInstance(env);
-    auto iterator = keyValueIterator(container.container);
+    auto iterator = constKeyValueIterator(container.container);
     while(iterator->hasNext()){
         auto content = iterator->next();
         jobject key{nullptr};
@@ -5906,7 +6264,7 @@ KeyPointerRCHashAccess* KeyPointerRCHashAccess::clone(){
 void KeyPointerRCHashAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
     JniLocalFrame frame(env, 200);
     jobject set = Java::Runtime::HashSet::newInstance(env);
-    auto iterator = keyValueIterator(container.container);
+    auto iterator = constKeyValueIterator(container.container);
     while(iterator->hasNext()){
         auto content = iterator->next();
         jobject obj{nullptr};
@@ -5988,7 +6346,7 @@ ValuePointerRCHashAccess* ValuePointerRCHashAccess::clone(){
 void ValuePointerRCHashAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
     JniLocalFrame frame(env, 200);
     jobject set = Java::Runtime::HashSet::newInstance(env);
-    auto iterator = keyValueIterator(container.container);
+    auto iterator = constKeyValueIterator(container.container);
     while(iterator->hasNext()){
         auto content = iterator->next();
         jobject obj{nullptr};
@@ -6075,7 +6433,7 @@ PointersRCHashAccess* PointersRCHashAccess::clone(){
 void PointersRCHashAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
     JniLocalFrame frame(env, 200);
     jobject map = Java::QtJambi::ReferenceUtility$RCMap::newInstance(env);
-    auto iterator = keyValueIterator(container.container);
+    auto iterator = constKeyValueIterator(container.container);
     while(iterator->hasNext()){
         auto content = iterator->next();
         jobject key{nullptr};
@@ -6177,7 +6535,7 @@ KeyPointerRCMultiHashAccess* KeyPointerRCMultiHashAccess::clone(){
 void KeyPointerRCMultiHashAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
     JniLocalFrame frame(env, 200);
     jobject set = Java::Runtime::HashSet::newInstance(env);
-    auto iterator = keyValueIterator(container.container);
+    auto iterator = constKeyValueIterator(container.container);
     while(iterator->hasNext()){
         auto content = iterator->next();
         jobject obj{nullptr};
@@ -6273,7 +6631,7 @@ ValuePointerRCMultiHashAccess* ValuePointerRCMultiHashAccess::clone(){
 void ValuePointerRCMultiHashAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
     JniLocalFrame frame(env, 200);
     jobject set = Java::Runtime::HashSet::newInstance(env);
-    auto iterator = keyValueIterator(container.container);
+    auto iterator = constKeyValueIterator(container.container);
     while(iterator->hasNext()){
         auto content = iterator->next();
         jobject obj{nullptr};
@@ -6380,7 +6738,7 @@ PointersRCMultiHashAccess* PointersRCMultiHashAccess::clone(){
 void PointersRCMultiHashAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
     JniLocalFrame frame(env, 200);
     jobject map = Java::QtJambi::ReferenceUtility$RCMap::newInstance(env);
-    auto iterator = keyValueIterator(container.container);
+    auto iterator = constKeyValueIterator(container.container);
     while(iterator->hasNext()){
         auto content = iterator->next();
         jobject key{nullptr};
@@ -6846,7 +7204,7 @@ void NestedPointersRCMapAccess::updateRC(JNIEnv * env, const ContainerInfo& cont
         jobject set = Java::Runtime::HashSet::newInstance(env);
         auto access1 = keyNestedContainerAccess();
         auto access2 = valueNestedContainerAccess();
-        auto iterator = keyValueIterator(container.container);
+        auto iterator = constKeyValueIterator(container.container);
         while(iterator->hasNext()){
             auto current = iterator->next();
             unfoldAndAddContainer(env, set, current.first, keyType(), keyMetaType(), access1);
@@ -6923,7 +7281,7 @@ void NestedPointersRCMultiMapAccess::updateRC(JNIEnv * env, const ContainerInfo&
         jobject set = Java::Runtime::HashSet::newInstance(env);
         auto access1 = keyNestedContainerAccess();
         auto access2 = valueNestedContainerAccess();
-        auto iterator = keyValueIterator(container.container);
+        auto iterator = constKeyValueIterator(container.container);
         while(iterator->hasNext()){
             auto current = iterator->next();
             unfoldAndAddContainer(env, set, current.first, keyType(), keyMetaType(), access1);
@@ -7019,7 +7377,7 @@ void NestedPointersRCHashAccess::updateRC(JNIEnv * env, const ContainerInfo& con
         jobject set = Java::Runtime::HashSet::newInstance(env);
         auto access1 = keyNestedContainerAccess();
         auto access2 = valueNestedContainerAccess();
-        auto iterator = keyValueIterator(container.container);
+        auto iterator = constKeyValueIterator(container.container);
         while(iterator->hasNext()){
             auto current = iterator->next();
             unfoldAndAddContainer(env, set, current.first, keyType(), keyMetaType(), access1);
@@ -7096,7 +7454,7 @@ void NestedPointersRCMultiHashAccess::updateRC(JNIEnv * env, const ContainerInfo
         jobject set = Java::Runtime::HashSet::newInstance(env);
         auto access1 = keyNestedContainerAccess();
         auto access2 = valueNestedContainerAccess();
-        auto iterator = keyValueIterator(container.container);
+        auto iterator = constKeyValueIterator(container.container);
         while(iterator->hasNext()){
             auto current = iterator->next();
             unfoldAndAddContainer(env, set, current.first, keyType(), keyMetaType(), access1);

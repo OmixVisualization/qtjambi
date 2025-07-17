@@ -648,6 +648,19 @@ void Instantiation::setTargetType(const QString &newTargetType)
     emit targetTypeChanged();
 }
 
+bool Instantiation::getNoImplicitArguments() const
+{
+    return noImplicitArguments;
+}
+
+void Instantiation::setNoImplicitArguments(bool newNoImplicitArguments)
+{
+    if (noImplicitArguments == newNoImplicitArguments)
+        return;
+    noImplicitArguments = newNoImplicitArguments;
+    emit noImplicitArgumentsChanged();
+}
+
 const QString &Argument::getType() const
 {
     return type;

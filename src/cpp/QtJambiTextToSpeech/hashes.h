@@ -42,7 +42,11 @@ inline bool operator==(const QVoice& lhs, const QVoice& rhs)
 
 inline hash_type qHash(const QVoice &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.name());
     seed = hash(seed, value.age());
     seed = hash(seed, value.gender());

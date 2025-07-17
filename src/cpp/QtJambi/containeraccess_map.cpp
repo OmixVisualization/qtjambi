@@ -1226,10 +1226,6 @@ void AutoMapAccess::copyNode(QList<TreeNode*>& nextNodes, QHash<TreeNode*,TreeNo
     }
 };
 
-void AutoMapAccess::insert(void* container, const void* key, const void* value){
-    insertOrAssign(detach(*reinterpret_cast<MapDataPointer*>(container)), key, value);
-}
-
 AutoMapAccess::MapData& AutoMapAccess::detach(MapDataPointer& d){
     if(!d){
         MapData* mapData = createMapData();
@@ -1575,20 +1571,28 @@ AutoMapAccess::~AutoMapAccess(){}
 
 std::unique_ptr<AbstractMapAccess::KeyValueIterator> AutoMapAccess::keyValueIterator(const void* container) {
     class KeyValueIterator : public AbstractMapAccess::KeyValueIterator{
-        AutoMapAccess* access;
+        AutoMapAccess* m_access;
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         Node* current;
         Node* end;
     public:
         KeyValueIterator(AutoMapAccess* _access, QMapDataBase *const* map)
-            :access(_access), current(beginNode(map)), end(endNode(map)){}
+            :m_access(_access), current(beginNode(map)), end(endNode(map)){}
 #else
         node_iterator current;
         node_iterator end;
     public:
         KeyValueIterator(AutoMapAccess* _access, const MapDataPointer& d)
-            :access(_access), current(d ? _access->begin(*d) : node_iterator{}), end(d? _access->end(*d) : node_iterator{}){}
+            :m_access(_access), current(d ? _access->begin(*d) : node_iterator{}), end(d? _access->end(*d) : node_iterator{}){}
 #endif
+    protected:
+        AbstractAssociativeAccess* access() override {return m_access;}
+    private:
+        KeyValueIterator(const KeyValueIterator& other)
+            :m_access(other.m_access),
+            current(other.current),
+            end(other.end) {}
+    public:
         bool hasNext() override{
             return current!=end;
         }
@@ -1598,39 +1602,165 @@ std::unique_ptr<AbstractMapAccess::KeyValueIterator> AutoMapAccess::keyValueIter
             jvalue v;
             v.l = nullptr;
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            access->m_keyInternalToExternalConverter(env, nullptr, reinterpret_cast<char*>(current)+access->m_offset1, k, true);
-            access->m_valueInternalToExternalConverter(env, nullptr, reinterpret_cast<char*>(current)+access->m_offset2, v, true);
+            m_access->m_keyInternalToExternalConverter(env, nullptr, reinterpret_cast<char*>(current)+m_access->m_offset1, k, true);
+            m_access->m_valueInternalToExternalConverter(env, nullptr, reinterpret_cast<char*>(current)+m_access->m_offset2, v, true);
             current = current->nextNode();
 #else
-            access->m_keyInternalToExternalConverter(env, nullptr, current->data(access->m_offset1), k, true);
-            access->m_valueInternalToExternalConverter(env, nullptr, current->data(access->m_offset2), v, true);
+            m_access->m_keyInternalToExternalConverter(env, nullptr, current->data(m_access->m_offset1), k, true);
+            m_access->m_valueInternalToExternalConverter(env, nullptr, current->data(m_access->m_offset2), v, true);
             ++current;
 #endif
             return {k.l, v.l};
         }
         QPair<const void*,const void*> next() override {
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            void* key = reinterpret_cast<char*>(current)+access->m_offset1;
-            void* value = reinterpret_cast<char*>(current)+access->m_offset2;
+            void* key = reinterpret_cast<char*>(current)+m_access->m_offset1;
+            void* value = reinterpret_cast<char*>(current)+m_access->m_offset2;
             current = current->nextNode();
 #else
-            void* key = current->data(access->m_offset1);
-            void* value = current->data(access->m_offset2);
+            void* key = current->data(m_access->m_offset1);
+            void* value = current->data(m_access->m_offset2);
             ++current;
 #endif
-            if(access->m_keyDataType & AbstractContainerAccess::PointersMask){
+            if(m_access->m_keyDataType & AbstractContainerAccess::PointersMask){
                 key = *reinterpret_cast<void**>(key);
             }
-            if(access->m_valueDataType & AbstractContainerAccess::PointersMask){
+            if(m_access->m_valueDataType & AbstractContainerAccess::PointersMask){
                 value = *reinterpret_cast<void**>(value);
             }
             return {key, value};
+        }
+        bool operator==(const AbstractMapAccess::KeyValueIterator& other) const override {
+            return current==reinterpret_cast<const KeyValueIterator&>(other).current;
+        }
+        std::unique_ptr<AbstractAssociativeAccess::KeyValueIterator> clone() const override {
+            return std::unique_ptr<AbstractAssociativeAccess::KeyValueIterator>(new KeyValueIterator(*this));
+        }
+        bool isConst() override{
+            return true;
+        }
+        QPair<const void*,const void*> constNext() override {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+            void* key = reinterpret_cast<char*>(current)+m_access->m_offset1;
+            void* value = reinterpret_cast<char*>(current)+m_access->m_offset2;
+            current = current->nextNode();
+#else
+            void* key = current->data(m_access->m_offset1);
+            void* value = current->data(m_access->m_offset2);
+            ++current;
+#endif
+            return {key, value};
+        }
+        QPair<const void*,void*> mutableNext() override {
+            return {nullptr, nullptr};
         }
     };
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     return std::unique_ptr<AbstractMapAccess::KeyValueIterator>(new KeyValueIterator(this, reinterpret_cast<QMapDataBase *const*>(container)));
 #else
     return std::unique_ptr<AbstractMapAccess::KeyValueIterator>(new KeyValueIterator(this, *reinterpret_cast<const MapDataPointer*>(container)));
+#endif
+}
+
+std::unique_ptr<AbstractMapAccess::KeyValueIterator> AutoMapAccess::keyValueIterator(void* container) {
+    class KeyValueIterator : public AbstractMapAccess::KeyValueIterator{
+        AutoMapAccess* m_access;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+        Node* current;
+        Node* end;
+    public:
+        KeyValueIterator(AutoMapAccess* _access, QMapDataBase ** map)
+            :m_access(_access), current(beginNode(map)), end(endNode(map)){}
+#else
+        node_iterator current;
+        node_iterator end;
+    public:
+        KeyValueIterator(AutoMapAccess* _access, MapDataPointer& d)
+            :m_access(_access), current(d ? _access->begin(*d) : node_iterator{}), end(d? _access->end(*d) : node_iterator{}){}
+#endif
+    protected:
+        AbstractAssociativeAccess* access() override {return m_access;}
+    private:
+        KeyValueIterator(const KeyValueIterator& other)
+            :m_access(other.m_access),
+            current(other.current),
+            end(other.end) {}
+    public:
+        bool hasNext() override{
+            return current!=end;
+        }
+        QPair<jobject,jobject> next(JNIEnv * env) override{
+            jvalue k;
+            k.l = nullptr;
+            jvalue v;
+            v.l = nullptr;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+            m_access->m_keyInternalToExternalConverter(env, nullptr, reinterpret_cast<char*>(current)+m_access->m_offset1, k, true);
+            m_access->m_valueInternalToExternalConverter(env, nullptr, reinterpret_cast<char*>(current)+m_access->m_offset2, v, true);
+            current = current->nextNode();
+#else
+            m_access->m_keyInternalToExternalConverter(env, nullptr, current->data(m_access->m_offset1), k, true);
+            m_access->m_valueInternalToExternalConverter(env, nullptr, current->data(m_access->m_offset2), v, true);
+            ++current;
+#endif
+            return {k.l, v.l};
+        }
+        QPair<const void*,const void*> next() override {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+            void* key = reinterpret_cast<char*>(current)+m_access->m_offset1;
+            void* value = reinterpret_cast<char*>(current)+m_access->m_offset2;
+            current = current->nextNode();
+#else
+            void* key = current->data(m_access->m_offset1);
+            void* value = current->data(m_access->m_offset2);
+            ++current;
+#endif
+            if(m_access->m_keyDataType & AbstractContainerAccess::PointersMask){
+                key = *reinterpret_cast<void**>(key);
+            }
+            if(m_access->m_valueDataType & AbstractContainerAccess::PointersMask){
+                value = *reinterpret_cast<void**>(value);
+            }
+            return {key, value};
+        }
+        bool operator==(const AbstractMapAccess::KeyValueIterator& other) const override {
+            return current==reinterpret_cast<const KeyValueIterator&>(other).current;
+        }
+        std::unique_ptr<AbstractAssociativeAccess::KeyValueIterator> clone() const override {
+            return std::unique_ptr<AbstractAssociativeAccess::KeyValueIterator>(new KeyValueIterator(*this));
+        }
+        bool isConst() override{
+            return false;
+        }
+        QPair<const void*,const void*> constNext() override {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+            void* key = reinterpret_cast<char*>(current)+m_access->m_offset1;
+            void* value = reinterpret_cast<char*>(current)+m_access->m_offset2;
+            current = current->nextNode();
+#else
+            void* key = current->data(m_access->m_offset1);
+            void* value = current->data(m_access->m_offset2);
+            ++current;
+#endif
+            return {key, value};
+        }
+        QPair<const void*,void*> mutableNext() override {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+            void* key = reinterpret_cast<char*>(current)+m_access->m_offset1;
+            void* value = reinterpret_cast<char*>(current)+m_access->m_offset2;
+            current = current->nextNode();
+#else
+            void* key = current->data(m_access->m_offset1);
+            void* value = current->data(m_access->m_offset2);
+            ++current;
+#endif
+            return {key, value};
+        }
+    };
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    return std::unique_ptr<AbstractMapAccess::KeyValueIterator>(new KeyValueIterator(this, reinterpret_cast<QMapDataBase **>(container)));
+#else
+    return std::unique_ptr<AbstractMapAccess::KeyValueIterator>(new KeyValueIterator(this, *reinterpret_cast<MapDataPointer*>(container)));
 #endif
 }
 
@@ -1787,7 +1917,7 @@ bool AutoMapAccess::hasValueNestedPointers() {
 
 const QObject* AutoMapAccess::getOwner(const void* container){
     if(hasOwnerFunction() && size(container)>0){
-        auto iter = keyValueIterator(container);
+        auto iter = constKeyValueIterator(container);
         while(iter->hasNext()){
             auto current = iter->next();
             if(m_keyOwnerFunction){
@@ -1833,6 +1963,43 @@ qsizetype AutoMapAccess::size(const void* container){
         return d->size;
     }
     return 0;
+#endif
+}
+
+void AutoMapAccess::insert(void* container, const void* key, const void* value){
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    QMapDataBase ** map = reinterpret_cast<QMapDataBase **>(container.container);
+    QMapDataBase*& d = *map;
+
+    detach(map);
+
+    Node *n = rootNode(map);
+    Node *y = endNode(map);
+    Node *lastNode = nullptr;
+    bool  left = true;
+    while (n) {
+        y = n;
+        if (!qMapLessThanKey(*n, akey)) {
+            lastNode = n;
+            left = true;
+            n = n->left;
+        } else {
+            left = false;
+            n = n->right;
+        }
+    }
+    if (lastNode && !qMapLessThanKey(akey, *lastNode)) {
+        char* lastNodeData = reinterpret_cast<char*>(lastNode);
+        m_valueMetaType.destruct(lastNodeData + m_offset2);
+        m_valueMetaType.construct(lastNodeData + m_offset2, value);
+        return;
+    }
+    Node* newNode = d->createNode(int(m_size), int(m_align), y, left);
+    char* newNodeData = reinterpret_cast<char*>(newNode);
+    m_keyMetaType.construct(newNodeData + m_offset1, key);
+    m_valueMetaType.construct(newNodeData + m_offset2, value);
+#else
+    insertOrAssign(detach(*reinterpret_cast<MapDataPointer*>(container)), key, value);
 #endif
 }
 
@@ -1899,6 +2066,21 @@ jboolean AutoMapAccess::contains(JNIEnv *env,const void* container, jobject key)
             auto i = find(*d, akey);
             return i != end(*d);
         }
+    }
+#endif
+    return false;
+}
+
+bool AutoMapAccess::contains(const void* container, const void* key)
+{
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    QMapDataBase *const* map = reinterpret_cast<QMapDataBase *const*>(container);
+    QMapDataBase * d = *map;
+    return findNode(d, key) != nullptr;
+#else
+    if(const MapDataPointer& d = *reinterpret_cast<const MapDataPointer*>(container)){
+        auto i = find(*d, key);
+        return i != end(*d);
     }
 #endif
     return false;
@@ -2379,6 +2561,28 @@ jobject AutoMapAccess::value(JNIEnv *env, const void* container, jobject key, jo
                 m_valueInternalToExternalConverter(env, nullptr, i->data(m_offset2), jv, true);
                 return jv.l;
             }
+        }
+    }
+    return defaultValue;
+#endif
+}
+
+const void* AutoMapAccess::value(const void* container, const void* key, const void* defaultValue)
+{
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    QMapDataBase *const* map = reinterpret_cast<QMapDataBase *const*>(container);
+    QMapDataBase* d = *map;
+    jvalue jv;
+    jv.l = key;
+    QtJambiScope scope;
+    Node *n = findNode(d, key);
+    return n ? reinterpret_cast<char*>(n)+m_offset2 : defaultValue;
+#else
+    if(const MapDataPointer& d = *reinterpret_cast<const MapDataPointer*>(container)){
+        node_iterator i = find(*d, key);
+        node_iterator end1 = end(*d);
+        if(i != end1){
+            return i->data(m_offset2);
         }
     }
     return defaultValue;
@@ -3786,7 +3990,7 @@ KeyPointerRCAutoMapAccess* KeyPointerRCAutoMapAccess::clone(){
 void KeyPointerRCAutoMapAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
     JniLocalFrame frame(env, 200);
     jobject set = Java::Runtime::HashSet::newInstance(env);
-    auto iterator = keyValueIterator(container.container);
+    auto iterator = constKeyValueIterator(container.container);
     while(iterator->hasNext()){
         const void* content = iterator->next().first;
         jobject obj{nullptr};
@@ -3875,7 +4079,7 @@ ValuePointerRCAutoMapAccess* ValuePointerRCAutoMapAccess::clone(){
 void ValuePointerRCAutoMapAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
     JniLocalFrame frame(env, 200);
     jobject set = Java::Runtime::HashSet::newInstance(env);
-    auto iterator = keyValueIterator(container.container);
+    auto iterator = constKeyValueIterator(container.container);
     while(iterator->hasNext()){
         const void* content = iterator->next().second;
         jobject obj{nullptr};
@@ -3967,7 +4171,7 @@ PointersRCAutoMapAccess* PointersRCAutoMapAccess::clone(){
 void PointersRCAutoMapAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
     JniLocalFrame frame(env, 200);
     jobject map = Java::Runtime::HashMap::newInstance(env, 0);
-    auto iterator = keyValueIterator(container.container);
+    auto iterator = constKeyValueIterator(container.container);
     while(iterator->hasNext()){
         auto content = iterator->next();
         jobject key{nullptr};
@@ -4083,7 +4287,7 @@ void NestedPointersRCAutoMapAccess::updateRC(JNIEnv * env, const ContainerInfo& 
         jobject set = Java::Runtime::HashSet::newInstance(env);
         auto access1 = keyNestedContainerAccess();
         auto access2 = valueNestedContainerAccess();
-        auto iterator = keyValueIterator(container.container);
+        auto iterator = constKeyValueIterator(container.container);
         while(iterator->hasNext()){
             auto current = iterator->next();
             unfoldAndAddContainer(env, set, current.first, keyType(), keyMetaType(), access1);

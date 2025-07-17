@@ -631,6 +631,7 @@ public:
     virtual bool isSharedWith(const void* container, const void* container2) = 0;
     virtual void swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2) = 0;
     virtual jint size(JNIEnv * env, const void* container) = 0;
+    virtual qsizetype size(const void* container) = 0;
     virtual void clear(JNIEnv * env, const ContainerInfo& container) = 0;
     virtual jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) = 0;
     virtual jobject constEnd(JNIEnv * env, const ConstExtendedContainerInfo& container) = 0;
@@ -643,11 +644,28 @@ public:
     public:
         ElementIterator() = default;
         virtual ~ElementIterator();
+    protected:
+        virtual AbstractSequentialAccess* access() = 0;
+    public:
+        virtual const QMetaType& elementMetaType();
+        virtual DataType elementType();
+        virtual AbstractContainerAccess* elementNestedContainerAccess();
+        virtual bool hasNestedContainerAccess();
+        virtual bool hasNestedPointers();
         virtual bool hasNext() = 0;
         virtual jobject next(JNIEnv * env) = 0;
         virtual const void* next() = 0;
+        virtual bool isConst() = 0;
+        virtual const void* constNext() = 0;
+        virtual void* mutableNext() = 0;
+        virtual bool operator==(const ElementIterator& other) const = 0;
+        virtual std::unique_ptr<ElementIterator> clone() const = 0;
     };
     virtual std::unique_ptr<ElementIterator> elementIterator(const void*) = 0;
+    virtual std::unique_ptr<ElementIterator> elementIterator(void*) = 0;
+    inline std::unique_ptr<ElementIterator> constElementIterator(const void* container){
+        return elementIterator(container);
+    }
     Q_DISABLE_COPY_MOVE(AbstractSequentialAccess)
 };
 
@@ -662,6 +680,8 @@ public:
     virtual jint size_bytes(JNIEnv * env, const void* container) = 0;
     virtual jobject get(JNIEnv *,const void*,jint) = 0;
     virtual bool set(JNIEnv *,const ContainerInfo&,jint,jobject) = 0;
+    virtual const void* get(const void*,qsizetype) = 0;
+    virtual bool set(void*,qsizetype,const void*) = 0;
     virtual jobject begin(JNIEnv * env, const ExtendedContainerInfo& container) = 0;
     virtual jobject end(JNIEnv * env, const ExtendedContainerInfo& container) = 0;
     Q_DISABLE_COPY_MOVE(AbstractSpanAccess)
@@ -685,19 +705,24 @@ public:
 #endif //QT_VERSION >= QT_VERSION_CHECK(6,7,0)
     virtual void appendList(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& containerInfo) = 0;
     virtual jobject at(JNIEnv * env, const void* container, jint index) = 0;
+    virtual const void* at(const void* container, qsizetype index) = 0;
+    virtual void* at(void* container, qsizetype index) = 0;
     virtual jobject value(JNIEnv * env, const void* container, jint index) = 0;
     virtual jobject value(JNIEnv * env, const void* container, jint index, jobject defaultValue) = 0;
     virtual void swapItemsAt(JNIEnv * env, const ContainerInfo& container, jint index1, jint index2) = 0;
     virtual jboolean startsWith(JNIEnv * env, const void* container, jobject value) = 0;
     virtual void reserve(JNIEnv * env, const ContainerInfo& container, jint size) = 0;
     virtual void replace(JNIEnv * env, const ContainerInfo& container, jint index, jobject value) = 0;
+    virtual void replace(void* container, qsizetype index, const void* value) = 0;
     virtual void remove(JNIEnv * env, const ContainerInfo& container, jint index, jint n) = 0;
+    virtual void remove(void* container, qsizetype pos, qsizetype n) = 0;
     virtual jint removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) = 0;
     virtual jboolean equal(JNIEnv * env, const void* container, jobject other) = 0;
     virtual void move(JNIEnv * env, const ContainerInfo& container, jint index1, jint index2) = 0;
     virtual ContainerAndAccessInfo mid(JNIEnv * env, const ConstContainerAndAccessInfo& container, jint index1, jint index2) = 0;
     virtual jint lastIndexOf(JNIEnv * env, const void* container, jobject value, jint index) = 0;
     virtual void insert(JNIEnv * env, const ContainerInfo& container, jint index, jint n, jobject value) = 0;
+    virtual void insert(void* container, qsizetype index, qsizetype n, const void* entry) = 0;
     virtual bool append(void* container, const void* entry) = 0;
     virtual jint indexOf(JNIEnv * env, const void* container, jobject value, jint index) = 0;
     virtual jboolean endsWith(JNIEnv * env, const void* container, jobject value) = 0;
@@ -706,6 +731,7 @@ public:
     virtual jobject begin(JNIEnv * env, const ExtendedContainerInfo& container) = 0;
     virtual jobject end(JNIEnv * env, const ExtendedContainerInfo& container) = 0;
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    virtual void resize(void* container, qsizetype newSize) = 0;
     virtual jint capacity(JNIEnv * env, const void* container) = 0;
     virtual void fill(JNIEnv * env, const ContainerInfo& container, jobject value, jint size) = 0;
     virtual void resize(JNIEnv * env, const ContainerInfo& container, jint newSize) = 0;
@@ -819,15 +845,18 @@ public:
     virtual bool hasValueNestedPointers() = 0;
     virtual void clear(JNIEnv *, const ContainerInfo& container) = 0;
     virtual jint size(JNIEnv *,const void*) = 0;
+    virtual qsizetype size(const void* container) = 0;
     virtual jobject begin(JNIEnv * env, const ExtendedContainerInfo& container) = 0;
     virtual jobject end(JNIEnv * env, const ExtendedContainerInfo& container) = 0;
     virtual jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) = 0;
     virtual jobject constEnd(JNIEnv * env, const ConstExtendedContainerInfo& container) = 0;
     virtual jboolean contains(JNIEnv *,const void*,jobject) = 0;
+    virtual bool contains(const void*,const void*) = 0;
     virtual jint count(JNIEnv *,const void*,jobject) = 0;
     virtual jobject find(JNIEnv *,const ExtendedContainerInfo& container, jobject) = 0;
     virtual jobject constFind(JNIEnv *,const ConstExtendedContainerInfo&,jobject) = 0;
     virtual void insert(JNIEnv *, const ContainerInfo& container,jobject,jobject) = 0;
+    virtual void insert(void* container,const void* key, const void* value) = 0;
     virtual jobject key(JNIEnv *,const void*,jobject,jobject) = 0;
     virtual ContainerAndAccessInfo keys(JNIEnv *, const ConstContainerInfo& container) = 0;
     virtual ContainerAndAccessInfo keys(JNIEnv *,const ConstContainerInfo& container,jobject) = 0;
@@ -835,16 +864,42 @@ public:
     virtual jint remove(JNIEnv *, const ContainerInfo& container,jobject) = 0;
     virtual jobject take(JNIEnv *, const ContainerInfo& container,jobject) = 0;
     virtual jobject value(JNIEnv *,const void*,jobject,jobject) = 0;
+    virtual const void* value(const void*, const void*, const void* = nullptr) = 0;
     virtual ContainerAndAccessInfo values(JNIEnv *, const ConstContainerInfo& container) = 0;
     class QTJAMBI_EXPORT KeyValueIterator{
     public:
         KeyValueIterator() = default;
         virtual ~KeyValueIterator();
+    protected:
+        virtual AbstractAssociativeAccess* access() = 0;
+    public:
+        virtual const QMetaType& keyMetaType();
+        virtual const QMetaType& valueMetaType();
+        virtual DataType keyType();
+        virtual DataType valueType();
+        virtual AbstractContainerAccess* keyNestedContainerAccess();
+        virtual AbstractContainerAccess* valueNestedContainerAccess();
+        virtual bool hasKeyNestedContainerAccess();
+        virtual bool hasValueNestedContainerAccess();
+        virtual bool hasKeyNestedPointers();
+        virtual bool hasValueNestedPointers();
         virtual bool hasNext() = 0;
         virtual QPair<jobject,jobject> next(JNIEnv * env) = 0;
+        virtual bool isConst() = 0;
         virtual QPair<const void*,const void*> next() = 0;
+        virtual QPair<const void*,const void*> constNext() = 0;
+        virtual QPair<const void*,void*> mutableNext() = 0;
+        virtual bool operator==(const KeyValueIterator& other) const = 0;
+        virtual std::unique_ptr<KeyValueIterator> clone() const = 0;
+        std::unique_ptr<AbstractSequentialAccess::ElementIterator> nextAsIterator();
     };
     virtual std::unique_ptr<KeyValueIterator> keyValueIterator(const void*) = 0;
+    virtual std::unique_ptr<KeyValueIterator> keyValueIterator(void*) = 0;
+    inline std::unique_ptr<KeyValueIterator> constKeyValueIterator(const void* container){
+        return keyValueIterator(container);
+    }
+    static std::unique_ptr<AbstractSequentialAccess::ElementIterator> asKeyIterator(std::unique_ptr<KeyValueIterator>&& iter);
+    static std::unique_ptr<AbstractSequentialAccess::ElementIterator> asValueIterator(std::unique_ptr<KeyValueIterator>&& iter);
 };
 
 class QTJAMBI_EXPORT AbstractHashAccess : public AbstractAssociativeAccess{
@@ -940,6 +995,16 @@ public:
     virtual void setFirst(JNIEnv *,void*,jobject) = 0;
     virtual void setSecond(JNIEnv *,void*,jobject) = 0;
     virtual QPair<const void*,const void*> elements(const void*) = 0;
+    virtual std::unique_ptr<AbstractAssociativeAccess::KeyValueIterator> keyValueIterator(const void*) = 0;
+    virtual std::unique_ptr<AbstractAssociativeAccess::KeyValueIterator> keyValueIterator(void*) = 0;
+    inline std::unique_ptr<AbstractAssociativeAccess::KeyValueIterator> constKeyValueIterator(const void* container){
+        return keyValueIterator(container);
+    }
+    virtual std::unique_ptr<AbstractSequentialAccess::ElementIterator> elementIterator(const void*) = 0;
+    virtual std::unique_ptr<AbstractSequentialAccess::ElementIterator> elementIterator(void*) = 0;
+    inline std::unique_ptr<AbstractSequentialAccess::ElementIterator> constElementIterator(const void* container){
+        return elementIterator(container);
+    }
 };
 
 namespace ContainerAPI{

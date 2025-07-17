@@ -1579,6 +1579,11 @@ TypeSystem{
     
     ObjectType{
         name: "QDBusConnectionInterface"
+        InjectCode{
+            target: CodeClass.Native
+            position: Position.Beginning
+            Text{content: "template<> struct QtJambiPrivate::supports_qHash<QDBusReply<QMap<QString, QVariant> >> : std::false_type{};"}
+        }
 
         EnumType{
             name: "ServiceQueueOptions"

@@ -95,15 +95,21 @@ void AutoSpanAccess::dispose(){
 
 std::unique_ptr<AbstractSpanAccess::ElementIterator> AutoSpanAccess::elementIterator(const void* container) {
     class ElementIterator : public AbstractSpanAccess::ElementIterator{
-        AutoSpanAccess* access;
+        AutoSpanAccess* m_access;
         const char* current;
         const char* end;
+        ElementIterator(const ElementIterator& other)
+            :m_access(other.m_access),
+            current(other.current),
+            end(other.end) {}
+    protected:
+        AbstractSequentialAccess* access() override { return m_access; }
     public:
         ElementIterator(AutoSpanAccess* _access, const QtJambiSpan* p)
             : AbstractSpanAccess::ElementIterator(),
-            access(_access),
+            m_access(_access),
             current(reinterpret_cast<const char*>(p->begin)),
-            end(current + p->size * access->m_offset)
+            end(current + p->size * m_access->m_offset)
         {
         }
         bool hasNext() override{
@@ -111,23 +117,104 @@ std::unique_ptr<AbstractSpanAccess::ElementIterator> AutoSpanAccess::elementIter
         }
         jobject next(JNIEnv * env) override{
             const void* data = current;
-            current += access->m_offset;
+            current += m_access->m_offset;
             jvalue _value;
             _value.l = nullptr;
-            access->m_internalToExternalConverter(env, nullptr, data, _value, true);
+            m_access->m_internalToExternalConverter(env, nullptr, data, _value, true);
             return _value.l;
         }
         const void* next() override {
             const void* data = current;
-            current += access->m_offset;
-            if(access->m_elementDataType & AbstractContainerAccess::PointersMask){
+            current += m_access->m_offset;
+            if(m_access->m_elementDataType & AbstractContainerAccess::PointersMask){
                 return *reinterpret_cast<void*const*>(data);
             }else{
                 return data;
             }
         }
+        bool isConst() override{
+            return false;
+        }
+        const void* constNext() override {
+            const void* data = current;
+            current += m_access->m_offset;
+            return data;
+        }
+        void* mutableNext() override {
+            return nullptr;
+        }
+        bool operator==(const AbstractSequentialAccess::ElementIterator& other) const override {
+            return current==reinterpret_cast<const ElementIterator&>(other).current;
+        }
+        std::unique_ptr<AbstractSequentialAccess::ElementIterator> clone() const override {
+            return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(*this));
+        }
     };
     return std::unique_ptr<AbstractSpanAccess::ElementIterator>(new ElementIterator(this, reinterpret_cast<const QtJambiSpan*>(container)));
+}
+
+std::unique_ptr<AbstractSpanAccess::ElementIterator> AutoSpanAccess::elementIterator(void* container) {
+    class ElementIterator : public AbstractSpanAccess::ElementIterator{
+        AutoSpanAccess* m_access;
+        const char* current;
+        const char* end;
+        ElementIterator(const ElementIterator& other)
+            :m_access(other.m_access),
+            current(other.current),
+            end(other.end) {}
+    protected:
+        AbstractSequentialAccess* access() override { return m_access; }
+    public:
+        ElementIterator(AutoSpanAccess* _access, QtJambiSpan* p)
+            : AbstractSpanAccess::ElementIterator(),
+            m_access(_access),
+            current(reinterpret_cast<const char*>(p->begin)),
+            end(current + p->size * m_access->m_offset)
+        {
+        }
+        bool hasNext() override{
+            return current!=end;
+        }
+        jobject next(JNIEnv * env) override{
+            const void* data = current;
+            current += m_access->m_offset;
+            jvalue _value;
+            _value.l = nullptr;
+            m_access->m_internalToExternalConverter(env, nullptr, data, _value, true);
+            return _value.l;
+        }
+        const void* next() override {
+            const void* data = current;
+            current += m_access->m_offset;
+            if(m_access->m_elementDataType & AbstractContainerAccess::PointersMask){
+                return *reinterpret_cast<void*const*>(data);
+            }else{
+                return data;
+            }
+        }
+        const void* constNext() override {
+            const void* data = current;
+            current += m_access->m_offset;
+            return data;
+        }
+        bool isConst() override{
+            return m_access->isConst();
+        }
+        void* mutableNext() override {
+            if(!m_access->isConst()){
+                void* data = const_cast<char*>(current);
+                current += m_access->m_offset;
+                return data;
+            }else return nullptr;
+        }
+        bool operator==(const AbstractSequentialAccess::ElementIterator& other) const override {
+            return current==reinterpret_cast<const ElementIterator&>(other).current;
+        }
+        std::unique_ptr<AbstractSequentialAccess::ElementIterator> clone() const override {
+            return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(*this));
+        }
+    };
+    return std::unique_ptr<AbstractSpanAccess::ElementIterator>(new ElementIterator(this, reinterpret_cast<QtJambiSpan*>(container)));
 }
 
 AutoSpanAccess* AutoSpanAccess::clone(){
@@ -645,6 +732,13 @@ jobject AutoSpanAccess::get(JNIEnv * env, const void* container, jint index)
     return nullptr;
 }
 
+const void* AutoSpanAccess::get(const void* container, qsizetype index)
+{
+    const QtJambiSpan* p = reinterpret_cast<const QtJambiSpan*>(container);
+    Q_ASSERT_X(index >= 0 && index < p->size, "QSpan<T>::operator[index]", "index out of range");
+    return reinterpret_cast<const char*>(p->begin)+index*m_offset;
+}
+
 jint AutoSpanAccess::size(JNIEnv *, const void* container)
 {
     const QtJambiSpan* p = reinterpret_cast<const QtJambiSpan*>(container);
@@ -662,11 +756,23 @@ bool AutoSpanAccess::set(JNIEnv * env, const ContainerInfo& container, jint inde
     if(isConst())
         return false;
     QtJambiSpan* p = reinterpret_cast<QtJambiSpan*>(container.container);
-    Q_ASSERT_X(index >= 0 && index < p->size, "QSpan<T>::operator[index]", "index out of range");
+    Q_ASSERT_X(index >= 0 && index < size_t(p->size), "QSpan<T>::operator[index]", "index out of range");
     void* target = reinterpret_cast<char*>(const_cast<void*>(p->begin))+index*m_offset;
     jvalue _value;
     _value.l = value;
     m_externalToInternalConverter(env, nullptr, _value, target, jValueType::l);
+    return true;
+}
+
+bool AutoSpanAccess::set(void* container, qsizetype index, const void* value)
+{
+    if(isConst())
+        return false;
+    QtJambiSpan* p = reinterpret_cast<QtJambiSpan*>(container);
+    Q_ASSERT_X(index >= 0 && index < p->size, "QSpan<T>::operator[index]", "index out of range");
+    void* target = reinterpret_cast<char*>(const_cast<void*>(p->begin))+index*m_offset;
+    m_elementMetaType.destruct(target);
+    m_elementMetaType.construct(target, value);
     return true;
 }
 

@@ -415,10 +415,7 @@ public:
                     });
                 }
 #endif
-                const std::type_info* eventType = nullptr;
-                try{
-                    eventType = &typeid(*event);
-                }catch(...){}
+                const std::type_info* eventType = QtJambiPrivate::CheckPointer<QEvent>::trySupplyType(event);
                 if(eventType){
                     return new MethodPrintPrivate(category, file, line, function, [receiverDbg, receiver, event, type = event->type(), eventTypeName = QtJambiAPI::typeName(*eventType)](QDebug& dbg){
                         dbg << "QCoreApplication::notify(QObject *receiver, QEvent *event) with receiver: " << reinterpret_cast<void*>(receiver) << "=" << receiverDbg << ", event: " << reinterpret_cast<void*>(event) << "=QEvent::Type(type: " << int(type) << ", class: " << eventTypeName.constData() << ")";

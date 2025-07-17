@@ -37,7 +37,11 @@
 hash_type qHash(const QHttpPart &value, hash_type seed = 0);
 
 inline hash_type qHash(const QHstsPolicy& p, hash_type seed = 0){
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, p.expiry());
     seed = hash(seed, p.includesSubDomains());
     seed = hash(seed, p.host());
@@ -45,7 +49,11 @@ inline hash_type qHash(const QHstsPolicy& p, hash_type seed = 0){
 }
 
 inline hash_type qHash(const QNetworkAddressEntry& p, hash_type seed = 0){
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, int(p.dnsEligibility()));
     seed = hash(seed, p.ip());
     seed = hash(seed, p.netmask());
@@ -58,7 +66,11 @@ inline hash_type qHash(const QNetworkAddressEntry& p, hash_type seed = 0){
 }
 
 inline hash_type qHash(const QNetworkCacheMetaData& p, hash_type seed = 0){
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, p.isValid());
     seed = hash(seed, p.url());
     seed = hash(seed, p.lastModified());
@@ -98,7 +110,11 @@ inline hash_type qHash(const QNetworkConfiguration& p, hash_type seed = 0){
 #endif
 
 inline hash_type qHash(const QSslPreSharedKeyAuthenticator& value, hash_type seed = 0){
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.identityHint());
     seed = hash(seed, value.identity());
     seed = hash(seed, value.maximumIdentityLength());
@@ -108,7 +124,11 @@ inline hash_type qHash(const QSslPreSharedKeyAuthenticator& value, hash_type see
 }
 
 inline hash_type qHash(const QNetworkCookie& p, hash_type seed = 0){
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, p.isSecure());
     seed = hash(seed, p.isHttpOnly());
     seed = hash(seed, p.isSessionCookie());
@@ -121,7 +141,11 @@ inline hash_type qHash(const QNetworkCookie& p, hash_type seed = 0){
 }
 
 inline hash_type qHash(const QNetworkProxy& p, hash_type seed = 0){
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, int(p.type()));
     seed = hash(seed, p.capabilities());
     seed = hash(seed, p.isCachingProxy());
@@ -137,7 +161,11 @@ inline hash_type qHash(const QNetworkProxy& p, hash_type seed = 0){
 }
 
 inline hash_type qHash(const QNetworkProxyQuery& p, hash_type seed = 0){
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, int(p.queryType()));
     seed = hash(seed, p.peerPort());
     seed = hash(seed, p.peerHostName());
@@ -148,7 +176,11 @@ inline hash_type qHash(const QNetworkProxyQuery& p, hash_type seed = 0){
 }
 
 inline hash_type qHash(const QNetworkRequest& p, hash_type seed = 0){
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, p.url());
     seed = hash(seed, quintptr(p.originatingObject()));
     seed = hash(seed, int(p.priority()));
@@ -159,7 +191,11 @@ inline hash_type qHash(const QNetworkRequest& p, hash_type seed = 0){
 inline hash_type qHash(const QAuthenticator& p, hash_type seed = 0){
     if(p.isNull())
         return 0;
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, p.user());
     seed = hash(seed, p.password());
     seed = hash(seed, p.realm());
@@ -172,7 +208,11 @@ inline hash_type qHash(const QAuthenticator& p, hash_type seed = 0){
 inline hash_type qHash(const QSslKey& p, hash_type seed = 0){
     if(p.isNull())
         return 0;
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, p.type());
     seed = hash(seed, quintptr(p.handle()));
     seed = hash(seed, p.length());
@@ -183,7 +223,11 @@ inline hash_type qHash(const QSslKey& p, hash_type seed = 0){
 inline hash_type qHash(const QSslCipher& p, hash_type seed = 0){
     if(p.isNull())
         return 0;
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, p.name());
     seed = hash(seed, quintptr(p.protocol()));
     seed = hash(seed, p.usedBits());
@@ -198,7 +242,11 @@ inline hash_type qHash(const QSslCipher& p, hash_type seed = 0){
 inline hash_type qHash(const QSslConfiguration& p, hash_type seed = 0){
     if(p.isNull())
         return 0;
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, p.ciphers());
     seed = hash(seed, quintptr(p.protocol()));
     seed = hash(seed, p.privateKey());
@@ -233,7 +281,11 @@ inline hash_type qHash(const QSslConfiguration& p, hash_type seed = 0){
 #if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
 
 inline hash_type qHash(const QHttp2Configuration& p, hash_type seed = 0){
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, p.serverPushEnabled());
     seed = hash(seed, quintptr(p.huffmanCompressionEnabled()));
     seed = hash(seed, p.sessionReceiveWindowSize());

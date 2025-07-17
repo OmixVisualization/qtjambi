@@ -14737,30 +14737,31 @@ public final class QMetaObject {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
         QThread thread = property.owner().thread();
-        if(type==Qt.ConnectionType.AutoConnection && !QThread.isCurrentOrNull(thread)) {
-            type = Qt.ConnectionType.QueuedConnection;
-        }
         boolean blocking = false;
         switch(type) {
         case AutoConnection:
+        	if(!QThread.isCurrentOrNull(thread)) {
+				type = Qt.ConnectionType.QueuedConnection;
+				break;
+			}
         case DirectConnection:
         	property.setValue(value);
-        	break;
+        	return;
         case BlockingQueuedConnection:
         	blocking = true;
         	if(QThread.isCurrentOrNull(thread)) {
                 throw new QUnsuccessfulInvocationException("Blocking-queued invocation on object whose thread is the current thread is not allowed.");
             }
         case QueuedConnection:
-        	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(property.owner()), ()->{
-        		if(!property.isDisposed() && !property.owner().isDisposed()) {
-        			property.setValue(value);
-        		}
-        	}, blocking);
             break;
         default:
         	throw new QUnsuccessfulInvocationException("Unable to set value of property.");
         }
+    	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(property.owner()), ()->{
+    		if(!property.isDisposed() && !property.owner().isDisposed()) {
+    			property.setValue(value);
+    		}
+    	}, blocking);
     }
     
     /**
@@ -14794,30 +14795,31 @@ public final class QMetaObject {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
         QThread thread = property.owner().thread();
-        if(type==Qt.ConnectionType.AutoConnection && !QThread.isCurrentOrNull(thread)) {
-            type = Qt.ConnectionType.QueuedConnection;
-        }
         boolean blocking = false;
         switch(type) {
         case AutoConnection:
+        	if(!QThread.isCurrentOrNull(thread)) {
+				type = Qt.ConnectionType.QueuedConnection;
+				break;
+			}
         case DirectConnection:
         	property.setValue(value);
-        	break;
+        	return;
         case BlockingQueuedConnection:
         	blocking = true;
         	if(QThread.isCurrentOrNull(thread)) {
                 throw new QUnsuccessfulInvocationException("Blocking-queued invocation on object whose thread is the current thread is not allowed.");
             }
         case QueuedConnection:
-        	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(property.owner()), ()->{
-        		if(!property.isDisposed() && !property.owner().isDisposed()) {
-        			property.setValue(value);
-        		}
-        	}, blocking);
             break;
         default:
         	throw new QUnsuccessfulInvocationException("Unable to set value of property.");
         }
+    	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(property.owner()), ()->{
+    		if(!property.isDisposed() && !property.owner().isDisposed()) {
+    			property.setValue(value);
+    		}
+    	}, blocking);
     }
     
     /**
@@ -14851,30 +14853,31 @@ public final class QMetaObject {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
         QThread thread = property.owner().thread();
-        if(type==Qt.ConnectionType.AutoConnection && !QThread.isCurrentOrNull(thread)) {
-            type = Qt.ConnectionType.QueuedConnection;
-        }
         boolean blocking = false;
         switch(type) {
         case AutoConnection:
+        	if(!QThread.isCurrentOrNull(thread)) {
+				type = Qt.ConnectionType.QueuedConnection;
+				break;
+			}
         case DirectConnection:
         	property.setValue(value);
-        	break;
+        	return;
         case BlockingQueuedConnection:
         	blocking = true;
         	if(QThread.isCurrentOrNull(thread)) {
                 throw new QUnsuccessfulInvocationException("Blocking-queued invocation on object whose thread is the current thread is not allowed.");
             }
         case QueuedConnection:
-        	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(property.owner()), ()->{
-        		if(!property.isDisposed() && !property.owner().isDisposed()) {
-        			property.setValue(value);
-        		}
-        	}, blocking);
             break;
         default:
         	throw new QUnsuccessfulInvocationException("Unable to set value of property.");
         }
+    	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(property.owner()), ()->{
+    		if(!property.isDisposed() && !property.owner().isDisposed()) {
+    			property.setValue(value);
+    		}
+    	}, blocking);
     }
     
     /**
@@ -14908,30 +14911,31 @@ public final class QMetaObject {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
         QThread thread = property.owner().thread();
-        if(type==Qt.ConnectionType.AutoConnection && !QThread.isCurrentOrNull(thread)) {
-            type = Qt.ConnectionType.QueuedConnection;
-        }
         boolean blocking = false;
         switch(type) {
         case AutoConnection:
+        	if(!QThread.isCurrentOrNull(thread)) {
+				type = Qt.ConnectionType.QueuedConnection;
+				break;
+			}
         case DirectConnection:
         	property.setValue(value);
-        	break;
+        	return;
         case BlockingQueuedConnection:
         	blocking = true;
         	if(QThread.isCurrentOrNull(thread)) {
                 throw new QUnsuccessfulInvocationException("Blocking-queued invocation on object whose thread is the current thread is not allowed.");
             }
         case QueuedConnection:
-        	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(property.owner()), ()->{
-        		if(!property.isDisposed() && !property.owner().isDisposed()) {
-        			property.setValue(value);
-        		}
-        	}, blocking);
             break;
         default:
         	throw new QUnsuccessfulInvocationException("Unable to set value of property.");
         }
+    	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(property.owner()), ()->{
+    		if(!property.isDisposed() && !property.owner().isDisposed()) {
+    			property.setValue(value);
+    		}
+    	}, blocking);
     }
     
     /**
@@ -14965,30 +14969,31 @@ public final class QMetaObject {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
         QThread thread = property.owner().thread();
-        if(type==Qt.ConnectionType.AutoConnection && !QThread.isCurrentOrNull(thread)) {
-            type = Qt.ConnectionType.QueuedConnection;
-        }
         boolean blocking = false;
         switch(type) {
         case AutoConnection:
+        	if(!QThread.isCurrentOrNull(thread)) {
+				type = Qt.ConnectionType.QueuedConnection;
+				break;
+			}
         case DirectConnection:
         	property.setValue(value);
-        	break;
+        	return;
         case BlockingQueuedConnection:
         	blocking = true;
         	if(QThread.isCurrentOrNull(thread)) {
                 throw new QUnsuccessfulInvocationException("Blocking-queued invocation on object whose thread is the current thread is not allowed.");
             }
         case QueuedConnection:
-        	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(property.owner()), ()->{
-        		if(!property.isDisposed() && !property.owner().isDisposed()) {
-        			property.setValue(value);
-        		}
-        	}, blocking);
             break;
         default:
         	throw new QUnsuccessfulInvocationException("Unable to set value of property.");
         }
+    	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(property.owner()), ()->{
+    		if(!property.isDisposed() && !property.owner().isDisposed()) {
+    			property.setValue(value);
+    		}
+    	}, blocking);
     }
     
     /**
@@ -15022,30 +15027,31 @@ public final class QMetaObject {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
         QThread thread = property.owner().thread();
-        if(type==Qt.ConnectionType.AutoConnection && !QThread.isCurrentOrNull(thread)) {
-            type = Qt.ConnectionType.QueuedConnection;
-        }
         boolean blocking = false;
         switch(type) {
         case AutoConnection:
+        	if(!QThread.isCurrentOrNull(thread)) {
+				type = Qt.ConnectionType.QueuedConnection;
+				break;
+			}
         case DirectConnection:
         	property.setValue(value);
-        	break;
+        	return;
         case BlockingQueuedConnection:
         	blocking = true;
         	if(QThread.isCurrentOrNull(thread)) {
                 throw new QUnsuccessfulInvocationException("Blocking-queued invocation on object whose thread is the current thread is not allowed.");
             }
         case QueuedConnection:
-        	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(property.owner()), ()->{
-        		if(!property.isDisposed() && !property.owner().isDisposed()) {
-        			property.setValue(value);
-        		}
-        	}, blocking);
             break;
         default:
         	throw new QUnsuccessfulInvocationException("Unable to set value of property.");
         }
+    	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(property.owner()), ()->{
+    		if(!property.isDisposed() && !property.owner().isDisposed()) {
+    			property.setValue(value);
+    		}
+    	}, blocking);
     }
     
     /**
@@ -15079,30 +15085,31 @@ public final class QMetaObject {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
         QThread thread = property.owner().thread();
-        if(type==Qt.ConnectionType.AutoConnection && !QThread.isCurrentOrNull(thread)) {
-            type = Qt.ConnectionType.QueuedConnection;
-        }
         boolean blocking = false;
         switch(type) {
         case AutoConnection:
+        	if(!QThread.isCurrentOrNull(thread)) {
+				type = Qt.ConnectionType.QueuedConnection;
+				break;
+			}
         case DirectConnection:
         	property.setValue(value);
-        	break;
+        	return;
         case BlockingQueuedConnection:
         	blocking = true;
         	if(QThread.isCurrentOrNull(thread)) {
                 throw new QUnsuccessfulInvocationException("Blocking-queued invocation on object whose thread is the current thread is not allowed.");
             }
         case QueuedConnection:
-        	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(property.owner()), ()->{
-        		if(!property.isDisposed() && !property.owner().isDisposed()) {
-        			property.setValue(value);
-        		}
-        	}, blocking);
             break;
         default:
         	throw new QUnsuccessfulInvocationException("Unable to set value of property.");
         }
+    	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(property.owner()), ()->{
+    		if(!property.isDisposed() && !property.owner().isDisposed()) {
+    			property.setValue(value);
+    		}
+    	}, blocking);
     }
     
     /**
@@ -15135,30 +15142,32 @@ public final class QMetaObject {
     public static void writeProperty(@StrictNonNull QObject.QBooleanProperty property, Qt.@NonNull ConnectionType type, boolean value) throws QUnsuccessfulInvocationException {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
-        if(type==Qt.ConnectionType.AutoConnection && !property.owner().isObjectsThread()) {
-            type = Qt.ConnectionType.QueuedConnection;
-        }
+        QThread thread = property.owner().thread();
         boolean blocking = false;
         switch(type) {
         case AutoConnection:
+        	if(!QThread.isCurrentOrNull(thread)) {
+				type = Qt.ConnectionType.QueuedConnection;
+				break;
+			}
         case DirectConnection:
         	property.setValue(value);
-        	break;
+        	return;
         case BlockingQueuedConnection:
         	blocking = true;
-        	if(property.owner().isObjectsThread()) {
+        	if(QThread.isCurrentOrNull(thread)) {
                 throw new QUnsuccessfulInvocationException("Blocking-queued invocation on object whose thread is the current thread is not allowed.");
             }
         case QueuedConnection:
-        	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(property.owner()), ()->{
-        		if(!property.isDisposed() && !property.owner().isDisposed()) {
-        			property.setValue(value);
-        		}
-        	}, blocking);
             break;
         default:
         	throw new QUnsuccessfulInvocationException("Unable to set value of property.");
         }
+    	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(property.owner()), ()->{
+    		if(!property.isDisposed() && !property.owner().isDisposed()) {
+    			property.setValue(value);
+    		}
+    	}, blocking);
     }
     
     /**
@@ -15191,30 +15200,32 @@ public final class QMetaObject {
     public static void writeProperty(@StrictNonNull QObject.QCharProperty property, Qt.@NonNull ConnectionType type, char value) throws QUnsuccessfulInvocationException {
     	if(type==null)
     		type = Qt.ConnectionType.AutoConnection;
-        if(type==Qt.ConnectionType.AutoConnection && !property.owner().isObjectsThread()) {
-            type = Qt.ConnectionType.QueuedConnection;
-        }
+        QThread thread = property.owner().thread();
         boolean blocking = false;
         switch(type) {
         case AutoConnection:
+        	if(!QThread.isCurrentOrNull(thread)) {
+				type = Qt.ConnectionType.QueuedConnection;
+				break;
+			}
         case DirectConnection:
         	property.setValue(value);
-        	break;
+        	return;
         case BlockingQueuedConnection:
         	blocking = true;
-        	if(property.owner().isObjectsThread()) {
+        	if(QThread.isCurrentOrNull(thread)) {
                 throw new QUnsuccessfulInvocationException("Blocking-queued invocation on object whose thread is the current thread is not allowed.");
             }
         case QueuedConnection:
-        	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(property.owner()), ()->{
-        		if(!property.isDisposed() && !property.owner().isDisposed()) {
-        			property.setValue(value);
-        		}
-        	}, blocking);
             break;
         default:
         	throw new QUnsuccessfulInvocationException("Unable to set value of property.");
         }
+    	invokeMethod(QtJambi_LibraryUtilities.internal.nativeId(property.owner()), ()->{
+    		if(!property.isDisposed() && !property.owner().isDisposed()) {
+    			property.setValue(value);
+    		}
+    	}, blocking);
     }
     
     /**

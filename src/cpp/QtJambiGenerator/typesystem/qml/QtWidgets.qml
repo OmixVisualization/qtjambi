@@ -14588,6 +14588,11 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
     }
 
     ObjectType{
+        name: "QAccessibleWidgetV2"
+        since: [6,10]
+    }
+
+    ObjectType{
         name: "QRhiWidget"
         EnumType{
             name: "Api"

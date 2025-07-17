@@ -71,6 +71,10 @@ namespace CoreAPI{
 
 QTJAMBI_EXPORT jobject convertQObjectToJavaObjectCppOwnership(JNIEnv *env, const QObject *qt_object, const std::type_info& typeId);
 
+QTJAMBI_EXPORT bool isJObjectWrappedMetaType(const QMetaType& metaType);
+
+QTJAMBI_EXPORT bool isNativeWrapperMetaType(const QMetaType& metaType);
+
 template<typename O>
 jobject convertQObjectToJavaObjectCppOwnership(JNIEnv *env, const O *qt_object)
 {
@@ -160,6 +164,8 @@ QTJAMBI_EXPORT void cleanContinuation(JNIEnv*, QFutureInterfaceBase* b);
 QTJAMBI_EXPORT const QHash<int,const char*>* renamedMethods(const QMetaObject* metaObject);
 
 QTJAMBI_EXPORT jclass getInterfaceByIID(JNIEnv *env, const char* iid);
+
+QTJAMBI_EXPORT void * futurePrivate(const QFutureInterfaceBase * base);
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
 struct NITypeInfo{

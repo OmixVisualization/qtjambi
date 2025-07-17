@@ -323,6 +323,12 @@ public:
         return result;
     }
 
+    qsizetype size(const void* container) override {
+        QTJAMBI_ELEMENT_LOCKER(this);
+        jint result = reinterpret_cast<const QSet<T> *>(container)->size();
+        return result;
+    }
+
     void reserve(JNIEnv *, const ContainerInfo& container, jint size) override {
         QTJAMBI_ELEMENT_LOCKER(this);
         reinterpret_cast<QSet<T> *>(container.container)->reserve(size);
@@ -410,10 +416,14 @@ public:
     }
 
     class ElementIterator : public AbstractSetAccess::ElementIterator{
-    public:
         GenericSetAccess* access;
         typename QSet<T>::ConstIterator current;
         typename QSet<T>::ConstIterator end;
+        ElementIterator(const ElementIterator& other)
+            :access(other.access),
+            current(other.current),
+            end(other.end) {}
+    public:
         ElementIterator(GenericSetAccess* _access, const void* container)
             : access(_access){
             QTJAMBI_ELEMENT_LOCKER(access);
@@ -436,8 +446,30 @@ public:
             ++current;
             return pointer;
         }
+        const void* constNext() override {
+            QTJAMBI_ELEMENT_LOCKER(access);
+            const void* pointer = *current;
+            ++current;
+            return pointer;
+        }
+        bool isConst() override{
+            return true;
+        }
+        void* mutableNext() override {
+            return nullptr;
+        }
+
+        bool operator==(const AbstractSequentialAccess::ElementIterator& other) const override {
+            return current==reinterpret_cast<const ElementIterator&>(other).current;
+        }
+        std::unique_ptr<AbstractSequentialAccess::ElementIterator> clone() const override {
+            return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(*this));
+        }
     };
     std::unique_ptr<AbstractSetAccess::ElementIterator> elementIterator(const void* container) override {
+        return std::unique_ptr<AbstractSetAccess::ElementIterator>(new ElementIterator(this, container));
+    }
+    std::unique_ptr<AbstractSetAccess::ElementIterator> elementIterator(void* container) override {
         return std::unique_ptr<AbstractSetAccess::ElementIterator>(new ElementIterator(this, container));
     }
 };

@@ -372,10 +372,12 @@ bool isVariantFuture(QSharedPointer<QFutureInterfaceBase>& sourceFuture){
     if(dynamic_cast<QFutureInterface<QVariant>*>(sourceFuture.get()))
         return true;
     QFutureInterfaceBase* sourceObject = sourceFuture.get();
-    QByteArray sourceFutureTypeName = QtJambiAPI::typeName(typeid(*sourceObject));
-    if(sourceFutureTypeName=="QFutureInterface<QVariant>"
+    if(auto* id = QtJambiPrivate::CheckPointer<QFutureInterfaceBase>::trySupplyType(sourceObject)){
+        QByteArray sourceFutureTypeName = QtJambiAPI::typeName(*id);
+        if(sourceFutureTypeName=="QFutureInterface<QVariant>"
             || sourceFutureTypeName=="QFutureInterface_shell<QVariant>")
-        return true;
+            return true;
+    }
     return false;
 }
 
@@ -388,14 +390,14 @@ QFutureInterfaceBase* QtJambiAPI::translateQFutureInterface(QSharedPointer<QFutu
                     if(ReverseFutureCallOut* rco = dynamic_cast<ReverseFutureCallOut*>(sourceFuture->d->outputConnections[i])){
                         QFutureInterfaceBase* sourceObject = rco->m_futureCallOut->m_sourceFuture.get();
                         QFutureInterfaceBase* targetObject = targetFuture.get();
-                        const std::type_info& sourceType = typeid(*sourceObject);
-                        const std::type_info& targetType = typeid(*targetObject);
-                        if(typeid_equals(targetType, sourceType)){
+                        const std::type_info* sourceType = QtJambiPrivate::CheckPointer<QFutureInterfaceBase>::trySupplyType(sourceObject);
+                        const std::type_info* targetType = QtJambiPrivate::CheckPointer<QFutureInterfaceBase>::trySupplyType(targetObject);
+                        if(targetType && sourceType && typeid_equals(*targetType, *sourceType)){
                             return sourceObject;
-                        }else{
+                        }else if(targetType && sourceType){
                             if(JniEnvironment env{200}){
-                                QByteArray baseType = QtJambiAPI::typeName(sourceType);
-                                QByteArray requiredType = QtJambiAPI::typeName(targetType);
+                                QByteArray baseType = QtJambiAPI::typeName(*sourceType);
+                                QByteArray requiredType = QtJambiAPI::typeName(*targetType);
                                 auto idx = requiredType.indexOf('<');
                                 if(idx>0){
                                     requiredType = translatedType + requiredType.mid(idx);
@@ -415,14 +417,14 @@ QFutureInterfaceBase* QtJambiAPI::translateQFutureInterface(QSharedPointer<QFutu
                     }else if(FutureCallOut* rco = dynamic_cast<FutureCallOut*>(sourceFuture->d->outputConnections[i])){
                         QFutureInterfaceBase* sourceObject = rco->m_targetFuture.get();
                         QFutureInterfaceBase* targetObject = targetFuture.get();
-                        const std::type_info& sourceType = typeid(*sourceObject);
-                        const std::type_info& targetType = typeid(*targetObject);
-                        if(typeid_equals(targetType, sourceType)){
+                        const std::type_info* sourceType = QtJambiPrivate::CheckPointer<QFutureInterfaceBase>::trySupplyType(sourceObject);
+                        const std::type_info* targetType = QtJambiPrivate::CheckPointer<QFutureInterfaceBase>::trySupplyType(targetObject);
+                        if(targetType && sourceType && typeid_equals(*targetType, *sourceType)){
                             return sourceObject;
-                        }else{
+                        }else if(targetType && sourceType){
                             if(JniEnvironment env{200}){
-                                QByteArray baseType = QtJambiAPI::typeName(sourceType);
-                                QByteArray requiredType = QtJambiAPI::typeName(targetType);
+                                QByteArray baseType = QtJambiAPI::typeName(*sourceType);
+                                QByteArray requiredType = QtJambiAPI::typeName(*targetType);
                                 auto idx = requiredType.indexOf('<');
                                 if(idx>0){
                                     requiredType = translatedType + requiredType.mid(idx);
@@ -460,6 +462,10 @@ void CoreAPI::cleanContinuation(JNIEnv*, QFutureInterfaceBase* b)
 #endif
 }
 #endif
+
+void * CoreAPI::futurePrivate(const QFutureInterfaceBase * base){
+    return base->d;
+}
 
 void CoreAPI::invokeAndCatch(JNIEnv *__jni_env, void* ptr, void(*expression)(void*)){
     Q_ASSERT(expression);

@@ -542,7 +542,7 @@ hash_type computeHash(const QtJambiMetaObject* q, StaticMetacallFunction fct){
 }
 
 StaticMetaCallFunction create_static_metacall(const QtJambiMetaObject* q, StaticMetacallFunction fct){
-    return qtjambi_function_pointer<16,void(QObject *, QMetaObject::Call, int, void **)>(
+    return qtjambi_function_pointer<512,void(QObject *, QMetaObject::Call, int, void **)>(
                 [q,fct](QObject * o, QMetaObject::Call cl, int idx, void ** argv){
                     fct(q, o, cl, idx, argv);
                 },

@@ -63,7 +63,11 @@ inline hash_type qHash(const QPixmap &value, hash_type seed = 0)
 
 inline hash_type qHash(const QCursor &cursor, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, int(cursor.shape()));
     if(cursor.shape()==Qt::BitmapCursor){
 #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0) && QT_VERSION < QT_VERSION_CHECK(6, 5, 0)
@@ -91,7 +95,11 @@ inline hash_type qHash(const QColor &color, hash_type seed = 0)
 
 inline hash_type qHash(const QBrush &brush, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, int(brush.style()));
     seed = hash(seed, brush.color());
     return seed;
@@ -100,7 +108,11 @@ inline hash_type qHash(const QBrush &brush, hash_type seed = 0)
 #if QT_VERSION >= 0x050000
 inline hash_type qHash(const QGradient &gradient, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombineCommutative hash;
+#else
+    QtPrivate::QHashCombineCommutative hash(seed);
+#endif
     seed = hash(seed, int(gradient.interpolationMode()));
     seed = hash(seed, int(gradient.type()));
     seed = hash(seed, int(gradient.spread()));
@@ -114,7 +126,11 @@ inline hash_type qHash(const QGradient &gradient, hash_type seed = 0)
 
 inline hash_type qHash(const QLinearGradient &gradient, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, gradient.start().x());
     seed = hash(seed, gradient.start().y());
     seed = hash(seed, gradient.finalStop().x());
@@ -125,7 +141,11 @@ inline hash_type qHash(const QLinearGradient &gradient, hash_type seed = 0)
 
 inline hash_type qHash(const QRadialGradient &gradient, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, gradient.center().x());
     seed = hash(seed, gradient.center().y());
     seed = hash(seed, gradient.centerRadius());
@@ -139,7 +159,11 @@ inline hash_type qHash(const QRadialGradient &gradient, hash_type seed = 0)
 
 inline hash_type qHash(const QConicalGradient &gradient, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombineCommutative hash;
+#else
+    QtPrivate::QHashCombineCommutative hash(seed);
+#endif
     seed = hash(seed, gradient.angle());
     seed = hash(seed, gradient.center().x());
     seed = hash(seed, gradient.center().y());
@@ -150,7 +174,11 @@ inline hash_type qHash(const QConicalGradient &gradient, hash_type seed = 0)
 
 inline hash_type qHash(const QRegion &region, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, region.rectCount());
     for(const QRect& rect : region)
         seed = hash(seed, rect);
@@ -159,7 +187,11 @@ inline hash_type qHash(const QRegion &region, hash_type seed = 0)
 
 inline hash_type qHash(const QPolygon &polygon, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, polygon.size());
     for (int i=0; i<polygon.size(); ++i)
         seed = hash(seed, polygon.at(i));
@@ -168,7 +200,11 @@ inline hash_type qHash(const QPolygon &polygon, hash_type seed = 0)
 
 inline hash_type qHash(const QPalette &palette, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     for (int role=0;role<int(QPalette::NColorRoles);++role) {
         for (int group=0;group<int(QPalette::NColorGroups);++group) {
             seed = hash(seed, palette.color(QPalette::ColorGroup(group), QPalette::ColorRole(role)));
@@ -222,7 +258,11 @@ inline hash_type qHash(const QImage &image, hash_type seed = 0)
 
 inline hash_type qHash(const QPen &pen, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, int(pen.style()));
     seed = hash(seed, int(pen.capStyle()));
     seed = hash(seed, int(pen.joinStyle()));
@@ -234,7 +274,11 @@ inline hash_type qHash(const QPen &pen, hash_type seed = 0)
 
 inline hash_type qHash(const QPolygonF &polygon, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, polygon.size());
     for (int i=0; i<polygon.size(); ++i){
         seed = hash(seed, polygon.at(i).x());
@@ -245,7 +289,11 @@ inline hash_type qHash(const QPolygonF &polygon, hash_type seed = 0)
 
 inline hash_type qHash(const QVector2D &vec, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, vec.x());
     seed = hash(seed, vec.y());
     return seed;
@@ -253,7 +301,11 @@ inline hash_type qHash(const QVector2D &vec, hash_type seed = 0)
 
 inline hash_type qHash(const QVector3D &vec, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, vec.x());
     seed = hash(seed, vec.y());
     seed = hash(seed, vec.z());
@@ -262,7 +314,11 @@ inline hash_type qHash(const QVector3D &vec, hash_type seed = 0)
 
 inline hash_type qHash(const QVector4D &vec, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, vec.x());
     seed = hash(seed, vec.y());
     seed = hash(seed, vec.z());
@@ -288,7 +344,11 @@ inline hash_type qHash(const QFontMetricsF &value, hash_type seed = 0)
 
 inline hash_type qHash(const QGlyphRun &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.rawFont());
     seed = hash(seed, value.glyphIndexes());
     auto positions = value.positions();
@@ -382,7 +442,11 @@ inline hash_type qHash(const QOpenGLFramebufferObjectFormat &value, hash_type se
 #else
 inline hash_type qHash(const QEventPoint &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, quintptr(value.device()));
     seed = hash(seed, value.ellipseDiameters());
     seed = hash(seed, value.globalGrabPosition().x());
@@ -441,7 +505,11 @@ hash_type qHash(const QTextFormat &value, hash_type seed = 0);
 
 inline hash_type qHash(const QTextLayout::FormatRange &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.start);
     seed = hash(seed, value.length);
     seed = hash(seed, value.format);
@@ -450,7 +518,11 @@ inline hash_type qHash(const QTextLayout::FormatRange &value, hash_type seed = 0
 
 inline hash_type qHash(const QPageSize &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.isValid());
     seed = hash(seed, value.key());
     seed = hash(seed, int(value.id()));
@@ -465,7 +537,11 @@ inline hash_type qHash(const QPageSize &value, hash_type seed = 0)
 
 inline hash_type qHash(const QPageLayout &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.isValid());
     seed = hash(seed, value.pageSize());
     seed = hash(seed, int(value.mode()));
@@ -483,7 +559,11 @@ inline hash_type qHash(const QPageLayout &value, hash_type seed = 0)
 
 inline hash_type qHash(const QPainterPath::Element &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, int(value.type));
     seed = hash(seed, value.x);
     seed = hash(seed, value.y);
@@ -492,7 +572,11 @@ inline hash_type qHash(const QPainterPath::Element &value, hash_type seed = 0)
 
 inline hash_type qHash(const QPainterPath &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, int(value.fillRule()));
     seed = hash(seed, value.elementCount());
     for(int i=0; i<value.elementCount(); ++i){
@@ -508,7 +592,11 @@ inline hash_type qHash(const QTextOption::Tab &value, hash_type seed = 0)
 
 inline hash_type qHash(const QTextOption &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, int(value.alignment()));
     seed = hash(seed, int(value.textDirection()));
     seed = hash(seed, int(value.wrapMode()));
@@ -522,7 +610,11 @@ inline hash_type qHash(const QTextOption &value, hash_type seed = 0)
 
 inline hash_type qHash(const QStaticText &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, int(value.textFormat()));
     seed = hash(seed, int(value.performanceHint()));
     seed = hash(seed, value.text());
@@ -535,7 +627,11 @@ inline hash_type qHash(const QStaticText &value, hash_type seed = 0)
 #if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
 inline hash_type qHash(const QColorSpace &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, hash_type(value.primaries()));
     seed = hash(seed, hash_type(value.transferFunction()));
     seed = hash(seed, value.gamma());
@@ -545,7 +641,11 @@ inline hash_type qHash(const QColorSpace &value, hash_type seed = 0)
 #if QT_VERSION >= QT_VERSION_CHECK(6,9,0)
 inline hash_type qHash(const QColorSpace::PrimaryPoints &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     if(value.isValid()){
         seed = hash(seed, value.redPoint.x());
         seed = hash(seed, value.redPoint.y());
@@ -563,7 +663,11 @@ inline hash_type qHash(const QColorSpace::PrimaryPoints &value, hash_type seed =
 
 inline hash_type qHash(const QSurfaceFormat &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, int(value.swapBehavior()));
     seed = hash(seed, int(value.profile()));
     seed = hash(seed, int(value.renderableType()));
@@ -602,7 +706,11 @@ inline hash_type qHash(const QPixmapCache::Key &value, hash_type seed = 0)
 
 inline hash_type qHash(const QTextFragment &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.position());
     seed = hash(seed, value.length());
     return seed;
@@ -615,7 +723,11 @@ inline hash_type qHash(const QTextBlock::iterator &value, hash_type seed = 0)
 
 inline hash_type qHash(const QTextBlock &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.position());
     seed = hash(seed, value.blockNumber());
     return seed;
@@ -623,7 +735,11 @@ inline hash_type qHash(const QTextBlock &value, hash_type seed = 0)
 
 inline hash_type qHash(const QTextCursor &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.position());
     seed = hash(seed, value.anchor());
     seed = hash(seed, value.selectedText());
@@ -634,7 +750,11 @@ hash_type qHash(const QTextLength &value, hash_type seed = 0);
 
 inline hash_type qHash(const QTextFormat &value, hash_type seed)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.type());
     seed = hash(seed, value.objectIndex());
     seed = hash(seed, value.objectType());
@@ -680,7 +800,11 @@ inline hash_type qHash(const QTextFormat &value, hash_type seed)
 
 inline hash_type qHash(const QTextFrame &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.parentFrame());
     seed = hash(seed, value.firstPosition());
     seed = hash(seed, value.lastPosition());
@@ -694,7 +818,11 @@ inline hash_type qHash(const QTextFrame::iterator &value, hash_type seed = 0)
 
 inline hash_type qHash(const QTextLength &value, hash_type seed)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.type());
     seed = hash(seed, value.rawValue());
     return seed;
@@ -702,7 +830,11 @@ inline hash_type qHash(const QTextLength &value, hash_type seed)
 
 inline hash_type qHash(const QTextTableCell &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.firstPosition());
     seed = hash(seed, value.lastPosition());
     seed = hash(seed, value.row());
@@ -715,7 +847,11 @@ inline hash_type qHash(const QTextTableCell &value, hash_type seed = 0)
 
 inline hash_type qHash(const QAbstractTextDocumentLayout::Selection &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.cursor);
     seed = hash(seed, value.format);
     return seed;
@@ -737,7 +873,11 @@ inline bool operator==(const QRgba64 &v1, const QRgba64 &v2){
 
 inline hash_type qHash(const QAbstractTextDocumentLayout::PaintContext &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.cursorPosition);
     seed = hash(seed, value.palette);
     seed = hash(seed, value.clip);
@@ -762,7 +902,11 @@ inline bool operator==(const QIconEngine::ScaledPixmapArgument &v1, const QIconE
 
 inline hash_type qHash(const QIconEngine::ScaledPixmapArgument &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.size);
     seed = hash(seed, value.mode);
     seed = hash(seed, value.state);

@@ -141,13 +141,17 @@ public:
     bool hasOwnerFunction() override;
     void appendList(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& containerInfo) override;
     jobject at(JNIEnv * env, const void* container, jint index) override;
+    const void* at(const void* container, qsizetype index) override;
+    void* at(void* container, qsizetype index) override;
     jobject value(JNIEnv * env, const void* container, jint index) override;
     jobject value(JNIEnv * env, const void* container, jint index, jobject defaultValue) override;
     void swapItemsAt(JNIEnv * env, const ContainerInfo& container, jint index1, jint index2) override;
     jboolean startsWith(JNIEnv * env, const void* container, jobject value) override;
     jint size(JNIEnv * env, const void* container) override;
+    qsizetype size(const void* container)override;
     void reserve(JNIEnv * env, const ContainerInfo& container, jint size) override;
     void replace(JNIEnv * env, const ContainerInfo& container, jint index, jobject value) override;
+    void replace(void* container, qsizetype index, const void* value) override;
     jint removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) override;
     jboolean equal(JNIEnv * env, const void* container, jobject other) override;
     void move(JNIEnv * env, const ContainerInfo& container, jint index1, jint index2) override;
@@ -163,15 +167,19 @@ public:
     jboolean contains(JNIEnv * env, const void* container, jobject value) override;
     void clear(JNIEnv * env, const ContainerInfo& container) override;
     void remove(JNIEnv * env, const ContainerInfo& container, jint index, jint n) override;
+    void remove(void* container, qsizetype pos, qsizetype n) override;
     void insert(JNIEnv * env, const ContainerInfo& container, jint index, jint n, jobject value) override;
+    void insert(void* container, qsizetype index, qsizetype n, const void* entry) override;
 
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    void resize(void* container, qsizetype newSize) override;
     jint capacity(JNIEnv * env, const void* container) override;
     void fill(JNIEnv * env, const ContainerInfo& container, jobject value, jint size) override;
     void resize(JNIEnv * env, const ContainerInfo& container, jint newSize) override;
     void squeeze(JNIEnv * env, const ContainerInfo& container) override;
 #endif
     std::unique_ptr<ElementIterator> elementIterator(const void* container) final override;
+    std::unique_ptr<ElementIterator> elementIterator(void* container) final override;
     AbstractListAccess* wrappedAccess() override;
     Q_DISABLE_COPY_MOVE(WrapperListAccess)
 private:
@@ -235,6 +243,7 @@ public:
     void squeeze(JNIEnv * env, const ContainerInfo& container) override;
     Q_DISABLE_COPY_MOVE(WrapperVectorAccess)
     std::unique_ptr<ElementIterator> elementIterator(const void* container) final override;
+    std::unique_ptr<ElementIterator> elementIterator(void* container) final override;
     AbstractVectorAccess* wrappedAccess() override;
 private:
     AbstractVectorAccess* m_containerAccess;
@@ -287,6 +296,7 @@ public:
     jobject takeFirst(JNIEnv * env, const ContainerInfo& container) override;
     jobject takeLast(JNIEnv * env, const ContainerInfo& container) override;
     std::unique_ptr<ElementIterator> elementIterator(const void* container) final override;
+    std::unique_ptr<ElementIterator> elementIterator(void* container) final override;
     AbstractLinkedListAccess* wrappedAccess() override;
     Q_DISABLE_COPY_MOVE(WrapperLinkedListAccess)
 private:
@@ -335,10 +345,12 @@ public:
     jboolean remove(JNIEnv * env, const ContainerInfo& container, jobject value) override;
     void reserve(JNIEnv * env, const ContainerInfo& container, jint newSize) override;
     jint size(JNIEnv * env, const void* container) override;
+    qsizetype size(const void* container) override;
     void subtract(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;
     void unite(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;
     ContainerAndAccessInfo values(JNIEnv * env, const ConstContainerInfo& container) override;
     std::unique_ptr<ElementIterator> elementIterator(const void* container) final override;
+    std::unique_ptr<ElementIterator> elementIterator(void* container) final override;
     AbstractSetAccess* wrappedAccess() override;
     Q_DISABLE_COPY_MOVE(WrapperSetAccess)
 private:
@@ -400,12 +412,17 @@ public:
     jboolean equal(JNIEnv * env, const void* container, jobject other) override;
     jint remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
     jint size(JNIEnv * env, const void* container) override;
+    qsizetype size(const void* container)override;
     jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
     jobject constUpperBound(JNIEnv * env, const ConstExtendedContainerInfo& container, jobject key) override;
     jobject value(JNIEnv * env, const void* container, jobject key, jobject defaultValue) override;
     ContainerAndAccessInfo values(JNIEnv * env, const ConstContainerInfo& container) override;
     bool keyLessThan(JNIEnv *env, jobject key1, jobject key2) override;
     std::unique_ptr<KeyValueIterator> keyValueIterator(const void* container) final override;
+    std::unique_ptr<KeyValueIterator> keyValueIterator(void* container) override;
+    bool contains(const void*,const void*) override;
+    void insert(void* container,const void* key, const void* value) override;
+    const void* value(const void*, const void*, const void*) override;
     AbstractMapAccess* wrappedAccess() override;
     Q_DISABLE_COPY_MOVE(WrapperMapAccess)
 private:
@@ -467,6 +484,7 @@ public:
     jboolean equal(JNIEnv * env, const void* container, jobject other) override;
     jint remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
     jint size(JNIEnv * env, const void* container) override;
+    qsizetype size(const void* container)override;
     jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
     jobject constUpperBound(JNIEnv * env, const ConstExtendedContainerInfo& container, jobject key) override;
     jobject value(JNIEnv * env, const void* container, jobject key, jobject defaultValue) override;
@@ -482,6 +500,10 @@ public:
     jint remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
     void replace(JNIEnv * env, const ContainerInfo& container,jobject key, jobject value) override;
     std::unique_ptr<AbstractMapAccess::KeyValueIterator> keyValueIterator(const void* container) override;
+    std::unique_ptr<AbstractMapAccess::KeyValueIterator> keyValueIterator(void* container) override;
+    bool contains(const void*,const void*) override;
+    void insert(void* container,const void* key, const void* value) override;
+    const void* value(const void*, const void*, const void*) override;
     AbstractMultiMapAccess* wrappedAccess() override;
     Q_DISABLE_COPY_MOVE(WrapperMultiMapAccess)
 private:
@@ -540,10 +562,15 @@ public:
     jint remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
     void reserve(JNIEnv * env, const ContainerInfo& container, jint newSize) override;
     jint size(JNIEnv * env, const void* container) override;
+    qsizetype size(const void* container)override;
     jobject take(JNIEnv *env, const ContainerInfo& container, jobject key) override;
     jobject value(JNIEnv * env, const void* container, jobject key, jobject defaultValue) override;
     ContainerAndAccessInfo values(JNIEnv * env, const ConstContainerInfo& container) override;
+    bool contains(const void*,const void*) override;
+    void insert(void* container,const void* key, const void* value) override;
+    const void* value(const void*, const void*, const void*) override;
     std::unique_ptr<KeyValueIterator> keyValueIterator(const void* container) final override;
+    std::unique_ptr<KeyValueIterator> keyValueIterator(void* container) override;
     AbstractHashAccess* wrappedAccess() override;
     Q_DISABLE_COPY_MOVE(WrapperHashAccess)
 private:
@@ -602,6 +629,10 @@ public:
     jint remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
     void reserve(JNIEnv * env, const ContainerInfo& container, jint newSize) override;
     jint size(JNIEnv * env, const void* container) override;
+    qsizetype size(const void* container)override;
+    bool contains(const void*,const void*) override;
+    void insert(void* container,const void* key, const void* value) override;
+    const void* value(const void*, const void*, const void*) override;
     jobject take(JNIEnv *env, const ContainerInfo& container, jobject key) override;
     jobject value(JNIEnv * env, const void* container, jobject key, jobject defaultValue) override;
     ContainerAndAccessInfo values(JNIEnv * env, const ConstContainerInfo& container) override;
@@ -615,6 +646,7 @@ public:
     ContainerAndAccessInfo uniqueKeys(JNIEnv * env, const ConstContainerInfo& container) override;
     void unite(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;
     std::unique_ptr<AbstractHashAccess::KeyValueIterator> keyValueIterator(const void* container) override;
+    std::unique_ptr<AbstractHashAccess::KeyValueIterator> keyValueIterator(void* container) override;
     AbstractMultiHashAccess* wrappedAccess() override;
     Q_DISABLE_COPY_MOVE(WrapperMultiHashAccess)
 private:
@@ -1168,6 +1200,10 @@ public:
     bool hasSecondNestedContainerAccess() override;
     bool hasFirstNestedPointers() override;
     bool hasSecondNestedPointers() override;
+    std::unique_ptr<AbstractAssociativeAccess::KeyValueIterator> keyValueIterator(const void*) override;
+    std::unique_ptr<AbstractAssociativeAccess::KeyValueIterator> keyValueIterator(void*) override;
+    std::unique_ptr<AbstractSequentialAccess::ElementIterator> elementIterator(const void*) override;
+    std::unique_ptr<AbstractSequentialAccess::ElementIterator> elementIterator(void*) override;
 };
 
 class AutoSequentialConstIteratorAccess : public AbstractSequentialConstIteratorAccess{
@@ -1634,7 +1670,7 @@ private:
     static bool equalsFn(const QtPrivate::QMetaTypeInterface *iface, const void *ptr1, const void *ptr2);
     static void debugStreamFn(const QtPrivate::QMetaTypeInterface *iface, QDebug &s, const void *ptr);
     static QtMetaContainerPrivate::QMetaSequenceInterface* createMetaSequenceInterface(int newMetaType);
-    qsizetype size(const void* container);
+    qsizetype size(const void* container) override;
     jobject createIterator(JNIEnv * env, QtJambiNativeID ownerId, void* iteratorPtr);
     jobject createConstIterator(JNIEnv * env, QtJambiNativeID ownerId, void* iteratorPtr);
 public:
@@ -1646,10 +1682,13 @@ public:
     jint size_bytes(JNIEnv * env, const void* container) override;
     jobject get(JNIEnv *,const void*,jint) override;
     bool set(JNIEnv *,const ContainerInfo&,jint,jobject) override;
+    const void* get(const void*,qsizetype) override;
+    bool set(void*,qsizetype,const void*) override;
     jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
     jobject constEnd(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
     jobject begin(JNIEnv * env, const ExtendedContainerInfo& container) override;
     jobject end(JNIEnv * env, const ExtendedContainerInfo& container) override;
+    std::unique_ptr<AbstractSpanAccess::ElementIterator> elementIterator(void* container) override;
     std::unique_ptr<AbstractSpanAccess::ElementIterator> elementIterator(const void* container) override;
 
     const QMetaType& elementMetaType() override;
@@ -1805,6 +1844,8 @@ public:
     jobject constEnd(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
     void appendList(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& containerInfo) override;
     jobject at(JNIEnv * env, const void* container, jint index) override;
+    const void* at(const void* container, qsizetype index) override;
+    void* at(void* container, qsizetype index) override;
     jobject value(JNIEnv * env, const void* container, jint index) override;
     jobject value(JNIEnv * env, const void* container, jint index, jobject defaultValue) override;
     void swapItemsAt(JNIEnv *, const ContainerInfo& container, jint index1, jint index2) override;
@@ -1812,8 +1853,9 @@ public:
     jint size(JNIEnv *, const void* container) override;
     void reserve(JNIEnv *, const ContainerInfo& container, jint size) override;
     void replace(JNIEnv * env, const ContainerInfo& container, jint index, jobject value) override;
+    void replace(void* container, qsizetype index, const void* value) override;
     void remove(JNIEnv *, const ContainerInfo& container, jint index, jint n) override;
-    void remove(void* container, jint index, jint n);
+    void remove(void* container, qsizetype index, qsizetype n) override;
     jint removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) override;
     jboolean equal(JNIEnv * env, const void* container, jobject other) override;
     void move(JNIEnv *, const ContainerInfo& container, jint index1, jint index2) override;
@@ -1826,18 +1868,21 @@ public:
     void clear(JNIEnv *, const ContainerInfo& container) override;
     void clear(void* container);
     void insert(JNIEnv * env, const ContainerInfo& container, jint index, jint n, jobject value) override;
+    void insert(void* container, qsizetype index, qsizetype n, const void* entry) override;
     bool append(void* container, const void* value) override;
     inline void insert(void* container, const void* value){
         append(container, value);
     }
-    qsizetype size(const void* container);
+    qsizetype size(const void* container) override;
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    void resize(void* container, qsizetype newSize) override;
     jint capacity(JNIEnv *, const void* container) override;
     void fill(JNIEnv * env, const ContainerInfo& container, jobject value, jint size) override;
     void resize(JNIEnv *, const ContainerInfo& container, jint newSize) override;
     void squeeze(JNIEnv *, const ContainerInfo& container) override;
 #endif
     std::unique_ptr<AbstractListAccess::ElementIterator> elementIterator(const void* container) override;
+    std::unique_ptr<AbstractListAccess::ElementIterator> elementIterator(void* container) override;
 private:
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     static QtMetaContainerPrivate::QMetaSequenceInterface* createMetaSequenceInterface(int newMetaType);
@@ -1954,6 +1999,9 @@ public:
     bool hasValueNestedPointers() override;
     void clear(JNIEnv *,const ContainerInfo&) override;
     void clear(void*);
+    bool contains(const void*,const void*) override;
+    void insert(void* container,const void* key, const void* value) override;
+    const void* value(const void*, const void*, const void*) override;
     jboolean contains(JNIEnv *,const void*,jobject) override;
     jint count(JNIEnv *,const void*,jobject) override;
     jobject begin(JNIEnv * env, const ExtendedContainerInfo& container) override;
@@ -1974,7 +2022,7 @@ public:
     jboolean equal(JNIEnv *,const void*,jobject) override;
     jint remove(JNIEnv *,const ContainerInfo&,jobject) override;
     jint size(JNIEnv *,const void*) override;
-    qsizetype size(const void* container);
+    qsizetype size(const void* container) override;
     jobject take(JNIEnv *,const ContainerInfo&,jobject) override;
     jobject constUpperBound(JNIEnv *,const ConstExtendedContainerInfo& container,jobject) override;
     jobject value(JNIEnv *,const void*,jobject,jobject) override;
@@ -2027,7 +2075,6 @@ private:
     jobject nodeKey(JNIEnv * env, Node* node);
     jobject nodeValue(JNIEnv * env, Node* node);
 #else
-    void insert(void* container, const void* key, const void* value = nullptr);
     static QtMetaContainerPrivate::QMetaAssociationInterface* createMetaAssociationInterface(int newMetaType);
 
     enum Colors {
@@ -2220,6 +2267,7 @@ private:
     friend class AutoMultiMapAccess;
 public:
     std::unique_ptr<AbstractMapAccess::KeyValueIterator> keyValueIterator(const void* container) override;
+    std::unique_ptr<AbstractMapAccess::KeyValueIterator> keyValueIterator(void* container) override;
 };
 
 class AutoMultiMapAccess : public virtual AbstractMultiMapAccess, public AutoMapAccess{
@@ -2294,6 +2342,7 @@ public:
     jboolean equal(JNIEnv *,const void*,jobject) override;
     jint remove(JNIEnv *,const ContainerInfo&,jobject) override;
     jint size(JNIEnv *,const void*) override;
+    qsizetype size(const void* container) override;
     jobject take(JNIEnv *,const ContainerInfo&,jobject) override;
     jobject constUpperBound(JNIEnv *,const ConstExtendedContainerInfo& container,jobject) override;
     jobject value(JNIEnv *,const void*,jobject,jobject) override;
@@ -2311,6 +2360,9 @@ public:
     jobject constFind(JNIEnv * env, const ConstExtendedContainerInfo& container, jobject key, jobject value) override;
     jint remove(JNIEnv *,const ContainerInfo&,jobject,jobject) override;
     void replace(JNIEnv *,const ContainerInfo&,jobject,jobject) override;
+    bool contains(const void*,const void*) override;
+    void insert(void* container,const void* key, const void* value) override;
+    const void* value(const void*, const void*, const void*) override;
     size_t sizeOf() override;
     void* constructContainer(void* placement) override;
     void* constructContainer(void* placement, const void* container) override;
@@ -2323,6 +2375,7 @@ public:
     void debugStream(QDebug &s, const void *ptr) override;
 #endif
     std::unique_ptr<AbstractMapAccess::KeyValueIterator> keyValueIterator(const void* container) override;
+    std::unique_ptr<AbstractMapAccess::KeyValueIterator> keyValueIterator(void* container) override;
 private:
     ushort alignOf() const override;
     IsBiContainerFunction getIsBiContainerFunction() override;
@@ -2428,7 +2481,7 @@ public:
     jint remove(JNIEnv *,const ContainerInfo&,jobject) override;
     void reserve(JNIEnv *,const ContainerInfo&,jint) override;
     jint size(JNIEnv *,const void*) override;
-    virtual qsizetype size(const void*);
+    qsizetype size(const void*) override;
     jobject take(JNIEnv *,const ContainerInfo&,jobject) override;
     jobject value(JNIEnv *,const void*,jobject,jobject) override;
     ContainerAndAccessInfo values(JNIEnv *,const ConstContainerInfo&) override;
@@ -2441,8 +2494,12 @@ public:
     void* constructContainer(JNIEnv * env, void* result, const ContainerAndAccessInfo& container) override;
     std::pair<const QtPrivate::QMetaTypeInterface *,const QtPrivate::QMetaTypeInterface *> metaTypes();
 #endif
+    bool contains(const void*,const void*) override;
+    void insert(void* container,const void* key, const void* value = nullptr) override;
+    const void* value(const void*, const void*, const void*) override;
     size_t sizeOf() override;
     std::unique_ptr<AbstractHashAccess::KeyValueIterator> keyValueIterator(const void* container) override;
+    std::unique_ptr<AbstractHashAccess::KeyValueIterator> keyValueIterator(void* container) override;
 private:
     virtual ushort alignOf() const;
     virtual IsBiContainerFunction getIsBiContainerFunction();
@@ -2651,7 +2708,6 @@ private:
     virtual bool equalSpanEntries(const char* value1, const char* value2) const;
     virtual void copySpanEntry(char* value1, const char* value2) const;
     virtual void eraseSpanEntry(char* value) const;
-    void insert(void* container, const void* key, const void* value = nullptr);
     virtual void emplace(void* container, const void* akey, JNIEnv *env, jobject value);
     virtual void emplace(void* container, const void* akey, const void* value);
     virtual char* iteratorValue(const iterator& it) const;
@@ -2763,6 +2819,9 @@ public:
     ContainerAndAccessInfo values(JNIEnv *,const ConstContainerInfo&) override;
     ContainerAndAccessInfo values(JNIEnv *,const ConstContainerInfo&,jobject) override;
     jboolean contains(JNIEnv *,const void*,jobject,jobject) override;
+    bool contains(const void*,const void*) override;
+    void insert(void* container,const void* key, const void* value) override;
+    const void* value(const void*, const void*, const void*) override;
     jint count(JNIEnv *,const void*,jobject,jobject) override;
     jobject find(JNIEnv * env, const ExtendedContainerInfo& container, jobject key, jobject value) override;
     jobject constFind(JNIEnv * env, const ConstExtendedContainerInfo& container, jobject key, jobject value) override;
@@ -2778,6 +2837,7 @@ public:
 #endif
     size_t sizeOf() override;
     std::unique_ptr<AbstractHashAccess::KeyValueIterator> keyValueIterator(const void* container) override;
+    std::unique_ptr<AbstractHashAccess::KeyValueIterator> keyValueIterator(void* container) override;
 private:
     friend class AutoHashAccess;
     ushort alignOf() const override;
@@ -2870,6 +2930,7 @@ public:
     jboolean remove(JNIEnv * env, const ContainerInfo& container, jobject value) override;
     void reserve(JNIEnv * env, const ContainerInfo& container, jint newSize) override;
     jint size(JNIEnv * env, const void* container) override;
+    qsizetype size(const void* container) override;
     void subtract(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;
     void unite(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;
     ContainerAndAccessInfo values(JNIEnv * env, const ConstContainerInfo& container) override;
@@ -2883,6 +2944,7 @@ public:
 #endif
     size_t sizeOf() override;
     std::unique_ptr<AbstractSetAccess::ElementIterator> elementIterator(const void* container) override;
+    std::unique_ptr<AbstractSetAccess::ElementIterator> elementIterator(void* container) override;
 private:
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     typedef QHashData::Node Node;
@@ -2959,7 +3021,7 @@ public:
     void swapItemsAt(JNIEnv * env, const ContainerInfo& container, jint index1, jint index2) override;
     jboolean startsWith(JNIEnv * env, const void* container, jobject value) override;
     jint size(JNIEnv * env, const void* container) override;
-    qsizetype size(const void* container);
+    qsizetype size(const void* container) override;
     void reserve(JNIEnv * env, const ContainerInfo& container, jint size) override;
     void replace(JNIEnv * env, const ContainerInfo& container, jint index, jobject value) override;
     jint removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) override;
@@ -2983,6 +3045,7 @@ public:
     void resize(JNIEnv * env, const ContainerInfo& container, jint newSize) override;
     void squeeze(JNIEnv * env, const ContainerInfo& container) override;
     std::unique_ptr<AbstractVectorAccess::ElementIterator> elementIterator(const void* container) override;
+    std::unique_ptr<AbstractVectorAccess::ElementIterator> elementIterator(void* container) override;
 };
 
 #include <QtCore/QLinkedList>
@@ -3051,11 +3114,12 @@ public:
     void removeLast(JNIEnv * env, const ContainerInfo& container) override;
     jboolean removeOne(JNIEnv * env, const ContainerInfo& container, jobject value) override;
     jint size(JNIEnv * env, const void* container) override;
-    jint size(const void* container);
+    qsizetype size(const void* container) override;
     jboolean startsWith(JNIEnv * env, const void* container, jobject value) override;
     jobject takeFirst(JNIEnv * env, const ContainerInfo& container) override;
     jobject takeLast(JNIEnv * env, const ContainerInfo& container) override;
     std::unique_ptr<AbstractLinkedListAccess::ElementIterator> elementIterator(const void* container) override;
+    std::unique_ptr<AbstractLinkedListAccess::ElementIterator> elementIterator(void* container) override;
 private:
     jobject createIterator(JNIEnv * env, QtJambiNativeID ownerId, void* iteratorPtr);
     jobject createConstIterator(JNIEnv * env, QtJambiNativeID ownerId, void* iteratorPtr);

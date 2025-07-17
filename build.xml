@@ -493,22 +493,22 @@ Further options:
     </target>
 
     <target name="deploy.snapshot" depends="log, init.taskdef"
-        description="Publishes QtJambi as Maven artifact snapshot.">
+        description="Create POM files (snapshot).">
         <foreach-version targets="init.build,deploy-snapshot"/>
     </target>
         
     <target name="deploy.release" depends="log, init.taskdef"
-        description="Publishes QtJambi as Maven artifact.">
+        description="Create POM files (release).">
         <foreach-version targets="init.build,deploy-release"/>
     </target>
         
     <target name="deploy.bundle" depends="log, init.taskdef"
-        description="Publishes QtJambi as Maven artifact.">
-        <foreach-version targets="init.build,deploy-bundle"/>
+        description="Creates Maven artifact bundles (snapshot).">
+        <foreach-version targets="init.build,deploy.snapshot,deploy-bundle"/>
     </target>
     
     <target name="deploy.bundle.release" depends="log, init.taskdef"
-        description="Publishes QtJambi as Maven artifact.">
+        description="Creates Maven artifact bundles (release).">
         <foreach-version targets="init.build,deploy-release,deploy-bundle"/>
     </target>
     <target name="test" depends="log, init.taskdef"

@@ -888,42 +888,60 @@ public:
         reinterpret_cast<QMultiHash<K,T> *>(container.container)->swap(*reinterpret_cast<QMultiHash<K,T> *>(container2.container));
     }
 
+    template<bool _isConst>
     class KeyValueIterator : public AbstractHashAccess::KeyValueIterator{
+        using Container = std::conditional_t<_isConst, const QMultiHash<K,T>, QMultiHash<K,T>>;
+        using iterator = decltype(std::declval<Container>().begin());
+        GenericMultiHashAccess* m_access;
+        iterator current;
+        iterator end;
+        KeyValueIterator(const KeyValueIterator& other)
+            :m_access(other.m_access),
+            current(other.current),
+            end(other.end) {}
+    protected:
+        auto access() override {return m_access;}
     public:
-        GenericMultiHashAccess* access;
-        typename QMultiHash<K,T>::ConstIterator current;
-        typename QMultiHash<K,T>::ConstIterator end;
-        KeyValueIterator(GenericMultiHashAccess* _access, const void* container)
-            : access(_access){
-            QTJAMBI_KEY_VALUE_LOCKER(access);
-            current = reinterpret_cast<const QMultiHash<K,T>*>(container)->constBegin();
-            end = reinterpret_cast<const QMultiHash<K,T>*>(container)->constEnd();
+        KeyValueIterator(GenericMultiHashAccess* _access, Container& container)
+            : m_access(_access){
+            QTJAMBI_KEY_VALUE_LOCKER(m_access);
+            current = container.begin();
+            end = container.end();
         }
         ~KeyValueIterator() override {};
         bool hasNext() override {return current!=end;};
         QPair<jobject,jobject> next(JNIEnv * env) override {
-            QTJAMBI_KEY_VALUE_LOCKER(access);
+            QTJAMBI_KEY_VALUE_LOCKER(m_access);
             jvalue k;
             k.l = nullptr;
             jvalue v;
             v.l = nullptr;
-            access->m_keyInternalToExternalConverter(env, nullptr, &current.key(), k, true);
-            access->m_valueInternalToExternalConverter(env, nullptr, &current.value(), v, true);
+            m_access->m_keyInternalToExternalConverter(env, nullptr, &current.key(), k, true);
+            m_access->m_valueInternalToExternalConverter(env, nullptr, &current.value(), v, true);
             ++current;
             return {k.l, v.l};
         };
         QPair<const void*,const void*> next() override {
-            QTJAMBI_KEY_VALUE_LOCKER(access);
-            const void* key = access->m_keyDataType==AbstractContainerAccess::Value ? nullptr :
+            QTJAMBI_KEY_VALUE_LOCKER(m_access);
+            const void* key = m_access->m_keyDataType==AbstractContainerAccess::Value ? nullptr :
                                   QtJambiPrivate::ContainerContentDeref<K, size1==0>::deref(current.key());
-            const void* value = access->m_valueDataType==AbstractContainerAccess::Value ? nullptr :
+            const void* value = m_access->m_valueDataType==AbstractContainerAccess::Value ? nullptr :
                                     QtJambiPrivate::ContainerContentDeref<T, size2==0>::deref(current.value());
             ++current;
             return {key, value};
         }
+        bool operator==(const AbstractHashAccess::KeyValueIterator& other) const override {
+            return current==reinterpret_cast<const KeyValueIterator&>(other).current;
+        }
+        std::unique_ptr<AbstractAssociativeAccess::KeyValueIterator> clone() const override {
+            return std::unique_ptr<AbstractAssociativeAccess::KeyValueIterator>(new KeyValueIterator(*this));
+        }
     };
     std::unique_ptr<AbstractHashAccess::KeyValueIterator> keyValueIterator(const void* container) override {
-        return std::unique_ptr<AbstractHashAccess::KeyValueIterator>(new KeyValueIterator(this, container));
+        return std::unique_ptr<AbstractHashAccess::KeyValueIterator>(new KeyValueIterator<true>(this, *reinterpret_cast<const QMultiHash<K,T>*>(container)));
+    }
+    std::unique_ptr<AbstractHashAccess::KeyValueIterator> keyValueIterator(void* container) override {
+        return std::unique_ptr<AbstractHashAccess::KeyValueIterator>(new KeyValueIterator<false>(this, *reinterpret_cast<QMultiHash<K,T>*>(container)));
     }
 };
 

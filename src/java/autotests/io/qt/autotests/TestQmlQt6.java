@@ -79,13 +79,17 @@ public class TestQmlQt6 extends ApplicationInitializer{
 	@Test
     public void testJSValue() {
 		QJSEngine engine = new QJSEngine();
-		QJSValue value = engine.toScriptValue(5.4);
-		Assert.assertTrue(value.isNumber());
-		Assert.assertEquals(0.000001, 5.4, value.toNumber());
-		value = engine.toScriptValue(QCoreApplication.instance());
-		Assert.assertTrue(value.isObject());
-		QObject result = engine.fromScriptValue(value, QObject.class);
-		Assert.assertEquals(QCoreApplication.instance(), result);
+		try {
+			QJSValue value = engine.toScriptValue(5.4);
+			Assert.assertTrue(value.isNumber());
+			Assert.assertEquals(0.000001, 5.4, value.toNumber());
+			value = engine.toScriptValue(QCoreApplication.instance());
+			Assert.assertTrue(value.isObject());
+			QObject result = engine.fromScriptValue(value, QObject.class);
+			Assert.assertEquals(QCoreApplication.instance(), result);
+		}finally {
+			engine.dispose();
+		}
 	}
 	
 	@QmlNamedElement(name="Singleton")
@@ -127,21 +131,25 @@ public class TestQmlQt6 extends ApplicationInitializer{
 				"    property int number: Singleton.number\n" + 
 				"}");
 		QQmlEngine engine = new QQmlEngine();
-		QQmlComponent component = new QQmlComponent(engine);
-		component.setData(data, (QUrl)null);
-		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
-		Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
-		QObject root = component.create();
-		Assert.assertEquals("Hello, world!", root.property("text"));
-		s.text.setValue("Hello, world?");
-		Assert.assertEquals("Hello, world?", root.property("text"));
-		QIntProperty iprop = new QIntProperty();
-		iprop.setBinding(()->s.number.value());
-		Assert.assertEquals(8, iprop.value());
-		Assert.assertEquals(8, root.property("number"));
-		s.setNumber(29);
-		Assert.assertEquals(29, iprop.value());
-		Assert.assertEquals(29, root.property("number"));
+		try {
+			QQmlComponent component = new QQmlComponent(engine);
+			component.setData(data, (QUrl)null);
+			Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
+			Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
+			QObject root = component.create();
+			Assert.assertEquals("Hello, world!", root.property("text"));
+			s.text.setValue("Hello, world?");
+			Assert.assertEquals("Hello, world?", root.property("text"));
+			QIntProperty iprop = new QIntProperty();
+			iprop.setBinding(()->s.number.value());
+			Assert.assertEquals(8, iprop.value());
+			Assert.assertEquals(8, root.property("number"));
+			s.setNumber(29);
+			Assert.assertEquals(29, iprop.value());
+			Assert.assertEquals(29, root.property("number"));
+		}finally {
+			engine.dispose();
+		}
 	}
 	
 	@Test
@@ -156,22 +164,26 @@ public class TestQmlQt6 extends ApplicationInitializer{
 				"    property int number: Singleton.number\n" + 
 				"}");
 		QQmlEngine engine = new QQmlEngine();
-		QQmlComponent component = new QQmlComponent(engine);
-		component.setData(data, (QUrl)null);
-		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
-		Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
-		QObject root = component.create();
-		Singleton s = engine.singletonInstance(Singleton.class, id);
-		Assert.assertEquals("Hello, world!", root.property("text"));
-		s.text.setValue("Hello, world?");
-		Assert.assertEquals("Hello, world?", root.property("text"));
-		QIntProperty iprop = new QIntProperty();
-		iprop.setBinding(()->s.number.value());
-		Assert.assertEquals(8, iprop.value());
-		Assert.assertEquals(8, root.property("number"));
-		s.setNumber(29);
-		Assert.assertEquals(29, iprop.value());
-		Assert.assertEquals(29, root.property("number"));
+		try {
+			QQmlComponent component = new QQmlComponent(engine);
+			component.setData(data, (QUrl)null);
+			Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
+			Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
+			QObject root = component.create();
+			Singleton s = engine.singletonInstance(Singleton.class, id);
+			Assert.assertEquals("Hello, world!", root.property("text"));
+			s.text.setValue("Hello, world?");
+			Assert.assertEquals("Hello, world?", root.property("text"));
+			QIntProperty iprop = new QIntProperty();
+			iprop.setBinding(()->s.number.value());
+			Assert.assertEquals(8, iprop.value());
+			Assert.assertEquals(8, root.property("number"));
+			s.setNumber(29);
+			Assert.assertEquals(29, iprop.value());
+			Assert.assertEquals(29, root.property("number"));
+		}finally {
+			engine.dispose();
+		}
 	}
 	
 	@Test
@@ -198,23 +210,27 @@ public class TestQmlQt6 extends ApplicationInitializer{
 				"    property list<mval> customValues;\n" + 
 				"}");
 		QQmlEngine engine = new QQmlEngine();
-		QQmlComponent component = new QQmlComponent(engine);
-		component.setData(data, (QUrl)null);
-		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
-		Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
-		QObject root = component.create();
-		Object customValue = root.property("customValue");
-		Assert.assertTrue(customValue instanceof CloneableMetaValue);
-		Object customValues = root.property("customValues");
-		Assert.assertTrue(customValues instanceof QList);
-		QList list = (QList)customValues;
-		Assert.assertEquals(0, list.size());
 		try {
-			list.add("");
-			Assert.fail("IllegalArgumentException expected");
-		} catch (IllegalArgumentException e) {
+			QQmlComponent component = new QQmlComponent(engine);
+			component.setData(data, (QUrl)null);
+			Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
+			Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
+			QObject root = component.create();
+			Object customValue = root.property("customValue");
+			Assert.assertTrue(customValue instanceof CloneableMetaValue);
+			Object customValues = root.property("customValues");
+			Assert.assertTrue(customValues instanceof QList);
+			QList list = (QList)customValues;
+			Assert.assertEquals(0, list.size());
+			try {
+				list.add("");
+				Assert.fail("IllegalArgumentException expected");
+			} catch (IllegalArgumentException e) {
+			}
+			list.add(new CloneableMetaValue());
+		}finally {
+			engine.dispose();
 		}
-		list.add(new CloneableMetaValue());
 	}
 	
 	static class CustomGadgetType
@@ -581,61 +597,66 @@ public class TestQmlQt6 extends ApplicationInitializer{
 				"    }\n" + 
 				"}");
 		QQmlEngine engine = new QQmlEngine();
-		engine.setOutputWarningsToStandardError(true);
-		engine.warnings.connect(warnings->{
-			for(QQmlError warning : warnings) {
-				System.out.println(warning);//.messageType()+" "+warning.line()+" "+warning.description());
-			}
-		});
-		
-		QQmlComponent component = new QQmlComponent(engine);
-		component.setData(data, (QUrl)null);
-		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
-		Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
-		QObject root = component.create();
-		ObjectType object = (ObjectType)root.property("object");
-		Assert.assertEquals(new QVector4D(1,2,3,4), object.vector);
-		Assert.assertEquals(ObjectType.SomeEnum.D, object.someEnum);
-		ObjectType.SomeEnum someEnum = QVariant.convert(root.property("someEnum"), ObjectType.SomeEnum.class);
-		Assert.assertEquals(ObjectType.SomeEnum.D, someEnum);
-		Assert.assertEquals(5, object.customValueType.i);
-		Assert.assertEquals(7.9, object.customValueType.d, 0.0001);
-		Assert.assertEquals("TEST", object.customValueType.s);
-		
-	    QMetaObject mo = root.metaObject();
-	    object.setIsNull(false);
-	    QMetaMethod changeObject = mo.method("changeObject");
-	    changeObject.invoke(root);
-		Assert.assertEquals(ObjectType.SomeEnum.B, object.someEnum);
-		someEnum = QVariant.convert(root.property("someEnum"), ObjectType.SomeEnum.class);
-		Assert.assertEquals(ObjectType.SomeEnum.B, someEnum);
-		Assert.assertEquals(6, object.customValueType.i);
-		Assert.assertEquals(3.9, object.customValueType.d, 0.0001);
-		Assert.assertEquals("TEST2", object.customValueType.s);
-		Assert.assertTrue(object.getIsNull());
-		
-		changeObject = mo.method("changeObject2");
-	    changeObject.invoke(root);
-		Assert.assertEquals(ObjectType.SomeEnum.C, object.someEnum);
-		someEnum = QVariant.convert(root.property("someEnum"), ObjectType.SomeEnum.class);
-		Assert.assertEquals(ObjectType.SomeEnum.C, someEnum);
-		Assert.assertEquals(3, object.customValueType.i);
-		Assert.assertEquals(9.6, object.customValueType.d, 0.0001);
-		Assert.assertEquals("TEST8", object.customValueType.s);
-		
-		Assert.assertEquals(QMetaType.fromType(CustomGadgetType.class), QVariant.fromValue(new CustomGadgetType()).metaType());
-		Assert.assertEquals(QMetaType.fromType(CustomValueType.class), QVariant.fromValue(new CustomValueType()).metaType());
-		Assert.assertTrue(QVariant.fromValue(new ObjectType()).metaType().name().startsWith("JObjectWrapper<"));
-//		QMetaObject.forType(ObjectType.class).properties().forEach(p->System.out.println(p.typeName()+" "+p.name()));
-//		System.out.println(QMetaType.fromType(java.lang.Runnable.class).flags());
-//		System.out.println(QMetaObject.forType(Runnable.class).methods());
-//		System.out.println(QMetaObject.forType(Runnable.class).properties());
+		try {
+			engine.setOutputWarningsToStandardError(true);
+			engine.warnings.connect(warnings->{
+				for(QQmlError warning : warnings) {
+					System.out.println(warning);//.messageType()+" "+warning.line()+" "+warning.description());
+				}
+			});
+			
+			QQmlComponent component = new QQmlComponent(engine);
+			component.setData(data, (QUrl)null);
+			Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
+			Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
+			QObject root = component.create();
+			ObjectType object = (ObjectType)root.property("object");
+			Assert.assertEquals(new QVector4D(1,2,3,4), object.vector);
+			Assert.assertEquals(ObjectType.SomeEnum.D, object.someEnum);
+			ObjectType.SomeEnum someEnum = QVariant.convert(root.property("someEnum"), ObjectType.SomeEnum.class);
+			Assert.assertEquals(ObjectType.SomeEnum.D, someEnum);
+			Assert.assertEquals(5, object.customValueType.i);
+			Assert.assertEquals(7.9, object.customValueType.d, 0.0001);
+			Assert.assertEquals("TEST", object.customValueType.s);
+			
+		    QMetaObject mo = root.metaObject();
+		    object.setIsNull(false);
+		    QMetaMethod changeObject = mo.method("changeObject");
+		    changeObject.invoke(root);
+			Assert.assertEquals(ObjectType.SomeEnum.B, object.someEnum);
+			someEnum = QVariant.convert(root.property("someEnum"), ObjectType.SomeEnum.class);
+			Assert.assertEquals(ObjectType.SomeEnum.B, someEnum);
+			Assert.assertEquals(6, object.customValueType.i);
+			Assert.assertEquals(3.9, object.customValueType.d, 0.0001);
+			Assert.assertEquals("TEST2", object.customValueType.s);
+			Assert.assertTrue(object.getIsNull());
+			
+			changeObject = mo.method("changeObject2");
+		    changeObject.invoke(root);
+			Assert.assertEquals(ObjectType.SomeEnum.C, object.someEnum);
+			someEnum = QVariant.convert(root.property("someEnum"), ObjectType.SomeEnum.class);
+			Assert.assertEquals(ObjectType.SomeEnum.C, someEnum);
+			Assert.assertEquals(3, object.customValueType.i);
+			Assert.assertEquals(9.6, object.customValueType.d, 0.0001);
+			Assert.assertEquals("TEST8", object.customValueType.s);
+			
+			Assert.assertEquals(QMetaType.fromType(CustomGadgetType.class), QVariant.fromValue(new CustomGadgetType()).metaType());
+			Assert.assertEquals(QMetaType.fromType(CustomValueType.class), QVariant.fromValue(new CustomValueType()).metaType());
+			Assert.assertTrue(QVariant.fromValue(new ObjectType()).metaType().name().startsWith("JObjectWrapper<"));
+	//		QMetaObject.forType(ObjectType.class).properties().forEach(p->System.out.println(p.typeName()+" "+p.name()));
+	//		System.out.println(QMetaType.fromType(java.lang.Runnable.class).flags());
+	//		System.out.println(QMetaObject.forType(Runnable.class).methods());
+	//		System.out.println(QMetaObject.forType(Runnable.class).properties());
+		}finally {
+			engine.dispose();
+		}
 	}
 	
 	@SuppressWarnings("rawtypes")
 	@Test
     public void testAutoGadgetTypes() {
 		qmlClearTypeRegistrations();
+		//this type needs to be available until engine is deleted otherwise crash:
 	    qmlRegisterType(ObjectType.class, "io.qt.test", 1, 0, "ObjectType");
 	    qmlRegisterType((Class)AutoGadgetValueType.class, "io.qt.test", 1, 0, "autoGadgetValueType");
 		QByteArray data = new QByteArray("import io.qt.test 1.0\n" + 
@@ -666,55 +687,59 @@ public class TestQmlQt6 extends ApplicationInitializer{
 				"    }\n" + 
 				"}");
 		QQmlEngine engine = new QQmlEngine();
-		engine.setOutputWarningsToStandardError(true);
-		engine.warnings.connect(warnings->{
-			for(QQmlError warning : warnings) {
-				System.out.println(warning);//.messageType()+" "+warning.line()+" "+warning.description());
-			}
-		});
-		
-		QQmlComponent component = new QQmlComponent(engine);
-		component.setData(data, (QUrl)null);
-		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
-		Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
-		QObject root = component.create();
-		ObjectType object = (ObjectType)root.property("object");
-		Assert.assertEquals(new QVector4D(1,2,3,4), object.vector);
-		Assert.assertEquals(ObjectType.SomeEnum.D, object.someEnum);
-		ObjectType.SomeEnum someEnum = QVariant.convert(root.property("someEnum"), ObjectType.SomeEnum.class);
-		Assert.assertEquals(ObjectType.SomeEnum.D, someEnum);
-		Assert.assertEquals(5, object.autoGadgetValueType.i);
-		Assert.assertEquals(7.9, object.autoGadgetValueType.d, 0.0001);
-		Assert.assertEquals("TEST", object.autoGadgetValueType.s);
-		
-		object.setIsNull(false);
-	    QMetaObject mo = root.metaObject();
-	    QMetaMethod changeObject = mo.method("changeObject");
-	    changeObject.invoke(root);
-		Assert.assertEquals(ObjectType.SomeEnum.B, object.someEnum);
-		someEnum = QVariant.convert(root.property("someEnum"), ObjectType.SomeEnum.class);
-		Assert.assertEquals(ObjectType.SomeEnum.B, someEnum);
-		Assert.assertEquals(6, object.autoGadgetValueType.i);
-		Assert.assertEquals(3.9, object.autoGadgetValueType.d, 0.0001);
-		Assert.assertEquals("TEST2", object.autoGadgetValueType.s);
-		Assert.assertTrue(object.getIsNull());
-		
-		changeObject = mo.method("changeObject2");
-	    changeObject.invoke(root);
-		Assert.assertEquals(ObjectType.SomeEnum.C, object.someEnum);
-		someEnum = QVariant.convert(root.property("someEnum"), ObjectType.SomeEnum.class);
-		Assert.assertEquals(ObjectType.SomeEnum.C, someEnum);
-		Assert.assertEquals(3, object.autoGadgetValueType.i);
-		Assert.assertEquals(9.6, object.autoGadgetValueType.d, 0.0001);
-		Assert.assertEquals("TEST8", object.autoGadgetValueType.s);
-		
-		Assert.assertEquals(QMetaType.fromType(AutoGadgetType.class), QVariant.fromValue(new AutoGadgetType()).metaType());
-		Assert.assertEquals(QMetaType.fromType(AutoGadgetValueType.class), QVariant.fromValue(new AutoGadgetValueType()).metaType());
-		Assert.assertTrue(QVariant.fromValue(new ObjectType()).metaType().name().startsWith("JObjectWrapper<"));
-//		QMetaObject.forType(ObjectType.class).properties().forEach(p->System.out.println(p.typeName()+" "+p.name()));
-//		System.out.println(QMetaType.fromType(java.lang.Runnable.class).flags());
-//		System.out.println(QMetaObject.forType(Runnable.class).methods());
-//		System.out.println(QMetaObject.forType(Runnable.class).properties());
+		try {
+			engine.setOutputWarningsToStandardError(true);
+			engine.warnings.connect(warnings->{
+				for(QQmlError warning : warnings) {
+					System.out.println(warning);//.messageType()+" "+warning.line()+" "+warning.description());
+				}
+			});
+			
+			QQmlComponent component = new QQmlComponent(engine);
+			component.setData(data, (QUrl)null);
+			Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
+			Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
+			QObject root = component.create();
+			ObjectType object = (ObjectType)root.property("object");
+			Assert.assertEquals(new QVector4D(1,2,3,4), object.vector);
+			Assert.assertEquals(ObjectType.SomeEnum.D, object.someEnum);
+			ObjectType.SomeEnum someEnum = QVariant.convert(root.property("someEnum"), ObjectType.SomeEnum.class);
+			Assert.assertEquals(ObjectType.SomeEnum.D, someEnum);
+			Assert.assertEquals(5, object.autoGadgetValueType.i);
+			Assert.assertEquals(7.9, object.autoGadgetValueType.d, 0.0001);
+			Assert.assertEquals("TEST", object.autoGadgetValueType.s);
+			
+			object.setIsNull(false);
+		    QMetaObject mo = root.metaObject();
+		    QMetaMethod changeObject = mo.method("changeObject");
+		    changeObject.invoke(root);
+			Assert.assertEquals(ObjectType.SomeEnum.B, object.someEnum);
+			someEnum = QVariant.convert(root.property("someEnum"), ObjectType.SomeEnum.class);
+			Assert.assertEquals(ObjectType.SomeEnum.B, someEnum);
+			Assert.assertEquals(6, object.autoGadgetValueType.i);
+			Assert.assertEquals(3.9, object.autoGadgetValueType.d, 0.0001);
+			Assert.assertEquals("TEST2", object.autoGadgetValueType.s);
+			Assert.assertTrue(object.getIsNull());
+			
+			changeObject = mo.method("changeObject2");
+		    changeObject.invoke(root);
+			Assert.assertEquals(ObjectType.SomeEnum.C, object.someEnum);
+			someEnum = QVariant.convert(root.property("someEnum"), ObjectType.SomeEnum.class);
+			Assert.assertEquals(ObjectType.SomeEnum.C, someEnum);
+			Assert.assertEquals(3, object.autoGadgetValueType.i);
+			Assert.assertEquals(9.6, object.autoGadgetValueType.d, 0.0001);
+			Assert.assertEquals("TEST8", object.autoGadgetValueType.s);
+			
+			Assert.assertEquals(QMetaType.fromType(AutoGadgetType.class), QVariant.fromValue(new AutoGadgetType()).metaType());
+			Assert.assertEquals(QMetaType.fromType(AutoGadgetValueType.class), QVariant.fromValue(new AutoGadgetValueType()).metaType());
+			Assert.assertTrue(QVariant.fromValue(new ObjectType()).metaType().name().startsWith("JObjectWrapper<"));
+	//		QMetaObject.forType(ObjectType.class).properties().forEach(p->System.out.println(p.typeName()+" "+p.name()));
+	//		System.out.println(QMetaType.fromType(java.lang.Runnable.class).flags());
+	//		System.out.println(QMetaObject.forType(Runnable.class).methods());
+	//		System.out.println(QMetaObject.forType(Runnable.class).properties());
+		}finally {
+			engine.dispose();
+		}
 	}
 	
 	@SuppressWarnings("rawtypes")
@@ -732,71 +757,75 @@ public class TestQmlQt6 extends ApplicationInitializer{
 				"    property customValueType someValueType: [8, 2.1, \"TEST3\"]\n" + 
 				"}");
 		QQmlEngine engine = new QQmlEngine();
-		engine.setOutputWarningsToStandardError(true);
-		engine.warnings.connect(warnings->{
-			for(QQmlError warning : warnings) {
-				System.out.println(warning);//.messageType()+" "+warning.line()+" "+warning.description());
+		try {
+			engine.setOutputWarningsToStandardError(true);
+			engine.warnings.connect(warnings->{
+				for(QQmlError warning : warnings) {
+					System.out.println(warning);//.messageType()+" "+warning.line()+" "+warning.description());
+				}
+			});
+			
+			QQmlComponent component = new QQmlComponent(engine);
+			component.setData(data, (QUrl)null);
+	//		Assert.assertEquals(0, CustomValueType.instances.size());
+			Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
+			Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
+			QObject root = component.create();
+	//		Assert.assertEquals(4, CustomValueType.instances.size());
+			
+			Object someValueTypeVar = root.property("someValueType");
+	//		Assert.assertEquals(7, CustomValueType.instances.size());
+			CustomValueType someValueType = QVariant.convert(someValueTypeVar, CustomValueType.class);
+			Assert.assertEquals(8, someValueType.i);
+			Assert.assertEquals(2.1, someValueType.d, 0.0001);
+			Assert.assertEquals("TEST3", someValueType.s);
+			someValueType = null;
+			someValueTypeVar = null;
+			for(int i=0; i<10; ++i) {
+				engine.collectGarbage();
+				ApplicationInitializer.runGC();
+				Thread.yield();
+				QCoreApplication.processEvents();
 			}
-		});
-		
-		QQmlComponent component = new QQmlComponent(engine);
-		component.setData(data, (QUrl)null);
-//		Assert.assertEquals(0, CustomValueType.instances.size());
-		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
-		Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
-		QObject root = component.create();
-//		Assert.assertEquals(4, CustomValueType.instances.size());
-		
-		Object someValueTypeVar = root.property("someValueType");
-//		Assert.assertEquals(7, CustomValueType.instances.size());
-		CustomValueType someValueType = QVariant.convert(someValueTypeVar, CustomValueType.class);
-		Assert.assertEquals(8, someValueType.i);
-		Assert.assertEquals(2.1, someValueType.d, 0.0001);
-		Assert.assertEquals("TEST3", someValueType.s);
-		someValueType = null;
-		someValueTypeVar = null;
-		for(int i=0; i<10; ++i) {
-			engine.collectGarbage();
-			ApplicationInitializer.runGC();
-			Thread.yield();
-			QCoreApplication.processEvents();
-		}
-		int counter=1, alife = 0;
-		for(WeakReference<CustomValueType> weak : CustomValueType.instances) {
-			CustomValueType value = weak.get();
-			if(value!=null) {
-				System.out.println(counter+": "+value);
-				++alife;
+			int counter=1, alife = 0;
+			for(WeakReference<CustomValueType> weak : CustomValueType.instances) {
+				CustomValueType value = weak.get();
+				if(value!=null) {
+					System.out.println(counter+": "+value);
+					++alife;
+				}
+				++counter;
 			}
-			++counter;
-		}
-		Assert.assertEquals(null, root.parent());
-		Assert.assertTrue(alife<=2);
-		engine.dispose();
-		Assert.assertEquals(null, component.engine());
-		Assert.assertFalse(component.isDisposed());
-		component.dispose();
-		Assert.assertEquals(null, root.parent());
-		Assert.assertFalse(root.isDisposed());
-		root.dispose();
-		
-		for(int i=0; i<10; ++i) {
-			ApplicationInitializer.runGC();
-			Thread.yield();
-			QCoreApplication.processEvents();
-		}
-		counter=1;
-		alife = 0;
-		for(WeakReference<CustomValueType> weak : CustomValueType.instances) {
-			CustomValueType value = weak.get();
-			if(value!=null) {
-				System.out.println(counter+": "+value);
-				++alife;
+			Assert.assertEquals(null, root.parent());
+			Assert.assertTrue(alife<=2);
+			engine.dispose();
+			Assert.assertEquals(null, component.engine());
+			Assert.assertFalse(component.isDisposed());
+			component.dispose();
+			Assert.assertEquals(null, root.parent());
+			Assert.assertFalse(root.isDisposed());
+			root.dispose();
+			
+			for(int i=0; i<10; ++i) {
+				ApplicationInitializer.runGC();
+				Thread.yield();
+				QCoreApplication.processEvents();
 			}
-			++counter;
+			counter=1;
+			alife = 0;
+			for(WeakReference<CustomValueType> weak : CustomValueType.instances) {
+				CustomValueType value = weak.get();
+				if(value!=null) {
+					System.out.println(counter+": "+value);
+					++alife;
+				}
+				++counter;
+			}
+			Assert.assertEquals("number of CustomValueType alife after GC", 0, alife);
+		}finally {
+			engine.dispose();
 		}
-		Assert.assertEquals("number of CustomValueType alife after GC", 0, alife);
-    }
+	}
 	
 	@SuppressWarnings("rawtypes")
 	@Test
@@ -813,23 +842,27 @@ public class TestQmlQt6 extends ApplicationInitializer{
 				"    property autoGadgetValueType someValueType: {\"i\": 8, \"d\": 2.1, \"s\": \"TEST3\"}\n" + 
 				"}");
 		QQmlEngine engine = new QQmlEngine();
-		engine.setOutputWarningsToStandardError(true);
-		engine.warnings.connect(warnings->{
-			for(QQmlError warning : warnings) {
-				System.out.println(warning);//.messageType()+" "+warning.line()+" "+warning.description());
-			}
-		});
-		
-		QQmlComponent component = new QQmlComponent(engine);
-		component.setData(data, (QUrl)null);
-		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
-		Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
-		QObject root = component.create();
-		
-		AutoGadgetValueType someValueType = QVariant.convert(root.property("someValueType"), AutoGadgetValueType.class);
-		Assert.assertEquals(8, someValueType.i);
-		Assert.assertEquals(2.1, someValueType.d, 0.0001);
-		Assert.assertEquals("TEST3", someValueType.s);
+		try {
+			engine.setOutputWarningsToStandardError(true);
+			engine.warnings.connect(warnings->{
+				for(QQmlError warning : warnings) {
+					System.out.println(warning);//.messageType()+" "+warning.line()+" "+warning.description());
+				}
+			});
+			
+			QQmlComponent component = new QQmlComponent(engine);
+			component.setData(data, (QUrl)null);
+			Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
+			Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
+			QObject root = component.create();
+			
+			AutoGadgetValueType someValueType = QVariant.convert(root.property("someValueType"), AutoGadgetValueType.class);
+			Assert.assertEquals(8, someValueType.i);
+			Assert.assertEquals(2.1, someValueType.d, 0.0001);
+			Assert.assertEquals("TEST3", someValueType.s);
+		}finally {
+			engine.dispose();
+		}
     }
 	
 	public static interface CustomJavaInterface{
@@ -852,28 +885,32 @@ public class TestQmlQt6 extends ApplicationInitializer{
 				"    property QtObject model: context.model\n" + 
 				"}");
 		QQmlEngine engine = new QQmlEngine();
-		engine.rootContext().setContextProperty("context", new QObject(engine) {
-			@QtPropertyReader
-			@QtPropertyStored("false")
-			@QtPropertyConstant(false)
-			public final QVariant model() {
-				return QVariant.fromValue(new CustomObject(this));
-			}
-		});
-		
-		engine.setOutputWarningsToStandardError(true);
-		engine.warnings.connect(warnings->{
-			for(QQmlError warning : warnings) {
-				System.out.println(warning);//.messageType()+" "+warning.line()+" "+warning.description());
-			}
-		});
-		
-		QQmlComponent component = new QQmlComponent(engine);
-		component.setData(data, (QUrl)null);
-		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
-		Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
-		QObject root = component.create();
-		Assert.assertTrue(root!=null);
-		Assert.assertTrue(root.property("model") instanceof CustomObject);
+		try {
+			engine.rootContext().setContextProperty("context", new QObject(engine) {
+				@QtPropertyReader
+				@QtPropertyStored("false")
+				@QtPropertyConstant(false)
+				public final QVariant model() {
+					return QVariant.fromValue(new CustomObject(this));
+				}
+			});
+			
+			engine.setOutputWarningsToStandardError(true);
+			engine.warnings.connect(warnings->{
+				for(QQmlError warning : warnings) {
+					System.out.println(warning);//.messageType()+" "+warning.line()+" "+warning.description());
+				}
+			});
+			
+			QQmlComponent component = new QQmlComponent(engine);
+			component.setData(data, (QUrl)null);
+			Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
+			Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
+			QObject root = component.create();
+			Assert.assertTrue(root!=null);
+			Assert.assertTrue(root.property("model") instanceof CustomObject);
+		}finally {
+			engine.dispose();
+		}
 	}
 }

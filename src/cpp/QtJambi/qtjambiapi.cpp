@@ -342,6 +342,13 @@ QByteArrayList analyze_instantiations(QByteArray& typeName, QList<QByteArray>& t
 }
 #endif
 
+QByteArray QtJambiAPI::typeName(const std::type_info* typeId){
+    if(!typeId)
+        return "<unknown>";
+    else
+        return typeName(*typeId);
+}
+
 QByteArray QtJambiAPI::typeName(const std::type_info& typeId){
     QByteArray typeName = typeId.name();
 #ifdef Q_CC_MSVC

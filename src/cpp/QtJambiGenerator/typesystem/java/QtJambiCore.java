@@ -14404,12 +14404,16 @@ class QByteArrayView___ extends QByteArray {
      */
     public QByteArrayView(byte @NonNull[] data, int offset, int length){
         super((QPrivateConstructor)null);
-        Long[] pointerOut = {null};
-        if(offset+length>data.length)
-            length = data.length-offset;
-        initialize_native(this, data, offset, length, pointerOut);
-        if(pointerOut[0]!=null)
-            __rcSource = new Purger(this, pointerOut[0], Purger.Mode.Bytes);
+        if(data==null){
+            initialize_native(this);
+        }else {
+            Long[] pointerOut = {null};
+            if(offset+length>data.length)
+                length = data.length-offset;
+            initialize_native(this, data, offset, length, pointerOut);
+            if(pointerOut[0]!=null)
+                __rcSource = new Purger(this, pointerOut[0], Purger.Mode.Bytes);
+        }
     }
     private native static void initialize_native(QByteArrayView instance, byte[] data, int offset, int length, Long[] pointerOut);
     private native static void purgeBytes(long pointer);
@@ -14419,10 +14423,14 @@ class QByteArrayView___ extends QByteArray {
      */
     public QByteArrayView(@NonNull String data){
         super((QPrivateConstructor)null);
-        Long[] pointerOut = {null};
-        initialize_native(this, data, pointerOut);
-        if(pointerOut[0]!=null)
-            __rcSource = new Purger(this, pointerOut[0], Purger.Mode.String);
+        if(data==null){
+            initialize_native(this);
+        }else{
+            Long[] pointerOut = {null};
+            initialize_native(this, data, pointerOut);
+            if(pointerOut[0]!=null)
+                __rcSource = new Purger(this, pointerOut[0], Purger.Mode.String);
+        }
     }
     private native static void initialize_native(QByteArrayView instance, String data, Long[] pointerOut);
     private native static void purgeString(long pointer);
@@ -14432,7 +14440,9 @@ class QByteArrayView___ extends QByteArray {
      */
     public QByteArrayView(java.nio.@NonNull ByteBuffer data){
         super((QPrivateConstructor)null);
-        if(data.isDirect()) {
+        if(data==null){
+            initialize_native(this);
+        }else if(data.isDirect()) {
             initialize_native(this, data, data.position(), data.limit()-data.position());
             __rcSource = data;
         }else {
@@ -15730,26 +15740,26 @@ class QMetaType_5__ extends QMetaType {
         if(obj==null)
             return new QMetaType(QMetaType.Type.Nullptr);
         Class<?> objClass = QtJambi_LibraryUtilities.internal.getClass(obj);
-        if(objClass==QList.class) {
-            return QMetaType.fromType(QList.class, ((QList<?>)obj).elementMetaType());
-        }else if(objClass==QLinkedList.class) {
-            return QMetaType.fromType(QLinkedList.class, ((QLinkedList<?>)obj).elementMetaType());
-        }else if(objClass==QVector.class) {
-            return QMetaType.fromType(QVector.class, ((QVector<?>)obj).elementMetaType());
-        }else if(objClass==QQueue.class) {
-            return QMetaType.fromType(QQueue.class, ((QQueue<?>)obj).elementMetaType());
-        }else if(objClass==QStack.class) {
-            return QMetaType.fromType(QStack.class, ((QStack<?>)obj).elementMetaType());
-        }else if(objClass==QSet.class) {
-            return QMetaType.fromType(QSet.class, ((QSet<?>)obj).elementMetaType());
-        }else if(objClass==QMultiMap.class) {
-            return QMetaType.fromType(QMultiMap.class, ((QMultiMap<?,?>)obj).keyMetaType(), ((QMultiMap<?,?>)obj).valueMetaType());
-        }else if(objClass==QMap.class) {
-            return QMetaType.fromType(QMap.class, ((QMap<?,?>)obj).keyMetaType(), ((QMap<?,?>)obj).valueMetaType());
-        }else if(objClass==QMultiHash.class) {
-            return QMetaType.fromType(QMultiHash.class, ((QMultiHash<?,?>)obj).keyMetaType(), ((QMultiHash<?,?>)obj).valueMetaType());
-        }else if(objClass==QHash.class) {
-            return QMetaType.fromType(QHash.class, ((QHash<?,?>)obj).keyMetaType(), ((QHash<?,?>)obj).valueMetaType());
+        if(obj instanceof QList) {
+            return QMetaType.fromType(objClass, ((QList<?>)obj).elementMetaType());
+        }else if(obj instanceof QLinkedList) {
+            return QMetaType.fromType(objClass, ((QLinkedList<?>)obj).elementMetaType());
+        }else if(obj instanceof QVector) {
+            return QMetaType.fromType(objClass, ((QVector<?>)obj).elementMetaType());
+        }else if(obj instanceof QQueue) {
+            return QMetaType.fromType(objClass, ((QQueue<?>)obj).elementMetaType());
+        }else if(obj instanceof QStack) {
+            return QMetaType.fromType(objClass, ((QStack<?>)obj).elementMetaType());
+        }else if(obj instanceof QSet) {
+            return QMetaType.fromType(objClass, ((QSet<?>)obj).elementMetaType());
+        }else if(obj instanceof QMultiMap) {
+            return QMetaType.fromType(objClass, ((QMultiMap<?,?>)obj).keyMetaType(), ((QMultiMap<?,?>)obj).valueMetaType());
+        }else if(obj instanceof QMap) {
+            return QMetaType.fromType(objClass, ((QMap<?,?>)obj).keyMetaType(), ((QMap<?,?>)obj).valueMetaType());
+        }else if(obj instanceof QMultiHash) {
+            return QMetaType.fromType(objClass, ((QMultiHash<?,?>)obj).keyMetaType(), ((QMultiHash<?,?>)obj).valueMetaType());
+        }else if(obj instanceof QHash) {
+            return QMetaType.fromType(objClass, ((QHash<?,?>)obj).keyMetaType(), ((QHash<?,?>)obj).valueMetaType());
         }
         return QMetaType.fromType(objClass);
     }
@@ -15763,26 +15773,25 @@ class QMetaType_6__ extends QMetaType {
         if(obj==null)
             return new QMetaType(QMetaType.Type.Nullptr);
         Class<?> objClass = QtJambi_LibraryUtilities.internal.getClass(obj);
-        if(objClass==QList.class) {
-            return QMetaType.fromType(QList.class, ((QList<?>)obj).elementMetaType());
-        }else if(objClass==QQueue.class) {
-            return QMetaType.fromType(QQueue.class, ((QQueue<?>)obj).elementMetaType());
-        }else if(objClass==QStack.class) {
-            return QMetaType.fromType(QStack.class, ((QStack<?>)obj).elementMetaType());
-        }else if(objClass==QSet.class) {
-            return QMetaType.fromType(QSet.class, ((QSet<?>)obj).elementMetaType());
-        }else if(objClass==QMultiMap.class) {
-            return QMetaType.fromType(QMultiMap.class, ((QMultiMap<?,?>)obj).keyMetaType(), ((QMultiMap<?,?>)obj).valueMetaType());
-        }else if(objClass==QMap.class) {
-            return QMetaType.fromType(QMap.class, ((QMap<?,?>)obj).keyMetaType(), ((QMap<?,?>)obj).valueMetaType());
-        }else if(objClass==QMultiHash.class) {
-            return QMetaType.fromType(QMultiHash.class, ((QMultiHash<?,?>)obj).keyMetaType(), ((QMultiHash<?,?>)obj).valueMetaType());
-        }else if(objClass==QHash.class) {
-            return QMetaType.fromType(QHash.class, ((QHash<?,?>)obj).keyMetaType(), ((QHash<?,?>)obj).valueMetaType());
+        if(obj instanceof QList) {
+            return QMetaType.fromType(objClass, ((QList<?>)obj).elementMetaType());
+        }else if(obj instanceof QQueue) {
+            return QMetaType.fromType(objClass, ((QQueue<?>)obj).elementMetaType());
+        }else if(obj instanceof QStack) {
+            return QMetaType.fromType(objClass, ((QStack<?>)obj).elementMetaType());
+        }else if(obj instanceof QSet) {
+            return QMetaType.fromType(objClass, ((QSet<?>)obj).elementMetaType());
+        }else if(obj instanceof QMultiMap) {
+            return QMetaType.fromType(objClass, ((QMultiMap<?,?>)obj).keyMetaType(), ((QMultiMap<?,?>)obj).valueMetaType());
+        }else if(obj instanceof QMap) {
+            return QMetaType.fromType(objClass, ((QMap<?,?>)obj).keyMetaType(), ((QMap<?,?>)obj).valueMetaType());
+        }else if(obj instanceof QMultiHash) {
+            return QMetaType.fromType(objClass, ((QMultiHash<?,?>)obj).keyMetaType(), ((QMultiHash<?,?>)obj).valueMetaType());
+        }else if(obj instanceof QHash) {
+            return QMetaType.fromType(objClass, ((QHash<?,?>)obj).keyMetaType(), ((QHash<?,?>)obj).valueMetaType());
         }
         return QMetaType.fromType(objClass);
     }
-    
 }// class
 
 class QMetaType___ extends QMetaType {
@@ -22279,4 +22288,757 @@ class QMutexLocker_metainfo__{
     registerConstructorInfos(typeId2, 0, &__qt_destruct_QMutexLocker_QRecursiveMutex_, {
         ConstructorInfo{&__qt_construct_QMutexLocker_QRecursiveMutex__QRecursiveMutex_ptr, "Lio/qt/core/QRecursiveMutex;"}
     });
+}// class
+
+class QRangeModel__{
+     /**
+      * Interface to be used to implement tree model content for {@link QRangeModel}.
+      * @param <Row>
+      */
+     public interface ConstTreeRowInterface<Row extends ConstTreeRowInterface<Row>>{
+          /**
+           * Delivers the parent row element of this row element.
+           * @return the parent row
+           */
+          @Nullable Row parentRow();
+          /**
+           * Delivers all child row elements of this row element.
+           * @return list of child rows
+           */
+          java.util.@StrictNonNull List<@NonNull Row> childRows();
+     };
+
+     /**
+      * Interface to be used to implement mutable tree model content for {@link QRangeModel}.
+      * @param <Row>
+      */
+     public interface TreeRowInterface<Row extends TreeRowInterface<Row>> extends ConstTreeRowInterface<Row> {
+          /**
+           * This method sets the parent row of this row element. By convention,
+           * this method is required to remove this row from {@link #childRows()} list of the previous parent row
+           * and add it to {@link #childRows()} of {@code parentRow}.
+           * @param parentRow
+           */
+          void setParentRow(@Nullable Row parentRow);
+     }
+
+     /**
+      * Implementation of {@link ConstTreeRowInterface}.
+      * @param <Row>
+      */
+     public static class ConstTreeRow<Row extends ConstTreeRow<Row>> implements ConstTreeRowInterface<Row>{
+          Row parentRow;
+          final java.util.List<Row> childRows = new java.util.ArrayList<>();
+          /**
+           * {@inheritDoc}
+           */
+          @Override
+          public final @Nullable Row parentRow() {
+               return parentRow;
+          }
+
+          /**
+           * {@inheritDoc}
+           */
+          @Override
+          public final java.util.@Nullable List<@NonNull Row> childRows() {
+               return childRows;
+          }
+
+          public ConstTreeRow() {
+          }
+
+          /**
+           * Constructs a row wit give parent row.
+           * @param parentRow
+           */
+          public ConstTreeRow(@Nullable Row parentRow) {
+               setParentRow(parentRow);
+          }
+
+          /**
+           * This method sets the parent row of this row element.
+           * @param parentRow
+           */
+          @SuppressWarnings({ "rawtypes", "unchecked" })
+          protected void setParentRow(@Nullable Row parentRow) {
+               if(this.parentRow!=null) {
+                    if(this.parentRow.childRows!=null)
+                         this.parentRow.childRows.remove(this);
+               }
+               this.parentRow = parentRow;
+               if(this.parentRow!=null) {
+                    ((java.util.List)this.parentRow.childRows).add(this);
+               }
+         }
+     }
+
+     /**
+      * Implementation of {@link TreeRowInterface}.
+      * @param <Row>
+      */
+     public static class TreeRow<Row extends TreeRow<Row>> extends ConstTreeRow<Row> implements TreeRowInterface<Row>{
+          public TreeRow() {
+          }
+
+          /**
+           * Constructs a row wit give parent.
+           * @param parentRow
+           */
+          public TreeRow(@Nullable Row parentRow) {
+               super(parentRow);
+          }
+
+          /**
+           * {@inheritDoc}
+           */
+          @Override
+          public final void setParentRow(@Nullable Row parentRow) {
+               super.setParentRow(parentRow);
+          }
+     }
+
+     /**
+      * <p>Overloaded constructor for {@link #QRangeModel(io.qt.core.QList, boolean, io.qt.core.QObject)}
+      *  with <code>asSingleColumn = false</code>.</p>
+      */
+     public <T> QRangeModel(io.qt.core.@StrictNonNull QList<T> range, io.qt.core.@Nullable QObject parent) {
+         this(range, false, parent);
+     }
+
+     /**
+      * <p>Overloaded constructor for {@link #QRangeModel(io.qt.core.QSpan, boolean, io.qt.core.QObject)}
+      *  with <code>asSingleColumn = false</code>.</p>
+      */
+     public <T> QRangeModel(io.qt.core.@StrictNonNull QSpan<T> range, io.qt.core.@Nullable QObject parent) {
+         this(range, false, parent);
+     }
+
+     /**
+      * <p>Overloaded constructor for {@link #QRangeModel(io.qt.core.QConstSpan, boolean, io.qt.core.QObject)}
+      *  with <code>asSingleColumn = false</code>.</p>
+      */
+     public <T> QRangeModel(io.qt.core.@StrictNonNull QConstSpan<T> range, io.qt.core.@Nullable QObject parent) {
+         this(range, false, parent);
+     }
+
+     /**
+      * <p>Overloaded constructor for {@link #QRangeModel(io.qt.core.QList, boolean, io.qt.core.QObject)}</p>
+      * <p>with: </p><ul>
+      * <li><code>asSingleColumn = false</code></li>
+      * <li><code>parent = null</code></li>
+      * </ul>
+      */
+     public <T> QRangeModel(io.qt.core.@StrictNonNull QList<T> range) {
+         this(range, false, (io.qt.core.QObject)null);
+     }
+
+     /**
+      * <p>Overloaded constructor for {@link #QRangeModel(io.qt.core.QSpan, boolean, io.qt.core.QObject)}</p>
+      * <p>with: </p><ul>
+      * <li><code>asSingleColumn = false</code></li>
+      * <li><code>parent = null</code></li>
+      * </ul>
+      */
+     public <T> QRangeModel(io.qt.core.@StrictNonNull QSpan<T> range) {
+         this(range, false, (io.qt.core.QObject)null);
+     }
+
+     /**
+      * <p>Overloaded constructor for {@link #QRangeModel(io.qt.core.QConstSpan, boolean, io.qt.core.QObject)}</p>
+      * <p>with: </p><ul>
+      * <li><code>asSingleColumn = false</code></li>
+      * <li><code>parent = null</code></li>
+      * </ul>
+      */
+     public <T> QRangeModel(io.qt.core.@StrictNonNull QConstSpan<T> range) {
+         this(range, false, (io.qt.core.QObject)null);
+     }
+
+     private static QConstSpan<?> toRange(int[][] range){
+                 QList<QConstSpan<Integer>> result = null;
+                 if(range.length==0)
+                         throw new IllegalArgumentException("Array length must not be null.");
+                 for (int[] is : range) {
+                         QConstSpan<Integer> span = QConstSpan.ofInt(is);
+                         if(result==null) {
+                                 result = QList.of(span);
+                                 result.reserve(range.length);
+                         }else {
+                                 result.add(span);
+                         }
+                 }
+         return QConstSpan.ofList(result);
+     }
+
+     /**
+      * <p>Overloaded constructor for {@link #QRangeModel(io.qt.core.QConstSpan, boolean, io.qt.core.QObject)}
+      *  with <code>parent = null</code>.</p>
+      */
+     public QRangeModel(int @StrictNonNull[] @StrictNonNull[] range) {
+         this(range, null);
+     }
+
+     /**
+      * <p>See <code><a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel">QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</a></code></p>
+      * @param range int[][]
+      * @param parent
+      */
+     public QRangeModel(int @StrictNonNull[] @StrictNonNull[] range, io.qt.core.@Nullable QObject parent) {
+         this(toRange(range), false, parent);
+     }
+
+     private static QConstSpan<?> toRange(byte[][] range){
+                 QList<QConstSpan<Byte>> result = null;
+                 if(range.length==0)
+                         throw new IllegalArgumentException("Array length must not be null.");
+                 for (byte[] is : range) {
+                         QConstSpan<Byte> span = QConstSpan.ofByte(is);
+                         if(result==null) {
+                                 result = QList.of(span);
+                                 result.reserve(range.length);
+                         }else {
+                                 result.add(span);
+                         }
+                 }
+         return QConstSpan.ofList(result);
+     }
+
+     /**
+      * <p>Overloaded constructor for {@link #QRangeModel(io.qt.core.QConstSpan, boolean, io.qt.core.QObject)}
+      *  with <code>parent = null</code>.</p>
+      */
+     public QRangeModel(byte @StrictNonNull[] @StrictNonNull[] range) {
+         this(range, null);
+     }
+
+     /**
+      * <p>See <code><a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel">QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</a></code></p>
+      * @param range byte[][]
+      * @param parent
+      */
+     public QRangeModel(byte @StrictNonNull[] @StrictNonNull[] range, io.qt.core.@Nullable QObject parent) {
+         this(toRange(range), false, parent);
+     }
+
+     private static QConstSpan<?> toRange(short[][] range){
+                 QList<QConstSpan<Short>> result = null;
+                 if(range.length==0)
+                         throw new IllegalArgumentException("Array length must not be null.");
+                 for (short[] is : range) {
+                         QConstSpan<Short> span = QConstSpan.ofShort(is);
+                         if(result==null) {
+                                 result = QList.of(span);
+                                 result.reserve(range.length);
+                         }else {
+                                 result.add(span);
+                         }
+                 }
+         return QConstSpan.ofList(result);
+     }
+
+     /**
+      * <p>Overloaded constructor for {@link #QRangeModel(io.qt.core.QConstSpan, boolean, io.qt.core.QObject)}
+      *  with <code>parent = null</code>.</p>
+      */
+     public QRangeModel(short @StrictNonNull[] @StrictNonNull[] range) {
+         this(range, null);
+     }
+
+     /**
+      * <p>See <code><a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel">QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</a></code></p>
+      * @param range short[][]
+      * @param parent
+      */
+     public QRangeModel(short @StrictNonNull[] @StrictNonNull[] range, io.qt.core.@Nullable QObject parent) {
+         this(toRange(range), false, parent);
+     }
+
+     private static QConstSpan<?> toRange(long[][] range){
+                 QList<QConstSpan<Long>> result = null;
+                 if(range.length==0)
+                         throw new IllegalArgumentException("Array length must not be null.");
+                 for (long[] is : range) {
+                         QConstSpan<Long> span = QConstSpan.ofLong(is);
+                         if(result==null) {
+                                 result = QList.of(span);
+                                 result.reserve(range.length);
+                         }else {
+                                 result.add(span);
+                         }
+                 }
+         return QConstSpan.ofList(result);
+     }
+
+     /**
+      * <p>Overloaded constructor for {@link #QRangeModel(io.qt.core.QConstSpan, boolean, io.qt.core.QObject)}
+      *  with <code>parent = null</code>.</p>
+      */
+     public QRangeModel(long @StrictNonNull[] @StrictNonNull[] range) {
+         this(range, null);
+     }
+
+     /**
+      * <p>See <code><a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel">QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</a></code></p>
+      * @param range long[][]
+      * @param parent
+      */
+     public QRangeModel(long @StrictNonNull[] @StrictNonNull[] range, io.qt.core.@Nullable QObject parent) {
+         this(toRange(range), false, parent);
+     }
+
+     private static QConstSpan<?> toRange(float[][] range){
+                 QList<QConstSpan<Float>> result = null;
+                 if(range.length==0)
+                         throw new IllegalArgumentException("Array length must not be null.");
+                 for (float[] is : range) {
+                         QConstSpan<Float> span = QConstSpan.ofFloat(is);
+                         if(result==null) {
+                                 result = QList.of(span);
+                                 result.reserve(range.length);
+                         }else {
+                                 result.add(span);
+                         }
+                 }
+         return QConstSpan.ofList(result);
+     }
+
+     /**
+      * <p>Overloaded constructor for {@link #QRangeModel(io.qt.core.QConstSpan, boolean, io.qt.core.QObject)}
+      *  with <code>parent = null</code>.</p>
+      */
+     public QRangeModel(float @StrictNonNull[] @StrictNonNull[] range) {
+         this(range, null);
+     }
+
+     /**
+      * <p>See <code><a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel">QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</a></code></p>
+      * @param range float[][]
+      * @param parent
+      */
+     public QRangeModel(float @StrictNonNull[] @StrictNonNull[] range, io.qt.core.@Nullable QObject parent) {
+         this(toRange(range), false, parent);
+     }
+
+     private static QConstSpan<?> toRange(double[][] range){
+                 QList<QConstSpan<Double>> result = null;
+                 if(range.length==0)
+                         throw new IllegalArgumentException("Array length must not be null.");
+                 for (double[] is : range) {
+                         QConstSpan<Double> span = QConstSpan.ofDouble(is);
+                         if(result==null) {
+                                 result = QList.of(span);
+                                 result.reserve(range.length);
+                         }else {
+                                 result.add(span);
+                         }
+                 }
+         return QConstSpan.ofList(result);
+     }
+
+     /**
+      * <p>Overloaded constructor for {@link #QRangeModel(io.qt.core.QConstSpan, boolean, io.qt.core.QObject)}
+      *  with <code>parent = null</code>.</p>
+      */
+     public QRangeModel(double @StrictNonNull[] @StrictNonNull[] range) {
+         this(range, null);
+     }
+
+     /**
+      * <p>See <code><a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel">QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</a></code></p>
+      * @param range double[][]
+      * @param parent
+      */
+     public QRangeModel(double @StrictNonNull[] @StrictNonNull[] range, io.qt.core.@Nullable QObject parent) {
+         this(toRange(range), false, parent);
+     }
+
+     private static QConstSpan<?> toRange(boolean[][] range){
+                 QList<QConstSpan<Boolean>> result = null;
+                 if(range.length==0)
+                         throw new IllegalArgumentException("Array length must not be null.");
+                 for (boolean[] is : range) {
+                         QConstSpan<Boolean> span = QConstSpan.ofBoolean(is);
+                         if(result==null) {
+                                 result = QList.of(span);
+                                 result.reserve(range.length);
+                         }else {
+                                 result.add(span);
+                         }
+                 }
+         return QConstSpan.ofList(result);
+     }
+
+     /**
+      * <p>Overloaded constructor for {@link #QRangeModel(io.qt.core.QConstSpan, boolean, io.qt.core.QObject)}
+      *  with <code>parent = null</code>.</p>
+      */
+     public QRangeModel(boolean @StrictNonNull[] @StrictNonNull[] range) {
+         this(range, null);
+     }
+
+     /**
+      * <p>See <code><a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel">QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</a></code></p>
+      * @param range boolean[][]
+      * @param parent
+      */
+     public QRangeModel(boolean @StrictNonNull[] @StrictNonNull[] range, io.qt.core.@Nullable QObject parent) {
+         this(toRange(range), false, parent);
+     }
+
+     private static QConstSpan<?> toRange(char[][] range){
+                 QList<QConstSpan<Character>> result = null;
+                 if(range.length==0)
+                         throw new IllegalArgumentException("Array length must not be null.");
+                 for (char[] is : range) {
+                         QConstSpan<Character> span = QConstSpan.ofChar(is);
+                         if(result==null) {
+                                 result = QList.of(span);
+                                 result.reserve(range.length);
+                         }else {
+                                 result.add(span);
+                         }
+                 }
+         return QConstSpan.ofList(result);
+     }
+
+     /**
+      * <p>Overloaded constructor for {@link #QRangeModel(io.qt.core.QConstSpan, boolean, io.qt.core.QObject)}
+      *  with <code>parent = null</code>.</p>
+      */
+     public QRangeModel(char @StrictNonNull[] @StrictNonNull[] range) {
+         this(range, null);
+     }
+
+     /**
+      * <p>See <code><a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel">QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</a></code></p>
+      * @param range char[][]
+      * @param parent
+      */
+     public QRangeModel(char @StrictNonNull[] @StrictNonNull[] range, io.qt.core.@Nullable QObject parent) {
+         this(toRange(range), false, parent);
+     }
+
+     private static QConstSpan<?> toRange(String[][] range){
+                 QList<QConstSpan<String>> result = null;
+                 if(range.length==0)
+                         throw new IllegalArgumentException("Array length must not be null.");
+                 for (String[] is : range) {
+                         QConstSpan<String> span = QConstSpan.ofTyped(String.class, is);
+                         if(result==null) {
+                                 result = QList.of(span);
+                                 result.reserve(range.length);
+                         }else {
+                                 result.add(span);
+                         }
+                 }
+         return QConstSpan.ofList(result);
+     }
+
+     /**
+      * <p>Overloaded constructor for {@link #QRangeModel(io.qt.core.QConstSpan, boolean, io.qt.core.QObject)}
+      *  with <code>parent = null</code>.</p>
+      */
+     public QRangeModel(@NonNull String[] @StrictNonNull[] range) {
+         this(range, null);
+     }
+
+     /**
+      * <p>See <code><a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel">QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</a></code></p>
+      * @param range String[][]
+      * @param parent
+      */
+     public QRangeModel(@NonNull String[] @StrictNonNull[] range, io.qt.core.@Nullable QObject parent) {
+         this(toRange(range), false, parent);
+     }
+
+     private static <T> QConstSpan<?> toRange(T[][] range){
+                 QList<QConstSpan<T>> result = null;
+                 if(range.length==0)
+                         throw new IllegalArgumentException("Array length must not be null.");
+                 for (T[] is : range) {
+                         QConstSpan<T> span = QConstSpan.ofTyped(QList.findElementMetaType(java.util.Arrays.asList(is)), is);
+                         if(result==null) {
+                                 result = QList.of(span);
+                                 result.reserve(range.length);
+                         }else {
+                                 result.add(span);
+                         }
+                 }
+         return QConstSpan.ofList(result);
+     }
+
+     /**
+      * <p>Overloaded constructor for {@link #QRangeModel(io.qt.core.QConstSpan, boolean, io.qt.core.QObject)}
+      *  with <code>parent = null</code>.</p>
+      */
+     public <T> QRangeModel(T @StrictNonNull[] @StrictNonNull[] range) {
+         this(range, null);
+     }
+
+     /**
+      * <p>See <code><a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel">QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</a></code></p>
+      * @param range T[][]
+      * @param parent
+      */
+     public <T> QRangeModel(T @StrictNonNull[] @StrictNonNull[] range, io.qt.core.@Nullable QObject parent) {
+         this(toRange(range), false, parent);
+     }
+
+     /**
+      * <p>Overloaded constructor for {@link #QRangeModel(io.qt.core.QConstSpan, boolean, io.qt.core.QObject)}
+      *  with <code>parent = null</code>.</p>
+      */
+     public QRangeModel(int @StrictNonNull[] range) {
+         this(range, null);
+     }
+
+     /**
+      * <p>See <code><a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel">QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</a></code></p>
+      * @param range int[]
+      * @param parent
+      */
+     public QRangeModel(int @StrictNonNull[] range, io.qt.core.@Nullable QObject parent) {
+         this(QConstSpan.ofInt(range), false, parent);
+     }
+
+     /**
+      * <p>Overloaded constructor for {@link #QRangeModel(io.qt.core.QConstSpan, boolean, io.qt.core.QObject)}
+      *  with <code>parent = null</code>.</p>
+      */
+     public QRangeModel(byte @StrictNonNull[] range) {
+         this(range, null);
+     }
+
+     /**
+      * <p>See <code><a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel">QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</a></code></p>
+      * @param range byte[]
+      * @param parent
+      */
+     public QRangeModel(byte @StrictNonNull[] range, io.qt.core.@Nullable QObject parent) {
+         this(QConstSpan.ofByte(range), false, parent);
+     }
+
+     /**
+      * <p>Overloaded constructor for {@link #QRangeModel(io.qt.core.QConstSpan, boolean, io.qt.core.QObject)}
+      *  with <code>parent = null</code>.</p>
+      */
+     public QRangeModel(short @StrictNonNull[] range) {
+         this(range, null);
+     }
+
+     /**
+      * <p>See <code><a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel">QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</a></code></p>
+      * @param range short[]
+      * @param parent
+      */
+     public QRangeModel(short @StrictNonNull[] range, io.qt.core.@Nullable QObject parent) {
+         this(QConstSpan.ofShort(range), false, parent);
+     }
+
+     /**
+      * <p>Overloaded constructor for {@link #QRangeModel(io.qt.core.QConstSpan, boolean, io.qt.core.QObject)}
+      *  with <code>parent = null</code>.</p>
+      */
+     public QRangeModel(long @StrictNonNull[] range) {
+         this(range, null);
+     }
+
+     /**
+      * <p>See <code><a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel">QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</a></code></p>
+      * @param range long[]
+      * @param parent
+      */
+     public QRangeModel(long @StrictNonNull[] range, io.qt.core.@Nullable QObject parent) {
+         this(QConstSpan.ofLong(range), false, parent);
+     }
+
+     /**
+      * <p>Overloaded constructor for {@link #QRangeModel(io.qt.core.QConstSpan, boolean, io.qt.core.QObject)}
+      *  with <code>parent = null</code>.</p>
+      */
+     public QRangeModel(float @StrictNonNull[] range) {
+         this(range, null);
+     }
+
+     /**
+      * <p>See <code><a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel">QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</a></code></p>
+      * @param range float[]
+      * @param parent
+      */
+     public QRangeModel(float @StrictNonNull[] range, io.qt.core.@Nullable QObject parent) {
+         this(QConstSpan.ofFloat(range), false, parent);
+     }
+
+     /**
+      * <p>Overloaded constructor for {@link #QRangeModel(io.qt.core.QConstSpan, boolean, io.qt.core.QObject)}
+      *  with <code>parent = null</code>.</p>
+      */
+     public QRangeModel(double @StrictNonNull[] range) {
+         this(range, null);
+     }
+
+     /**
+      * <p>See <code><a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel">QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</a></code></p>
+      * @param range double[]
+      * @param parent
+      */
+     public QRangeModel(double @StrictNonNull[] range, io.qt.core.@Nullable QObject parent) {
+         this(QConstSpan.ofDouble(range), false, parent);
+     }
+
+     /**
+      * <p>Overloaded constructor for {@link #QRangeModel(io.qt.core.QConstSpan, boolean, io.qt.core.QObject)}
+      *  with <code>parent = null</code>.</p>
+      */
+     public QRangeModel(boolean @StrictNonNull[] range) {
+         this(range, null);
+     }
+
+     /**
+      * <p>See <code><a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel">QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</a></code></p>
+      * @param range boolean[]
+      * @param parent
+      */
+     public QRangeModel(boolean @StrictNonNull[] range, io.qt.core.@Nullable QObject parent) {
+         this(QConstSpan.ofBoolean(range), false, parent);
+     }
+
+     /**
+      * <p>Overloaded constructor for {@link #QRangeModel(io.qt.core.QConstSpan, boolean, io.qt.core.QObject)}
+      *  with <code>parent = null</code>.</p>
+      */
+     public QRangeModel(char @StrictNonNull[] range) {
+         this(range, null);
+     }
+
+     /**
+      * <p>See <code><a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel">QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</a></code></p>
+      * @param range char[]
+      * @param parent
+      */
+     public QRangeModel(char @StrictNonNull[] range, io.qt.core.@Nullable QObject parent) {
+         this(QConstSpan.ofChar(range), false, parent);
+     }
+
+     /**
+      * <p>Overloaded constructor for {@link #QRangeModel(io.qt.core.QList, boolean, io.qt.core.QObject)}</p>
+      * <p>with: </p><ul>
+      * <li><code>asSingleColumn = false</code></li>
+      * <li><code>parent = null</code></li>
+      * </ul>
+      */
+     public <T> QRangeModel(T @StrictNonNull[] range) {
+         this(range, false, (io.qt.core.QObject)null);
+     }
+
+     /**
+      * <p>Overloaded constructor for {@link #QRangeModel(io.qt.core.QList, boolean, io.qt.core.QObject)}
+      *  with <code>parent = null</code>.</p>
+      */
+     public <T> QRangeModel(T @StrictNonNull[] range, boolean asSingleColumn) {
+         this(range, asSingleColumn, (io.qt.core.QObject)null);
+     }
+
+     /**
+      * <p>Overloaded constructor for {@link #QRangeModel(io.qt.core.QSpan, boolean, io.qt.core.QObject)}
+      *  with <code>asSingleColumn = false</code>.</p>
+      */
+     public <T> QRangeModel(T @StrictNonNull[] range, io.qt.core.@Nullable QObject parent) {
+         this(range, false, parent);
+     }
+
+     private static <T> QConstSpan<?> toRange(T[] range){
+                 if(range.length==0)
+                         throw new IllegalArgumentException("Array length must not be null.");
+         return QConstSpan.ofTyped(QList.findElementMetaType(java.util.Arrays.asList(range)), range);
+     }
+
+     /**
+      * <p>See <code><a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel">QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</a></code></p>
+      * @param range T[]
+      * @param asSingleColumn
+      * @param parent
+      */
+     public <T> QRangeModel(T @StrictNonNull[] range, boolean asSingleColumn, io.qt.core.@Nullable QObject parent) {
+         this(toRange(range), asSingleColumn, parent);
+     }
+
+     /**
+      * <p>Overloaded constructor for {@link #QRangeModel(io.qt.core.QList, boolean, io.qt.core.QObject)}</p>
+      * <p>with: </p><ul>
+      * <li><code>asSingleColumn = false</code></li>
+      * <li><code>parent = null</code></li>
+      * </ul>
+      */
+     public QRangeModel(@NonNull String @StrictNonNull[] range) {
+         this(range, false, (io.qt.core.QObject)null);
+     }
+
+     /**
+      * <p>See <code><a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel">QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</a></code></p>
+      * @param range T[]
+      * @param parent
+      */
+     public QRangeModel(@NonNull String @StrictNonNull[] range, io.qt.core.@Nullable QObject parent) {
+         this(QConstSpan.ofList(QStringList.of(range)), true, parent);
+     }
+
+     /**
+      * <p>Overloaded constructor for {@link #QRangeModel(io.qt.core.QConstSpan, boolean, io.qt.core.QObject)}</p>
+      * <p>with: </p><ul>
+      * <li><code>asSingleColumn = false</code></li>
+      * <li><code>parent = null</code></li>
+      * </ul>
+      */
+     public <T> QRangeModel(java.util.@StrictNonNull Collection<T> range) {
+         this(range, false, (io.qt.core.QObject)null);
+     }
+
+     /**
+      * <p>Overloaded constructor for {@link #QRangeModel(io.qt.core.QList, boolean, io.qt.core.QObject)}
+      *  with <code>parent = null</code>.</p>
+      */
+     public <T> QRangeModel(java.util.@StrictNonNull Collection<T> range, boolean asSingleColumn) {
+         this(range, asSingleColumn, (io.qt.core.QObject)null);
+     }
+
+     /**
+      * <p>Overloaded constructor for {@link #QRangeModel(io.qt.core.QList, boolean, io.qt.core.QObject)}
+      *  with <code>asSingleColumn = false</code>.</p>
+      */
+     public <T> QRangeModel(java.util.@StrictNonNull Collection<T> range, io.qt.core.@Nullable QObject parent) {
+         this(range, false, parent);
+     }
+
+     private static <T> QConstSpan<?> toRange(java.util.Collection<T> range){
+                 if(range.size()==0)
+                         throw new IllegalArgumentException("Array length must not be null.");
+         return QConstSpan.ofList(range);
+     }
+
+     /**
+      * <p>See <code><a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel">QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</a></code></p>
+      * @param range
+      * @param asSingleColumn
+      * @param parent
+      */
+     public <T> QRangeModel(java.util.@StrictNonNull Collection<T> range, boolean asSingleColumn, io.qt.core.@Nullable QObject parent){
+         this(toRange(range), asSingleColumn, parent);
+     }
+}// class
+
+
+class QRangeModel_cpp__{
+template<typename T>
+void initializeModel(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, T&& range, bool __qtjambi_has_derivedMetaObject, bool __qtjambi_has_overrides, bool __qtjambi_is_generic, jobject range0, QObject* parent){
+    if(__qtjambi_has_overrides)
+        new(__qtjambi_ptr) QRangeModel_oshell(std::move(range), parent);
+    else if(__qtjambi_has_derivedMetaObject)
+        new(__qtjambi_ptr) QRangeModel_mshell(std::move(range), parent);
+    else
+        new(__qtjambi_ptr) QRangeModel_shell(std::move(range), parent);
+    if(__qtjambi_is_generic)
+        Java::QtJambi::ReferenceUtility::setReferenceCount(__jni_env, __jni_object, nullptr, __jni_env->NewStringUTF("__rcRange"), false, false, range0);
+}
 }// class

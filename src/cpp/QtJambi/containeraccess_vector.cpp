@@ -184,15 +184,21 @@ void* AutoVectorAccess::constructContainer(JNIEnv*, void* result, const ConstCon
 
 std::unique_ptr<AbstractVectorAccess::ElementIterator> AutoVectorAccess::elementIterator(const void* container) {
     class ElementIterator : public AbstractVectorAccess::ElementIterator{
-        AutoVectorAccess* access;
+        AutoVectorAccess* m_access;
         char* current;
         char* end;
+        ElementIterator(const ElementIterator& other)
+            :m_access(other.m_access),
+            current(other.current),
+            end(other.end) {}
+    protected:
+        AbstractSequentialAccess* access() override { return m_access; }
     public:
         ElementIterator(AutoVectorAccess* _access, QTypedArrayData<char>* container)
             : AbstractVectorAccess::ElementIterator(),
-            access(_access),
+            m_access(_access),
             current(container->data()),
-            end(container->data() + container->size * access->m_offset)
+            end(container->data() + container->size * m_access->m_offset)
         {
         }
         bool hasNext() override{
@@ -200,23 +206,104 @@ std::unique_ptr<AbstractVectorAccess::ElementIterator> AutoVectorAccess::element
         }
         jobject next(JNIEnv * env) override{
             void* data = current;
-            current += access->m_offset;
+            current += m_access->m_offset;
             jvalue _value;
             _value.l = nullptr;
-            access->m_internalToExternalConverter(env, nullptr, data, _value, true);
+            m_access->m_internalToExternalConverter(env, nullptr, data, _value, true);
             return _value.l;
         }
         const void* next() override {
             void* data = current;
-            current += access->m_offset;
-            if(access->elementType() & AbstractContainerAccess::PointersMask){
+            current += m_access->m_offset;
+            if(m_access->elementType() & AbstractContainerAccess::PointersMask){
                 return *reinterpret_cast<void**>(data);
             }else{
                 return data;
             }
         }
+        const void* constNext() override {
+            void* data = current;
+            current += m_access->m_offset;
+            return data;
+        }
+        bool isConst() override{
+            return true;
+        }
+        void* mutableNext() override {
+            return nullptr;
+        }
+
+        bool operator==(const AbstractSequentialAccess::ElementIterator& other) const override {
+            return current==reinterpret_cast<const ElementIterator&>(other).current;
+        }
+        std::unique_ptr<AbstractSequentialAccess::ElementIterator> clone() const override {
+            return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(*this));
+        }
     };
     return std::unique_ptr<AbstractVectorAccess::ElementIterator>(new ElementIterator(this, *reinterpret_cast<QTypedArrayData<char> *const*>(container)));
+}
+
+std::unique_ptr<AbstractVectorAccess::ElementIterator> AutoVectorAccess::elementIterator(void* container) {
+    class ElementIterator : public AbstractVectorAccess::ElementIterator{
+        AutoVectorAccess* m_access;
+        char* current;
+        char* end;
+        ElementIterator(const ElementIterator& other)
+            :m_access(other.m_access),
+            current(other.current),
+            end(other.end) {}
+    protected:
+        AbstractSequentialAccess* access() override { return m_access; }
+    public:
+        ElementIterator(AutoVectorAccess* _access, QTypedArrayData<char>* container)
+            : AbstractVectorAccess::ElementIterator(),
+            m_access(_access),
+            current(container->data()),
+            end(container->data() + container->size * m_access->m_offset)
+        {
+        }
+        bool hasNext() override{
+            return current!=end;
+        }
+        jobject next(JNIEnv * env) override{
+            void* data = current;
+            current += m_access->m_offset;
+            jvalue _value;
+            _value.l = nullptr;
+            m_access->m_internalToExternalConverter(env, nullptr, data, _value, true);
+            return _value.l;
+        }
+        const void* next() override {
+            void* data = current;
+            current += m_access->m_offset;
+            if(m_access->elementType() & AbstractContainerAccess::PointersMask){
+                return *reinterpret_cast<void**>(data);
+            }else{
+                return data;
+            }
+        }
+        const void* constNext() override {
+            void* data = current;
+            current += m_access->m_offset;
+            return data;
+        }
+        bool isConst() override{
+            return false;
+        }
+        void* mutableNext() override {
+            void* data = current;
+            current += m_access->m_offset;
+            return data;
+        }
+
+        bool operator==(const AbstractSequentialAccess::ElementIterator& other) const override {
+            return current==reinterpret_cast<const ElementIterator&>(other).current;
+        }
+        std::unique_ptr<AbstractSequentialAccess::ElementIterator> clone() const override {
+            return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(*this));
+        }
+    };
+    return std::unique_ptr<AbstractVectorAccess::ElementIterator>(new ElementIterator(this, *reinterpret_cast<QTypedArrayData<char> **>(container)));
 }
 
 void* AutoVectorAccess::constructContainer(void* placement){

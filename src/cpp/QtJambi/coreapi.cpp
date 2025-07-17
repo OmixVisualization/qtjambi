@@ -3759,6 +3759,7 @@ int CoreAPI::registerMetaType(JNIEnv *env, jclass containerType, jobjectArray in
     try{
         JConstObjectArrayPointer<jobject> _instantiations(env, instantiations);
         QStringList names;
+        bool registerDerivedClass = false;
         AbstractContainerAccess* containerAccess = nullptr;
         switch(_instantiations.length()){
         case 1: {
@@ -3783,27 +3784,57 @@ int CoreAPI::registerMetaType(JNIEnv *env, jclass containerType, jobjectArray in
             }else if(templateName.startsWith(QStringLiteral("QSet<"))){
                 type = SequentialContainerType::QSet;
                 names << templateName;
+            }else if(Java::QtCore::QQueue::isSameClass(env, containerType)){
+                type = SequentialContainerType::QQueue;
+                names << QStringLiteral("QQueue<%1>");
             }else if(Java::QtCore::QQueue::isAssignableFrom(env, containerType)){
                 type = SequentialContainerType::QQueue;
                 names << QStringLiteral("QQueue<%1>");
-            }else if(Java::QtCore::QStack::isAssignableFrom(env, containerType)
-                     || Java::Runtime::Deque::isAssignableFrom(env, containerType)){
+                registerDerivedClass = true;
+            }else if(Java::QtCore::QStack::isSameClass(env, containerType)){
                 type = SequentialContainerType::QStack;
                 names << QStringLiteral("QStack<%1>");
+            }else if(Java::Runtime::Deque::isAssignableFrom(env, containerType)){
+                type = SequentialContainerType::QStack;
+                names << QStringLiteral("QStack<%1>");
+            }else if(Java::QtCore::QStack::isAssignableFrom(env, containerType)){
+                type = SequentialContainerType::QStack;
+                names << QStringLiteral("QStack<%1>");
+                registerDerivedClass = true;
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+            }else if(Java::QtCore::QLinkedList::isSameClass(env, containerType)){
+                type = SequentialContainerType::QLinkedList;
+                names << QStringLiteral("QLinkedList<%1>");
             }else if(Java::QtCore::QLinkedList::isAssignableFrom(env, containerType)){
                 type = SequentialContainerType::QLinkedList;
                 names << QStringLiteral("QLinkedList<%1>");
+                registerDerivedClass = true;
+            }else if(Java::QtCore::QVector::isSameClass(env, containerType)){
+                type = SequentialContainerType::QVector;
+                names << QStringLiteral("QVector<%1>");
             }else if(Java::QtCore::QVector::isAssignableFrom(env, containerType)){
                 type = SequentialContainerType::QVector;
                 names << QStringLiteral("QVector<%1>");
+                registerDerivedClass = true;
 #endif
-            }else if(Java::QtCore::QList::isAssignableFrom(env, containerType)
-                     || Java::Runtime::List::isAssignableFrom(env, containerType)){
+            }else if(Java::QtCore::QList::isSameClass(env, containerType)){
                 type = SequentialContainerType::QList;
                 names << QStringLiteral("QList<%1>");
-            }else if(Java::QtCore::QSet::isAssignableFrom(env, containerType)
-                     || Java::Runtime::Set::isAssignableFrom(env, containerType)){
+            }else if(Java::QtCore::QList::isAssignableFrom(env, containerType)){
+                type = SequentialContainerType::QList;
+                names << QStringLiteral("QList<%1>");
+                registerDerivedClass = true;
+            }else if(Java::Runtime::List::isAssignableFrom(env, containerType)){
+                type = SequentialContainerType::QList;
+                names << QStringLiteral("QList<%1>");
+            }else if(Java::QtCore::QSet::isSameClass(env, containerType)){
+                type = SequentialContainerType::QSet;
+                names << QStringLiteral("QSet<%1>");
+            }else if(Java::QtCore::QSet::isAssignableFrom(env, containerType)){
+                type = SequentialContainerType::QSet;
+                names << QStringLiteral("QSet<%1>");
+                registerDerivedClass = true;
+            }else if(Java::Runtime::Set::isAssignableFrom(env, containerType)){
                 type = SequentialContainerType::QSet;
                 names << QStringLiteral("QSet<%1>");
 #if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
@@ -4007,9 +4038,16 @@ int CoreAPI::registerMetaType(JNIEnv *env, jclass containerType, jobjectArray in
             for(QString& name : names){
                 id = containerAccess->registerContainer(name.toLatin1());
             }
-            containerAccess->dispose();
-            return id;
-        }
+            if(registerDerivedClass){
+                id = registerMetaType(env, containerType, false, false, id);
+                registerContainerAccess(id, containerAccess);
+                containerAccess->dispose();
+                return id;
+            }else{
+                containerAccess->dispose();
+                return id;
+            }
+        } break;
         case 2: {
             QTJAMBI_JNI_LOCAL_FRAME(env, 64);
             const QMetaType& metaType1 = qtjambi_cast<const QMetaType&>(env, _instantiations[0]);
@@ -4034,18 +4072,38 @@ int CoreAPI::registerMetaType(JNIEnv *env, jclass containerType, jobjectArray in
 #else
                 names << QStringLiteral("std::pair<%1,%2>");
 #endif
+            }else if(Java::QtCore::QMultiMap::isSameClass(env, containerType)){
+                type = AssociativeContainerType::QMultiMap;
+                names << QStringLiteral("QMultiMap<%1,%2>");
             }else if(Java::QtCore::QMultiMap::isAssignableFrom(env, containerType)){
                 type = AssociativeContainerType::QMultiMap;
                 names << QStringLiteral("QMultiMap<%1,%2>");
-            }else if(Java::QtCore::QMap::isAssignableFrom(env, containerType)
-                     || Java::Runtime::NavigableMap::isAssignableFrom(env, containerType)){
+                registerDerivedClass = true;
+            }else if(Java::QtCore::QMap::isSameClass(env, containerType)){
                 type = AssociativeContainerType::QMap;
                 names << QStringLiteral("QMap<%1,%2>");
+            }else if(Java::QtCore::QMap::isAssignableFrom(env, containerType)){
+                type = AssociativeContainerType::QMap;
+                names << QStringLiteral("QMap<%1,%2>");
+                registerDerivedClass = true;
+            }else if(Java::Runtime::NavigableMap::isAssignableFrom(env, containerType)){
+                type = AssociativeContainerType::QMap;
+                names << QStringLiteral("QMap<%1,%2>");
+            }else if(Java::QtCore::QMultiHash::isSameClass(env, containerType)){
+                type = AssociativeContainerType::QMultiHash;
+                names << QStringLiteral("QMultiHash<%1,%2>");
             }else if(Java::QtCore::QMultiHash::isAssignableFrom(env, containerType)){
                 type = AssociativeContainerType::QMultiHash;
                 names << QStringLiteral("QMultiHash<%1,%2>");
-            }else if(Java::QtCore::QHash::isAssignableFrom(env, containerType)
-                     || Java::Runtime::Map::isAssignableFrom(env, containerType)){
+                registerDerivedClass = true;
+            }else if(Java::QtCore::QHash::isSameClass(env, containerType)){
+                type = AssociativeContainerType::QHash;
+                names << QStringLiteral("QHash<%1,%2>");
+            }else if(Java::QtCore::QHash::isAssignableFrom(env, containerType)){
+                type = AssociativeContainerType::QHash;
+                names << QStringLiteral("QHash<%1,%2>");
+                registerDerivedClass = true;
+            }else if(Java::Runtime::Map::isAssignableFrom(env, containerType)){
                 type = AssociativeContainerType::QHash;
                 names << QStringLiteral("QHash<%1,%2>");
             }else{
@@ -4194,9 +4252,16 @@ int CoreAPI::registerMetaType(JNIEnv *env, jclass containerType, jobjectArray in
             for(QString& name : names){
                 id = containerAccess->registerContainer(name.toLatin1());
             }
-            containerAccess->dispose();
-            return id;
-        }
+            if(registerDerivedClass){
+                id = registerMetaType(env, containerType, false, false, id);
+                registerContainerAccess(id, containerAccess);
+                containerAccess->dispose();
+                return id;
+            }else{
+                containerAccess->dispose();
+                return id;
+            }
+        } break;
         }
 
         return registerMetaType(env, containerType, false, false);
@@ -4531,6 +4596,14 @@ jobject CoreAPI::getExtraSignal(JNIEnv *env, QtJambiNativeID sender__id, QtJambi
         exn.raiseInJava(env);
     }
     return nullptr;
+}
+
+bool CoreAPI::isJObjectWrappedMetaType(const QMetaType& metaType){
+    return ::isJObjectWrappedMetaType(metaType);
+}
+
+bool CoreAPI::isNativeWrapperMetaType(const QMetaType& metaType){
+    return ::isNativeWrapperMetaType(metaType);
 }
 
 ManagedSpan::ManagedSpan() = default;

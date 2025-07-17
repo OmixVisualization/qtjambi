@@ -179,6 +179,8 @@ T& checkedAddressOf(JNIEnv *env, T * ptr)
     return *ptr;
 }
 
+QTJAMBI_EXPORT QByteArray typeName(const std::type_info* typeId);
+
 QTJAMBI_EXPORT QByteArray typeName(const std::type_info& typeId);
 
 QTJAMBI_EXPORT jintArray toJIntArray(JNIEnv *__jni_env, const jint* in, jsize length);

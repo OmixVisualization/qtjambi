@@ -4542,7 +4542,10 @@ void CppImplGenerator::writeFinalFunctionSetup(QTextStream &s, const MetaFunctio
         MetaType* argumentType = argument->type();
         if(argumentType->getReferenceType()==MetaType::RReference){
             argumentType = argumentType->copy();
-            argumentType->setReferenceType(MetaType::Reference);
+            if(argumentType->indirections().isEmpty())
+                argumentType->setReferenceType(MetaType::Reference);
+            else
+                argumentType->setReferenceType(MetaType::NoReference);
             MetaBuilder::decideUsagePattern(argumentType);
             scope.reset(argumentType);
         }
@@ -5060,7 +5063,10 @@ void CppImplGenerator::writeConstructor(QTextStream &s, const MetaFunction *java
                 MetaType* argumentType = argument->type();
                 if(argumentType->getReferenceType()==MetaType::RReference){
                     argumentType = argumentType->copy();
-                    argumentType->setReferenceType(MetaType::Reference);
+                    if(argumentType->indirections().isEmpty())
+                        argumentType->setReferenceType(MetaType::Reference);
+                    else
+                        argumentType->setReferenceType(MetaType::NoReference);
                     MetaBuilder::decideUsagePattern(argumentType);
                     scope.reset(argumentType);
                 }
@@ -5477,6 +5483,7 @@ void CppImplGenerator::writeConstructor(QTextStream &s, const MetaFunction *java
                 }
                 s << ';' << Qt::endl;
             }
+            s << INDENT << "Q_UNUSED(" << addedArguments.second[i].modified_name << ')' << Qt::endl;
         }
         if(counter==0)
             s << INDENT << "Q_UNUSED(__java_arguments)" << Qt::endl;
@@ -9727,7 +9734,8 @@ bool CppImplGenerator::writeJavaToQt(QTextStream &s,
                         writeTypeInfo(s, java_type, Option(ExcludeReference | SkipName));
                     }else if(java_type->getReferenceType()==MetaType::RReference && java_type->hasNativeId()){
                         writeTypeInfo(s, java_type, Option(ExcludeReference | SkipName));
-                        s << "&";
+                        if(java_type->indirections().isEmpty())
+                            s << "&";
                     }else{
                         writeTypeInfo(s, java_type, SkipName); //ForceConstReference
                     }
@@ -13310,10 +13318,10 @@ void CppImplGenerator::writeMetaInfo(QTextStream &s, const MetaClass *cls,
                                         && function->type()->indirections().isEmpty()){
                                     QString qtName;
                                     QTextStream _s(&qtName);
-                                    writeTypeInfo(_s, function->type(), Option(SkipName | ForceValueType));
+                                    writeTypeInfo(_s, function->type(), Option(ForceValueType | NoSpace));
                                     if(!registeredTypes.contains(qtName)){
                                         registeredTypes.insert(qtName);
-                                        s << INDENT << "registerMetaType" << "<" << qtName << ">(\"" << qtName << "\");" << Qt::endl;
+                                        s << INDENT << "registerMetaType<" << qtName << ">(\"" << qtName << "\");" << Qt::endl;
                                     }
                                 }
                             }
@@ -13324,10 +13332,10 @@ void CppImplGenerator::writeMetaInfo(QTextStream &s, const MetaClass *cls,
                                             && argument->type()->indirections().isEmpty()){
                                         QString qtName;
                                         QTextStream _s(&qtName);
-                                        writeTypeInfo(_s, argument->type(), Option(SkipName | ForceValueType));
+                                        writeTypeInfo(_s, argument->type(), Option(ForceValueType | NoSpace));
                                         if(!registeredTypes.contains(qtName)){
                                             registeredTypes.insert(qtName);
-                                            s << INDENT << "registerMetaType" << "<" << qtName << ">(\"" << qtName << "\");" << Qt::endl;
+                                            s << INDENT << "registerMetaType<" << qtName << ">(\"" << qtName << "\");" << Qt::endl;
                                         }
                                     }
                                 }

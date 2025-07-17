@@ -2655,22 +2655,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_qml_QQmlIncubationController_00024W
 #endif
 }
 
-// QQmlEngine::singletonInstance(int)
-extern "C" JNIEXPORT jobject JNICALL Java_io_qt_qml_QQmlEngine_singletonInstance__JI(JNIEnv *__jni_env, jclass, QtJambiNativeID __this_nativeId, jint qmlTypeId){
-    jobject result{nullptr};
-    QTJAMBI_TRY {
-        QQmlEngine *__qt_this = QtJambiAPI::objectFromNativeId<QQmlEngine>(__this_nativeId);
-        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
-        QtJambiAPI::checkThread(__jni_env, __qt_this);
-        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QQmlEngine::singletonInstance(int)", __qt_this)
-        QJSValue value = __qt_this->singletonInstance<QJSValue>(qmlTypeId);
-        result = qtjambi_cast<jobject>(__jni_env, value);
-    }QTJAMBI_CATCH(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }QTJAMBI_TRY_END
-    return result;
-}
-
 #if QT_VERSION >= QT_VERSION_CHECK(6,3,0)
 using ConvertVariant = bool(QJSEngine::*)(const QVariant &value, QMetaType metaType, void *ptr);
 template <>
@@ -3704,7 +3688,11 @@ hash_type qHash(const QQmlListReference &value, hash_type seed)
     if(!p){
         return seed;
     }
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, quintptr(value.object()));
     seed = hash(seed, quintptr(p->property.data));
     seed = hash(seed, value.canAppend());

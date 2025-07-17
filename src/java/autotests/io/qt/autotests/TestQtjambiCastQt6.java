@@ -138,7 +138,7 @@ public class TestQtjambiCastQt6 extends ApplicationInitializer {
 				QList.class,//60
 				text.getClass()
 			);
-		java.util.List<java.lang.Boolean> internalTests = General.start_qtjambi_cast_test(list, qObject, graphicsItem, gradient, functionalPointer, functional, customCList, customJavaList, text);
+		QList<java.lang.Boolean> internalTests = General.start_qtjambi_cast_test(list, qObject, graphicsItem, gradient, functionalPointer, functional, customCList, customJavaList, text);
 		
 		assertEquals(types.size(), list.size());
 		assertEquals("U8 \u00f6", list.get(list.size()-11));
@@ -161,6 +161,6 @@ public class TestQtjambiCastQt6 extends ApplicationInitializer {
 		}
 		assertEquals(new Qt.ItemFlags(Qt.ItemFlag.ItemIsDropEnabled, Qt.ItemFlag.ItemIsEditable), list.get(7));
 		assertEquals(new Qt.ItemFlags(Qt.ItemFlag.ItemIsDropEnabled, Qt.ItemFlag.ItemIsEditable).value(), list.get(8));
-		assertEquals(-1, internalTests.indexOf(false));
+		assertEquals("start_qtjambi_cast_test has "+internalTests.count(false)+" fails", -1, internalTests.indexOf(false));
 	}	
 }

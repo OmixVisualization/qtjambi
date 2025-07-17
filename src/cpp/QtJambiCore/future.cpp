@@ -564,11 +564,11 @@ void __qt_construct_QFutureWatcher_1(void* __qtjambi_ptr, JNIEnv* __jni_env, job
                  QFutureWatcher_shell* watcher = dynamic_cast<QFutureWatcher_shell*>(base);
                  jobject jfi = QtJambiAPI::getQFutureInterfaceFromQFuture(env, future);
                  QFutureInterfaceBase* fibase = qtjambi_cast<QFutureInterfaceBase*>(env, jfi);
-                 const std::type_info& fibaseType = typeid(*fibase);
+                 const std::type_info* fibaseType = QtJambiPrivate::CheckPointer<QFutureInterfaceBase>::trySupplyType(fibase);
                  const std::type_info& fibaseshellType = typeid_QFutureInterfaceBase_shell();
-                 if(dynamic_cast<QFutureInterface<void>*>(fibase)
-                         || typeid_equals(fibaseType, typeid(QFutureInterfaceBase))
-                         || typeid_equals(fibaseType, fibaseshellType)){
+                 if(fibaseType && (dynamic_cast<QFutureInterface<void>*>(fibase)
+                                     || typeid_equals(*fibaseType, typeid(QFutureInterfaceBase))
+                                     || typeid_equals(*fibaseType, fibaseshellType))){
                      watcher->m_isVoid = true;
                      reinterpret_cast<QFutureWatcher<void>*>(base)->setFuture(QFuture<void>(fibase));
                  }else{

@@ -18102,6 +18102,29 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
         name: "HWND"
         asNativePointer: true
     }
+    TypeAliasType{
+        name: "CALayer"
+        asNativePointer: true
+        since: [6, 10]
+    }
+    EnumType{
+        name: "NSVisualEffectMaterial"
+        forceInteger: true
+        generate: false
+        since: [6, 10]
+    }
+    EnumType{
+        name: "NSVisualEffectBlendingMode"
+        forceInteger: true
+        generate: false
+        since: [6, 10]
+    }
+    EnumType{
+        name: "NSVisualEffectState"
+        forceInteger: true
+        generate: false
+        since: [6, 10]
+    }
     
     InterfaceType{
         name: "QNativeInterface::Private::QCocoaWindow"
@@ -18982,6 +19005,10 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
         name: "id<MTLTexture>"
         generate: false
         since: 6
+    }
+    ObjectType{
+        name: "QAccessibilityHints"
+        since: [6,10]
     }
     
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: unsupported default value '0., 0., 1000000000., 1000000000.' of argument in function 'update', class 'QAbstractTextDocumentLayout'"}

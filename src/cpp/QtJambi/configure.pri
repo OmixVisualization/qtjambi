@@ -154,9 +154,9 @@ macx | ios:{
     }
 }
 
-lessThan(QT_MAJOR_VERSION, 6):{
+#lessThan(QT_MAJOR_VERSION, 6):{
     CONFIG += c++17
-}
+#}
 
 contains(QT_CONFIG, release):contains(QT_CONFIG, debug) {
     win32-arm64-msvc* | win32-msvc* | !CONFIG(force_debug_info): {

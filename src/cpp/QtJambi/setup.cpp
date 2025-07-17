@@ -300,6 +300,7 @@ Q_DECLARE_METATYPE(jdoubleArray)
 bool enabledMethodTracePrints(JNIEnv*);
 bool enabledEventPrints(JNIEnv*);
 bool useFastEnvForOverrides(JNIEnv*);
+bool dontUseEventNotify(JNIEnv *);
 bool useFastEnv(JNIEnv*);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 bool useHiddenObjectData(JNIEnv *);
@@ -333,6 +334,7 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *){
         JniLocalFrame __jniLocalFrame(env, 200);
         // BEGIN these need to be the first steps
         useFastEnvForOverrides(env);
+        dontUseEventNotify(env);
         useFastEnv(env);
         enabledMethodTracePrints(env);
         enabledEventPrints(env);

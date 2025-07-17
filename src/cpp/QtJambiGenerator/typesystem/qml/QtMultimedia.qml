@@ -2800,6 +2800,11 @@ if(%in){
         name: "QVideoFrameInput"
         since: 6.8
     }
+
+    ObjectType{
+        name: "QPlaybackOptions"
+        since: [6,10]
+    }
     
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function '*', unmatched parameter type 'QAbstractAudioBuffer*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QMediaService::requestControl', unmatched return type 'T'"}

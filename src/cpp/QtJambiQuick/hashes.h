@@ -46,7 +46,11 @@ struct RenderState{
 
 inline hash_type qHash(const QSGMaterialShader::RenderState &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.dirtyStates());
     seed = hash(seed, quintptr(reinterpret_cast<const RenderState&>(value).m_data));
     return seed;
@@ -97,7 +101,11 @@ inline bool operator==(const QSGMaterialRhiShader::GraphicsPipelineState &value1
 
 inline hash_type qHash(const QSGMaterialShader::GraphicsPipelineState &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.blendEnable);
     seed = hash(seed, value.srcColor);
     seed = hash(seed, value.dstColor);
@@ -126,7 +134,11 @@ inline bool operator==(const QSGMaterialShader::GraphicsPipelineState &value1, c
 
 inline hash_type qHash(const QSGGeometry::ColoredPoint2D &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.x);
     seed = hash(seed, value.y);
     seed = hash(seed, value.r);
@@ -147,7 +159,11 @@ inline bool operator==(const QSGGeometry::ColoredPoint2D &value1, const QSGGeome
 
 inline hash_type qHash(const QSGGeometry::TexturedPoint2D &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.x);
     seed = hash(seed, value.y);
     seed = hash(seed, value.tx);
@@ -164,7 +180,11 @@ inline bool operator==(const QSGGeometry::TexturedPoint2D &value1, const QSGGeom
 
 inline hash_type qHash(const QSGGeometry::Point2D &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.x);
     seed = hash(seed, value.y);
     return seed;
@@ -177,7 +197,11 @@ inline bool operator==(const QSGGeometry::Point2D &value1, const QSGGeometry::Po
 
 inline hash_type qHash(const QSGGeometry::Attribute &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.position);
     seed = hash(seed, value.tupleSize);
     seed = hash(seed, value.type);
@@ -196,7 +220,11 @@ inline bool operator==(const QSGGeometry::Attribute &value1, const QSGGeometry::
 
 inline hash_type qHash(const QSGGeometry::AttributeSet &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.stride);
     seed = hash(seed, value.count);
     for(int i=0; i<value.count; ++i){
@@ -221,7 +249,11 @@ inline bool operator==(const QSGGeometry::AttributeSet &value1, const QSGGeometr
 #include <QtQuick/QQuickWindow>
 inline hash_type qHash(const QQuickWindow::GraphicsStateInfo &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, value.currentFrameSlot);
     seed = hash(seed, value.framesInFlight);
     return seed;
@@ -239,7 +271,11 @@ inline bool operator==(const QQuickWindow::GraphicsStateInfo &value1, const QQui
 
 inline hash_type qHash(const QQuickGraphicsDevice &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, *reinterpret_cast<quintptr const*>(&value));
     return seed;
 }
@@ -249,7 +285,11 @@ inline bool operator==(const QQuickGraphicsDevice &value1, const QQuickGraphicsD
 }
 inline hash_type qHash(const QQuickGraphicsConfiguration &value, hash_type seed = 0)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, *reinterpret_cast<quintptr const*>(&value));
     return seed;
 }
@@ -268,7 +308,11 @@ inline hash_type qHash(const QQuickRenderTarget &value, hash_type seed = 0)
     if(!p){
         return seed;
     }
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
     seed = hash(seed, int(p->type));
     seed = hash(seed, p->pixelSize);
     seed = hash(seed, p->sampleCount);
