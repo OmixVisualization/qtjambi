@@ -1795,10 +1795,11 @@ bool Parser::parseEnumClassSpecifier(TypeSpecifierAST *&node) {
     std::size_t start = token_stream.cursor();
 
     CHECK(Token_enum);
-    if (token_stream.lookAhead() == Token_struct) {
+    if (token_stream.lookAhead() == Token_struct || token_stream.lookAhead() == Token_class) {
         token_stream.nextToken();
     }else{
-        CHECK(Token_class);
+        token_stream.rewind(start);
+        return false;
     }
 
     ExpressionAST *annotationExpression(nullptr);
@@ -1965,8 +1966,11 @@ bool Parser::parseTypeParameter(TypeParameterAST *&node) {
 
             ADVANCE('>', ">")
 
-            if (token_stream.lookAhead() == Token_class)
+            if (token_stream.lookAhead() == Token_class || token_stream.lookAhead() == Token_typename){
                 token_stream.nextToken();
+                if (token_stream.lookAhead() == Token_ellipsis)
+                    token_stream.nextToken();
+            }
 
             // parse optional name
             if (parseName(ast->name, true)) {
@@ -2247,16 +2251,14 @@ bool Parser::parseForwardDeclarationSpecifier(TypeSpecifierAST *&node) {
     int kind = token_stream.lookAhead();
     if (kind != Token_enum && kind != Token_class && kind != Token_struct && kind != Token_union)
         return false;
+    std::size_t class_key = -1;
     if (kind == Token_enum){
         token_stream.nextToken();
-        if(token_stream.lookAhead() != Token_class && token_stream.lookAhead() != Token_struct){
-            token_stream.rewind(start);
-            return false;
+        if(token_stream.lookAhead() == Token_class || token_stream.lookAhead() == Token_struct){
+            class_key = token_stream.cursor();
+            token_stream.nextToken();
         }
     }
-
-    std::size_t class_key = token_stream.cursor();
-    token_stream.nextToken();
 
     const ListNode<std::size_t> *storageSpec = nullptr;
     bool hasExported = parseExportedSpecifier(storageSpec);
@@ -4524,8 +4526,15 @@ bool Parser::parsePostfixExpression(ExpressionAST *&node) {
             ast->typename_token = token;
             ast->name = name;
             ast->expression = expr;
-
-            UPDATE_POS(ast, start, token_stream.cursor());
+            ExpressionAST *e = nullptr;
+            const ListNode<ExpressionAST*> *sub_expressions = nullptr;
+            while (parsePostfixExpressionInternal(e)) {
+                sub_expressions = snoc(sub_expressions, e, _M_pool);
+            }
+            if(e)
+                UPDATE_POS(e, start, token_stream.cursor());
+            else
+                UPDATE_POS(ast, start, token_stream.cursor());
             node = ast;
         }
         return true;

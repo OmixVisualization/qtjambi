@@ -402,21 +402,6 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
     }
     
     Rejection{
-        className: "QAccessibleWidget"
-        functionName: "interface_cast"
-    }
-    
-    Rejection{
-        className: "QAccessibleWidget"
-        functionName: "tr"
-    }
-    
-    Rejection{
-        className: "QAccessibleWidget"
-        functionName: "trUtf8"
-    }
-    
-    Rejection{
         className: "QStyleHintReturn"
         enumName: "StyleOptionType"
     }
@@ -11189,6 +11174,16 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
     
     ObjectType{
         name: "QScrollBar"
+        ModifyFunction{
+            signature: "createStandardContextMenu(QPoint)"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+        }
     }
     
     ObjectType{
@@ -14585,10 +14580,28 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
     
     ObjectType{
         name: "QAccessibleWidget"
+        Rejection{
+            functionName: "interface_cast"
+        }
+        Rejection{
+            functionName: "tr"
+        }
+        Rejection{
+            functionName: "trUtf8"
+        }
     }
 
     ObjectType{
         name: "QAccessibleWidgetV2"
+        Rejection{
+            functionName: "interface_cast"
+        }
+        Rejection{
+            functionName: "tr"
+        }
+        Rejection{
+            functionName: "trUtf8"
+        }
         since: [6,10]
     }
 

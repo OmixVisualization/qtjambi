@@ -108,7 +108,7 @@
                                                 **/*.java,
                                                 **/*.jui,
                                                 ${jar.excludes},
-                                                ${qtjambi.jar.excludes}"/>
+                                                ${qtjambi.jar.excludes}" erroronmissingdir="false"/>
         </copy>
         <condition property="module.info.exclude" value="" else="module-info.java">
             <istrue value="${java.module.based}"/>
@@ -121,7 +121,7 @@
                                                     ${jar.excludes},
                                                     ${module.info.exclude},
                                                     ${module.excludes},
-                                                    ${qtjambi.jar.excludes}"/>
+                                                    ${qtjambi.jar.excludes}" erroronmissingdir="false"/>
         </copy>
         <pathconvert pathsep="${psep}"
             property="sourcedirs2">

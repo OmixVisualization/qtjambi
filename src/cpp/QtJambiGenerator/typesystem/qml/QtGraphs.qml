@@ -1369,6 +1369,28 @@ TypeSystem{
             }
             until: 6.7
         }
+        ModifyFunction{
+            signature: "setAxisX(QAbstractAxis*)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcAxisX"
+                    action: ReferenceCount.Set
+                }
+            }
+            until: [6,10]
+        }
+        ModifyFunction{
+            signature: "setAxisY(QAbstractAxis*)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcAxisY"
+                    action: ReferenceCount.Set
+                }
+            }
+            until: [6,10]
+        }
         Rejection{fieldName: "d_ptr"}
         Rejection{functionName: "graph"}
         Rejection{functionName: "setGraph"}

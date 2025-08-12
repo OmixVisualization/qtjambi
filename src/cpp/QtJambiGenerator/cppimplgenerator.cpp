@@ -3029,12 +3029,25 @@ void CppImplGenerator::writeOwnership(QTextStream &s,
     if (var_index != -1) {
         const MetaType* type{nullptr};
         if(var_index==0){
-            type = java_function->type();
+            if(java_functional){
+                type = java_functional->type();
+            }else{
+                type = java_function->type();
+            }
         }else{
-            for(auto arg : java_function->arguments()){
-                if(arg->argumentIndex()==var_index-1){
-                   type = arg->type();
-                   break;
+            if(java_functional){
+                for(auto arg : java_functional->arguments()){
+                    if(arg->argumentIndex()==var_index-1){
+                       type = arg->type();
+                       break;
+                    }
+                }
+            }else{
+                for(auto arg : java_function->arguments()){
+                    if(arg->argumentIndex()==var_index-1){
+                       type = arg->type();
+                       break;
+                    }
                 }
             }
         }

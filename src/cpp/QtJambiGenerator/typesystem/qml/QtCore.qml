@@ -17811,6 +17811,12 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
         ModifyFunction{
             signature: "setContinuation(const QObject*,std::function<void()>,QVariant,QFutureInterfaceBase::ContinuationType)"
             ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    action: ReferenceCount.Ignore
+                }
+            }
+            ModifyArgument{
                 index: 2
                 ReplaceType{
                     modifiedType: "java.lang.Runnable"
@@ -20068,7 +20074,7 @@ else`}
         ModifyFunction{
             signature: "fromRawData(const char16_t*,qsizetype)"
             remove: RemoveFlag.All
-            until: [6, 10]
+            since: [6, 10]
         }
         ModifyFunction{
             signature: "data() const"

@@ -234,7 +234,7 @@ void Binder::visitSimpleDeclaration(SimpleDeclarationAST *node) {
 void Binder::declare_symbol(SimpleDeclarationAST *node, InitDeclaratorAST *init_declarator) {
     DeclaratorAST *declarator = init_declarator->declarator;
     if (!declarator) {
-        _M_message_handler("expected a declarator");
+        _M_message_handler(QString("expected a declarator: %1").arg(init_declarator->toString(this->tokenStream())).toStdString());
         return;
     }
 
@@ -243,7 +243,7 @@ void Binder::declare_symbol(SimpleDeclarationAST *node, InitDeclaratorAST *init_
 
     NameAST *id = declarator->id;
     if (! declarator->id) {
-        _M_message_handler("expected a declarator id");
+        _M_message_handler(QString("expected a declarator id: %1").arg(declarator->toString(this->tokenStream())).toStdString());
         return;
     }
 

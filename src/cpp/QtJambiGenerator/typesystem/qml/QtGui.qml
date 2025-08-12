@@ -3627,6 +3627,10 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
     
     ObjectType{
         name: "QAccessible"
+        ModifyFunction{
+            signature: "QAccessible(QAccessible)"
+            remove: RemoveFlag.All
+        }
 
         EnumType{
             name: "Event"
@@ -3682,6 +3686,17 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                 }
                 since: [6, 4]
             }
+            ModifyArgument{
+                index: "return"
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+                DefineOwnership{
+                    codeClass: CodeClass.Shell
+                    ownership: Ownership.Cpp
+                }
+            }
         }
 
         FunctionalType{
@@ -3704,12 +3719,12 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                 }
                 since: [6, 4]
             }
+            ModifyArgument{
+                index: 1
+                invalidateAfterUse: true
+            }
         }
 
-        ModifyFunction{
-            signature: "cleanup()"
-            remove: RemoveFlag.All
-        }
         ModifyFunction{
             signature: "installUpdateHandler(QAccessible::UpdateHandler)"
             ModifyArgument{
@@ -18107,6 +18122,13 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
         asNativePointer: true
         since: [6, 10]
     }
+    PrimitiveType{
+        name: "NSInteger"
+        javaName: "int"
+        jniName: "jint"
+        preferredConversion: false
+        since: [6, 10]
+    }
     EnumType{
         name: "NSVisualEffectMaterial"
         forceInteger: true
@@ -19108,5 +19130,5 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'glGetPointerv(GLenum, GLvoid**)' for function modification in 'QOpenGLFunctions_3_*' not found. Possible candidates: "}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'glGetPointerv(GLenum, GLvoid**)' for function modification in 'QOpenGLFunctions_4_*' not found. Possible candidates: "}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QRhi*'"; until: 6.6}
-    //SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QFont::Tag::Tag<N>*', unmatched parameter type 'const char[N]'"; since: 6.7}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'QAccessible(QAccessible)' for function modification in 'QAccessible' not found. Possible candidates: "}
 }
