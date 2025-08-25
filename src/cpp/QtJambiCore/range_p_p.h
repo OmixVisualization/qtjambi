@@ -1303,7 +1303,7 @@ protected:
 
     using ModelData = QRangeModelDetails::ModelData<std::conditional_t<
                                                     std::is_pointer_v<Range>,
-                                                    Range, std::remove_reference_t<Range>>>;
+                                                    Range, std::remove_reference_t<Range>>,QObject>;
 
     using range_features = QRangeModelDetails::range_traits<range_type>;
     using row_features = QRangeModelDetails::range_traits<wrapped_row_type>;
@@ -1567,6 +1567,8 @@ public:
             break;
         case ItemData: makeCall(that, &Self::itemData, r, args);
             break;
+        case RoleNames: makeCall(that, &Self::roleNames, r, args);
+            break;
         }
     }
 
@@ -1592,6 +1594,12 @@ public:
         case RemoveRows: makeCall(that, &Self::removeRows, r, args);
             break;
         case MoveRows: makeCall(that, &Self::moveRows, r, args);
+            break;
+        case SetHeaderData:
+            // not implemented
+            break;
+        case InvalidateCaches:
+            static_cast<Self *>(that)->m_data.invalidateCaches();
             break;
         }
     }
@@ -2023,6 +2031,19 @@ public:
         return success;
     }
 
+    QHash<int, QByteArray> roleNames() const
+    {
+        const QMetaObject* mo = m_data.model()->elementMetaObject();
+        if (mo) {
+            return roleNamesForMetaObject(*mo);
+//        } else if constexpr (std::negation_v<std::disjunction<std::is_void<item_type>,
+//                                                              QRangeModelDetails::is_multi_role<item_type>>>) {
+//            return roleNamesForSimpleType();
+        }
+
+        return itemModel().QAbstractItemModel::roleNames();
+    }
+
     bool insertColumns(int column, int count, const QModelIndex &parent)
     {
         Q_UNUSED(column)
@@ -2302,10 +2323,24 @@ private:
 
     QMetaProperty roleProperty(int role, const QMetaObject* mo) const
     {
-        const QByteArray roleName = roleNames().value(role);
-        if (const int index = mo->indexOfProperty(roleName.data()); index >= 0)
-            return mo->property(index);
-        return {};
+        struct {
+            operator QMetaProperty() const {
+                const QByteArray roleName = that.itemModel().roleNames().value(role);
+                if (const int index = mo->indexOfProperty(roleName.data());
+                    index >= 0) {
+                    return mo->property(index);
+                }
+                return {};
+            }
+            const QtJambiRangeModelImpl &that;
+            const int role;
+            const QMetaObject* mo;
+        } findProperty{*this, role, mo};
+
+        if constexpr (ModelData::cachesProperties)
+            return *m_data.properties.tryEmplace(role, findProperty).iterator;
+        else
+            return findProperty;
     }
 
     template <typename ItemType>

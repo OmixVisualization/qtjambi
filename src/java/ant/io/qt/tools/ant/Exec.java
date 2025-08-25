@@ -98,7 +98,8 @@ class Exec {
             if(directory != null)
                 builder.directory(directory);
             Process process = builder.start();
-            Util.redirectOutput(process);
+            Runnable wait = Util.redirectOutput(process);
+            wait.run();
             if(process.exitValue() != 0) {
                 String exitValueAsHex = String.format("0x%1$08x", new Object[] { process.exitValue() });
                 String inDirectory = (directory != null) ? " in " + directory.getAbsolutePath() : "";
@@ -126,7 +127,8 @@ class Exec {
     	}
         try {
             Process process = Runtime.getRuntime().exec(cmd, null, directory);
-            Util.redirectOutput(process);
+            Runnable wait = Util.redirectOutput(process);
+            wait.run();
             if(process.exitValue() != 0) {
                 String exitValueAsHex = String.format("0x%1$08x", new Object[] { process.exitValue() });
                 String inDirectory = (directory != null) ? " in " + directory.getAbsolutePath() : "";
@@ -240,13 +242,66 @@ class Exec {
             builder.directory(directory);
         try {
             Process process = builder.start();
-            Util.redirectOutput(process);
+            Runnable wait = Util.redirectOutput(process);
+            wait.run();
             if(process.exitValue() != 0) {
                 String exitValueAsHex = String.format("0x%1$08x", new Object[] { process.exitValue() });
                 String inDirectory = (directory != null) ? " in " + directory.getAbsolutePath() : "";
                 project.log(task, "Running: '" + commandLine(command) + "'" + inDirectory + " failed.  exitStatus=" + process.exitValue() + " (" + exitValueAsHex + ")", Project.MSG_ERR);
                 throw new BuildException("Running: '" + commandLine(command) + "'" + inDirectory + " failed.  exitStatus=" + process.exitValue() + " (" + exitValueAsHex + ")");
             }
+        } catch(IOException e) {
+        	e.printStackTrace();
+            if(directory != null)
+            	System.err.println("directory="+directory.getAbsolutePath());
+            if(env.containsKey("path"))
+            	System.err.println("path="+env.get("path"));
+            if(env.containsKey("Path"))
+            	System.err.println("Path="+env.get("Path"));
+            if(env.containsKey("PATH"))
+            	System.err.println("PATH="+env.get("PATH"));
+            project.log(task, "Running: '" +commandLine(command)+ "' in directory " + ((directory != null) ? directory.toString() : "<notset>") + " failed.", e, Project.MSG_ERR);
+            throw new BuildException("Running: '" + commandLine(command) + "' failed.", e);
+        }
+    }
+    
+    public static Runnable executeAsync(Task task, List<String> command, File directory, Project project, String path, String ldpath) throws BuildException {
+    	return executeAsync(task, command, directory, project, path, ldpath, null);
+    }
+    
+    public static Runnable executeAsync(Task task, List<String> command, File directory, Project project, String path, String ldpath, Map<String, String> newEnv) throws BuildException {
+    	{
+        	project.log(task, "Executing: '" +commandLine(command)+ "' in directory " + ((directory != null) ? directory.toString() : "<notset>"), Project.MSG_INFO);
+    	}
+        ProcessBuilder builder = new ProcessBuilder(command);
+		//builder = builder.redirectErrorStream(true);
+
+        // NOTE: this is most likely very linux-specific system. For Windows one would use PATH instead,
+        // but it should not be needed there in first place... Only if you want to have same kind of building
+        // environment one can have for Linux.
+        // it shouldn't affect to Windows environment though.
+        Map<String, String> env = builder.environment();
+        if(newEnv!=null) {
+        	env.putAll(newEnv);
+        }else if(project != null) {
+            PropertyHelper props = PropertyHelper.getPropertyHelper(project);
+            setupEnvironment(env, props, path, ldpath);
+        }
+        
+        if(directory != null)
+            builder.directory(directory);
+        try {
+            Process process = builder.start();
+            Runnable wait = Util.redirectOutput(process);
+            return ()->{
+            	wait.run();
+	            if(process.exitValue() != 0) {
+	                String exitValueAsHex = String.format("0x%1$08x", new Object[] { process.exitValue() });
+	                String inDirectory = (directory != null) ? " in " + directory.getAbsolutePath() : "";
+	                project.log(task, "Running: '" + commandLine(command) + "'" + inDirectory + " failed.  exitStatus=" + process.exitValue() + " (" + exitValueAsHex + ")", Project.MSG_ERR);
+	                throw new BuildException("Running: '" + commandLine(command) + "'" + inDirectory + " failed.  exitStatus=" + process.exitValue() + " (" + exitValueAsHex + ")");
+	            }
+            };
         } catch(IOException e) {
         	e.printStackTrace();
             if(directory != null)

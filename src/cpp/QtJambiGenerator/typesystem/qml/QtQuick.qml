@@ -2880,6 +2880,17 @@ if(%1.count()<=0)
             since: 6.6
         }
         ModifyFunction{
+            signature: "fromRhiAdapter(QRhiAdapter*)"
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.End
+                ArgumentMap{index: 0; metaName: "%0"}
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: "%0.__rcDeviceContext = %1;"}
+            }
+            since: [6,10]
+        }
+        ModifyFunction{
             signature: "QQuickGraphicsDevice(QQuickGraphicsDevice)"
             InjectCode{
                 target: CodeClass.Java

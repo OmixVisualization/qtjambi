@@ -93,49 +93,21 @@ abstract class Util {
         return LOCATE_EXEC(name, prependString, append);
     }
 
-    public static void redirectOutput(Process proc) {
-        try {
+    public static Runnable redirectOutput(Process proc) {
             StreamConsumer std = new StreamConsumer(proc.getInputStream(), System.out);
             StreamConsumer err = new StreamConsumer(proc.getErrorStream(), System.err);
             std.start();
             err.start();
-            proc.waitFor();
-            std.join();
-            err.join();
-        } catch(InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void redirectOutput(Process proc, File outputFile, File errorFile) {
-        FileOutputStream outputFileStream = null;
-        FileOutputStream errorFileStream = null;
-        try {
-            try {
-                outputFileStream = new FileOutputStream(outputFile);
-                errorFileStream = new FileOutputStream(errorFile);
-                StreamConsumer std = new StreamConsumer(proc.getInputStream(), new java.io.PrintStream(outputFileStream));
-                StreamConsumer err = new StreamConsumer(proc.getErrorStream(), new java.io.PrintStream(errorFileStream));
-                std.start();
-                err.start();
-                proc.waitFor();
-                std.join();
-                err.join();
-            } catch(InterruptedException e) {
-                e.printStackTrace();
-            }finally{
-                if(outputFileStream!=null){
-                    outputFileStream.close();
+            return ()->{
+                try {
+	            	proc.waitFor();
+	                std.join();
+	                err.join();
+                } catch(InterruptedException e) {
+                    e.printStackTrace();
                 }
-                if(errorFileStream!=null){
-                    errorFileStream.close();
-                }
-            }
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
+            };
     }
-
 
     public static boolean copy(File src, File dst) throws IOException {
         boolean bf = false;

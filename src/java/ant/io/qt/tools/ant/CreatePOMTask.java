@@ -686,15 +686,39 @@ public class CreatePOMTask extends Task {
 								}else if(platform.startsWith("windows")) {
 									name.setTextContent(_moduleName+" native components for Windows");
 									description.setTextContent("Native components for Windows");
-									if(platform.endsWith("-x64")) {
-										name.setTextContent(name.getTextContent()+" x64");
-										description.setTextContent(description.getTextContent()+" x64");
-									}else if(platform.endsWith("-x86")) {
-										name.setTextContent(name.getTextContent()+" x86");
-										description.setTextContent(description.getTextContent()+" x86");
-									}else if(platform.endsWith("-arm64")) {
-										name.setTextContent(name.getTextContent()+" arm64");
-										description.setTextContent(description.getTextContent()+" arm64");
+									if(platform.startsWith("windows-mingw")) {
+										if(platform.endsWith("-x64")) {
+											name.setTextContent(name.getTextContent()+" x64 (MinGW)");
+											description.setTextContent(description.getTextContent()+" x64 (MinGW)");
+										}else if(platform.endsWith("-x86")) {
+											name.setTextContent(name.getTextContent()+" x86 (MinGW)");
+											description.setTextContent(description.getTextContent()+" x86 (MinGW)");
+										}else if(platform.endsWith("-arm64")) {
+											name.setTextContent(name.getTextContent()+" arm64 (MinGW)");
+											description.setTextContent(description.getTextContent()+" arm64 (MinGW)");
+										}
+									}else if(platform.startsWith("windows-llvm")) {
+										if(platform.endsWith("-x64")) {
+											name.setTextContent(name.getTextContent()+" x64 (LLVM MinGW)");
+											description.setTextContent(description.getTextContent()+" x64 (LLVM MinGW)");
+										}else if(platform.endsWith("-x86")) {
+											name.setTextContent(name.getTextContent()+" x86 (LLVM MinGW)");
+											description.setTextContent(description.getTextContent()+" x86 (LLVM MinGW)");
+										}else if(platform.endsWith("-arm64")) {
+											name.setTextContent(name.getTextContent()+" arm64 (LLVM MinGW)");
+											description.setTextContent(description.getTextContent()+" arm64 (LLVM MinGW)");
+										}
+									}else {
+										if(platform.endsWith("-x64")) {
+											name.setTextContent(name.getTextContent()+" x64 (MSVC)");
+											description.setTextContent(description.getTextContent()+" x64 (MSVC)");
+										}else if(platform.endsWith("-x86")) {
+											name.setTextContent(name.getTextContent()+" x86 (MSVC)");
+											description.setTextContent(description.getTextContent()+" x86 (MSVC)");
+										}else if(platform.endsWith("-arm64")) {
+											name.setTextContent(name.getTextContent()+" arm64 (MSVC)");
+											description.setTextContent(description.getTextContent()+" arm64 (MSVC)");
+										}
 									}
 								}else if(platform.startsWith("linux")) {
 									name.setTextContent(_moduleName+" native components for Linux");

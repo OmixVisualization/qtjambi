@@ -6169,6 +6169,11 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
             since: [6, 4]
         }
         ModifyFunction{
+            signature: "toStringView(QAnyStringView)const"
+            remove: RemoveFlag.All
+            since: [6, 10]
+        }
+        ModifyFunction{
             signature: "fromCbor(const char *, qsizetype, QCborParserError *)"
             remove: RemoveFlag.All
         }
@@ -7516,6 +7521,11 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
         ModifyFunction{
             signature: "QJsonValue(const char*)"
             remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "toStringView(QAnyStringView)const"
+            remove: RemoveFlag.All
+            since: [6, 10]
         }
         ModifyFunction{
             signature: "toBool(bool)const"
@@ -16617,7 +16627,7 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
         }
         ModifyFunction{
             signature: "operator bool()const"
-            remove: RemoveFlag.All
+            rename: "isOk"
             since: "6.10"
         }
         ModifyFunction{
@@ -17113,6 +17123,11 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
             signature: "QTextStream(QString*,QIODeviceBase::OpenMode)"
             remove: RemoveFlag.All
             since: 6
+        }
+        ModifyFunction{
+            signature: "operator bool()const"
+            rename: "isOk"
+            since: "6.10"
         }
         ModifyFunction{
             signature: "device() const"

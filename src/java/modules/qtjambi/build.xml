@@ -87,7 +87,7 @@
         </condition>
         <property name="destdir" value="${deploymentdir}"/>
         <mkdir dir="${destdir}"/>
-		<path id="basesourcedirs">
+		<path id="sourcedirs">
 			<pathelement location="${generator.outputdir}/java/${module}"/>
 			<pathelement location="${antfile.dir}/main"/>
 			<pathelement location="${antfile.dir}/Qt${qtjambi.soname.version.major}"/>
@@ -95,72 +95,56 @@
 			<pathelement location="${antfile.dir}/${jsr305-dir}"/>
 		</path>
 		<if>
-			<equals arg1="${qtjambi.soname.version.major}" arg2="5"/>
+			<greater-or-equals arg1="${qtjambi.soname.version.major}" arg2="6"/>
 			<then>
-				<!-- Qt 5 -->
-				<path id="sourcedirs">
-					<path refid="basesourcedirs"/>
-				</path>
-			</then>
-			<else>
 				<!-- Qt 6 (and higher) -->
-				<if>
+				<condition property="Qt6-span" value="Qt6-nospan" else="Qt6-span">
+					<and>
+						<equals arg1="${qtjambi.soname.version.major}" arg2="6"/>
+						<less arg1="${qtjambi.soname.version.minor}" arg2="7"/>
+					</and>
+				</condition>
+				<condition property="Qt6X-metaobject" value="Qt6.0-metaobject" else="Qt6.5-metaobject">
 					<and>
 						<equals arg1="${qtjambi.soname.version.major}" arg2="6"/>
 						<less arg1="${qtjambi.soname.version.minor}" arg2="5"/>
 					</and>
+				</condition>
+				<condition property="Qt6-metaobject" value="${Qt6X-metaobject}" else="Qt6.10-metaobject">
+					<and>
+						<equals arg1="${qtjambi.soname.version.major}" arg2="6"/>
+						<less arg1="${qtjambi.soname.version.minor}" arg2="10"/>
+					</and>
+				</condition>
+				<condition property="Qt6-future" value="Qt6.0-future" else="Qt6.10-future">
+					<and>
+						<equals arg1="${qtjambi.soname.version.major}" arg2="6"/>
+						<less arg1="${qtjambi.soname.version.minor}" arg2="10"/>
+					</and>
+				</condition>
+				<condition property="Qt6-bindings" value="Qt6.0-bindings" else="Qt6.5-bindings">
+					<and>
+						<equals arg1="${qtjambi.soname.version.major}" arg2="6"/>
+						<less arg1="${qtjambi.soname.version.minor}" arg2="5"/>
+					</and>
+				</condition>
+				<extendpath refid="sourcedirs">
+					<pathelement location="${antfile.dir}/${Qt6-bindings}"/>
+					<pathelement location="${antfile.dir}/${Qt6-future}"/>
+					<pathelement location="${antfile.dir}/${Qt6-metaobject}"/>
+					<pathelement location="${antfile.dir}/${Qt6-span}"/>
+				</extendpath>
+				<if>
+					<and>
+						<equals arg1="${qtjambi.soname.version.major}" arg2="6"/>
+						<greater-or-equals arg1="${qtjambi.soname.version.minor}" arg2="9"/>
+					</and>
 					<then>
-						<!-- Qt 6.0 to 6.5 -->
-						<path id="sourcedirs">
-							<path refid="basesourcedirs"/>
-							<pathelement location="${antfile.dir}/Qt6.0"/>
-							<pathelement location="${antfile.dir}/Qt6-nospan"/>
-						</path>
+						<!-- Qt 6.9 and higher -->
+						<extendpath refid="sourcedirs" location="${antfile.dir}/Qt6-longflags"/>
 					</then>
-					<else>
-						<!-- Qt 6.5 and higher -->
-						<if>
-							<and>
-								<equals arg1="${qtjambi.soname.version.major}" arg2="6"/>
-								<less arg1="${qtjambi.soname.version.minor}" arg2="7"/>
-							</and>
-							<then>
-								<!-- Qt 6.5 to 6.6 -->
-								<path id="sourcedirs">
-									<path refid="basesourcedirs"/>
-									<pathelement location="${antfile.dir}/Qt6.5"/>
-									<pathelement location="${antfile.dir}/Qt6-nospan"/>
-								</path>
-							</then>
-							<else>
-								<if>
-									<and>
-										<equals arg1="${qtjambi.soname.version.major}" arg2="6"/>
-										<less arg1="${qtjambi.soname.version.minor}" arg2="9"/>
-									</and>
-									<then>
-										<!-- Qt 6.7 to 6.8 -->
-										<path id="sourcedirs">
-											<path refid="basesourcedirs"/>
-											<pathelement location="${antfile.dir}/Qt6.5"/>
-											<pathelement location="${antfile.dir}/Qt6-span"/>
-										</path>
-									</then>
-									<else>
-										<!-- Qt 6.9 and higher -->
-										<path id="sourcedirs">
-											<path refid="basesourcedirs"/>
-											<pathelement location="${antfile.dir}/Qt6.5"/>
-											<pathelement location="${antfile.dir}/Qt6-span"/>
-											<pathelement location="${antfile.dir}/Qt6-longflags"/>
-										</path>
-									</else>
-								</if>
-							</else>
-						</if>
-					</else>
 				</if>
-			</else>
+			</then>
 		</if>
         <ant antfile="${basedir}/../modules.xml" inheritrefs="true" target="build-impl">
             <property name="jar.excludes" value=""/>

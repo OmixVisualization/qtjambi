@@ -4135,6 +4135,11 @@ abstract class SignalUtility {
         }
         
         @io.qt.QtUninvokable
+        protected static QMetaObject.Connection nonConnection() {
+        	return new NonConnection();
+        }
+        
+        @io.qt.QtUninvokable
 		protected final boolean removeConnectionToSignalObject(AbstractSignal signalObject) {
         	this.name();
     		QMetaMethod method = signalObject.signalMethod();

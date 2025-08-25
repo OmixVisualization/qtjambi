@@ -62,6 +62,8 @@
          classname="io.qt.tools.ant.AidlTask"/>
     <taskdef name="if"
          classname="io.qt.tools.ant.IfTask"/>
+    <taskdef name="extendpath"
+         classname="io.qt.tools.ant.ExtendPathTask"/>
     <taskdef name="trycatch"
          classname="io.qt.tools.ant.TryCatchTask"/>
     <taskdef name="create-function-pointer-qrc"

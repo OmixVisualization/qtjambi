@@ -1721,6 +1721,11 @@ TypeSystem{
             Text{content: "new(placement) QDBusPendingCall(QDBusPendingCall::fromCompletedCall(QDBusMessage()));"}
         }
         ModifyFunction{
+            signature: "QDBusPendingCall(QDBusPendingCall &&)"
+            remove: RemoveFlag.All
+            since: [6, 10]
+        }
+        ModifyFunction{
             signature: "operator=(QDBusPendingCall &&)"
             remove: RemoveFlag.All
             since: [5, 14]

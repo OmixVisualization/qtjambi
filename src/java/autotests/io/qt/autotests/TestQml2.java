@@ -40,10 +40,14 @@ import io.qt.QtUtilities;
 import io.qt.core.QByteArray;
 import io.qt.core.QLibraryInfo;
 import io.qt.core.QList;
+import io.qt.core.QMetaObject;
 import io.qt.core.QObject;
 import io.qt.core.QOperatingSystemVersion;
+import io.qt.core.QSize;
 import io.qt.core.QTimer;
 import io.qt.core.QUrl;
+import io.qt.core.QVariant;
+import io.qt.gui.QColor;
 import io.qt.gui.QGuiApplication;
 import io.qt.gui.QWindow;
 import io.qt.qml.QQmlComponent;
@@ -165,5 +169,95 @@ public class TestQml2 extends ApplicationInitializer{
 	    Assert.assertEquals("root", root.objectName());
 	    Assert.assertEquals(1, root.children().size());
 	    Assert.assertEquals("child", root.children().get(0).objectName());
+	}
+	
+	@Test
+    public void testNullness() {
+		@SuppressWarnings("unused")
+		class NullnessObject extends QObject{
+			Object variant = QVariant.INVALID;
+			int i;
+			QSize size = new QSize();
+			QColor color = new QColor();
+			QObject object = null;
+			public Object getVariant() {
+				return variant;
+			}
+			public void setVariant(Object variant) {
+				System.out.println("NullnessObject.setVariant("+(variant==null ? "null" : variant + "[" + variant.getClass().getName()+"]")+")");
+				this.variant = variant;
+			}
+			public int getI() {
+				return i;
+			}
+			public void setI(int i) {
+				System.out.println("NullnessObject.setI("+i+")");
+				this.i = i;
+			}
+			public QSize getSize() {
+				return size;
+			}
+			public void setSize(QSize size) {
+				System.out.println("NullnessObject.setSize("+size+")");
+				this.size = size;
+			}
+			public QColor getColor() {
+				return color;
+			}
+			public void setColor(QColor color) {
+				System.out.println("NullnessObject.setColor("+color+")");
+				this.color = color;
+			}
+			public QObject getObject() {
+				return object;
+			}
+			public void setObject(QObject object) {
+				System.out.println("NullnessObject.setObject("+object+")");
+				this.object = object;
+			}
+		}
+		QtQml.qmlClearTypeRegistrations();
+		NullnessObject nullnessObject = new NullnessObject();
+		QtQml.qmlRegisterSingletonInstance("io.qt.test", 1, 0, "Nullness", nullnessObject);
+		QQmlEngine engine = new QQmlEngine();
+		QByteArray data = new QByteArray("import io.qt.test 1.0\n"
+				+ "import QtQuick 2.0\n"
+				+ "QtObject {\n"
+				+ "    function testNull(){\n"
+				+ "        let v = null\n"
+				+ "        Nullness.setVariant(v)\n"
+				+ "        Nullness.setObject(v)\n"
+//				+ "        Nullness.setSize(v)\n"
+				+ "        Nullness.setColor(v)\n"
+				+ "        Nullness.setI(v)\n"
+				+ "        Nullness.variant = v\n"
+				+ "        Nullness.object = v\n"
+//				+ "        Nullness.i = v\n"
+				+ "        Nullness.size = v\n"
+				+ "        Nullness.color = v\n"
+				+ "    }\n"
+				+ "    function testUndefined(){\n"
+				+ "        let v = undefined\n"
+				+ "        Nullness.setVariant(v)\n"
+				+ "        Nullness.setObject(v)\n"
+//				+ "        Nullness.setSize(v)\n"
+//				+ "        Nullness.setColor(v)\n"
+				+ "        Nullness.setI(v)\n"
+				+ "        Nullness.variant = v\n"
+//				+ "        Nullness.object = v\n"
+//				+ "        Nullness.i = v\n"
+//				+ "        Nullness.size = v\n"
+//				+ "        Nullness.color = v\n"
+				+ "    }\n"
+				+ "}");
+		QQmlComponent component = new QQmlComponent(engine);
+		component.setData(data, (QUrl)null);
+		QObject root = component.create();
+	    Assert.assertTrue(component.errorString(), root!=null);
+	    System.out.println("testNull()");
+	    QMetaObject.invokeMethod(root, "testNull");
+	    System.out.println("testUndefined()");
+	    QMetaObject.invokeMethod(root, "testUndefined");
+//	    System.out.println(component.errorString());
 	}
 }
