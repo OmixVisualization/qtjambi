@@ -2033,15 +2033,27 @@ public:
 
     QHash<int, QByteArray> roleNames() const
     {
-        const QMetaObject* mo = m_data.model()->elementMetaObject();
-        if (mo) {
-            return roleNamesForMetaObject(*mo);
-//        } else if constexpr (std::negation_v<std::disjunction<std::is_void<item_type>,
-//                                                              QRangeModelDetails::is_multi_role<item_type>>>) {
-//            return roleNamesForSimpleType();
+        if(MultiRole::isMultiRole(m_data.model()->elementMetaType(), &*m_data.model()->containerAccess())){
+            return itemModel().QAbstractItemModel::roleNames();
+        }else if (const QMetaObject* mo = m_data.model()->elementMetaObject()) {
+            if constexpr(rowType!=RowType::MetaObject){
+                return roleNamesForMetaObject(*mo);
+            }else{
+                return itemModel().QAbstractItemModel::roleNames();
+            }
+        }else if(AbstractSequentialAccess* listAccess = dynamic_cast<AbstractSequentialAccess*>(&*m_data.model()->containerAccess())){
+            QSharedPointer<AbstractContainerAccess> elementNestedContainerAccess{m_data.model()->containerAccess()->elementNestedContainerAccess(), &containerDisposer};
+            if(MultiRole::isMultiRole(listAccess->elementMetaType(), &*elementNestedContainerAccess)){
+                return itemModel().QAbstractItemModel::roleNames();
+            }else if (const QMetaObject* mo = listAccess->elementMetaType().metaObject()){
+                return roleNamesForMetaObject(*mo);
+            }else if(AbstractSequentialAccess* nestedListAccess = dynamic_cast<AbstractSequentialAccess*>(&*elementNestedContainerAccess)){
+                if (const QMetaObject* mo = nestedListAccess->elementMetaType().metaObject()){
+                    return roleNamesForMetaObject(*mo);
+                }
+            }
         }
-
-        return itemModel().QAbstractItemModel::roleNames();
+        return roleNamesForSimpleType();
     }
 
     bool insertColumns(int column, int count, const QModelIndex &parent)
