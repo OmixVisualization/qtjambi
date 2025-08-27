@@ -585,7 +585,7 @@ public class TestQml extends ApplicationInitializer{
 		QQmlComponent component = new QQmlComponent(engine);
 		component.setData(data, (QUrl)null);
 		Assert.assertEquals(QQmlComponent.Status.Error, component.status());
-		if(QLibraryInfo.version().compareTo(new QVersionNumber(6,10,0))>=0)
+		if(QLibraryInfo.version().compareTo(new QVersionNumber(6,9,2))>=0)
 			Assert.assertEquals(":5 Cannot assign object of type \"QQuickItem\" to list property \"testChildren\"; expected \"io::qt::autotests::TestQml::TestChild\"", component.errorString().trim());
 		else
 			Assert.assertEquals(":5 Cannot assign object to list property \"testChildren\"", component.errorString().trim());
@@ -606,7 +606,7 @@ public class TestQml extends ApplicationInitializer{
 		QQmlComponent component = new QQmlComponent(engine);
 		component.setData(data, (QUrl)null);
 		Assert.assertEquals(QQmlComponent.Status.Error, component.status());
-		if(QLibraryInfo.version().compareTo(new QVersionNumber(6,10,0))>=0)
+		if(QLibraryInfo.version().compareTo(new QVersionNumber(6,9,2))>=0)
 			Assert.assertEquals(":5 Cannot assign object of type \"io::qt::autotests::TestQml::TestChild\" to list property \"testItems\"; expected \"QQuickItem\"", component.errorString().trim());
 		else
 			Assert.assertEquals(":5 Cannot assign object to list property \"testItems\"", component.errorString().trim());

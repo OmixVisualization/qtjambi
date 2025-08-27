@@ -64,7 +64,7 @@ public class TestCharts extends ApplicationInitializer {
     	set = new QBarSet("D", initialParent);
     	assertEquals(initialParent, set.parent());
     	series.insert(0, set);
-    	if(QLibraryInfo.version().compareTo(new QVersionNumber(6,10,0))<0)
+    	if(QLibraryInfo.version().compareTo(new QVersionNumber(6,9,2))<0)
     		assertEquals(initialParent, set.parent());
     	else
     		assertEquals(series, set.parent());

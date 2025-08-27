@@ -502,14 +502,19 @@ Further options:
         <foreach-version targets="init.build,deploy-release"/>
     </target>
         
-    <target name="deploy.bundle" depends="log, init.taskdef"
-        description="Creates Maven artifact bundles (snapshot).">
-        <foreach-version targets="init.build,deploy.snapshot,deploy-bundle"/>
+    <target name="deploy.bundle.snapshot" depends="log, init.taskdef"
+        description="Creates Maven artifact bundles (snapshot POM).">
+        <foreach-version targets="init.build,deploy-snapshot,deploy-bundle"/>
     </target>
     
     <target name="deploy.bundle.release" depends="log, init.taskdef"
-        description="Creates Maven artifact bundles (release).">
+        description="Creates Maven artifact bundles (release POM).">
         <foreach-version targets="init.build,deploy-release,deploy-bundle"/>
+    </target>
+	
+    <target name="deploy.bundle" depends="log, init.taskdef"
+        description="Creates Maven artifact bundles (available POM).">
+        <foreach-version targets="init.build,deploy-bundle"/>
     </target>
     <target name="test" depends="log, init.taskdef"
         description="Publishes QtJambi as Maven artifact.">

@@ -207,7 +207,6 @@ public class CreatePOMTask extends Task {
 					version.setTextContent(qtjambiVersion);
 					doc.getDocumentElement().appendChild(version);
 					if(this.description!=null) {
-						Element description = doc.createElement("description");
 						this.description = this.description.trim();
 						if(this.description.startsWith("\"") && this.description.endsWith("\"")) {
 							this.description = this.description.substring(1, this.description.length()-1);
@@ -219,9 +218,21 @@ public class CreatePOMTask extends Task {
 								this.description = this.description.substring(0, idx);
 							}
 						}
-						description.setTextContent(this.description);
-						doc.getDocumentElement().appendChild(description);				
+						if(this.description.isEmpty()) {
+							if(_moduleName.startsWith("QtJambi "))
+								this.description = _moduleName.replace("QtJambi ", "Java bindings for for Qt");
+							else
+								this.description = _moduleName;
+						}
+					}else {
+						if(_moduleName.startsWith("QtJambi "))
+							this.description = _moduleName.replace("QtJambi ", "Java bindings for for Qt");
+						else
+							this.description = _moduleName;
 					}
+					Element description = doc.createElement("description");
+					description.setTextContent(this.description);
+					doc.getDocumentElement().appendChild(description);				
 					Element url = doc.createElement("url");
 					url.setTextContent("https://www.qtjambi.io");
 					doc.getDocumentElement().appendChild(url);
