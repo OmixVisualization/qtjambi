@@ -214,12 +214,8 @@ class IndentationReset {
         int indent;
 };
 
-#define INDENTATION(INDENT)\
-    Indentation indent(INDENT);\
-    Q_UNUSED(indent)
-#define INDENTATIONRESET(INDENT)\
-    IndentationReset indentReset(INDENT);\
-    Q_UNUSED(indentReset)
+#define INDENTATION(INDENT) Indentation indent(INDENT)
+#define INDENTATIONRESET(INDENT) IndentationReset indentReset(INDENT)
 
 inline QTextStream &operator <<(QTextStream &s, const Indentor &indentor) {
     s << indentor.end();

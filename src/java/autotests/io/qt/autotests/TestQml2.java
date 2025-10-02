@@ -95,7 +95,7 @@ public class TestQml2 extends ApplicationInitializer{
 	public static class TestObjects extends QObject
 	{
 		@NativeAccess
-		private TestObjects(QDeclarativeConstructor dc) throws IllegalAccessException {
+		private TestObjects(QPrivateConstructor dc) {
 			super(dc);
 		}
 		
@@ -112,7 +112,7 @@ public class TestQml2 extends ApplicationInitializer{
 	public static class TestChild extends QObject
 	{
 		@NativeAccess
-		private TestChild(QDeclarativeConstructor dc) throws IllegalAccessException {
+		private TestChild(QPrivateConstructor dc) {
 			super(dc);
 		}
 

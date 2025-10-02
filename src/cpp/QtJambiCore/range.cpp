@@ -915,8 +915,9 @@ AbstractConstIterator AbstractConstIterator::operator++(int){
 }
 
 QGenericTableItemModelImpl<GenericTable>::QGenericTableItemModelImpl(GenericTable &&model, QRangeModel *itemModel)
-    : QRangeModelImplBase(itemModel, static_cast<const QGenericTableItemModelImpl<GenericTable>*>(nullptr))
+    : QRangeModelImplBase(itemModel)
 {
+    initCallFN(&QGenericTableItemModelImpl<GenericTable>::callImpl);
     switch(model.treeType){
     case TreeType::None:
         initializeTable(itemModel, std::move(model));
@@ -927,17 +928,13 @@ QGenericTableItemModelImpl<GenericTable>::QGenericTableItemModelImpl(GenericTabl
     }
 }
 
-void QGenericTableItemModelImpl<GenericTable>::callConst(ConstOp op, const QRangeModelImplBase *that, void *r, const void *args){
-    const QGenericTableItemModelImpl<GenericTable>* _this = static_cast<const QGenericTableItemModelImpl<GenericTable>*>(that);
-    _this->callConst_fn(op, _this->impl, r, args);
-}
-
-void QGenericTableItemModelImpl<GenericTable>::call(Op op, QRangeModelImplBase *that, void *r, const void *args){
-    QGenericTableItemModelImpl<GenericTable>* _this = static_cast<QGenericTableItemModelImpl<GenericTable>*>(that);
-    _this->call_fn(op, _this->impl, r, args);
-    if(op==Destroy){
-        delete _this;
-    }
+void QGenericTableItemModelImpl<GenericTable>::callImpl(size_t index, QtPrivate::QQuasiVirtualInterface<QRangeModelImplBase> &intf, void *ret, void *args)
+{
+    struct Impl{
+        CallFN m_callFN;
+    };
+    QGenericTableItemModelImpl<GenericTable>& _this = static_cast<QGenericTableItemModelImpl<GenericTable>&>(intf);
+    reinterpret_cast<Impl*>(_this.impl)->m_callFN(index, *_this.impl, ret, args);
 }
 
 #endif

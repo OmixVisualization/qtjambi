@@ -41,6 +41,7 @@
 typedef void (*StaticMetaCallFunction)(QObject *, QMetaObject::Call, int, void **);
 
 class QtJambiMetaObjectPrivate;
+class SuperTypeInfos;
 
 class ParameterTypeInfo{
 public:
@@ -92,6 +93,80 @@ private:
     friend class QtJambiMetaObject;
 };
 
+struct JInvokableInfo{
+    jclass declaringClass = nullptr;
+    QVector<ParameterTypeInfo> parameterTypeInfos;
+protected:
+    mutable QString m_description;
+};
+
+struct JConstructorInfo : JInvokableInfo{
+    jmethodID constructorId = nullptr;
+    QtJambiAPI::ConstructorFn constructorFunction = nullptr;
+    QList<jclass> constructorArgumentTypes;
+    inline operator bool()const{return constructorId!=nullptr;}
+    inline bool operator!()const{return constructorId==nullptr;}
+    QString toString(JNIEnv* env) const;
+};
+
+class SuperInitializer;
+class QtJambiMetaObject;
+
+class InPlaceInitializer{
+    const QtJambiMetaObject* m_metaObject;
+    void* m_placement;
+    QVector<ParameterTypeInfo> m_parameterTypeInfos;
+    QtJambiAPI::ConstructorFn m_constructorFunction;
+    QList<jclass> m_constructorArgumentFunctionTypes;
+    const bool m_matches;
+    QVector<jvalue> m_arguments;
+    bool m_is_qml_call;
+    QSharedPointer<bool> m_isInitialized;
+    InPlaceInitializer* m_parentInitializer = nullptr;
+    QList<SuperInitializer*> m_superInitializers;
+public:
+    InPlaceInitializer(const QtJambiMetaObject* metaObject, void* placement,
+                       const JConstructorInfo& constructorInfo,
+                       QVector<jvalue>&& arguments,
+                       bool is_qml_call = false);
+    InPlaceInitializer(const QtJambiMetaObject* metaObject, void* placement,
+                       QtJambiAPI::ConstructorFn constructorFunction,
+                       bool is_qml_call = false);
+protected:
+    InPlaceInitializer(InPlaceInitializer* parentInitializer,
+                       const QtJambiMetaObject* metaObject, void* placement,
+                       QVector<ParameterTypeInfo>&& parameterTypeInfos,
+                       QtJambiAPI::ConstructorFn constructorFunction,
+                       const QList<jclass>& constructorArgumentFunctionTypes,
+                       QVector<jvalue> arguments,
+                       bool is_qml_call,
+                       bool matches);
+    friend class SuperInitializer;
+public:
+    int parameterCount();
+    jobject argumentAt(JNIEnv *env, int index);
+    jclass parameterTypeAt(JNIEnv *env, int index);
+    SuperInitializer* asArguments(JNIEnv *env, std::initializer_list<int> indexes, bool requireJava = true);
+    void reset(JNIEnv *env);
+    InPlaceInitializer* topLevel();
+    friend class QtJambiShellImpl;
+};
+
+class SuperInitializer : public InPlaceInitializer{
+    JObjectWrapper m_javaInPlaceObject;
+public:
+    SuperInitializer(JNIEnv *env,
+                     InPlaceInitializer* parentInitializer,
+                     const QtJambiMetaObject* metaObject, void* placement,
+                     QVector<ParameterTypeInfo>&& parameterTypeInfos,
+                     QtJambiAPI::ConstructorFn constructorFunction,
+                     const QList<jclass>& constructorArgumentFunctionTypes,
+                     QVector<jvalue> arguments,
+                     bool is_qml_call,
+                     bool matches, bool requireJava);
+    jobject inPlaceObject(JNIEnv *env) const;
+};
+
 class QtJambiMetaObject final : public QMetaObject
 {
 public:
@@ -100,21 +175,10 @@ public:
     int writeProperty(JNIEnv *env, jobject object, QObject* qobject, int _id, void **_a, bool direct = false) const;
     int resetProperty(JNIEnv *env, jobject object, QObject* qobject, int _id, void **_a, bool direct = false) const;
     int notifyProperty(JNIEnv *env, jobject object, QObject* qobject, int _id, void **_a, bool direct = false) const;
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    int queryPropertyDesignable(JNIEnv *env, jobject object, QObject* qobject, int _id, void **_a, bool direct = false) const;
-    int queryPropertyScriptable(JNIEnv *env, jobject object, QObject* qobject, int _id, void **_a, bool direct = false) const;
-#else
     int bindableProperty(JNIEnv *env, jobject object, QObject* qobject, int _id, void **_a, bool direct = false) const;
-#endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 
-#if QT_VERSION >= 0x050000
     int invokeConstructor(JNIEnv *env, int _id, void **_a) const;
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    int queryPropertyUser(JNIEnv *env, jobject object, QObject* qobject, int _id, void **_a, bool direct = false) const;
-    int queryPropertyStored(JNIEnv *env, jobject object, QObject* qobject, int _id, void **_a, bool direct = false) const;
-    int queryPropertyEditable(JNIEnv *env, jobject object, QObject* qobject, int _id, void **_a, bool direct = false) const;
-#endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#endif
+    int invokeInPlaceConstructor(JNIEnv *env, int _id, void **_a) const;
     int originalSignalOrSlotSignature(JNIEnv *env, int _id, QString *signature) const;
     int revision() const;
 
@@ -122,10 +186,9 @@ public:
     QtJambiUtils::InternalToExternalConverter internalToExternalConverterOfProperty(int index) const;
     QtJambiUtils::ExternalToInternalConverter externalToInternalConverterOfProperty(int index) const;
     jclass javaClass() const;
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    const SuperTypeInfos& superTypeInfos() const;
     jfieldID getQPropertyField(int index) const;
     void registerQPropertyField(int index, jfieldID field);
-#endif
     bool hasSignals() const;
     const QSharedPointer<const QtJambiMetaObject>& thisPointer() const;
     static jclass javaClass(JNIEnv * env, const QMetaObject* metaObject, bool exactOrNull = false);

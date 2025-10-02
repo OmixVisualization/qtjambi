@@ -32,8 +32,6 @@ package io.qt.autotests;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
-import org.junit.Assume;
-
 import io.qt.QtUtilities;
 import io.qt.core.QPair;
 

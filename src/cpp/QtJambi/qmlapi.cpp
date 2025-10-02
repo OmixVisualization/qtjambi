@@ -39,4 +39,3 @@ int QmlAPI::getInterfaceOffset(JNIEnv *env, jclass cls, const std::type_info& in
     }
     return -1;
 }
-

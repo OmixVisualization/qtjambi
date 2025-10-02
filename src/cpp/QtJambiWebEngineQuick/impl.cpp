@@ -29,7 +29,9 @@
 
 #include <QtWebEngineQuick/private/qquickwebenginesettings_p.h>
 #include <QtWebEngineQuick/private/qquickwebenginescriptcollection_p.h>
+#if __has_include(<QtWebEngineQuick/private/qquickwebenginescriptcollection_p_p.h>)
 #include <QtWebEngineQuick/private/qquickwebenginescriptcollection_p_p.h>
+#endif
 #include <QtWebEngineCore/QWebEngineSettings>
 #include <QtWebEngineCore/QWebEngineScriptCollection>
 

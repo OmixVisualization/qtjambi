@@ -69,7 +69,7 @@ public class TestQuickTextureVulkanQt62 extends ApplicationInitializer {
 			QEventLoop loop = new QEventLoop();
 			boolean[] hasVulkanInstance = {false};
 			QSGTexture[] texture = {null};
-			TestQuickQt6.TestItem item = new TestQuickQt6.TestItem() {
+			TestQuick.TestItem item = new TestQuick.TestItem() {
 				@Override
 				protected QSGNode updatePaintNode(QSGNode arg__1, UpdatePaintNodeData arg__2) {
 					QPixmap pixmap = new QPixmap(100, 100);

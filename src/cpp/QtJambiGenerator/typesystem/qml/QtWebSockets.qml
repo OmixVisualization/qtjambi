@@ -107,6 +107,7 @@ TypeSystem{
             signature: "originAuthenticationRequired(QWebSocketCorsAuthenticator *)"
             ModifyArgument{
                 index: 1
+                invalidateAfterUse: true
                 NoNullPointer{
                 }
             }
@@ -115,6 +116,7 @@ TypeSystem{
             signature: "preSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator *)"
             ModifyArgument{
                 index: 1
+                invalidateAfterUse: true
                 NoNullPointer{
                 }
             }

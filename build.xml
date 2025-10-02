@@ -33,16 +33,6 @@
     <property file="build.properties"/>
     <property name="build.properties.loaded" value="true"/>
 
-    <!--
-        Import files containing tasks for the compilation.
-    -->
-
-    <import file="antfiles/generator.xml"/>
-    <import file="antfiles/native.xml"/>
-    <import file="antfiles/java.xml"/>
-    <import file="antfiles/clean.xml"/>
-    <import file="antfiles/autotests.xml" />
-
     <!-- These properties used to be at the top of build.properties
          but no one is expected to change them.
          -->
@@ -312,6 +302,72 @@ Further options:
         </java>
     </target>
 
+    <target name="java.build.qtjambi" unless="${skip-java-build}">
+        <ant antfile="${basedir}/src/java/modules/modules.xml" inheritrefs="true" target="build">
+            <property name="qtjambi-build" value="true"/>
+        </ant>
+        <antcall target="java.build.qtjambiplugins"/>
+    </target>
+    
+    <target name="java.build.qtjambiplugins">
+        <if>
+            <or>
+                <not>
+                    <isset property="qtjambi.build.module"/>
+                </not>
+                <equals arg1="${qtjambi.build.module}" arg2=""/>
+            </or>
+            <then>
+                <ant antfile="${basedir}/src/java/plugins/plugins.xml" inheritrefs="true" target="build">
+                    <property name="qtjambi.testbuild" value="false"/>
+                    <property name="qtjambi.plugin.bundle" value="false"/>
+                    <property name="qtjambi-build" value="true"/>
+                </ant>
+                <if>
+                    <istrue value="${qtjambi.qml.any.true}"/>
+                    <then>
+                        <ant antfile="${basedir}/src/java/qml/qml.xml" inheritrefs="true" target="build">
+                            <property name="qtjambi.testbuild" value="false"/>
+                            <property name="qtjambi.qml.bundle" value="false"/>
+                            <property name="qtjambi-build" value="true"/>
+                        </ant>
+                    </then>
+                </if>
+            </then>
+        </if>
+    </target>
+    
+    <target name="deploy-snapshot" depends="init.build" unless="${skip-java-build}">
+        <ant antfile="${basedir}/src/java/modules/modules.xml" inheritrefs="true" target="build">
+            <property name="qtjambi-deploy" value="true"/>
+            <property name="qtjambi-deploy-snapshot" value="true"/>
+        </ant>
+        <ant antfile="${basedir}/src/java/plugins/plugins.xml" inheritrefs="true" target="build">
+            <property name="qtjambi-deploy" value="true"/>
+            <property name="qtjambi-deploy-snapshot" value="true"/>
+        </ant>
+    </target>
+    
+    <target name="deploy-release" depends="init.build" unless="${skip-java-build}">
+        <ant antfile="${basedir}/src/java/modules/modules.xml" inheritrefs="true" target="build">
+            <property name="qtjambi-deploy" value="true"/>
+            <property name="qtjambi-deploy-snapshot" value="false"/>
+        </ant>
+        <ant antfile="${basedir}/src/java/plugins/plugins.xml" inheritrefs="true" target="build">
+            <property name="qtjambi-deploy" value="true"/>
+            <property name="qtjambi-deploy-snapshot" value="false"/>
+        </ant>
+    </target>
+    
+    <target name="deploy-bundle" depends="init.build" unless="${skip-java-build}">
+        <ant antfile="${basedir}/src/java/modules/modules.xml" inheritrefs="true" target="build">
+            <property name="qtjambi-deploy-bundle" value="true"/>
+        </ant>
+        <ant antfile="${basedir}/src/java/plugins/plugins.xml" inheritrefs="true" target="build">
+            <property name="qtjambi-deploy-bundle" value="true"/>
+        </ant>
+    </target>
+
     <!--
         Root targets
 
@@ -319,16 +375,25 @@ Further options:
         provides consistent and easy to use interface for humans to use.
     -->
     
-    <target name="targetproxy">
-        <antcall inheritAll="false" target="${proxy.target}"/>
-    </target>
-
     <target name="javadocs" depends="log, init.taskdef" description="Generates the Java Doc pages for QtJambi">
         <foreach-version targets="javadocs-impl"/>
     </target>
     
     <target name="single.javadocs" depends="log, init.taskdef" description="Generates the Java Doc pages for QtJambi">
         <foreach-version targets="single.javadocs-impl"/>
+    </target>
+    <target name="single.javadocs-impl" depends="init.build,single.javadocs-impl2" unless="${skip-java-build}">
+    </target>
+    <target name="single.javadocs-impl2" unless="${skip-java-build}">
+        <ant antfile="${basedir}/src/java/modules/modules.xml" inheritAll="true" target="build">
+            <property name="qtjambi-javadoc" value="true"/>
+        </ant>
+    </target>
+    <target name="javadocs-impl" depends="init.build,javadocs-impl2" unless="${skip-java-build}">
+    </target>
+    <target name="javadocs-impl2" depends="init.build" unless="${skip-java-build}">
+        <ant antfile="${basedir}/src/java/modules/modules.xml" inheritAll="true" target="javadocs-all">
+        </ant>
     </target>
     
     <target name="generator.make" depends="log, init.taskdef"
@@ -352,58 +417,141 @@ Further options:
     <target name="generator.run-impl" depends="init.build, tools.generator.run">
         <antcall target="finished"/>
     </target>
+	
+	<target name="tools.generator.run" unless="${skip-generate}">
+        <mkdir dir="${generator.outputdir}"/>
+		<!--options="- - debug-level=full"-->
+		<if>
+			<istrue value="${generate.legacy.modules}"/>
+			<then>
+				<generator dir="${generator.builddir}/../bin"
+						importdirectories="${basedir}/src/cpp/QtJambiGenerator"
+						outputDirectory="${generator.outputdir}"
+						generatorDirectory="${generator.builddir}/../bin"
+						nullness="${qtjambi.generate.nullness}"
+						kotlinpropertydelegates="${qtjambi.generate.kotlin.delegates}"
+						qtdocdirectory="${qtjambi.qt.docdir}"
+						qtlibdirectory="${generator.builddir}/../lib${psep}${tools.qt.libdir}"
+						qtbindirectory="${generator.builddir}/../bin${psep}${tools.qt.bindir}"
+						includeDirectories="${qtjambi.qt.includedir};${basedir}/src/cpp/QtJambiGenerator/targets;${generator.includepaths};${generator.extra.includes}"
+						legacy="true"
+					/>
+			</then>
+		</if>
+        <generator dir="${generator.builddir}/../bin"
+                importdirectories="${basedir}/src/cpp/QtJambiGenerator"
+                outputDirectory="${generator.outputdir}"
+                generatorDirectory="${generator.builddir}/../bin"
+                nullness="${qtjambi.generate.nullness}"
+                kotlinpropertydelegates="${qtjambi.generate.kotlin.delegates}"
+                qtdocdirectory="${qtjambi.qt.docdir}"
+                qtlibdirectory="${generator.builddir}/../lib${psep}${tools.qt.libdir}"
+                qtbindirectory="${generator.builddir}/../bin${psep}${tools.qt.bindir}"
+                includeDirectories="${qtjambi.qt.includedir};${basedir}/src/cpp/QtJambiGenerator/targets;${generator.includepaths};${generator.extra.includes}"
+			/>
+    </target>
+	
+    <!-- NOTES includepaths: For Linux the following paths _APPENDED_ to the
+         minimum:
+             ${basedir}/generator/targets:${basedir}/src/cpp:${java.home.target}/include:${java.home.target}/include/${java.osarch.target}
+         above made quiet the WARNINGs:
+             /usr/include:/usr/include/c++/4.4.4:/usr/include/c++/4.4.4/x86_64-redhat-linux:/usr/lib/gcc/x86_64-redhat-linux/4.4.4/include
+         Only the cross platform settings are included in generator element
+         above since QtJambi does not appear to need full header file
+         qualification.
+          jdoc-enabled
+      -->
+
+    <target name="tools.generator.qmake" unless="${skip-generate}" depends="init.build">
+        <mkdir dir="${generator.builddir}"/>
+        <delete quiet="true">
+            <fileset dir="${generator.builddir}">
+                <include name="Makefile*"/>
+            </fileset>
+        </delete>
+        <qmake dir="${generator.builddir}" pro="${basedir}/src/cpp/QtJambiGenerator/QtJambiGenerator.pro"
+                config="${qtjambi.configuration}"
+                tools="true"/>
+    </target>
+
+    <target name="tools.generator.make" unless="${skip-generate}" depends="tools.generator.qmake">
+        <make dir="${generator.builddir}" tools="true"/>
+    </target>
 
     <target name="library.native" depends="log, init.taskdef"
         description="Compiles and bundles the Qt Jambi native libraries.">
         <foreach-version targets="library.native-impl"/>
     </target>
-    <target name="library.native-impl" depends="library.native.qmake-impl, library.native.make-impl, library.native.bundle-impl"/>
+    <target name="library.native-impl" depends="init.build">
+		<ant antfile="${basedir}/src/cpp/build.xml" inheritrefs="true" target="library.native-impl"/>
+    </target>
     
     <target name="library.native.qmake" depends="log, init.taskdef" description="Runs qmake on the Qt Jambi native library">
         <foreach-version targets="library.native.qmake-impl"/>
+    </target>
+	<target name="library.native.qmake-impl" depends="init.build">
+		<ant antfile="${basedir}/src/cpp/build.xml" inheritAll="true" target="library.native.qmake-impl"/>
     </target>
     
     <target name="library.native.make" depends="log, init.taskdef" description="Runs make on the Qt Jambi native library">
         <foreach-version targets="library.native.make-impl"/>
     </target>
+	<target name="library.native.make-impl" depends="init.build">
+		<ant antfile="${basedir}/src/cpp/build.xml" inheritAll="true" target="library.native.make-impl"/>
+    </target>
     
     <target name="library.native.compile" depends="log, init.taskdef">
         <foreach-version targets="library.native.compile-impl"/>
+    </target>
+	<target name="library.native.compile-impl" depends="init.build">
+		<ant antfile="${basedir}/src/cpp/build.xml" inheritAll="true" target="library.native.compile-impl"/>
     </target>
 	
     <target name="library.native.makebundle" depends="log, init.taskdef">
         <foreach-version targets="library.native.makebundle-impl"/>
     </target>
+	<target name="library.native.makebundle-impl" depends="init.build">
+		<ant antfile="${basedir}/src/cpp/build.xml" inheritAll="true" target="library.native.makebundle-impl"/>
+    </target>
     
     <target name="library.native.bundle" depends="log, init.taskdef">
         <foreach-version targets="library.native.bundle-impl"/>
+    </target>
+	<target name="library.native.bundle-impl" depends="init.build">
+		<ant antfile="${basedir}/src/cpp/build.xml" inheritAll="true" target="library.native.bundle-impl"/>
     </target>
 
     <target name="library.native.bundle.plugins" depends="log, init.taskdef">
         <foreach-version targets="library.native.bundle.plugins-impl"/>
     </target>
+	<target name="library.native.bundle.plugins-impl" depends="init.build">
+		<ant antfile="${basedir}/src/cpp/build.xml" inheritAll="true" target="library.native.bundle.plugins-impl"/>
+    </target>
 	
     <target name="bundle.qtlib" depends="log, init.taskdef">
         <foreach-version targets="bundle.qtlib-impl"/>
+    </target>
+	<target name="bundle.qtlib-impl" depends="init.build">
+		<ant antfile="${basedir}/src/cpp/build.xml" inheritAll="true" target="bundle.qtlib-impl"/>
     </target>
 
     <target name="library.java" depends="log, init.taskdef"
         description="Compiles and bundles the Qt Jambi java libraries.">
         <foreach-version targets="library.java-impl"/>
     </target>
-    <target name="library.java-impl" depends="init.build, javac.excludes, java.build.qtjambi"/>
+    <target name="library.java-impl" depends="init.build, java.build.qtjambi"/>
 
     <target name="plugins.java" depends="log, init.taskdef"
         description="Compiles the Qt Jambi plugins.">
         <foreach-version targets="plugins.java-impl"/>
     </target>
-    <target name="plugins.java-impl" depends="init.build, javac.excludes, java.build.qtjambiplugins"/>
+    <target name="plugins.java-impl" depends="init.build, java.build.qtjambiplugins"/>
     
     <target name="plugins" depends="log, init.taskdef"
         description="Compiles and bundles the Qt Jambi plugins.">
         <foreach-version targets="plugins-impl"/>
     </target>
-    <target name="plugins-impl" depends="init.build, javac.excludes, java.build.qtjambiplugins, library.native.bundle.plugins-impl"/>
+    <target name="plugins-impl" depends="init.build, java.build.qtjambiplugins, library.native.bundle.plugins-impl"/>
 
     <target name="library" depends="log, init.taskdef"
         description="Compiles and bundles the Qt Jambi libraries.">
@@ -421,75 +569,136 @@ Further options:
         description="Cleans everything">
         <foreach-version targets="clean-impl"/>
     </target>
-    
-    <target name="tests.clean" depends="log, init.taskdef"
-        description="Cleans built test files">
-        <foreach-version targets="tests.clean-impl"/>
+
+    <available file="${qtjambi.builddir}/Makefile"   type="file" property="global.makefile.present"/>
+    <available file="${generator.builddir}/Makefile" type="file" property="generator.makefile.present"/>
+
+    <target name="make.clean.global.make" if="global.makefile.present"
+        depends="init">
+        <make dir="${qtjambi.builddir}" target="mocclean" failonerror="false"/>
+        <make dir="${qtjambi.builddir}" target="distclean"/>
     </target>
 
-    <target name="tests.generate" depends="log, init.taskdef"
+    <target name="make.clean.global" depends="init, make.clean.global.make">
+        <delete dir="${qtjambi.builddir}" quiet="true"/>
+    </target>
+
+    <target name="make.clean.generator.make" if="generator.makefile.present"
+        depends="init">
+        <make dir="${generator.builddir}" target="mocclean" failonerror="false"/>
+        <make dir="${generator.builddir}" target="distclean"/>
+    </target>
+
+    <target name="make.clean.generator" depends="init, make.clean.generator.make">
+        <delete dir="${generator.builddir}" quiet="true"/>
+    </target>
+
+    <target name="clean-impl" description="Cleans everything"
+        depends="make.clean.global, make.clean.generator">
+        <delete dir="${java.outdir}" quiet="true"/>
+        <delete dir="${deploymentdir}" quiet="true"/>
+        <delete dir="${generator.outputdir}" quiet="true"/>
+        <delete quiet="true">
+            <fileset dir=".">
+                <include name="plugins/**/*"/>
+                <exclude name="plugins/qtjambi/**/*"/>
+                <include name="*.jar"/>
+            </fileset>
+        </delete>
+        <delete dir="${basedir}/build" quiet="true"/>
+    </target>
+
+    <target name="library.native.clean" description="Cleans all native binaries for recompilation">
+        <delete dir="${qtjambi.builddir}" quiet="true" failonerror="false"/>
+    </target>
+
+    <target name="realclean-impl"
+        depends="clean-impl">
+        <delete dir="${deploymentdir}" quiet="true"/>
+    </target>
+
+    <target name="distclean-impl"
+        depends="realclean-impl">
+        <delete dir="${basedir}/${resourcesdir}" quiet="true"/><!-- Try not to download this too much -->
+        <delete dir="${basedir}/buildlogs" quiet="true"/>
+    </target>
+    
+    <target name="tests.import" depends="log, init.taskdef">
+    </target>
+	<import file="${basedir}/src/java/autotests/build.xml"/>
+	
+    <target name="tests.clean" depends="tests.import"
+        description="Cleans built test files">
+		<foreach-version targets="tests.clean-impl"/>
+    </target>
+
+    <target name="tests.generate" depends="tests.import"
          description="Generates and builds all tests">
         <foreach-version targets="tests.generate-impl"/>
     </target>
 
-    <target name="tests.compile" depends="log, init.taskdef"
+    <target name="tests.compile" depends="tests.import"
           description="Builds all tests without recalling generator">
         <foreach-version targets="tests.compile-impl"/>
     </target>
 
-    <target name="tests.compile.native" depends="log, init.taskdef"
+    <target name="tests.compile.native" depends="tests.import"
           description="Builds native test components">
         <foreach-version targets="tests.compile.native-impl"/>
     </target>
 
-    <target name="tests.compile.java" depends="log, init.taskdef"
+    <target name="tests.compile.java" depends="tests.import"
           description="Builds java test components">
         <foreach-version targets="tests.compile.java-impl"/>
     </target>
 
-    <target name="tests.compile.plugins" depends="log, init.taskdef"
+    <target name="tests.compile.plugins" depends="tests.import"
           description="Builds plugins test components">
         <foreach-version targets="tests.compile.plugins-impl"/>
     </target>
 
-    <target name="tests.run" depends="log, init.taskdef"
+    <target name="tests.run" depends="tests.import"
            description="Runs tests and generates report in TestReport subdir">
         <foreach-version targets="tests.run-impl"/>
     </target>
 	
-    <target name="tests.run.all" depends="log, init.taskdef"
+    <target name="tests.run.all" depends="tests.import"
             description="Runs tests and generates report in TestReport subdir">
         <foreach-version targets="tests.run.all-impl"/>
     </target>
 
-    <target name="tests.release.run" depends="log, init.taskdef"
+    <target name="tests.release.run" depends="tests.import"
             description="Runs tests and generates report in TestReport subdir">
         <foreach-version targets="tests.release.run-impl"/>
     </target>
 
-    <target name="tests.debug.run" depends="log, init.taskdef"
+    <target name="tests.debug.run" depends="tests.import"
             description="Runs tests and generates report in TestReport subdir">
         <foreach-version targets="tests.debug.run-impl"/>
     </target>
 
-    <target name="tests.release.run8" depends="log, init.taskdef"
+    <target name="tests.release.run8" depends="tests.import"
             description="Runs tests and generates report in TestReport subdir">
         <foreach-version targets="tests.release.run8-impl"/>
     </target>
 
-    <target name="tests.debug.run8" depends="log, init.taskdef"
+    <target name="tests.debug.run8" depends="tests.import"
             description="Runs tests and generates report in TestReport subdir">
         <foreach-version targets="tests.debug.run8-impl"/>
     </target>
     
-    <target name="tests.release.run.all" depends="log, init.taskdef"
+    <target name="tests.release.run.all" depends="tests.import"
             description="Runs tests and generates report in TestReport subdir">
         <foreach-version targets="tests.release.run.all-impl"/>
     </target>
     
-    <target name="tests.debug.run.all" depends="log, init.taskdef"
+    <target name="tests.debug.run.all" depends="tests.import"
             description="Runs tests and generates report in TestReport subdir">
         <foreach-version targets="tests.debug.run.all-impl"/>
+    </target>
+    <target name="tests.report" depends="tests.import"
+            description="Generates all test reports">
+        <antcall target="tests.report.impl"/>
     </target>
 
     <target name="deploy.snapshot" depends="log, init.taskdef"

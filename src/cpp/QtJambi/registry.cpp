@@ -2539,7 +2539,7 @@ FunctionalResolver registeredFunctionalResolver(const std::type_info& typeId){
 
 static QmlAPI::QmlReportDestruction qmlReportDestructionFunction = nullptr;
 
-static QmlAPI::QmlIsJavaScriptOwnership qmlIsJavaScriptOwnership = nullptr;
+static QmlAPI::GetQmlOwnership fnGetQmlOwnership = nullptr;
 
 void QtJambiAPI::DeclarativeUtil::reportDestruction(QObject * obj){
     if(qmlReportDestructionFunction)
@@ -2551,13 +2551,17 @@ void QmlAPI::setQmlReportDestruction(QmlReportDestruction fct){
         qmlReportDestructionFunction = fct;
 }
 
-void QmlAPI::setQmlIsJavaScriptOwnership(QmlIsJavaScriptOwnership fct){
-    if(!qmlIsJavaScriptOwnership)
-        qmlIsJavaScriptOwnership = fct;
+void QmlAPI::setGetQmlOwnership(GetQmlOwnership fct){
+    if(!fnGetQmlOwnership)
+        fnGetQmlOwnership = fct;
 }
 
 bool isQmlJavaScriptOwnership(QObject * obj){
-    return qmlIsJavaScriptOwnership && qmlIsJavaScriptOwnership(obj);
+    return fnGetQmlOwnership && fnGetQmlOwnership(obj).testFlag(QmlAPI::JavaScriptOwnership);
+}
+
+bool isQmlExplicitCppOwnership(QObject * obj){
+    return fnGetQmlOwnership && fnGetQmlOwnership(obj)==(QmlAPI::CppOwnership | QmlAPI::ExplicitSet);
 }
 
 void RegistryAPI::registerMediaControlInfo(const std::type_info& typeId, const char *media_control_iid){
@@ -2717,9 +2721,9 @@ QMetaType getNativeWrapperType(const QMetaType& metaType){
                 if(original->metaObjectFn)
                     originalMetaObject = original->metaObjectFn(original);
 #if QT_VERSION < QT_VERSION_CHECK(6, 9, 0)
-                uint flags = QtPrivate::QMetaTypeTypeFlags<JQObjectWrapper>::Flags;
+                uint flags = QtPrivate::QMetaTypeTypeFlags<JObjectWrapper>::Flags;
 #else
-                uint flags = QtPrivate::QMetaTypeForType<JQObjectWrapper>::flags();
+                uint flags = QtPrivate::QMetaTypeForType<JObjectWrapper>::flags();
 #endif
                 if(originalMetaObject)
                     flags |= QMetaType::IsGadget;
@@ -3295,7 +3299,7 @@ jclass JavaAPI::resolveClass(JNIEnv *env, const char *className, jobject classLo
 
     if (returned == nullptr) {
 #endif // QTJAMBI_NOCACHE
-        if(className && !QString(QLatin1String(className)).contains("$Lambda$") && !QLatin1String(className).isEmpty()){
+        if(className && !QByteArrayView(className).contains("$Lambda$") && !QByteArrayView(className).contains("$$Lambda/") && !QLatin1String(className).isEmpty()){
             returned = findClass(env, className, classLoader);
             JavaException::check(env QTJAMBI_STACKTRACEINFO );
             returned = getGlobalClassRef(env, returned, className);

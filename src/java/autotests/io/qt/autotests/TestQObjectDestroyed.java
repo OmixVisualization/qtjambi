@@ -31,6 +31,12 @@ package io.qt.autotests;
 
 import static org.junit.Assert.*;
 
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
@@ -212,7 +218,77 @@ public class TestQObjectDestroyed extends ApplicationInitializer {
     	object.dispose();
     	object.setObjectName("test");
     }
-
+    
+    interface DestroyedInterface{
+    	void destruct(QObject destroyedObject);
+    }
+    
+    interface Marker1{}
+    interface Marker2{}
+    
+    static abstract class TestObject<T> extends QObject implements DestroyedInterface{
+		static final Set<Class<?>> lambdaClasses = new HashSet<>();
+		static int counter = 0;
+    	public void destruct(QObject destroyedObject) {
+    		if(destroyedObject instanceof TestObject)
+    			++counter;
+    	}
+    	TestObject() {
+    		if(this instanceof Marker1) {
+    			QMetaObject.Slot2<TestObject<T>, QObject> slot = this instanceof Marker2 ? (o,d)->{o.destruct(d);} : TestObject::destruct;
+				lambdaClasses.add(General.internalAccess.getClass(slot));
+				this.destroyed.connect(this, slot);
+    		}else {
+        		QMetaObject.Slot1<QObject> slot = this instanceof Marker2 ? destroyedObject->{destruct(destroyedObject);} : this::destruct;
+				lambdaClasses.add(General.internalAccess.getClass(slot));
+				this.destroyed.connect(slot);
+    		}
+    	}
+    }
+    
+    static class TestObject1 extends TestObject<Integer>{
+    }
+    
+    static class TestObject2 extends TestObject<Double> implements Marker1{
+    }
+    
+    static class TestObject3 extends TestObject<String> implements Marker2{
+    }
+    
+    static class TestObject4 extends TestObject<Float> implements Marker1, Marker2{
+    }
+    
+    static class TestObject5 extends TestObject<Boolean>{
+    }
+    
+	static void analyzeLambdas() {
+		for (int i = 0; i < 100; i++) {
+        	TestObject<?> object;
+        	switch(i%5) {
+        	case 1:  object = new TestObject1(); break;
+        	case 2:  object = new TestObject2(); break;
+        	case 3:  object = new TestObject3(); break;
+        	case 4:  object = new TestObject4(); break;
+        	default: object = new TestObject5(); break;
+        	}
+        	object.dispose();
+        	if(i%50==0)
+        		System.gc();
+		}
+	}
+    
+    @Test
+    public void testDestroyedSelfConnect() {
+    	URLClassLoader cl = new URLClassLoader(new URL[0]);
+    	QThread t = QThread.create(TestQObjectDestroyed::analyzeLambdas);
+    	t.setContextClassLoader(cl);
+    	t.start();
+    	t.join();
+    	analyzeLambdas();
+    	assertEquals(4, TestObject.lambdaClasses.size());
+    	assertEquals(200, TestObject.counter);
+    }
+    
     public static void main(String args[]) {
         org.junit.runner.JUnitCore.main(TestQObjectDestroyed.class.getName());
     }

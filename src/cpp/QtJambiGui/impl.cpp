@@ -96,7 +96,6 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/widgets,QApplication,
 }
 
 #if defined(Q_OS_MACOS)
-
 class MacOSUtilsPlugin final : public QGenericPlugin{
 public:
     MacOSUtilsPlugin();
@@ -109,62 +108,79 @@ MacOSUtilsPlugin::MacOSUtilsPlugin()
     moveToThread(nullptr);
 }
 
-QObject* MacOSUtilsPlugin::create(const QString& key, const QString &spec){
+QObject* MacOSUtilsPlugin::create(const QString& key, const QString &){
     if (!key.compare(QLatin1String("NSWindowUtils"), Qt::CaseInsensitive))
         return new NSWindowUtils();
     return nullptr;
 }
 
-void installMacOSUtils(){
-    static MacOSUtilsPlugin instance;
-    QtPluginInstanceFunction i = []() -> QObject* {
-        return &instance;
-    };
-    static QByteArray metaData = []()->QByteArray{
-        QByteArray result;
+class MacOSUtilsPluginData{
+    QPointer<MacOSUtilsPlugin> pointer;
+    const QByteArray metaData;
+
+    MacOSUtilsPluginData()
+      : pointer(new MacOSUtilsPlugin),
+        metaData(
+              []()->QByteArray{
+                  QByteArray result;
 #ifndef QT_MOC_EXPORT_PLUGIN_V2
-        result += 'Q';
-        result += 'T';
-        result += 'M';
-        result += 'E';
-        result += 'T';
-        result += 'A';
-        result += 'D';
-        result += 'A';
-        result += 'T';
-        result += 'A';
-        result += ' ';
-        result += '!';
+                  result += 'Q';
+                  result += 'T';
+                  result += 'M';
+                  result += 'E';
+                  result += 'T';
+                  result += 'A';
+                  result += 'D';
+                  result += 'A';
+                  result += 'T';
+                  result += 'A';
+                  result += ' ';
+                  result += '!';
 #endif
-        result += char(0);
-        result += char(QT_VERSION_MAJOR);
-        result += char(QT_VERSION_MINOR);
-        result += char(qPluginArchRequirements()
+                  result += char(0);
+                  result += char(QT_VERSION_MAJOR);
+                  result += char(QT_VERSION_MINOR);
+                  result += char(qPluginArchRequirements()
 #ifdef QTJAMBI_NO_DEBUG_PLUGINS
-                       & ~1
+                                 & ~1
 #endif
-                       );
-        QCborMap cborValue;
-        cborValue.insert(qint64(QtPluginMetaDataKeys::IID), QGenericPluginFactoryInterface_iid);
-        QJsonObject json;
-        json["Keys"] = QJsonArray({"NSWindowUtils"});
-        cborValue.insert(qint64(QtPluginMetaDataKeys::MetaData), QCborMap::fromJsonObject(json));
-        result += cborValue.toCborValue().toCbor();
-        return result;
-    }();
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    QtPluginMetaDataFunction m = []()->const char *{
-        return metaData.constData();
-    };
-#else
-    QtPluginMetaDataFunction m = []()->QPluginMetaData{
-        return {reinterpret_cast<decltype(std::declval<QPluginMetaData>().data)>(metaData.constData()), size_t(metaData.size())};
-    };
-#endif
-    QStaticPlugin sp{i, m};
-    sp.metaData();
-    qRegisterStaticPluginFunction(sp);
-}
+                                 );
+                  QCborMap cborValue;
+                  cborValue.insert(qint64(QtPluginMetaDataKeys::IID), QGenericPluginFactoryInterface_iid);
+                  QJsonObject json;
+                  json["Keys"] = QJsonArray({"NSWindowUtils"});
+                  cborValue.insert(qint64(QtPluginMetaDataKeys::MetaData), QCborMap::fromJsonObject(json));
+                  result += cborValue.toCborValue().toCbor();
+                  return result;
+              }()
+            ){}
+    ~MacOSUtilsPluginData(){
+        if(pointer)
+            delete pointer.get();
+    }
+
+    MacOSUtilsPlugin* macOSUtils(){
+        if(!pointer)
+            pointer = new MacOSUtilsPlugin();
+        return pointer.get();
+    }
+
+    static MacOSUtilsPluginData instance;
+    static QObject* pluginInstance(){
+        return instance.macOSUtils();
+    }
+    static QPluginMetaData pluginMetaData(){
+        return {reinterpret_cast<decltype(std::declval<QPluginMetaData>().data)>(instance.metaData.constData()), size_t(instance.metaData.size())};
+    }
+public:
+    static void install(){
+        QStaticPlugin sp{MacOSUtilsPluginData::pluginInstance, MacOSUtilsPluginData::pluginMetaData};
+        sp.metaData();
+        qRegisterStaticPluginFunction(sp);
+    }
+};
+
+MacOSUtilsPluginData MacOSUtilsPluginData::instance;
 #endif
 
 void initialize_meta_info_gui(){
@@ -177,7 +193,7 @@ void initialize_meta_info_gui(){
                       });
     GuiAPI::installThreadedPixmapsChecker([]()->bool{ return QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ThreadedPixmaps); });
 #if defined(Q_OS_MACOS)
-    installMacOSUtils();
+    MacOSUtilsPluginData::install();
 #endif
 }
 

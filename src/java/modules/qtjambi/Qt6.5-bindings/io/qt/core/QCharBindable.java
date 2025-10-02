@@ -47,7 +47,7 @@ public final class QCharBindable extends QUntypedBindable {
 	 * Creates a new <code>char</code>-typed invalid bindable.
 	 */
 	public QCharBindable() {
-		super(null, null);
+		this((QUntypedPropertyData)null, (QBindableInterface)null);
 	}
 	
 	/**

@@ -1186,6 +1186,24 @@ void shutdown(JNIEnv * env, bool regular)
 
 #ifdef Q_OS_ANDROID
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
+extern "C" JNIEXPORT bool JNICALL
+Java_org_qtproject_qt_android_QtNativeAccessibility_accessibilitySupported(JNIEnv *env, jobject obj)
+{
+    QLibrary library("libplugins_platforms_qtforandroid");
+    if(library.load()){
+        typedef bool (*Fn)(JNIEnv *, jobject);
+        Fn accessibilitySupported = Fn(library.resolve("Java_org_qtproject_qt_android_QtNativeAccessibility_accessibilitySupported"));
+        if(accessibilitySupported){
+            return accessibilitySupported(env,obj);
+        }
+    }else{
+        qWarning() << library.errorString();
+    }
+    return false;
+}
+#endif
+
 int main(int argc, char *argv[])
 {
     if(JniEnvironment env{1024}){

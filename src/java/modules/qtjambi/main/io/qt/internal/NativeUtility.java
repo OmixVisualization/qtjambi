@@ -766,12 +766,12 @@ public abstract class NativeUtility {
 		return key->new ArrayList<>();
 	}
 
-	protected static void initializeNativeObject(Class<?> declaringClass, QtObjectInterface object, Map<Class<?>, List<Map.Entry<Class<?>,java.lang.Object>>> arguments) throws IllegalArgumentException {
+	protected static void initializeNativeObject(Class<?> declaringClass, QtObjectInterface object, Map<Class<?>, List<Map.Entry<java.lang.Object,java.lang.Object>>> arguments) throws IllegalArgumentException {
 		initializeNativeObject(declaringClass, object, NativeUtility.findInterfaceLink(object, true, false), arguments);
 	}
 
-	private native static void initializeNativeObject(Class<?> callingClass, QtObjectInterface object, NativeLink link, Map<Class<?>, List<Map.Entry<Class<?>,java.lang.Object>>> arguments) throws IllegalArgumentException;
-
+	private native static void initializeNativeObject(Class<?> callingClass, QtObjectInterface object, NativeLink link, Map<Class<?>, List<Map.Entry<java.lang.Object,java.lang.Object>>> arguments) throws IllegalArgumentException;
+	
 	static void initializeNativeObject(QtObjectInterface object, NativeLink link) throws IllegalArgumentException {
 		Class<?> cls = AccessUtility.instance.getClass(object);
 		QtUtilities.initializePackage(cls);

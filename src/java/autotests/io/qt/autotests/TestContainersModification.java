@@ -35,7 +35,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.core.QList;
-import io.qt.core.QStringList;
 
 public class TestContainersModification extends ApplicationInitializer{
 	@BeforeClass

@@ -855,17 +855,23 @@ final class LibraryUtility {
 				    		String jarFileURL = classURL.substring(4, index);
 				    		try {
 								jarFile = new File(CoreUtility.createURL(jarFileURL).toURI());
-							} catch (URISyntaxException | MalformedURLException e) {
+							} catch (Exception e) {
+								try{
+									jarFileURL = jarFileURL.substring(5);
+									jarFile = new File(jarFileURL);
+								} catch (Throwable e2) {
+								}
 							}
-				    	}else {
-				    		try {
+				    	}
+				    	if(jarFile==null || !jarFile.exists()) {
+			    			try {
 								URLConnection connection = _classURL.openConnection();
 								if(connection instanceof JarURLConnection) {
 									jarFile = new File(((JarURLConnection) connection).getJarFile().getName());
 								}
 							} catch (Throwable e) {
 							}
-				    	}
+			    		}
 				    	if(jarFile!=null && jarFile.exists()) {
 			    			_jambiJarDir = jarFile.getParentFile();
 			    			try {
@@ -2033,9 +2039,11 @@ final class LibraryUtility {
 		    		String jarFileURL = classURL.substring(4, index);
 		    		try {
 						jarFile = new File(CoreUtility.createURL(jarFileURL).toURI());
-					} catch (URISyntaxException | MalformedURLException e) {
+					} catch (Exception e) {
+						jarFile = new File(jarFileURL.substring(5));
 					}
-		    	}else {
+		    	}
+		    	if(jarFile==null || !jarFile.exists()) {
 		    		try {
 						URLConnection connection = _classURL.openConnection();
 						if(connection instanceof JarURLConnection) {
@@ -2278,9 +2286,11 @@ final class LibraryUtility {
 			    		String jarFileURL = classURL.substring(4, index);
 			    		try {
 							jarFile = new File(CoreUtility.createURL(jarFileURL).toURI());
-						} catch (URISyntaxException | MalformedURLException e) {
+						} catch (Exception e) {
+							jarFile = new File(jarFileURL.substring(5));
 						}
-			    	}else {
+			    	}
+			    	if(jarFile==null || !jarFile.exists()) {
 			    		try {
 							URLConnection connection = _classURL.openConnection();
 							if(connection instanceof JarURLConnection) {

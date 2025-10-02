@@ -44,7 +44,7 @@ public final class QIntBindable extends QUntypedBindable {
 	 * Creates a new <code>int</code>-typed invalid bindable.
 	 */
 	public QIntBindable() {
-		super(null, null);
+		this((QUntypedPropertyData)null, (QBindableInterface)null);
 	}
 	
 	/**

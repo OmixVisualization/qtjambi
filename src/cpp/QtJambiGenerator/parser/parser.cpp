@@ -855,6 +855,10 @@ bool Parser::parseUsing(DeclarationAST *&node) {
             }else{
                 if (token_stream.lookAhead() == ')'){
                     token_stream.nextToken();
+                    {
+                        const ListNode<std::size_t> *cv = nullptr;
+                        parseCvQualify(cv);
+                    }
                     if (token_stream.lookAhead() == Token_noexcept){
                         token_stream.nextToken();
                         if (token_stream.lookAhead() == '('){
@@ -1380,6 +1384,9 @@ bool Parser::parseTemplateArgument(TemplateArgumentAST *&node) {
 
         if (!parseConditionalExpression(expr, true))
             return false;
+        if(token_stream.lookAhead()==Token_ellipsis){
+            token_stream.nextToken();
+        }
     }
 
     TemplateArgumentAST *ast = CreateNode<TemplateArgumentAST>(_M_pool);
@@ -2258,6 +2265,9 @@ bool Parser::parseForwardDeclarationSpecifier(TypeSpecifierAST *&node) {
             class_key = token_stream.cursor();
             token_stream.nextToken();
         }
+    }else{
+        class_key = token_stream.cursor();
+        token_stream.nextToken();
     }
 
     const ListNode<std::size_t> *storageSpec = nullptr;
@@ -3699,6 +3709,24 @@ bool Parser::parseBlockDeclaration(DeclarationAST *&node) {
     }
 
     std::size_t start = token_stream.cursor();
+
+    if (token_stream.lookAhead() == Token_alignas) {
+        token_stream.nextToken();
+        ADVANCE('(', "(")
+        ExpressionAST *alignmentExpression(nullptr);
+        if(!parseExpression(alignmentExpression)){
+            TypeSpecifierAST *node(nullptr);
+            if(!parseTypeSpecifierOrClassSpec(node)){
+                token_stream.rewind(start);
+                return false;
+            }
+            PtrOperatorAST *ptrOp = nullptr;
+            while (parsePtrOperator(ptrOp)) {
+                //ast->ptr_ops = snoc(ast->ptr_ops, ptrOp, _M_pool);
+            }
+        }
+        ADVANCE(')', ")")
+    }
 
     const ListNode<std::size_t> *cv = nullptr;
     parseCvQualify(cv);

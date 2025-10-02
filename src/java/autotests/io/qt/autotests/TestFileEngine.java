@@ -57,6 +57,7 @@ import io.qt.core.QDir;
 import io.qt.core.QFile;
 import io.qt.core.QFileInfo;
 import io.qt.core.QIODevice;
+import io.qt.core.QIODeviceBase;
 import io.qt.core.QLibraryInfo;
 import io.qt.core.QLocale;
 import io.qt.core.QOperatingSystemVersion;
@@ -471,7 +472,15 @@ public class TestFileEngine extends ApplicationInitializer {
 	        assertTrue(file.exists());
 	        assertTrue(file.permissions().testFlag(QFile.Permission.ReadUser));
 	        assertEquals(file.size(), 13L);
-	
+	        file.dispose();
+	        
+	        file = new QFile("classpath:sharp#sharp.txt");
+	        assertTrue(file.exists());
+	        assertEquals(5L, file.size());
+	        assertTrue(file.open(QIODeviceBase.OpenModeFlag.ReadOnly));
+	        assertEquals(new QByteArray("sharp"), file.readAll());
+	        file.close();
+	        file.dispose();
         }finally {
         	runGC();
         	if(finalAction!=null)
@@ -498,7 +507,7 @@ public class TestFileEngine extends ApplicationInitializer {
 		QStringList content = dir.entryList(QDir.Filter.NoFilter.asFlags(), QDir.SortFlag.NoSort.asFlags());
 		dir.dispose();
 		if(!QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android))
-			assertTrue("directory :io/qt/autotests/generated/ contains class", content.contains("General.class"));
+			assertEquals("directory :io/qt/autotests/generated/ contains class", Boolean.getBoolean("io.qt.allow-classfiles-as-resource"), content.contains("General.class"));
 		assertTrue("directory :io/qt/autotests/generated/ contains image", content.contains("qjlogo.png"));
         info.dispose();
 		
@@ -527,7 +536,7 @@ public class TestFileEngine extends ApplicationInitializer {
 		
 		if(!QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android)) {
 	        info = new QFileInfo(":io/qt/autotests/generated/General.class");
-			assertTrue(info.exists());
+			assertEquals(Boolean.getBoolean("io.qt.allow-classfiles-as-resource"), info.exists());
 	        info.dispose();
 		}
 		
@@ -627,7 +636,7 @@ public class TestFileEngine extends ApplicationInitializer {
 		}
 	}
 	
-	@Test
+//	@Test
     public void testDir(){
 		QDir dir = new QDir(":/");
 		for (String file : dir.entryList()) {

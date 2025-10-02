@@ -47,7 +47,7 @@ public final class QBooleanBindable extends QUntypedBindable {
 	 * Creates a new <code>boolean</code>-typed invalid bindable.
 	 */
 	public QBooleanBindable() {
-		super(null, null);
+		this((QUntypedPropertyData)null, (QBindableInterface)null);
 	}
 	
 	/**

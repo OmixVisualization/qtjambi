@@ -48,7 +48,7 @@ public final class QByteBindable extends QUntypedBindable {
 	 * Creates a new <code>byte</code>-typed invalid bindable.
 	 */
 	public QByteBindable() {
-		super(null, null);
+		this((QUntypedPropertyData)null, (QBindableInterface)null);
 	}
 	
 	/**

@@ -37,7 +37,6 @@ import io.qt.gui.QGuiApplication;
 import io.qt.gui.QIcon;
 import io.qt.gui.rhi.QRhi;
 import io.qt.gui.rhi.QRhiInitParams;
-import io.qt.widgets.QApplication;
 
 public class TestInitializationGuiRhiQt66 extends UnitTestInitializer {
     @Test

@@ -44,7 +44,7 @@ public final class QFloatBindable extends QUntypedBindable {
 	 * Creates a new <code>float</code>-typed invalid bindable.
 	 */
 	public QFloatBindable() {
-		super(null, null);
+		this((QUntypedPropertyData)null, (QBindableInterface)null);
 	}
 	
 	/**

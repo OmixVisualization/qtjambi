@@ -240,6 +240,21 @@ MetaFunction::~MetaFunction() {
     delete m_type;
 }
 
+const MetaArgument *MetaFunction::argumentByIndex(const MetaArgumentList& arguments, int index){
+    const MetaArgument * result = nullptr;
+    if(!arguments.isEmpty()){
+        result = arguments[index];
+        if(!result || result->argumentIndex()!=index){
+            for(const MetaArgument * arg : arguments){
+                if(arg && arg->argumentIndex()==index){
+                    result = arg;
+                }
+            }
+        }
+    }
+    return result;
+}
+
 QString MetaFunction::name() const { return m_name; }
 
 QString MetaFunction::originalName() const { return m_original_name.isEmpty() ? name() : m_original_name; }
@@ -306,7 +321,9 @@ bool MetaFunction::needsCallThrough() const {
     if (hasReferenceCount
             || argumentsHaveNativeId()
             || isConstructor()
-            || (((ownerClass()->typeEntry()->designatedInterface() && !this->isAbstract()) || implementingClass()->typeEntry()->isNativeIdBased()) && !isStatic()))
+            || (((ownerClass()->typeEntry()->designatedInterface() && !this->isAbstract())
+             || implementingClass()->typeEntry()->isNativeIdBased()
+             || implementingClass()->typeEntry()->isQMetaObjectType()) && !isStatic()))
         return true;
     if(this->isSelfReturningFunction() && implementingClass()->typeEntry()->isNativeIdBased())
         return true;

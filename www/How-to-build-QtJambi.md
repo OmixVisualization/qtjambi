@@ -64,7 +64,7 @@ Finally, find all Java libraries in directory `<qtjambiversion>/deployment` and 
 
 You can call ant with additional properties as listed below. Therefore use the `-D` command line argument: `ant -Dkey=value all`.
 
-* `qt` - specify comma-separated Qt versions to be used, e.g. `-Dqt="6.5,6.7,6.8"`.
+* `qt` - specify comma-separated Qt versions to be used, e.g. `-Dqt="6.8,6.9,6.10"`.
 * `qtbase` - specify Qt installer's base directory, e.g. `-Dqtbase=/var/Qt`. Can be combined with `qt`.
 * `qtdir` - specify Qt version and platform directory, e.g. `-Dqtdir=/var/Qt/6.8.3/macos`. This option allows multiple directories separated by path separator. (If this option is specified `qt` and `qtbase` have no effect.)
 * `qmake` - specify a path to a `qmake` program to be used for building QtJambi. (If this option is specified `qt`, `qtbase` and `qtdir` have no effect.)

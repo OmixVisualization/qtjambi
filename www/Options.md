@@ -72,8 +72,12 @@ For development purpose it is possible to let QtJambi extract header files from 
 * `io.qt.avoid-jni-global-references` - Specify `true` to avoid using JNI global references. Instead, QtJambi will use a Java `HashMap` to manage references. (default on Android)
 * `io.qt.use-jni-global-references` - Only on Android: Specify `true` to let QtJambi use JNI global references instead of `HashMap` to manage references.
 * `io.qt.disable-thread-purger` - Specify `true` to not starting a watcher thread for purging Java-related thread data.
+* `io.qt.resourcepath` - (semi)colon-separated list of jar files or directories to be added as Qt resource path at initialization. Skips classpath from being used.
 * `io.qt.no-classpath-to-resourcepath` - Specify `true` to not adding Java classpath to Qt resource path. You may neeed to do this manually by using `QResource.addClassPath`.
 * `io.qt.no-directories-to-resourcepath` - Specify `true` to not adding Java classpath directories to Qt resource path (jar files only). This has no effect on `QResource.addClassPath`.
+* `io.qt.allow-classfiles-as-resource` - Specify `true` to allow `.class` files in jar bundles to be found by Qt resources.
+* `io.qt.allow-meta-inf-as-resource` - Specify `true` to add the META-INF of jar files to Qt resource path (legacy option).
+* `io.qt.resource-cache-timeout` - Specify the amount of time in milliseconds a resource is kept alive in cache.
 
 ## QML
 

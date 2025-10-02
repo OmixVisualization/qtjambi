@@ -1374,8 +1374,6 @@ void AutoListAccess::appendList(JNIEnv * env, const ContainerInfo& container, Co
 
 const void* AutoListAccess::at(const void* container, qsizetype index)
 {
-    jvalue _value;
-    _value.l = nullptr;
     const QListData* p = reinterpret_cast<const QListData*>(container);
     Q_ASSERT_X(index >= 0 && index < p->listSize(), "QList<T>::at", "index out of range");
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
@@ -1392,10 +1390,9 @@ const void* AutoListAccess::at(const void* container, qsizetype index)
 
 void* AutoListAccess::at(void* container, qsizetype index)
 {
-    jvalue _value;
-    _value.l = nullptr;
     QListData* p = reinterpret_cast<QListData*>(container);
     Q_ASSERT_X(index >= 0 && index < p->listSize(), "QList<T>::at", "index out of range");
+    detach(p);
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     void** v = p->at(index);
     if(m_isLargeOrStaticType){
@@ -1671,39 +1668,41 @@ void AutoListAccess::remove(void* container, qsizetype index, qsizetype n)
         m_elementMetaType.destruct(p->ptr + (index+i) * m_offset);
     }
     p->listSize() -= nmb;
-    if(index>p->listSize()/2.){
-        if(auto moveCtr = m_elementMetaType.iface()->moveCtr){
-            for(qsizetype i = index; i<p->listSize(); ++i){
-                void* target = p->ptr + i * m_offset;
-                void* source = p->ptr + (i+nmb) * m_offset;
-                moveCtr(m_elementMetaType.iface(), target, source);
-                m_elementMetaType.destruct(source);
+    if(p->listSize()>0){
+        if(index>p->listSize()/2.){
+            if(auto moveCtr = m_elementMetaType.iface()->moveCtr){
+                for(qsizetype i = index; i<p->listSize(); ++i){
+                    void* target = p->ptr + i * m_offset;
+                    void* source = p->ptr + (i+nmb) * m_offset;
+                    moveCtr(m_elementMetaType.iface(), target, source);
+                    m_elementMetaType.destruct(source);
+                }
+            }else{
+                for(qsizetype i = index; i<p->listSize(); ++i){
+                    void* target = p->ptr + i * m_offset;
+                    void* source = p->ptr + (i+nmb) * m_offset;
+                    m_elementMetaType.construct(target, source);
+                    m_elementMetaType.destruct(source);
+                }
             }
         }else{
-            for(qsizetype i = index; i<p->listSize(); ++i){
-                void* target = p->ptr + i * m_offset;
-                void* source = p->ptr + (i+nmb) * m_offset;
-                m_elementMetaType.construct(target, source);
-                m_elementMetaType.destruct(source);
+            if(auto moveCtr = m_elementMetaType.iface()->moveCtr){
+                for(qsizetype i = index-1; i>=0; --i){
+                    void* target = p->ptr + (i+nmb) * m_offset;
+                    void* source = p->ptr + i * m_offset;
+                    moveCtr(m_elementMetaType.iface(), target, source);
+                    m_elementMetaType.destruct(source);
+                }
+            }else{
+                for(qsizetype i = index-1; i>=0; --i){
+                    void* target = p->ptr + (i+nmb) * m_offset;
+                    void* source = p->ptr + i * m_offset;
+                    m_elementMetaType.construct(target, source);
+                    m_elementMetaType.destruct(source);
+                }
             }
+            p->ptr += nmb*m_offset;
         }
-    }else if(nmb!=p->listSize()){
-        if(auto moveCtr = m_elementMetaType.iface()->moveCtr){
-            for(qsizetype i = index; i>0; --i){
-                void* target = p->ptr + i * m_offset;
-                void* source = p->ptr + (i-nmb) * m_offset;
-                moveCtr(m_elementMetaType.iface(), target, source);
-                m_elementMetaType.destruct(source);
-            }
-        }else{
-            for(qsizetype i = index; i>0; --i){
-                void* target = p->ptr + i * m_offset;
-                void* source = p->ptr + (i-nmb) * m_offset;
-                m_elementMetaType.construct(target, source);
-                m_elementMetaType.destruct(source);
-            }
-        }
-        p->ptr += nmb*m_offset;
     }
 #endif
 }

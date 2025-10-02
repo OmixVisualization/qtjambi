@@ -54,34 +54,14 @@ struct SecureContainer : Super{
             QWriteLocker locker(gLock());
             container.swap(*this);
         }else if constexpr(std::is_same<decltype(gLock()),QRecursiveMutex>::value){
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            QMutexLocker locker(gLock());
-#else
             QMutexLocker<QRecursiveMutex> locker(gLock());
-#endif
             container.swap(*this);
         }else if constexpr(std::is_same<decltype(gLock()),QMutex>::value){
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            QMutexLocker locker(gLock());
-#else
             QMutexLocker<QMutex> locker(gLock());
-#endif
             container.swap(*this);
         }
     }
 };
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-namespace QtPrivate{
-    struct AbstractConverterFunction;
-}
-
-bool registerConverter(const QtPrivate::AbstractConverterFunction *f, int from, int to);
-const QtPrivate::AbstractComparatorFunction * registeredComparator(int typeId);
-const QtPrivate::AbstractDebugStreamFunction * registeredDebugStreamOperator(int typeId);
-bool isLessThan(const QMetaType& keyMetaType, const void * ptr, const void* ptr2);
-bool isEquals(const QMetaType& keyMetaType, const void * ptr, const void* ptr2);
-#endif
 
 #if defined(Q_OS_ANDROID) || defined(Q_OS_FREEBSD)
 #define unique_id(id) qHash(QLatin1String((id).name()))
@@ -169,9 +149,7 @@ public:
              , typename std::enable_if<!std::is_same<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type, Printer>::value, bool>::type = true
              , typename std::enable_if<!std::is_null_pointer<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type>::value, bool>::type = true
              , typename std::enable_if<!std::is_same<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type, FunctionPointer>::value, bool>::type = true
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
              , typename std::enable_if<std::is_invocable<Functor,QDebug&>::value, bool>::type = true
-#endif
              >
     Printer(Functor&& functor) noexcept
         : Printer(
@@ -270,48 +248,6 @@ private:
     friend void clearResettableFlags();
 };
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #define QtJambiMetaType QMetaType
-#else
-class QtJambiMetaType{
-public:
-    inline QtJambiMetaType() : m_metaType(new QMetaType()) {}
-    inline QtJambiMetaType(const QtJambiMetaType& other) : m_metaType(other.m_metaType) {}
-    inline QtJambiMetaType(int metaType) : m_metaType(new QMetaType(metaType)) {}
-    inline QtJambiMetaType(const QMetaType& metaType) : m_metaType(new QMetaType(metaType.id())) {}
-    inline QtJambiMetaType& operator=(int metaType){
-        if(m_metaType->id()!=metaType)
-            m_metaType.reset(new QMetaType(metaType));
-        return *this;
-    }
-    inline QtJambiMetaType& operator=(const QMetaType& metaType){
-        if(m_metaType->id()!=metaType.id())
-            m_metaType.reset(new QMetaType(metaType.id()));
-        return *this;
-    }
-    inline bool isValid() const { return m_metaType->isValid(); }
-    inline QByteArray name() const { return m_metaType->name(); }
-    inline int id() const { return m_metaType->id(); }
-    inline operator int() const { return m_metaType->id(); }
-    inline QMetaType::TypeFlags flags() const { return m_metaType->flags(); }
-    inline int sizeOf() const { return m_metaType->sizeOf(); }
-    inline operator const QMetaType&() const { return *m_metaType; }
-    inline const QMetaType& metaType() const { return *m_metaType; }
-    inline void *create(const void *copy = nullptr) const{
-        return QMetaType::create(id(), copy);
-    }
-    inline void destroy(void *data) const{
-        QMetaType::destroy(id(), data);
-    }
-    inline void *construct(void *where, const void *copy = nullptr) const{
-        return QMetaType::construct(id(), where, copy);
-    }
-    inline void destruct(void *data) const{
-        QMetaType::destruct(id(), data);
-    }
-private:
-    QSharedPointer<QMetaType> m_metaType;
-};
-#endif
 
 #endif // QTJAMBI_UTILS_P_H

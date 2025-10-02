@@ -32,6 +32,7 @@
 #include <QtCore/private/qobject_p.h>
 #include <QtCore/QMutex>
 #include <QtQml/private/qqmllist_p.h>
+#include <QtQml/private/qqmldata_p.h>
 #include <QtQml/private/qjsvalue_p.h>
 
 #include <QtQml/qqmlprivate.h>
@@ -52,7 +53,16 @@
 #endif
 
 namespace Java{
+namespace QtCore{
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QObject$QDeclarativeConstructor,
+                                QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtConstructInPlace;)
+                                )
+}
 namespace QtJambi {
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt,QtConstructInPlace,
+                                QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(J)
+                                QTJAMBI_REPOSITORY_DEFINE_FIELD(native_id,J)
+                                )
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt,QtMetaType,
                                  QTJAMBI_REPOSITORY_DEFINE_METHOD(type,()Lio/qt/core/QMetaType$Type;)
                                  QTJAMBI_REPOSITORY_DEFINE_METHOD(name,()Ljava/lang/String;)
@@ -154,65 +164,20 @@ private:
     int viCast;
 };
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-typedef void(*CreatorFunction)(void*);
-CreatorFunction creatorFunction(JNIEnv * env, const QMetaObject *meta_object, jclass clazz, jmethodID constructor, size_t objectSize, int psCast, int vsCast, int viCast){
-    uint hash = 1;
-    hash = 31 * hash + uint(QtJambiAPI::getJavaObjectHashCode(env, clazz));
-    hash = 31 * hash + qHash(qint64(constructor));
-    hash = 31 * hash + qHash(psCast);
-    hash = 31 * hash + qHash(vsCast);
-    hash = 31 * hash + qHash(viCast);
-    JObjectWrapper clazzWrapper(env, clazz);
-    return qtjambi_function_pointer<16,void(void*)>([clazzWrapper, meta_object, constructor, objectSize, psCast, vsCast, viCast](void* placement){
-        memset(placement, 0, objectSize);
-        if(JniEnvironmentExceptionInhibitor env{200}){
-            QTJAMBI_TRY{
-                jobject declarativeConstructor = Java::QtCore::QObject$QDeclarativeConstructor::newInstance(env, clazzWrapper.object(env), jlong(placement));
-                QTJAMBI_TRY{
-                    env->NewObject(jclass(clazzWrapper.object(env)), constructor, declarativeConstructor);
-                    JavaException::check(env QTJAMBI_STACKTRACEINFO );
-                }QTJAMBI_CATCH(const JavaException& exn){
-                    jlong pl = Java::QtCore::QObject$QDeclarativeConstructor::placement(env, declarativeConstructor);
-                    if(pl==0){
-                        QObject* obj = reinterpret_cast<QObject*>(placement);
-                        obj->deleteLater();
-                        env.handleException(exn, nullptr);
-                        return;
-                    }else{
-                        exn.raise();
-                    }
-                }
-                jlong pl = Java::QtCore::QObject$QDeclarativeConstructor::placement(env, declarativeConstructor);
-                if(pl!=0){
-                    QString className = QtJambiAPI::getClassName(env, jclass(clazzWrapper.object(env)));
-                    Java::Runtime::RuntimeException::throwNew(env, QStringLiteral("Irreguar implementation of declarative constructor in class %1. Please call super constructor by submitting QDeclarativeConstructor object.").arg(className) QTJAMBI_STACKTRACEINFO );
-                }
-            }QTJAMBI_CATCH(const JavaException& exn){
-                QObject* obj = reinterpret_cast<QObject*>(placement);
-                if(QObjectPrivate::get(obj) != nullptr){
-                    obj->~QObject();
-                }
-                obj = QmlAPI::createQmlErrorDummyObject(meta_object, placement, vsCast, viCast);
-                if(!obj)
-                    obj = new (placement) ErrorDummyObject(psCast, vsCast, viCast);
-                obj->deleteLater();
-                env.handleException(exn, nullptr);
-            }QTJAMBI_TRY_END
-        }else{
-            QObject* obj = QmlAPI::createQmlErrorDummyObject(meta_object, placement, vsCast, viCast);
-            if(!obj)
-                obj = new (placement) ErrorDummyObject(psCast, vsCast, viCast);
-            obj->deleteLater();
-        }
-    }, hash);
-}
-#else
+enum ConstructorKind{
+    NoConstructor,
+    DefaultConstructor,
+    PrivateConstructor,
+    InPlaceConstructor,
+    DeclarativeConstructor
+};
 
 struct CreatorFunctionMetaData : QSharedData{
     jclass clazz;
     const QMetaObject *meta_object;
     jmethodID constructor;
+    ConstructorKind constructorKind;
+    QtJambiAPI::ConstructorFn constructorFunction;
     size_t objectSize;
     int psCast;
     int vsCast;
@@ -236,14 +201,14 @@ struct SecureContainer : Super{
 typedef SecureContainer<QHash<hash_type,QExplicitlySharedDataPointer<CreatorFunctionMetaData>>> MetaDataHash;
 Q_GLOBAL_STATIC(MetaDataHash, gMetaDataHash)
 
-void* creatorFunctionMetaData(JNIEnv * env, const QMetaObject *meta_object, jclass clazz, jmethodID constructor, size_t objectSize, int psCast, int vsCast, int viCast, int fhCast){
+void* creatorFunctionMetaData(JNIEnv * env, const QMetaObject *meta_object, jclass clazz, jmethodID constructor, ConstructorKind constructorKind, QtJambiAPI::ConstructorFn constructorFunction, size_t objectSize, int psCast, int vsCast, int viCast, int fhCast){
     hash_type hash = qHashMulti(0, QtJambiAPI::getJavaObjectHashCode(env, clazz), qint64(constructor), psCast, vsCast, viCast, fhCast);
     {
         QReadLocker lock(gMetaDataAccessLock());
         if(gMetaDataHash->contains(hash))
             return (*gMetaDataHash)[hash].data();
     }
-    CreatorFunctionMetaData* d = new CreatorFunctionMetaData{QSharedData(), JavaAPI::toGlobalReference(env, clazz), meta_object, constructor, objectSize, psCast, vsCast, viCast, fhCast};
+    CreatorFunctionMetaData* d = new CreatorFunctionMetaData{QSharedData(), JavaAPI::toGlobalReference(env, clazz), meta_object, constructor, constructorKind, constructorFunction, objectSize, psCast, vsCast, viCast, fhCast};
     {
         QWriteLocker lock(gMetaDataAccessLock());
         (*gMetaDataHash)[hash] = d;
@@ -255,28 +220,48 @@ void createQmlObject(void* placement,void* _metaData){
     if(CreatorFunctionMetaData* metaData = reinterpret_cast<CreatorFunctionMetaData*>(_metaData)){
         memset(placement, 0, metaData->objectSize);
         if(JniEnvironmentExceptionInhibitor env{200}){
+            void* pointer = nullptr;
             QTJAMBI_TRY{
-                jobject declarativeConstructor = Java::QtCore::QObject$QDeclarativeConstructor::newInstance(env, metaData->clazz, jlong(placement));
-                QTJAMBI_TRY{
-                    env->NewObject(metaData->clazz, metaData->constructor, declarativeConstructor);
+                switch(metaData->constructorKind){
+                case DeclarativeConstructor:
+                {
+                    pointer = QmlAPI::beginInPlaceConstruction(placement, metaData->meta_object, metaData->constructorFunction);
+                    jobject ipc = Java::QtJambi::QtConstructInPlace::newInstance(env, jlong(pointer));
+                    jobject dc = Java::QtCore::QObject$QDeclarativeConstructor::newInstance(env, ipc);
+                    jobject object = env->NewObject(metaData->clazz, metaData->constructor, dc);
                     JavaException::check(env QTJAMBI_STACKTRACEINFO );
-                }QTJAMBI_CATCH(const JavaException& exn){
-                    jlong pl = Java::QtCore::QObject$QDeclarativeConstructor::placement(env, declarativeConstructor);
-                    if(pl==0){
-                        QObject* obj = reinterpret_cast<QObject*>(placement);
-                        obj->deleteLater();
-                        env.handleException(exn, nullptr);
-                        return;
-                    }else{
-                        exn.raise();
-                    }
-                }QTJAMBI_TRY_END
-                jlong pl = Java::QtCore::QObject$QDeclarativeConstructor::placement(env, declarativeConstructor);
-                if(pl!=0){
-                    QString className = QtJambiAPI::getClassName(env, metaData->clazz);
-                    Java::Runtime::RuntimeException::throwNew(env, QStringLiteral("Irreguar implementation of declarative constructor in class %1. Please call super constructor by submitting QDeclarativeConstructor object.").arg(className) QTJAMBI_STACKTRACEINFO );
+                    QmlAPI::endInPlaceConstruction(env, object, pointer);
+                    pointer = nullptr;
+                    Java::QtJambi::QtConstructInPlace::set_native_id(env, ipc, 0);
+                }
+                break;
+                case InPlaceConstructor:
+                {
+                    pointer = QmlAPI::beginInPlaceConstruction(placement, metaData->meta_object, metaData->constructorFunction);
+                    jobject ipc = Java::QtJambi::QtConstructInPlace::newInstance(env, jlong(pointer));
+                    jobject object = env->NewObject(metaData->clazz, metaData->constructor, ipc);
+                    JavaException::check(env QTJAMBI_STACKTRACEINFO );
+                    QmlAPI::endInPlaceConstruction(env, object, pointer);
+                    pointer = nullptr;
+                    Java::QtJambi::QtConstructInPlace::set_native_id(env, ipc, 0);
+                }
+                break;
+                case PrivateConstructor:
+                {
+                    pointer = QmlAPI::beginInPlaceConstruction(placement, metaData->meta_object, metaData->constructorFunction);
+                    jobject object = env->NewObject(metaData->clazz, metaData->constructor, nullptr);
+                    JavaException::check(env QTJAMBI_STACKTRACEINFO );
+                    QmlAPI::endInPlaceConstruction(env, object, pointer);
+                    pointer = nullptr;
+                }
+                break;
+                default:
+                    break;
                 }
             }QTJAMBI_CATCH(const JavaException& exn){
+                if(pointer){
+                    QmlAPI::endInPlaceConstruction(env, nullptr, pointer);
+                }
                 QObject* obj = reinterpret_cast<QObject*>(placement);
                 if(QObjectPrivate::get(obj) != nullptr){
                     obj->~QObject();
@@ -295,8 +280,6 @@ void createQmlObject(void* placement,void* _metaData){
         }
     }
 }
-
-#endif
 
 typedef QObject*(*CreateParentFunction)(QObject*);
 CreateParentFunction createParentFunction(JNIEnv * env, jclass clazz, jmethodID constructor){
@@ -388,35 +371,6 @@ int finalizerHookCast(JNIEnv *, jclass){
 
 int registerQQmlListPropertyAsQmlMetaType(JNIEnv *env, const QString& javaName){
     QByteArray listName = "QQmlListProperty<" + javaName.toLatin1().replace(".", "::").replace("$", "::").replace("/", "::") + '>';
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    Q_UNUSED(env)
-    return QMetaType::registerNormalizedType(listName,
-                                      QtMetaTypePrivate::QMetaTypeFunctionHelper<QQmlListProperty<QObject> >::Destruct,
-                                      [](void * ptr, const void * copy)->void*{
-                                            const QQmlListProperty<QObject>* _copy = reinterpret_cast<const QQmlListProperty<QObject>*>(copy);
-                                            QQmlListProperty<QObject>* list = new(ptr) QQmlListProperty<QObject>();
-                                            if(_copy){
-                                                list->append = _copy->append;
-                                                list->at = _copy->at;
-                                                list->clear = _copy->clear;
-                                                list->count = _copy->count;
-                                                list->data = _copy->data;
-#if QT_VERSION < QT_VERSION_CHECK(5,15,0)
-                                                list->dummy1 = _copy->dummy1;
-                                                list->dummy2 = _copy->dummy2;
-#else
-                                                list->replace = _copy->replace;
-                                                list->removeLast = _copy->removeLast;
-#endif
-                                                list->object = _copy->object;
-                                            }
-                                            return list;
-                                      },
-                                      sizeof(QQmlListProperty<QObject>),
-                                      QMetaType::MovableType | QMetaType::NeedsConstruction | QMetaType::NeedsDestruction,
-                                      nullptr
-                                      );
-#else
     return QmlAPI::registerQmlMetaType(env, Java::QtQml::QQmlListProperty::getClass(env),
                                listName,
                                 /*.defaultCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<QQmlListProperty<QObject>>::defaultCtr,
@@ -465,7 +419,6 @@ int registerQQmlListPropertyAsQmlMetaType(JNIEnv *env, const QString& javaName){
 #endif
                               nullptr,
                               nullptr);
-#endif
 }
 
 /**
@@ -475,20 +428,6 @@ int registerQObjectAsQmlMetaType(JNIEnv *env, jclass javaClass, const QString& j
 {
     QByteArray qtName = javaName.toLatin1().replace(".", "::").replace("$", "::").replace("/", "::")+"*";
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    int definedType = QMetaType::type(qtName);
-    if(definedType!=QMetaType::UnknownType){
-        return definedType;
-    }
-    int typeId = QMetaType::registerNormalizedType(qtName,
-                                     QtMetaTypePrivate::QMetaTypeFunctionHelper<QObject*>::Destruct,
-                                     QtMetaTypePrivate::QMetaTypeFunctionHelper<QObject*>::Construct,
-                                     sizeof(QObject*),
-                                     QMetaType::TypeFlags( QMetaType::MovableType | QMetaType::PointerToQObject ),
-                                     meta_object);
-    QmlAPI::registerJavaClassForCustomMetaType(env, typeId, javaClass);
-    return typeId;
-#else
     QMetaType definedType = QMetaType::fromName(qtName);
     if(definedType.id()!=QMetaType::UnknownType){
         return definedType.id();
@@ -538,32 +477,51 @@ int registerQObjectAsQmlMetaType(JNIEnv *env, jclass javaClass, const QString& j
                                             meta_object,
                                             nullptr);
     }
-#endif
 }
 
-jmethodID findConstructor(JNIEnv * env, jclass clazz, const QString& javaName){
+jmethodID findConstructor(JNIEnv * env, jclass clazz){
     jmethodID constructor = JavaAPI::resolveMethod(env, "<init>", "(Lio/qt/core/QObject$QDeclarativeConstructor;)V", clazz);
-    jmethodID superClassConstructor = nullptr;
-    jclass generatedSuperclass = Java::QtJambi::ClassAnalyzerUtility::findGeneratedSuperclass(env, clazz);
-    if(generatedSuperclass){
-        superClassConstructor = JavaAPI::resolveMethod(env, "<init>", "(Lio/qt/core/QObject$QDeclarativeConstructor;)V", generatedSuperclass);
-    }else{
-        Java::Runtime::IllegalAccessException::throwNew(env, QStringLiteral("Class %1 cannot be registered as Qml type since it does not inherit a Qt class.").arg(QString(javaName).replace(QLatin1Char('$'), QLatin1Char('.'))) QTJAMBI_STACKTRACEINFO );
-    }
-    if(!constructor){
-        if(superClassConstructor){
-            Java::Runtime::IllegalAccessException::throwNew(env, QStringLiteral("Class must offer the constructor %1(QDeclarativeConstructor) to register as Qml type.").arg(QString(javaName).replace(QLatin1Char('$'), QLatin1Char('.'))) QTJAMBI_STACKTRACEINFO );
-        }else{
-            QString superClassName = QtJambiAPI::getClassName(env, generatedSuperclass).replace(QLatin1Char('$'), QLatin1Char('.'));
-            Java::Runtime::IllegalAccessException::throwNew(env, QStringLiteral("Class %1 cannot be registered as Qml type because its super class %2 is excluded.").arg(QString(javaName).replace(QLatin1Char('$'), QLatin1Char('.')), superClassName) QTJAMBI_STACKTRACEINFO );
+#ifdef Q_OS_ANDROID
+    if(constructor){
+        jobject mtd = env->ToReflectedMethod(clazz, constructor, false);
+        if(!env->IsSameObject(clazz, Java::Runtime::Constructor::getDeclaringClass(env, mtd))){
+            constructor = nullptr;
         }
-    }else{
+    }
+#endif
+    if(constructor){
+        jmethodID superClassConstructor = nullptr;
+        jclass generatedSuperclass = Java::QtJambi::ClassAnalyzerUtility::findGeneratedSuperclass(env, clazz);
+        if(generatedSuperclass){
+            superClassConstructor = JavaAPI::resolveMethod(env, "<init>", "(Lio/qt/core/QObject$QDeclarativeConstructor;)V", generatedSuperclass);
+        }else{
+            Java::Runtime::IllegalAccessException::throwNew(env, QStringLiteral("Class %1 cannot be registered as Qml type since it does not inherit a Qt class.").arg(QtJambiAPI::getClassName(env, clazz).replace(QLatin1Char('$'), QLatin1Char('.'))) QTJAMBI_STACKTRACEINFO );
+        }
         if(!superClassConstructor){
             QString superClassName = QtJambiAPI::getClassName(env, generatedSuperclass).replace(QLatin1Char('$'), QLatin1Char('.'));
-            Java::Runtime::IllegalAccessException::throwNew(env, QStringLiteral("Class %1 cannot be registered as Qml type because its super class %2 is excluded.").arg(QString(javaName).replace(QLatin1Char('$'), QLatin1Char('.')), superClassName) QTJAMBI_STACKTRACEINFO );
+            Java::Runtime::IllegalAccessException::throwNew(env, QStringLiteral("Class %1 cannot be registered as Qml type because its super class %2 is excluded.").arg(QtJambiAPI::getClassName(env, clazz).replace(QLatin1Char('$'), QLatin1Char('.')), superClassName) QTJAMBI_STACKTRACEINFO );
         }
     }
     return constructor;
+}
+
+void findConstructor(JNIEnv * env, jclass clazz, const QMetaObject *meta_object, jmethodID& constructor, ConstructorKind& constructorKind, QtJambiAPI::ConstructorFn& constructorFunction){
+    constructor = nullptr;
+    QmlAPI::InPlaceConstructorInfo info = QmlAPI::findInPlaceConstructor(env, clazz, meta_object);
+    if(!info.constructor || info.isPrivate){
+        constructor = findConstructor(env, clazz);
+        if(constructor)
+            constructorKind = DeclarativeConstructor;
+    }
+    if(!constructor){
+        if(info.constructor){
+            constructor = info.constructor;
+            constructorKind = info.isPrivate ? PrivateConstructor : InPlaceConstructor;
+            constructorFunction = info.constructorFunction;
+        }else{
+            constructorKind = NoConstructor;
+        }
+    }
 }
 
 struct QmlTypeRegistractionData{
@@ -577,12 +535,10 @@ struct QmlTypeRegistractionData{
     int fhCast = 0;
     const QMetaObject *meta_object = nullptr;
     jmethodID constructor = 0;
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    ConstructorKind constructorKind = NoConstructor;
+    QtJambiAPI::ConstructorFn constructorFunction = nullptr;
     void (*create)(void *,void *) = nullptr;
     void *userdata = nullptr;
-#else
-    void (*create)(void *) = nullptr;
-#endif
     QVariant (*createValueType)(const QJSValue &) = nullptr;
     QQmlAttachedPropertiesFunc attachedPropertiesFunction = nullptr;
     const QMetaObject *attachedPropertiesMetaObject = nullptr;
@@ -603,7 +559,6 @@ typedef QFlags<RegisterOption> RegisterOptions;
 
 typedef QVariant (*CreateValueTypeFn)(const QJSValue &);
 
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 CreateValueTypeFn getCreateValueType(JNIEnv *env, jclass clazz, CreateValueTypeFn defaultFn = nullptr){
     CreateValueTypeFn result = nullptr;
     if(jmethodID jsvFactory = JavaAPI::resolveMethod(env, "create", qPrintable(QStringLiteral("(Lio/qt/qml/QJSValue;)L%1;").arg(QtJambiAPI::getClassName(env, clazz).replace('.', '/'))), clazz, true)){
@@ -635,7 +590,6 @@ CreateValueTypeFn getCreateValueType(JNIEnv *env, jclass clazz, CreateValueTypeF
     }
     return result==nullptr ? defaultFn : result;
 }
-#endif
 
 QmlTypeRegistractionData registerQmlType(JNIEnv *env, jclass clazz, const char* qmlName, RegisterOptions skip = {}){
     const QString javaName = QtJambiAPI::getClassName(env, clazz);
@@ -649,7 +603,6 @@ QmlTypeRegistractionData registerQmlType(JNIEnv *env, jclass clazz, const char* 
 #endif
     bool isQObject = Java::QtCore::QObject::isAssignableFrom(env, clazz);
     if(!isQObject){
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
         if (findQmlAttachedProperties(env, clazz).function) {
             Java::QtQml::QmlTypeRegistrationException::throwNew(env, QStringLiteral("%1 is not a QObject, but has attached properties. This won't work.").arg(data.javaName) QTJAMBI_STACKTRACEINFO );
         }
@@ -693,14 +646,6 @@ QmlTypeRegistractionData registerQmlType(JNIEnv *env, jclass clazz, const char* 
                     Java::QtQml::QmlTypeRegistrationException::throwNew(env, QStringLiteral("%1 is neither a QObject, nor default- and copy-constructible. You should not use it as a QML type.").arg(data.javaName) QTJAMBI_STACKTRACEINFO );
                 }
             }else{
-                /*if(typeId.iface()->copyCtr && typeId.iface()->defaultCtr){
-                    data.create = [](void* placement,void* metaData){
-                        const QtPrivate::QMetaTypeInterface* iface = reinterpret_cast<const QtPrivate::QMetaTypeInterface*>(metaData);
-                        Q_ASSERT(iface->defaultCtr);
-                        iface->defaultCtr(iface, placement);
-                    };
-                    data.userdata = const_cast<QtPrivate::QMetaTypeInterface*>(typeId.iface());
-                }*/
                 if(jsvFactory){
                     clazz = JavaAPI::toGlobalReference(env, clazz);
                     data.createValueType = qtjambi_function_pointer<64, QVariant(const QJSValue&)>(
@@ -752,9 +697,6 @@ QmlTypeRegistractionData registerQmlType(JNIEnv *env, jclass clazz, const char* 
                 }
             }
         }
-#else
-        Java::QtQml::QmlTypeRegistrationException::throwNew(env, QStringLiteral("%1 is not a QObject.").arg(QString(javaName).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
-#endif
     }else{
         QString typeName = QLatin1String(qmlName);
         if (!typeName.isEmpty()) {
@@ -784,14 +726,13 @@ QmlTypeRegistractionData registerQmlType(JNIEnv *env, jclass clazz, const char* 
         data.typeId = registerQObjectAsQmlMetaType(env, clazz, data.javaName, data.meta_object);
         data.listId = registerQQmlListPropertyAsQmlMetaType(env, data.javaName);
         if(!skip.testFlag(RegisterOption::SkipCreator)){
-            data.constructor = findConstructor(env, clazz, data.javaName);
-            Q_ASSERT(data.constructor);
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-            data.create = &createQmlObject;
-            data.userdata = creatorFunctionMetaData(env, data.meta_object, clazz, data.constructor, data.objectSize, data.psCast, data.vsCast, data.viCast, data.fhCast);
-#else
-            data.create = creatorFunction(env, data.meta_object, clazz, data.constructor, data.objectSize, data.psCast, data.vsCast, data.viCast);
-#endif
+            findConstructor(env, clazz, data.meta_object, data.constructor, data.constructorKind, data.constructorFunction);
+            if(data.constructor){
+                data.create = &createQmlObject;
+                data.userdata = creatorFunctionMetaData(env, data.meta_object, clazz, data.constructor, data.constructorKind, data.constructorFunction, data.objectSize, data.psCast, data.vsCast, data.viCast, data.fhCast);
+            }else{
+                Java::QtQml::QmlTypeRegistrationException::throwNew(env, QStringLiteral("%1 is not constructible.").arg(QtJambiAPI::getClassName(env, clazz).replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+            }
         }
         if(!skip.testFlag(RegisterOption::SkipAttachedProperties)){
             AttachedPropertiesInfo info = findQmlAttachedProperties(env, clazz, Java::Runtime::Class::getAnnotation(env, clazz, Java::QtQml::Util::QmlAttached::getClass(env)));
@@ -811,16 +752,9 @@ QObject* qtjambi_qmlAttachedPropertiesObject(JNIEnv *env, jclass clazz, const QO
             meta_object = CoreAPI::metaObjectForClass(env, clazz, original_meta_object);
         }
     }
-#if QT_VERSION < QT_VERSION_CHECK(5,14,0)
-    int idx = -1;
-    return QtQml::qmlAttachedPropertiesObject(&idx, const_cast<QObject *>(obj), meta_object, create);
-#else
     const auto func = qmlAttachedPropertiesFunction(nullptr, meta_object);
     return qmlAttachedPropertiesObject(const_cast<QObject *>(obj), func, create);
-#endif
 }
-
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 
 struct MetaContainerInterfaceExtractor : QMetaContainer{
     static inline const QtMetaContainerPrivate::QMetaSequenceInterface * getInterface(const QMetaSequence& m){
@@ -850,47 +784,9 @@ int qtjambi_qmlRegisterAnonymousSequentialContainer(JNIEnv *env, jobject contain
 
     return QQmlPrivate::qmlregister(QQmlPrivate::SequentialContainerRegistration, &type);
 }
-#endif
 
 int qtjambi_qmlRegisterAnonymousType(JNIEnv *env, jclass clazz, const char* uri, int versionMajor){
-#if QT_VERSION < QT_VERSION_CHECK(5,14,0)
-        Q_UNUSED(clazz)
-        Q_UNUSED(uri)
-        Q_UNUSED(versionMajor)
-        JavaException::raiseQNoImplementationException(env, "qmlRegisterAnonymousType() is not available in Qt versions older than 5.14" QTJAMBI_STACKTRACEINFO);
-#else
     QmlTypeRegistractionData data = registerQmlType(env, clazz, nullptr, RegisterOptions(SkipCreator | SkipObjectSize));
-
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-        QQmlPrivate::RegisterType type = {
-            /* int version */ 0,
-
-            /*int typeId*/ data.typeId,
-            /*int listId*/ data.listId,
-            /*int objectSize*/ 0,
-            /*void (*create)(void *)*/ nullptr,
-            /*QString noCreationReason*/ QString(),
-
-            /*const char *uri*/ uri,
-            /*int versionMajor*/ int(versionMajor),
-            /*int versionMinor*/ 0,
-            /*const char *elementName*/ nullptr,
-            /*const QMetaObject *metaObject*/ data.meta_object,
-
-            /*QQmlAttachedPropertiesFunc attachedPropertiesFunction*/ data.attachedPropertiesFunction,
-            /*const QMetaObject *attachedPropertiesMetaObject*/ data.attachedPropertiesMetaObject,
-
-            /*int parserStatusCast*/ data.psCast,
-            /*int valueSourceCast*/ data.vsCast,
-            /*int valueInterceptorCast*/ data.viCast,
-
-            /*QObject *(*extensionObjectCreate)(QObject *)*/ nullptr,
-            /*const QMetaObject *extensionMetaObject*/ nullptr,
-
-            /*QQmlCustomParser *customParser*/ nullptr,
-            /*int revision*/ 0
-        };
-#else
         QQmlPrivate::RegisterType type = {
 #if QT_VERSION >= QT_VERSION_CHECK(6,5,0)
             QQmlPrivate::RegisterType::CurrentVersion,
@@ -934,9 +830,7 @@ int qtjambi_qmlRegisterAnonymousType(JNIEnv *env, jclass clazz, const char* uri,
             ,data.creationMethod
 #endif
         };
-#endif
         return QQmlPrivate::qmlregister(QQmlPrivate::TypeRegistration, &type);
-#endif
 }
 
 #if QT_VERSION >= QT_VERSION_CHECK(6,3,0)
@@ -993,25 +887,6 @@ void qtjambi_qmlRegisterAnonymousTypesAndRevisions(JNIEnv *env, jclass clazz, co
     QmlTypeRegistractionData data = registerQmlType(env, clazz, nullptr, RegisterOptions(OptionalCreator));
 
     QQmlPrivate::RegisterTypeAndRevisions type = {
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-        1,
-        /* int typeId */ data.typeId,
-        /* int listId */ data.listId,
-        data.objectSize,
-        /*void (*create)(void *)*/ data.create,
-        uri,
-        versionMajor,
-        data.meta_object,
-        data.meta_object,
-        /*QQmlAttachedPropertiesFunc attachedPropertiesFunction*/ data.attachedPropertiesFunction,
-        /*const QMetaObject *attachedPropertiesMetaObject*/ data.attachedPropertiesMetaObject,
-        data.psCast,
-        data.vsCast,
-        data.viCast,
-        nullptr,
-        nullptr,
-        nullptr
-#else
         3,
         /* QMetaType typeId */ QMetaType(data.typeId),
         /* QMetaType listId */ QMetaType(data.listId),
@@ -1043,7 +918,6 @@ void qtjambi_qmlRegisterAnonymousTypesAndRevisions(JNIEnv *env, jclass clazz, co
         ,QMetaSequence()
 #endif
 #endif
-#endif
     };
 
     // Initialize the extension so that we can find it by name or ID.
@@ -1070,36 +944,6 @@ int qtjambi_qmlRegisterExtendedType(JNIEnv *env, jclass clazz, jclass extendedCl
         }
     }
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    QQmlPrivate::RegisterType type = {
-        /* int version */ 0,
-
-        /*int typeId*/ data.typeId,
-        /*int listId*/ data.listId,
-        /*int objectSize*/ 0,
-        /*void (*create)(void *)*/ nullptr,
-        /*QString noCreationReason*/ QString(),
-
-        /*const char *uri*/ uri,
-        /*int versionMajor*/ versionMajor,
-        /*int versionMinor*/ 0,
-        /*const char *elementName*/ nullptr,
-        /*const QMetaObject *metaObject*/ data.meta_object,
-
-        /*QQmlAttachedPropertiesFunc attachedPropertiesFunction*/ data.attachedPropertiesFunction,
-        /*const QMetaObject *attachedPropertiesMetaObject*/ data.attachedPropertiesMetaObject,
-
-        /*int parserStatusCast*/ data.psCast,
-        /*int valueSourceCast*/ data.vsCast,
-        /*int valueInterceptorCast*/ data.viCast,
-
-        /*QObject *(*extensionObjectCreate)(QObject *)*/ createParentFunction(env, extendedClazz, extendedConstructor),
-        /*const QMetaObject *extensionMetaObject*/ extended_meta_object,
-
-        /*QQmlCustomParser *customParser*/ nullptr,
-        /*int revision*/ 0
-    };
-#else
     QQmlPrivate::RegisterType type = {
 #if QT_VERSION >= QT_VERSION_CHECK(6,5,0)
         QQmlPrivate::RegisterType::CurrentVersion,
@@ -1142,7 +986,6 @@ int qtjambi_qmlRegisterExtendedType(JNIEnv *env, jclass clazz, jclass extendedCl
         ,data.creationMethod
 #endif
     };
-#endif
     return QQmlPrivate::qmlregister(QQmlPrivate::TypeRegistration, &type);
 }
 
@@ -1171,36 +1014,6 @@ int qtjambi_qmlRegisterExtendedType(JNIEnv *env, jclass clazz, jclass extendedCl
         data.attachedPropertiesMetaObject = info.meta_object;
     }
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    QQmlPrivate::RegisterType type = {
-        /* int version */ 0,
-
-        /*int typeId*/ data.typeId,
-        /*int listId*/ data.listId,
-        /*int objectSize*/ data.objectSize,
-        /*void (*create)(void *)*/ data.create,
-        /*QString noCreationReason*/ QString(),
-
-        /*const char *uri*/ uri,
-        /*int versionMajor*/ int(versionMajor),
-        /*int versionMinor*/ int(versionMinor),
-        /*const char *elementName*/ qmlName,
-        /*const QMetaObject *metaObject*/ data.meta_object,
-
-        /*QQmlAttachedPropertiesFunc attachedPropertiesFunction*/ data.attachedPropertiesFunction,
-        /*const QMetaObject *attachedPropertiesMetaObject*/ data.attachedPropertiesMetaObject,
-
-        data.psCast,
-        data.vsCast,
-        data.viCast,
-
-        /*QObject *(*extensionObjectCreate)(QObject *)*/ createParentFunction(env, extendedClazz, econstructor),
-        /*const QMetaObject *extensionMetaObject*/ extended_meta_object,
-
-        /*QQmlCustomParser *customParser*/ nullptr,
-        /*int revision*/ 0
-    };
-#else
     QQmlPrivate::RegisterType type = {
 #if QT_VERSION >= QT_VERSION_CHECK(6,5,0)
         QQmlPrivate::RegisterType::CurrentVersion,
@@ -1243,7 +1056,6 @@ int qtjambi_qmlRegisterExtendedType(JNIEnv *env, jclass clazz, jclass extendedCl
         ,data.creationMethod
 #endif
     };
-#endif
     return QQmlPrivate::qmlregister(QQmlPrivate::TypeRegistration, &type);
 }
 
@@ -1272,36 +1084,6 @@ int qtjambi_qmlRegisterExtendedUncreatableType(JNIEnv *env, jclass clazz, jclass
         data.attachedPropertiesMetaObject = info.meta_object;
     }
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    QQmlPrivate::RegisterType type = {
-        /* int version */ 0,
-
-        /*int typeId*/ data.typeId,
-        /*int listId*/ data.listId,
-        /*int objectSize*/ 0,
-        /*void (*create)(void *)*/ nullptr,
-        /*QString noCreationReason*/ reason,
-
-        /*const char *uri*/ uri,
-        /*int versionMajor*/ int(versionMajor),
-        /*int versionMinor*/ int(versionMinor),
-        /*const char *elementName*/ qmlName,
-        /*const QMetaObject *metaObject*/ data.meta_object,
-
-        /*QQmlAttachedPropertiesFunc attachedPropertiesFunction*/ data.attachedPropertiesFunction,
-        /*const QMetaObject *attachedPropertiesMetaObject*/ data.attachedPropertiesMetaObject,
-
-        /*int parserStatusCast*/ data.psCast,
-        /*int valueSourceCast*/ data.vsCast,
-        /*int valueInterceptorCast*/ data.viCast,
-
-        /*QObject *(*extensionObjectCreate)(QObject *)*/ createParentFunction(env, extendedClazz, econstructor),
-        /*const QMetaObject *extensionMetaObject*/ extended_meta_object,
-
-        /*QQmlCustomParser *customParser*/ nullptr,
-        /*int revision*/ 0
-    };
-#else
     QQmlPrivate::RegisterType type = {
 #if QT_VERSION >= QT_VERSION_CHECK(6,5,0)
         QQmlPrivate::RegisterType::CurrentVersion,
@@ -1344,7 +1126,6 @@ int qtjambi_qmlRegisterExtendedUncreatableType(JNIEnv *env, jclass clazz, jclass
         ,data.creationMethod
 #endif
     };
-#endif
     return QQmlPrivate::qmlregister(QQmlPrivate::TypeRegistration, &type);
 }
 
@@ -1373,36 +1154,6 @@ int qtjambi_qmlRegisterExtendedUncreatableType(JNIEnv *env, jclass clazz, jclass
         data.attachedPropertiesMetaObject = info.meta_object;
     }
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    QQmlPrivate::RegisterType type = {
-        /* int version */ 0,
-
-        /*int typeId*/ data.typeId,
-        /*int listId*/ data.listId,
-        /*int objectSize*/ 0,
-        /*void (*create)(void *)*/ nullptr,
-        /*QString noCreationReason*/ reason,
-
-        /*const char *uri*/ uri,
-        /*int versionMajor*/ int(versionMajor),
-        /*int versionMinor*/ int(versionMinor),
-        /*const char *elementName*/ qmlName,
-        /*const QMetaObject *metaObject*/ data.meta_object,
-
-        /*QQmlAttachedPropertiesFunc attachedPropertiesFunction*/ data.attachedPropertiesFunction,
-        /*const QMetaObject *attachedPropertiesMetaObject*/ data.attachedPropertiesMetaObject,
-
-        /*int parserStatusCast*/ data.psCast,
-        /*int valueSourceCast*/ data.vsCast,
-        /*int valueInterceptorCast*/ data.viCast,
-
-        /*QObject *(*extensionObjectCreate)(QObject *)*/ createParentFunction(env, extendedClazz, econstructor),
-        /*const QMetaObject *extensionMetaObject*/ extended_meta_object,
-
-        /*QQmlCustomParser *customParser*/ nullptr,
-        /*int revision*/ int(metaObjectRevision)
-    };
-#else
     if(!QTypeRevision::isValidSegment(metaObjectRevision)){
         Java::Runtime::IllegalAccessException::throwNew(env, QStringLiteral("Not a valid metaObjectRevision %1.").arg(metaObjectRevision) QTJAMBI_STACKTRACEINFO );
     }
@@ -1448,40 +1199,8 @@ int qtjambi_qmlRegisterExtendedUncreatableType(JNIEnv *env, jclass clazz, jclass
         ,data.creationMethod
 #endif
     };
-#endif
     return QQmlPrivate::qmlregister(QQmlPrivate::TypeRegistration, &type);
 }
-
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-int qtjambi_qmlRegisterInterface(JNIEnv *env, jclass clazz, const char* uri){
-    QString typeName = QtJambiAPI::getClassName(env, clazz);
-    const QMetaObject *meta_object = CoreAPI::metaObjectForClass(env, clazz);
-    if(!meta_object){
-        jclass closestClass = JavaAPI::resolveClosestQtSuperclass(env, clazz);
-        if(closestClass){
-            const QMetaObject *original_meta_object = CoreAPI::metaObjectForClass(env, closestClass);
-            meta_object = CoreAPI::metaObjectForClass(env, clazz, original_meta_object);
-        }
-    }
-    const char* iid = CoreAPI::getInterfaceIID(env, clazz);
-    if(!iid){
-        iid = RegistryAPI::registerInterfaceID(env, clazz);
-    }
-
-    QQmlPrivate::RegisterInterface qmlInterface = {
-        /* int version */ 1,
-
-        /* int typeId */ registerQObjectAsQmlMetaType(env, clazz, typeName, meta_object),
-        /* int listId */ registerQQmlListPropertyAsQmlMetaType(env, typeName),
-
-        /* const char *iid */ iid,
-
-        /* const char *uri */ uri,
-        /* int versionMajor */ 0
-    };
-    return QQmlPrivate::qmlregister(QQmlPrivate::InterfaceRegistration, &qmlInterface);
-}
-#endif
 
 int qtjambi_qmlRegisterInterface(JNIEnv *env, jclass clazz, const char* uri, int versionMajor){
     const QMetaObject *meta_object = CoreAPI::metaObjectForClass(env, clazz);
@@ -2024,22 +1743,26 @@ using SingletonConstructionMode = ConstructionMode;
 }
 #endif
 
-QQmlPrivate::SingletonConstructionMode singletonConstructionMode(JNIEnv *env, jclass type, jclass wrapperType, bool singleton, jmethodID& method){
+QQmlPrivate::SingletonConstructionMode singletonConstructionMode(JNIEnv *env, jclass type, jclass wrapperType, bool singleton, const QMetaObject* metaObject, jmethodID& method, ConstructorKind& constructorKind, QtJambiAPI::ConstructorFn& constructorFunction){
     if(!Java::QtCore::QObject::isAssignableFrom(env, type))
         return QQmlPrivate::SingletonConstructionMode::None;
 #if QT_VERSION >= QT_VERSION_CHECK(6,1,0)
     if(!env->IsSameObject(type, wrapperType)
             && (method = JavaAPI::resolveMethod(env, "create", qPrintable(QStringLiteral("(Lio/qt/qml/QJSValue;)L%1;").arg(QtJambiAPI::getClassName(env, type).replace('.', '/'))), wrapperType, true))){
+        constructorKind = NoConstructor;
         return QQmlPrivate::SingletonConstructionMode::FactoryWrapper;
     }
 #else
     Q_UNUSED(wrapperType)
 #endif //QT_VERSION >= QT_VERSION_CHECK(6,1,0)
     if(singleton){
-        if ((method = JavaAPI::resolveMethod(env, "<init>", "()V", type, false)))
+        if ((method = JavaAPI::resolveMethod(env, "<init>", "()V", type, false))){
+            constructorKind = DefaultConstructor;
             return QQmlPrivate::SingletonConstructionMode::Constructor;
+        }
     }else{
-        if ((method = findConstructor(env, type, QtJambiAPI::getClassName(env, type).replace('.', '/'))))
+        findConstructor(env, type, metaObject, method, constructorKind, constructorFunction);
+        if (method)
             return QQmlPrivate::SingletonConstructionMode::Constructor;
     }
     if ((method = JavaAPI::resolveMethod(env, "create", qPrintable(QStringLiteral("(Lio/qt/qml/QJSValue;)L%1;").arg(QtJambiAPI::getClassName(env, type).replace('.', '/'))), type, true)))
@@ -2048,17 +1771,26 @@ QQmlPrivate::SingletonConstructionMode singletonConstructionMode(JNIEnv *env, jc
 }
 
 std::function<QObject*(QQmlEngine *, QJSEngine *)> getCreateSingletonFunction(JNIEnv *env, jclass type, jclass wrapperType){
+    ConstructorKind constructorKind = NoConstructor;
     jmethodID method{nullptr};
+    QtJambiAPI::ConstructorFn constructorFunction{nullptr};
     jclass factoryType = type;
-    switch(singletonConstructionMode(env, type, wrapperType, true, method)){
+    switch(singletonConstructionMode(env, type, wrapperType, true, nullptr, method, constructorKind, constructorFunction)){
     case QQmlPrivate::SingletonConstructionMode::Constructor:
         type = JavaAPI::toGlobalReference(env, type);
-        return [type, method](QQmlEngine *, QJSEngine *)->QObject*{
+        return [type, method, constructorKind](QQmlEngine *, QJSEngine *)->QObject*{
             QObject* result{nullptr};
             if(JniEnvironment env{300}){
-                jobject o = env->NewObject(type, method);
-                result = qtjambi_cast<QObject*>(env, o);
-                QtJambiAPI::setCppOwnershipForTopLevelObject(env, result);
+                switch(constructorKind){
+                case DeclarativeConstructor: break;
+                case PrivateConstructor: break;
+                case InPlaceConstructor: break;
+                default:
+                    jobject o = env->NewObject(type, method);
+                    result = qtjambi_cast<QObject*>(env, o);
+                    QtJambiAPI::setCppOwnershipForTopLevelObject(env, result);
+                    break;
+                }
             }
             return result;
         };
@@ -2451,11 +2183,6 @@ void qtjambi_qmlRegisterTypesAndRevisions(JNIEnv *env, jobjectArray types, const
                     extendedConstructor = JavaAPI::resolveMethod(env, "<init>", "(Lio/qt/core/QObject;)V", extendedClass);
                 }
             }
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-            QString javaName = QtJambiAPI::getClassName(env, resolvedClass).replace(".", "/");
-            int typeId = registerQObjectAsQmlMetaType(env, resolvedClass, javaName, resolved_meta_object);
-            int listId = registerQQmlListPropertyAsQmlMetaType(env, javaName);
-#else
             QMetaType typeId;
             QMetaType listId;
             if(!isQObject){
@@ -2470,7 +2197,7 @@ void qtjambi_qmlRegisterTypesAndRevisions(JNIEnv *env, jobjectArray types, const
                     Java::QtQml::QmlTypeRegistrationException::throwNew(env, QStringLiteral("%1 is neither a QObject, nor default- and copy-constructible. You should not use it as a QML type.").arg(QtJambiAPI::getClassName(env, resolvedClass).replace('$', '.')) QTJAMBI_STACKTRACEINFO );
                 listId = QMetaType(QmlAPI::registerMetaType(env, SequentialContainerType::QList, typeId));
                 if(Java::Runtime::Class::getAnnotation(env, resolvedClass, Java::QtQml::Util::QmlAttached::getClass(env))
-                        || findQmlAttachedProperties(env, resolvedClass).function){
+                    || findQmlAttachedProperties(env, resolvedClass).function){
                     Java::QtQml::QmlTypeRegistrationException::throwNew(env, QStringLiteral("%1 is not a QObject, but has attached properties. This won't work.").arg(QtJambiAPI::getClassName(env, resolvedClass).replace('$', '.')) QTJAMBI_STACKTRACEINFO );
                 }
             }else{
@@ -2478,7 +2205,6 @@ void qtjambi_qmlRegisterTypesAndRevisions(JNIEnv *env, jobjectArray types, const
                 typeId = QMetaType(registerQObjectAsQmlMetaType(env, resolvedClass, javaName, resolved_meta_object));
                 listId = QMetaType(registerQQmlListPropertyAsQmlMetaType(env, javaName));
             }
-#endif
 
             int objectSize = int(QmlAPI::extendedSizeForClass(env, resolvedClass));
             int psCast = parserStatusCast(env, resolvedClass);
@@ -2486,13 +2212,19 @@ void qtjambi_qmlRegisterTypesAndRevisions(JNIEnv *env, jobjectArray types, const
             int viCast = valueInterceptorCast(env, resolvedClass);
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
             int fhCast = finalizerHookCast(env, resolvedClass);
+            ConstructorKind constructorKind = NoConstructor;
             jmethodID constructor{nullptr};
+            QtJambiAPI::ConstructorFn constructorFunction{nullptr};
             void (*create)(void *, void *) = nullptr;
             void* userdata = nullptr;
-            switch(singletonConstructionMode(env, resolvedClass, resolvedClass, false, constructor)){
+            switch(singletonConstructionMode(env, resolvedClass, resolvedClass, false, resolved_meta_object, constructor, constructorKind, constructorFunction)){
             case QQmlPrivate::SingletonConstructionMode::Constructor:
-                create = &createQmlObject;
-                userdata = creatorFunctionMetaData(env, resolved_meta_object, resolvedClass, constructor, objectSize, psCast, vsCast, viCast, fhCast);
+                if(constructor){
+                    create = &createQmlObject;
+                    userdata = creatorFunctionMetaData(env, resolved_meta_object, resolvedClass, constructor, constructorKind, constructorFunction, objectSize, psCast, vsCast, viCast, fhCast);
+                }else{
+                    Java::QtQml::QmlTypeRegistrationException::throwNew(env, QStringLiteral("%1 is not constructible.").arg(QtJambiAPI::getClassName(env, resolvedClass).replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+                }
                 break;
             default: break;
             }
@@ -2555,19 +2287,11 @@ void qtjambi_qmlRegisterTypesAndRevisions(JNIEnv *env, jobjectArray types, const
                 typeId,
                 listId,
                 objectSize,
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
                 create,
                 userdata,
                 createValueType,
-#else
-                creatorFunction(env, resolved_meta_object, resolvedClass, findConstructor(env, resolvedClass, javaName), objectSize, psCast, vsCast, viCast),
-#endif
                 uri,
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
                 QTypeRevision::fromMajorVersion(versionMajor),
-#else
-                versionMajor,
-#endif
                 resolved_meta_object,
                 type_meta_object,
 
@@ -2582,7 +2306,6 @@ void qtjambi_qmlRegisterTypesAndRevisions(JNIEnv *env, jobjectArray types, const
                 extended_meta_object,
 
                 &qmlCreateCustomParser<void>,
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
                 qmlTypeIds,
 #if QT_VERSION >= QT_VERSION_CHECK(6,3,0)
                 fhCast,
@@ -2590,7 +2313,6 @@ void qtjambi_qmlRegisterTypesAndRevisions(JNIEnv *env, jobjectArray types, const
                 false,
 #if QT_VERSION >= QT_VERSION_CHECK(6,4,0)
                 QMetaSequence(),
-#endif
 #endif
 #endif
             };
@@ -2902,7 +2624,7 @@ constexpr CreateManaged qjsvalue_cast<CreateManaged>(const QJSValue &)
 QJSManagedValue qtjambi_toManagedValue(JNIEnv *env, QJSEngine *__qt_this, const QVariant& variant)
 {
     QtJambiAPI::checkThread(env, __qt_this);
-    CreateManaged createManaged = qjsvalue_cast<CreateManaged>(QJSManagedValue{});
+    CreateManaged createManaged = qjsvalue_cast<CreateManaged>(QJSValue{});
     return (__qt_this->*createManaged)(variant.metaType(), variant.data());
 }
 #endif
@@ -2936,7 +2658,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_qml_QQmlListProperty_clone_1nati
 }
 
 // new QQmlListProperty()
-void __qt_create_new_QQmlListProperty(void* __qtjambi_ptr, JNIEnv*, jobject, jvalue*, bool, bool, bool)
+void __qt_create_new_QQmlListProperty(void* __qtjambi_ptr, JNIEnv*, jobject, jvalue*, QtJambiAPI::ConstructorOptions)
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QQmlListProperty<void>()")
     QQmlListProperty<void> *__qt_this = new(__qtjambi_ptr) QQmlListProperty<void>();
@@ -2950,7 +2672,7 @@ typedef qsizetype list_int;
 #endif
 
 // new QQmlListProperty(QObject * o, QList<QObject > & list)
-void __qt_create_new_QQmlListProperty_QObject_QList_bool(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject, jvalue* __java_arguments, bool, bool, bool)
+void __qt_create_new_QQmlListProperty_QObject_QList_bool(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject, jvalue* __java_arguments, QtJambiAPI::ConstructorOptions)
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QQmlListProperty<void>(QObject * o, QList<QObject > & list)")
     jobject o0 = __java_arguments[0].l;
@@ -3170,7 +2892,7 @@ struct FunctionUserData : QtJambiObjectData{
 #endif
 };
 
-void __qt_create_new_QQmlListProperty_functions(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject, jvalue* __java_arguments, bool, bool, bool)
+void __qt_create_new_QQmlListProperty_functions(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject, jvalue* __java_arguments, QtJambiAPI::ConstructorOptions)
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QQmlListProperty<void>(QObject * o, QList<QObject > & list)()")
     QObject* object = QtJambiAPI::convertJavaObjectToQObject(__jni_env, __java_arguments[1].l);
@@ -3250,7 +2972,7 @@ void __qt_destruct_QQmlListProperty(void* ptr)
 extern "C" JNIEXPORT void JNICALL Java_io_qt_qml_QQmlListProperty_initialize_1native_1plain(JNIEnv *__jni_env, jclass __jni_class, jobject __jni_object){
     QTJAMBI_NATIVE_METHOD_CALL("QQmlListProperty::QQmlListProperty()")
     QTJAMBI_TRY{
-        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_create_new_QQmlListProperty, sizeof(QQmlListProperty<void>), typeid(QQmlListProperty<void>), 0, false, &deleter_QQmlListProperty, nullptr);
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_create_new_QQmlListProperty, sizeof(QQmlListProperty<void>), typeid(QQmlListProperty<void>), 0, false, &deleter_QQmlListProperty, nullptr, nullptr);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -3629,43 +3351,18 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_qml_QtJambi_1LibraryUtilities_initi
 void initialize_meta_info_QQmlListProperty(){
     using namespace RegistryAPI;
     QmlAPI::setQmlReportDestruction(&QQmlPrivate::qdeclarativeelement_destructor);
-    QmlAPI::setQmlIsJavaScriptOwnership([](QObject * obj)->bool{
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-        return QQmlEngine::objectOwnership(obj)==QQmlEngine::JavaScriptOwnership;
-#else
-        return QJSEngine::objectOwnership(obj)==QJSEngine::JavaScriptOwnership;
-#endif
+    QmlAPI::setGetQmlOwnership([](QObject * obj)->QmlAPI::ObjectOwnerships{
+        QmlAPI::ObjectOwnerships result;
+        if(QQmlData *ddata = QQmlData::get(obj, false)){
+            result.setFlag(QmlAPI::ExplicitSet, ddata->explicitIndestructibleSet);
+            result.setFlag(QmlAPI::JavaScriptOwnership, !ddata->indestructible);
+        }
+        return result;
     });
     const std::type_info& typeId = registerUnspecificTypeInfo<QQmlListProperty<void>>("QQmlListProperty", "io/qt/qml/QQmlListProperty");
     registerOperators<QQmlListProperty<void>>();
     registerConstructorInfos(typeId, 0, &__qt_destruct_QQmlListProperty, {});
     registerDeleter(typeId, &deleter_QQmlListProperty);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    int metaTypeID = registerMetaType<QQmlListProperty<QObject>>("QQmlListProperty<QObject>",
-                            QtMetaTypePrivate::QMetaTypeFunctionHelper<QQmlListProperty<void>>::Destruct,
-                            [](void *where, const void *ptr) -> void *{
-                                QQmlListProperty<void>* listProperty = new(where) QQmlListProperty<void>();
-                                if (ptr){
-                                    const QQmlListProperty<void>* _ptr = reinterpret_cast<const QQmlListProperty<void>*>(ptr);
-                                    listProperty->object = _ptr->object;
-                                    listProperty->data = _ptr->data;
-                                    listProperty->append = _ptr->append;
-                                    listProperty->at = _ptr->at;
-                                    listProperty->clear = _ptr->clear;
-                                    listProperty->count = _ptr->count;
-#if QT_VERSION < QT_VERSION_CHECK(5,15,0)
-                                    listProperty->dummy1 = _ptr->dummy1;
-                                    listProperty->dummy2 = _ptr->dummy2;
-#else
-                                    listProperty->replace = _ptr->replace;
-                                    listProperty->removeLast = _ptr->removeLast;
-#endif
-                                }
-                                return listProperty;
-                            }
-                        );
-    QMetaType::registerNormalizedTypedef("QQmlListProperty", metaTypeID);
-#else
     int metaTypeID = registerMetaType<QQmlListProperty<QObject>>("QQmlListProperty<QObject>",
                             QtJambiPrivate::QMetaTypeInterfaceFunctions<QQmlListProperty<void>>::defaultCtr,
                             [](const QtPrivate::QMetaTypeInterface *, void *where, const void *ptr){
@@ -3678,7 +3375,6 @@ void initialize_meta_info_QQmlListProperty(){
                             }
                         );
     QMetaType::registerNormalizedTypedef("QQmlListProperty", QMetaType(metaTypeID));
-#endif
     registerMetaTypeID(typeId, metaTypeID);
 }
 

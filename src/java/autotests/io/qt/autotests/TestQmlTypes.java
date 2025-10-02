@@ -28,28 +28,13 @@
 ****************************************************************************/
 package io.qt.autotests;
 
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import io.qt.autotests.qmlreg.LineEditForeignExtendedByJavaWrapper;
-import io.qt.autotests.qmlreg.LineEditForeignExtendedByNativeObjectWrapper;
-import io.qt.autotests.qmlreg.LineEditForeignExtendedByQObjectWrapper;
-import io.qt.core.QByteArray;
-import io.qt.core.QList;
-import io.qt.core.QMetaObject;
-import io.qt.core.QMetaProperty;
-import io.qt.core.QObject;
-import io.qt.core.QUrl;
-import io.qt.qml.QQmlComponent;
-import io.qt.qml.QQmlEngine;
-import io.qt.qml.QQmlError;
-import io.qt.qml.QtQml;
-import io.qt.qml.util.QmlElement;
-import io.qt.qml.util.QmlTypeRegistrationException;
-import io.qt.qml.util.QmlTypes;
-import io.qt.widgets.QLineEdit;
+import org.junit.*;
+import io.qt.*;
+import io.qt.autotests.qmlreg.*;
+import io.qt.core.*;
+import io.qt.qml.*;
+import io.qt.qml.util.*;
+import io.qt.widgets.*;
 
 public class TestQmlTypes extends ApplicationInitializer{
 	@BeforeClass
@@ -147,8 +132,9 @@ public class TestQmlTypes extends ApplicationInitializer{
 	
 	@QmlElement
 	static class MyObject extends QObject{
-		public MyObject(QDeclarativeConstructor constructor) {
-			super(constructor);
+		MyObject(QtConstructInPlace constructor) {
+			super((QPrivateConstructor)null);
+			constructor.initialize(this);
 			lineEdits.add(new QLineEdit());
 			lineEdits.add(null);
 			lineEdits.add(null);

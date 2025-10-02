@@ -109,7 +109,7 @@ public class TestExceptions2 extends ApplicationInitializer {
     }
     
     @Test
-    public void testInhibitedExceptiom() {
+    public void testInhibitedException() {
     	QtUtilities.setNoExceptionForwardingFromVirtualCallsEnabled(true);
     	try {
     		QObject object = new QObject() {

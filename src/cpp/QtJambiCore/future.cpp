@@ -139,7 +139,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QFutureInterface_clone(JNIE
 // emitting (writeSignalFunction)
 // emitting (writeConstructors)
 // new QFutureInterface(QFutureInterfaceBase::State initialState)
-void __qt_construct_QFutureInterface_QVariant__0(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject, jvalue*, bool, bool, bool)
+void __qt_construct_QFutureInterface_QVariant__0(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject, jvalue*, QtJambiAPI::ConstructorOptions)
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QFutureInterface(QFutureInterfaceBase::State initialState)")
 #if QT_CONFIG(future)
@@ -153,7 +153,7 @@ void __qt_construct_QFutureInterface_QVariant__0(void* __qtjambi_ptr, JNIEnv* __
 }
 
 // new QFutureInterface(QFutureInterfaceBase::State initialState)
-void __qt_construct_QFutureInterface_void__0(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject, jvalue*, bool, bool, bool)
+void __qt_construct_QFutureInterface_void__0(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject, jvalue*, QtJambiAPI::ConstructorOptions)
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QFutureInterface(QFutureInterfaceBase::State initialState)")
 #if QT_CONFIG(future)
@@ -167,7 +167,7 @@ void __qt_construct_QFutureInterface_void__0(void* __qtjambi_ptr, JNIEnv* __jni_
 }
 
 // new QFutureInterface(QFutureInterfaceBase::State initialState)
-void __qt_construct_QFutureInterface_QVariant__1(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, bool, bool, bool)
+void __qt_construct_QFutureInterface_QVariant__1(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, QtJambiAPI::ConstructorOptions)
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QFutureInterface(QFutureInterfaceBase::State initialState)")
 #if QT_CONFIG(future)
@@ -185,7 +185,7 @@ void __qt_construct_QFutureInterface_QVariant__1(void* __qtjambi_ptr, JNIEnv* __
 }
 
 // new QFutureInterface(const QFutureInterface<QVariant> & other)
-void __qt_construct_QFutureInterface_QVariant__2(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, bool, bool, bool)
+void __qt_construct_QFutureInterface_QVariant__2(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, QtJambiAPI::ConstructorOptions)
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QFutureInterface(const QFutureInterface<QVariant> & other)")
 #if QT_CONFIG(future)
@@ -208,7 +208,7 @@ void __qt_construct_QFutureInterface_QVariant__2(void* __qtjambi_ptr, JNIEnv* __
 }
 
 // new QFutureInterface(QFutureInterfaceBase::State initialState)
-void __qt_construct_QFutureInterface_void__1(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, bool, bool, bool)
+void __qt_construct_QFutureInterface_void__1(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, QtJambiAPI::ConstructorOptions)
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QFutureInterface(QFutureInterfaceBase::State initialState)")
 #if QT_CONFIG(future)
@@ -226,7 +226,7 @@ void __qt_construct_QFutureInterface_void__1(void* __qtjambi_ptr, JNIEnv* __jni_
 }
 
 // new QFutureInterface(const QFutureInterface<void> & other)
-void __qt_construct_QFutureInterface_void__2(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, bool, bool, bool)
+void __qt_construct_QFutureInterface_void__2(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, QtJambiAPI::ConstructorOptions)
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QFutureInterface(const QFutureInterface<QVariant> & other)")
 #if QT_CONFIG(future)
@@ -552,7 +552,7 @@ void QFutureWatcher_shell::operator delete(void * ptr) noexcept {
 }
 
 // new QFutureWatcher(QObject*)
-void __qt_construct_QFutureWatcher_1(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject, jvalue* __java_arguments, bool, bool, bool)
+void __qt_construct_QFutureWatcher_1(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject, jvalue* __java_arguments, QtJambiAPI::ConstructorOptions)
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QFutureWatcher(QObject*)")
 #if QT_CONFIG(future)
@@ -631,7 +631,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QFutureWatcher_initialize_1nat
         jvalue arguments[2];
         arguments[0].l = parent0;
         arguments[1].l = functions;
-        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QFutureWatcher_1, sizeof(QFutureWatcher_shell), typeid(QFutureWatcher<QVariant>), 0, QFutureWatcher_shell::staticMetaObject, true, false, false, arguments);
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QFutureWatcher_1, sizeof(QFutureWatcher_shell), typeid(QFutureWatcher<QVariant>), 0, QFutureWatcher_shell::staticMetaObject, true, false, arguments);
 #else
         Q_UNUSED(__jni_object)
         Q_UNUSED(__jni_class)

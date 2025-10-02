@@ -380,6 +380,7 @@ TypeSystem{
             signature: "authenticationRequired(const QUrl&,QAuthenticator*)"
             ModifyArgument{
                 index: 2
+                invalidateAfterUse: true
                 NoNullPointer{
                 }
             }
@@ -388,6 +389,7 @@ TypeSystem{
             signature: "proxyAuthenticationRequired(const QUrl&,QAuthenticator*, const QString&)"
             ModifyArgument{
                 index: 2
+                invalidateAfterUse: true
                 NoNullPointer{
                 }
             }

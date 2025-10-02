@@ -56,7 +56,7 @@
 // emitting (writeSignalFunction)
 // emitting (writeConstructors)
 // new QDBusReply(const QDBusError & dbusError)
-void __qt_construct_QDBusReply(void* __qtjambi_ptr, JNIEnv*, jobject, jvalue*, bool, bool, bool)
+void __qt_construct_QDBusReply(void* __qtjambi_ptr, JNIEnv*, jobject, jvalue*, QtJambiAPI::ConstructorOptions)
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QDBusReply(const QDBusError & dbusError)")
     QDBusReply<QVariant> *__qt_this = new(__qtjambi_ptr) QDBusReply<QVariant>();
@@ -64,7 +64,7 @@ void __qt_construct_QDBusReply(void* __qtjambi_ptr, JNIEnv*, jobject, jvalue*, b
 }
 
 // new QDBusReply(const QDBusError & dbusError)
-void __qt_construct_QDBusReply_QDBusError(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject, jvalue* __java_arguments, bool, bool, bool)
+void __qt_construct_QDBusReply_QDBusError(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject, jvalue* __java_arguments, QtJambiAPI::ConstructorOptions)
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QDBusReply(const QDBusError & dbusError)")
     jobject dbusError0 = __java_arguments[0].l;
@@ -86,7 +86,7 @@ struct DBusReply{
 };
 
 // new QDBusReply(const QDBusMessage & reply)
-void __qt_construct_QDBusReply_QDBusMessage(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, bool, bool, bool)
+void __qt_construct_QDBusReply_QDBusMessage(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, QtJambiAPI::ConstructorOptions)
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QDBusReply(const QDBusMessage & reply)")
     jobject reply0 = __java_arguments[0].l;
@@ -98,7 +98,7 @@ void __qt_construct_QDBusReply_QDBusMessage(void* __qtjambi_ptr, JNIEnv* __jni_e
 }
 
 // new QDBusReply(const QDBusPendingCall & pcall)
-void __qt_construct_QDBusReply_QDBusPendingCall(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, bool, bool, bool)
+void __qt_construct_QDBusReply_QDBusPendingCall(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, QtJambiAPI::ConstructorOptions)
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QDBusReply(const QDBusPendingCall & pcall)")
     jobject pcall0 = __java_arguments[0].l;

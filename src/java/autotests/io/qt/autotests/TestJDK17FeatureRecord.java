@@ -46,6 +46,7 @@ public class TestJDK17FeatureRecord extends ApplicationInitializer {
 	
 	public static record Book(@QtPropertyReader @QtInvokable String name, @QtPropertyReader @QtInvokable double price) {}
     
+	@SuppressWarnings("unused")
 	@Test
     public void test() {
 		QMetaObject bookObjectType = QMetaObject.forType(Book.class);

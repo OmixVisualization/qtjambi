@@ -362,6 +362,7 @@
 				<equals arg1="${qtjambi.osplatform}" arg2="android"/>
 			</or>
 			<then>
+				<mkdir dir="${plugindestdir}/${moduledash}"/>
 				<if>
 					<equals arg1="${qtjambi.osname}" arg2="android-arm"/>
 					<then>
@@ -388,6 +389,7 @@
 											<else>
 												<property name="jar-includes" value="plugins/${plugin-subdir}/*,META-INF/qtjambi-deployment.xml"/>
 												<create-native-deployment outputDirectory="${plugindestdir}" 
+																			tempDirectory="${plugindestdir}/${moduledash}"
 																			debug="${isdebug}" 
 																			module="${moduledot}" 
 																			libraries="${plugin-subdir}" 
@@ -426,10 +428,11 @@
 								<attribute name="Bundle-ManifestVersion" value="2"/>
 							</manifest>
 							<fileset dir="${plugindestdir}" includes="${jar-includes}"/>
+							<fileset dir="${plugindestdir}/${moduledash}" includes="META-INF/*"/>
 						</jar>
 					</then>
 				</if>
-				<delete file="${plugindestdir}/META-INF/qtjambi-deployment.xml"/>
+				<delete dir="${plugindestdir}/${moduledash}" failonerror="false"/>
 			</then>
 		</if>
     </target>
@@ -444,6 +447,7 @@
     </target>
     
     <target name="compile-plugin" depends="jar_init">
+        <dependencies-to-classpath property="qtjambi.dependencies" jarversion="${qtjambi.jar.version}" dependencies="${qtjambi.required.modules}"/>
         <echo message="Compiling java classes: ${java.srcdir}/${module} excludes: ${module.excludes}"/>
         <pathconvert pathsep=","
             property="multiroot.basedirs">
@@ -480,7 +484,6 @@
             property="sourcedirs2">
             <path refid="sourcedirs"/>
         </pathconvert>
-        <dependencies-to-classpath property="qtjambi.dependencies" jarversion="${qtjambi.jar.version}" dependencies="${qtjambi.required.modules}"/>
         <if>
             <istrue value="${java.module.based}"/>
             <then>
@@ -544,6 +547,7 @@
 			</manifest>
 			<fileset dir="${java.outsrcdir}/plugins/${module}" excludes="**/*.class"/>
 		</jar>
+		<register-finished-module module="${module}"/>
     </target>
 
     <target name="build-plugin">

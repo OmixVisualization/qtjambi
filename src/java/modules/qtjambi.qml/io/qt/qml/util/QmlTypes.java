@@ -31,13 +31,18 @@
 package io.qt.qml.util;
 
 import java.io.File;
+import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.logging.Logger;
 
 import io.qt.NativeAccess;
@@ -144,37 +149,90 @@ public final class QmlTypes {
 			if(!registeredClasses.contains(cls))
 				registeredClasses.add(cls);
 		}
-		QDir classPath = new QDir(":"+pkg.getName().replace('.', '/'));
-		for(String className : classPath.entryList(Collections.singletonList("*.class"), new QDir.Filters(QDir.Filter.Files, QDir.Filter.NoSymLinks))) {
-			if(className.endsWith(".class") && !className.endsWith("-info.class") && !className.contains("$")){
-				className = pkg.getName()+"."+className.substring(0, className.length()-6);
+		boolean found = false;
+		try {
+			String className = pkg.getName()+".package-info";
+			Class<?> cls;
+			try {
+				cls = qmlClassLoader.loadClass(className);
+			} catch (Exception e) {
 				try {
-					Class<?> cls;
+					cls = ClassLoader.getSystemClassLoader().loadClass(className);
+				} catch (Exception e1) {
 					try {
-						cls = qmlClassLoader.loadClass(className);
-					} catch (Exception e) {
-						try {
-							cls = ClassLoader.getSystemClassLoader().loadClass(className);
-						} catch (Exception e1) {
-							try {
-								cls = Thread.currentThread().getContextClassLoader().loadClass(className);
-							} catch (Exception e2) {
-								cls = Class.forName(className);
+						cls = Thread.currentThread().getContextClassLoader().loadClass(className);
+					} catch (Exception e2) {
+						cls = Class.forName(className);
+					}
+				}
+			}
+			URL url = cls.getResource(cls.getName().replace('.', '/')+".class");
+			if(url!=null) {
+				try {
+					URLConnection connection = url.openConnection();
+					if(connection instanceof JarURLConnection) {
+						JarFile jarFile = ((JarURLConnection) connection).getJarFile();
+						Enumeration<JarEntry> entries = jarFile.entries();
+						String dir = pkg.getName().replace('.', '/');
+						while(entries.hasMoreElements()) {
+							JarEntry entry = entries.nextElement();
+							if(entry.getName().startsWith(dir)) {
+								found = true;
+								className = entry.getName().substring(dir.length());
+								if(!className.contains("/")){
+									if(!className.contains("$") 
+										&& className.endsWith(".class") && !className.endsWith("-info.class")) {
+										className = pkg.getName()+"."+className.substring(0, className.length()-6);
+										try {
+											cls = cls.getClassLoader().loadClass(className);
+											if(!registeredClasses.contains(cls))
+												registeredClasses.add(cls);
+										} catch (Exception e) {
+										}
+									}else if(className.endsWith(".qml")){
+										QtQml.qmlRegisterType(new QUrl("qrc:"+pkg.getName().replace('.', '/')+"/"+className), uri, versionMajor, 0, className.substring(0, className.length()-4));
+									}
+								}
 							}
 						}
 					}
-					if(!registeredClasses.contains(cls))
-						registeredClasses.add(cls);
-				} catch (Exception e) {
+				} catch (Throwable e) {
 				}
+			}
+		} catch (Throwable e) {}
+		if(!found){
+			QDir classPath = new QDir(":"+uri.replace('.', '/'));
+			for(String className : classPath.entryList(Collections.singletonList("*.class"), new QDir.Filters(QDir.Filter.Files, QDir.Filter.NoSymLinks))) {
+				if(className.endsWith(".class") && !className.endsWith("-info.class") && !className.contains("$")){
+					className = uri+"."+className.substring(0, className.length()-6);
+					try {
+						Class<?> cls;
+						try {
+							cls = qmlClassLoader.loadClass(className);
+						} catch (Exception e) {
+							try {
+								cls = ClassLoader.getSystemClassLoader().loadClass(className);
+							} catch (Exception e1) {
+								try {
+									cls = Thread.currentThread().getContextClassLoader().loadClass(className);
+								} catch (Exception e2) {
+									cls = Class.forName(className);
+								}
+							}
+						}
+						if(!registeredClasses.contains(cls))
+							registeredClasses.add(cls);
+					} catch (Exception e) {
+					}
+				}
+			}
+			for(String qmlFile : classPath.entryList(Collections.singletonList("*.qml"), new QDir.Filters(QDir.Filter.Files, QDir.Filter.NoSymLinks))) {
+				QtQml.qmlRegisterType(new QUrl("qrc:"+pkg.getName().replace('.', '/')+"/"+qmlFile), uri, versionMajor, 0, qmlFile.substring(0, qmlFile.length()-4));
 			}
 		}
 		try{
 			analyzeType(uri, versionMajor, null, registeredClasses.toArray(new Class[registeredClasses.size()]));
 		} catch (Exception e) {
-		}
-		for(String qmlFile : classPath.entryList(Collections.singletonList("*.qml"), new QDir.Filters(QDir.Filter.Files, QDir.Filter.NoSymLinks))) {
-			QtQml.qmlRegisterType(new QUrl("qrc:"+pkg.getName().replace('.', '/')+"/"+qmlFile), uri, versionMajor, 0, qmlFile.substring(0, qmlFile.length()-4));
 		}
 		if(isModule) {
 			QtQml.qmlRegisterModule(uri, versionMajor, 0);
@@ -208,31 +266,7 @@ public final class QmlTypes {
 			_package = QtJambi_LibraryUtilities.internal.getDefinedPackage(Thread.currentThread().getContextClassLoader(), pkg);
 		}
 		if(_package==null){
-			QDir classPath = new QDir(":"+pkg.replace('.', '/'));
-			for(String className : classPath.entryList(Collections.singletonList("*.class"), new QDir.Filters(QDir.Filter.Files, QDir.Filter.NoSymLinks))) {
-				if(className.endsWith(".class") && !className.endsWith("-info.class") && !className.contains("$")){
-					className = pkg+"."+className.substring(0, className.length()-6);
-					try {
-						Class<?> cls;
-						try {
-							cls = qmlClassLoader.loadClass(className);
-						} catch (Exception e) {
-							try {
-								cls = ClassLoader.getSystemClassLoader().loadClass(className);
-							} catch (Exception e1) {
-								try {
-									cls = Thread.currentThread().getContextClassLoader().loadClass(className);
-								} catch (Exception e2) {
-									cls = Class.forName(className);
-								}
-							}
-						}
-						_package = cls.getPackage();
-						break;
-					} catch (Exception e) {
-					}
-				}
-			}
+			_package = findPackage(pkg);
 		}
 		if(_package==null) {
 			throw new IllegalArgumentException("No such package "+pkg);
@@ -264,31 +298,7 @@ public final class QmlTypes {
 			_package = QtJambi_LibraryUtilities.internal.getDefinedPackage(Thread.currentThread().getContextClassLoader(), pkg);
 		}
 		if(_package==null){
-			QDir classPath = new QDir(":"+pkg.replace('.', '/'));
-			for(String className : classPath.entryList(Collections.singletonList("*.class"), new QDir.Filters(QDir.Filter.Files, QDir.Filter.NoSymLinks))) {
-				if(className.endsWith(".class") && !className.endsWith("-info.class") && !className.contains("$")){
-					className = pkg+"."+className.substring(0, className.length()-6);
-					try {
-						Class<?> cls;
-						try {
-							cls = qmlClassLoader.loadClass(className);
-						} catch (Exception e) {
-							try {
-								cls = ClassLoader.getSystemClassLoader().loadClass(className);
-							} catch (Exception e1) {
-								try {
-									cls = Thread.currentThread().getContextClassLoader().loadClass(className);
-								} catch (Exception e2) {
-									cls = Class.forName(className);
-								}
-							}
-						}
-						_package = cls.getPackage();
-						break;
-					} catch (Exception e) {
-					}
-				}
-			}
+			_package = findPackage(pkg);
 		}
 		if(_package==null) {
 			throw new IllegalArgumentException("No such package "+pkg);
@@ -412,18 +422,7 @@ public final class QmlTypes {
 				_package = QtJambi_LibraryUtilities.internal.getDefinedPackage(Thread.currentThread().getContextClassLoader(), uri);
 			}
 			if(_package==null){
-				QDir classPathDir = new QDir(":"+uri.replace('.', '/'));
-				for(String className : classPathDir.entryList(Collections.singletonList("*.class"), new QDir.Filters(QDir.Filter.Files, QDir.Filter.NoSymLinks))) {
-					if(className.endsWith(".class") && !className.endsWith("-info.class") && !className.contains("$")){
-						className = uri+"."+className.substring(0, className.length()-6);
-						try {
-							Class<?> cls = qmlClassLoader.loadClass(className);
-							_package = cls.getPackage();
-							break;
-						} catch (Exception e) {
-						}
-					}
-				}
+				_package = findPackage(uri);
 			}
 			int version = 1;
 			if(_package!=null) {
@@ -450,5 +449,55 @@ public final class QmlTypes {
 			QtQml.qmlRegisterModule(uri, version, 0);
 			QtQml.qmlProtectModule(uri, version);
         }
+	}
+	
+	private static java.lang.Package findPackage(String pkg) {
+		java.lang.Package _package = null;
+		QDir classPath = new QDir(":"+pkg.replace('.', '/'));
+		for(String className : classPath.entryList(Collections.singletonList("*.class"), new QDir.Filters(QDir.Filter.Files, QDir.Filter.NoSymLinks))) {
+			if(className.endsWith(".class") && !className.endsWith("-info.class") && !className.contains("$")){
+				className = pkg+"."+className.substring(0, className.length()-6);
+				try {
+					Class<?> cls;
+					try {
+						cls = qmlClassLoader.loadClass(className);
+					} catch (Exception e) {
+						try {
+							cls = ClassLoader.getSystemClassLoader().loadClass(className);
+						} catch (Exception e1) {
+							try {
+								cls = Thread.currentThread().getContextClassLoader().loadClass(className);
+							} catch (Exception e2) {
+								cls = Class.forName(className);
+							}
+						}
+					}
+					_package = cls.getPackage();
+					break;
+				} catch (Exception e) {
+				}
+			}
+		}
+		if(_package==null) {
+			try {
+				String className = pkg+".package-info";
+				Class<?> cls;
+				try {
+					cls = qmlClassLoader.loadClass(className);
+				} catch (Exception e) {
+					try {
+						cls = ClassLoader.getSystemClassLoader().loadClass(className);
+					} catch (Exception e1) {
+						try {
+							cls = Thread.currentThread().getContextClassLoader().loadClass(className);
+						} catch (Exception e2) {
+							cls = Class.forName(className);
+						}
+					}
+				}
+				_package = cls.getPackage();
+			} catch (Throwable e) {}
+		}
+		return _package;
 	}
 }

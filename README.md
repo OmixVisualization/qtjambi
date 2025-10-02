@@ -13,7 +13,7 @@ Further modules deal with concurrency, SQL and XML processing, statemachines, Op
 
 ## Availability
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.qtjambi/qtjambi/badge.svg)](https://search.maven.org/artifact/io.qtjambi/qtjambi)
+[![Maven Central](https://maven-badges.sml.io/sonatype-central/io.qtjambi/qtjambi/badge.svg)](https://central.sonatype.com/artifact/io.qtjambi/qtjambi)
 [![Release (latest by date)](https://img.shields.io/github/v/release/OmixVisualization/qtjambi)](https://github.com/OmixVisualization/qtjambi/releases)
 
 QtJambi is available for Java 11 and higher using Qt6 in Java on Windows, Android Linux and macOS. 

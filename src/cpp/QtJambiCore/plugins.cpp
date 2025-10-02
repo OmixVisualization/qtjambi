@@ -90,7 +90,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QPluginLoader_qRegisterStaticP
     try{
         QObject* instance = qtjambi_cast<QObject*>(__jni_env, jinstance);
         QtJambiAPI::checkNullPointer(__jni_env, instance);
-        QSharedPointer<QPointer<QObject>> pointer(new QPointer<QObject>(instance));
         QtJambiAPI::setCppOwnership(__jni_env, jinstance);
         jclass cls = __jni_env->GetObjectClass(jinstance);
         Q_ASSERT(cls);
@@ -101,8 +100,8 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QPluginLoader_qRegisterStaticP
         }
         QJsonObject json = QtJambiAPI::valueReferenceFromNativeId<QJsonObject>(metaData1);
         QtPluginInstanceFunction instanceFunction = qtjambi_function_pointer<16,QObject*()>(
-                    [pointer]() -> QObject*{
-                        return pointer->data();
+                    [pointer = QPointer<QObject>(instance)]() -> QObject*{
+                        return pointer.data();
                     }
                 , qHash(className) * 31 + qHash(json.value("Keys")));
         registerPlugin(instanceFunction, className.replace(".", "::").replace("$", "::"), json, iids);
@@ -125,17 +124,16 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QPluginLoader_qRegisterStaticP
         if(constructorHandle){
             QJsonObject json = QtJambiAPI::valueReferenceFromNativeId<QJsonObject>(metaData1);
             QtPluginInstanceFunction instanceFunction = qtjambi_function_pointer<16,QObject*()>(
-                        [cls, constructorHandle, pointer = QSharedPointer<QPointer<QObject>>(new QPointer<QObject>())]() -> QObject*{
+                        [cls, constructorHandle, pointer = QPointer<QObject>()]() mutable -> QObject* {
                             if(JniEnvironment env{500}){
                                QTJAMBI_TRY{
-                                    if(pointer->isNull()){
+                                    if(pointer.isNull()){
                                         jobject plugin = env->NewObject(cls, constructorHandle);
                                         JavaException::check(env QTJAMBI_STACKTRACEINFO);
-                                        QPointer<QObject> p(qtjambi_cast<QObject*>(env, plugin));
                                         QtJambiAPI::setCppOwnership(env, plugin);
-                                        pointer->swap(p);
+                                        pointer = qtjambi_cast<QObject*>(env, plugin);
                                     }
-                                    return pointer->data();
+                                    return pointer.data();
                                 }QTJAMBI_CATCH(const JavaException& exn){
                                     exn.report(env);
                                 }QTJAMBI_TRY_END

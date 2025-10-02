@@ -16,6 +16,9 @@ import org.apache.tools.ant.taskdefs.Property;
 public class ForeachNativeTask extends Task{
 	@Override
 	public void execute() throws BuildException {
+		boolean parallel = true;
+		if(!Boolean.getBoolean("parallel"))
+			parallel = false;
 		java.io.File dir = new java.io.File(this.dir);
 		if(dir.isDirectory()) {
 			String prefix = module + "-native-";
@@ -32,7 +35,10 @@ public class ForeachNativeTask extends Task{
 						Property param = ct.createParam();
 						param.setName("native-spec");
 						param.setValue(platform);
-						tasks.add(()->{ct.execute(); return null;});
+						if(parallel)
+							tasks.add(()->{ct.execute(); return null;});
+						else
+							ct.execute();
 					}
 				}
 			}

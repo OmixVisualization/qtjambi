@@ -328,7 +328,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_AbstractSpan_isConst
         return result;
 }
 
-void __qt_construct_QSpan_cref_Iterator(void* __qtjambi_ptr, JNIEnv*, jobject, jvalue* __java_arguments, bool, bool, bool)
+void __qt_construct_QSpan_cref_Iterator(void* __qtjambi_ptr, JNIEnv*, jobject, jvalue* __java_arguments, QtJambiAPI::ConstructorOptions)
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QSpan::QSpan(Iterator)")
     new(__qtjambi_ptr) QtJambiSpan{reinterpret_cast<void*>(__java_arguments[0].j), qsizetype(__java_arguments[1].j)};
@@ -385,7 +385,7 @@ class BufferArraySpan : public ManagedSpan{
         begin = data<Data>()->bufferAccess.data();
         size = data<Data>()->bufferAccess.size()/valueSize;
     }
-    static void construct(void* __qtjambi_ptr, JNIEnv* env, jobject, jvalue* __java_arguments, bool, bool, bool)
+    static void construct(void* __qtjambi_ptr, JNIEnv* env, jobject, jvalue* __java_arguments, QtJambiAPI::ConstructorOptions)
     {
         QTJAMBI_NATIVE_METHOD_CALL("construct QSpan::QSpan(Buffer)")
         BufferArraySpan<isConst>* access = new(__qtjambi_ptr) BufferArraySpan<isConst>(env, __java_arguments[0].l, __java_arguments[1].j);
@@ -484,7 +484,7 @@ class ArraySpan : public ManagedSpan{
         begin = data<Data>()->arrayAccess.pointer();
         size = data<Data>()->arrayAccess.size();
     }
-    static void construct(void* __qtjambi_ptr, JNIEnv* env, jobject, jvalue* __java_arguments, bool, bool, bool)
+    static void construct(void* __qtjambi_ptr, JNIEnv* env, jobject, jvalue* __java_arguments, QtJambiAPI::ConstructorOptions)
     {
         QTJAMBI_NATIVE_METHOD_CALL("construct QSpan::QSpan(Array)")
         ArraySpan<NativeType>* access = new(__qtjambi_ptr) ArraySpan<NativeType>(env, JArray(__java_arguments[0].l));
@@ -496,7 +496,11 @@ public:
             jvalue arguments[2];
             arguments[0].j = 0;
             arguments[1].j = 0;
-            QtJambiShell::initialize(__jni_env, __jni_env->GetObjectClass(__jni_object), __jni_object, &__qt_construct_QSpan_cref_Iterator, sizeof(QtJambiSpan), typeid(QSpan<QVariant>), 0, false, &QtJambiSpan::deleter, arguments);
+            QtJambiShell::initialize(__jni_env, __jni_env->GetObjectClass(__jni_object),
+                                     __jni_object,
+                                     &__qt_construct_QSpan_cref_Iterator,
+                                     sizeof(QtJambiSpan), typeid(QSpan<QVariant>), 0, false,
+                                     &QtJambiSpan::deleter, arguments);
             return false;
         }else{
             jvalue arguments[2];
@@ -680,7 +684,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_AbstractSpan_initializeFro
     return result;
 }
 
-void __qt_construct_QSpan_cref_Clone(void* __qtjambi_ptr, JNIEnv*, jobject, jvalue* __java_arguments, bool, bool, bool)
+void __qt_construct_QSpan_cref_Clone(void* __qtjambi_ptr, JNIEnv*, jobject, jvalue* __java_arguments, QtJambiAPI::ConstructorOptions)
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QSpan::QSpan(Iterator)")
     QtJambiSpan* newManager = new(__qtjambi_ptr) QtJambiSpan(*reinterpret_cast<QtJambiSpan*>(__java_arguments[0].j));
@@ -693,7 +697,7 @@ void __qt_construct_QSpan_cref_Clone(void* __qtjambi_ptr, JNIEnv*, jobject, jval
     }
 }
 
-void __qt_construct_QSpan_cref_ManagedClone(void* __qtjambi_ptr, JNIEnv*, jobject, jvalue* __java_arguments, bool, bool, bool)
+void __qt_construct_QSpan_cref_ManagedClone(void* __qtjambi_ptr, JNIEnv*, jobject, jvalue* __java_arguments, QtJambiAPI::ConstructorOptions)
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QSpan::QSpan(Iterator)")
     ManagedSpan* newManager = new(__qtjambi_ptr) ManagedSpan(*reinterpret_cast<ManagedSpan*>(__java_arguments[0].j));

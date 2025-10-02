@@ -574,7 +574,7 @@ typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,
 #include <QtJambiBluetooth/hashes.h>
 #endif
 
-#if !defined(QTJAMBI_NO_INSIGHTETRACKER)
+#if !defined(QTJAMBI_NO_INSIGHTTRACKER)
 #include <QtInsightTracker/QtInsightTracker>
 #endif
 
@@ -654,6 +654,8 @@ typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,
 
 #define QTJAMBI_FEATURE_opengles2 1
 
+#endif
+
 #ifdef QT_NO_OPENGL_BRIDGE
 #undef QT_NO_OPENGL_BRIDGE
 #define QT_NO_OPENGL
@@ -703,6 +705,5 @@ typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,
 
 #endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 
-#endif
 
 

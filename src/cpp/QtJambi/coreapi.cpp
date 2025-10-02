@@ -224,17 +224,10 @@ jobject invokeMetaMethodImpl(JNIEnv * env, const QMetaMethod& method,
             if(ok){
                 void* resultPtr = nullptr;
 #if QT_VERSION < QT_VERSION_CHECK(6,5,0)
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                if(method.returnType()!=QMetaType::Void){
-                    resultPtr = QMetaType::create(method.returnType());
-                    scope.addDeletion(method.returnType(), resultPtr);
-                }
-#else
                 if(method.returnMetaType().id()!=QMetaType::Void){
                     resultPtr = method.returnMetaType().create();
                     scope.addDeletion(method.returnMetaType(), resultPtr);
                 }
-#endif
                 ok = method.invoke(object,
                                    Qt::ConnectionType(connection),
                                    QGenericReturnArgument(method.typeName(), resultPtr),
@@ -262,6 +255,12 @@ jobject invokeMetaMethodImpl(JNIEnv * env, const QMetaMethod& method,
 #endif
                 if(ok && resultPtr){
                     ok = parameterTypeInfos[0].convertInternalToExternal(env, nullptr, resultPtr, result, true);
+                    if(QMetaType(parameterTypeInfos[0].metaType()).flags() & QMetaType::IsPointer){
+                        if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, result.l)){
+                            if(!link->isQObject() || !link->qobject()->parent())
+                                link->setDefaultOwnership(env);
+                        }
+                    }
                 }
             }
         }else if(parameterCount!=argsCount){
@@ -443,6 +442,12 @@ jobject CoreAPI::invokeMetaMethodOnGadget(JNIEnv * env, QtJambiNativeID _metaMet
 #endif
                     if(ok && resultPtr){
                         ok = parameterTypeInfos[0].convertInternalToExternal(env, nullptr, resultPtr, result, true);
+                        if(QMetaType(parameterTypeInfos[0].metaType()).flags() & QMetaType::IsPointer){
+                            if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, result.l)){
+                                if(!link->isQObject() || !link->qobject()->parent())
+                                    link->setDefaultOwnership(env);
+                            }
+                        }
                     }
                 }
             }else if(parameterCount!=argsCount){
@@ -748,7 +753,7 @@ QReadWriteLock* CoreAPI::objectDataLock()
     return QtJambiLinkUserData::lock();
 }
 
-jobject CoreAPI::getMetaObjectJavaType(JNIEnv *env, const QMetaObject *metaObject, bool exactOrNull)
+jclass CoreAPI::getMetaObjectJavaType(JNIEnv *env, const QMetaObject *metaObject, bool exactOrNull)
 {
     return QtJambiMetaObject::javaClass(env, metaObject, exactOrNull);
 }
@@ -804,6 +809,8 @@ QMetaMethod CoreAPI::findMetaMethod(const QMetaObject *metaObject, const QString
     return method;
 }
 
+bool isQmlJavaScriptOwnership(QObject * obj);
+
 jobject CoreAPI::newInstanceForMetaObject(JNIEnv *env, QtJambiNativeID constructorId, jobjectArray args){
     env->EnsureLocalCapacity(64);
     const QMetaMethod& constructor = QtJambiAPI::objectReferenceFromNativeId<QMetaMethod>(env, constructorId);
@@ -834,7 +841,13 @@ jobject CoreAPI::newInstanceForMetaObject(JNIEnv *env, QtJambiNativeID construct
             }
             if(obj){
                 if(constructor.enclosingMetaObject()->inherits(&QObject::staticMetaObject)){
-                    return QtJambiAPI::convertQObjectToJavaObject(env, obj);
+                    jobject jobj = QtJambiAPI::convertQObjectToJavaObject(env, obj);
+                    if(!obj->parent() && !isQmlJavaScriptOwnership(obj)){
+                        if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForQObject(obj)){
+                            link->setJavaOwnership(env);
+                        }
+                    }
+                    return jobj;
                 }else{
                     if(const QtJambiMetaObject* dynamicMetaObject = QtJambiMetaObject::cast(constructor.enclosingMetaObject())){
                         jclass cls = dynamicMetaObject->javaClass();

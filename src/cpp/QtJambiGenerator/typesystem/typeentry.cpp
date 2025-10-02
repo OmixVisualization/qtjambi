@@ -1216,4 +1216,38 @@ void AliasTypeEntry::setHasIndirections(bool newHasIndirections)
     hasIndirections = newHasIndirections;
 }
 
+GLsyncTypeEntry::GLsyncTypeEntry() : ObjectTypeEntry("__GLsync") {
+    setCodeGeneration(GenerateNothing);
+    setTargetLangName("GLsync");
+    setTargetTypeSystem("io.qt.gui");
+    setTargetLangPackage("io.qt.gui.gl");
+    setCodeGeneration(TypeEntry::GenerateNothing);
+    m_attributes.setFlag(ComplexTypeEntry::IsGLsync);
+}
+
+QMetaObjectTypeEntry::QMetaObjectTypeEntry() : ComplexTypeEntry("QMetaObject", QMetaObjectType) {
+    disableNativeIdUsage();
+    setDestructorPrivate();
+    setHasPrivateCopyConstructor();
+    setHasPrivateMoveConstructor();
+    setHasPrivateDefaultConstructor();
+}
+
+QString QMetaObjectTypeEntry::javaPackage() const { return "io.qt.core"; }
+
+bool QMetaObjectTypeEntry::isValue() const { return false; }
+
+QMetaObjectConnectionTypeEntry::QMetaObjectConnectionTypeEntry() : ComplexTypeEntry("QMetaObject::Connection", QMetaObjectConnectionType) {
+    setCodeGeneration(GenerateNothing);
+    disableNativeIdUsage();
+}
+
+QString QMetaObjectConnectionTypeEntry::targetLangName() const {
+    return "QMetaObject$Connection";
+}
+
+QString QMetaObjectConnectionTypeEntry::javaPackage() const { return "io.qt.core"; }
+
+bool QMetaObjectConnectionTypeEntry::isValue() const { return true; }
+
 }

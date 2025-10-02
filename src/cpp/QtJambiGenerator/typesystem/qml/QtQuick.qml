@@ -1846,10 +1846,10 @@ for(jsize i=0; i<count0; ++i){
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: String.raw`
-if(__qtjambi_is_generic)
+if(__qtjambi_constructor_options & QtJambiAPI::IsNativeConstruction)
     %in = Java::QtQuick::QSGGeometry$AttributeSet::clone(%env, %in);
 const QSGGeometry::AttributeSet& %out = QtJambiAPI::checkedAddressOf(%env, QtJambiAPI::convertJavaObjectToNative<QSGGeometry::AttributeSet>(%env, %in));
-if(__qtjambi_is_generic){
+if(__qtjambi_constructor_options & QtJambiAPI::IsNativeConstruction){
     if(%out.stride<=0)
         JavaException::raiseIllegalArgumentException(%env, "AttributeSet stride > 0 expected" QTJAMBI_STACKTRACEINFO);
     if(%out.count<=0)

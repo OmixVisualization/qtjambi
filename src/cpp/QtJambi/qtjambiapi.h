@@ -109,6 +109,16 @@ operator ||(QtJambiNativeID nativeId, BoolSupplier&& b2){
 typedef const std::type_info* (*TypeInfoSupplier)(const void *object);
 
 namespace QtJambiAPI{
+
+enum ConstructorOptions : int{
+    NoConstructorOption = 0,
+    HasDerivedMetaObject = 0x01,
+    HasOverrides = 0x02,
+    IsNativeConstruction = 0x04,
+    IsQmlConstruction = 0x08 | IsNativeConstruction,
+};
+typedef void (*ConstructorFn)(void*, JNIEnv*, jobject, jvalue*, QtJambiAPI::ConstructorOptions);
+
 void QTJAMBI_EXPORT checkNullPointer(JNIEnv *env, const void* ptr, const std::type_info& typeId);
 void QTJAMBI_EXPORT checkNullPointer(JNIEnv *env, const void* ptr, const std::type_info& typeId, TypeInfoSupplier typeInfoSupplier);
 void QTJAMBI_EXPORT checkDanglingPointer(JNIEnv *env, const void* ptr, const std::type_info& typeId, TypeInfoSupplier typeInfoSupplier);
@@ -684,7 +694,8 @@ template<typename T>
 class DeclarativeShellElement final : public T
 {
 public:
-    DeclarativeShellElement() : T() {}
+    template<typename... Args>
+    DeclarativeShellElement(Args... args) : T(std::forward(args)...) {}
     ~DeclarativeShellElement() override {
         DeclarativeUtil::reportDestruction(this);
     }

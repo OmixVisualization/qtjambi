@@ -401,7 +401,7 @@ struct MutableRangeRow : ConstRangeRow<RowType>{
     using Super::begin;
     using Super::end;
     using const_iterator = ConstIterator<>;
-    using iterator = Iterator<>;
+    using iterator = std::conditional_t<std::is_same_v<void*,decltype(std::declval<Super>().pointer())>, Iterator<>, ConstIterator<>>;
     using value_type = typename iterator::value_type;
     using size_type = qsizetype;
     MutableRangeRow(const MutableRangeRow& other) = default;
@@ -460,7 +460,7 @@ public:
     auto initialize(const Value& value) -> std::enable_if_t<std::is_same_v<decltype(value.metaType),decltype(metaType)>,bool> {
         if(Super::initialize(value)){
             if(pendingResize>0 && data){
-                if(AbstractListAccess* listAccess = dynamic_cast<AbstractListAccess*>(&*containerAccess)){
+                if(AbstractListAccess* listAccess = dynamic_cast<AbstractListAccess*>(containerAccess.get())){
                     listAccess->resize(pointer(), pendingResize);
                 }
                 pendingResize = 0;
@@ -471,8 +471,9 @@ public:
     }
 
     iterator insert(const const_iterator& iter, size_type n, const value_type& value){
-        if(AbstractListAccess* listAccess = dynamic_cast<AbstractListAccess*>(&*containerAccess)){
-            size_type i = std::distance(QRangeModelDetails::cbegin(*this), iter);
+        if(AbstractListAccess* listAccess = dynamic_cast<AbstractListAccess*>(containerAccess.get())){
+            const ExtensibleRangeRow& _this = *this;
+            size_type i = std::distance(QRangeModelDetails::begin(_this), iter);
             if(!value.data){
                 void* ptr = listAccess->elementMetaType().create();
                 listAccess->insert(pointer(), i, n, ptr);
@@ -492,16 +493,18 @@ public:
     }
 
     void erase(const const_iterator& iter){
-        if(AbstractListAccess* listAccess = dynamic_cast<AbstractListAccess*>(&*containerAccess)){
-            const_iterator begin = QRangeModelDetails::cbegin(*this);
+        if(AbstractListAccess* listAccess = dynamic_cast<AbstractListAccess*>(containerAccess.get())){
+            const ExtensibleRangeRow& _this = *this;
+            const_iterator begin = QRangeModelDetails::begin(_this);
             qsizetype i = std::distance(begin, iter);
             listAccess->remove(pointer(), i, 1);
         }
     }
 
     void erase(const const_iterator& iter, const const_iterator& iter2){
-        if(AbstractListAccess* listAccess = dynamic_cast<AbstractListAccess*>(&*containerAccess)){
-            const_iterator begin = QRangeModelDetails::cbegin(*this);
+        if(AbstractListAccess* listAccess = dynamic_cast<AbstractListAccess*>(containerAccess.get())){
+            const ExtensibleRangeRow& _this = *this;
+            const_iterator begin = QRangeModelDetails::begin(_this);
             qsizetype i = std::distance(begin, iter);
             qsizetype i2 = std::distance(begin, iter2);
             listAccess->remove(pointer(), i, i2-i);
@@ -511,12 +514,12 @@ public:
     void resize(qsizetype newSize){
         if(!containerAccess){
             pendingResize = newSize;
-        }else if(AbstractListAccess* listAccess = dynamic_cast<AbstractListAccess*>(&*containerAccess)){
+        }else if(AbstractListAccess* listAccess = dynamic_cast<AbstractListAccess*>(containerAccess.get())){
             listAccess->resize(pointer(), newSize);
         }
     }
     void resize(size_type newSize, const value_type& value){
-        if(AbstractListAccess* listAccess = dynamic_cast<AbstractListAccess*>(&*containerAccess)){
+        if(AbstractListAccess* listAccess = dynamic_cast<AbstractListAccess*>(containerAccess.get())){
             size_type oldSize = listAccess->size(pointer());
             if(!value.data && newSize>oldSize){
                 void* ptr = listAccess->elementMetaType().create();
@@ -721,10 +724,11 @@ struct TreeRangeWrapper : std::vector<std::conditional_t<sizeof...(Args)==0, Con
 
     template<int S = sizeof...(Args)>
     std::enable_if_t<S!=0, void> erase(const const_iterator& iter){
-        const_iterator begin = std::cbegin(*this);
+        const TreeRangeWrapper& _this = *this;
+        const_iterator begin = QRangeModelDetails::begin(_this);
         size_type i = std::distance(begin, iter);
         if(void* container = m_data.container()){
-            if(auto sequentialAccess = dynamic_cast<AbstractListAccess*>(&*m_data.containerAccess())){
+            if(auto sequentialAccess = dynamic_cast<AbstractListAccess*>(m_data.containerAccess().get())){
                 sequentialAccess->remove(container, i, 1);
                 Super::erase(iter);
                 auto iter = sequentialAccess->elementIterator(container);
@@ -749,11 +753,12 @@ struct TreeRangeWrapper : std::vector<std::conditional_t<sizeof...(Args)==0, Con
 
     template<int S = sizeof...(Args)>
     std::enable_if_t<S!=0, void> erase(const const_iterator& iter, const const_iterator& iter2){
-        const_iterator begin = std::cbegin(*this);
+        const TreeRangeWrapper& _this = *this;
+        const_iterator begin = QRangeModelDetails::begin(_this);
         size_type i = std::distance(begin, iter);
         size_type i2 = std::distance(begin, iter2);
         if(void* container = m_data.container()){
-            if(auto sequentialAccess = dynamic_cast<AbstractListAccess*>(&*m_data.containerAccess())){
+            if(auto sequentialAccess = dynamic_cast<AbstractListAccess*>(m_data.containerAccess().get())){
                 sequentialAccess->remove(container, i, i2-i);
                 Super::erase(iter, iter2);
                 auto iter = sequentialAccess->elementIterator(container);
@@ -781,8 +786,9 @@ struct TreeRangeWrapper : std::vector<std::conditional_t<sizeof...(Args)==0, Con
         if(!value)
             return Super::insert(iter, n, value);
         if(void* container = m_data.container()){
-            if(auto sequentialAccess = dynamic_cast<AbstractListAccess*>(&*m_data.containerAccess())){
-                size_type index = std::distance(std::cbegin(*this), iter);
+            if(auto sequentialAccess = dynamic_cast<AbstractListAccess*>(m_data.containerAccess().get())){
+                const TreeRangeWrapper& _this = *this;
+                size_type index = std::distance(QRangeModelDetails::begin(_this), iter);
                 if(index>size_type(sequentialAccess->size(container)))
                     index = size_type(sequentialAccess->size(container));
                 if(JniEnvironment env{100}){
@@ -828,7 +834,7 @@ struct TreeRangeWrapper : std::vector<std::conditional_t<sizeof...(Args)==0, Con
                         }
                         return result;
                     }else if(value->data){
-                        int index = std::distance(std::cbegin(*this), iter);
+                        int index = std::distance(QRangeModelDetails::begin(_this), iter);
                         sequentialAccess->insert(container, index, 1, value->data);
                         auto result = Super::insert(iter, 1, value);
                         auto eiter = sequentialAccess->elementIterator(container);
@@ -847,7 +853,7 @@ struct TreeRangeWrapper : std::vector<std::conditional_t<sizeof...(Args)==0, Con
                             index = std::distance(std::begin(*this), result);
                             TreeRow* row = new TreeRow();
                             row->setParentRow(value->parentRow());
-                            auto _iter = std::cbegin(*this);
+                            auto _iter = QRangeModelDetails::begin(_this);
                             std::advance(_iter, index+1);
                             insert(_iter, n-1, row);
                         }
@@ -884,7 +890,8 @@ struct TreeRangeWrapper : std::vector<std::conditional_t<sizeof...(Args)==0, Con
             if(n>1){
                 TreeRow* row = new TreeRow();
                 row->setParentRow(value->parentRow());
-                auto _iter = std::cbegin(*this);
+                const TreeRangeWrapper& _this = *this;
+                auto _iter = QRangeModelDetails::begin(_this);
                 std::advance(_iter, index+1);
                 insert(_iter, n-1, row);
             }
@@ -895,19 +902,19 @@ struct TreeRangeWrapper : std::vector<std::conditional_t<sizeof...(Args)==0, Con
 private:
     void initialize(JNIEnv* env){
         if constexpr(rowType==RowType::Range){
-            if(AbstractSequentialAccess* sequentialElementAccess = dynamic_cast<AbstractSequentialAccess*>(&*m_data.elementNestedContainerAccess())){
+            if(AbstractSequentialAccess* sequentialElementAccess = dynamic_cast<AbstractSequentialAccess*>(m_data.elementNestedContainerAccess().get())){
                 auto containerIter = m_data.containerAccess()->constElementIterator(m_data.container());
                 while(containerIter->hasNext()){
                     const void* data = containerIter->next();
                     *m_data.m_treeColumnCount = qMax(*m_data.m_treeColumnCount, sequentialElementAccess->size(data));
                 }
-            }else if(AbstractAssociativeAccess* associativeElementAccess = dynamic_cast<AbstractAssociativeAccess*>(&*m_data.elementNestedContainerAccess())){
+            }else if(AbstractAssociativeAccess* associativeElementAccess = dynamic_cast<AbstractAssociativeAccess*>(m_data.elementNestedContainerAccess().get())){
                 auto containerIter = m_data.containerAccess()->constElementIterator(m_data.container());
                 while(containerIter->hasNext()){
                     const void* data = containerIter->next();
                     *m_data.m_treeColumnCount = qMax(*m_data.m_treeColumnCount, associativeElementAccess->size(data));
                 }
-            }else if(dynamic_cast<AbstractPairAccess*>(&*m_data.elementNestedContainerAccess())){
+            }else if(dynamic_cast<AbstractPairAccess*>(m_data.elementNestedContainerAccess().get())){
                 *m_data.m_treeColumnCount = qMax(*m_data.m_treeColumnCount, 2);
             }
         }
@@ -953,11 +960,11 @@ private:
                     }
                     if constexpr(rowType==RowType::Range){
                         if(container){
-                            if(AbstractSequentialAccess* sequentialElementAccess = dynamic_cast<AbstractSequentialAccess*>(&*m_data.elementNestedContainerAccess())){
+                            if(AbstractSequentialAccess* sequentialElementAccess = dynamic_cast<AbstractSequentialAccess*>(m_data.elementNestedContainerAccess().get())){
                                 *m_data.m_treeColumnCount = qMax(*m_data.m_treeColumnCount, sequentialElementAccess->size(container));
-                            }else if(AbstractAssociativeAccess* associativeElementAccess = dynamic_cast<AbstractAssociativeAccess*>(&*m_data.elementNestedContainerAccess())){
+                            }else if(AbstractAssociativeAccess* associativeElementAccess = dynamic_cast<AbstractAssociativeAccess*>(m_data.elementNestedContainerAccess().get())){
                                 *m_data.m_treeColumnCount = qMax(*m_data.m_treeColumnCount, associativeElementAccess->size(container));
-                            }else if(dynamic_cast<AbstractPairAccess*>(&*m_data.elementNestedContainerAccess())){
+                            }else if(dynamic_cast<AbstractPairAccess*>(m_data.elementNestedContainerAccess().get())){
                                 *m_data.m_treeColumnCount = qMax(*m_data.m_treeColumnCount, 2);
                             }
                         }
@@ -1132,7 +1139,7 @@ public:
     bool resizeIfNecessary(){
         if constexpr(rowType==RowType::Range){
             if(data){
-                if(AbstractListAccess* access = dynamic_cast<AbstractListAccess*>(&*containerAccess)){
+                if(AbstractListAccess* access = dynamic_cast<AbstractListAccess*>(containerAccess.get())){
                     void* container = pointer();
                     if(container && access->size(container)<treeColumnCount()){
                         access->resize(container, treeColumnCount());
@@ -1159,7 +1166,8 @@ struct ListRangeWrapper : Super{
     template<typename Value>
     std::enable_if_t<std::is_same_v<Value,typename iterator::value_type> || std::is_same_v<Value,typename const_iterator::value_type>,iterator>
     insert(const const_iterator& iter, size_type n, const Value& value){
-        size_type i = std::distance(QRangeModelDetails::cbegin(*this), iter);
+        const ListRangeWrapper& _this = *this;
+        size_type i = std::distance(QRangeModelDetails::begin(_this), iter);
         if(!value.data){
             void* ptr = containerAccess()->elementMetaType().create();
             static_cast<AbstractListAccess*>(&*containerAccess())->insert(data, i, n, ptr);
@@ -1176,13 +1184,15 @@ struct ListRangeWrapper : Super{
     }
 
     void erase(const const_iterator& iter){
-        const_iterator begin = QRangeModelDetails::cbegin(*this);
+        const ListRangeWrapper& _this = *this;
+        const_iterator begin = QRangeModelDetails::begin(_this);
         size_type i = std::distance(begin, iter);
         static_cast<AbstractListAccess*>(&*containerAccess())->remove(data, i, 1);
     }
 
     void erase(const const_iterator& iter, const const_iterator& iter2){
-        const_iterator begin = QRangeModelDetails::cbegin(*this);
+        const ListRangeWrapper& _this = *this;
+        const_iterator begin = QRangeModelDetails::begin(_this);
         size_type i = std::distance(begin, iter);
         size_type i2 = std::distance(begin, iter2);
         static_cast<AbstractListAccess*>(&*containerAccess())->remove(data, i, i2-i);
@@ -1284,26 +1294,29 @@ template <TreeType treeType,
           bool is_list_range,
           bool is_list_row,
           RowType rowType, typename Protocol = QRangeModelDetails::table_protocol_t<RangeWrapperType<treeType,is_mutable_range,is_mutable_row,is_list_range,is_list_row,rowType>>>
-class QtJambiRangeModelImpl : public QRangeModelImplBase
+class QtJambiRangeModelImpl : public QtPrivate::QQuasiVirtualSubclass<QtJambiRangeModelImpl<treeType, Structure, is_mutable_range,is_mutable_row,is_list_range,is_list_row,rowType, Protocol>,
+                                                                      QRangeModelImplBase>
 {
 public:
     using Range = RangeWrapperType<treeType,is_mutable_range,is_mutable_row,is_list_range,is_list_row,rowType>;
     using range_type = QRangeModelDetails::wrapped_t<Range>;
     using row_reference = decltype(*QRangeModelDetails::begin(std::declval<range_type&>()));
-    using const_row_reference = decltype(*QRangeModelDetails::cbegin(std::declval<range_type&>()));
+    using const_row_reference = std::add_const_t<decltype(*QRangeModelDetails::begin(std::declval<const range_type&>()))>;
     using row_type = std::remove_reference_t<row_reference>;
     using wrapped_row_type = QRangeModelDetails::wrapped_t<row_type>;
     using row_ptr = wrapped_row_type *;
     using const_row_ptr = const wrapped_row_type *;
     using protocol_type = QRangeModelDetails::wrapped_t<Protocol>;
 protected:
+    using Ancestor = QtPrivate::QQuasiVirtualSubclass<QtJambiRangeModelImpl<treeType, Structure, is_mutable_range,is_mutable_row,is_list_range,is_list_row,rowType, Protocol>,
+                                                      QRangeModelImplBase>;
     using Self = QtJambiRangeModelImpl<treeType, Structure, is_mutable_range,is_mutable_row,is_list_range,is_list_row,rowType, Protocol>;
     Structure& that() { return static_cast<Structure &>(*this); }
     const Structure& that() const { return static_cast<const Structure &>(*this); }
 
     using ModelData = QRangeModelDetails::ModelData<std::conditional_t<
                                                     std::is_pointer_v<Range>,
-                                                    Range, std::remove_reference_t<Range>>,QObject>;
+                                                    Range, std::remove_reference_t<Range>>, QObject /*...having staticMetaObject*/ >;
 
     using range_features = QRangeModelDetails::range_traits<range_type>;
     using row_features = QRangeModelDetails::range_traits<wrapped_row_type>;
@@ -1413,12 +1426,12 @@ protected:
     void readAt(const QModelIndex &index, F&& reader) const {
         const_row_reference row = rowData(index);
         if constexpr(treeType!=TreeType::None && rowType==RowType::Range){
-            reader(*QRangeModelDetails::cpos(row, index.column()));
+            reader(*QRangeModelDetails::pos(row, index.column()));
         }else if constexpr (one_dimensional_range) {
             return reader(row);
         } else if (QRangeModelDetails::isValid(row)) {
             if constexpr (dynamicColumns()){
-                reader(*QRangeModelDetails::cpos(row, index.column()));
+                reader(*QRangeModelDetails::pos(row, index.column()));
             }
         }
     }
@@ -1445,10 +1458,11 @@ protected:
         return result;
     }
 public:
-    explicit QtJambiRangeModelImpl(Range &&model, Protocol&& protocol, QRangeModel *itemModel)
-        : QRangeModelImplBase(itemModel, static_cast<const Self*>(nullptr))
+    explicit QtJambiRangeModelImpl(Range &&model, Protocol&& protocol, QRangeModel *itemModel, QGenericTableItemModelImpl<GenericTable>* owner)
+        : Ancestor(itemModel)
         , m_data{std::forward<Range>(model)}
         , m_protocol(std::forward<Protocol>(protocol))
+        , m_owner(owner)
     {
 #if defined(Q_OS_WINDOWS)
         if(logRangeModel()){
@@ -1546,64 +1560,6 @@ public:
 #endif
     }
 
-    static void callConst(ConstOp op, const QRangeModelImplBase *that, void *r, const void *args)
-    {
-        switch (op) {
-        case Index: makeCall(that, &Self::index, r, args);
-            break;
-        case Parent: makeCall(that, &Structure::parent, r, args);
-            break;
-        case Sibling: makeCall(that, &Self::sibling, r, args);
-            break;
-        case RowCount: makeCall(that, &Structure::rowCount, r, args);
-            break;
-        case ColumnCount: makeCall(that, &Structure::columnCount, r, args);
-            break;
-        case Flags: makeCall(that, &Self::flags, r, args);
-            break;
-        case HeaderData: makeCall(that, &Self::headerData, r, args);
-            break;
-        case Data: makeCall(that, &Self::data, r, args);
-            break;
-        case ItemData: makeCall(that, &Self::itemData, r, args);
-            break;
-        case RoleNames: makeCall(that, &Self::roleNames, r, args);
-            break;
-        }
-    }
-
-    static void call(Op op, QRangeModelImplBase *that, void *r, const void *args)
-    {
-        switch (op) {
-        case Destroy: delete static_cast<Structure *>(that);
-            break;
-        case SetData: makeCall(that, &Self::setData, r, args);
-            break;
-        case SetItemData: makeCall(that, &Self::setItemData, r, args);
-            break;
-        case ClearItemData: makeCall(that, &Self::clearItemData, r, args);
-            break;
-        case InsertColumns: makeCall(that, &Self::insertColumns, r, args);
-            break;
-        case RemoveColumns: makeCall(that, &Self::removeColumns, r, args);
-            break;
-        case MoveColumns: makeCall(that, &Self::moveColumns, r, args);
-            break;
-        case InsertRows: makeCall(that, &Self::insertRows, r, args);
-            break;
-        case RemoveRows: makeCall(that, &Self::removeRows, r, args);
-            break;
-        case MoveRows: makeCall(that, &Self::moveRows, r, args);
-            break;
-        case SetHeaderData:
-            // not implemented
-            break;
-        case InvalidateCaches:
-            static_cast<Self *>(that)->m_data.invalidateCaches();
-            break;
-        }
-    }
-
     QModelIndex index(int row, int column, const QModelIndex &parent) const
     {
         if (row < 0 || column < 0 || column >= that().columnCount(parent)
@@ -1619,18 +1575,18 @@ public:
         if (row == index.row() && column == index.column())
             return index;
 
-        if (column < 0 || column >= itemModel().columnCount())
+        if (column < 0 || column >= this->itemModel().columnCount())
             return {};
 
         if (row == index.row()){
-            return createIndex(row, column, index.constInternalPointer());
+            return this->createIndex(row, column, index.constInternalPointer());
         }
 
         const_row_ptr parentRow = static_cast<const_row_ptr>(index.constInternalPointer());
         const auto siblingCount = size(that().childrenOf(parentRow));
         if (row < 0 || row >= int(siblingCount))
             return {};
-        return createIndex(row, column, parentRow);
+        return this->createIndex(row, column, parentRow);
     }
 
     Qt::ItemFlags flags(const QModelIndex &index) const
@@ -1675,7 +1631,7 @@ public:
         QVariant result;
         if (role != Qt::DisplayRole || orientation != Qt::Horizontal
             || section < 0 || section >= that().columnCount({})) {
-            return itemModel().QAbstractItemModel::headerData(section, orientation, role);
+            return this->itemModel().QAbstractItemModel::headerData(section, orientation, role);
         }
 
         if constexpr (rowType==RowType::MetaObject) {
@@ -1690,7 +1646,7 @@ public:
             result = QString::fromUtf8(m_data.model()->elementMetaType().name());
         }
         if (!result.isValid())
-            result = itemModel().QAbstractItemModel::headerData(section, orientation, role);
+            result = this->itemModel().QAbstractItemModel::headerData(section, orientation, role);
         return result;
     }
 
@@ -1805,7 +1761,7 @@ public:
             readAt(index, readItemData);
 
             if (!tried) // no multi-role item found
-                result = itemModel().QAbstractItemModel::itemData(index);
+                result = this->itemModel().QAbstractItemModel::itemData(index);
         }
         return result;
     }
@@ -1819,7 +1775,7 @@ public:
         if constexpr (isMutable()/* || rowType==RowType::MetaObject*/) {
             auto emitDataChanged = qScopeGuard([&success, this, &index, &role]{
                 if (success) {
-                    Q_EMIT dataChanged(index, index, role == Qt::EditRole
+                    Q_EMIT this->dataChanged(index, index, role == Qt::EditRole
                                                          ? QList<int>{} : QList{role});
                 }
             });
@@ -1895,7 +1851,7 @@ public:
         if constexpr (isMutable()) {
             auto emitDataChanged = qScopeGuard([&success, this, &index, &data]{
                 if (success)
-                    Q_EMIT dataChanged(index, index, data.keys());
+                    Q_EMIT this->dataChanged(index, index, data.keys());
             });
 
             bool tried = false;
@@ -1974,7 +1930,7 @@ public:
                 // setItemData will emit the dataChanged signal
                 Q_ASSERT(!success);
                 emitDataChanged.dismiss();
-                success = itemModel().QAbstractItemModel::setItemData(index, data);
+                success = this->itemModel().QAbstractItemModel::setItemData(index, data);
             }
         }
         return success;
@@ -1989,7 +1945,7 @@ public:
         if constexpr (isMutable()) {
             auto emitDataChanged = qScopeGuard([&success, this, &index]{
                 if (success)
-                    Q_EMIT dataChanged(index, index, {});
+                    Q_EMIT this->dataChanged(index, index, {});
             });
 
             auto clearData = [this, column = index.column()](auto &&target) {
@@ -2034,26 +1990,26 @@ public:
     QHash<int, QByteArray> roleNames() const
     {
         if(MultiRole::isMultiRole(m_data.model()->elementMetaType(), &*m_data.model()->containerAccess())){
-            return itemModel().QAbstractItemModel::roleNames();
+            return this->itemModel().QAbstractItemModel::roleNames();
         }else if (const QMetaObject* mo = m_data.model()->elementMetaObject()) {
             if constexpr(rowType!=RowType::MetaObject){
-                return roleNamesForMetaObject(*mo);
+                return this->roleNamesForMetaObject(this->itemModel(), *mo);
             }else{
-                return itemModel().QAbstractItemModel::roleNames();
+                return this->itemModel().QAbstractItemModel::roleNames();
             }
-        }else if(AbstractSequentialAccess* listAccess = dynamic_cast<AbstractSequentialAccess*>(&*m_data.model()->containerAccess())){
-            QSharedPointer<AbstractContainerAccess> elementNestedContainerAccess{m_data.model()->containerAccess()->elementNestedContainerAccess(), &containerDisposer};
-            if(MultiRole::isMultiRole(listAccess->elementMetaType(), &*elementNestedContainerAccess)){
-                return itemModel().QAbstractItemModel::roleNames();
+        }else if(AbstractSequentialAccess* listAccess = m_data.model()->containerAccess().get()){
+            QSharedPointer<AbstractContainerAccess> elementNestedContainerAccess{listAccess->elementNestedContainerAccess(), &containerDisposer};
+            if(MultiRole::isMultiRole(listAccess->elementMetaType(), elementNestedContainerAccess.get())){
+                return this->itemModel().QAbstractItemModel::roleNames();
             }else if (const QMetaObject* mo = listAccess->elementMetaType().metaObject()){
-                return roleNamesForMetaObject(*mo);
-            }else if(AbstractSequentialAccess* nestedListAccess = dynamic_cast<AbstractSequentialAccess*>(&*elementNestedContainerAccess)){
+                return this->roleNamesForMetaObject(this->itemModel(), *mo);
+            }else if(AbstractSequentialAccess* nestedListAccess = dynamic_cast<AbstractSequentialAccess*>(elementNestedContainerAccess.get())){
                 if (const QMetaObject* mo = nestedListAccess->elementMetaType().metaObject()){
-                    return roleNamesForMetaObject(*mo);
+                    return this->roleNamesForMetaObject(this->itemModel(), *mo);
                 }
             }
         }
-        return roleNamesForSimpleType();
+        return this->roleNamesForSimpleType();
     }
 
     bool insertColumns(int column, int count, const QModelIndex &parent)
@@ -2068,12 +2024,12 @@ public:
             if (!children)
                 return false;
 
-            beginInsertColumns(parent, column, column + count - 1);
+            this->beginInsertColumns(parent, column, column + count - 1);
             for (auto child : *children) {
                 auto it = QRangeModelDetails::pos(child, column);
                 QRangeModelDetails::refTo(child).insert(it, count, {});
             }
-            endInsertColumns();
+            this->endInsertColumns();
             return true;
         }
         return false;
@@ -2092,12 +2048,12 @@ public:
             if (!children)
                 return false;
 
-            beginRemoveColumns(parent, column, column + count - 1);
+            this->beginRemoveColumns(parent, column, column + count - 1);
             for (auto child : *children) {
                 const auto start = QRangeModelDetails::pos(child, column);
                 QRangeModelDetails::refTo(child).erase(start, std::next(start, count));
             }
-            endRemoveColumns();
+            this->endRemoveColumns();
             return true;
         }
         return false;
@@ -2126,7 +2082,7 @@ public:
                     if (!children)
                         return false;
 
-                    if (!beginMoveColumns(sourceParent, sourceColumn, sourceColumn + count - 1,
+                    if (!this->beginMoveColumns(sourceParent, sourceColumn, sourceColumn + count - 1,
                                           destParent, destColumn)) {
                         return false;
                     }
@@ -2142,7 +2098,7 @@ public:
                             rotate_by_swap(last, first, middle);
                     }
 
-                    endMoveColumns();
+                    this->endMoveColumns();
                     return true;
                 }
             }
@@ -2161,11 +2117,11 @@ public:
                 return false;
             if constexpr (treeType!=TreeType::None) {
                 if(!parent.isValid()){
-                    if(dynamic_cast<AbstractSpanAccess*>(&*children->containerAccess())){
+                    if(dynamic_cast<AbstractSpanAccess*>(children->containerAccess().get())){
                         return false;
                     }
                 }else{
-                    if(AbstractSpanAccess* spanAccess = dynamic_cast<AbstractSpanAccess*>(&*children->containerAccess())){
+                    if(AbstractSpanAccess* spanAccess = dynamic_cast<AbstractSpanAccess*>(children->containerAccess().get())){
                         if(spanAccess->isConst())
                             return false;
                     }
@@ -2173,7 +2129,7 @@ public:
             }
             EmptyRowGenerator generator{0, &that(), &parent};
 
-            beginInsertRows(parent, row, row + count - 1);
+            this->beginInsertRows(parent, row, row + count - 1);
 
             const auto pos = QRangeModelDetails::pos(children, row);
             if constexpr (range_features::has_insert_range) {
@@ -2196,7 +2152,7 @@ public:
             // references back to the parent might have become invalid.
             that().resetParentInChildren(children);
 
-            endInsertRows();
+            this->endInsertRows();
             return true;
         } else
         {
@@ -2219,18 +2175,18 @@ public:
                 return false;
             if constexpr (treeType!=TreeType::None) {
                 if(!parent.isValid()){
-                    if(dynamic_cast<AbstractSpanAccess*>(&*children->containerAccess())){
+                    if(dynamic_cast<AbstractSpanAccess*>(children->containerAccess().get())){
                         return false;
                     }
                 }else{
-                    if(AbstractSpanAccess* spanAccess = dynamic_cast<AbstractSpanAccess*>(&*children->containerAccess())){
+                    if(AbstractSpanAccess* spanAccess = dynamic_cast<AbstractSpanAccess*>(children->containerAccess().get())){
                         if(spanAccess->isConst())
                             return false;
                     }
                 }
             }
 
-            beginRemoveRows(parent, row, row + count - 1);
+            this->beginRemoveRows(parent, row, row + count - 1);
             [[maybe_unused]] bool callEndRemoveColumns = false;
             if constexpr (dynamicColumns()) {
                 // if we remove the last row in a dynamic model, then we no longer
@@ -2238,7 +2194,7 @@ public:
                 if (prevRowCount == count) {
                     if (const int columns = that().columnCount(parent)) {
                         callEndRemoveColumns = true;
-                        beginRemoveColumns(parent, 0, columns - 1);
+                        this->beginRemoveColumns(parent, 0, columns - 1);
                     }
                 }
             }
@@ -2255,10 +2211,10 @@ public:
             if constexpr (dynamicColumns()) {
                 if (callEndRemoveColumns) {
                     Q_ASSERT(that().columnCount(parent) == 0);
-                    endRemoveColumns();
+                    this->endRemoveColumns();
                 }
             }
-            endRemoveRows();
+            this->endRemoveRows();
             return true;
         } else
         {
@@ -2284,14 +2240,14 @@ public:
             }
 
             if (sourceRow == destRow || sourceRow == destRow - 1 || count <= 0
-                || sourceRow < 0 || sourceRow + count - 1 >= itemModel().rowCount(sourceParent)
-                || destRow < 0 || destRow > itemModel().rowCount(destParent)) {
+                || sourceRow < 0 || sourceRow + count - 1 >= this->itemModel().rowCount(sourceParent)
+                || destRow < 0 || destRow > this->itemModel().rowCount(destParent)) {
                 return false;
             }
 
             range_type *source = childRange(sourceParent);
             // moving within the same range
-            if (!beginMoveRows(sourceParent, sourceRow, sourceRow + count - 1, destParent, destRow))
+            if (!this->beginMoveRows(sourceParent, sourceRow, sourceRow + count - 1, destParent, destRow))
                 return false;
 
             const auto first = QRangeModelDetails::pos(source, sourceRow);
@@ -2305,7 +2261,7 @@ public:
 
             that().resetParentInChildren(source);
 
-            endMoveRows();
+            this->endMoveRows();
             return true;
         } else
         {
@@ -2640,7 +2596,6 @@ private:
             return false;
         }
     }
-
 protected:
     const protocol_type& protocol() const { return QRangeModelDetails::refTo(m_protocol); }
     protocol_type& protocol() { return QRangeModelDetails::refTo(m_protocol); }
@@ -2662,8 +2617,47 @@ protected:
         return that().childRangeImpl(index);
     }
 public:
+    QModelIndex parent(const QModelIndex &child) const { return that().parent(child); }
+
+    int rowCount(const QModelIndex &parent) const { return that().rowCount(parent); }
+
+    int columnCount(const QModelIndex &parent) const { return that().columnCount(parent); }
+
+    void invalidateCaches() { m_data.invalidateCaches(); }
+
+    bool setHeaderData(int , Qt::Orientation , const QVariant &, int ) { return false; }
+
+    void destroy() { delete std::addressof(that()); }
     ModelData m_data;
     Protocol m_protocol;
+    std::unique_ptr<QGenericTableItemModelImpl<GenericTable>> m_owner;
+
+    template <typename BaseMethod, typename BaseMethod::template Overridden<Self> overridden>
+    using Override = typename Ancestor::template Override<BaseMethod, overridden>;
+
+    using Destroy = Override<QRangeModelImplBase::Destroy, &Self::destroy>;
+    using Index = Override<QRangeModelImplBase::Index, &Self::index>;
+    using Parent = Override<QRangeModelImplBase::Parent, &Self::parent>;
+    using Sibling = Override<QRangeModelImplBase::Sibling, &Self::sibling>;
+    using RowCount = Override<QRangeModelImplBase::RowCount, &Self::rowCount>;
+    using ColumnCount = Override<QRangeModelImplBase::ColumnCount, &Self::columnCount>;
+    using Flags = Override<QRangeModelImplBase::Flags, &Self::flags>;
+    using HeaderData = Override<QRangeModelImplBase::HeaderData, &Self::headerData>;
+
+    using Data = Override<QRangeModelImplBase::Data, &Self::data>;
+    using ItemData = Override<QRangeModelImplBase::ItemData, &Self::itemData>;
+    using RoleNames = Override<QRangeModelImplBase::RoleNames, &Self::roleNames>;
+    using InvalidateCaches = Override<QRangeModelImplBase::InvalidateCaches, &Self::invalidateCaches>;
+    using SetHeaderData = Override<QRangeModelImplBase::SetHeaderData, &Self::setHeaderData>;
+    using SetData = Override<QRangeModelImplBase::SetData, &Self::setData>;
+    using SetItemData = Override<QRangeModelImplBase::SetItemData, &Self::setItemData>;
+    using ClearItemData = Override<QRangeModelImplBase::ClearItemData, &Self::clearItemData>;
+    using InsertColumns = Override<QRangeModelImplBase::InsertColumns, &Self::insertColumns>;
+    using RemoveColumns = Override<QRangeModelImplBase::RemoveColumns, &Self::removeColumns>;
+    using MoveColumns = Override<QRangeModelImplBase::MoveColumns, &Self::moveColumns>;
+    using InsertRows = Override<QRangeModelImplBase::InsertRows, &Self::insertRows>;
+    using RemoveRows = Override<QRangeModelImplBase::RemoveRows, &Self::removeRows>;
+    using MoveRows = Override<QRangeModelImplBase::MoveRows, &Self::moveRows>;
 private:
 };
 

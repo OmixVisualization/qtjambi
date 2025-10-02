@@ -33,6 +33,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -140,7 +142,7 @@ class Utility extends io.qt.internal.NativeUtility{
 		return io.qt.internal.NativeUtility.areObjectsEquals(object, other);
 	}
 		
-	protected static void initializeNativeObject(Class<?> declaringClass, QtObjectInterface object, Map<Class<?>, List<Map.Entry<Class<?>,java.lang.Object>>> arguments) {
+	protected static void initializeNativeObject(Class<?> declaringClass, QtObjectInterface object, Map<Class<?>, List<Map.Entry<java.lang.Object,java.lang.Object>>> arguments) {
 		io.qt.internal.NativeUtility.initializeNativeObject(declaringClass, object, arguments);
 	}
 	

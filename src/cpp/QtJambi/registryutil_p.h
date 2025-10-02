@@ -41,30 +41,9 @@
 
 class SuperTypeInfos;
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#define QRecursiveMutexLocker QMutexLocker
-#else
 #define QRecursiveMutexLocker QMutexLocker<QRecursiveMutex>
-#endif
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-struct OptionalBool{
-    inline OptionalBool() : m_hasValue(false), m_value(false) {}
-    inline OptionalBool(bool value) : m_hasValue(true), m_value(value) {}
-    inline operator bool() const {return m_hasValue;}
-    inline bool value() const {return m_hasValue && m_value;}
-    uint m_hasValue:1;
-    uint m_value:1;
-};
-#else
 #define OptionalBool std::optional<bool>
-#endif
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-jclass getGlobalClassRef(JNIEnv *env, jclass cls, const char *className = nullptr);
-#else
 jclass getGlobalClassRef(JNIEnv *env, jclass cls, QByteArrayView className = {});
-#endif
 
 hash_type qHash(const std::type_index& idx, hash_type seed = 0) Q_DECL_NOEXCEPT;
 hash_type qHash(const char *p, hash_type seed = 0) Q_DECL_NOEXCEPT;
@@ -143,26 +122,17 @@ RegistryAPI::qHashFn registeredHashFunction(const std::type_info& typeId);
 OptionalBool isRegisteredAsPointerType(const std::type_info& typeId);
 jfieldID resolveField(JNIEnv *env, const char *fieldName, const char *signature, jclass clazz, bool isStatic = false, jthrowable* exceptionOccurred = nullptr);
 //jfieldID resolveField(JNIEnv *env, const char *fieldName, const char *signature, const char *className, bool isStatic = false, jthrowable* exceptionOccurred = nullptr);
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-void registerJavaClassForCustomMetaType(JNIEnv *env, const QMetaType& metaType, jclass javaClass, bool isJObjectWrapped = false);
-void registerJavaClassForCustomMetaType(JNIEnv *env, int metaType, jclass javaClass, bool isJObjectWrapped);
-bool isJObjectWrappedMetaType(const QMetaType& metaType);
-OptionalBool isRegisteredAsStaticType(const std::type_info& typeId);
-#else
 void registerJavaClassForCustomMetaType(JNIEnv *env, QMetaType metaType, jclass javaClass, bool isJObjectWrapped = false);
 bool isJObjectWrappedMetaType(QMetaType metaType);
 QMetaType getNativeWrapperType(const QMetaType& metaType);
 bool isNativeWrapperMetaType(QMetaType metaType);
-#endif
 
 int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isReference, int superId = QMetaType::UnknownType);
 const QVector<const RegistryAPI::ConstructorInfo>* registeredConstructorInfos(const std::type_info& typeId);
 uint returnScopes(const std::type_info& typeId);
 jclass getArrayClass(JNIEnv *env, jclass cls, int arrayDepth);
 
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 void registerConverterVariant(JNIEnv *env, QMetaType metaType, QString qtName, const QString& fullJavaName, jclass clazz, QMetaType nativeWrapperType = {});
-#endif
 
 void registerLambdaClass(JNIEnv *env, jclass lambdaClass, const char *className);
 

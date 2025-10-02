@@ -194,6 +194,25 @@ inline hash_type qHash(const QWebEnginePermission &value, hash_type seed = 0){
     };
     return qHash(reinterpret_cast<const WebEnginePermission*>(&value)->get(), seed);
 }
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
+#if defined(QTJAMBI_GENERATOR_RUNNING)
+hash_type qHash(const QWebEngineFrame &value, hash_type seed = 0);
+#else
+#include <QtWebEngineCore/QWebEngineFrame>
+
+class QQuickWebEngineViewPrivate{
+public:
+    static hash_type hash(const QWebEngineFrame &value, hash_type seed) {
+        return qHashMulti(seed, value.m_adapter.toStrongRef().get(), value.m_id);
+    }
+};
+inline hash_type qHash(const QWebEngineFrame &value, hash_type seed = 0){
+    return qHash(QQuickWebEngineViewPrivate::hash(value, seed), seed);
+}
+#endif
+#endif //QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
+
 #endif //QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
 
 #endif // QT_VERSION >= QT_VERSION_CHECK(6, 4, 0)

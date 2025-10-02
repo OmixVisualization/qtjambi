@@ -84,7 +84,7 @@ public class TestQt3DCore extends ApplicationInitializer {
         QPhongMaterial textMaterial = new QPhongMaterial(root);
         { // text
             int i = 0;
-            List<String> fonts = new QFontDatabase().families();
+            List<String> fonts = QFontDatabase.families();
 
             for (String family : fonts)
             {

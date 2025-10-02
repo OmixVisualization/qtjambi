@@ -882,7 +882,7 @@ QHttpServerRouterRule_shell::QHttpServerRouterRule_shell(
 }
 
 // new QHttpServerRouterRule(QString,const QObject*,Handler&&)
-void __qt_construct_QHttpServerRouterRule_cref_QString_const_QtPrivate_ContextTypeForFunctor_ContextType_Handler__ptr_rval_Handler(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, bool, bool, bool __qtjambi_is_generic)
+void __qt_construct_QHttpServerRouterRule_cref_QString_const_QtPrivate_ContextTypeForFunctor_ContextType_Handler__ptr_rval_Handler(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, QtJambiAPI::ConstructorOptions)
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QHttpServerRouterRule(QString,const QObject*,Handler&&)")
     QString __qt_pathPattern0 = qtjambi_cast<QString>(__jni_env, static_cast<jstring>(__java_arguments[0].l));
@@ -890,12 +890,11 @@ void __qt_construct_QHttpServerRouterRule_cref_QString_const_QtPrivate_ContextTy
     auto __qt_func2 = convertSlot(__jni_env, __java_arguments[2].l);
     QHttpServerRouterRule_shell *__qt_this = new(__qtjambi_ptr) QHttpServerRouterRule_shell(__qt_pathPattern0, __qt_context1, std::move(__qt_func2));
     Q_UNUSED(__qt_this)
-    Q_UNUSED(__qtjambi_is_generic)
     Q_UNUSED(__jni_object)
 }
 
 // new QHttpServerRouterRule(QString,const QHttpServerRequest::Methods,const QObject*,Handler&&)
-void __qt_construct_QHttpServerRouterRule_cref_QString_const_QHttpServerRequest_Methods_const_QtPrivate_ContextTypeForFunctor_ContextType_Handler__ptr_rval_Handler(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, bool, bool, bool __qtjambi_is_generic)
+void __qt_construct_QHttpServerRouterRule_cref_QString_const_QHttpServerRequest_Methods_const_QtPrivate_ContextTypeForFunctor_ContextType_Handler__ptr_rval_Handler(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, QtJambiAPI::ConstructorOptions)
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QHttpServerRouterRule(QString,const QHttpServerRequest::Methods,const QObject*,Handler&&)")
     QString __qt_pathPattern0 = qtjambi_cast<QString>(__jni_env, static_cast<jstring>(__java_arguments[0].l));
@@ -904,12 +903,11 @@ void __qt_construct_QHttpServerRouterRule_cref_QString_const_QHttpServerRequest_
     auto __qt_func3 = convertSlot(__jni_env, __java_arguments[3].l);
     QHttpServerRouterRule_shell *__qt_this = new(__qtjambi_ptr) QHttpServerRouterRule_shell(__qt_pathPattern0, __qt_methods1, __qt_context2, std::move(__qt_func3));
     Q_UNUSED(__qt_this)
-    Q_UNUSED(__qtjambi_is_generic)
     Q_UNUSED(__jni_object)
 }
 
 // new QHttpServerRouterRule(QString,const QHttpServerRequest::Methods,const QObject*,Handler&&)
-void __qt_construct_QHttpServerRouterRule_cref_QString_const_QHttpServerRequest_Methods_const_QtPrivate_ContextTypeForFunctor_ContextType_Handler__ptr_rval_Handler_3(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, bool, bool, bool __qtjambi_is_generic)
+void __qt_construct_QHttpServerRouterRule_cref_QString_const_QHttpServerRequest_Methods_const_QtPrivate_ContextTypeForFunctor_ContextType_Handler__ptr_rval_Handler_3(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, QtJambiAPI::ConstructorOptions)
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QHttpServerRouterRule(QString,const QHttpServerRequest::Methods,const QObject*,Handler&&)")
     QString __qt_pathPattern0 = qtjambi_cast<QString>(__jni_env, static_cast<jstring>(__java_arguments[0].l));
@@ -917,12 +915,11 @@ void __qt_construct_QHttpServerRouterRule_cref_QString_const_QHttpServerRequest_
     auto __qt_func3 = convertSlot(__jni_env, __qt_context2, __java_arguments[1].l, __java_arguments[2].l);
     QHttpServerRouterRule_shell *__qt_this = new(__qtjambi_ptr) QHttpServerRouterRule_shell(__qt_pathPattern0, __qt_context2, std::move(__qt_func3));
     Q_UNUSED(__qt_this)
-    Q_UNUSED(__qtjambi_is_generic)
     Q_UNUSED(__jni_object)
 }
 
 // new QHttpServerRouterRule(QString,const QHttpServerRequest::Methods,const QObject*,Handler&&)
-void __qt_construct_QHttpServerRouterRule_cref_QString_const_QHttpServerRequest_Methods_const_QtPrivate_ContextTypeForFunctor_ContextType_Handler__ptr_rval_Handler_4(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, bool, bool, bool __qtjambi_is_generic)
+void __qt_construct_QHttpServerRouterRule_cref_QString_const_QHttpServerRequest_Methods_const_QtPrivate_ContextTypeForFunctor_ContextType_Handler__ptr_rval_Handler_4(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, QtJambiAPI::ConstructorOptions)
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QHttpServerRouterRule(QString,const QHttpServerRequest::Methods,const QObject*,Handler&&)")
     QString __qt_pathPattern0 = qtjambi_cast<QString>(__jni_env, static_cast<jstring>(__java_arguments[0].l));
@@ -931,7 +928,6 @@ void __qt_construct_QHttpServerRouterRule_cref_QString_const_QHttpServerRequest_
     auto __qt_func3 = convertSlot(__jni_env, __qt_context2, __java_arguments[2].l, __java_arguments[3].l);
     QHttpServerRouterRule_shell *__qt_this = new(__qtjambi_ptr) QHttpServerRouterRule_shell(__qt_pathPattern0, __qt_methods1, __qt_context2, std::move(__qt_func3));
     Q_UNUSED(__qt_this)
-    Q_UNUSED(__qtjambi_is_generic)
     Q_UNUSED(__jni_object)
 }
 

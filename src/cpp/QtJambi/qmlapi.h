@@ -40,11 +40,14 @@ namespace QmlAPI{
 
 typedef void (*QmlReportDestruction)(QObject * obj);
 
-typedef bool (*QmlIsJavaScriptOwnership)(QObject * obj);
+enum ObjectOwnership { CppOwnership = 0x0, JavaScriptOwnership = 0x01, ExplicitSet = 0x10 };
+typedef QFlags<ObjectOwnership> ObjectOwnerships;
+
+typedef ObjectOwnerships (*GetQmlOwnership)(QObject * obj);
 
 QTJAMBI_EXPORT void setQmlReportDestruction(QmlReportDestruction fct);
 
-QTJAMBI_EXPORT void setQmlIsJavaScriptOwnership(QmlIsJavaScriptOwnership fct);
+QTJAMBI_EXPORT void setGetQmlOwnership(GetQmlOwnership fct);
 
 typedef QObject* (* CreateQmlErrorDummyObject) (const QMetaObject* metaObject, void* placement, int vsCast, int viCast);
 
@@ -84,6 +87,14 @@ QTJAMBI_EXPORT bool registerQmlExtension(JNIEnv *env, const QMetaObject *extende
 
 QTJAMBI_EXPORT int getInterfaceOffset(JNIEnv *env, jclass cls, const std::type_info& interfacetype);
 
+struct InPlaceConstructorInfo{
+    jmethodID constructor = nullptr;
+    bool isPrivate = false;
+    QtJambiAPI::ConstructorFn constructorFunction = nullptr;
+};
+QTJAMBI_EXPORT InPlaceConstructorInfo findInPlaceConstructor(JNIEnv *env, jclass type, const QMetaObject *meta_object);
+QTJAMBI_EXPORT void* beginInPlaceConstruction(void* placement, const QMetaObject *meta_object, QtJambiAPI::ConstructorFn constructorFunction);
+QTJAMBI_EXPORT void endInPlaceConstruction(JNIEnv *env, jobject object, void* pointer);
 }
 
 #endif // QMLAPI_H

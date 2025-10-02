@@ -553,6 +553,8 @@ final class ClassAnalyzerUtility {
 
 	@NativeAccess
 	static boolean isGeneratedClass(Class<?> clazz) {
+		if(clazz.isSynthetic() || clazz.isArray() || clazz.isAnonymousClass() || clazz.isPrimitive())
+			return false;
 		synchronized (isClassGenerated) {
 			Boolean b = isClassGenerated.get(clazz);
 			if (b != null) {
@@ -960,7 +962,7 @@ final class ClassAnalyzerUtility {
 				if(writeReplace == null) try {
 					writeReplace = cls.getMethod("writeReplace");
 				} catch (Throwable e) {}
-				return writeReplace==null ? null : ReflectionUtility.functionFromMethod(writeReplace);
+				return ReflectionUtility.functionFromMethod(writeReplace);
 			});
 			if (writeReplaceHandle != null) {
 				try {

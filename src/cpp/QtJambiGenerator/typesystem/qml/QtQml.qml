@@ -1058,6 +1058,18 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
         ModifyFunction{
             signature: "newQObject(QObject *)"
             threadAffinity: true
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.End
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: String.raw`
+if(QJSEngine::objectOwnership(__qt_%1)==QJSEngine::JavaScriptOwnership)
+    QtJambiAPI::setCppOwnershipForTopLevelObject(%env, __qt_%1);
+                    `}
+            }
         }
         ModifyFunction{
             signature: "newQMetaObject(const QMetaObject*)"
@@ -1263,25 +1275,19 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
                 }
             }
             InjectCode{
-                target: CodeClass.Java
+                target: CodeClass.Native
                 position: Position.End
                 ArgumentMap{
                     index: 1
                     metaName: "%1"
                 }
-                ArgumentMap{
-                    index: 2
-                    metaName: "%2"
-                }
-                Text{content: "if (%1 != null && %2 != null){\n"+
-                              "    switch(%2){\n"+
-                              "    case JavaOwnership:\n"+
-                              "        if(%1.parent()==null){\n"+
-                              "            QtJambi_LibraryUtilities.internal.setJavaOwnership(%1);\n"+
-                              "        }\n"+
+                Text{content: "if (__qt_%1){\n"+
+                              "    switch(QJSEngine::objectOwnership(__qt_%1)){\n"+
+                              "    case QJSEngine::JavaScriptOwnership:\n"+
+                              "        QtJambiAPI::setCppOwnershipForTopLevelObject(%env, __qt_%1);\n"+
                               "        break;\n"+
                               "    default:\n"+
-                              "        QtJambi_LibraryUtilities.internal.setCppOwnership(%1);\n"+
+                              "        QtJambiAPI::setJavaOwnershipForTopLevelObject(%env, __qt_%1);\n"+
                               "        break;\n"+
                               "    }\n"+
                               "}"}

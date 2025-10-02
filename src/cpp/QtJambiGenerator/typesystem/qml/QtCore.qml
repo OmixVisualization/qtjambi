@@ -1990,10 +1990,6 @@ Q_UNUSED(__qt_return_value)
     }
 
     Rejection{
-        className: "QMetaClassInfo"
-    }
-
-    Rejection{
         className: "QMutableHashIterator"
     }
 
@@ -3178,14 +3174,6 @@ Q_UNUSED(__qt_return_value)
             javaName: "long"
             jniName: "jlong"
             preferredConversion: false
-        }
-
-        InjectCode{
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
-                quoteAfterLine: "class Qt___"
-                quoteBeforeLine: "}// class"
-            }
         }
 
         ObjectType{
@@ -4802,11 +4790,599 @@ extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_QDirListing_isEnd
         }*/
     }
 
+    ObjectType{
+        name: "QMetaObject"
+        ExtraIncludes{
+            Include{
+                fileName: "io.qt.internal.*"
+                location: Include.Java
+            }
+            Include{
+                fileName: "java.io.*"
+                location: Include.Java
+            }
+            Include{
+                fileName: "java.lang.reflect.*"
+                location: Include.Java
+            }
+            Include{
+                fileName: "java.util.*"
+                location: Include.Java
+            }
+            Include{
+                fileName: "java.util.function.*"
+                location: Include.Java
+            }
+            Include{
+                fileName: "java.util.logging.*"
+                location: Include.Java
+            }
+            Include{
+                fileName: "QtCore/private/qmetaobject_p.h"
+                location: Include.Global
+            }
+            Include{
+                fileName: "QtJambi/CoreAPI"
+                location: Include.Global
+            }
+            Include{
+                fileName: "QtJambi/JObjectWrapper"
+                location: Include.Global
+            }
+        }
+        forceFinal: true
+        noMetaType: true
+        notCloneable: true
+        notAssignable: true
+        disableNativeIdUsage: true
+        defaultSuperClass: "java.lang.Object"
+        EnumType{
+            name: "Call"
+        }
+        Rejection{className: "Data"}
+        Rejection{className: "SuperData"}
+        ModifyFunction{
+            signature: "cast(const QObject*)const"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "staticMetaObject<MO>()"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "activate<Ret,Args...>(QObject*,const QMetaObject*,int,Ret*,Args)"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "connect(const QObject*,int,const QObject*,int,int,int*)"
+            ModifyArgument{
+                index: 6
+                ReplaceType{
+                    modifiedType: "int[]"
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "metacall(QObject*,QMetaObject::Call,int,void**)"
+            ModifyArgument{
+                index: 1
+                NoNullPointer{}
+            }
+            ModifyArgument{
+                index: 4
+                ReplaceType{
+                    modifiedType: "java.lang.@NonNull Object[]"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: String.raw`
+                        JObjectArrayPointer<QVariant> %in_javaArray{%env, %in, [](QVariant& out, JNIEnv *env, jobject o){
+                                                                     out = QtJambiAPI::convertJavaObjectToQVariant(env, o);
+                                                                }, [](JNIEnv *env,const QVariant& v)->jobject{
+                                                                    return QtJambiAPI::convertQVariantToJavaObject(env, v);
+                                                                }};
+                        QtJambiScope scope;
+                        switch(__qt_%2){
+#if QT_VERSION >= QT_VERSION_CHECK(6,5,0)
+                        case QMetaObject::CustomCall:{
+                            if(%in_javaArray.size()!=1)
+                                Java::Runtime::IllegalArgumentException::throwNew(%env, "Number of arguments mismatch. Expected: 1" QTJAMBI_STACKTRACEINFO);
+                            if(%in_javaArray[0].metaType()!=QMetaType(QMetaType::QObjectStar))
+                                %in_javaArray[0] = QVariant::fromValue<QUntypedBindable>(QUntypedBindable());
+                            break;
+                        }
+#endif
+#if QT_VERSION >= QT_VERSION_CHECK(6,8,0)
+                        case QMetaObject::ConstructInPlace:{
+                            Java::Runtime::IllegalArgumentException::throwNew(%env, u"ConstructInPlace call not allowed from Java" QTJAMBI_STACKTRACEINFO);
+                            break;
+                        }
+#endif
+                        case QMetaObject::CreateInstance: {
+                            if(__qt_%1){
+                                QMetaMethod method = __qt_%1->metaObject()->constructor(%3);
+                                if(method.isValid()){
+                                    if(%in_javaArray.size()!=method.parameterCount()+1){
+                                        if(%in_javaArray.size()==0 && method.methodType()!=QMetaMethod::Constructor && method.parameterCount()==0)
+                                            break;
+                                        Java::Runtime::IllegalArgumentException::throwNew(%env, QStringLiteral(u"Number of arguments mismatch. Expected: %""1").arg(method.parameterCount()+1) QTJAMBI_STACKTRACEINFO);
+                                    }
+                                    if(!__qt_%1->metaObject()->metaType().isValid()){
+                                        if(__qt_%1->metaObject()->inherits(&QObject::staticMetaObject)){
+                                            %in_javaArray[0] = QVariant::fromValue<QObject*>(nullptr);
+                                        }else{
+                                            %in_javaArray[0] = QVariant::fromValue<void*>(nullptr);
+                                        }
+                                    }else if(%in_javaArray[0].metaType()!=__qt_%1->metaObject()->metaType())
+                                        %in_javaArray[0] = QVariant(__qt_%1->metaObject()->metaType(), nullptr);
+                                    scope.addFinalAction([%env, result = reinterpret_cast<QObject**>(%in_javaArray[0].data())](){
+                                        if(*result)
+                                            QtJambiAPI::setJavaOwnershipForTopLevelObject(%env, *result);
+                                    });
+                                    for(jsize l=%in_javaArray.size(), i=1; i<l; ++i){
+                                        if(%in_javaArray[i].metaType()!=method.parameterMetaType(i-1)
+                                            && !%in_javaArray[i].convert(method.parameterMetaType(i-1))){
+                                            Java::Runtime::IllegalArgumentException::throwNew(%env, QStringLiteral(u"Type mismatch of argument %""1. Expected: %""2").arg(QString::number(i), method.parameterTypeName(i-1)) QTJAMBI_STACKTRACEINFO);
+                                        }
+                                    }
+                                }
+                            }
+                            break;
+                        }
+                        case QMetaObject::InvokeMetaMethod:{
+                            if(__qt_%1){
+                                QMetaMethod method = __qt_%1->metaObject()->method(%3);
+                                if(method.isValid()){
+                                    if(%in_javaArray.size()!=method.parameterCount()+1){
+                                        if(%in_javaArray.size()==0 && method.methodType()!=QMetaMethod::Constructor && method.parameterCount()==0)
+                                            break;
+                                        Java::Runtime::IllegalArgumentException::throwNew(%env, QStringLiteral(u"Number of arguments mismatch. Expected: %""1").arg(method.parameterCount()+1) QTJAMBI_STACKTRACEINFO);
+                                    }
+                                    if(%in_javaArray[0].metaType()!=method.returnMetaType())
+                                        %in_javaArray[0] = QVariant(method.returnMetaType(), nullptr);
+                                    for(jsize l=%in_javaArray.size(), i=1; i<l; ++i){
+                                        if(%in_javaArray[i].metaType()!=method.parameterMetaType(i-1)
+                                            && !%in_javaArray[i].convert(method.parameterMetaType(i-1))){
+                                            Java::Runtime::IllegalArgumentException::throwNew(%env, QStringLiteral(u"Type mismatch of argument %""1. Expected: %""2").arg(QString::number(i), method.parameterTypeName(i-1)) QTJAMBI_STACKTRACEINFO);
+                                        }
+                                    }
+                                }
+                            }
+                            break;
+                        }
+                        case QMetaObject::ReadProperty: {
+                            QMetaProperty property = __qt_%1->metaObject()->property(%3);
+                            if(property.isValid()){
+                                if(%in_javaArray.size()!=1)
+                                    Java::Runtime::IllegalArgumentException::throwNew(%env, "Number of arguments mismatch. Expected: 1" QTJAMBI_STACKTRACEINFO);
+                                if(%in_javaArray[0].metaType()!=property.metaType())
+                                    %in_javaArray[0] = QVariant(property.metaType(), nullptr);
+                            }
+                            break;
+                        }
+                        case QMetaObject::WriteProperty: {
+                            QMetaProperty property = __qt_%1->metaObject()->property(%3);
+                            if(property.isValid()){
+                                if(%in_javaArray.size()!=1)
+                                    Java::Runtime::IllegalArgumentException::throwNew(%env, "Number of arguments mismatch. Expected: 1" QTJAMBI_STACKTRACEINFO);
+                                if(%in_javaArray[0].metaType()!=property.metaType()
+                                    && !%in_javaArray[0].convert(property.metaType())){
+                                    Java::Runtime::IllegalArgumentException::throwNew(%env, QStringLiteral(u"Type mismatch of argument 1. Expected: %1").arg(property.typeName()) QTJAMBI_STACKTRACEINFO);
+                                }
+                            }
+                            break;
+                        }
+                        case QMetaObject::BindableProperty: {
+                            if(%in_javaArray.size()!=1)
+                                Java::Runtime::IllegalArgumentException::throwNew(%env, "Number of arguments mismatch. Expected: 1" QTJAMBI_STACKTRACEINFO);
+                            if(%in_javaArray[0].metaType()!=QMetaType::fromType<QUntypedBindable>())
+                                %in_javaArray[0] = QVariant::fromValue<QUntypedBindable>(QUntypedBindable());
+                            break;
+                        }
+                        case QMetaObject::RegisterPropertyMetaType: {
+                            if(%in_javaArray.size()!=1)
+                                Java::Runtime::IllegalArgumentException::throwNew(%env, "Number of arguments mismatch. Expected: 1" QTJAMBI_STACKTRACEINFO);
+                            if(%in_javaArray[0].metaType()!=QMetaType(QMetaType::Int))
+                                %in_javaArray[0] = QVariant::fromValue<int>(0);
+                            break;
+                        }
+                        case QMetaObject::RegisterMethodArgumentMetaType: {
+                            if(%in_javaArray.size()!=2)
+                                Java::Runtime::IllegalArgumentException::throwNew(%env, "Number of arguments mismatch. Expected: 2" QTJAMBI_STACKTRACEINFO);
+                            if(%in_javaArray[0].metaType()!=QMetaType::fromType<QMetaType>())
+                                %in_javaArray[0] = QVariant::fromValue<QMetaType>(QMetaType());
+                            if(%in_javaArray[1].metaType()!=QMetaType(QMetaType::Int)
+                                && !%in_javaArray[1].convert(QMetaType(QMetaType::Int))){
+                                Java::Runtime::IllegalArgumentException::throwNew(%env, QStringLiteral(u"Type mismatch of argument 2. Expected: int") QTJAMBI_STACKTRACEINFO);
+                            }
+                            break;
+                        }
+                        case QMetaObject::IndexOfMethod: {
+                            if(%in_javaArray.size()!=2)
+                                Java::Runtime::IllegalArgumentException::throwNew(%env, "Number of arguments mismatch. Expected: 2" QTJAMBI_STACKTRACEINFO);
+                            if(%in_javaArray[0].metaType()!=QMetaType(QMetaType::Int))
+                                %in_javaArray[0] = QVariant::fromValue<int>(0);
+                            break;
+                        }
+                        default: break;
+                        }
+                        QScopedArrayPointer<void*> %in_arrayPointer;
+                        if(%in_javaArray.size()>0){
+                            %in_arrayPointer.reset(new void*[%in_javaArray.size()]);
+                            for(jsize l=%in_javaArray.size(), i=0; i<l; ++i){
+                                %in_arrayPointer[i] = %in_javaArray[i].data();
+                            }
+                        }
+                        void** %out = %in_arrayPointer.data();
+                        `}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "static_metacall(QMetaObject::Call,int,void**)const"
+            ModifyArgument{
+                index: 3
+                ReplaceType{
+                    modifiedType: "java.lang.@NonNull Object[]"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: String.raw`
+                        JObjectArrayPointer<QVariant> %in_javaArray{%env, %in, [](QVariant& out, JNIEnv *env, jobject o){
+                                                                     out = QtJambiAPI::convertJavaObjectToQVariant(env, o);
+                                                                }, [](JNIEnv *env,const QVariant& v)->jobject{
+                                                                    return QtJambiAPI::convertQVariantToJavaObject(env, v);
+                                                                }};
+                        QtJambiScope scope;
+                        switch(__qt_%1){
+#if QT_VERSION >= QT_VERSION_CHECK(6,5,0)
+                        case QMetaObject::CustomCall:{
+                            if(%in_javaArray.size()!=1)
+                                Java::Runtime::IllegalArgumentException::throwNew(%env, "Number of arguments mismatch. Expected: 1" QTJAMBI_STACKTRACEINFO);
+                            if(%in_javaArray[0].metaType()!=QMetaType(QMetaType::QObjectStar))
+                                %in_javaArray[0] = QVariant::fromValue<QUntypedBindable>(QUntypedBindable());
+                            break;
+                        }
+#endif
+#if QT_VERSION >= QT_VERSION_CHECK(6,8,0)
+                        case QMetaObject::ConstructInPlace:{
+                            Java::Runtime::IllegalArgumentException::throwNew(%env, u"ConstructInPlace call not allowed from Java" QTJAMBI_STACKTRACEINFO);
+                            break;
+                        }
+#endif
+                        case QMetaObject::CreateInstance: {
+                            QMetaMethod method = __qt_this->constructor(%2);
+                            if(method.isValid()){
+                                if(%in_javaArray.size()!=method.parameterCount()+1){
+                                    if(%in_javaArray.size()==0 && method.methodType()!=QMetaMethod::Constructor && method.parameterCount()==0)
+                                        break;
+                                    Java::Runtime::IllegalArgumentException::throwNew(%env, QStringLiteral(u"Number of arguments mismatch. Expected: %""1").arg(method.parameterCount()+1) QTJAMBI_STACKTRACEINFO);
+                                }
+                                if(__qt_this->inherits(&QObject::staticMetaObject)){
+                                    %in_javaArray[0] = QVariant::fromValue<QObject*>(nullptr);
+                                    scope.addFinalAction([%env, result = reinterpret_cast<QObject**>(%in_javaArray[0].data())](){
+                                        if(*result)
+                                            QtJambiAPI::setJavaOwnershipForTopLevelObject(%env, *result);
+                                    });
+                                }else if(!__qt_this->metaType().isValid()){
+                                    if(Java::QtJambi::QtObjectInterface::isAssignableFrom(%env, CoreAPI::getMetaObjectJavaType(%env, __qt_this))){
+                                        %in_javaArray[0] = QVariant::fromValue<void*>(nullptr);
+                                        scope.addFinalAction([%env, result = &%in_javaArray[0]]() mutable {
+                                            void* _result = *reinterpret_cast<void**>(result->data());
+                                            if(_result){
+                                                if(jobject obj = QtJambiAPI::findObject(%env, _result)){
+                                                    QtJambiAPI::setDefaultOwnership(%env, obj);
+                                                    *result = QVariant::fromValue(JObjectWrapper(%env, obj));
+                                                }
+                                            }
+                                        });
+                                    }else{
+                                        %in_javaArray[0] = QVariant::fromValue(JObjectWrapper());
+                                    }
+                                }else{
+                                    %in_javaArray[0] = QVariant(__qt_this->metaType(), nullptr);
+                                    if(__qt_this->metaType().flags() & QMetaType::IsPointer){
+                                        scope.addFinalAction([%env, result = reinterpret_cast<void**>(%in_javaArray[0].data())](){
+                                            if(*result)
+                                                QtJambiAPI::setDefaultOwnership(%env, QtJambiAPI::findObject(%env, *result));
+                                        });
+                                    }
+                                }
+                                for(jsize l=%in_javaArray.size(), i=1; i<l; ++i){
+                                    if(%in_javaArray[i].metaType()!=method.parameterMetaType(i-1)
+                                        && !%in_javaArray[i].convert(method.parameterMetaType(i-1))){
+                                        Java::Runtime::IllegalArgumentException::throwNew(%env, QStringLiteral(u"Type mismatch of argument %""1. Expected: %""2").arg(QString::number(i), method.parameterTypeName(i-1)) QTJAMBI_STACKTRACEINFO);
+                                    }
+                                }
+                            }
+                            break;
+                        }
+                        case QMetaObject::InvokeMetaMethod: {
+                        QMetaMethod method = __qt_this->method(%2);
+                        if(method.isValid()){
+                            if(%in_javaArray.size()!=method.parameterCount()+1){
+                                if(%in_javaArray.size()==0 && method.methodType()!=QMetaMethod::Constructor && method.parameterCount()==0)
+                                    break;
+                                Java::Runtime::IllegalArgumentException::throwNew(%env, QStringLiteral(u"Number of arguments mismatch. Expected: %""1").arg(method.parameterCount()+1) QTJAMBI_STACKTRACEINFO);
+                            }
+                            if(%in_javaArray[0].metaType()!=method.returnMetaType())
+                                %in_javaArray[0] = QVariant(method.returnMetaType(), nullptr);
+                            for(jsize l=%in_javaArray.size(), i=1; i<l; ++i){
+                                if(%in_javaArray[i].metaType()!=method.parameterMetaType(i-1)
+                                    && !%in_javaArray[i].convert(method.parameterMetaType(i-1))){
+                                    Java::Runtime::IllegalArgumentException::throwNew(%env, QStringLiteral(u"Type mismatch of argument %""1. Expected: %""2").arg(QString::number(i), method.parameterTypeName(i-1)) QTJAMBI_STACKTRACEINFO);
+                                }
+                            }
+                        }
+                        break;
+                        }
+                        case QMetaObject::ReadProperty:{
+                            Java::Runtime::IllegalArgumentException::throwNew(%env, "QMetaObject::ReadProperty forbidden as static call." QTJAMBI_STACKTRACEINFO);
+                            break;
+                        }
+                        case QMetaObject::WriteProperty:{
+                            Java::Runtime::IllegalArgumentException::throwNew(%env, "QMetaObject::WriteProperty forbidden as static call." QTJAMBI_STACKTRACEINFO);
+                            break;
+                        }
+                        case QMetaObject::BindableProperty: {
+                            Java::Runtime::IllegalArgumentException::throwNew(%env, "QMetaObject::BindableProperty forbidden as static call." QTJAMBI_STACKTRACEINFO);
+                            break;
+                        }
+                        case QMetaObject::RegisterPropertyMetaType: {
+                            if(%in_javaArray.size()!=1)
+                                Java::Runtime::IllegalArgumentException::throwNew(%env, "Number of arguments mismatch. Expected: 1" QTJAMBI_STACKTRACEINFO);
+                            if(%in_javaArray[0].metaType()!=QMetaType(QMetaType::Int))
+                                %in_javaArray[0] = QVariant::fromValue<int>(0);
+                            break;
+                        }
+                        case QMetaObject::RegisterMethodArgumentMetaType: {
+                            if(%in_javaArray.size()!=2)
+                                Java::Runtime::IllegalArgumentException::throwNew(%env, "Number of arguments mismatch. Expected: 2" QTJAMBI_STACKTRACEINFO);
+                            if(%in_javaArray[0].metaType()!=QMetaType::fromType<QMetaType>())
+                                %in_javaArray[0] = QVariant::fromValue<QMetaType>(QMetaType());
+                            if(%in_javaArray[1].metaType()!=QMetaType(QMetaType::Int)
+                                && !%in_javaArray[1].convert(QMetaType(QMetaType::Int))){
+                                Java::Runtime::IllegalArgumentException::throwNew(%env, QStringLiteral(u"Type mismatch of argument 2. Expected: int") QTJAMBI_STACKTRACEINFO);
+                            }
+                            break;
+                        }
+                        case QMetaObject::IndexOfMethod: {
+                            if(%in_javaArray.size()!=2)
+                                Java::Runtime::IllegalArgumentException::throwNew(%env, "Number of arguments mismatch. Expected: 2" QTJAMBI_STACKTRACEINFO);
+                            if(%in_javaArray[0].metaType()!=QMetaType(QMetaType::Int))
+                                %in_javaArray[0] = QVariant::fromValue<int>(0);
+                            break;
+                        }
+                        default: break;
+                        }
+                        QScopedArrayPointer<void*> %in_arrayPointer;
+                        if(%in_javaArray.size()>0){
+                            %in_arrayPointer.reset(new void*[%in_javaArray.size()]);
+                            for(jsize l=%in_javaArray.size(), i=0; i<l; ++i){
+                                %in_arrayPointer[i] = %in_javaArray[i].data();
+                            }
+                        }
+                        void** %out = %in_arrayPointer.data();
+                        `}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "activate(QObject*,int,int,void**)"
+            ModifyArgument{
+                index: 1
+                NoNullPointer{}
+            }
+            ModifyArgument{
+                index: 4
+                ReplaceType{
+                    modifiedType: "java.lang.@NonNull Object[]"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: String.raw`
+                        JObjectArrayPointer<QVariant> %in_javaArray{%env, %in, [](QVariant& out, JNIEnv *env, jobject o){
+                                                                     out = QtJambiAPI::convertJavaObjectToQVariant(env, o);
+                                                                }, [](JNIEnv *env,const QVariant& v)->jobject{
+                                                                    return QtJambiAPI::convertQVariantToJavaObject(env, v);
+                                                                }};
+                        if(__qt_%1){
+                            QMetaMethod method = QMetaObjectPrivate::signal(__qt_%1->metaObject(), %2+%3);
+                            if(method.isValid()){
+                                bool checkArguments = true;
+                                if(%in_javaArray.size()!=method.parameterCount()+1){
+                                    if(%in_javaArray.size()==0 && method.methodType()!=QMetaMethod::Constructor && method.parameterCount()==0){
+                                        checkArguments = false;
+                                    }else{
+                                        Java::Runtime::IllegalArgumentException::throwNew(%env, QStringLiteral(u"Number of arguments mismatch. Expected: %""1").arg(method.parameterCount()+1) QTJAMBI_STACKTRACEINFO);
+                                    }
+                                }
+                                if(checkArguments){
+                                    for(jsize l=%in_javaArray.size(), i=1; i<l; ++i){
+                                        if(%in_javaArray[i].metaType()!=method.parameterMetaType(i-1)
+                                            && !%in_javaArray[i].convert(method.parameterMetaType(i-1))){
+                                            Java::Runtime::IllegalArgumentException::throwNew(%env, QStringLiteral(u"Type mismatch of argument %""1. Expected: %""2").arg(QString::number(i), method.parameterTypeName(i-1)) QTJAMBI_STACKTRACEINFO);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        QScopedArrayPointer<void*> %in_arrayPointer;
+                        if(%in_javaArray.size()>0){
+                            %in_arrayPointer.reset(new void*[%in_javaArray.size()]);
+                            for(jsize l=%in_javaArray.size(), i=0; i<l; ++i){
+                                %in_arrayPointer[i] = %in_javaArray[i].data();
+                            }
+                        }
+                        void** %out = %in_arrayPointer.data();
+                        `}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "activate(QObject*,const QMetaObject*,int,void**)"
+            ModifyArgument{
+                index: 1
+                NoNullPointer{}
+            }
+            ModifyArgument{
+                index: 4
+                ReplaceType{
+                    modifiedType: "java.lang.@NonNull Object[]"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: String.raw`
+                        JObjectArrayPointer<QVariant> %in_javaArray{%env, %in, [](QVariant& out, JNIEnv *env, jobject o){
+                                                                     out = QtJambiAPI::convertJavaObjectToQVariant(env, o);
+                                                                }, [](JNIEnv *env,const QVariant& v)->jobject{
+                                                                    return QtJambiAPI::convertQVariantToJavaObject(env, v);
+                                                                }};
+                        if(__qt_%1){
+                            QMetaMethod method = QMetaObjectPrivate::signal(__qt_%2, %3);
+                            if(method.isValid()){
+                                bool checkArguments = true;
+                                if(%in_javaArray.size()!=method.parameterCount()+1){
+                                    if(%in_javaArray.size()==0 && method.methodType()!=QMetaMethod::Constructor && method.parameterCount()==0){
+                                        checkArguments = false;
+                                    }else{
+                                        Java::Runtime::IllegalArgumentException::throwNew(%env, QStringLiteral(u"Number of arguments mismatch. Expected: %""1").arg(method.parameterCount()+1) QTJAMBI_STACKTRACEINFO);
+                                    }
+                                }
+                                if(checkArguments){
+                                    for(jsize l=%in_javaArray.size(), i=1; i<l; ++i){
+                                        if(%in_javaArray[i].metaType()!=method.parameterMetaType(i-1)
+                                            && !%in_javaArray[i].convert(method.parameterMetaType(i-1))){
+                                            Java::Runtime::IllegalArgumentException::throwNew(%env, QStringLiteral(u"Type mismatch of argument %""1. Expected: %""2").arg(QString::number(i), method.parameterTypeName(i-1)) QTJAMBI_STACKTRACEINFO);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        QScopedArrayPointer<void*> %in_arrayPointer;
+                        if(%in_javaArray.size()>0){
+                            %in_arrayPointer.reset(new void*[%in_javaArray.size()]);
+                            for(jsize l=%in_javaArray.size(), i=0; i<l; ++i){
+                                %in_arrayPointer[i] = %in_javaArray[i].data();
+                            }
+                        }
+                        void** %out = %in_arrayPointer.data();
+                        `}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "activate(QObject*,int,void**)"
+            ModifyArgument{
+                index: 1
+                NoNullPointer{}
+            }
+            ModifyArgument{
+                index: 3
+                ReplaceType{
+                    modifiedType: "java.lang.@NonNull Object[]"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: String.raw`
+                        JObjectArrayPointer<QVariant> %in_javaArray{%env, %in, [](QVariant& out, JNIEnv *env, jobject o){
+                                                                     out = QtJambiAPI::convertJavaObjectToQVariant(env, o);
+                                                                }, [](JNIEnv *env,const QVariant& v)->jobject{
+                                                                    return QtJambiAPI::convertQVariantToJavaObject(env, v);
+                                                                }};
+                        if(__qt_%1){
+                            QMetaMethod method = QMetaObjectPrivate::signal(__qt_%1->metaObject(), %2);
+                            if(method.isValid()){
+                                bool checkArguments = true;
+                                if(%in_javaArray.size()!=method.parameterCount()+1){
+                                    if(%in_javaArray.size()==0 && method.methodType()!=QMetaMethod::Constructor && method.parameterCount()==0){
+                                        checkArguments = false;
+                                    }else{
+                                        Java::Runtime::IllegalArgumentException::throwNew(%env, QStringLiteral(u"Number of arguments mismatch. Expected: %""1").arg(method.parameterCount()+1) QTJAMBI_STACKTRACEINFO);
+                                    }
+                                }
+                                if(checkArguments){
+                                    for(jsize l=%in_javaArray.size(), i=1; i<l; ++i){
+                                        if(%in_javaArray[i].metaType()!=method.parameterMetaType(i-1)
+                                            && !%in_javaArray[i].convert(method.parameterMetaType(i-1))){
+                                            Java::Runtime::IllegalArgumentException::throwNew(%env, QStringLiteral(u"Type mismatch of argument %""1. Expected: %""2").arg(QString::number(i), method.parameterTypeName(i-1)) QTJAMBI_STACKTRACEINFO);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        QScopedArrayPointer<void*> %in_arrayPointer;
+                        if(%in_javaArray.size()>0){
+                            %in_arrayPointer.reset(new void*[%in_javaArray.size()]);
+                            for(jsize l=%in_javaArray.size(), i=0; i<l; ++i){
+                                %in_arrayPointer[i] = %in_javaArray[i].data();
+                            }
+                        }
+                        void** %out = %in_arrayPointer.data();
+                        `}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "checkConnectArgs(const char *,const char *)"
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                ArgumentMap{
+                    index: 2
+                    metaName: "%2"
+                }
+                Text{content: String.raw`
+                    %1 = SignalPrefix+cppNormalizedSignature(%1, null);
+                    %2 = SlotPrefix+cppNormalizedSignature(%2, null);
+                    `}
+            }
+        }
+        InjectCode{
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class QMetaObject___"
+                quoteBeforeLine: "}// class"
+            }
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class QMetaObject_610__"
+                quoteBeforeLine: "}// class"
+                since: [6,10]
+            }
+        }
+        InjectCode{
+            target: CodeClass.MetaInfo
+            position: Position.Beginning
+            Text{content: "#if 0"}
+        }
+        InjectCode{
+            target: CodeClass.MetaInfo
+            position: Position.End
+            Text{content: "#endif"}
+        }
+    }
+    Rejection{className: "QArgument"}
+    Rejection{className: "QMetaMethodArgument"}
+    Rejection{className: "QMetaMethodReturnArgument"}
+    Rejection{className: "QReturnArgument"}
+    Rejection{className: "QTemplatedMetaMethodReturnArgument"}
+    Rejection{className: "QMethodRawArguments"}
+
+    ValueType{
+        name: "QMetaClassInfo"
+        Rejection{className: "Data"}
+    }
+
     ValueType{
         name: "QMetaMethod"
 
         Rejection{className: "Data"}
         Rejection{fieldName: "data"}
+        Rejection{fieldName: "mobj"}
 
         EnumType{
             name: "MethodType"
@@ -26988,6 +27564,7 @@ static FilterResetter resetter(%0);
         remove: RemoveFlag.All
     }
 
+    Rejection{className: "QRangeModelDetails::QRangeModelRowOptions"}
     ObjectType{
         name: "QRangeModel"
         ExtraIncludes{
@@ -26996,10 +27573,8 @@ static FilterResetter resetter(%0);
                 location: Include.Local
             }
         }
-        Rejection{
-            className: "MultiColumn"
-            since: [6,10]
-        }
+        EnumType{name: "RowCategory"}
+        Rejection{className: "RowOptions"}
         InjectCode{
             target: CodeClass.ShellDeclaration
             Text{
@@ -27033,9 +27608,9 @@ static FilterResetter resetter(%0);
                     name: "T"
                 }
                 AddArgument{
-                    type: "boolean"
-                    name: "asSingleColumn"
-                    defaultExpression: "false"
+                    type: "io.qt.core.QRangeModel$@NonNull RowCategory"
+                    name: "rowCategory"
+                    defaultExpression: "RowCategory.Default"
                     index: 2
                 }
                 ModifyArgument{
@@ -27058,7 +27633,7 @@ static FilterResetter resetter(%0);
                         Text{content: String.raw`
 QObject* %out = qtjambi_cast<QObject*>(%env, %in);
 QtJambiAPI::checkThreadOnParent(%env, %out);
-if(initializeModelBySpanPointer(__qtjambi_ptr, %env, __jni_object, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, %1, false, asSingleColumn, %out))
+if(initializeModelBySpanPointer(__qtjambi_ptr, %env, __jni_object, __qtjambi_constructor_options, %1, false, qtjambi_cast<QRangeModel::RowCategory>(%env, rowCategory), %out))
     return;
 ContainerAPI::getAsQSpan(%env, %1, QMetaType::fromType<QVariant>(), *reinterpret_cast<void**>(&__qt_%1));
                             `}
@@ -27067,7 +27642,7 @@ ContainerAPI::getAsQSpan(%env, %1, QMetaType::fromType<QVariant>(), *reinterpret
                 InjectCode{
                     target: CodeClass.Native
                     position: Position.End
-                    Text{content: String.raw`Q_UNUSED(asSingleColumn)`}
+                    Text{content: String.raw`Q_UNUSED(rowCategory)`}
                 }
                 noImplicitArguments: true
             }
@@ -27080,9 +27655,9 @@ ContainerAPI::getAsQSpan(%env, %1, QMetaType::fromType<QVariant>(), *reinterpret
                     name: "T"
                 }
                 AddArgument{
-                    type: "boolean"
-                    name: "asSingleColumn"
-                    defaultExpression: "false"
+                    type: "io.qt.core.QRangeModel$@NonNull RowCategory"
+                    name: "rowCategory"
+                    defaultExpression: "RowCategory.Default"
                     index: 2
                 }
                 ModifyArgument{
@@ -27105,7 +27680,7 @@ ContainerAPI::getAsQSpan(%env, %1, QMetaType::fromType<QVariant>(), *reinterpret
                         Text{content: String.raw`
 QObject* %out = qtjambi_cast<QObject*>(%env, %in);
 QtJambiAPI::checkThreadOnParent(%env, %out);
-if(initializeModelBySpanPointer(__qtjambi_ptr, %env, __jni_object, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, %1, true, asSingleColumn, %out))
+if(initializeModelBySpanPointer(__qtjambi_ptr, %env, __jni_object, __qtjambi_constructor_options, %1, true, qtjambi_cast<QRangeModel::RowCategory>(%env, rowCategory), %out))
     return;
 ContainerAPI::getAsQSpan(%env, %1, QMetaType::fromType<QVariant>(), *reinterpret_cast<void**>(&__qt_%1));
                             `}
@@ -27114,7 +27689,7 @@ ContainerAPI::getAsQSpan(%env, %1, QMetaType::fromType<QVariant>(), *reinterpret
                 InjectCode{
                     target: CodeClass.Native
                     position: Position.End
-                    Text{content: String.raw`Q_UNUSED(asSingleColumn)`}
+                    Text{content: String.raw`Q_UNUSED(rowCategory)`}
                 }
                 noImplicitArguments: true
             }
@@ -27127,8 +27702,8 @@ ContainerAPI::getAsQSpan(%env, %1, QMetaType::fromType<QVariant>(), *reinterpret
                     name: "T"
                 }
                 AddArgument{
-                    type: "boolean"
-                    name: "asSingleColumn"
+                    type: "io.qt.core.QRangeModel$RowCategory"
+                    name: "rowCategory"
                     defaultExpression: "false"
                     index: 2
                 }
@@ -27152,7 +27727,7 @@ ContainerAPI::getAsQSpan(%env, %1, QMetaType::fromType<QVariant>(), *reinterpret
                         Text{content: String.raw`
 QObject* %out = qtjambi_cast<QObject*>(%env, %in);
 QtJambiAPI::checkThreadOnParent(%env, %out);
-if(initializeModelByListPointer(__qtjambi_ptr, %env, __jni_object, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, %1, asSingleColumn, %out))
+if(initializeModelByListPointer(__qtjambi_ptr, %env, __jni_object, __qtjambi_constructor_options, %1, qtjambi_cast<QRangeModel::RowCategory>(%env, rowCategory), %out))
     return;
 __qt_%1 = qtjambi_cast<QList<QVariant>>(%env, %1);
                             `}
@@ -27161,7 +27736,7 @@ __qt_%1 = qtjambi_cast<QList<QVariant>>(%env, %1);
                 InjectCode{
                     target: CodeClass.Native
                     position: Position.End
-                    Text{content: String.raw`Q_UNUSED(asSingleColumn)`}
+                    Text{content: String.raw`Q_UNUSED(rowCategory)`}
                 }
                 noImplicitArguments: true
             }

@@ -940,7 +940,7 @@ public class TestInterfaces extends ApplicationInitializer {
 	static class VirtualOverrideTest extends TestAbstractClass implements TestInterface{
 		
 		public VirtualOverrideTest() {
-			super(null);
+			super((QPrivateConstructor)null);
 			QtUtilities.initializeNativeObject(this, QtArgument.begin(TestAbstractClass.class).begin(TestInterface.class).add("QString arg"));
 		}
 

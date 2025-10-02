@@ -149,6 +149,7 @@ public abstract class AbstractInitializeTask extends Task {
 
 
     protected String decideJavaHomeTarget() {
+    	OSInfo osInfo = OSInfo.instance(getProject());
         String sourceValue = null;
         String s = AntUtil.getPropertyAsString(propertyHelper, Constants.JAVA_HOME_TARGET);
         String error = null;
@@ -169,7 +170,7 @@ public abstract class AbstractInitializeTask extends Task {
                     	sourceValue = " (from envvar:JAVA_HOME_TARGET)";
             		}else {
                 		File binDir = new File(home, "bin");
-                		File javaExe = new File(binDir, OSInfo.os()==OperationSystem.Windows ? "java.exe" : "java");
+                		File javaExe = new File(binDir, osInfo.os()==OperationSystem.Windows ? "java.exe" : "java");
                 		if(javaExe.isFile()) {
                 			error = "JDK does not provide headers: "+home.getAbsolutePath();
                 		}else {
@@ -199,7 +200,7 @@ public abstract class AbstractInitializeTask extends Task {
             			error = null;
             		}else {
                 		File binDir = new File(home, "bin");
-                		File javaExe = new File(binDir, OSInfo.os()==OperationSystem.Windows ? "java.exe" : "java");
+                		File javaExe = new File(binDir, osInfo.os()==OperationSystem.Windows ? "java.exe" : "java");
                 		if(javaExe.isFile()) {
                 			error = "JDK does not provide headers: "+home.getAbsolutePath();
                 		}else {
@@ -294,7 +295,7 @@ public abstract class AbstractInitializeTask extends Task {
 			}
         }
         String javaHome = AntUtil.getPropertyAsString(propertyHelper, Constants.JAVA_HOME_TARGET);
-        String app = OSInfo.os()==OSInfo.OperationSystem.Windows ? "%1$s.exe" : "%1$s";
+        String app = osInfo.os()==OSInfo.OperationSystem.Windows ? "%1$s.exe" : "%1$s";
         File executable;
 		if((executable = new File(new File(javaHome, "bin"), String.format(app, "java"))).exists()) {
 			mySetProperty(-1, "tools.jvm", " (taken from "+Constants.JAVA_HOME_TARGET+")", executable.getAbsolutePath(), true);
@@ -315,6 +316,7 @@ public abstract class AbstractInitializeTask extends Task {
     }
     
     protected void decideAlternativeJavaHomesTarget() {
+    	OSInfo osInfo = OSInfo.instance(getProject());
     	int qtMajorVersion = 5;
     	int qtMinorVersion = 0;
     	try {
@@ -358,7 +360,7 @@ public abstract class AbstractInitializeTask extends Task {
             }
         }
         mySetProperty(-1, Constants.JAVA8_HOME_TARGET, sourceValue, s, true);
-        switch(OSInfo.os()) {
+        switch(osInfo.os()) {
         case MacOS: 
         	switch(System.getProperty("os.arch").toLowerCase()) {
         	case "arm64":

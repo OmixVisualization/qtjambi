@@ -27,7 +27,6 @@
 #define Q_NULLPTR nullptr
 #define Q_NAMESPACE
 #define QT_COORD_TYPE _QT_COORD_TYPE __QT_COORD_TYPE; using ___QT_COORD_TYPE =
-#define QOBJECTDEFS_H
 #define QTMETAMACROS_H
 #define QFLAGS_H
 #define decltype(A) DECL_TYPE

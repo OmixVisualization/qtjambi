@@ -34,7 +34,7 @@ import io.qt.qml.util.QmlElement;
 
 @QmlElement
 public class Engine extends QObject {
-	private Engine(QDeclarativeConstructor dc) throws IllegalAccessException {
+	private Engine(QPrivateConstructor dc) {
 		super(dc);
 	}
 	

@@ -33,39 +33,13 @@ import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import io.qt.NonNull;
-import io.qt.QtUtilities;
+import io.qt.*;
 import io.qt.autotests.generated.General;
-import io.qt.core.QCoreApplication;
-import io.qt.core.QFileInfo;
-import io.qt.core.QIODevice;
-import io.qt.core.QJsonValue;
-import io.qt.core.QLibrary;
-import io.qt.core.QList;
-import io.qt.core.QMetaMethod;
-import io.qt.core.QMetaObject;
-import io.qt.core.QObject;
-import io.qt.core.QOperatingSystemVersion;
+import io.qt.core.*;
 import io.qt.core.QOperatingSystemVersion.OSType;
-import io.qt.core.QPluginLoader;
-import io.qt.core.QStaticPlugin;
-import io.qt.core.QTimer;
-import io.qt.core.Qt;
-import io.qt.core.internal.QFactoryLoader;
-import io.qt.core.internal.QtPluginMetaData;
-import io.qt.gui.QGenericPlugin;
-import io.qt.gui.QGenericPluginFactory;
-import io.qt.gui.QIconEngine;
-import io.qt.gui.QIconEnginePlugin;
-import io.qt.gui.QImageIOHandler;
-import io.qt.gui.QImageIOPlugin;
-import io.qt.gui.QWindow;
-import io.qt.widgets.QApplication;
-import io.qt.widgets.QGraphicsItem;
-import io.qt.widgets.QGraphicsObject;
-import io.qt.widgets.QGraphicsWidget;
-import io.qt.widgets.QStyle;
-import io.qt.widgets.QStylePlugin;
+import io.qt.core.internal.*;
+import io.qt.gui.*;
+import io.qt.widgets.*;
 
 public class TestPlugin extends ApplicationInitializer {
 	
@@ -92,38 +66,59 @@ public class TestPlugin extends ApplicationInitializer {
 		Assume.assumeTrue("QtNetwork unavailable", QtUtilities.initializePackage("io.qt.network"));
 		QFactoryLoader loader = new QFactoryLoader(QGenericPlugin.class, "/generic");
 		QObject plugin = loader.loadPlugin(QGenericPlugin::create, "TuioTouch", "");
-		Assert.assertTrue(plugin!=null);
-		Assert.assertEquals("QTuioHandler", plugin.metaObject().className());
-        plugin.dispose();
-        loader.dispose();
+		try {
+			Assert.assertTrue(plugin!=null);
+			Assert.assertEquals("QTuioHandler", plugin.metaObject().className());
+		}finally {
+	        plugin.dispose();
+	        loader.dispose();
+		}
 	}
     
     @Test
     public void testStylePlugin() {
     	Assume.assumeTrue("windows or macos", QOperatingSystemVersion.current().isAnyOfType(OSType.Windows, OSType.MacOS));
 		QFactoryLoader loader = new QFactoryLoader(QStylePlugin.class, "/styles");
-		Assert.assertFalse(loader.keyMap().isEmpty());
-        Assert.assertFalse(loader.keyMap().get(0).isEmpty());
-		QStyle plugin = loader.loadPlugin(QStylePlugin::create, loader.keyMap().get(0).get(0), loader.keyMap().get(0).get(0));
-		Assert.assertTrue(plugin!=null);
-		//Assert.assertEquals("QTuioHandler", plugin.metaObject().className());
+		try {
+			Assert.assertFalse(loader.keyMap().isEmpty());
+	        Assert.assertFalse(loader.keyMap().get(0).isEmpty());
+			QStyle plugin = loader.loadPlugin(QStylePlugin::create, loader.keyMap().get(0).get(0), loader.keyMap().get(0).get(0));
+			//Assert.assertEquals("QTuioHandler", plugin.metaObject().className());
+			try{
+				Assert.assertTrue(plugin!=null);
+			}finally {
+				plugin.dispose();
+			}
+		}finally {
+			loader.dispose();
+		}
 	}
     
     @Test
     public void testImageFormatsPlugin() {
 		QFactoryLoader loader = new QFactoryLoader(QImageIOPlugin.class, "/imageformats");
-		System.out.println(loader.keyMap());
 		QImageIOHandler plugin = loader.loadPlugin((QMetaObject.Method2<QImageIOPlugin,QIODevice,QImageIOHandler>)QImageIOPlugin::create, "jpeg", null);
-		Assert.assertTrue(plugin!=null);
-		//Assert.assertEquals("QTuioHandler", plugin.metaObject().className());
+		try {
+//			System.out.println(loader.keyMap());
+			Assert.assertTrue(plugin!=null);
+			//Assert.assertEquals("QTuioHandler", plugin.metaObject().className());
+		}finally {
+			plugin.dispose();
+			loader.dispose();
+		}
 	}
 	
 	//@Test
     public void testIconEnginePlugin() {
 		QFactoryLoader loader = new QFactoryLoader(QIconEnginePlugin.class, "/iconengines");
-		System.out.println(loader.keyMap());
 		QIconEngine plugin = loader.loadPlugin((QMetaObject.Method2<QIconEnginePlugin,String,QIconEngine>)QIconEnginePlugin::create, "svg", ":io/qt/autotests/svg-cards.svg");
-		Assert.assertTrue(plugin!=null);
+		try{
+//			System.out.println(loader.keyMap());
+			Assert.assertTrue(plugin!=null);
+		}finally {
+			plugin.dispose();
+			loader.dispose();
+		}
 	}
 	
     @Test
@@ -131,12 +126,23 @@ public class TestPlugin extends ApplicationInitializer {
 		QFactoryLoader.registerFactory(GraphicsPluginFactory.class);
 		QPluginLoader.qRegisterStaticPluginFunction(GraphicsPlugin.class);
 		QFactoryLoader loader = new QFactoryLoader(GraphicsPluginFactory.class, "/static");
-		Assert.assertEquals(0, loader.indexOf("InterfacePlugin"));
-		QGraphicsItem parent = new QGraphicsWidget();
-		QGraphicsObject plugin = loader.loadPlugin(GraphicsPluginFactory::create, "InterfacePlugin", parent);
-		Assert.assertTrue("InterfacePlugin not a QGraphicsWidget: "+(plugin==null ? "null" : plugin.getClass()), plugin instanceof QGraphicsWidget);
-		plugin = loader.loadPlugin(QGraphicsObject.class, "InterfacePlugin", parent);
-		Assert.assertTrue(plugin instanceof QGraphicsWidget);
+		try {
+			Assert.assertEquals(0, loader.indexOf("InterfacePlugin"));
+			QGraphicsItem parent = new QGraphicsWidget();
+			QGraphicsObject plugin = loader.loadPlugin(GraphicsPluginFactory::create, "InterfacePlugin", parent);
+			try {
+				Assert.assertTrue("InterfacePlugin not a QGraphicsWidget: "+(plugin==null ? "null" : plugin.getClass()), plugin instanceof QGraphicsWidget);
+				plugin.dispose();
+				plugin = loader.loadPlugin(QGraphicsObject.class, "InterfacePlugin", parent);
+				Assert.assertTrue(plugin instanceof QGraphicsWidget);
+			}finally {
+				plugin.dispose();
+				parent.dispose();
+			}
+		}finally {
+			System.out.println("TestPlugin.testCustomPlugin()");
+			loader.dispose();
+		}
     }
     
     @Test
@@ -160,25 +166,34 @@ public class TestPlugin extends ApplicationInitializer {
     public void testMacOSUtilsPlugins() {
     	Assume.assumeTrue("macos only", QOperatingSystemVersion.current().isAnyOfType(OSType.MacOS));
     	QFactoryLoader fl = new QFactoryLoader(QGenericPlugin.class);
-    	QObject macOSUtils = fl.loadPlugin(QGenericPlugin::create, "NSWindowUtils", "");
-		Assert.assertTrue(macOSUtils!=null);
-		Assert.assertTrue(General.internalAccess.isJavaOwnership(macOSUtils));
-    	QMetaMethod isOnActiveSpace = macOSUtils.metaObject().method("isOnActiveSpace", QWindow.class);
-		Assert.assertTrue(isOnActiveSpace.isValid());
-		QWindow window = new QWindow();
-		window.show();
-		Object[] result = {null};
-		QTimer.singleShot(100, ()->{
+    	try {
+	    	QObject macOSUtils = fl.loadPlugin(QGenericPlugin::create, "NSWindowUtils", "");
+			Assert.assertTrue(macOSUtils!=null);
 			try {
-				result[0] = isOnActiveSpace.invoke(macOSUtils, window);
-			}catch(Throwable t) {
-				result[0] = t;
+				Assert.assertTrue(General.internalAccess.isJavaOwnership(macOSUtils));
+		    	QMetaMethod isOnActiveSpace = macOSUtils.metaObject().method("isOnActiveSpace", QWindow.class);
+				Assert.assertTrue(isOnActiveSpace.isValid());
+				QWindow window = new QWindow();
+				window.show();
+				Object[] result = {null};
+				QTimer.singleShot(100, ()->{
+					try {
+						result[0] = isOnActiveSpace.invoke(macOSUtils, window);
+					}catch(Throwable t) {
+						result[0] = t;
+					}finally {
+						QApplication.quit();
+					}
+				});
+				QApplication.exec();
+				window.dispose();
+				Assert.assertEquals("Window is not on current space", Boolean.TRUE, result[0]);
 			}finally {
-				QApplication.quit();
+				macOSUtils.dispose();
 			}
-		});
-		QApplication.exec();
-		Assert.assertEquals("Window is not on current space", Boolean.TRUE, result[0]);
+		}finally {
+			fl.dispose();
+		}
     }
     
     public static void main(String args[]) {

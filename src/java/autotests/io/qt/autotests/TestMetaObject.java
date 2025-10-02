@@ -29,40 +29,15 @@
 ****************************************************************************/
 package io.qt.autotests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
-
-import org.junit.Assert;
-import org.junit.Test;
-
-import io.qt.QtEnumerator;
-import io.qt.QtFlagEnumerator;
-import io.qt.QtInvokable;
-import io.qt.QtPropertyReader;
-import io.qt.QtPropertyWriter;
-import io.qt.StrictNonNull;
-import io.qt.autotests.generated.SignalsAndSlots;
-import io.qt.core.QAbstractItemModel;
-import io.qt.core.QCoreApplication;
-import io.qt.core.QList;
-import io.qt.core.QMetaEnum;
-import io.qt.core.QMetaMethod;
-import io.qt.core.QMetaObject;
-import io.qt.core.QMetaProperty;
-import io.qt.core.QObject;
-import io.qt.core.QOperatingSystemVersion;
-import io.qt.core.QPair;
-import io.qt.core.QPersistentModelIndex;
-import io.qt.core.QStringListModel;
-import io.qt.core.QThread;
-import io.qt.core.Qt;
-import io.qt.core.QtAlgorithms;
-import io.qt.gui.QStandardItem;
+import java.util.*;
+import java.util.concurrent.atomic.*;
+import org.junit.*;
+import io.qt.*;
+import io.qt.autotests.generated.*;
+import io.qt.core.*;
+import io.qt.gui.*;
 
 /**
  * Testing the fake meta object.
@@ -71,6 +46,7 @@ import io.qt.gui.QStandardItem;
 public class TestMetaObject extends ApplicationInitializer {
     @SuppressWarnings("unused")
     private static class SignalsAndSlotsSubclass extends SignalsAndSlots {
+    	public static final @NonNull QMetaObject staticMetaObject = QMetaObject.forType(SignalsAndSlotsSubclass.class);
         enum YoYoYo {
             Yo,
             YoYo,
@@ -227,25 +203,206 @@ public class TestMetaObject extends ApplicationInitializer {
     }
     
     public static class SubQObject extends QObject{
+    	public static final @NonNull QMetaObject staticMetaObject = QMetaObject.forType(SubQObject.class);
     	@QtInvokable
 		public SubQObject(int i, boolean b) {
 			super();
+    		this.i = i;
+    		this.b = b;
+    		this.s = "";
 		}
     	
     	@QtInvokable
 		public SubQObject(int i, boolean b, String s) {
 			super();
+    		this.i = i;
+    		this.b = b;
+    		this.s = s;
+		}
+    	
+    	@QtInvokable
+		public SubQObject(QObject parent, int i, boolean b) {
+			super(parent);
+    		this.i = i;
+    		this.b = b;
+    		this.s = "";
+		}
+    	
+    	@QtInvokable
+		public SubQObject(QObject parent, int i, boolean b, String s) {
+			super(parent);
+    		this.i = i;
+    		this.b = b;
+    		this.s = s;
+		}
+    	
+    	SubQObject(QtConstructInPlace inPlace){
+    		super((QPrivateConstructor)null);
+    		if(inPlace.matches(int.class, boolean.class, String.class)) {
+        		inPlace.initWithArguments(this);
+    			this.i = inPlace.argumentAt(0, int.class);
+        		this.b = inPlace.argumentAt(1, boolean.class);
+        		this.s = inPlace.argumentAt(2, String.class);
+    		}else if(inPlace.matches(int.class, boolean.class)) {
+        		inPlace.initWithArguments(this);
+    			this.i = inPlace.argumentAt(0, int.class);
+        		this.b = inPlace.argumentAt(1, boolean.class);
+        		this.s = "";
+    		}else if(inPlace.matches(QObject.class, int.class, boolean.class, String.class)) {
+        		inPlace.initWithArguments(this, 0);
+    			this.i = inPlace.argumentAt(1, int.class);
+        		this.b = inPlace.argumentAt(2, boolean.class);
+        		this.s = inPlace.argumentAt(3, String.class);
+    		}else if(inPlace.matches(QObject.class, int.class, boolean.class)) {
+        		inPlace.initWithArguments(this, 0);
+    			this.i = inPlace.argumentAt(1, int.class);
+        		this.b = inPlace.argumentAt(2, boolean.class);
+        		this.s = "";
+    		}else {
+    			throw new Error("Parameters mismatch");
+    		}
+    	}
+    	
+    	private int i;
+    	private boolean b;
+    	private String s;
+    	
+    	public final PrivateSignal0 dataChanged = new PrivateSignal0();
+    	
+    	@QtInvokable
+    	public boolean initialize(int i, boolean b, String s) {
+    		this.i = i;
+    		this.b = b;
+    		this.s = s;
+			emit(dataChanged);
+    		return true;
+    	}
+
+		public int i() {
+			return i;
+		}
+
+		public void setI(int i) {
+			this.i = i;
+			emit(dataChanged);
+		}
+
+		public boolean b() {
+			return b;
+		}
+
+		public void setB(boolean b) {
+			this.b = b;
+			emit(dataChanged);
+		}
+
+		public String s() {
+			return s;
+		}
+
+		public void setS(String s) {
+			this.s = s;
+			emit(dataChanged);
+		}
+    }
+    
+    public static class SubQObject2 extends SubQObject{
+    	public static final @NonNull QMetaObject staticMetaObject = QMetaObject.forType(SubQObject2.class);
+
+		SubQObject2(QtConstructInPlace inPlace) {
+			super(inPlace.asArguments(map->{
+				if(map.matches(boolean.class, int.class, String.class, double.class)) {
+					map.map(1, 0, 2);
+	    		}else if(inPlace.matches(boolean.class, int.class, double.class)) {
+	    			map.map(1, 0);
+	    		}else if(inPlace.matches(boolean.class, int.class, String.class, double.class, QObject.class)) {
+	    			map.map(4, 1, 0, 2);
+	    		}else if(inPlace.matches(boolean.class, int.class, double.class, QObject.class)) {
+	    			map.map(3, 1, 0);
+	    		}
+			}));
+			if(inPlace.matches(boolean.class, int.class, String.class, double.class)) {
+    			this.d = inPlace.argumentAt(3, double.class);
+    		}else if(inPlace.matches(boolean.class, int.class, double.class)) {
+    			this.d = inPlace.argumentAt(2, double.class);
+    		}else if(inPlace.matches(boolean.class, int.class, String.class, double.class, QObject.class)) {
+    			this.d = inPlace.argumentAt(3, double.class);
+    		}else if(inPlace.matches(boolean.class, int.class, double.class, QObject.class)) {
+    			this.d = inPlace.argumentAt(2, double.class);
+    		}else {
+    			throw new Error("Parameters mismatch");
+    		}
+		}
+
+		@QtInvokable
+		public SubQObject2(boolean b, int i, String s) {
+			super(i, b, s);
+		}
+
+		@QtInvokable
+		public SubQObject2(boolean b, int i) {
+			super(i, b);
+		}
+
+		@QtInvokable
+		public SubQObject2(boolean b, int i, String s, QObject parent) {
+			super(parent, i, b, s);
+		}
+
+		@QtInvokable
+		public SubQObject2(boolean b, int i, QObject parent) {
+			super(parent, i, b);
+		}
+
+		@QtInvokable
+		public SubQObject2(boolean b, int i, String s, double d) {
+			super(i, b, s);
+			this.d = d;
+		}
+
+		@QtInvokable
+		public SubQObject2(boolean b, int i, double d) {
+			super(i, b);
+			this.d = d;
+		}
+
+		@QtInvokable
+		public SubQObject2(boolean b, int i, String s, double d, QObject parent) {
+			super(parent, i, b, s);
+			this.d = d;
+		}
+
+		@QtInvokable
+		public SubQObject2(boolean b, int i, double d, QObject parent) {
+			super(parent, i, b);
+			this.d = d;
+		}
+		
+		private double d;
+
+		public double d() {
+			return d;
+		}
+
+		public void setD(double d) {
+			this.d = d;
 		}
     }
     
     public static class SubQtObject extends QStandardItem{
+    	public static final @NonNull QMetaObject staticMetaObject = QMetaObject.forType(SubQtObject.class);
     	@QtInvokable
 		public SubQtObject(int i, boolean b) {
 			super();
 		}
+    	SubQtObject(QtConstructInPlace inPlace) {
+    		super((QPrivateConstructor)null);
+    		inPlace.initialize(this);
+		}
     }
     
     public static class NonQtType{
+    	public static final @NonNull QMetaObject staticMetaObject = QMetaObject.forType(NonQtType.class);
     	@QtInvokable
     	public NonQtType(int integerNumber, String text) {
 			super();
@@ -304,6 +461,7 @@ public class TestMetaObject extends ApplicationInitializer {
 //    	System.out.println(QMetaObject.forType(NonQtType.class).methods());
 		Object instance = subQObjectMO.newInstance(1, false);
 		assertTrue(instance instanceof SubQObject);
+		Assert.assertTrue(General.internalAccess.isJavaOwnership((QObject)instance));
     	try {
     		instance = subQtObjectMO.newInstance(1, false);
     		assertTrue("RuntimeException expected to be thrown", false);

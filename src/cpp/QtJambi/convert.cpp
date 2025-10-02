@@ -354,6 +354,8 @@ jobject QtJambiAPI::convertQVariantToJavaObject(JNIEnv *env, const QVariant &qt_
         return Java::Runtime::Short::valueOf(env, jshort(qt_variant.value<qint16>()));
     }else if (metaType == QMetaType::fromType<float>()) {
         return Java::Runtime::Float::valueOf(env, qt_variant.value<float>());
+    }else if (metaType == QMetaType::fromType<jobject>()) {
+        return qt_variant.value<jobject>();
     }else if (metaType == QMetaType::fromType<JObjectWrapper>()) {
         JObjectWrapper wrapper = qt_variant.value<JObjectWrapper>();
         return env->NewLocalRef(wrapper.object(env));

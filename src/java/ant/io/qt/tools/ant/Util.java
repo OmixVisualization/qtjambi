@@ -177,7 +177,7 @@ abstract class Util {
         return null;
     }
 
-    public static File findInLibraryPath(String name, String javaLibDir) {
+    public static File findInLibraryPath(OSInfo osInfo, String name, String javaLibDir) {
         String libraryPath;
         if(javaLibDir != null) {
             libraryPath = javaLibDir;
@@ -187,9 +187,9 @@ abstract class Util {
         //System.out.println("library path is: " + libraryPath);
 
         // Make /usr/lib an implicit part of library path
-        if(OSInfo.os().isUnixLike()) {
+        if(osInfo.os().isUnixLike()) {
             boolean match = false;
-            switch(OSInfo.arch()) {
+            switch(osInfo.arch()) {
             case x86:
                 // (some non-FHS) Linux 32bit might have lib32 directory most Linux
                 //  distros (FHS compliant) will not have a /usr/lib32.

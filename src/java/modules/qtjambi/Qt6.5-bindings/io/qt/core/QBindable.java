@@ -446,7 +446,7 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * Creates a new invalid <code>QBindable</code>.
 	 */
 	public QBindable() {
-		super(null, null);
+		this((QUntypedPropertyData)null, (QBindableInterface)null);
 	}
 	
 	/**

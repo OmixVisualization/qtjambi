@@ -1703,8 +1703,10 @@ bool AutoHashAccess::equal(const void* a, const void* b){
     QHashData* d2 = *map2;
     if(d==d2)
         return true;
-    if((!d && d2) || (!d2 && d))
-        return false;
+    if(!d && d2)
+        return d2->size==0;
+    if(!d2 && d)
+        return d->size==0;
     if(d->size!=d2->size)
         return false;
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)

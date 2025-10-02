@@ -370,9 +370,11 @@ QByteArray QtJambiAPI::typeName(const std::type_info& typeId){
     return typeName;
 }
 
+bool isQmlJavaScriptOwnership(QObject * obj);
+
 void QtJambiAPI::setJavaOwnershipForTopLevelObject(JNIEnv *env, QObject* qobject)
 {
-    if(qobject && !qobject->parent()){
+    if(qobject && !qobject->parent() && !isQmlJavaScriptOwnership(qobject)){
         if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForQObject(qobject)){
             link->setJavaOwnership(env);
         }
@@ -381,7 +383,7 @@ void QtJambiAPI::setJavaOwnershipForTopLevelObject(JNIEnv *env, QObject* qobject
 
 void QtJambiAPI::setDefaultOwnershipForTopLevelObject(JNIEnv *env, QObject* qobject)
 {
-    if(qobject && !qobject->parent()){
+    if(qobject && !qobject->parent() && !isQmlJavaScriptOwnership(qobject)){
         if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForQObject(qobject)){
             link->setDefaultOwnership(env);
         }
@@ -400,7 +402,13 @@ void QtJambiAPI::setCppOwnershipForTopLevelObject(JNIEnv *env, QObject* qobject)
 void QtJambiAPI::setJavaOwnership(JNIEnv *env, jobject object)
 {
     if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, object)){
-        link->setJavaOwnership(env);
+        if(link->isQObject()){
+            if(link->qobject() && !link->qobject()->parent() && !isQmlJavaScriptOwnership(link->qobject())){
+                link->setJavaOwnership(env);
+            }
+        }else{
+            link->setJavaOwnership(env);
+        }
     }
 }
 
@@ -527,7 +535,13 @@ void QtJambiAPI::setCppOwnershipAndInvalidate(JNIEnv *env, jobject object)
 void QtJambiAPI::setJavaOwnership(JNIEnv *env, QtJambiNativeID objectId)
 {
     if(QSharedPointer<QtJambiLink> link = QtJambiLink::fromNativeId(objectId)){
-        link->setJavaOwnership(env);
+        if(link->isQObject()){
+            if(link->qobject() && !link->qobject()->parent()){
+                link->setJavaOwnership(env);
+            }
+        }else{
+            link->setJavaOwnership(env);
+        }
     }
 }
 

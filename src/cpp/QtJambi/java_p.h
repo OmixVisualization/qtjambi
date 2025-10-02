@@ -161,7 +161,7 @@ namespace Java{
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QMetaObject,
                       QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
-                      QTJAMBI_REPOSITORY_DECLARE_LONG_FIELD(metaObjectPointer))
+                      QTJAMBI_REPOSITORY_DECLARE_LONG_FIELD(__qt_persistentPointer))
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QPair,
             QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
@@ -462,20 +462,9 @@ namespace Java{
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(ResourceUtility,
                                          QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(resolveUrlFromPath)
-                                         QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(resolveFileToJarResource)
+                                         QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(openChannel)
                                          QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(cleanupOnShutdown)
-                                         )
-
-        QTJAMBI_REPOSITORY_DECLARE_CLASS(ResourceUtility$JarResource,
-                                         QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getJarEntry)
-                                         QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getInputStream)
-                                         QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getChannel)
-                                         QTJAMBI_REPOSITORY_DECLARE_LONG_METHOD(fileTime)
-                                         QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(ensureRef)
-                                         QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(_deref)
-                                         QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(entryList)
-                                         QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(isDirectory)
-                                         QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(checkIsDirectory)
+                                         QTJAMBI_REPOSITORY_DECLARE_STATIC_STRING_METHOD(resolveAlias)
                                          )
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(LibraryUtility,
@@ -543,18 +532,15 @@ namespace Java{
                       QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(propertyResetters)
                       QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(propertyNotifies)
                       QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(propertyMemberFields)
-                      QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD_QT5(propertyDesignableResolvers)
-                      QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD_QT5(propertyScriptableResolvers)
-                      QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD_QT5(propertyEditableResolvers)
-                      QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD_QT5(propertyStoredResolvers)
-                      QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD_QT5(propertyUserResolvers)
-                      QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD_QT6(propertyQPropertyFields)
-                      QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD_QT6(propertyBindables)
+                      QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(propertyQPropertyFields)
+                      QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(propertyBindables)
                       QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(propertyMetaTypes)
                       QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(propertyClassTypes)
                       QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD_QT6(metaTypes)
                       QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(relatedMetaObjects)
                       QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(switchTableFields)
+                      QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(privateConstructor)
+                      QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(inPlaceConstructor)
                       QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_FIELD(hasStaticMembers))
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QThreadAffinityException,
@@ -562,6 +548,12 @@ namespace Java{
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QInterfaceCannotBeSubclassedException,
                       QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CONSTRUCTOR())
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QClassCannotBeSubclassedException,
+                                         QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CONSTRUCTOR())
+
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QtConstructInPlace,
+                                         QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                                         QTJAMBI_REPOSITORY_DECLARE_LONG_FIELD(native_id))
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QtEnumerator,
                                          QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(value)

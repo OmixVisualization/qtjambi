@@ -1,15 +1,37 @@
-# What's new in QtJambi 6.9.1
+# What's new in QtJambi 6.9.3
+
+* In-place construction
+* QObject::destructed signal can now execute instance methods of the destroyed object if they are connected by method handle.
+* Full availability of new QRangeModel.
+* Bugfix: memory leak when using lambda expressions in signal connections
+* Bugfix: sharp character in file name of classpath resources foes not work
+* Bugfix: comparing empty QHash containers always false
+* Bugfix: QList::takeAt for first of two entries fails
+* New option `io.qt.resourcepath` to specify jar files for Qt resource system (instead using classpath).
+* New option `io.qt.no-classpath-to-resourcepath` to avoid Java class path top be used as Qt resource.
+* New option `io.qt.allow-classfiles-as-resource` to allow Java class files top be found by Qt resource system.
+* New option `io.qt.allow-meta-inf-as-resource` to allow a jar file's META-INF folder and content be used as Qt resource.
+* New option `io.qt.resource-cache-timeout` to specify how long jar files shall be cached in resource system.
+
+This will be the last release with Maven-published binaries for Qt 6.9.
+
+# History
+
+## What's new in QtJambi 6.9.2
+
+* 6.8.6 linux libraries are based on GLIBC 2.29 again
+* Ready for Qt 6.10
+
+## What's new in QtJambi 6.9.1
 
 * End of support for Java 8.
 * End of support for Qt 5.
 * Compatible with Java 24.
 
-## Bugfixes
+### Bugfixes
 
 Solved issue:
 * [Issue 223](../../../issues/223): ant javadocs fails
-
-# History
 
 ## What's new in QtJambi 6.9.0
 

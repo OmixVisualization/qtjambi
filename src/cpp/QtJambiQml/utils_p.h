@@ -35,7 +35,15 @@
 #include <QtJambi/JavaAPI>
 
 namespace Java{
+namespace QtCore{
+QTJAMBI_REPOSITORY_DECLARE_CLASS(QObject$QDeclarativeConstructor,
+                                 QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
+}
 namespace QtJambi {
+QTJAMBI_REPOSITORY_DECLARE_CLASS(QtConstructInPlace,
+                                 QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                                 QTJAMBI_REPOSITORY_DECLARE_LONG_FIELD(native_id))
+
 QTJAMBI_REPOSITORY_DECLARE_CLASS(QtMetaType,
                                  QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(type)
                                  QTJAMBI_REPOSITORY_DECLARE_STRING_METHOD(name)

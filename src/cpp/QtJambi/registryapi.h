@@ -46,6 +46,11 @@ class AbstractContainerAccess;
 enum class jValueType;
 class QtJambiScope;
 
+namespace QtJambiAPI{
+enum ConstructorOptions : int;
+typedef void (*ConstructorFn)(void*, JNIEnv*, jobject, jvalue*, QtJambiAPI::ConstructorOptions);
+}
+
 namespace RegistryAPI{
 
 class QtJambiTypeInfo
@@ -91,8 +96,7 @@ struct FunctionInfo{
 };
 
 struct ConstructorInfo{
-    typedef void (*ConstructorFn)(void*, JNIEnv*, jobject, jvalue*, bool, bool, bool);
-    ConstructorFn constructorFunction = nullptr;
+    QtJambiAPI::ConstructorFn constructorFunction = nullptr;
     const char *signature = nullptr;
 };
 

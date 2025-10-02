@@ -43,6 +43,8 @@
 #include "java_p.h"
 #include "utils_p.h"
 #include "qtjambilink_p.h"
+#include "qtjambimetaobject_p.h"
+#include "qtjambishell_p.h"
 #if QT_VERSION < QT_VERSION_CHECK(6, 8, 0) \
                || ( (defined(Q_OS_LINUX) \
                     || defined(Q_OS_MACOS) \
@@ -143,7 +145,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_internal_ReferenceUtility_needs
 
 void addClassPath(const QString& path, bool isDirectory);
 void removeResource(const QString& path);
-void insertJarFileResources(JNIEnv *env, jobject directoryPaths, jstring _jarFileName);
+void insertJarFileResources(JNIEnv *env, jobject entryPaths, jstring _jarFileName);
 void ensureHandler(JNIEnv* env, jstring qtJambiConfFile);
 
 extern "C" JNIEXPORT void JNICALL Java_io_qt_internal_ResourceUtility_ensureHandler(JNIEnv *env,jclass, jstring qtJambiConfFile){
@@ -177,9 +179,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_internal_ResourceUtility_addClassPa
     }
 }
 
-extern "C" JNIEXPORT void JNICALL Java_io_qt_internal_ResourceUtility_insertJarFileResources(JNIEnv *env,jclass, jobject directoryPaths, jstring jarFileName){
+extern "C" JNIEXPORT void JNICALL Java_io_qt_internal_ResourceUtility_insertJarFileResources(JNIEnv *env,jclass, jobject entryPaths, jstring jarFileName){
     try{
-        insertJarFileResources(env, directoryPaths, jarFileName);
+        insertJarFileResources(env, entryPaths, jarFileName);
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
     }
@@ -237,6 +239,93 @@ extern "C" JNIEXPORT jstring JNICALL Java_io_qt_QtUtilities_getenv(JNIEnv *env, 
         if(qEnvironmentVariableIsSet(_varName.constData())){
             QString value = qEnvironmentVariable(_varName.constData());
             return qtjambi_cast<jstring>(env, value);
+        }
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+    return nullptr;
+}
+
+extern "C" JNIEXPORT void JNICALL Java_io_qt_QtConstructInPlace_initialize(JNIEnv *env, jclass, jlong initializer, jobject object){
+    try{
+        if(!initializer)
+            Java::QtJambi::QNoNativeResourcesException::throwNew(env, "in-place constructor disposed" QTJAMBI_STACKTRACEINFO );
+        QtJambiShellImpl::initializeNativeInterface(env, object, reinterpret_cast<InPlaceInitializer*>(initializer));
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+}
+
+extern "C" JNIEXPORT void JNICALL Java_io_qt_QtConstructInPlace_initWithArguments(JNIEnv *env, jclass, jlong initializer, jobject object, jintArray indexes){
+    try{
+        if(!initializer){
+            Java::QtJambi::QNoNativeResourcesException::throwNew(env, "in-place constructor disposed" QTJAMBI_STACKTRACEINFO );
+            return;
+        }
+        QtJambiScope scope;
+        SuperInitializer* si = reinterpret_cast<InPlaceInitializer*>(initializer)->asArguments(env, qtjambi_cast<std::initializer_list<int>>(env, scope, indexes), false);
+        QtJambiShellImpl::initializeNativeInterface(env, object, si);
+        reinterpret_cast<InPlaceInitializer*>(initializer)->reset(env);
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+}
+
+extern "C" JNIEXPORT void JNICALL Java_io_qt_QtConstructInPlace_initFromStream(JNIEnv *env, jclass, jlong initializer, jobject object, jobject arguments){
+    try{
+        if(!initializer){
+            Java::QtJambi::QNoNativeResourcesException::throwNew(env, "in-place constructor disposed" QTJAMBI_STACKTRACEINFO );
+            return;
+        }
+        QtJambiScope scope;
+        QtJambiShellImpl::initializeNativeInterface(env, object, reinterpret_cast<InPlaceInitializer*>(initializer), arguments);
+        reinterpret_cast<InPlaceInitializer*>(initializer)->reset(env);
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+}
+
+extern "C" JNIEXPORT jint JNICALL Java_io_qt_QtConstructInPlace_parameterCount(JNIEnv *env, jclass, jlong ptr){
+    try{
+        if(!ptr)
+            Java::QtJambi::QNoNativeResourcesException::throwNew(env, "in-place constructor disposed" QTJAMBI_STACKTRACEINFO );
+        else return reinterpret_cast<InPlaceInitializer*>(ptr)->parameterCount();
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+    return 0;
+}
+
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_QtConstructInPlace_argumentAt(JNIEnv *env, jclass, jlong ptr, jint index){
+    try{
+        if(!ptr)
+            Java::QtJambi::QNoNativeResourcesException::throwNew(env, "in-place constructor disposed" QTJAMBI_STACKTRACEINFO );
+        else return reinterpret_cast<InPlaceInitializer*>(ptr)->argumentAt(env, index);
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+    return nullptr;
+}
+
+extern "C" JNIEXPORT jclass JNICALL Java_io_qt_QtConstructInPlace_parameterTypeAt(JNIEnv *env, jclass, jlong ptr, jint index){
+    try{
+        if(!ptr)
+            Java::QtJambi::QNoNativeResourcesException::throwNew(env, "in-place constructor disposed" QTJAMBI_STACKTRACEINFO );
+        else return reinterpret_cast<InPlaceInitializer*>(ptr)->parameterTypeAt(env, index);
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+    return nullptr;
+}
+
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_QtConstructInPlace_asArguments(JNIEnv *env, jclass, jlong ptr, jintArray indexes){
+    try{
+        if(!ptr)
+            Java::QtJambi::QNoNativeResourcesException::throwNew(env, "in-place constructor disposed" QTJAMBI_STACKTRACEINFO );
+        else{
+            QtJambiScope scope;
+            SuperInitializer* si = reinterpret_cast<InPlaceInitializer*>(ptr)->asArguments(env, qtjambi_cast<std::initializer_list<int>>(env, scope, indexes));
+            return si ? si->inPlaceObject(env) : nullptr;
         }
     }catch(const JavaException& exn){
         exn.raiseInJava(env);

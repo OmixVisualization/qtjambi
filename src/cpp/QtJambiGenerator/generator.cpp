@@ -252,6 +252,7 @@ void GeneratorApplication::parseArguments(){
                     unexit = QFunctionPointer(jarimportPlugin->qt_metacast("CoreAPI::unexit"));
                     if(preExit && unexit)
                         preExit();
+                    break;
                 }
             }
         }

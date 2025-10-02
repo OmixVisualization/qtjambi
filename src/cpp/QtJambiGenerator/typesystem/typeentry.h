@@ -1908,160 +1908,140 @@ private:
 };
 
 class ContainerTypeEntry : public ComplexTypeEntry {
-    public:
-        enum Type {
-            NoContainer,
-            ListContainer,
-            StringListContainer,
-            ByteArrayListContainer,
-            LinkedListContainer,
-            VectorContainer,
-            StackContainer,
-            QueueContainer,
-            SetContainer,
-            MapContainer,
-            MultiMapContainer,
-            HashContainer,
-            MultiHashContainer,
-            PairContainer,
-            QDBusReplyContainer,
-            QQmlListPropertyContainer,
-            QArrayDataContainer,
-            QTypedArrayDataContainer,
-            QModelRoleDataSpanContainer,
-            QBindableContainer,
-            QPropertyBindingContainer,
-            std_atomic,
-            std_optional,
-            std_vector,
-            std_array,
-            std_chrono,
-            std_chrono_template
-        };
+public:
+    enum Type {
+        NoContainer,
+        ListContainer,
+        StringListContainer,
+        ByteArrayListContainer,
+        LinkedListContainer,
+        VectorContainer,
+        StackContainer,
+        QueueContainer,
+        SetContainer,
+        MapContainer,
+        MultiMapContainer,
+        HashContainer,
+        MultiHashContainer,
+        PairContainer,
+        QDBusReplyContainer,
+        QQmlListPropertyContainer,
+        QArrayDataContainer,
+        QTypedArrayDataContainer,
+        QModelRoleDataSpanContainer,
+        QBindableContainer,
+        QPropertyBindingContainer,
+        std_atomic,
+        std_optional,
+        std_vector,
+        std_array,
+        std_chrono,
+        std_chrono_template
+    };
 
-        ContainerTypeEntry(const QString &name, Type type);
-        Type type() const;
-        QString targetLangName() const override;
-        QString javaPackage() const override;
-        QString qualifiedCppName() const override;
+    ContainerTypeEntry(const QString &name, Type type);
+    Type type() const;
+    QString targetLangName() const override;
+    QString javaPackage() const override;
+    QString qualifiedCppName() const override;
 
-    private:
-        Type m_type;
+private:
+    Type m_type;
 };
 
 class IteratorTypeEntry : public ComplexTypeEntry {
-    public:
-        IteratorTypeEntry(const QString &name, const ComplexTypeEntry* containerType) :
-            ComplexTypeEntry(name, IteratorType),
-            m_containerType(containerType),
-            m_qualifiedCppContainerName(),
-            m_isPointer(false)
-        {
-            setCodeGeneration(GenerateForSubclass);
-            disableNativeIdUsage();
-        }
-        IteratorTypeEntry(const QString &name, const QString& qualifiedCppContainerName, const ComplexTypeEntry* containerType, bool isPointer) :
-            ComplexTypeEntry(name, IteratorType),
-            m_containerType(containerType),
-            m_qualifiedCppContainerName(qualifiedCppContainerName),
-            m_isPointer(isPointer)
-        {
+public:
+    IteratorTypeEntry(const QString &name, const ComplexTypeEntry* containerType) :
+        ComplexTypeEntry(name, IteratorType),
+        m_containerType(containerType),
+        m_qualifiedCppContainerName(),
+        m_isPointer(false)
+    {
+        setCodeGeneration(GenerateForSubclass);
+        disableNativeIdUsage();
+    }
+    IteratorTypeEntry(const QString &name, const QString& qualifiedCppContainerName, const ComplexTypeEntry* containerType, bool isPointer) :
+        ComplexTypeEntry(name, IteratorType),
+        m_containerType(containerType),
+        m_qualifiedCppContainerName(qualifiedCppContainerName),
+        m_isPointer(isPointer)
+    {
 //            setCodeGeneration(GenerateNothing);
-            disableNativeIdUsage();
-        }
-        IteratorTypeEntry* clone(const ComplexTypeEntry* containerType, const QString& qualifiedCppContainerName) const;
-        QString targetLangName() const override;
-        QString javaPackage() const override;
-        QString qualifiedCppName() const override;
-        QString iteratorName() const;
-        const QString& qualifiedCppContainerName() const;
-        const ComplexTypeEntry* containerType() const {return m_containerType;}
-        void setContainerType(const ComplexTypeEntry* t) {m_containerType = t;}
-        void setQualifiedCppContainerName(const QString& t) {m_qualifiedCppContainerName = t;}
-        void setIsPointer(bool isPointer) {m_isPointer = isPointer;}
-        bool isPointer() const {return m_isPointer;}
-        void setIsConst(bool newIsConst);
+        disableNativeIdUsage();
+    }
+    IteratorTypeEntry* clone(const ComplexTypeEntry* containerType, const QString& qualifiedCppContainerName) const;
+    QString targetLangName() const override;
+    QString javaPackage() const override;
+    QString qualifiedCppName() const override;
+    QString iteratorName() const;
+    const QString& qualifiedCppContainerName() const;
+    const ComplexTypeEntry* containerType() const {return m_containerType;}
+    void setContainerType(const ComplexTypeEntry* t) {m_containerType = t;}
+    void setQualifiedCppContainerName(const QString& t) {m_qualifiedCppContainerName = t;}
+    void setIsPointer(bool isPointer) {m_isPointer = isPointer;}
+    bool isPointer() const {return m_isPointer;}
+    void setIsConst(bool newIsConst);
 
 private:
-        const ComplexTypeEntry* m_containerType;
-        QString m_qualifiedCppContainerName;
-        bool m_isPointer;
-        bool m_isConst = true;
+    const ComplexTypeEntry* m_containerType;
+    QString m_qualifiedCppContainerName;
+    bool m_isPointer;
+    bool m_isConst = true;
 };
 
 class InstantiatedTemplateArgumentEntry : public ComplexTypeEntry {
-    public:
-    InstantiatedTemplateArgumentEntry(int ordinal, TypeEntry * templateArg, TypeEntry *instantiation, const QString & javaInstantiationBaseType = {"java.lang.Object"})
-                : ComplexTypeEntry(instantiation->name(), InstantiatedTemplateArgumentType),
-                  m_ordinal(ordinal),
-                  m_templateArg(templateArg),
-                  m_instantiation(instantiation),
-                  m_javaInstantiationBaseType(javaInstantiationBaseType)
-        {
-            this->disableNativeIdUsage();
-        }
+public:
+InstantiatedTemplateArgumentEntry(int ordinal, TypeEntry * templateArg, TypeEntry *instantiation, const QString & javaInstantiationBaseType = {"java.lang.Object"})
+            : ComplexTypeEntry(instantiation->name(), InstantiatedTemplateArgumentType),
+              m_ordinal(ordinal),
+              m_templateArg(templateArg),
+              m_instantiation(instantiation),
+              m_javaInstantiationBaseType(javaInstantiationBaseType)
+    {
+        this->disableNativeIdUsage();
+    }
 
-        int ordinal() const {
-            return m_ordinal;
-        }
+    int ordinal() const {
+        return m_ordinal;
+    }
 
-        QString targetLangName() const override {
-            return m_templateArg->name();
-        }
-        QString javaPackage() const override {
-            return {};
-        }
-        QString qualifiedCppName() const override {
-            return m_instantiation->qualifiedCppName();
-        }
-        const QString & javaInstantiationBaseType() const{
-            return m_javaInstantiationBaseType;
-        }
-    private:
-        int m_ordinal;
-        TypeEntry * m_templateArg;
-        TypeEntry * m_instantiation;
-        QString m_javaInstantiationBaseType;
+    QString targetLangName() const override {
+        return m_templateArg->name();
+    }
+    QString javaPackage() const override {
+        return {};
+    }
+    QString qualifiedCppName() const override {
+        return m_instantiation->qualifiedCppName();
+    }
+    const QString & javaInstantiationBaseType() const{
+        return m_javaInstantiationBaseType;
+    }
+private:
+    int m_ordinal;
+    TypeEntry * m_templateArg;
+    TypeEntry * m_instantiation;
+    QString m_javaInstantiationBaseType;
 };
 
 class GLsyncTypeEntry : public ObjectTypeEntry {
-    public:
-        GLsyncTypeEntry() : ObjectTypeEntry("__GLsync") {
-            setCodeGeneration(GenerateNothing);
-            setTargetLangName("GLsync");
-            setTargetTypeSystem("io.qt.gui");
-            setTargetLangPackage("io.qt.gui.gl");
-            setCodeGeneration(TypeEntry::GenerateNothing);
-            m_attributes.setFlag(ComplexTypeEntry::IsGLsync);
-        }
+public:
+    GLsyncTypeEntry();
 };
 
 class QMetaObjectTypeEntry : public ComplexTypeEntry {
-    public:
-        QMetaObjectTypeEntry() : ComplexTypeEntry("QMetaObject", QMetaObjectType) {
-            setCodeGeneration(GenerateNothing);
-            disableNativeIdUsage();
-        }
-
-        QString javaPackage() const override { return "io.qt.core"; }
-
-        bool isValue() const override { return false; }
+public:
+    QMetaObjectTypeEntry();
+    QString javaPackage() const override;
+    bool isValue() const override;
 };
 
 class QMetaObjectConnectionTypeEntry : public ComplexTypeEntry {
-    public:
-        QMetaObjectConnectionTypeEntry() : ComplexTypeEntry("QMetaObject::Connection", QMetaObjectConnectionType) {
-            setCodeGeneration(GenerateNothing);
-            disableNativeIdUsage();
-        }
-
-        QString targetLangName() const override {
-            return "QMetaObject$Connection";
-        }
-
-        virtual QString javaPackage() const override { return "io.qt.core"; }
-
-        virtual bool isValue() const override { return true; }
+public:
+    QMetaObjectConnectionTypeEntry();
+    QString targetLangName() const override;
+    QString javaPackage() const override;
+    bool isValue() const override;
 };
 
 }

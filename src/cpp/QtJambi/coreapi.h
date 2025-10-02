@@ -109,7 +109,7 @@ QTJAMBI_EXPORT jobject readMetaPropertyOnGadget(JNIEnv *env, jobject _this, jobj
 
 QTJAMBI_EXPORT jboolean writeMetaPropertyOnGadget(JNIEnv *env, jobject _this, jobject gadget, jobject value);
 
-QTJAMBI_EXPORT jobject getMetaObjectJavaType(JNIEnv *env, const QMetaObject *metaObject, bool exactOrNull = false);
+QTJAMBI_EXPORT jclass getMetaObjectJavaType(JNIEnv *env, const QMetaObject *metaObject, bool exactOrNull = false);
 
 QTJAMBI_EXPORT jobject metaObjectCast(JNIEnv *env, jobject object, jclass type);
 

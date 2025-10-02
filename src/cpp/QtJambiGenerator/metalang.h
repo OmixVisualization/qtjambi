@@ -789,6 +789,7 @@ class MetaFunction : public MetaAttributes {
     QString returnValueComment() const;
     void setReturnValueComment(const QString& returnValueComment);
 
+    static const MetaArgument *argumentByIndex(const MetaArgumentList& arguments, int index);
 private:
     QString m_name;
     QString m_original_name;

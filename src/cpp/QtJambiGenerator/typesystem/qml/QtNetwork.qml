@@ -1736,6 +1736,57 @@ inline auto convertSlot(JNIEnv* _env, jobject _receiver, jobject _slot){
             }
             since: 6.7
         }
+        ModifyFunction{
+            signature: "setRawHeader(const QByteArray &, const QByteArray &)"
+            ModifyArgument{
+                index: 1
+                AddImplicitCall{type: "java.lang.@NonNull String"}
+            }
+            ModifyArgument{
+                index: 2
+                AddImplicitCall{type: "java.lang.@NonNull String"}
+            }
+        }
+        ModifyFunction{
+            signature: "rawHeader(QAnyStringView)const"
+            ModifyArgument{
+                index: 1
+                replaceType: "io.qt.core.@NonNull QByteArrayView"
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "QByteArrayView %out = qtjambi_cast<QByteArrayView>(%env, %in);"}
+                }
+            }
+            ModifyArgument{
+                index: 1
+                AddImplicitCall{type: "io.qt.core.@NonNull QByteArray"}
+                AddImplicitCall{type: "java.nio.@NonNull ByteBuffer"}
+                AddImplicitCall{type: "java.lang.@NonNull CharSequence"}
+                AddImplicitCall{type: "java.lang.@NonNull String"}
+                AddImplicitCall{type: "byte @NonNull[]"}
+            }
+            since: 6.7
+        }
+        ModifyFunction{
+            signature: "hasRawHeader(QAnyStringView)const"
+            ModifyArgument{
+                index: 1
+                replaceType: "io.qt.core.@NonNull QByteArrayView"
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "QByteArrayView %out = qtjambi_cast<QByteArrayView>(%env, %in);"}
+                }
+            }
+            ModifyArgument{
+                index: 1
+                AddImplicitCall{type: "io.qt.core.@NonNull QByteArray"}
+                AddImplicitCall{type: "java.nio.@NonNull ByteBuffer"}
+                AddImplicitCall{type: "java.lang.@NonNull CharSequence"}
+                AddImplicitCall{type: "java.lang.@NonNull String"}
+                AddImplicitCall{type: "byte @NonNull[]"}
+            }
+            since: 6.7
+        }
     }
     
     ValueType{

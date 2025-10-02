@@ -4866,7 +4866,7 @@ bool MetaUtilTypeEntry<TargetType>::convertToNative(JNIEnv *env, jvalue java_val
         if(!env->IsSameObject(java_value.l, nullptr)){
             if(!Java::QtCore::QMetaObject::isInstanceOf(env, java_value.l))
                 return false;
-            jlong ptr = Java::QtCore::QMetaObject::metaObjectPointer(env, java_value.l);
+            jlong ptr = Java::QtCore::QMetaObject::__qt_persistentPointer(env, java_value.l);
             *reinterpret_cast<const QMetaObject**>(output) = reinterpret_cast<const QMetaObject *>(ptr);
         }else{
             *reinterpret_cast<const QMetaObject**>(output) = nullptr;

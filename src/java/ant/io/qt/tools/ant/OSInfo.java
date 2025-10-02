@@ -32,6 +32,12 @@
 
 package io.qt.tools.ant;
 
+import java.util.Collections;
+import java.util.Map;
+import java.util.TreeMap;
+
+import org.apache.tools.ant.Project;
+
 import io.qt.tools.ant.FindCompiler.Compiler;
 
 /**
@@ -85,7 +91,7 @@ public class OSInfo
     /**
      * Returns the operating system
      */
-    public static OperationSystem os() {
+    public OperationSystem os() {
         if (os == null) {
             String osname = System.getProperty("os.name").toLowerCase();
             if (osname.contains("linux")) {
@@ -111,7 +117,7 @@ public class OSInfo
         return os;
     }
 
-	public static Architecture arch() {
+	public Architecture arch() {
 		if(arch == null) {
 	    	String osarch = System.getProperty("os.arch").toLowerCase();
 	    	switch(osarch) {
@@ -152,7 +158,7 @@ public class OSInfo
 		return arch;
 	}
     
-    public static OperationSystem crossOS() {
+    public OperationSystem crossOS() {
     	if(crossOS==null) {
     		return os();
     	}
@@ -161,7 +167,7 @@ public class OSInfo
     	}
     }
     
-    public static String targetPlatform(Compiler compiler) {
+    public String targetPlatform(Compiler compiler) {
     	if(crossOS==null) {
     		switch (os()) {
             case Windows:
@@ -253,7 +259,7 @@ public class OSInfo
     	}
     }
     
-    public static Architecture crossArch() {
+    public Architecture crossArch() {
     	if(crossOS==null) {
     		return null;
     	}else if(crossOS==OperationSystem.Android) {
@@ -268,7 +274,7 @@ public class OSInfo
     	}
     }
 
-    static void setQMakeXSpec(String qmakeXSpec) {
+    void setQMakeXSpec(String qmakeXSpec) {
     	if(qmakeXSpec==null) {
     		crossOS = null;
     	}else {
@@ -336,14 +342,32 @@ public class OSInfo
     	}
     }
     
-    static void setCrossCompilation(OperationSystem _crossOS, Architecture _crossArch) {
+    void setCrossCompilation(OperationSystem _crossOS, Architecture _crossArch) {
     	crossOS = _crossOS;
     	crossArch = _crossArch;
     }
     
-    private static OperationSystem crossOS;
-    private static Architecture crossArch;
-    private static OperationSystem os;
-    private static Architecture arch;
+    private OperationSystem crossOS;
+    private Architecture crossArch;
+    private OperationSystem os;
+    private Architecture arch;
+    
+    public final String id = "qtjambi.osinfo-"+Integer.toHexString(System.identityHashCode(this));
+    
+    private static final Map<String,OSInfo> osInfos = Collections.synchronizedMap(new TreeMap<>());
+    
+    public static OSInfo instance(Project project) {
+    	return osInfos.get(project.getProperty("qtjambi.osinfo"));
+	}
+    
+    public static void cleanupOSInfo(Project project) {
+    	osInfos.remove(project.getProperty("qtjambi.osinfo"));
+    }
+    
+    public static String initializeNewOSInfo(Project project) {
+    	OSInfo localOSInfo = new OSInfo();
+    	osInfos.put(localOSInfo.id, localOSInfo);
+		return localOSInfo.id;
+    }
 }
 

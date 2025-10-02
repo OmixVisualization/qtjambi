@@ -94,7 +94,9 @@ public:
     static bool testFetchPropertyCustomJavaType(QObject* qobj);
     static bool testFetchPropertyCustomQtEnum2(QObject* qobj);
     static bool testFetchPropertyExtendedColor(QObject* qobj);
-
+#if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
+    static QVariant instantiateInPlace(const QMetaMethod& constructor, std::initializer_list<QVariant> args);
+#endif
 signals:
     
 public slots:

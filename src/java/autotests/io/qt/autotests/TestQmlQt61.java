@@ -36,7 +36,10 @@ import org.junit.Test;
 
 import io.qt.autotests.TestQmlQt6.AutoGadgetValueType;
 import io.qt.autotests.TestQmlQt6.CustomValueType;
+import io.qt.autotests.generated.General;
+import io.qt.core.QObject;
 import io.qt.core.QVariant;
+import io.qt.qml.QJSEngine;
 import io.qt.qml.QJSManagedValue;
 import io.qt.qml.QJSValue;
 import io.qt.qml.QQmlEngine;
@@ -103,5 +106,18 @@ public class TestQmlQt61 extends ApplicationInitializer{
 			Assert.assertEquals(25.6, v.d, 0.0001);
 			Assert.assertEquals("CREATE_TEST2", v.s);
 		}
+	}
+	
+	@Test
+    public void testObjectOwnership() {
+		QQmlEngine engine = new QQmlEngine();
+		QObject scriptValueObject = new QObject();
+		QJSManagedValue jsValue = engine.toManagedValue(scriptValueObject);
+        Assert.assertEquals(QJSEngine.ObjectOwnership.JavaOwnership, QJSEngine.objectOwnership(scriptValueObject));
+		Assert.assertTrue(General.internalAccess.isJavaOwnership(scriptValueObject));
+        Assert.assertTrue(jsValue.isQObject());
+        Assert.assertEquals(scriptValueObject, jsValue.toQObject());
+        engine.dispose();
+        Assert.assertFalse(scriptValueObject.isDisposed());
 	}
 }

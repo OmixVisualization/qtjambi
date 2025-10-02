@@ -82,12 +82,13 @@ public class GeneratorTask extends Task {
     }
 
     private String generatorExecutable() {
+    	OSInfo osInfo = OSInfo.instance(getProject());
     	boolean generator_debug = "true".equals(getProject().getProperty("generator.debug.run"));
         if(generatorExe != null) {
             File fileExe = new File(generatorExe);
             if(fileExe.isFile() /*&& fileExe.isExecutable()*/)
                 return fileExe.getAbsolutePath();
-            if(OSInfo.os() == OSInfo.OperationSystem.Windows) {
+            if(osInfo.os() == OSInfo.OperationSystem.Windows) {
                 fileExe = new File(generatorExe + ".exe");
                 if(fileExe.isFile() /*&& fileExe.isExecutable()*/)
                     return fileExe.getAbsolutePath();
@@ -95,7 +96,7 @@ public class GeneratorTask extends Task {
         }
 
         String exe;
-        switch(OSInfo.os()) {
+        switch(osInfo.os()) {
         case Windows:
             exe = generator_debug ? "QtJambiGeneratord.exe" : "QtJambiGenerator.exe";
             break;

@@ -327,7 +327,7 @@ void MetaInfoGenerator::writeCppFile() {
             stream << Qt::endl
                       << INDENT << "extern \"C\" Q_DECL_EXPORT jint JNICALL JNI_ONLOAD(JavaVM *, void *)" << Qt::endl
                       << INDENT << "{" << Qt::endl;
-            INDENTATION(INDENT)
+            INDENTATION(INDENT);
             stream << INDENT << "QTJAMBI_LIBRARY_INITIALIZATION_METHOD_CALL(\"" << package << "\")" << Qt::endl;
             if(typeSystemEntry)
                 generateInitializer(stream, typeSystemEntry, {}, TS::MetaInfo, CodeSnip::Beginning, INDENT);
@@ -335,7 +335,7 @@ void MetaInfoGenerator::writeCppFile() {
     }
 
     {
-        INDENTATION(INDENT)
+        INDENTATION(INDENT);
         writtenClasses.clear();
         for(MetaClass *cls : qAsConst(m_classes)) {
             if (BufferedOutputStream *f = buffers.value(cls->targetTypeSystem(), nullptr)) {
@@ -372,7 +372,7 @@ void MetaInfoGenerator::writeCppFile() {
         if (f != nullptr) {
             QTextStream& stream  = *f;
             {
-                INDENTATION(INDENT)
+                INDENTATION(INDENT);
                 TypeSystemTypeEntry * typeSystemEntry = m_database->findTypeSystem(package);
                 if(typeSystemEntry){
                     generateInitializer(stream, typeSystemEntry, {}, TS::MetaInfo, CodeSnip::Position3, INDENT);
@@ -547,7 +547,7 @@ void MetaInfoGenerator::writeLibraryInitializers() {
               << INDENT << "@ModuleVersion(major=QtJambi_LibraryUtilities.qtMajorVersion, minor=QtJambi_LibraryUtilities.qtMinorVersion, patch=QtJambi_LibraryUtilities.qtJambiPatch)" << Qt::endl
               << INDENT << "final class QtJambi_LibraryUtilities {" << Qt::endl << Qt::endl;
             {
-                INDENTATION(INDENT)
+                INDENTATION(INDENT);
                 s << INDENT << "final static int qtMajorVersion = " << m_qtVersionMajor << ";" << Qt::endl << Qt::endl
                   << INDENT << "final static int qtMinorVersion = " << m_qtVersionMinor << ";" << Qt::endl << Qt::endl
                   << INDENT << "final static int qtJambiPatch = " << m_qtjambiVersionPatch << ";" << Qt::endl;
@@ -556,10 +556,10 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                     s << Qt::endl << INDENT << "final static InternalAccess internal;" << Qt::endl
                       << Qt::endl << INDENT << "static{" << Qt::endl;
                     {
-                        INDENTATION(INDENT)
+                        INDENTATION(INDENT);
                         s << INDENT << "try {" << Qt::endl;
                         {
-                            INDENTATION(INDENT)
+                            INDENTATION(INDENT);
                             QString typeSystemID = typeSystemEntry->module();
                             if(typeSystemID.isEmpty())
                                 typeSystemID = typeSystemEntry->qtLibrary();
@@ -887,7 +887,7 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                         generateInitializer(s, typeSystemEntry, package, TS::PackageInitializer, CodeSnip::Beginning, INDENT);
                         s << Qt::endl << INDENT << "static{" << Qt::endl;
                         {
-                            INDENTATION(INDENT)
+                            INDENTATION(INDENT);
                             generateInitializer(s, typeSystemEntry, package, TS::TargetLangCode, CodeSnip::Beginning, INDENT);
                             if(package=="io.qt.internal"){
                                 s << INDENT << "Map<String,List<Dependency>> _dependencies = new TreeMap<>();" << Qt::endl;
@@ -950,7 +950,7 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                             generateInitializer(s, typeSystemEntry, package, TS::TargetLangCode, CodeSnip::Position1, INDENT);
                             s << INDENT << "try {" << Qt::endl;
                             {
-                                INDENTATION(INDENT)
+                                INDENTATION(INDENT);
                                 generateInitializer(s, typeSystemEntry, package, TS::TargetLangCode, CodeSnip::Position2, INDENT);
                                 if(package!="io.qt.internal")
                                     s << INDENT << "initializePackage(\"" << typeSystemByPackage << "\");" << Qt::endl;
@@ -958,13 +958,13 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                             }
                             s << INDENT << "} catch(Error t) {" << Qt::endl;
                             {
-                                INDENTATION(INDENT)
+                                INDENTATION(INDENT);
                                 generateInitializer(s, typeSystemEntry, package, TS::TargetLangCode, CodeSnip::Position4, INDENT);
                                 s << INDENT << "throw t;" << Qt::endl;
                             }
                             s << INDENT << "} catch(Throwable t) {" << Qt::endl;
                             {
-                                INDENTATION(INDENT)
+                                INDENTATION(INDENT);
                                 generateInitializer(s, typeSystemEntry, package, TS::TargetLangCode, CodeSnip::Position4, INDENT);
                                 s << INDENT << "throw new ExceptionInInitializerError(t);" << Qt::endl;
                             }
@@ -1038,7 +1038,7 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                 }
                 stream << "module " << moduleName << " {" << Qt::endl;
                 {
-                    INDENTATION(INDENT)
+                    INDENTATION(INDENT);
                     for(const TypeSystemTypeEntry* typeSystem : qAsConst(sortedTypeSystems)){
                         generateInitializer(stream, typeSystem, {}, TS::ModuleInfo, CodeSnip::Beginning, INDENT);
                     }

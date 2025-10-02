@@ -57,8 +57,8 @@ class QtJambiGenericTreeItemModelImpl : public QtJambiRangeModelImpl<is_mutable_
     static_assert(!Base::dynamicColumns(), "A tree must have a static number of columns!");
 
 public:
-    QtJambiGenericTreeItemModelImpl(Range &&model, Protocol &&p, QRangeModel *itemModel)
-        : Base(std::forward<Range>(model), std::forward<Protocol>(p), itemModel)
+    QtJambiGenericTreeItemModelImpl(Range &&model, Protocol &&p, QRangeModel *itemModel, QGenericTableItemModelImpl<GenericTable>* owner)
+        : Base(std::forward<Range>(model), std::forward<Protocol>(p), itemModel, owner)
     {};
 
 protected:
@@ -72,7 +72,7 @@ protected:
 
         const_row_ptr grandParent = static_cast<const_row_ptr>(parent.constInternalPointer());
         const auto &parentSiblings = childrenOf(grandParent);
-        const auto it = QRangeModelDetails::cpos(parentSiblings, parent.row());
+        const auto it = QRangeModelDetails::pos(parentSiblings, parent.row());
         return this->createIndex(row, column, QRangeModelDetails::pointerTo(*it));
     }
 
@@ -90,8 +90,8 @@ protected:
         decltype(auto) grandParent = this->protocol().parentRow(QRangeModelDetails::refTo(parentRow));
         const range_type &parentSiblings = childrenOf(QRangeModelDetails::pointerTo(grandParent));
         // find the index of parentRow
-        const auto begin = QRangeModelDetails::cbegin(parentSiblings);
-        const auto end = QRangeModelDetails::cend(parentSiblings);
+        const auto begin = QRangeModelDetails::begin(parentSiblings);
+        const auto end = QRangeModelDetails::end(parentSiblings);
         const auto it = std::find_if(begin, end, [parentRow](auto &&s){
             return QRangeModelDetails::pointerTo(s) == parentRow;
         });
@@ -306,7 +306,7 @@ protected:
         const_row_ptr parentRow = static_cast<const_row_ptr>(index.constInternalPointer());
         const range_type &siblings = childrenOf(parentRow);
         Q_ASSERT(index.row() < int(Base::size(siblings)));
-        return *QRangeModelDetails::cpos(siblings, index.row());
+        return *QRangeModelDetails::pos(siblings, index.row());
     }
 
     decltype(auto) rowDataImpl(const QModelIndex &index)
@@ -369,9 +369,7 @@ template<bool is_mutable_tree,
 void QGenericTableItemModelImpl<GenericTable>::initializeTree(QRangeModel *itemModel, Args&&... args){
     using Range = RangeWrapperType<is_mutable_tree ? TreeType::MutableTree : TreeType::ConstTree,is_mutable_range,is_mutable_row,is_list_range,is_list_row,rowType>;
     using TreeType = QtJambiGenericTreeItemModelImpl<is_mutable_tree,is_mutable_range,is_mutable_row,is_list_range,is_list_row,rowType,QRangeModelDetails::DefaultTreeProtocol<Range>>;
-    impl = new TreeType(Range{std::move(args)...}, {}, itemModel);
-    callConst_fn = &TreeType::callConst;
-    call_fn = &TreeType::call;
+    impl = new TreeType(Range{std::move(args)...}, {}, itemModel, this);
 }
 
 void QGenericTableItemModelImpl<GenericTable>::initializeTree(QRangeModel *itemModel, GenericTable&& model){

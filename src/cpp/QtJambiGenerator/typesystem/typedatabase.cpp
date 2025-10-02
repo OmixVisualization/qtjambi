@@ -1049,15 +1049,15 @@ void TypeDatabase::initialize(const QString &filename, const QStringList &import
         addType(new SmartPointerTypeEntry("std::weak_ptr", SmartPointerTypeEntry::weak_ptr));
 
         // Custom types...
-        addType(new QMetaObjectTypeEntry());
-        {
-            EnumTypeEntry* etype = new EnumTypeEntry("QMetaObject", "Call");
-            etype->setTargetTypeSystem("QtCore");
-            etype->setTargetLangPackage("io.qt.core");
-            etype->setCodeGeneration(TypeEntry::GenerateNothing);
-            addType(etype);
-        }
-        addType(new QMetaObjectConnectionTypeEntry());
+        // addType(new QMetaObjectTypeEntry());
+        // {
+        //     EnumTypeEntry* etype = new EnumTypeEntry("QMetaObject", "Call");
+        //     etype->setTargetTypeSystem("QtCore");
+        //     etype->setTargetLangPackage("io.qt.core");
+        //     etype->setCodeGeneration(TypeEntry::GenerateNothing);
+        //     addType(etype);
+        // }
+        // addType(new QMetaObjectConnectionTypeEntry());
         addType(new GLsyncTypeEntry());
         {
             ContainerTypeEntry* cronoType = new ContainerTypeEntry("std::chrono::milliseconds", ContainerTypeEntry::std_chrono);

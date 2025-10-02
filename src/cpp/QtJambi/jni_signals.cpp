@@ -381,21 +381,10 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_SignalUtility_signalInf
     }
 }
 
-
-extern "C" JNIEXPORT jlong JNICALL Java_io_qt_internal_SignalUtility_metaObjectId
-(JNIEnv *env, jclass, jobject mo){
-    try{
-        return mo ? Java::QtCore::QMetaObject::metaObjectPointer(env, mo) : 0;
-    }catch(const JavaException& exn){
-        exn.raiseInJava(env);
-        return 0;
-    }
-}
-
 extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_internal_SignalUtility_isDynamic
     (JNIEnv *env, jclass, jobject mo){
     try{
-        jlong metaObjectId = mo ? Java::QtCore::QMetaObject::metaObjectPointer(env, mo) : 0;
+        jlong metaObjectId = mo ? Java::QtCore::QMetaObject::__qt_persistentPointer(env, mo) : 0;
         return QtJambiMetaObject::isInstance(reinterpret_cast<const QMetaObject*>(metaObjectId));
     }catch(const JavaException& exn){
         exn.raiseInJava(env);

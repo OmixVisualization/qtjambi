@@ -56,8 +56,6 @@ final class MetaObjectUtility{
     
     private MetaObjectUtility() { throw new RuntimeException();}
     
-    private final static boolean isQt6 = QtJambi_LibraryUtilities.qtMajorVersion>5;
-    
     private final static Supplier<List<String>> intDescriptionListFactory = 
     		Boolean.getBoolean("io.qt.enable-metaobject-logs") 
 	    		? ArrayList::new 
@@ -101,11 +99,11 @@ final class MetaObjectUtility{
             Map<Method, MethodFlags> methodFlags = new HashMap<>();
             Map<String, Method> propertyReaders = new TreeMap<>();
             Map<String, List<Method>> propertyWriters = new TreeMap<>();
-            Map<String, Object> propertyDesignableResolvers = new TreeMap<>();
-            Map<String, Object> propertyScriptableResolvers = new TreeMap<>();
-            Map<String, Object> propertyEditableResolvers = new TreeMap<>();
-            Map<String, Object> propertyStoredResolvers = new TreeMap<>();
-            Map<String, Object> propertyUserResolvers = new TreeMap<>();
+            Map<String, Boolean> propertyDesignableResolvers = new TreeMap<>();
+            Map<String, Boolean> propertyScriptableResolvers = new TreeMap<>();
+            Map<String, Boolean> propertyEditableResolvers = new TreeMap<>();
+            Map<String, Boolean> propertyStoredResolvers = new TreeMap<>();
+            Map<String, Boolean> propertyUserResolvers = new TreeMap<>();
             Map<String, Boolean> propertyRequiredResolvers = new TreeMap<>();
             Map<String, Boolean> propertyConstantResolvers = new TreeMap<>();
             Map<String, Boolean> propertyFinalResolvers = new TreeMap<>();
@@ -531,8 +529,17 @@ signalLoop:	    for (Field declaredField : declaredFields) {
                 });
                 declaredConstructors.addAll(Arrays.asList(clazz.getDeclaredConstructors()));
 cloop: 		    for(Constructor<?> constructor : declaredConstructors){
+					Class<?>[] parameterTypes = constructor.getParameterTypes();
+					if(parameterTypes!=null && parameterTypes.length==1) {
+						if(parameterTypes[0]==Classes.QPrivateConstructor()) {
+							metaObjectData.privateConstructor = constructor;
+							continue cloop;
+						}else if(parameterTypes[0]==Classes.QtConstructInPlace()) {
+							metaObjectData.inPlaceConstructor = constructor;
+							continue cloop;
+						}
+					}
                     if(!constructor.isSynthetic() && constructor.isAnnotationPresent(QtInvokable.class)) {
-                        Class<?>[] parameterTypes = constructor.getParameterTypes();
                         for (Class<?> parameterType : parameterTypes) {
                             if(parameterType==Classes.QPrivateConstructor()
                             		|| parameterType==Classes.QDeclarativeConstructor()) {
@@ -1281,9 +1288,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                         metaObjectData.intData.add(0);		intdataComments.add("signal["+i+"]: parameters");
                         metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex(""));		intdataComments.add("signal["+i+"]: tag");
                         metaObjectData.intData.add(flags);		intdataComments.add("signal["+i+"]: flags");
-                        if(isQt6) {
-                            metaObjectData.intData.add(0);		intdataComments.add("signal["+i+"]: initial metatype offsets");
-                        }
+                        metaObjectData.intData.add(0);		intdataComments.add("signal["+i+"]: initial metatype offsets");
                     }
                     
                     //
@@ -1315,9 +1320,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                         intdataComments.add("slot["+i+"]: tag");
                         metaObjectData.intData.add(flags);
                         intdataComments.add("slot["+i+"]: flags");
-                        if(isQt6) {
-                            metaObjectData.intData.add(0);		intdataComments.add("slot["+i+"]: initial metatype offsets");
-                        }
+                        metaObjectData.intData.add(0);		intdataComments.add("slot["+i+"]: initial metatype offsets");
                     }
                 }
                 
@@ -1328,6 +1331,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                     metaObjectData.metaTypes.add(0);
                 }
                 
+                int selfMetaTypeIndex = -1;
                 if(revision>=10) {
                 	if(revision>=12) {
                 		if(!enums.isEmpty()){
@@ -1359,18 +1363,16 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                         }
                 	}
                 	// metaType for metaObject
+                	selfMetaTypeIndex = metaObjectData.metaTypes.size();
                 	metaObjectData.metaTypes.add(0);
                 }
-                
                 for (int i = 0; i < metaObjectData.signalInfos.size(); ++i) {
                 	MetaObjectData.SignalInfo signalInfo = metaObjectData.signalInfos.get(i);
                 	List<ParameterInfo> signalParameterInfos = allSignalParameterInfos.get(i);
                     // signals: parameters
                     int METHOD_PARAMETER_INDEX = paramIndexOfMethods.get(new QPair<>(signalInfo.field, signalInfo.signalMetaTypes.length));
                     metaObjectData.intData.set(METHOD_PARAMETER_INDEX, metaObjectData.intData.size());
-                    if(isQt6) {
-                        metaObjectData.intData.set(METHOD_PARAMETER_INDEX+3, metaObjectData.metaTypes.size());
-                    }
+                    metaObjectData.intData.set(METHOD_PARAMETER_INDEX+3, metaObjectData.metaTypes.size());
                     metaObjectData.intData.add(QMetaType.Type.Void.value());		intdataComments.add("signal["+i+"].returnType");
                     metaObjectData.metaTypes.add(QMetaType.Type.Void.value());
                     for (int j = 0; j < signalParameterInfos.size(); j++) {
@@ -1398,7 +1400,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                 if(!metaObjectData.constructors.isEmpty()){
                     metaObjectData.intData.set(CONSTRUCTOR_METADATA_INDEX, metaObjectData.intData.size());
                     for (int i = 0; i < metaObjectData.constructors.size(); i++) {
-                        Constructor<?> constructor = metaObjectData.constructors.get(i);
+                    	Constructor<?> constructor = metaObjectData.constructors.get(i);
                         int flags = MethodFlags.MethodConstructor.value();
                         if (Modifier.isPrivate(constructor.getModifiers()))
                         	flags |= MethodFlags.AccessPrivate.value();
@@ -1425,9 +1427,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                         metaObjectData.intData.add(0);		intdataComments.add("constructor["+i+"]: parameters");
                         metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex(""));		intdataComments.add("constructor["+i+"]: tag");
                         metaObjectData.intData.add(flags);		intdataComments.add("constructor["+i+"]: flags");
-                        if(isQt6) {
-                            metaObjectData.intData.add(0);		intdataComments.add("slot["+i+"]: initial metatype offsets");
-                        }
+                        metaObjectData.intData.add(0);		intdataComments.add("slot["+i+"]: initial metatype offsets");
                     }
                 }
                 
@@ -1438,9 +1438,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                     // slot/method: parameters
                     int METHOD_PARAMETER_INDEX = paramIndexOfMethods.get(method);
                     metaObjectData.intData.set(METHOD_PARAMETER_INDEX, metaObjectData.intData.size());
-                    if(isQt6) {
-                        metaObjectData.intData.set(METHOD_PARAMETER_INDEX+3, metaObjectData.metaTypes.size());
-                    }
+                    metaObjectData.intData.set(METHOD_PARAMETER_INDEX+3, metaObjectData.metaTypes.size());
                     ParameterInfo info = methodParameterInfos.get(0);
                     if(info.type==null){
                         metaObjectData.intData.add(0x80000000 | metaObjectData.addStringDataAndReturnIndex(info.typeName));
@@ -1491,9 +1489,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                     // constructors: parameters
                     int METHOD_PARAMETER_INDEX = paramIndexOfMethods.get(constructor);
                     metaObjectData.intData.set(METHOD_PARAMETER_INDEX, metaObjectData.intData.size());
-                    if(isQt6) {
-                        metaObjectData.intData.set(METHOD_PARAMETER_INDEX+3, metaObjectData.metaTypes.size());
-                    }
+                    metaObjectData.intData.set(METHOD_PARAMETER_INDEX+3, metaObjectData.metaTypes.size());
                     metaObjectData.intData.add(0x80000000 | metaObjectData.addStringDataAndReturnIndex(""));
                     intdataComments.add("constructor["+i+"].returnType");
                     for (int j = 0; j < constructorParameterInfos.size(); j++) {
@@ -1861,12 +1857,10 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                         metaObjectData.intData.add(flags);
                         intdataComments.add("property["+i+"].flags");
                         Integer signalIndex = signalIndexes.get(notify);
-                        if(isQt6){
-                            metaObjectData.intData.add(signalIndex!=null ? signalIndex : -1);
-                            intdataComments.add("property["+i+"].notifyId");
-                            metaObjectData.intData.add(0);
-                            intdataComments.add("property["+i+"].revision");
-                        }
+                        metaObjectData.intData.add(signalIndex!=null ? signalIndex : -1);
+                        intdataComments.add("property["+i+"].notifyId");
+                        metaObjectData.intData.add(0);
+                        intdataComments.add("property["+i+"].revision");
                         
                         metaObjectData.propertyReaders.add(reader);
                         metaObjectData.propertyWriters.add(writer);
@@ -1914,17 +1908,13 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                     for (int i = 0; i < enumList.size(); i++) {
                         Class<?> enumClass = enumList.get(i);
                         // enums: name, alias, flags, count, data
-                        if(isQt6){
-                            String alias = enumClass.getSimpleName();
-                            if(QFlags.class.isAssignableFrom(enumClass)) {
-                                Class<?> _enumClass = getEnumForQFlags(enumClass);
-                                alias = _enumClass.getSimpleName();
-                            }
-                            metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex(enumClass.getSimpleName()));	intdataComments.add("enum["+i+"].name");
-                            metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex(alias));	intdataComments.add("enum["+i+"].alias");
-                        }else{
-                            metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex(enumClass.getSimpleName()));	intdataComments.add("enum["+i+"].name");
+                        String alias = enumClass.getSimpleName();
+                        if(QFlags.class.isAssignableFrom(enumClass)) {
+                            Class<?> _enumClass = getEnumForQFlags(enumClass);
+                            alias = _enumClass.getSimpleName();
                         }
+                        metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex(enumClass.getSimpleName()));	intdataComments.add("enum["+i+"].name");
+                        metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex(alias));	intdataComments.add("enum["+i+"].alias");
                                                                                                                                                
                                                                                                                             
                         metaObjectData.intData.add(QFlags.class.isAssignableFrom(enumClass) ? 0x1 : 0x0);	intdataComments.add("enum["+i+"].flags");
@@ -1974,6 +1964,13 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                         	}
                         }
                     }
+                }
+                
+                if(!metaObjectData.constructors.isEmpty() && selfMetaTypeIndex!=-1) {
+	            	int metaTypeId = registerMetaType(clazz, null, null, false, false);
+	            	QMetaType metaType = new QMetaType(metaTypeId);
+	            	if(metaType.isValid() && !metaType.flags().testFlag(QMetaType.TypeFlag.IsPointer))
+	            		metaObjectData.metaTypes.add(metaTypeId);
                 }
                 
                 //
@@ -2072,6 +2069,10 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
 		static Class<?> QPrivateConstructor(){
     		return QPrivateConstructor.class;
     	}
+		static Class<?> QtConstructInPlace(){
+    		return QtConstructInPlace.class;
+    	}
+		@SuppressWarnings({"removal", "deprecation"})
 		static Class<?> QDeclarativeConstructor(){
     		return QDeclarativeConstructor.class;
     	}
@@ -2316,7 +2317,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
         return true;
     }
 
-    private static Object isDesignable(AccessibleObject member, Class<?> clazz) {
+    private static Boolean isDesignable(AccessibleObject member, Class<?> clazz) {
         QtPropertyDesignable designable = member.getAnnotation(QtPropertyDesignable.class);
 
         if (designable != null) {
@@ -2326,23 +2327,13 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                 return Boolean.TRUE;
             } else if (value.equalsIgnoreCase("false")) {
                 return Boolean.FALSE;
-            } else if(!isQt6) { 
-            	try {
-	                Method m = clazz.getMethod(value);
-	                if (isBoolean(m.getReturnType()))
-	                    return m;
-	                else
-	                    throw new RuntimeException("Wrong return type of designable method '" + m.getName() + "'");
-	            } catch (Throwable t) {
-	                logger.log(java.util.logging.Level.SEVERE, "", t);
-	            }
             }
         }
 
         return null;
     }
     
-    private static Object isScriptable(AccessibleObject member, Class<?> clazz) {
+    private static Boolean isScriptable(AccessibleObject member, Class<?> clazz) {
         QtPropertyScriptable scriptable = member.getAnnotation(QtPropertyScriptable.class);
 
         if (scriptable != null) {
@@ -2352,22 +2343,12 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                 return Boolean.TRUE;
             } else if (value.equalsIgnoreCase("false")) {
                 return Boolean.FALSE;
-            } else if(!isQt6) {
-            	try {
-	                Method m = clazz.getMethod(value);
-	                if (isBoolean(m.getReturnType()))
-	                    return m;
-	                else
-	                    throw new RuntimeException("Wrong return type of scriptable method '" + m.getName() + "'");
-	            } catch (Throwable t) {
-	                logger.log(java.util.logging.Level.SEVERE, "", t);
-	            }
             }
         }
         return null;
     }
     
-    private static Object isStored(AccessibleObject member, Class<?> clazz) {
+    private static Boolean isStored(AccessibleObject member, Class<?> clazz) {
         QtPropertyStored stored = member.getAnnotation(QtPropertyStored.class);
 
         if (stored != null) {
@@ -2377,22 +2358,12 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                 return Boolean.TRUE;
             } else if (value.equalsIgnoreCase("false")) {
                 return Boolean.FALSE;
-            } else if(!isQt6) {
-            	try {
-	                Method m = clazz.getMethod(value);
-	                if (isBoolean(m.getReturnType()))
-	                    return m;
-	                else
-	                    throw new RuntimeException("Wrong return type of scriptable method '" + m.getName() + "'");
-	            } catch (Throwable t) {
-	                logger.log(java.util.logging.Level.SEVERE, "", t);
-	            }
             }
         }
         return null;
     }
     
-    private static Object isEditable(AccessibleObject member, Class<?> clazz) {
+    private static Boolean isEditable(AccessibleObject member, Class<?> clazz) {
         return Boolean.TRUE;
     }
 
@@ -2417,7 +2388,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
         return (type == Boolean.class || type == Boolean.TYPE);
     }
 
-    private static Object isUser(AccessibleObject member, Class<?> clazz) {
+    private static Boolean isUser(AccessibleObject member, Class<?> clazz) {
         QtPropertyUser user = member.getAnnotation(QtPropertyUser.class);
 
         if (user != null) {
@@ -2427,14 +2398,6 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                 return Boolean.TRUE;
             } else if (value.equalsIgnoreCase("false")) {
                 return Boolean.FALSE;
-            } else try {
-                Method m = clazz.getMethod(value);
-                if (isBoolean(m.getReturnType()))
-                    return m;
-                else
-                    throw new RuntimeException("Wrong return type of scriptable method '" + m.getName() + "'");
-            } catch (Throwable t) {
-                logger.log(java.util.logging.Level.SEVERE, "", t);
             }
         }
 
@@ -2746,4 +2709,6 @@ class MetaObjectData {
 
     @NativeAccess boolean hasStaticMembers;
     final @NativeAccess List<Integer> metaTypes = new ArrayList<>();
+    @NativeAccess Constructor<?> privateConstructor;
+    @NativeAccess Constructor<?> inPlaceConstructor;
 }

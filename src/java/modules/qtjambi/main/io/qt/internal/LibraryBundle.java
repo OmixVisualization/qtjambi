@@ -177,6 +177,7 @@ final class LibraryBundle {
 				URL url = CoreUtility.createURL(origin);
 				origin = new File(url.toURI()).getAbsolutePath();
 			} catch (Exception e) {
+				origin = new File(url.toString().substring(5)).getAbsolutePath();
 			}
 		}
 		return origin;

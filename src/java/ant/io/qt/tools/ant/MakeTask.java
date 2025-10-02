@@ -52,7 +52,7 @@ public class MakeTask extends Task {
     private boolean failOnError = true;
     private boolean isTools;
 
-    private String compilerName() {
+    private String compilerName(OSInfo osInfo) {
     	String compilerError = (String)PropertyHelper.getProperty(getProject(), "qtjambi.compiler.error");
     	if(compilerError!=null && !compilerError.isEmpty())
     		throw new BuildException(compilerError);
@@ -62,7 +62,7 @@ public class MakeTask extends Task {
                 return make;
         	String compilerPathValue = (String)PropertyHelper.getProperty(getProject(), "tools.compiler.path");
         	if(compilerPathValue!=null && !compilerPathValue.isEmpty()) {
-	        	switch(OSInfo.os()) {
+	        	switch(osInfo.os()) {
 		        case Windows:
 		            String compiler = (String)PropertyHelper.getProperty(getProject(), Constants.TOOLS_COMPILER);
 		
@@ -76,7 +76,7 @@ public class MakeTask extends Task {
 		        }
 	        	return new File(compilerPathValue, "make.exe").getAbsolutePath();
         	}else {
-        		switch(OSInfo.os()) {
+        		switch(osInfo.os()) {
     	        case Windows:
     	            String compiler = (String)PropertyHelper.getProperty(getProject(), Constants.COMPILER);
     	
@@ -103,12 +103,12 @@ public class MakeTask extends Task {
 	            return make_tool;
 	        }
 	
-	        if(OSInfo.crossOS()!=OSInfo.os() && OSInfo.crossOS()==OperationSystem.Android) {
+	        if(osInfo.crossOS()!=osInfo.os() && osInfo.crossOS()==OperationSystem.Android) {
 	        	String ndkRoot = (String)PropertyHelper.getProperty(getProject(), "qtjambi.android.ndk");
 	        	if(ndkRoot!=null && !ndkRoot.isEmpty()) {
 	        		File nrkRootFile = new File(ndkRoot);
 	        		if(nrkRootFile.isDirectory()) {
-		    	        switch(OSInfo.os()) {
+		    	        switch(osInfo.os()) {
 		    	        case Windows:
 		    	        	return nrkRootFile.getAbsolutePath() + "\\prebuilt\\windows-x86_64\\bin\\make.exe";
 		    	        case MacOS:
@@ -124,7 +124,7 @@ public class MakeTask extends Task {
 	        String make = System.getenv("MAKE");
 	        if(make !=  null)
 	            return make;
-	        switch(OSInfo.os()) {
+	        switch(osInfo.os()) {
 	        case Windows:
 	            String compiler = (String)PropertyHelper.getProperty(getProject(), Constants.COMPILER);
 	
@@ -149,13 +149,14 @@ public class MakeTask extends Task {
 
     @Override
     public void execute() throws BuildException {
+    	OSInfo osInfo = OSInfo.instance(getProject());
         getProject().log(this, msg, Project.MSG_INFO);
 
-        String compilerName = compilerName();
+        String compilerName = compilerName(osInfo);
         List<String> commandArray = new ArrayList<String>();
         commandArray.add(compilerName);
 
-        if(silent && OSInfo.os() != OSInfo.OperationSystem.Windows) {
+        if(silent && osInfo.os() != OSInfo.OperationSystem.Windows) {
             commandArray.add("-s");
         }
 
@@ -205,13 +206,13 @@ public class MakeTask extends Task {
             }else {
             	String path = null;
             	Map<String, String> newEnv = null;
-            	if(OSInfo.crossOS()!=OSInfo.os() && OSInfo.crossOS()==OperationSystem.Android) {
+            	if(osInfo.crossOS()!=osInfo.os() && osInfo.crossOS()==OperationSystem.Android) {
     	        	String ndkRoot = (String)PropertyHelper.getProperty(getProject(), "qtjambi.android.ndk");
     	        	if(ndkRoot!=null) {
     	        		newEnv = new TreeMap<>();
     	        		newEnv.put("ANDROID_NDK_ROOT", ndkRoot.replace('\\', '/'));
     	        		File nrkRootFile = new File(ndkRoot);
-    	    	        switch(OSInfo.os()) {
+    	    	        switch(osInfo.os()) {
     	    	        case Windows:
     	    	        	path = nrkRootFile.getAbsolutePath() + "\\prebuilt\\windows-x86_64\\bin;"
     	    	        			+ nrkRootFile.getAbsolutePath() + "\\toolchains\\llvm\\prebuilt\\windows-x86_64\\bin";

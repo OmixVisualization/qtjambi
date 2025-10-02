@@ -60,6 +60,13 @@ TypeSystem{
         mode: RequiredLibrary.ProvideOnly
         until: 5
     }
+
+    RequiredLibrary{
+        name: "QtConcurrent"
+        mode: RequiredLibrary.ProvideOnly
+        platforms: ["macos", "linux", "android"]
+        since: [6,10]
+    }
     
     Rejection{
         className: "QMediaRecorder"

@@ -96,6 +96,7 @@ public class GPGTask extends Task {
 		if(deleteBundle[0] && bundle!=null) {
 			new java.io.File(bundle).delete();
 		}
+		executor.shutdown();
 		if(exception!=null)
 			throw exception;
 	}

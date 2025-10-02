@@ -75,7 +75,10 @@ TestInterface* TestAbstractClass::createQObjectInheritingInterface(QObject* pare
     return new InterfaceImplementingObject(parent);
 }
 
-TestInterface::TestInterface(const QString &){}
+TestInterface::TestInterface(const QString &arg){
+    if(!arg.isEmpty())
+        qWarning() << arg;
+}
 TestInterface::~TestInterface(){}
 bool TestInterface::setReferenceCountTest2(QObject* object) { Q_UNUSED(object) return false; }
 bool TestInterface::setReferenceCountTest3(QObject* object) { Q_UNUSED(object) return false; }

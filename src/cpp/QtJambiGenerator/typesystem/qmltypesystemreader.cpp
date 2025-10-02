@@ -995,46 +995,55 @@ void QmlTypeSystemReaderPrivate::parseObjectType(const QString& nameSpace, Objec
                     break;
                 }
             }
-//            if(!nameSpace.isEmpty()){
-//                if(targetName.endsWith(nameSpace+"::"+element->getName())){
-//                    targetName = targetName.mid(0, targetName.length()-element->getName().length()-2) + "$" + element->getName();
-//                }else if(name.endsWith(nameSpace+"::"+element->getName())){
-//                    targetName = name.mid(0, name.length()-element->getName().length()-2) + "$" + element->getName();
-//                }
-//            }
-            std::unique_ptr<ObjectTypeEntry> entry(new ObjectTypeEntry(name));
-            if(!targetName.isEmpty())
-                entry->setTargetLangName(targetName.replace("::", "$"));
-            entry->setIsValueOwner(element->getIsValueOwner());
-            entry->setIsPolymorphicBase(element->getIsPolymorphicBase());
-            entry->setPolymorphicIdValue(element->getPolymorphicIdExpression());
-            parseAttributesOfComplexType(element, entry.get());
-            const QList<AbstractObject*> unhandledElements = parseChildrenOfComplexType(nameSpace, element, entry.get());
-            for(AbstractObject* unhandledElement : unhandledElements){
-                TypesystemException::raise(QStringLiteral(u"Unexpected child element %1 in %2.").arg(unhandledElement->metaObject()->className(), element->metaObject()->className()));
-            }
-            if(name.endsWith(">")){
-                auto idx = name.indexOf('<');
-                QString templateName = name.mid(0, idx);
-                QStringList templateArguments = name.mid(idx+1).chopped(1).split(",");
-                ComplexTypeEntry* templateType = m_database->findComplexType(templateName);
-                if(templateType){
-                    if(templateType->isTemplate()){
-                        if(templateType->instantiations().contains(templateArguments) && templateType->instantiations()[templateArguments]==nullptr){
-                            entry->setTargetLangName(templateType->targetLangName());
-                            templateType->addInstantiation(templateArguments, entry.release());
-                        }else{
-                            TypesystemException::raise(QStringLiteral(u"Template %1<%2> already defined").arg(templateName, templateArguments.join(",")));
-                        }
-                    }else{
-                        TypesystemException::raise(QStringLiteral(u"Type %1 not a template").arg(templateName));
-                    }
-                }else{
-                    TypesystemException::raise(QStringLiteral(u"Template %1 not found").arg(templateName));
+            if(name=="QMetaObject") {
+                std::unique_ptr<TS::QMetaObjectTypeEntry> entry(new TS::QMetaObjectTypeEntry());
+                if(!targetName.isEmpty())
+                    entry->setTargetLangName(targetName.replace("::", "$"));
+                entry->setIsPolymorphicBase(element->getIsPolymorphicBase());
+                entry->setPolymorphicIdValue(element->getPolymorphicIdExpression());
+                parseAttributesOfComplexType(element, entry.get());
+                const QList<AbstractObject*> unhandledElements = parseChildrenOfComplexType(nameSpace, element, entry.get());
+                for(AbstractObject* unhandledElement : unhandledElements){
+                    TypesystemException::raise(QStringLiteral(u"Unexpected child element %1 in %2.").arg(unhandledElement->metaObject()->className(), element->metaObject()->className()));
                 }
-            }else{
                 ReportHandler::debugTypes("Adding to TypeDatabase(2): " + entry->name());
                 m_database->addType(entry.release());
+                m_database->addType(new TS::QMetaObjectConnectionTypeEntry());
+            }else{
+                std::unique_ptr<ObjectTypeEntry> entry(new ObjectTypeEntry(name));
+                if(!targetName.isEmpty())
+                    entry->setTargetLangName(targetName.replace("::", "$"));
+                entry->setIsValueOwner(element->getIsValueOwner());
+                entry->setIsPolymorphicBase(element->getIsPolymorphicBase());
+                entry->setPolymorphicIdValue(element->getPolymorphicIdExpression());
+                parseAttributesOfComplexType(element, entry.get());
+                const QList<AbstractObject*> unhandledElements = parseChildrenOfComplexType(nameSpace, element, entry.get());
+                for(AbstractObject* unhandledElement : unhandledElements){
+                    TypesystemException::raise(QStringLiteral(u"Unexpected child element %1 in %2.").arg(unhandledElement->metaObject()->className(), element->metaObject()->className()));
+                }
+                if(name.endsWith(">")){
+                    auto idx = name.indexOf('<');
+                    QString templateName = name.mid(0, idx);
+                    QStringList templateArguments = name.mid(idx+1).chopped(1).split(",");
+                    ComplexTypeEntry* templateType = m_database->findComplexType(templateName);
+                    if(templateType){
+                        if(templateType->isTemplate()){
+                            if(templateType->instantiations().contains(templateArguments) && templateType->instantiations()[templateArguments]==nullptr){
+                                entry->setTargetLangName(templateType->targetLangName());
+                                templateType->addInstantiation(templateArguments, entry.release());
+                            }else{
+                                TypesystemException::raise(QStringLiteral(u"Template %1<%2> already defined").arg(templateName, templateArguments.join(",")));
+                            }
+                        }else{
+                            TypesystemException::raise(QStringLiteral(u"Type %1 not a template").arg(templateName));
+                        }
+                    }else{
+                        TypesystemException::raise(QStringLiteral(u"Template %1 not found").arg(templateName));
+                    }
+                }else{
+                    ReportHandler::debugTypes("Adding to TypeDatabase(2): " + entry->name());
+                    m_database->addType(entry.release());
+                }
             }
         }catch(const TypesystemException& exn){
             TypesystemException::raise(QStringLiteral(u"%1 of type %2").arg(QLatin1String(exn.what()), name));
@@ -2664,45 +2673,53 @@ void QmlTypeSystemReaderPrivate::parseValueType(const QString& nameSpace, ValueT
                     break;
                 }
             }
-            std::unique_ptr<ValueTypeEntry> entry(new ValueTypeEntry(name));
-//            if(!nameSpace.isEmpty()){
-//                if(targetName.endsWith(nameSpace+"::"+element->getName())){
-//                    targetName = targetName.mid(0, targetName.length()-element->getName().length()-2) + "$" + element->getName();
-//                }else if(name.endsWith(nameSpace+"::"+element->getName())){
-//                    targetName = name.mid(0, name.length()-element->getName().length()-2) + "$" + element->getName();
-//                }
-//            }
-            if(!targetName.isEmpty())
-                entry->setTargetLangName(targetName.replace("::", "$"));
-            entry->setIsPolymorphicBase(element->getIsPolymorphicBase());
-            entry->setPolymorphicIdValue(element->getPolymorphicIdExpression());
-            parseAttributesOfComplexType(element, entry.get());
-            QList<AbstractObject*> unhandledElements = parseChildrenOfComplexType(nameSpace, element, entry.get());
-            for(AbstractObject* childElement : qAsConst(unhandledElements)){
-                TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2").arg(childElement->metaObject()->className(), element->metaObject()->className()));
-            }
-            if(name.endsWith(">")){
-                auto idx = name.indexOf('<');
-                QString templateName = name.mid(0, idx);
-                QStringList templateArguments = name.mid(idx+1).chopped(1).split(",");
-                ComplexTypeEntry* templateType = m_database->findComplexType(templateName);
-                if(templateType){
-                    if(templateType->isTemplate()){
-                        if(templateType->instantiations().contains(templateArguments) && templateType->instantiations()[templateArguments]==nullptr){
-                            entry->setTargetLangName(templateType->targetLangName());
-                            templateType->addInstantiation(templateArguments, entry.release());
+            /*if(name=="QMetaObject::Connection") {
+                std::unique_ptr<TS::QMetaObjectConnectionTypeEntry> entry(new TS::QMetaObjectConnectionTypeEntry());
+                if(!targetName.isEmpty())
+                    entry->setTargetLangName(targetName.replace("::", "$"));
+                entry->setIsPolymorphicBase(element->getIsPolymorphicBase());
+                entry->setPolymorphicIdValue(element->getPolymorphicIdExpression());
+                parseAttributesOfComplexType(element, entry.get());
+                const QList<AbstractObject*> unhandledElements = parseChildrenOfComplexType(nameSpace, element, entry.get());
+                for(AbstractObject* unhandledElement : unhandledElements){
+                    TypesystemException::raise(QStringLiteral(u"Unexpected child element %1 in %2.").arg(unhandledElement->metaObject()->className(), element->metaObject()->className()));
+                }
+                ReportHandler::debugTypes("Adding to TypeDatabase(2): " + entry->name());
+                m_database->addType(entry.release());
+            }else*/{
+                std::unique_ptr<ValueTypeEntry> entry(new ValueTypeEntry(name));
+                if(!targetName.isEmpty())
+                    entry->setTargetLangName(targetName.replace("::", "$"));
+                entry->setIsPolymorphicBase(element->getIsPolymorphicBase());
+                entry->setPolymorphicIdValue(element->getPolymorphicIdExpression());
+                parseAttributesOfComplexType(element, entry.get());
+                QList<AbstractObject*> unhandledElements = parseChildrenOfComplexType(nameSpace, element, entry.get());
+                for(AbstractObject* childElement : qAsConst(unhandledElements)){
+                    TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2").arg(childElement->metaObject()->className(), element->metaObject()->className()));
+                }
+                if(name.endsWith(">")){
+                    auto idx = name.indexOf('<');
+                    QString templateName = name.mid(0, idx);
+                    QStringList templateArguments = name.mid(idx+1).chopped(1).split(",");
+                    ComplexTypeEntry* templateType = m_database->findComplexType(templateName);
+                    if(templateType){
+                        if(templateType->isTemplate()){
+                            if(templateType->instantiations().contains(templateArguments) && templateType->instantiations()[templateArguments]==nullptr){
+                                entry->setTargetLangName(templateType->targetLangName());
+                                templateType->addInstantiation(templateArguments, entry.release());
+                            }else{
+                                TypesystemException::raise(QStringLiteral(u"Template %1<%2> already defined").arg(templateName, templateArguments.join(",")));
+                            }
                         }else{
-                            TypesystemException::raise(QStringLiteral(u"Template %1<%2> already defined").arg(templateName, templateArguments.join(",")));
+                            TypesystemException::raise(QStringLiteral(u"Type %1 not a template").arg(templateName));
                         }
                     }else{
-                        TypesystemException::raise(QStringLiteral(u"Type %1 not a template").arg(templateName));
+                        TypesystemException::raise(QStringLiteral(u"Template %1 not found").arg(templateName));
                     }
                 }else{
-                    TypesystemException::raise(QStringLiteral(u"Template %1 not found").arg(templateName));
+                    ReportHandler::debugTypes("Adding to TypeDatabase(2): " + name);
+                    m_database->addType(entry.release());
                 }
-            }else{
-                ReportHandler::debugTypes("Adding to TypeDatabase(2): " + name);
-                m_database->addType(entry.release());
             }
         }catch(const TypesystemException& exn){
             TypesystemException::raise(QStringLiteral(u"%1 of type %2").arg(QLatin1String(exn.what()), name));

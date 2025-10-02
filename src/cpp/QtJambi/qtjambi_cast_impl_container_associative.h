@@ -3533,7 +3533,7 @@ public:
     }
 private:
     template<bool is_const>
-    class ElementIterator : public AbstractSpanAccess::ElementIterator{
+    class ElementIterator : public AbstractSequentialAccess::ElementIterator{
         using Container = std::conditional_t<is_const, const QPair<K,T>, QPair<K,T>>;
         QPairAccess* m_access;
         Container* container;
@@ -3649,11 +3649,11 @@ private:
         }
     };
 public:
-    std::unique_ptr<AbstractSpanAccess::ElementIterator> elementIterator(const void* container) override {
-        return std::unique_ptr<AbstractSpanAccess::ElementIterator>(new ElementIterator<true>(this, *reinterpret_cast<const QPair<K,T>*>(container)));
+    std::unique_ptr<AbstractSequentialAccess::ElementIterator> elementIterator(const void* container) override {
+        return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator<true>(this, *reinterpret_cast<const QPair<K,T>*>(container)));
     }
-    std::unique_ptr<AbstractSpanAccess::ElementIterator> elementIterator(void* container) override {
-        return std::unique_ptr<AbstractSpanAccess::ElementIterator>(new ElementIterator<false>(this, *reinterpret_cast<QPair<K,T>*>(container)));
+    std::unique_ptr<AbstractSequentialAccess::ElementIterator> elementIterator(void* container) override {
+        return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator<false>(this, *reinterpret_cast<QPair<K,T>*>(container)));
     }
 };
 

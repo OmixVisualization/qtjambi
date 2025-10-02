@@ -30,6 +30,9 @@
 ****************************************************************************/
 
 #include "propertyandmethodcalltest.h"
+#include <QtJambi/CoreAPI>
+#include <QtJambi/TestAPI>
+#include <QtJambi/QtJambiAPI>
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #define QTJAMBI_ARG(Type, MetaType, arg) QArgument<Type >(#MetaType, arg)
@@ -405,6 +408,66 @@ bool PropertyAndMethodCallTest::testFetchPropertyCustomQtEnum2(QObject* qobj){
     PROPERTY_TEST(JEnumWrapper, io::qt::autotests::TestPropertyAndMethodCall::TestQObject::CustomQtEnum, CustomQtEnum2)
 #endif
 }
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
+QVariant PropertyAndMethodCallTest::instantiateInPlace(const QMetaMethod& constructor, std::initializer_list<QVariant> args){
+    if(JniEnvironment env{128}){
+        const QMetaObject* metaObject = constructor.enclosingMetaObject();
+        QMetaType metaType = metaObject->metaType();
+        if(constructor.parameterCount()!=int(args.size()))
+            Java::Runtime::IllegalArgumentException::throwNew(env, "Mismatching number of arguments." QTJAMBI_STACKTRACEINFO);
+        int index = -1;
+        for(int i=0; i<metaObject->constructorCount(); ++i){
+            if(metaObject->constructor(i)==constructor){
+                index = i;
+                break;
+            }
+        }
+        if(index>=0){
+            QList<QVariant> _args(args);
+            QScopedArrayPointer<void*> a(new void*[_args.size()+1]);
+            for(int i=0, l=_args.size(); i<l; ++i){
+                _args[i].convert(constructor.parameterMetaType(i));
+                a[i+1] = _args[i].data();
+            }
+            if(!metaType.isValid() || (metaType.flags() & QMetaType::IsPointer)){
+                size_t size = TestAPI::sizeOf(env, metaObject);
+                if(size>0){
+                    if(metaObject->inherits(&QObject::staticMetaObject)){
+                        void* placement = operator new(size);
+                        memset(placement, 0, size);
+                        a[0] = placement;
+                        QObject* ptr = reinterpret_cast<QObject*>(a[0]);
+                        if(metaObject->static_metacall(QMetaObject::ConstructInPlace, index, a.data())>=0){
+                            ptr = nullptr;
+                            operator delete(placement);
+                        }
+                        return QVariant::fromValue(ptr);
+                    }else if(Java::QtJambi::QtObjectInterface::isAssignableFrom(env, CoreAPI::getMetaObjectJavaType(env, metaObject))){
+                        void* placement = operator new(size);
+                        memset(placement, 0, size);
+                        a[0] = placement;
+                        if(metaObject->static_metacall(QMetaObject::ConstructInPlace, index, a.data())<0){
+                            jobject obj = QtJambiAPI::findObject(env, placement);
+                            return QVariant::fromValue(JObjectWrapper(env, obj));
+                        }else{
+                            operator delete(placement);
+                        }
+                    }
+                }
+            }else{
+                QVariant result(metaType, nullptr);
+                a[0] = result.data();
+                metaType.destruct(a[0]);
+                if(metaObject->static_metacall(QMetaObject::ConstructInPlace, index, a.data())<0){
+                    return result;
+                }
+            }
+        }
+    }
+    return QVariant{};
+}
+#endif
 
 void PropertyAndMethodCallTest::dumpMetaObject(const QMetaObject* metaObject){
     if(metaObject){

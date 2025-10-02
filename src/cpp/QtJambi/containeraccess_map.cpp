@@ -2662,11 +2662,10 @@ bool AutoMapAccess::equal(const void* a, const void* b){
     if(d==d2){
         return true;
     }
-    if(!d || d->size==0){
-        if(!d2 || d2->size==0){
-            return false;
-        }
-    }
+    if(!d && d2)
+        return d2->size==0;
+    if(!d2 && d)
+        return d->size==0;
     if(d && d2 && d->size==d2->size){
         node_iterator end1 = end(*d);
         node_iterator end2 = end(*d2);

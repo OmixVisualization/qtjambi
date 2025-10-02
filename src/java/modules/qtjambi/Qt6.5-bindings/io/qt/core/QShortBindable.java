@@ -48,7 +48,7 @@ public final class QShortBindable extends QUntypedBindable {
 	 * Creates a new <code>short</code>-typed invalid bindable.
 	 */
 	public QShortBindable() {
-		super(null, null);
+		this((QUntypedPropertyData)null, (QBindableInterface)null);
 	}
 	
 	/**

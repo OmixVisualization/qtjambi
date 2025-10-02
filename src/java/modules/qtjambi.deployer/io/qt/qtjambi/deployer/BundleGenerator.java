@@ -18,6 +18,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.function.Function;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -116,6 +119,7 @@ final class BundleGenerator {
 			_pluginsModules.put("bearer", "network");
 			_pluginsModules.put("qtwebengine", "webenginecore");
 			_pluginsModules.put("help", "help");
+			_pluginsModules.put("vectorimageformats", "quickvectorimage");
 			Map<String,Set<String>> _pluginsByModules = new TreeMap<>();
 			Function<String,Set<String>> containerFactory = key->new TreeSet<>();
 			for(Map.Entry<String,String> entry : _pluginsModules.entrySet()) {
@@ -704,9 +708,9 @@ final class BundleGenerator {
 			}
 		}
 		if(version!=null) {
-			Map<String,List<File>> libraries = new TreeMap<>();
-			Map<String,File> plugins = new TreeMap<>();
-			Map<String,File> qmllibs = new TreeMap<>();
+			Map<String,List<File>> libraries = Collections.synchronizedMap(new TreeMap<>());
+			Map<String,File> plugins = Collections.synchronizedMap(new TreeMap<>());
+			Map<String,File> qmllibs = Collections.synchronizedMap(new TreeMap<>());
 			if(osArchName.startsWith("windows-")) {
 				boolean isMingw = osArchName.startsWith("windows-mingw");
 				boolean isLlvmMingw = osArchName.startsWith("windows-llvm-mingw");
@@ -1113,255 +1117,262 @@ final class BundleGenerator {
 					}
 				}
 				
-				Transformer transformer = TransformerFactory.newInstance().newTransformer();
-				transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-				transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-				transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
-				DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-				factory.setValidating(false);
-				DocumentBuilder builder = factory.newDocumentBuilder();
-				Manifest manifest = new Manifest();
-				manifest.getMainAttributes().putValue("Bundle-Version", version.toString());
+				ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+				List<Future<?>> futures = new ArrayList<>();
+				boolean _isDebug = isDebug;
+				QVersionNumber _version = version;
 				
 				for (Map.Entry<String, List<File>> libPair : libraries.entrySet()) {
-					File libBundleFile = new File(targetDir, "qt-lib-"+libPair.getKey()+"-native-"+osArchName+(isDebug ? "-debug-" : "-")+version+".jar");
-					File libDebugInfoFile = new File(targetDir, "qt-lib-"+libPair.getKey()+"-debuginfo-"+osArchName+(isDebug ? "-debug-" : "-")+version+".jar");
-					@SuppressWarnings("resource")
-					AutoCloseable closable = ()->{};
-					JarOutputStream jarUtilFile = null;
-					if(osArchName.startsWith("android")) {
-						File utilFile = new File(targetDir, "qt-lib-"+libPair.getKey()+"-native-android-common-"+version+".jar");
-						jarUtilFile = new UnEmptyJarOutputStream(utilFile, manifest);
-						closable = jarUtilFile;
-						if("core".equals(libPair.getKey())) {
-							try(JarInputStream is = new JarInputStream(androidBindingsURL.openStream())){
-								JarEntry entry = is.getNextJarEntry();
-								while(entry!=null) {
-									if(!entry.isDirectory() && !entry.getName().equals(JarFile.MANIFEST_NAME)) {
-										jarUtilFile.putNextEntry(entry);
-										byte[] buffer = new byte[1024];
-										int length = is.read(buffer, 0, buffer.length);
-										while(length>0) {
-											jarUtilFile.write(buffer, 0, length);
-											length = is.read(buffer, 0, buffer.length);
+					futures.add(executor.submit(()->{
+						Transformer transformer = TransformerFactory.newInstance().newTransformer();
+						transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+						transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+						transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+						DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+						factory.setValidating(false);
+						DocumentBuilder builder = factory.newDocumentBuilder();
+						Manifest manifest = new Manifest();
+						manifest.getMainAttributes().putValue("Bundle-Version", _version.toString());
+							File libBundleFile = new File(targetDir, "qt-lib-"+libPair.getKey()+"-native-"+osArchName+(_isDebug ? "-debug-" : "-")+_version+".jar");
+							File libDebugInfoFile = new File(targetDir, "qt-lib-"+libPair.getKey()+"-debuginfo-"+osArchName+(_isDebug ? "-debug-" : "-")+_version+".jar");
+							@SuppressWarnings("resource")
+							AutoCloseable closable = ()->{};
+							JarOutputStream jarUtilFile = null;
+							if(osArchName.startsWith("android")) {
+								File utilFile = new File(targetDir, "qt-lib-"+libPair.getKey()+"-native-android-common-"+_version+".jar");
+								jarUtilFile = new UnEmptyJarOutputStream(utilFile, manifest);
+								closable = jarUtilFile;
+								if("core".equals(libPair.getKey())) {
+									try(JarInputStream is = new JarInputStream(androidBindingsURL.openStream())){
+										JarEntry entry = is.getNextJarEntry();
+										while(entry!=null) {
+											if(!entry.isDirectory() && !entry.getName().equals(JarFile.MANIFEST_NAME)) {
+												jarUtilFile.putNextEntry(entry);
+												byte[] buffer = new byte[1024];
+												int length = is.read(buffer, 0, buffer.length);
+												while(length>0) {
+													jarUtilFile.write(buffer, 0, length);
+													length = is.read(buffer, 0, buffer.length);
+												}
+												jarUtilFile.closeEntry();
+											}
+											is.closeEntry();
+											entry = is.getNextJarEntry();
 										}
-										jarUtilFile.closeEntry();
 									}
-									is.closeEntry();
-									entry = is.getNextJarEntry();
 								}
 							}
-						}
-					}
-					boolean isEmpty = false;
-					boolean isDEmpty = false;
-					try(JarOutputStream libBundleJarFile = new JarOutputStream(new FileOutputStream(libBundleFile));
-						JarOutputStream libDebugInfoJarFile = new JarOutputStream(new FileOutputStream(libDebugInfoFile));
-							AutoCloseable _closable = closable){
-						if(jarUtilFile==null) {
-							jarUtilFile = libBundleJarFile;
-						}
-						Document libDoc = builder.getDOMImplementation().createDocument(
-								null,
-								"qtjambi-deploy",
-								null
-							);
-						libDoc.getDocumentElement().setAttribute("module", "qt.lib."+libPair.getKey().replace('-', '.').replace('/', '.'));
-						libDoc.getDocumentElement().setAttribute("system", osArchName);
-						libDoc.getDocumentElement().setAttribute("version", version.toString());
-						libDoc.getDocumentElement().setAttribute("configuration", isDebug ? "debug" : "release");
-						Document debugInfoDoc = builder.getDOMImplementation().createDocument(
-								null,
-								"qtjambi-deploy",
-								null
-							);
-						debugInfoDoc.getDocumentElement().setAttribute("module", "qt.lib."+libPair.getKey().replace('-', '.').replace('/', '.'));
-						debugInfoDoc.getDocumentElement().setAttribute("system", osArchName);
-						debugInfoDoc.getDocumentElement().setAttribute("version", version.toString());
-						debugInfoDoc.getDocumentElement().setAttribute("configuration", "debuginfo");
-						
-						Document debugDoc = isDebug ? libDoc : debugInfoDoc;
-						JarOutputStream debugJarFile = isDebug ? jarUtilFile : libDebugInfoJarFile;
-						
-						for(File libraryFile : libPair.getValue()) {
-							if(osArchName.startsWith("macos")) {
-								String libName = libraryFile.getName();
-								libName = libName.substring(0, libName.length() - ".framework".length());
-								File versionDir = new File(new File(libraryFile, "Versions"), version.majorVersion()==5 ? "5" : "A");
-								File libFile = new File(versionDir, libName);
-								if(libFile.isFile()) {
-									if(isDebug || isForceDebugInfo) {
-										File debugSym = new File(libraryFile.getParentFile(), libName+".framework.dSYM");
-										if(debugSym.exists() && debugSym.isFile()) {
-											debugJarFile.putNextEntry(new ZipEntry(libraryFile.getParentFile().getName()+"/"+libName+".framework.dSYM"));
-											Files.copy(debugSym.toPath(), debugJarFile);
-											debugJarFile.closeEntry();
-											Element libraryElement = libDoc.createElement("file");
-											libraryElement.setAttribute("name", libraryFile.getParentFile().getName()+"/"+libName+".framework.dSYM");
-											debugDoc.getDocumentElement().appendChild(libraryElement);									
-										}else if(debugSym.isDirectory()) {
-											copyDirectory(debugSym, libDebugInfoJarFile, libDebugInfoJarFile, libDebugInfoJarFile, libraryFile.getParentFile().getName(), osArchName, isDebug, isForceDebugInfo, debugInfoDoc, debugInfoDoc);
+							boolean isEmpty = false;
+							boolean isDEmpty = false;
+							try(JarOutputStream libBundleJarFile = new JarOutputStream(new FileOutputStream(libBundleFile));
+								JarOutputStream libDebugInfoJarFile = new JarOutputStream(new FileOutputStream(libDebugInfoFile));
+									AutoCloseable _closable = closable){
+								if(jarUtilFile==null) {
+									jarUtilFile = libBundleJarFile;
+								}
+								Document libDoc = builder.getDOMImplementation().createDocument(
+										null,
+										"qtjambi-deploy",
+										null
+									);
+								libDoc.getDocumentElement().setAttribute("module", "qt.lib."+libPair.getKey().replace('-', '.').replace('/', '.'));
+								libDoc.getDocumentElement().setAttribute("system", osArchName);
+								libDoc.getDocumentElement().setAttribute("version", _version.toString());
+								libDoc.getDocumentElement().setAttribute("configuration", _isDebug ? "debug" : "release");
+								Document debugInfoDoc = builder.getDOMImplementation().createDocument(
+										null,
+										"qtjambi-deploy",
+										null
+									);
+								debugInfoDoc.getDocumentElement().setAttribute("module", "qt.lib."+libPair.getKey().replace('-', '.').replace('/', '.'));
+								debugInfoDoc.getDocumentElement().setAttribute("system", osArchName);
+								debugInfoDoc.getDocumentElement().setAttribute("version", _version.toString());
+								debugInfoDoc.getDocumentElement().setAttribute("configuration", "debuginfo");
+								
+								Document debugDoc = _isDebug ? libDoc : debugInfoDoc;
+								JarOutputStream debugJarFile = _isDebug ? jarUtilFile : libDebugInfoJarFile;
+								
+								for(File libraryFile : libPair.getValue()) {
+									if(osArchName.startsWith("macos")) {
+										String libName = libraryFile.getName();
+										libName = libName.substring(0, libName.length() - ".framework".length());
+										File versionDir = new File(new File(libraryFile, "Versions"), _version.majorVersion()==5 ? "5" : "A");
+										File libFile = new File(versionDir, libName);
+										if(libFile.isFile()) {
+											if(_isDebug || isForceDebugInfo) {
+												File debugSym = new File(libraryFile.getParentFile(), libName+".framework.dSYM");
+												if(debugSym.exists() && debugSym.isFile()) {
+													debugJarFile.putNextEntry(new ZipEntry(libraryFile.getParentFile().getName()+"/"+libName+".framework.dSYM"));
+													Files.copy(debugSym.toPath(), debugJarFile);
+													debugJarFile.closeEntry();
+													Element libraryElement = libDoc.createElement("file");
+													libraryElement.setAttribute("name", libraryFile.getParentFile().getName()+"/"+libName+".framework.dSYM");
+													debugDoc.getDocumentElement().appendChild(libraryElement);									
+												}else if(debugSym.isDirectory()) {
+													copyDirectory(debugSym, libDebugInfoJarFile, libDebugInfoJarFile, libDebugInfoJarFile, libraryFile.getParentFile().getName(), osArchName, _isDebug, isForceDebugInfo, debugInfoDoc, debugInfoDoc);
+												}
+											}
+											String libFilePath = libraryFile.getName()+(_version.majorVersion()==5 ? "/Versions/5" : "/Versions/A");
+											libBundleJarFile.putNextEntry(new ZipEntry(libraryFile.getParentFile().getName()+"/"+libFilePath +"/"+ libName));
+											Files.copy(libFile.toPath(), libBundleJarFile);
+											libBundleJarFile.closeEntry();
+											Element libraryElement = libDoc.createElement("library");
+											libraryElement.setAttribute("name", libraryFile.getParentFile().getName()+"/"+libFilePath +"/"+ libName);
+											libDoc.getDocumentElement().appendChild(libraryElement);
+											File macResourcesDir = new File(versionDir, "Resources");
+											if(macResourcesDir.isDirectory())
+												copyDirectory(macResourcesDir, libBundleJarFile, libDebugInfoJarFile, jarUtilFile, libraryFile.getParentFile().getName()+"/"+libFilePath, osArchName, _isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
+											File helpersDir = new File(versionDir, "Helpers");
+											if(helpersDir.isDirectory())
+												copyDirectory(helpersDir, libBundleJarFile, libDebugInfoJarFile, jarUtilFile, libraryFile.getParentFile().getName()+"/"+libFilePath, osArchName, _isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
+											Element symlinkElement = libDoc.createElement("symlink");
+											symlinkElement.setAttribute("name", libraryFile.getParentFile().getName()+"/"+libraryFile.getName()+"/Versions/Current");
+											symlinkElement.setAttribute("target", libraryFile.getParentFile().getName()+"/"+libFilePath);
+											libDoc.getDocumentElement().appendChild(symlinkElement);
+											if(macResourcesDir.isDirectory()) {
+												symlinkElement = libDoc.createElement("symlink");
+												symlinkElement.setAttribute("name", libraryFile.getParentFile().getName()+"/"+libraryFile.getName()+"/Resources");
+												symlinkElement.setAttribute("target", libraryFile.getParentFile().getName()+"/"+libraryFile.getName()+"/Versions/Current/Resources");
+												libDoc.getDocumentElement().appendChild(symlinkElement);
+											}
+											if(helpersDir.isDirectory()) {
+												symlinkElement = libDoc.createElement("symlink");
+												symlinkElement.setAttribute("name", libraryFile.getParentFile().getName()+"/"+libraryFile.getName()+"/Helpers");
+												symlinkElement.setAttribute("target", libraryFile.getParentFile().getName()+"/"+libraryFile.getName()+"/Versions/Current/Helpers");
+												libDoc.getDocumentElement().appendChild(symlinkElement);										
+											}
+											symlinkElement = libDoc.createElement("symlink");
+											symlinkElement.setAttribute("name", libraryFile.getParentFile().getName()+"/"+libraryFile.getName()+"/"+libName);
+											symlinkElement.setAttribute("target", libraryFile.getParentFile().getName()+"/"+libraryFile.getName()+"/Versions/Current/"+libName);
+											libDoc.getDocumentElement().appendChild(symlinkElement);
 										}
-									}
-									String libFilePath = libraryFile.getName()+(version.majorVersion()==5 ? "/Versions/5" : "/Versions/A");
-									libBundleJarFile.putNextEntry(new ZipEntry(libraryFile.getParentFile().getName()+"/"+libFilePath +"/"+ libName));
-									Files.copy(libFile.toPath(), libBundleJarFile);
-									libBundleJarFile.closeEntry();
-									Element libraryElement = libDoc.createElement("library");
-									libraryElement.setAttribute("name", libraryFile.getParentFile().getName()+"/"+libFilePath +"/"+ libName);
-									libDoc.getDocumentElement().appendChild(libraryElement);
-									File macResourcesDir = new File(versionDir, "Resources");
-									if(macResourcesDir.isDirectory())
-										copyDirectory(macResourcesDir, libBundleJarFile, libDebugInfoJarFile, jarUtilFile, libraryFile.getParentFile().getName()+"/"+libFilePath, osArchName, isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
-									File helpersDir = new File(versionDir, "Helpers");
-									if(helpersDir.isDirectory())
-										copyDirectory(helpersDir, libBundleJarFile, libDebugInfoJarFile, jarUtilFile, libraryFile.getParentFile().getName()+"/"+libFilePath, osArchName, isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
-									Element symlinkElement = libDoc.createElement("symlink");
-									symlinkElement.setAttribute("name", libraryFile.getParentFile().getName()+"/"+libraryFile.getName()+"/Versions/Current");
-									symlinkElement.setAttribute("target", libraryFile.getParentFile().getName()+"/"+libFilePath);
-									libDoc.getDocumentElement().appendChild(symlinkElement);
-									if(macResourcesDir.isDirectory()) {
-										symlinkElement = libDoc.createElement("symlink");
-										symlinkElement.setAttribute("name", libraryFile.getParentFile().getName()+"/"+libraryFile.getName()+"/Resources");
-										symlinkElement.setAttribute("target", libraryFile.getParentFile().getName()+"/"+libraryFile.getName()+"/Versions/Current/Resources");
-										libDoc.getDocumentElement().appendChild(symlinkElement);
-									}
-									if(helpersDir.isDirectory()) {
-										symlinkElement = libDoc.createElement("symlink");
-										symlinkElement.setAttribute("name", libraryFile.getParentFile().getName()+"/"+libraryFile.getName()+"/Helpers");
-										symlinkElement.setAttribute("target", libraryFile.getParentFile().getName()+"/"+libraryFile.getName()+"/Versions/Current/Helpers");
-										libDoc.getDocumentElement().appendChild(symlinkElement);										
-									}
-									symlinkElement = libDoc.createElement("symlink");
-									symlinkElement.setAttribute("name", libraryFile.getParentFile().getName()+"/"+libraryFile.getName()+"/"+libName);
-									symlinkElement.setAttribute("target", libraryFile.getParentFile().getName()+"/"+libraryFile.getName()+"/Versions/Current/"+libName);
-									libDoc.getDocumentElement().appendChild(symlinkElement);
-								}
-							}else if(osArchName.startsWith("linux-") || osArchName.startsWith("solaris-") || osArchName.contains("bsd-")) {
-								libBundleJarFile.putNextEntry(new ZipEntry("lib/"+libraryFile.getName()));
-								Files.copy(libraryFile.toPath(), libBundleJarFile);
-								libBundleJarFile.closeEntry();
-								Element libraryElement = libDoc.createElement("library");
-								libraryElement.setAttribute("name", "lib/"+libraryFile.getName());
-								libDoc.getDocumentElement().appendChild(libraryElement);
-								String libName = libraryFile.getName();
-								if(libName.endsWith(".so."+version)) {
-									if(isDebug || isForceDebugInfo) {
-										String _libName;
-										File debugSym = new File(libraryFile.getParentFile(), _libName = libName.replace(".so."+version, ".debug"));
-										if(!debugSym.exists() && _libName.startsWith("lib")) {
-											_libName = _libName.substring(3);
-											debugSym = new File(libraryFile.getParentFile(), _libName);
+									}else if(osArchName.startsWith("linux-") || osArchName.startsWith("solaris-") || osArchName.contains("bsd-")) {
+										libBundleJarFile.putNextEntry(new ZipEntry("lib/"+libraryFile.getName()));
+										Files.copy(libraryFile.toPath(), libBundleJarFile);
+										libBundleJarFile.closeEntry();
+										Element libraryElement = libDoc.createElement("library");
+										libraryElement.setAttribute("name", "lib/"+libraryFile.getName());
+										libDoc.getDocumentElement().appendChild(libraryElement);
+										String libName = libraryFile.getName();
+										if(libName.endsWith(".so."+_version)) {
+											if(_isDebug || isForceDebugInfo) {
+												String _libName;
+												File debugSym = new File(libraryFile.getParentFile(), _libName = libName.replace(".so."+_version, ".debug"));
+												if(!debugSym.exists() && _libName.startsWith("lib")) {
+													_libName = _libName.substring(3);
+													debugSym = new File(libraryFile.getParentFile(), _libName);
+												}
+												if(debugSym.exists()) {
+													debugJarFile.putNextEntry(new ZipEntry("lib/"+debugSym.getName()));
+													Files.copy(debugSym.toPath(), debugJarFile);
+													debugJarFile.closeEntry();
+													libraryElement = debugDoc.createElement("file");
+													libraryElement.setAttribute("name", "lib/"+debugSym.getName());
+													debugDoc.getDocumentElement().appendChild(libraryElement);									
+												}
+											}
 										}
-										if(debugSym.exists()) {
-											debugJarFile.putNextEntry(new ZipEntry("lib/"+debugSym.getName()));
-											Files.copy(debugSym.toPath(), debugJarFile);
-											debugJarFile.closeEntry();
-											libraryElement = debugDoc.createElement("file");
-											libraryElement.setAttribute("name", "lib/"+debugSym.getName());
-											debugDoc.getDocumentElement().appendChild(libraryElement);									
+										if(libName.contains(".so.")) {
+											while(!libName.endsWith(".so")) {
+												int idx = libName.lastIndexOf('.');
+												libName = libName.substring(0, idx);
+												Element symlinkElement = libDoc.createElement("symlink");
+												symlinkElement.setAttribute("name", "lib/"+libName);
+												symlinkElement.setAttribute("target", "lib/"+libraryFile.getName());
+												libDoc.getDocumentElement().appendChild(symlinkElement);
+											}
 										}
-									}
-								}
-								if(libName.contains(".so.")) {
-									while(!libName.endsWith(".so")) {
-										int idx = libName.lastIndexOf('.');
-										libName = libName.substring(0, idx);
-										Element symlinkElement = libDoc.createElement("symlink");
-										symlinkElement.setAttribute("name", "lib/"+libName);
-										symlinkElement.setAttribute("target", "lib/"+libraryFile.getName());
-										libDoc.getDocumentElement().appendChild(symlinkElement);
-									}
-								}
-							}else if(osArchName.startsWith("android-")) {
-								String targetDirName;
-								switch(osArchName) {
-								case "android-arm64":
-									targetDirName = "lib/arm64-v8a/";
-									break;
-								case "android-arm":
-									targetDirName = "lib/armeabi-v7a/";
-									break;
-								case "android-x64":
-									targetDirName = "lib/x86_64/";
-									break;
-								default:
-									targetDirName = "lib/x86/";
-									break;
-								}
-								libBundleJarFile.putNextEntry(new ZipEntry(targetDirName + libraryFile.getName()));
-								Files.copy(libraryFile.toPath(), libBundleJarFile);
-								libBundleJarFile.closeEntry();
-								Element libraryElement = libDoc.createElement("library");
-								libraryElement.setAttribute("name", targetDirName + libraryFile.getName());
-								libDoc.getDocumentElement().appendChild(libraryElement);
-								String libName = libraryFile.getName();
-								if(libName.startsWith("libQt") && libName.endsWith(".so")) {
-									File dependencies = new File(libraryFile.getParentFile(), libName.substring(3, libName.length()-3)+"-android-dependencies.xml");
-									if(dependencies.exists()) {
-										Document depDoc = builder.parse(dependencies);
-										Element rulesEl = depDoc.getDocumentElement();
-										Set<String> resources = new HashSet<>();
-										if(rulesEl.getNodeName().equals("rules")) {
-											for(int i=0, length=rulesEl.getChildNodes().getLength(); i<length; ++i) {
-												if(rulesEl.getChildNodes().item(i) instanceof Element) {
-													Element dependenciesEl = (Element)rulesEl.getChildNodes().item(i);
-													if(dependenciesEl.getNodeName().equals("dependencies")) {
-														for(int i2=0, length2=dependenciesEl.getChildNodes().getLength(); i2<length2; ++i2) {
-															if(dependenciesEl.getChildNodes().item(i2) instanceof Element) {
-																Element libEl = (Element)dependenciesEl.getChildNodes().item(i2);
-																if(libEl.getNodeName().equals("lib") && libName.substring(3, libName.length()-3).equals(libEl.getAttribute("name"))) {
-																	for(int i3=0, length3=libEl.getChildNodes().getLength(); i3<length3; ++i3) {
-																		if(libEl.getChildNodes().item(i3) instanceof Element) {
-																			Element dependsEl = (Element)libEl.getChildNodes().item(i3);
-																			if(dependsEl.getNodeName().equals("depends")) {
-																				for(int i4=0, length4=dependsEl.getChildNodes().getLength(); i4<length4; ++i4) {
-																					if(dependsEl.getChildNodes().item(i4) instanceof Element) {
-																						Element childEl = (Element)dependsEl.getChildNodes().item(i4);
-																						switch(childEl.getNodeName()) {
-																						case "jar":{
-																							File jarResource = new File(libDir.getParentFile(), childEl.getAttribute("file"));
-																							if(jarResource.exists() && !resources.contains(childEl.getAttribute("file"))) {
-																								resources.add(childEl.getAttribute("file"));
-																								try(JarFile jarResourceFile = new JarFile(jarResource)){
-																									Enumeration<JarEntry> entries = jarResourceFile.entries();
-																									while(entries.hasMoreElements()) {
-																										JarEntry entry = entries.nextElement();
-																										if(entry.isDirectory())
-																											continue;
-																										try {
-																											jarUtilFile.putNextEntry(entry);
-																										}catch(HasManifestException h) {
-																											continue;
-																										}catch(Throwable e) {
-																											e.printStackTrace();
-																											continue;
-																										}
-																										try(InputStream is = jarResourceFile.getInputStream(entry)){
-																											byte[] buffer = new byte[1024];
-																											int l = is.read(buffer);
-																											while(l>0){
-																												jarUtilFile.write(buffer, 0, l);
-																												l = is.read(buffer);
+									}else if(osArchName.startsWith("android-")) {
+										String targetDirName;
+										switch(osArchName) {
+										case "android-arm64":
+											targetDirName = "lib/arm64-v8a/";
+											break;
+										case "android-arm":
+											targetDirName = "lib/armeabi-v7a/";
+											break;
+										case "android-x64":
+											targetDirName = "lib/x86_64/";
+											break;
+										default:
+											targetDirName = "lib/x86/";
+											break;
+										}
+										libBundleJarFile.putNextEntry(new ZipEntry(targetDirName + libraryFile.getName()));
+										Files.copy(libraryFile.toPath(), libBundleJarFile);
+										libBundleJarFile.closeEntry();
+										Element libraryElement = libDoc.createElement("library");
+										libraryElement.setAttribute("name", targetDirName + libraryFile.getName());
+										libDoc.getDocumentElement().appendChild(libraryElement);
+										String libName = libraryFile.getName();
+										if(libName.startsWith("libQt") && libName.endsWith(".so")) {
+											File dependencies = new File(libraryFile.getParentFile(), libName.substring(3, libName.length()-3)+"-android-dependencies.xml");
+											if(dependencies.exists()) {
+												Document depDoc = builder.parse(dependencies);
+												Element rulesEl = depDoc.getDocumentElement();
+												Set<String> resources = new HashSet<>();
+												if(rulesEl.getNodeName().equals("rules")) {
+													for(int i=0, length=rulesEl.getChildNodes().getLength(); i<length; ++i) {
+														if(rulesEl.getChildNodes().item(i) instanceof Element) {
+															Element dependenciesEl = (Element)rulesEl.getChildNodes().item(i);
+															if(dependenciesEl.getNodeName().equals("dependencies")) {
+																for(int i2=0, length2=dependenciesEl.getChildNodes().getLength(); i2<length2; ++i2) {
+																	if(dependenciesEl.getChildNodes().item(i2) instanceof Element) {
+																		Element libEl = (Element)dependenciesEl.getChildNodes().item(i2);
+																		if(libEl.getNodeName().equals("lib") && libName.substring(3, libName.length()-3).equals(libEl.getAttribute("name"))) {
+																			for(int i3=0, length3=libEl.getChildNodes().getLength(); i3<length3; ++i3) {
+																				if(libEl.getChildNodes().item(i3) instanceof Element) {
+																					Element dependsEl = (Element)libEl.getChildNodes().item(i3);
+																					if(dependsEl.getNodeName().equals("depends")) {
+																						for(int i4=0, length4=dependsEl.getChildNodes().getLength(); i4<length4; ++i4) {
+																							if(dependsEl.getChildNodes().item(i4) instanceof Element) {
+																								Element childEl = (Element)dependsEl.getChildNodes().item(i4);
+																								switch(childEl.getNodeName()) {
+																								case "jar":{
+																									File jarResource = new File(libDir.getParentFile(), childEl.getAttribute("file"));
+																									if(jarResource.exists() && !resources.contains(childEl.getAttribute("file"))) {
+																										resources.add(childEl.getAttribute("file"));
+																										try(JarFile jarResourceFile = new JarFile(jarResource)){
+																											Enumeration<JarEntry> entries = jarResourceFile.entries();
+																											while(entries.hasMoreElements()) {
+																												JarEntry entry = entries.nextElement();
+																												if(entry.isDirectory())
+																													continue;
+																												try {
+																													jarUtilFile.putNextEntry(entry);
+																												}catch(HasManifestException h) {
+																													continue;
+																												}catch(Throwable e) {
+																													e.printStackTrace();
+																													continue;
+																												}
+																												try(InputStream is = jarResourceFile.getInputStream(entry)){
+																													byte[] buffer = new byte[1024];
+																													int l = is.read(buffer);
+																													while(l>0){
+																														jarUtilFile.write(buffer, 0, l);
+																														l = is.read(buffer);
+																													}
+																												}
+																												jarUtilFile.closeEntry();
 																											}
 																										}
-																										jarUtilFile.closeEntry();
 																									}
 																								}
-																							}
-																						}
-																						break;
-																						case "lib":{
-																							File libResource = new File(libDir.getParentFile(), childEl.getAttribute("file"));
-																							if(libResource.exists() && pluginsDir.equals(libResource.getParentFile().getParentFile())) {
-																								String plugin = libResource.getParentFile().getName();
-																								File pluginFile = plugins.remove(plugin);
-																								if(pluginFile!=null) {
-																									copyDirectory(pluginFile, libBundleJarFile, libDebugInfoJarFile, jarUtilFile, "plugins", osArchName, isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
+																								break;
+																								case "lib":{
+																									File libResource = new File(libDir.getParentFile(), childEl.getAttribute("file"));
+																									if(libResource.exists() && pluginsDir.equals(libResource.getParentFile().getParentFile())) {
+																										String plugin = libResource.getParentFile().getName();
+																										File pluginFile = plugins.remove(plugin);
+																										if(pluginFile!=null) {
+																											copyDirectory(pluginFile, libBundleJarFile, libDebugInfoJarFile, jarUtilFile, "plugins", osArchName, _isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
+																										}
+																									}
+																								}
+																								break;
 																								}
 																							}
-																						}
-																						break;
 																						}
 																					}
 																				}
@@ -1375,508 +1386,549 @@ final class BundleGenerator {
 												}
 											}
 										}
-									}
-								}
-							}else {
-								libBundleJarFile.putNextEntry(new ZipEntry(libraryFile.getParentFile().getName()+"/"+libraryFile.getName()));
-								Files.copy(libraryFile.toPath(), libBundleJarFile);
-								libBundleJarFile.closeEntry();
-								Element libraryElement = libDoc.createElement("library");
-								libraryElement.setAttribute("name", libraryFile.getParentFile().getName()+"/"+libraryFile.getName());
-								libDoc.getDocumentElement().appendChild(libraryElement);
-								
-								if(isDebug || isForceDebugInfo) {
-									File pdb = new File(libraryFile.getParentFile(), libraryFile.getName().substring(0, libraryFile.getName().length()-3)+"pdb");
-									if(pdb.exists()) {
-										debugJarFile.putNextEntry(new ZipEntry(pdb.getParentFile().getName()+"/"+pdb.getName()));
-										Files.copy(pdb.toPath(), debugJarFile);
-										debugJarFile.closeEntry();
-										libraryElement = debugDoc.createElement("file");
-										libraryElement.setAttribute("name", pdb.getParentFile().getName()+"/"+pdb.getName());
-										debugDoc.getDocumentElement().appendChild(libraryElement);
-									}else if(isDebug){
-										pdb = new File(libraryFile.getParentFile(), libraryFile.getName()+".debug");
-										if(pdb.exists()) {
-											debugJarFile.putNextEntry(new ZipEntry(pdb.getParentFile().getName()+"/"+pdb.getName()));
-											Files.copy(pdb.toPath(), debugJarFile);
-											debugJarFile.closeEntry();
-											libraryElement = debugDoc.createElement("file");
-											libraryElement.setAttribute("name", pdb.getParentFile().getName()+"/"+pdb.getName());
-											debugDoc.getDocumentElement().appendChild(libraryElement);
-										}
-								}
-							}
-							}
-							
-							switch(libPair.getKey()) {
-							case "webenginecore": {
-									if(resourcesDir.isDirectory()) {
-										copyDirectory(resourcesDir, libBundleJarFile, libDebugInfoJarFile, jarUtilFile, "", osArchName, isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
-									}
-									File qtwebengine_locales;
-									if(translationsDir.isDirectory() && (qtwebengine_locales = new File(translationsDir, "qtwebengine_locales")).isDirectory()) {
-										copyDirectory(qtwebengine_locales, libBundleJarFile, libDebugInfoJarFile, jarUtilFile, "translations/", osArchName, isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
-									}
-									File exe = null;
-									String path = null;
-									if(osArchName.startsWith("windows-")) {
-										path = "bin";
-										exe = new File(binDir, isDebug ? "QtWebEngineProcessd.exe" : "QtWebEngineProcess.exe");
-									}else if(osArchName.startsWith("linux-") || osArchName.startsWith("solaris-") || osArchName.contains("bsd-")) {
-										path = "libexec";
-										exe = new File(libexecDir, "QtWebEngineProcess");
-									}
-									if(exe!=null && exe.exists()) {
-										libBundleJarFile.putNextEntry(new ZipEntry(path+"/"+exe.getName()));
-										Files.copy(exe.toPath(), libBundleJarFile);
+									}else {
+										libBundleJarFile.putNextEntry(new ZipEntry(libraryFile.getParentFile().getName()+"/"+libraryFile.getName()));
+										Files.copy(libraryFile.toPath(), libBundleJarFile);
 										libBundleJarFile.closeEntry();
-										Element libraryElement = libDoc.createElement("file");
-										libraryElement.setAttribute("name", path+"/"+exe.getName());
-										if(exe.canExecute())
-											libraryElement.setAttribute("executable", "true");
-										libDoc.getDocumentElement().appendChild(libraryElement);									
-									}
-								}
-								break;
-							case "svg": {
-									for(String subdir : Arrays.asList("imageformats", "iconengines")) {
-										for(File pluginFile : new File(pluginsDir, subdir).listFiles()) {
-											if(pluginFile.getName().contains("qsvg")) {
-												if(pluginFile.isFile()) {
-													String targetDirName = "plugins/" + subdir + "/";
-													if(osArchName.startsWith("windows-")) {
-														if(pluginFile.getName().endsWith(".pdb")) {
-															if(isDebug) {
-																if(pluginFile.getName().endsWith("d.pdb")) {
-																	String libNoSuffix = pluginFile.getName().substring(0, pluginFile.getName().length()-5);
-																	if(new File(pluginFile.getParentFile(), libNoSuffix+"dd.pdb").exists())
-																		continue;
-																}else continue;
-															}else if(isForceDebugInfo) {
-																if(pluginFile.getName().endsWith("d.pdb")) {
-																	String libNoSuffix = pluginFile.getName().substring(0, pluginFile.getName().length()-5);
-																	if(new File(pluginFile.getParentFile(), libNoSuffix+".pdb").exists())
-																		continue;
-																}else continue;
-															}else {
-																continue;
-															}
-														}
-														if(pluginFile.getName().endsWith(".dll.debug") && !isDebug)
-															continue;
-														if(isDebug && !pluginFile.getName().endsWith("d.dll"))
-															continue;
-														if(!isDebug && pluginFile.getName().endsWith("d.dll"))
-															continue;
-													}else if(osArchName.startsWith("android-")) {
-														String suffix;
-														switch(osArchName) {
-														case "android-arm64":
-															suffix = "_arm64-v8a.so";
-															targetDirName = "lib/arm64-v8a/";
-															break;
-														case "android-arm":
-															suffix = "_armeabi-v7a.so";
-															targetDirName = "lib/armeabi-v7a/";
-															break;
-														case "android-x64":
-															suffix = "_x86_64.so";
-															targetDirName = "lib/x86_64/";
-															break;
-														default:
-															suffix = "_x86.so";
-															targetDirName = "lib/x86/";
-															break;
-														}
-														if(!pluginFile.getName().endsWith(suffix))
-															continue;
-													}
-													libBundleJarFile.putNextEntry(new ZipEntry(targetDirName + pluginFile.getName()));
-													Files.copy(pluginFile.toPath(), libBundleJarFile);
-													libBundleJarFile.closeEntry();
-													Element libraryElement = libDoc.createElement("library");
-													libraryElement.setAttribute("name", targetDirName + pluginFile.getName());
-													libDoc.getDocumentElement().appendChild(libraryElement);
-												}else if(pluginFile.getName().endsWith("dSYM") && isDebug) {
-													copyDirectory(pluginFile, libBundleJarFile, libDebugInfoJarFile, jarUtilFile, "plugins/"+subdir, osArchName, isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
+										Element libraryElement = libDoc.createElement("library");
+										libraryElement.setAttribute("name", libraryFile.getParentFile().getName()+"/"+libraryFile.getName());
+										libDoc.getDocumentElement().appendChild(libraryElement);
+										
+										if(_isDebug || isForceDebugInfo) {
+											File pdb = new File(libraryFile.getParentFile(), libraryFile.getName().substring(0, libraryFile.getName().length()-3)+"pdb");
+											if(pdb.exists()) {
+												debugJarFile.putNextEntry(new ZipEntry(pdb.getParentFile().getName()+"/"+pdb.getName()));
+												Files.copy(pdb.toPath(), debugJarFile);
+												debugJarFile.closeEntry();
+												libraryElement = debugDoc.createElement("file");
+												libraryElement.setAttribute("name", pdb.getParentFile().getName()+"/"+pdb.getName());
+												debugDoc.getDocumentElement().appendChild(libraryElement);
+											}else if(_isDebug){
+												pdb = new File(libraryFile.getParentFile(), libraryFile.getName()+".debug");
+												if(pdb.exists()) {
+													debugJarFile.putNextEntry(new ZipEntry(pdb.getParentFile().getName()+"/"+pdb.getName()));
+													Files.copy(pdb.toPath(), debugJarFile);
+													debugJarFile.closeEntry();
+													libraryElement = debugDoc.createElement("file");
+													libraryElement.setAttribute("name", pdb.getParentFile().getName()+"/"+pdb.getName());
+													debugDoc.getDocumentElement().appendChild(libraryElement);
 												}
-											}
 										}
 									}
-								}
-								break;
-							case "virtualkeyboard": {
-								for(String subdir : Arrays.asList("platforminputcontexts")) {
-									for(File pluginFile : new File(pluginsDir, subdir).listFiles()) {
-										if(pluginFile.getName().contains("qtvirtualkeyboard")) {
-											if(pluginFile.isFile()) {
-												String targetDirName = "plugins/" + subdir + "/";
-												if(osArchName.startsWith("windows-")) {
-													if(pluginFile.getName().endsWith(".pdb")) {
-														if(isDebug) {
-															if(pluginFile.getName().endsWith("d.pdb")) {
-																String libNoSuffix = pluginFile.getName().substring(0, pluginFile.getName().length()-5);
-																if(new File(pluginFile.getParentFile(), libNoSuffix+"dd.pdb").exists())
-																	continue;
-															}else continue;
-														}else if(isForceDebugInfo) {
-															if(pluginFile.getName().endsWith("d.pdb")) {
-																String libNoSuffix = pluginFile.getName().substring(0, pluginFile.getName().length()-5);
-																if(new File(pluginFile.getParentFile(), libNoSuffix+".pdb").exists())
-																	continue;
-															}else continue;
-														}else {
-															continue;
-														}
-													}
-													if(pluginFile.getName().endsWith(".dll.debug") && !isDebug)
-														continue;
-													if(isDebug && !pluginFile.getName().endsWith("d.dll"))
-														continue;
-													if(!isDebug && pluginFile.getName().endsWith("d.dll"))
-														continue;
-												}else if(osArchName.startsWith("android-")) {
-													String suffix;
-													switch(osArchName) {
-													case "android-arm64":
-														suffix = "_arm64-v8a.so";
-														targetDirName = "lib/arm64-v8a/";
-														break;
-													case "android-arm":
-														suffix = "_armeabi-v7a.so";
-														targetDirName = "lib/armeabi-v7a/";
-														break;
-													case "android-x64":
-														suffix = "_x86_64.so";
-														targetDirName = "lib/x86_64/";
-														break;
-													default:
-														suffix = "_x86.so";
-														targetDirName = "lib/x86/";
-														break;
-													}
-													if(!pluginFile.getName().endsWith(suffix))
-														continue;
-												}
-												libBundleJarFile.putNextEntry(new ZipEntry(targetDirName + pluginFile.getName()));
-												Files.copy(pluginFile.toPath(), libBundleJarFile);
+									}
+									
+									switch(libPair.getKey()) {
+									case "webenginecore": {
+											if(resourcesDir.isDirectory()) {
+												copyDirectory(resourcesDir, libBundleJarFile, libDebugInfoJarFile, jarUtilFile, "", osArchName, _isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
+											}
+											File qtwebengine_locales;
+											if(translationsDir.isDirectory() && (qtwebengine_locales = new File(translationsDir, "qtwebengine_locales")).isDirectory()) {
+												copyDirectory(qtwebengine_locales, libBundleJarFile, libDebugInfoJarFile, jarUtilFile, "translations/", osArchName, _isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
+											}
+											File exe = null;
+											String path = null;
+											if(osArchName.startsWith("windows-")) {
+												path = "bin";
+												exe = new File(binDir, _isDebug ? "QtWebEngineProcessd.exe" : "QtWebEngineProcess.exe");
+											}else if(osArchName.startsWith("linux-") || osArchName.startsWith("solaris-") || osArchName.contains("bsd-")) {
+												path = "libexec";
+												exe = new File(libexecDir, "QtWebEngineProcess");
+											}
+											if(exe!=null && exe.exists()) {
+												libBundleJarFile.putNextEntry(new ZipEntry(path+"/"+exe.getName()));
+												Files.copy(exe.toPath(), libBundleJarFile);
 												libBundleJarFile.closeEntry();
-												Element libraryElement = libDoc.createElement("library");
-												libraryElement.setAttribute("name", targetDirName + pluginFile.getName());
-												libDoc.getDocumentElement().appendChild(libraryElement);
-											}else if(pluginFile.getName().endsWith("dSYM") && isDebug) {
-												copyDirectory(pluginFile, libBundleJarFile, libDebugInfoJarFile, jarUtilFile, "plugins/"+subdir, osArchName, isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
+												Element libraryElement = libDoc.createElement("file");
+												libraryElement.setAttribute("name", path+"/"+exe.getName());
+												if(exe.canExecute())
+													libraryElement.setAttribute("executable", "true");
+												libDoc.getDocumentElement().appendChild(libraryElement);									
+											}
+										}
+										break;
+									case "svg": {
+											for(String subdir : Arrays.asList("imageformats", "iconengines")) {
+												for(File pluginFile : new File(pluginsDir, subdir).listFiles()) {
+													if(pluginFile.getName().contains("qsvg")) {
+														if(pluginFile.isFile()) {
+															String targetDirName = "plugins/" + subdir + "/";
+															if(osArchName.startsWith("windows-")) {
+																if(pluginFile.getName().endsWith(".pdb")) {
+																	if(_isDebug) {
+																		if(pluginFile.getName().endsWith("d.pdb")) {
+																			String libNoSuffix = pluginFile.getName().substring(0, pluginFile.getName().length()-5);
+																			if(new File(pluginFile.getParentFile(), libNoSuffix+"dd.pdb").exists())
+																				continue;
+																		}else continue;
+																	}else if(isForceDebugInfo) {
+																		if(pluginFile.getName().endsWith("d.pdb")) {
+																			String libNoSuffix = pluginFile.getName().substring(0, pluginFile.getName().length()-5);
+																			if(new File(pluginFile.getParentFile(), libNoSuffix+".pdb").exists())
+																				continue;
+																		}else continue;
+																	}else {
+																		continue;
+																	}
+																}
+																if(pluginFile.getName().endsWith(".dll.debug") && !_isDebug)
+																	continue;
+																if(_isDebug && !pluginFile.getName().endsWith("d.dll"))
+																	continue;
+																if(!_isDebug && pluginFile.getName().endsWith("d.dll"))
+																	continue;
+															}else if(osArchName.startsWith("android-")) {
+																String suffix;
+																switch(osArchName) {
+																case "android-arm64":
+																	suffix = "_arm64-v8a.so";
+																	targetDirName = "lib/arm64-v8a/";
+																	break;
+																case "android-arm":
+																	suffix = "_armeabi-v7a.so";
+																	targetDirName = "lib/armeabi-v7a/";
+																	break;
+																case "android-x64":
+																	suffix = "_x86_64.so";
+																	targetDirName = "lib/x86_64/";
+																	break;
+																default:
+																	suffix = "_x86.so";
+																	targetDirName = "lib/x86/";
+																	break;
+																}
+																if(!pluginFile.getName().endsWith(suffix))
+																	continue;
+															}
+															libBundleJarFile.putNextEntry(new ZipEntry(targetDirName + pluginFile.getName()));
+															Files.copy(pluginFile.toPath(), libBundleJarFile);
+															libBundleJarFile.closeEntry();
+															Element libraryElement = libDoc.createElement("library");
+															libraryElement.setAttribute("name", targetDirName + pluginFile.getName());
+															libDoc.getDocumentElement().appendChild(libraryElement);
+														}else if(pluginFile.getName().endsWith("dSYM") && _isDebug) {
+															copyDirectory(pluginFile, libBundleJarFile, libDebugInfoJarFile, jarUtilFile, "plugins/"+subdir, osArchName, _isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
+														}
+													}
+												}
+											}
+										}
+										break;
+									case "virtualkeyboard": {
+										for(String subdir : Arrays.asList("platforminputcontexts")) {
+											for(File pluginFile : new File(pluginsDir, subdir).listFiles()) {
+												if(pluginFile.getName().contains("qtvirtualkeyboard")) {
+													if(pluginFile.isFile()) {
+														String targetDirName = "plugins/" + subdir + "/";
+														if(osArchName.startsWith("windows-")) {
+															if(pluginFile.getName().endsWith(".pdb")) {
+																if(_isDebug) {
+																	if(pluginFile.getName().endsWith("d.pdb")) {
+																		String libNoSuffix = pluginFile.getName().substring(0, pluginFile.getName().length()-5);
+																		if(new File(pluginFile.getParentFile(), libNoSuffix+"dd.pdb").exists())
+																			continue;
+																	}else continue;
+																}else if(isForceDebugInfo) {
+																	if(pluginFile.getName().endsWith("d.pdb")) {
+																		String libNoSuffix = pluginFile.getName().substring(0, pluginFile.getName().length()-5);
+																		if(new File(pluginFile.getParentFile(), libNoSuffix+".pdb").exists())
+																			continue;
+																	}else continue;
+																}else {
+																	continue;
+																}
+															}
+															if(pluginFile.getName().endsWith(".dll.debug") && !_isDebug)
+																continue;
+															if(_isDebug && !pluginFile.getName().endsWith("d.dll"))
+																continue;
+															if(!_isDebug && pluginFile.getName().endsWith("d.dll"))
+																continue;
+														}else if(osArchName.startsWith("android-")) {
+															String suffix;
+															switch(osArchName) {
+															case "android-arm64":
+																suffix = "_arm64-v8a.so";
+																targetDirName = "lib/arm64-v8a/";
+																break;
+															case "android-arm":
+																suffix = "_armeabi-v7a.so";
+																targetDirName = "lib/armeabi-v7a/";
+																break;
+															case "android-x64":
+																suffix = "_x86_64.so";
+																targetDirName = "lib/x86_64/";
+																break;
+															default:
+																suffix = "_x86.so";
+																targetDirName = "lib/x86/";
+																break;
+															}
+															if(!pluginFile.getName().endsWith(suffix))
+																continue;
+														}
+														libBundleJarFile.putNextEntry(new ZipEntry(targetDirName + pluginFile.getName()));
+														Files.copy(pluginFile.toPath(), libBundleJarFile);
+														libBundleJarFile.closeEntry();
+														Element libraryElement = libDoc.createElement("library");
+														libraryElement.setAttribute("name", targetDirName + pluginFile.getName());
+														libDoc.getDocumentElement().appendChild(libraryElement);
+													}else if(pluginFile.getName().endsWith("dSYM") && _isDebug) {
+														copyDirectory(pluginFile, libBundleJarFile, libDebugInfoJarFile, jarUtilFile, "plugins/"+subdir, osArchName, _isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
+													}
+												}
+											}
+										}
+									}
+									break;
+									}
+								}
+								
+								Set<String> associatedPlugins = pluginsByModules(osArchName).get(libPair.getKey());
+								if(associatedPlugins!=null) {
+									for(String plugin : associatedPlugins) {
+										File pluginFile = plugins.remove(plugin);
+										if(pluginFile!=null && pluginFile.isDirectory()) {
+											copyDirectory(pluginFile, libBundleJarFile, libDebugInfoJarFile, jarUtilFile, "plugins", osArchName, _isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
+										}
+									}
+								}
+								if("pdfquick".equals(libPair.getKey())) {
+									copyQmlPaths(qmllibs, Collections.singletonList("QtQuick/Pdf"), libBundleJarFile, jarUtilFile, libDebugInfoJarFile, osArchName, _isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
+								}else if("waylandclient".equals(libPair.getKey())) {
+									copyQmlPaths(qmllibs, Collections.singletonList("QtWayland/Client"), libBundleJarFile, jarUtilFile, libDebugInfoJarFile, osArchName, _isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
+								}else if("waylandcompositor".equals(libPair.getKey())) {
+									copyQmlPaths(qmllibs, Collections.singletonList("QtWayland/Compositor"), libBundleJarFile, jarUtilFile, libDebugInfoJarFile, osArchName, _isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
+								}else if("virtualkeyboard".equals(libPair.getKey())) {
+									copyQmlPaths(qmllibs, Collections.singletonList("QtQuick/VirtualKeyboard"), libBundleJarFile, jarUtilFile, libDebugInfoJarFile, osArchName, _isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
+								}else if("quickeffects".equals(libPair.getKey())) {
+									copyQmlPaths(qmllibs, Collections.singletonList("QtQuickEffectMaker"), libBundleJarFile, jarUtilFile, libDebugInfoJarFile, osArchName, _isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
+								}else if("qml".equals(libPair.getKey())) {
+									copyQmlPaths(qmllibs, Arrays.asList("QtQuick/LocalStorage",
+											"Assets",
+											"QtQml",
+											"QmlTime",
+											"QtQuick/Window",
+											"QtQuick/tooling"), libBundleJarFile, jarUtilFile, libDebugInfoJarFile, osArchName, _isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
+									if(_version.majorVersion()==5) {
+										copyQmlPaths(qmllibs, Collections.singletonList("QtQuick/LocalStorage"), libBundleJarFile, jarUtilFile, libDebugInfoJarFile, osArchName, _isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
+									}
+								}else if("qt3dcore".equals(libPair.getKey())) {
+									copyQmlPaths(qmllibs, Arrays.asList("QtQuick/Scene2D", "QtQuick/Scene3D"), libBundleJarFile, jarUtilFile, libDebugInfoJarFile, osArchName, _isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
+								}else if("quick".equals(libPair.getKey())) {
+									copyQmlPaths(qmllibs, Arrays.asList(
+											"QtQuick/NativeStyle",
+											"QtQuick/Particles",
+											"Qt",
+											"QtQuick",
+											"QtCore",
+											"QtQuick/Shapes",
+											"QtQuick/Templates",
+											"QtQuick/Controls",
+											"QtQuick/Dialogs",
+											"QtQuick/Layouts",
+											"QtQuick/Timeline"), libBundleJarFile, jarUtilFile, libDebugInfoJarFile, osArchName, _isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
+									if(_version.majorVersion()==5) {
+										copyQmlPaths(qmllibs, Arrays.asList("QtGraphicalEffects",
+												"QtQuick/Window.2",
+												"QtQuick/Templates.2",
+												"QtQuick/Controls.2",
+												"QtQuick/Particles.2",
+												"QtQuick.2",
+												"QtQuick/Extras",
+												"QtQuick/PrivateWidgets"), libBundleJarFile, jarUtilFile, libDebugInfoJarFile, osArchName, _isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
+									}
+								}else if("webenginequick".equals(libPair.getKey())) {
+									copyQmlPaths(qmllibs, Collections.singletonList("QtWebEngine"), libBundleJarFile, jarUtilFile, libDebugInfoJarFile, osArchName, _isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
+								}else if("xmlpatterns".equals(libPair.getKey())) {
+									copyQmlPaths(qmllibs, Collections.singletonList("QtQuick/XmlListModel"), libBundleJarFile, jarUtilFile, libDebugInfoJarFile, osArchName, _isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
+								}
+								if(!"core".equals(libPair.getKey())) {
+									for(String key : new ArrayList<>(qmllibs.keySet())) {
+										String libName = key.replace('/', '-').replace(".", "").toLowerCase();
+										if(libName.startsWith("qt3d-")) {
+											switch(libName) {
+											case "qt3d-core":
+												libName = "qt3dquick";
+												break;
+											case "qt3d-logic":
+												libName = "qt3dlogic";
+												break;
+											default: 
+												libName = "qt3dquick"+libName.substring(5);
+												break;
+											}
+										}
+										if(libName.startsWith("qtquick-")) {
+											libName = "quick"+libName.substring(8); 
+										}
+										if(libName.startsWith("qt")) {
+											String _libName = libName.substring(2);
+											if(!_libName.isEmpty() && Character.isJavaIdentifierStart(_libName.charAt(0)))
+												libName = _libName;
+										}
+										if(libPair.getKey().equals("core5compat") && libName.equals("qt5compat"))
+											libName = libPair.getKey();
+										else if(libPair.getKey().equals(libName+"2"))
+											libName = libPair.getKey();
+										else if(libPair.getKey().endsWith("qml")) {
+											String nonQmlLib = libPair.getKey().substring(0, libPair.getKey().length()-3);
+											if(libraries.containsKey(nonQmlLib) && libName.equals(nonQmlLib)) {
+												libName = libPair.getKey();
+											}
+										}
+										else if(libPair.getKey().endsWith("quick")) {
+											String nonQmlLib = libPair.getKey().substring(0, libPair.getKey().length()-5);
+											if(libraries.containsKey(nonQmlLib) && libName.equals(nonQmlLib)) {
+												libName = libPair.getKey();
+											}
+										}
+										if(libName.equals(libPair.getKey())) {
+											if(!libraries.containsKey(libPair.getKey()+"qml")
+													&& !libraries.containsKey(libPair.getKey()+"quick")) {
+												copyQmlPaths(qmllibs, Collections.singletonList(key), libBundleJarFile, jarUtilFile, libDebugInfoJarFile, osArchName, _isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
 											}
 										}
 									}
 								}
-							}
-							break;
-							}
-						}
-						
-						Set<String> associatedPlugins = pluginsByModules(osArchName).get(libPair.getKey());
-						if(associatedPlugins!=null) {
-							for(String plugin : associatedPlugins) {
-								File pluginFile = plugins.remove(plugin);
-								if(pluginFile!=null && pluginFile.isDirectory()) {
-									copyDirectory(pluginFile, libBundleJarFile, libDebugInfoJarFile, jarUtilFile, "plugins", osArchName, isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
-								}
-							}
-						}
-						if("pdfquick".equals(libPair.getKey())) {
-							copyQmlPaths(qmllibs, Collections.singletonList("QtQuick/Pdf"), libBundleJarFile, jarUtilFile, libDebugInfoJarFile, osArchName, isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
-						}else if("waylandclient".equals(libPair.getKey())) {
-							copyQmlPaths(qmllibs, Collections.singletonList("QtWayland/Client"), libBundleJarFile, jarUtilFile, libDebugInfoJarFile, osArchName, isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
-						}else if("waylandcompositor".equals(libPair.getKey())) {
-							copyQmlPaths(qmllibs, Collections.singletonList("QtWayland/Compositor"), libBundleJarFile, jarUtilFile, libDebugInfoJarFile, osArchName, isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
-						}else if("virtualkeyboard".equals(libPair.getKey())) {
-							copyQmlPaths(qmllibs, Collections.singletonList("QtQuick/VirtualKeyboard"), libBundleJarFile, jarUtilFile, libDebugInfoJarFile, osArchName, isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
-						}else if("quickeffects".equals(libPair.getKey())) {
-							copyQmlPaths(qmllibs, Collections.singletonList("QtQuickEffectMaker"), libBundleJarFile, jarUtilFile, libDebugInfoJarFile, osArchName, isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
-						}else if("qml".equals(libPair.getKey())) {
-							copyQmlPaths(qmllibs, Arrays.asList("QtQuick/LocalStorage",
-									"Assets",
-									"QtQml",
-									"QmlTime",
-									"QtQuick/Window",
-									"QtQuick/tooling"), libBundleJarFile, jarUtilFile, libDebugInfoJarFile, osArchName, isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
-							if(version.majorVersion()==5) {
-								copyQmlPaths(qmllibs, Collections.singletonList("QtQuick/LocalStorage"), libBundleJarFile, jarUtilFile, libDebugInfoJarFile, osArchName, isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
-							}
-						}else if("qt3dcore".equals(libPair.getKey())) {
-							copyQmlPaths(qmllibs, Arrays.asList("QtQuick/Scene2D", "QtQuick/Scene3D"), libBundleJarFile, jarUtilFile, libDebugInfoJarFile, osArchName, isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
-						}else if("quick".equals(libPair.getKey())) {
-							copyQmlPaths(qmllibs, Arrays.asList(
-									"QtQuick/NativeStyle",
-									"QtQuick/Particles",
-									"Qt",
-									"QtQuick",
-									"QtCore",
-									"QtQuick/Shapes",
-									"QtQuick/Templates",
-									"QtQuick/Controls",
-									"QtQuick/Dialogs",
-									"QtQuick/Layouts",
-									"QtQuick/Timeline"), libBundleJarFile, jarUtilFile, libDebugInfoJarFile, osArchName, isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
-							if(version.majorVersion()==5) {
-								copyQmlPaths(qmllibs, Arrays.asList("QtGraphicalEffects",
-										"QtQuick/Window.2",
-										"QtQuick/Templates.2",
-										"QtQuick/Controls.2",
-										"QtQuick/Particles.2",
-										"QtQuick.2",
-										"QtQuick/Extras",
-										"QtQuick/PrivateWidgets"), libBundleJarFile, jarUtilFile, libDebugInfoJarFile, osArchName, isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
-							}
-						}else if("webenginequick".equals(libPair.getKey())) {
-							copyQmlPaths(qmllibs, Collections.singletonList("QtWebEngine"), libBundleJarFile, jarUtilFile, libDebugInfoJarFile, osArchName, isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
-						}else if("xmlpatterns".equals(libPair.getKey())) {
-							copyQmlPaths(qmllibs, Collections.singletonList("QtQuick/XmlListModel"), libBundleJarFile, jarUtilFile, libDebugInfoJarFile, osArchName, isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
-						}
-						if(!"core".equals(libPair.getKey())) {
-							for(String key : new ArrayList<>(qmllibs.keySet())) {
-								String libName = key.replace('/', '-').replace(".", "").toLowerCase();
-								if(libName.startsWith("qt3d-")) {
-									switch(libName) {
-									case "qt3d-core":
-										libName = "qt3dquick";
-										break;
-									case "qt3d-logic":
-										libName = "qt3dlogic";
-										break;
-									default: 
-										libName = "qt3dquick"+libName.substring(5);
-										break;
-									}
-								}
-								if(libName.startsWith("qtquick-")) {
-									libName = "quick"+libName.substring(8); 
-								}
-								if(libName.startsWith("qt")) {
-									String _libName = libName.substring(2);
-									if(!_libName.isEmpty() && Character.isJavaIdentifierStart(_libName.charAt(0)))
-										libName = _libName;
-								}
-								if(libPair.getKey().equals("core5compat") && libName.equals("qt5compat"))
-									libName = libPair.getKey();
-								else if(libPair.getKey().equals(libName+"2"))
-									libName = libPair.getKey();
-								else if(libPair.getKey().endsWith("qml")) {
-									String nonQmlLib = libPair.getKey().substring(0, libPair.getKey().length()-3);
-									if(libraries.containsKey(nonQmlLib) && libName.equals(nonQmlLib)) {
-										libName = libPair.getKey();
-									}
-								}
-								else if(libPair.getKey().endsWith("quick")) {
-									String nonQmlLib = libPair.getKey().substring(0, libPair.getKey().length()-5);
-									if(libraries.containsKey(nonQmlLib) && libName.equals(nonQmlLib)) {
-										libName = libPair.getKey();
-									}
-								}
-								if(libName.equals(libPair.getKey())) {
-									if(!libraries.containsKey(libPair.getKey()+"qml")
-											&& !libraries.containsKey(libPair.getKey()+"quick")) {
-										copyQmlPaths(qmllibs, Collections.singletonList(key), libBundleJarFile, jarUtilFile, libDebugInfoJarFile, osArchName, isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
-									}
-								}
-							}
-						}
-						{
-							List<File> list = libraries.get(libPair.getKey()+"qml");
-							if(list!=null && !list.isEmpty()) {
-								Element libraryElement = libDoc.createElement("qmllib");
-								if(osArchName.startsWith("macos")) {
-									String libName = list.get(0).getName();
-									libName = libName.substring(0, libName.length() - ".framework".length());
-									libraryElement.setAttribute("name", list.get(0).getName()+"/Versions/"+(version.majorVersion()==5 ? "5/" : "A/")+libName);
-								}else {
-									libraryElement.setAttribute("name", list.get(0).getParentFile().getName()+"/"+list.get(0).getName());
-								}
-								libDoc.getDocumentElement().appendChild(libraryElement);																	
-							}else {
-								if("webenginecore".equals(libPair.getKey())) {
-									if(version.majorVersion()==5) {
-										list = libraries.get("webengine");
+								{
+									List<File> list = libraries.get(libPair.getKey()+"qml");
+									if(list!=null && !list.isEmpty()) {
+										Element libraryElement = libDoc.createElement("qmllib");
+										if(osArchName.startsWith("macos")) {
+											String libName = list.get(0).getName();
+											libName = libName.substring(0, libName.length() - ".framework".length());
+											libraryElement.setAttribute("name", list.get(0).getName()+"/Versions/"+(_version.majorVersion()==5 ? "5/" : "A/")+libName);
+										}else {
+											libraryElement.setAttribute("name", list.get(0).getParentFile().getName()+"/"+list.get(0).getName());
+										}
+										libDoc.getDocumentElement().appendChild(libraryElement);																	
 									}else {
-										list = libraries.get("webenginequick");
+										if("webenginecore".equals(libPair.getKey())) {
+											if(_version.majorVersion()==5) {
+												list = libraries.get("webengine");
+											}else {
+												list = libraries.get("webenginequick");
+											}
+										}else {
+											list = libraries.get(libPair.getKey()+"quick");
+										}
+										if(list!=null && !list.isEmpty()) {
+											Element libraryElement = libDoc.createElement("qmllib");
+											if(osArchName.startsWith("macos")) {
+												String libName = list.get(0).getName();
+												libName = libName.substring(0, libName.length() - ".framework".length());
+												libraryElement.setAttribute("name", list.get(0).getName()+"/Versions/"+(_version.majorVersion()==5 ? "5/" : "A/")+libName);
+											}else {
+												libraryElement.setAttribute("name", list.get(0).getParentFile().getName()+"/"+list.get(0).getName());
+											}
+											libDoc.getDocumentElement().appendChild(libraryElement);																	
+										}
 									}
-								}else {
-									list = libraries.get(libPair.getKey()+"quick");
 								}
-								if(list!=null && !list.isEmpty()) {
-									Element libraryElement = libDoc.createElement("qmllib");
-									if(osArchName.startsWith("macos")) {
-										String libName = list.get(0).getName();
-										libName = libName.substring(0, libName.length() - ".framework".length());
-										libraryElement.setAttribute("name", list.get(0).getName()+"/Versions/"+(version.majorVersion()==5 ? "5/" : "A/")+libName);
-									}else {
-										libraryElement.setAttribute("name", list.get(0).getParentFile().getName()+"/"+list.get(0).getName());
-									}
-									libDoc.getDocumentElement().appendChild(libraryElement);																	
+								
+								libBundleJarFile.putNextEntry(new ZipEntry(JarFile.MANIFEST_NAME));
+								manifest.write(libBundleJarFile);
+								libBundleJarFile.closeEntry();
+								libDebugInfoJarFile.putNextEntry(new ZipEntry(JarFile.MANIFEST_NAME));
+								manifest.write(libDebugInfoJarFile);
+								libDebugInfoJarFile.closeEntry();
+								
+								isEmpty = !libDoc.getDocumentElement().hasChildNodes();
+								isDEmpty = !debugInfoDoc.getDocumentElement().hasChildNodes();
+								if(!osArchName.startsWith("android-")) {
+									libBundleJarFile.putNextEntry(new ZipEntry("META-INF/qtjambi-deployment.xml"));
+									transformer.transform(new DOMSource(libDoc), new StreamResult(libBundleJarFile));
+									libBundleJarFile.closeEntry();
+									libDebugInfoJarFile.putNextEntry(new ZipEntry("META-INF/qtjambi-deployment.xml"));
+									transformer.transform(new DOMSource(debugInfoDoc), new StreamResult(libDebugInfoJarFile));
+									libDebugInfoJarFile.closeEntry();
 								}
 							}
-						}
-						
-						libBundleJarFile.putNextEntry(new ZipEntry(JarFile.MANIFEST_NAME));
-						manifest.write(libBundleJarFile);
-						libBundleJarFile.closeEntry();
-						libDebugInfoJarFile.putNextEntry(new ZipEntry(JarFile.MANIFEST_NAME));
-						manifest.write(libDebugInfoJarFile);
-						libDebugInfoJarFile.closeEntry();
-						
-						isEmpty = !libDoc.getDocumentElement().hasChildNodes();
-						isDEmpty = !debugInfoDoc.getDocumentElement().hasChildNodes();
-						if(!osArchName.startsWith("android-")) {
-							libBundleJarFile.putNextEntry(new ZipEntry("META-INF/qtjambi-deployment.xml"));
-							transformer.transform(new DOMSource(libDoc), new StreamResult(libBundleJarFile));
-							libBundleJarFile.closeEntry();
-							libDebugInfoJarFile.putNextEntry(new ZipEntry("META-INF/qtjambi-deployment.xml"));
-							transformer.transform(new DOMSource(debugInfoDoc), new StreamResult(libDebugInfoJarFile));
-							libDebugInfoJarFile.closeEntry();
-						}
-					}
-					if(isDEmpty || isDebug || osArchName.startsWith("android") || osArchName.equals("ios"))
-						libDebugInfoFile.delete();
-					if(isEmpty)
-						libBundleFile.delete();
+							if(isDEmpty || _isDebug || osArchName.startsWith("android") || osArchName.equals("ios"))
+								libDebugInfoFile.delete();
+							if(isEmpty)
+								libBundleFile.delete();
+						return null;
+					}));
 				}
 				
+				for (Future<?> future : futures) {
+					try{
+						future.get();
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+				futures.clear();
+				
 				for (Map.Entry<String, File> libPair : plugins.entrySet()) {
-					File libBundleFile = new File(targetDir, "qt-plugin-"+libPair.getKey().replace("/", "-")+"-native-"+osArchName+(isDebug ? "-debug-" : "-")+version+".jar");
-					File libDebugInfoFile = new File(targetDir, "qt-plugin-"+libPair.getKey().replace("/", "-")+"-debuginfo-"+osArchName+(isDebug ? "-debug-" : "-")+version+".jar");
-					@SuppressWarnings("resource")
-					AutoCloseable closable = ()->{};
-					JarOutputStream jarUtilFile = null;
-					if(osArchName.startsWith("android")) {
-						File utilFile = new File(targetDir, "qt-plugin-"+libPair.getKey().replace("/", "-")+"-native-android-common-"+version+".jar");
-						if(!utilFile.exists()) {
-							jarUtilFile = new UnEmptyJarOutputStream(utilFile, manifest);
-						}else {
-							jarUtilFile = new JarOutputStream(new ByteArrayOutputStream());
+					futures.add(executor.submit(()->{
+						Transformer transformer = TransformerFactory.newInstance().newTransformer();
+						transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+						transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+						transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+						DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+						factory.setValidating(false);
+						DocumentBuilder builder = factory.newDocumentBuilder();
+						Manifest manifest = new Manifest();
+						manifest.getMainAttributes().putValue("Bundle-Version", _version.toString());
+						File libBundleFile = new File(targetDir, "qt-plugin-"+libPair.getKey().replace("/", "-")+"-native-"+osArchName+(_isDebug ? "-debug-" : "-")+_version+".jar");
+						File libDebugInfoFile = new File(targetDir, "qt-plugin-"+libPair.getKey().replace("/", "-")+"-debuginfo-"+osArchName+(_isDebug ? "-debug-" : "-")+_version+".jar");
+						@SuppressWarnings("resource")
+						AutoCloseable closable = ()->{};
+						JarOutputStream jarUtilFile = null;
+						if(osArchName.startsWith("android")) {
+							File utilFile = new File(targetDir, "qt-plugin-"+libPair.getKey().replace("/", "-")+"-native-android-common-"+_version+".jar");
+							if(!utilFile.exists()) {
+								jarUtilFile = new UnEmptyJarOutputStream(utilFile, manifest);
+							}else {
+								jarUtilFile = new JarOutputStream(new ByteArrayOutputStream());
+							}
+							closable = jarUtilFile;
 						}
-						closable = jarUtilFile;
-					}
-					boolean isEmpty = false;
-					boolean isDEmpty = false;
-					try(JarOutputStream jarFile = new JarOutputStream(new FileOutputStream(libBundleFile));
-							JarOutputStream libDebugInfoJarFile = new JarOutputStream(new FileOutputStream(libDebugInfoFile));
-							AutoCloseable _closable = closable){
-						if(jarUtilFile==null) {
-							jarUtilFile = jarFile;
-						}
-						Document libDoc = builder.getDOMImplementation().createDocument(
-								null,
-								"qtjambi-deploy",
-								null
-							);
-						libDoc.getDocumentElement().setAttribute("module", "qt.plugin."+libPair.getKey().replace('-', '.').replace('/', '.'));
-						libDoc.getDocumentElement().setAttribute("system", osArchName);
-						libDoc.getDocumentElement().setAttribute("version", version.toString());
-						libDoc.getDocumentElement().setAttribute("configuration", isDebug ? "debug" : "release");
-						Document debugInfoDoc = builder.getDOMImplementation().createDocument(
-								null,
-								"qtjambi-deploy",
-								null
-							);
-						debugInfoDoc.getDocumentElement().setAttribute("module", "qt.plugin."+libPair.getKey().replace('-', '.').replace('/', '.'));
-						debugInfoDoc.getDocumentElement().setAttribute("system", osArchName);
-						debugInfoDoc.getDocumentElement().setAttribute("version", version.toString());
-						debugInfoDoc.getDocumentElement().setAttribute("configuration", "debuginfo");
-						copyDirectory(libPair.getValue(), jarFile, libDebugInfoJarFile, jarUtilFile, "plugins", osArchName, isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
-						jarFile.putNextEntry(new ZipEntry(JarFile.MANIFEST_NAME));
-						manifest.write(jarFile);
-						jarFile.closeEntry();
-						
-						isEmpty = !libDoc.getDocumentElement().hasChildNodes();
-						isDEmpty = !debugInfoDoc.getDocumentElement().hasChildNodes();
-						if(!osArchName.startsWith("android-")) {
-							jarFile.putNextEntry(new ZipEntry("META-INF/qtjambi-deployment.xml"));
-							transformer.transform(new DOMSource(libDoc), new StreamResult(jarFile));
+						boolean isEmpty = false;
+						boolean isDEmpty = false;
+						try(JarOutputStream jarFile = new JarOutputStream(new FileOutputStream(libBundleFile));
+								JarOutputStream libDebugInfoJarFile = new JarOutputStream(new FileOutputStream(libDebugInfoFile));
+								AutoCloseable _closable = closable){
+							if(jarUtilFile==null) {
+								jarUtilFile = jarFile;
+							}
+							Document libDoc = builder.getDOMImplementation().createDocument(
+									null,
+									"qtjambi-deploy",
+									null
+								);
+							libDoc.getDocumentElement().setAttribute("module", "qt.plugin."+libPair.getKey().replace('-', '.').replace('/', '.'));
+							libDoc.getDocumentElement().setAttribute("system", osArchName);
+							libDoc.getDocumentElement().setAttribute("version", _version.toString());
+							libDoc.getDocumentElement().setAttribute("configuration", _isDebug ? "debug" : "release");
+							Document debugInfoDoc = builder.getDOMImplementation().createDocument(
+									null,
+									"qtjambi-deploy",
+									null
+								);
+							debugInfoDoc.getDocumentElement().setAttribute("module", "qt.plugin."+libPair.getKey().replace('-', '.').replace('/', '.'));
+							debugInfoDoc.getDocumentElement().setAttribute("system", osArchName);
+							debugInfoDoc.getDocumentElement().setAttribute("version", _version.toString());
+							debugInfoDoc.getDocumentElement().setAttribute("configuration", "debuginfo");
+							copyDirectory(libPair.getValue(), jarFile, libDebugInfoJarFile, jarUtilFile, "plugins", osArchName, _isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
+							jarFile.putNextEntry(new ZipEntry(JarFile.MANIFEST_NAME));
+							manifest.write(jarFile);
 							jarFile.closeEntry();
-							libDebugInfoJarFile.putNextEntry(new ZipEntry("META-INF/qtjambi-deployment.xml"));
-							transformer.transform(new DOMSource(debugInfoDoc), new StreamResult(libDebugInfoJarFile));
-							libDebugInfoJarFile.closeEntry();
+							
+							isEmpty = !libDoc.getDocumentElement().hasChildNodes();
+							isDEmpty = !debugInfoDoc.getDocumentElement().hasChildNodes();
+							if(!osArchName.startsWith("android-")) {
+								jarFile.putNextEntry(new ZipEntry("META-INF/qtjambi-deployment.xml"));
+								transformer.transform(new DOMSource(libDoc), new StreamResult(jarFile));
+								jarFile.closeEntry();
+								libDebugInfoJarFile.putNextEntry(new ZipEntry("META-INF/qtjambi-deployment.xml"));
+								transformer.transform(new DOMSource(debugInfoDoc), new StreamResult(libDebugInfoJarFile));
+								libDebugInfoJarFile.closeEntry();
+							}
 						}
-					}
-					if(isEmpty)
-						libBundleFile.delete();
-					if(isDEmpty || isDebug || osArchName.startsWith("android") || osArchName.equals("ios"))
-						libDebugInfoFile.delete();
+						if(isEmpty)
+							libBundleFile.delete();
+						if(isDEmpty || _isDebug || osArchName.startsWith("android") || osArchName.equals("ios"))
+							libDebugInfoFile.delete();
+						return null;
+					}));
 				}
 				
 				for (Map.Entry<String, File> libPair : qmllibs.entrySet()) {
-					String libName = libPair.getKey().replace('/', '-').replace(".", "").toLowerCase();
-					if(libName.startsWith("qt")) {
-						String _libName = libName.substring(2);
-						if(!_libName.isEmpty() && Character.isJavaIdentifierStart(_libName.charAt(0)))
-							libName = _libName;
-					}
-					File libBundleFile = new File(targetDir, "qt-qml-"+libName+"-native-"+osArchName+(isDebug ? "-debug-" : "-")+version+".jar");
-					File libDebugInfoFile = new File(targetDir, "qt-qml-"+libName+"-debuginfo-"+osArchName+(isDebug ? "-debug-" : "-")+version+".jar");
-					boolean isEmpty = false;
-					boolean isDEmpty = false;
-					@SuppressWarnings("resource")
-					AutoCloseable closable = ()->{};
-					JarOutputStream jarUtilFile = null;
-					if(osArchName.startsWith("android")) {
-						File utilFile = new File(targetDir, "qt-qml-"+libName+"-native-android-common-"+version+".jar");
-						if(!utilFile.exists()) {
-							jarUtilFile = new UnEmptyJarOutputStream(utilFile, manifest);
-						}else {
-							jarUtilFile = new JarOutputStream(new ByteArrayOutputStream());
+					futures.add(executor.submit(()->{
+						Transformer transformer = TransformerFactory.newInstance().newTransformer();
+						transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+						transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+						transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+						DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+						factory.setValidating(false);
+						DocumentBuilder builder = factory.newDocumentBuilder();
+						Manifest manifest = new Manifest();
+						manifest.getMainAttributes().putValue("Bundle-Version", _version.toString());
+						String libName = libPair.getKey().replace('/', '-').replace(".", "").toLowerCase();
+						if(libName.startsWith("qt")) {
+							String _libName = libName.substring(2);
+							if(!_libName.isEmpty() && Character.isJavaIdentifierStart(_libName.charAt(0)))
+								libName = _libName;
 						}
-						closable = jarUtilFile;
-					}
-					try(JarOutputStream jarFile = new JarOutputStream(new FileOutputStream(libBundleFile));
-							JarOutputStream libDebugInfoJarFile = new JarOutputStream(new FileOutputStream(libDebugInfoFile));
-							AutoCloseable _closable = closable){
-						if(jarUtilFile==null) {
-							jarUtilFile = jarFile;
+						File libBundleFile = new File(targetDir, "qt-qml-"+libName+"-native-"+osArchName+(_isDebug ? "-debug-" : "-")+_version+".jar");
+						File libDebugInfoFile = new File(targetDir, "qt-qml-"+libName+"-debuginfo-"+osArchName+(_isDebug ? "-debug-" : "-")+_version+".jar");
+						boolean isEmpty = false;
+						boolean isDEmpty = false;
+						@SuppressWarnings("resource")
+						AutoCloseable closable = ()->{};
+						JarOutputStream jarUtilFile = null;
+						if(osArchName.startsWith("android")) {
+							File utilFile = new File(targetDir, "qt-qml-"+libName+"-native-android-common-"+_version+".jar");
+							if(!utilFile.exists()) {
+								jarUtilFile = new UnEmptyJarOutputStream(utilFile, manifest);
+							}else {
+								jarUtilFile = new JarOutputStream(new ByteArrayOutputStream());
+							}
+							closable = jarUtilFile;
 						}
-						Document libDoc = builder.getDOMImplementation().createDocument(
-								null,
-								"qtjambi-deploy",
-								null
-							);
-						libDoc.getDocumentElement().setAttribute("module", "qt.qml."+libName.replace('-', '.').replace('/', '.'));
-						libDoc.getDocumentElement().setAttribute("system", osArchName);
-						libDoc.getDocumentElement().setAttribute("version", version.toString());
-						libDoc.getDocumentElement().setAttribute("configuration", isDebug ? "debug" : "release");
-						Document debugInfoDoc = builder.getDOMImplementation().createDocument(
-								null,
-								"qtjambi-deploy",
-								null
-							);
-						debugInfoDoc.getDocumentElement().setAttribute("module", "qt.qml."+libName.replace('-', '.').replace('/', '.'));
-						debugInfoDoc.getDocumentElement().setAttribute("system", osArchName);
-						debugInfoDoc.getDocumentElement().setAttribute("version", version.toString());
-						debugInfoDoc.getDocumentElement().setAttribute("configuration", "debuginfo");
-						List<String> path = new ArrayList<>();
-						path.add("qml");
-						path.addAll(Arrays.asList(libPair.getKey().split("/")));
-						path.remove(path.size()-1);
-						copyDirectory(libPair.getValue(), jarFile, libDebugInfoJarFile, jarUtilFile, String.join("/", path), osArchName, isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
-						jarFile.putNextEntry(new ZipEntry(JarFile.MANIFEST_NAME));
-						manifest.write(jarFile);
-						jarFile.closeEntry();
-						
-						isEmpty = !libDoc.getDocumentElement().hasChildNodes();
-						isDEmpty = !debugInfoDoc.getDocumentElement().hasChildNodes();
-						if(!osArchName.startsWith("android-")) {
-							jarFile.putNextEntry(new ZipEntry("META-INF/qtjambi-deployment.xml"));
-							transformer.transform(new DOMSource(libDoc), new StreamResult(jarFile));
+						try(JarOutputStream jarFile = new JarOutputStream(new FileOutputStream(libBundleFile));
+								JarOutputStream libDebugInfoJarFile = new JarOutputStream(new FileOutputStream(libDebugInfoFile));
+								AutoCloseable _closable = closable){
+							if(jarUtilFile==null) {
+								jarUtilFile = jarFile;
+							}
+							Document libDoc = builder.getDOMImplementation().createDocument(
+									null,
+									"qtjambi-deploy",
+									null
+								);
+							libDoc.getDocumentElement().setAttribute("module", "qt.qml."+libName.replace('-', '.').replace('/', '.'));
+							libDoc.getDocumentElement().setAttribute("system", osArchName);
+							libDoc.getDocumentElement().setAttribute("version", _version.toString());
+							libDoc.getDocumentElement().setAttribute("configuration", _isDebug ? "debug" : "release");
+							Document debugInfoDoc = builder.getDOMImplementation().createDocument(
+									null,
+									"qtjambi-deploy",
+									null
+								);
+							debugInfoDoc.getDocumentElement().setAttribute("module", "qt.qml."+libName.replace('-', '.').replace('/', '.'));
+							debugInfoDoc.getDocumentElement().setAttribute("system", osArchName);
+							debugInfoDoc.getDocumentElement().setAttribute("version", _version.toString());
+							debugInfoDoc.getDocumentElement().setAttribute("configuration", "debuginfo");
+							List<String> path = new ArrayList<>();
+							path.add("qml");
+							path.addAll(Arrays.asList(libPair.getKey().split("/")));
+							path.remove(path.size()-1);
+							copyDirectory(libPair.getValue(), jarFile, libDebugInfoJarFile, jarUtilFile, String.join("/", path), osArchName, _isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
+							jarFile.putNextEntry(new ZipEntry(JarFile.MANIFEST_NAME));
+							manifest.write(jarFile);
 							jarFile.closeEntry();
-							libDebugInfoJarFile.putNextEntry(new ZipEntry("META-INF/qtjambi-deployment.xml"));
-							transformer.transform(new DOMSource(debugInfoDoc), new StreamResult(libDebugInfoJarFile));
-							libDebugInfoJarFile.closeEntry();
+							
+							isEmpty = !libDoc.getDocumentElement().hasChildNodes();
+							isDEmpty = !debugInfoDoc.getDocumentElement().hasChildNodes();
+							if(!osArchName.startsWith("android-")) {
+								jarFile.putNextEntry(new ZipEntry("META-INF/qtjambi-deployment.xml"));
+								transformer.transform(new DOMSource(libDoc), new StreamResult(jarFile));
+								jarFile.closeEntry();
+								libDebugInfoJarFile.putNextEntry(new ZipEntry("META-INF/qtjambi-deployment.xml"));
+								transformer.transform(new DOMSource(debugInfoDoc), new StreamResult(libDebugInfoJarFile));
+								libDebugInfoJarFile.closeEntry();
+							}
 						}
-					}
-					if(isEmpty)
-						libBundleFile.delete();
-					if(isDEmpty || isDebug || osArchName.startsWith("android") || osArchName.equals("ios"))
-						libDebugInfoFile.delete();
+						if(isEmpty)
+							libBundleFile.delete();
+						if(isDEmpty || _isDebug || osArchName.startsWith("android") || osArchName.equals("ios"))
+							libDebugInfoFile.delete();
+						return null;
+					}));
 				}
+				for (Future<?> future : futures) {
+					try{
+						future.get();
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+				executor.shutdown();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

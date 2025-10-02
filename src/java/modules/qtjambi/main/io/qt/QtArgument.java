@@ -34,6 +34,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * <p>QtArgument is used to initialize an interface type or a set of inherited interface types with their 
@@ -69,10 +70,10 @@ public final class QtArgument {
 	 * Argument stream.
 	 */
 	public final static class Stream{
-		private final Map<Class<?>,List<Map.Entry<Class<?>,Object>>> arguments = new HashMap<>();
-		private List<Map.Entry<Class<?>,Object>> currentList;
+		private final Map<Class<?>,List<Map.Entry<Object,Object>>> arguments = new HashMap<>();
+		private List<Map.Entry<Object,Object>> currentList;
 		
-		private Stream(Class<?> type) {
+		Stream(Class<?> type) {
 			beginImpl(type);
 		}
 		
@@ -112,9 +113,14 @@ public final class QtArgument {
 			currentList.add(newArg(boolean.class, value, false));
 			return this;
 		}
-		public <T> Stream add(Class<? super T> type, T value) {
+		public <T> Stream add(@StrictNonNull Class<? super T> type, T value) {
 			currentList.add(newArg(type, value, true));
 			return this;
+		}
+		void addIndexes(int index, int... indexes) {
+			currentList.add(new AbstractMap.SimpleImmutableEntry<>(null, index));
+			if(indexes!=null && indexes.length>0)
+				currentList.add(new AbstractMap.SimpleImmutableEntry<>(null, indexes));
 		}
 		public Stream begin(Class<?> type) {
 			if(arguments.containsKey(type))
@@ -125,10 +131,10 @@ public final class QtArgument {
 		private void beginImpl(Class<?> type) {
 			currentList = arguments.computeIfAbsent(type, Utility.arrayListFactory());
 		}
-		Map<Class<?>, List<Map.Entry<Class<?>,Object>>> arguments() {
+		Map<Class<?>, List<Map.Entry<Object,Object>>> arguments() {
 			return Collections.unmodifiableMap(arguments);
 		}
-		private static Map.Entry<Class<?>,Object> newArg(Class<?> type, Object value, boolean check) {
+		private static Map.Entry<Object,Object> newArg(Class<?> type, Object value, boolean check) {
 			if(java.util.Collection.class.isAssignableFrom(type)){
                 type = java.util.Collection.class;
             }else if(java.util.Map.class.isAssignableFrom(type)){
@@ -140,6 +146,8 @@ public final class QtArgument {
             }
 			if(check) {
 				value = type.cast(value);
+			}else {
+				Objects.requireNonNull(type);
 			}
 			return new AbstractMap.SimpleImmutableEntry<>(type, value);
 		}

@@ -740,6 +740,25 @@ inline bool operator==(const QMetaProperty &value1, const QMetaProperty &value2)
             && value2.propertyIndex()==value2.propertyIndex();
 }
 
+inline hash_type qHash(const QMetaClassInfo &value, hash_type seed = 0)
+{
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
+    QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
+    seed = hash(seed, value.enclosingMetaObject());
+    seed = hash(seed, quintptr(value.name()));
+    seed = hash(seed, quintptr(value.value()));
+    return seed;
+}
+
+inline bool operator==(const QMetaClassInfo &value1, const QMetaClassInfo &value2)
+{
+    return value1.enclosingMetaObject()==value2.enclosingMetaObject()
+    && value2.name()==value2.name() && value2.value()==value2.value();
+}
+
 #if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
 #if QT_CONFIG(permissions)
 inline size_t qHash(const QBluetoothPermission &, size_t seed = 0)

@@ -106,12 +106,6 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QThread,
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QMetaMethod,
                                 QTJAMBI_REPOSITORY_DEFINE_METHOD(toSignal,(Lio/qt/core/QObject;)Lio/qt/core/QMetaObject$AbstractSignal;)
 )
-
-QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QObject$QDeclarativeConstructor,
-    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/lang/Class;J)
-    QTJAMBI_REPOSITORY_DEFINE_LONG_FIELD(placement)
-    QTJAMBI_REPOSITORY_DEFINE_FIELD(cls,Ljava/lang/Class;)
-)
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QBindable,
                                 QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(createBinding,(Lio/qt/core/QUntypedPropertyData;)Lio/qt/core/QUntypedBindable;)
 )
@@ -684,7 +678,7 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QPair,
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QMetaObject,
     QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(J)
-    QTJAMBI_REPOSITORY_DEFINE_LONG_FIELD(metaObjectPointer)
+    QTJAMBI_REPOSITORY_DEFINE_LONG_FIELD(__qt_persistentPointer)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_EMPTY_CLASS(io/qt/core,QMetaObject$Connection)
@@ -1326,19 +1320,8 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,AccessUtility,
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,ResourceUtility,
         QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(resolveUrlFromPath,(Ljava/lang/String;)Ljava/net/URL;)
         QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(cleanupOnShutdown,()V)
-        QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(resolveFileToJarResource,(Ljava/lang/String;)Lio/qt/internal/ResourceUtility$JarResource;)
-)
-
-QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,ResourceUtility$JarResource,
-        QTJAMBI_REPOSITORY_DEFINE_METHOD(getJarEntry,(Ljava/lang/String;)Ljava/util/jar/JarEntry;)
-        QTJAMBI_REPOSITORY_DEFINE_METHOD(getInputStream,(Ljava/util/zip/ZipEntry;)Ljava/io/InputStream;)
-        QTJAMBI_REPOSITORY_DEFINE_METHOD(getChannel,(Ljava/util/zip/ZipEntry;)Ljava/nio/channels/ReadableByteChannel;)
-        QTJAMBI_REPOSITORY_DEFINE_METHOD(fileTime,(Ljava/util/zip/ZipEntry;ZZZ)J)
-        QTJAMBI_REPOSITORY_DEFINE_METHOD(ensureRef,()I)
-        QTJAMBI_REPOSITORY_DEFINE_RENAMED_METHOD(_deref,deref,()V)
-        QTJAMBI_REPOSITORY_DEFINE_METHOD(entryList,(Ljava/util/List;ILjava/util/Collection;Ljava/lang/String;Z)V)
-        QTJAMBI_REPOSITORY_DEFINE_METHOD(isDirectory,(Ljava/lang/String;)Z)
-        QTJAMBI_REPOSITORY_DEFINE_METHOD(checkIsDirectory,(Ljava/util/jar/JarEntry;)Z)
+        QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(resolveAlias,(Ljava/lang/String;Ljava/lang/String;[J)Ljava/lang/String;)
+        QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(openChannel,(Ljava/lang/String;Ljava/lang/String;)Ljava/nio/channels/ReadableByteChannel;)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,LibraryUtility,
@@ -1399,18 +1382,15 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,MetaObjectData,
     QTJAMBI_REPOSITORY_DEFINE_FIELD(propertyResetters,Ljava/util/List;)
     QTJAMBI_REPOSITORY_DEFINE_FIELD(propertyNotifies,Ljava/util/List;)
     QTJAMBI_REPOSITORY_DEFINE_FIELD(propertyMemberFields,Ljava/util/List;)
-    QTJAMBI_REPOSITORY_DEFINE_FIELD_QT5(propertyDesignableResolvers,Ljava/util/List;)
-    QTJAMBI_REPOSITORY_DEFINE_FIELD_QT5(propertyScriptableResolvers,Ljava/util/List;)
-    QTJAMBI_REPOSITORY_DEFINE_FIELD_QT5(propertyEditableResolvers,Ljava/util/List;)
-    QTJAMBI_REPOSITORY_DEFINE_FIELD_QT5(propertyStoredResolvers,Ljava/util/List;)
-    QTJAMBI_REPOSITORY_DEFINE_FIELD_QT5(propertyUserResolvers,Ljava/util/List;)
-    QTJAMBI_REPOSITORY_DEFINE_FIELD_QT6(propertyQPropertyFields,Ljava/util/List;)
-    QTJAMBI_REPOSITORY_DEFINE_FIELD_QT6(propertyBindables,Ljava/util/List;)
+    QTJAMBI_REPOSITORY_DEFINE_FIELD(propertyQPropertyFields,Ljava/util/List;)
+    QTJAMBI_REPOSITORY_DEFINE_FIELD(propertyBindables,Ljava/util/List;)
     QTJAMBI_REPOSITORY_DEFINE_FIELD(propertyMetaTypes,Ljava/util/List;)
     QTJAMBI_REPOSITORY_DEFINE_FIELD(propertyClassTypes,Ljava/util/List;)
-    QTJAMBI_REPOSITORY_DEFINE_FIELD_QT6(metaTypes,Ljava/util/List;)
+    QTJAMBI_REPOSITORY_DEFINE_FIELD(metaTypes,Ljava/util/List;)
     QTJAMBI_REPOSITORY_DEFINE_FIELD(relatedMetaObjects,Ljava/util/List;)
     QTJAMBI_REPOSITORY_DEFINE_FIELD(switchTableFields,Ljava/util/List;)
+    QTJAMBI_REPOSITORY_DEFINE_FIELD(privateConstructor,Ljava/lang/reflect/Constructor;)
+    QTJAMBI_REPOSITORY_DEFINE_FIELD(inPlaceConstructor,Ljava/lang/reflect/Constructor;)
     QTJAMBI_REPOSITORY_DEFINE_FIELD(hasStaticMembers,Z)
 )
 
@@ -1419,6 +1399,10 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt,QThreadAffinityException,
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt,QInterfaceCannotBeSubclassedException,
+    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/lang/Class;)
+)
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt,QClassCannotBeSubclassedException,
     QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/lang/Class;)
 )
 
@@ -1520,6 +1504,10 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt,QtObjectInterface,
     QTJAMBI_REPOSITORY_DEFINE_METHOD(isDisposed,()Z)
 )
 
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt,QtConstructInPlace,
+                                QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(J)
+                                QTJAMBI_REPOSITORY_DEFINE_FIELD(native_id,J)
+                                )
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt,QNativePointer,
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(fromNative,(JIJIZ)Lio/qt/QNativePointer;)
     QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(IJIZ)

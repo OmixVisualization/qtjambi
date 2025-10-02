@@ -49,11 +49,11 @@ import org.apache.tools.ant.Task;
  */
 class Exec {
 
-	private static String commandLine(List<String> command) {
+	private static String commandLine(OSInfo osInfo, List<String> command) {
 		List<String> command2 = new ArrayList<>(command);
 		for (int i = 0; i < command2.size(); i++) {
 			String arg = command2.get(i);
-			if(OSInfo.os()==OSInfo.OperationSystem.Windows) {
+			if(osInfo.os()==OSInfo.OperationSystem.Windows) {
         		if(arg.contains(" ") && !arg.startsWith("\"") && !arg.endsWith("\""))
         			command2.set(i, "\""+arg+"\"");
         	}else if(arg.contains(" ") || arg.contains("$")){
@@ -63,11 +63,11 @@ class Exec {
 		return String.join(" ", command2);
     }
 	
-	private static String commandLine(String[] command) {
+	private static String commandLine(OSInfo osInfo, String[] command) {
 		List<String> command2 = new ArrayList<>(Arrays.asList(command));
 		for (int i = 0; i < command2.size(); i++) {
 			String arg = command2.get(i);
-			if(OSInfo.os()==OSInfo.OperationSystem.Windows) {
+			if(osInfo.os()==OSInfo.OperationSystem.Windows) {
         		if(arg.contains(" ") || arg.contains("\\"))
         			command2.set(i, "\""+arg+"\"");
         	}else if(arg.contains(" ") || arg.contains("$")){
@@ -121,8 +121,9 @@ class Exec {
      * @throws BuildException Thrown if process exit value is not zero or IOException has been occurred.
      */
     public static void exec(Task task, String cmd[], File directory, Project project, boolean verbose) throws BuildException {
+    	OSInfo osInfo = OSInfo.instance(project);
     	if(verbose){
-        	String log = "Executing: '" +commandLine(cmd)+ "' in directory " + ((directory != null) ? directory.toString() : "<notset>");
+        	String log = "Executing: '" +commandLine(osInfo, cmd)+ "' in directory " + ((directory != null) ? directory.toString() : "<notset>");
         	project.log(task, log, Project.MSG_INFO);
     	}
         try {
@@ -132,10 +133,10 @@ class Exec {
             if(process.exitValue() != 0) {
                 String exitValueAsHex = String.format("0x%1$08x", new Object[] { process.exitValue() });
                 String inDirectory = (directory != null) ? " in " + directory.getAbsolutePath() : "";
-                throw new BuildException("Running: '" + commandLine(cmd) + "'" + inDirectory + " failed.  exitStatus=" + process.exitValue() + " (" + exitValueAsHex + ")");
+                throw new BuildException("Running: '" + commandLine(osInfo, cmd) + "'" + inDirectory + " failed.  exitStatus=" + process.exitValue() + " (" + exitValueAsHex + ")");
             }
         } catch(IOException e) {
-            throw new BuildException("Running: '" + commandLine(cmd) + "' failed.", e);
+            throw new BuildException("Running: '" + commandLine(osInfo, cmd) + "' failed.", e);
         }
     }
 
@@ -161,10 +162,10 @@ class Exec {
         return v;
     }
 
-    private static void setupEnvironment(Map<String, String> env, PropertyHelper props, String path, String ldpath) {
+    private static void setupEnvironment(OSInfo osInfo, Map<String, String> env, PropertyHelper props, String path, String ldpath) {
         String s;
 
-        if(OSInfo.os().isUnixLike()) {
+        if(osInfo.os().isUnixLike()) {
         	if(ldpath != null) {
                 prependEnvironmentWithPathSeparator(env, K_LD_LIBRARY_PATH, ldpath);
             } else {
@@ -172,7 +173,7 @@ class Exec {
                 if(s != null)
                     prependEnvironmentWithPathSeparator(env, K_LD_LIBRARY_PATH, s);
             }
-        }else if(OSInfo.os()==OSInfo.OperationSystem.MacOS) {
+        }else if(osInfo.os()==OSInfo.OperationSystem.MacOS) {
         	if(ldpath != null) {
                 prependEnvironmentWithPathSeparator(env, K_DYLD_LIBRARY_PATH, ldpath);
                 prependEnvironmentWithPathSeparator(env, K_DYLD_FRAMEWORK_PATH, ldpath);
@@ -220,8 +221,9 @@ class Exec {
     }
 
     public static void execute(Task task, List<String> command, File directory, Project project, String path, String ldpath, Map<String, String> newEnv) throws BuildException {
+    	OSInfo osInfo = OSInfo.instance(project);
     	{
-        	project.log(task, "Executing: '" +commandLine(command)+ "' in directory " + ((directory != null) ? directory.toString() : "<notset>"), Project.MSG_INFO);
+        	project.log(task, "Executing: '" +commandLine(osInfo, command)+ "' in directory " + ((directory != null) ? directory.toString() : "<notset>"), Project.MSG_INFO);
     	}
         ProcessBuilder builder = new ProcessBuilder(command);
 		//builder = builder.redirectErrorStream(true);
@@ -235,7 +237,7 @@ class Exec {
         	env.putAll(newEnv);
         }else if(project != null) {
             PropertyHelper props = PropertyHelper.getPropertyHelper(project);
-            setupEnvironment(env, props, path, ldpath);
+            setupEnvironment(osInfo, env, props, path, ldpath);
         }
         
         if(directory != null)
@@ -247,8 +249,8 @@ class Exec {
             if(process.exitValue() != 0) {
                 String exitValueAsHex = String.format("0x%1$08x", new Object[] { process.exitValue() });
                 String inDirectory = (directory != null) ? " in " + directory.getAbsolutePath() : "";
-                project.log(task, "Running: '" + commandLine(command) + "'" + inDirectory + " failed.  exitStatus=" + process.exitValue() + " (" + exitValueAsHex + ")", Project.MSG_ERR);
-                throw new BuildException("Running: '" + commandLine(command) + "'" + inDirectory + " failed.  exitStatus=" + process.exitValue() + " (" + exitValueAsHex + ")");
+                project.log(task, "Running: '" + commandLine(osInfo, command) + "'" + inDirectory + " failed.  exitStatus=" + process.exitValue() + " (" + exitValueAsHex + ")", Project.MSG_ERR);
+                throw new BuildException("Running: '" + commandLine(osInfo, command) + "'" + inDirectory + " failed.  exitStatus=" + process.exitValue() + " (" + exitValueAsHex + ")");
             }
         } catch(IOException e) {
         	e.printStackTrace();
@@ -260,8 +262,8 @@ class Exec {
             	System.err.println("Path="+env.get("Path"));
             if(env.containsKey("PATH"))
             	System.err.println("PATH="+env.get("PATH"));
-            project.log(task, "Running: '" +commandLine(command)+ "' in directory " + ((directory != null) ? directory.toString() : "<notset>") + " failed.", e, Project.MSG_ERR);
-            throw new BuildException("Running: '" + commandLine(command) + "' failed.", e);
+            project.log(task, "Running: '" +commandLine(osInfo, command)+ "' in directory " + ((directory != null) ? directory.toString() : "<notset>") + " failed.", e, Project.MSG_ERR);
+            throw new BuildException("Running: '" + commandLine(osInfo, command) + "' failed.", e);
         }
     }
     
@@ -270,8 +272,9 @@ class Exec {
     }
     
     public static Runnable executeAsync(Task task, List<String> command, File directory, Project project, String path, String ldpath, Map<String, String> newEnv) throws BuildException {
+    	OSInfo osInfo = OSInfo.instance(project);
     	{
-        	project.log(task, "Executing: '" +commandLine(command)+ "' in directory " + ((directory != null) ? directory.toString() : "<notset>"), Project.MSG_INFO);
+        	project.log(task, "Executing: '" +commandLine(osInfo, command)+ "' in directory " + ((directory != null) ? directory.toString() : "<notset>"), Project.MSG_INFO);
     	}
         ProcessBuilder builder = new ProcessBuilder(command);
 		//builder = builder.redirectErrorStream(true);
@@ -285,7 +288,7 @@ class Exec {
         	env.putAll(newEnv);
         }else if(project != null) {
             PropertyHelper props = PropertyHelper.getPropertyHelper(project);
-            setupEnvironment(env, props, path, ldpath);
+            setupEnvironment(osInfo, env, props, path, ldpath);
         }
         
         if(directory != null)
@@ -298,8 +301,8 @@ class Exec {
 	            if(process.exitValue() != 0) {
 	                String exitValueAsHex = String.format("0x%1$08x", new Object[] { process.exitValue() });
 	                String inDirectory = (directory != null) ? " in " + directory.getAbsolutePath() : "";
-	                project.log(task, "Running: '" + commandLine(command) + "'" + inDirectory + " failed.  exitStatus=" + process.exitValue() + " (" + exitValueAsHex + ")", Project.MSG_ERR);
-	                throw new BuildException("Running: '" + commandLine(command) + "'" + inDirectory + " failed.  exitStatus=" + process.exitValue() + " (" + exitValueAsHex + ")");
+	                project.log(task, "Running: '" + commandLine(osInfo, command) + "'" + inDirectory + " failed.  exitStatus=" + process.exitValue() + " (" + exitValueAsHex + ")", Project.MSG_ERR);
+	                throw new BuildException("Running: '" + commandLine(osInfo, command) + "'" + inDirectory + " failed.  exitStatus=" + process.exitValue() + " (" + exitValueAsHex + ")");
 	            }
             };
         } catch(IOException e) {
@@ -312,19 +315,20 @@ class Exec {
             	System.err.println("Path="+env.get("Path"));
             if(env.containsKey("PATH"))
             	System.err.println("PATH="+env.get("PATH"));
-            project.log(task, "Running: '" +commandLine(command)+ "' in directory " + ((directory != null) ? directory.toString() : "<notset>") + " failed.", e, Project.MSG_ERR);
-            throw new BuildException("Running: '" + commandLine(command) + "' failed.", e);
+            project.log(task, "Running: '" +commandLine(osInfo, command)+ "' in directory " + ((directory != null) ? directory.toString() : "<notset>") + " failed.", e, Project.MSG_ERR);
+            throw new BuildException("Running: '" + commandLine(osInfo, command) + "' failed.", e);
         }
     }
 
     public static void execute(Task task, List<String> command, File directory, Project project, String path, String ldpath, File outputFile, File errorFile) throws BuildException {
+    	OSInfo osInfo = OSInfo.instance(project);
         String inDirectory;
         try {
 			inDirectory = (directory != null) ? " in " + directory.getCanonicalPath() : "";
 		} catch (IOException e) {
 			inDirectory = (directory != null) ? " in " + directory.getAbsolutePath() : "";
 		}
-    	project.log(task, "Running '" + commandLine(command) + "'"+inDirectory+" ...", Project.MSG_INFO);
+    	project.log(task, "Running '" + commandLine(osInfo, command) + "'"+inDirectory+" ...", Project.MSG_INFO);
         ProcessBuilder builder = new ProcessBuilder(command);
 		//builder = builder.redirectErrorStream(true);
 		builder.redirectError(errorFile);
@@ -337,7 +341,7 @@ class Exec {
         Map<String, String> env = builder.environment();
         if(project != null) {
             PropertyHelper props = PropertyHelper.getPropertyHelper(project);
-            setupEnvironment(env, props, path, ldpath);
+            setupEnvironment(osInfo, env, props, path, ldpath);
         }
         
         if(directory != null)
@@ -357,7 +361,7 @@ class Exec {
         } catch(IOException e) {
         	e.printStackTrace();
             project.log(task, "FAILED!", e, Project.MSG_ERR);
-            throw new BuildException("Running: '" + commandLine(command) + "' failed.", e);
+            throw new BuildException("Running: '" + commandLine(osInfo, command) + "' failed.", e);
         }
     }
 
@@ -373,8 +377,8 @@ class Exec {
      * @throws InterruptedException
      * @throws IOException
      */
-    public static String[] executeCaptureOutput(Task task, List<String> command, File directory, Project project, String path, String ldpath, boolean emitErrorExitStatus) throws BuildException, InterruptedException, IOException {
-        ProcessBuilder builder = new ProcessBuilder(command);
+    public static String[] executeCaptureOutput(Task task, List<String> command, File directory, Project project, OSInfo osInfo, String path, String ldpath, boolean emitErrorExitStatus) throws BuildException, InterruptedException, IOException {
+    	ProcessBuilder builder = new ProcessBuilder(command);
 
         // NOTE: this is most likely very linux-specific system. For Windows one would use PATH instead,
         // but it should not be needed there in first place... Only if you want to have same kind of building
@@ -382,7 +386,7 @@ class Exec {
         // it shouldn't affect to Windows environment though.
         Map<String, String> env = builder.environment();
         PropertyHelper props = PropertyHelper.getPropertyHelper(project);
-        setupEnvironment(env, props, path, ldpath);
+        setupEnvironment(osInfo, env, props, path, ldpath);
 
         if(directory != null)
             builder.directory(directory);
@@ -414,7 +418,7 @@ class Exec {
             if(emitErrorExitStatus && process.exitValue() != 0) {
                 String exitValueAsHex = String.format("0x%1$08x", new Object[] { process.exitValue() });
                 String inDirectory = (directory != null) ? " in " + directory.getAbsolutePath() : "";
-                project.log(task, "Running: '" + commandLine(command) + "'" + inDirectory + " failed.  exitStatus=" + process.exitValue() + " (" + exitValueAsHex + ")", Project.MSG_ERR);
+                project.log(task, "Running: '" + commandLine(osInfo, command) + "'" + inDirectory + " failed.  exitStatus=" + process.exitValue() + " (" + exitValueAsHex + ")", Project.MSG_ERR);
             }
 
             return new String[] { outdata.toString(), errdata.toString() };

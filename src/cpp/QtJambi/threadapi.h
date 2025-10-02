@@ -62,10 +62,15 @@ QTJAMBI_EXPORT jobject getContextClassLoader(JNIEnv *__jni_env, QtJambiNativeID 
 
 }
 
+namespace QtJambiAPI{
+enum ConstructorOptions : int;
+typedef void (*ConstructorFn)(void*, JNIEnv*, jobject, jvalue*, QtJambiAPI::ConstructorOptions);
+}
+
 class QtJambiThreadShell{
 public:
-    typedef void (*ConstructorFunction)(void*, JNIEnv*, jobject, jvalue*, bool, bool, bool);
-    static QTJAMBI_EXPORT void initialize(JNIEnv *env, jclass callingClass, jobject object, ConstructorFunction constructorFunction, size_t size, const std::type_info& typeId, uint returnScopeRequired, const QMetaObject& originalMetaObject, bool isShell, bool hasCustomMetaObject, bool isDeclarativeCall, jvalue* arguments);
+    typedef QtJambiAPI::ConstructorFn ConstructorFunction;
+    static QTJAMBI_EXPORT void initialize(JNIEnv *env, jclass callingClass, jobject object, ConstructorFunction constructorFunction, size_t size, const std::type_info& typeId, uint returnScopeRequired, const QMetaObject& originalMetaObject, bool isShell, bool hasCustomMetaObject, jvalue* arguments = nullptr);
 };
 
 #endif // QTJAMBI_THREADAPI_H

@@ -76,6 +76,7 @@ public class CreateNativeDeploymentTask extends Task {
     
 	@Override
     public void execute() throws BuildException {
+		OSInfo osInfo = OSInfo.instance(getProject());
         getProject().log(this, msg, Project.MSG_INFO);
         PropertyHelper propertyHelper = PropertyHelper.getPropertyHelper(getProject());
         boolean useFrameworks = Boolean.valueOf(AntUtil.getPropertyAsString(propertyHelper, Constants.MAC_OS_GENERATE_FRAMEWORKS));
@@ -120,27 +121,27 @@ public class CreateNativeDeploymentTask extends Task {
 			String libdir;
 			java.io.File libc_for_android = null;
 			String abi = null;
-			switch(OSInfo.crossOS()) {
+			switch(osInfo.crossOS()) {
 			case Android:
 				switch(AntUtil.getPropertyAsString(propertyHelper, Constants.OSNAME)) {
 	        	case "android-arm":
-	        		OSInfo.setCrossCompilation(OSInfo.OperationSystem.Android, OSInfo.Architecture.arm);
+	        		osInfo.setCrossCompilation(OSInfo.OperationSystem.Android, OSInfo.Architecture.arm);
 	        		abi = "armeabi-v7a"; 
 	        		break;
 	        	case "android-arm64":
-	        		OSInfo.setCrossCompilation(OSInfo.OperationSystem.Android, OSInfo.Architecture.arm64);
+	        		osInfo.setCrossCompilation(OSInfo.OperationSystem.Android, OSInfo.Architecture.arm64);
 	        		abi = "arm64-v8a"; 
 	        		break;
 	        	case "android-x86":
-	        		OSInfo.setCrossCompilation(OSInfo.OperationSystem.Android, OSInfo.Architecture.x86);
+	        		osInfo.setCrossCompilation(OSInfo.OperationSystem.Android, OSInfo.Architecture.x86);
 	        		abi = "x86";
 	        		break;
 	        	case "android-x64":
-	        		OSInfo.setCrossCompilation(OSInfo.OperationSystem.Android, OSInfo.Architecture.x86_64);
+	        		osInfo.setCrossCompilation(OSInfo.OperationSystem.Android, OSInfo.Architecture.x86_64);
 	        		abi = "x86_64";
 	        		break;
 	        	case "android-riscv64":
-	        		OSInfo.setCrossCompilation(OSInfo.OperationSystem.Android, OSInfo.Architecture.riscv64);
+	        		osInfo.setCrossCompilation(OSInfo.OperationSystem.Android, OSInfo.Architecture.riscv64);
 	        		abi = "riscv64";
 	        		break;
 	        	default:break;
@@ -161,7 +162,7 @@ public class CreateNativeDeploymentTask extends Task {
 								libcdir = new java.io.File(ndkdir, "toolchains");
 								libcdir = new java.io.File(libcdir, "llvm");
 								libcdir = new java.io.File(libcdir, "prebuilt");
-								switch(OSInfo.os()) {
+								switch(osInfo.os()) {
 								case Windows:
 									libcdir = new java.io.File(libcdir, "windows-x86_64");
 									break;
@@ -177,7 +178,7 @@ public class CreateNativeDeploymentTask extends Task {
 								libcdir = new java.io.File(libcdir, "sysroot");
 								libcdir = new java.io.File(libcdir, "usr");
 								libcdir = new java.io.File(libcdir, "lib");
-								switch(OSInfo.crossArch()) {
+								switch(osInfo.crossArch()) {
 					        	case arm:
 					        		libcdir = new java.io.File(libcdir, "arm-linux-androideabi");
 					        		break;
@@ -211,7 +212,7 @@ public class CreateNativeDeploymentTask extends Task {
 				break;
 			}
 			targetLibDir = new java.io.File(directory, libdir);
-			switch(OSInfo.crossOS()) {
+			switch(osInfo.crossOS()) {
 			case Android:
 				targetLibDir = new java.io.File(targetLibDir, abi);
 				targetLibDir.mkdirs();
@@ -228,7 +229,7 @@ public class CreateNativeDeploymentTask extends Task {
 				if(no_otool==null) {
 					no_otool = false;
 					try {
-			        	String[] out = Exec.executeCaptureOutput(this, Arrays.asList("otool", "--version"), builddir, getProject(), null, null, false);
+			        	String[] out = Exec.executeCaptureOutput(this, Arrays.asList("otool", "--version"), builddir, getProject(), osInfo, null, null, false);
 			        	if(out==null || out.length<2 || out[0]==null || !out[0].contains("Apple")) {
 			        		if(out==null || out.length<=2 || out[1]==null || !out[1].contains("Apple")) {
 			        			no_otool = true;
@@ -244,7 +245,7 @@ public class CreateNativeDeploymentTask extends Task {
 	        
         	switch(moduleName) {
 			case "qtjambi.deployer":
-				switch(OSInfo.crossOS()) {
+				switch(osInfo.crossOS()) {
 				case Android:
 	        		_libraries = Arrays.asList("QtJambiPlugin", "jarimport");
 	        		break;
@@ -263,7 +264,7 @@ public class CreateNativeDeploymentTask extends Task {
 				_libraries = new ArrayList<>();
 				if(pluginDir.isDirectory()) {
 					for(String f : pluginDir.list()) {
-						switch(OSInfo.crossOS()) {
+						switch(osInfo.crossOS()) {
 						case Windows:
 							if(!debug && !forceDebugInfo && f.endsWith(".dll") && !f.endsWith("d.dll")) {
 								_libraries.add(f);
@@ -278,7 +279,7 @@ public class CreateNativeDeploymentTask extends Task {
 							break;
 						case Android:
 							String suffix = ".so";
-							switch(OSInfo.crossArch()) {
+							switch(osInfo.crossArch()) {
 				        	case arm:
 				        		targetLibDir = new java.io.File(new java.io.File(directory, "lib"), "arm32");
 				        		suffix = "_armeabi-v7a.so"; break;
@@ -298,7 +299,7 @@ public class CreateNativeDeploymentTask extends Task {
 							}
 							break;
 						default:
-							if(OSInfo.crossOS().isUnixLike()) {
+							if(osInfo.crossOS().isUnixLike()) {
 								if(f.endsWith(".so")) {
 									_libraries.add(f);
 								}
@@ -341,7 +342,7 @@ public class CreateNativeDeploymentTask extends Task {
 					jarpath = "utilities";
 					if("QtJambiLauncher".equals(name)) {
 						_libdir = "bin";
-						switch(OSInfo.crossOS()) {
+						switch(osInfo.crossOS()) {
 						case MacOS:
 							libName = name + (debug ? "_debug.app" : ".app");
 							isMacBundle = true;
@@ -354,7 +355,7 @@ public class CreateNativeDeploymentTask extends Task {
 							break;
 						}
 					}else {
-						libName = formatQtJambiQmlPluginName(name, debug, "");
+						libName = formatQtJambiQmlPluginName(osInfo, name, debug, "");
 					}
 					break;
 				default:
@@ -368,13 +369,13 @@ public class CreateNativeDeploymentTask extends Task {
 							}
 						}
 						continue;
-					}else if(OSInfo.crossOS()==OSInfo.OperationSystem.MacOS && useFrameworks) {
+					}else if(osInfo.crossOS()==OSInfo.OperationSystem.MacOS && useFrameworks) {
 						libName = name + (debug ? "_debug.framework" : ".framework");
 						isMacBundle = true;
 					}else {
-						libName = formatQtJambiName(name, debug, qtMajorVersion, qtMinorVersion, qtjambiPatchlevelVersion);
-						if(OSInfo.crossOS()==OSInfo.OperationSystem.Android) {
-							switch(OSInfo.crossArch()) {
+						libName = formatQtJambiName(osInfo, name, debug, qtMajorVersion, qtMinorVersion, qtjambiPatchlevelVersion);
+						if(osInfo.crossOS()==OSInfo.OperationSystem.Android) {
+							switch(osInfo.crossArch()) {
 				        	case arm:
 				        		jarpath += "/armeabi-v7a"; break;
 				        	case arm64:
@@ -496,7 +497,7 @@ public class CreateNativeDeploymentTask extends Task {
 							}
 						}
 					}
-					switch(OSInfo.crossOS()) {
+					switch(osInfo.crossOS()) {
 					case Windows:
 						if((libName.endsWith(".dll") || libName.endsWith(".exe")) && (debug || forceDebugInfo)){
 							String dbgName = libName.substring(0, libName.length()-3)+"pdb";
@@ -616,8 +617,8 @@ public class CreateNativeDeploymentTask extends Task {
 						noSymlinks = true;
 						break;
 					default:
-						if(OSInfo.crossOS()==OSInfo.OperationSystem.Android) {
-							switch(OSInfo.crossArch()) {
+						if(osInfo.crossOS()==OSInfo.OperationSystem.Android) {
+							switch(osInfo.crossArch()) {
 				        	case arm:
 								_libdir += "/armeabi-v7a"; break;
 				        	case arm64:
@@ -637,7 +638,7 @@ public class CreateNativeDeploymentTask extends Task {
 						doc.getDocumentElement().appendChild(libraryElement);
 		        	}
 					
-					switch(OSInfo.crossOS()) {
+					switch(osInfo.crossOS()) {
 					case Windows:
 						if(libName.endsWith(".dll")){
 							String pdbName = libName.substring(0, libName.length()-3)+"pdb";
@@ -678,7 +679,7 @@ public class CreateNativeDeploymentTask extends Task {
 					String shortName;
 					Element symlinkElement;
 					if(!noSymlinks && (debug || !forceDebugInfo)) {
-						switch(OSInfo.crossOS()) {
+						switch(osInfo.crossOS()) {
 						case Windows:
 						case Android:
 						case IOS:
@@ -690,7 +691,7 @@ public class CreateNativeDeploymentTask extends Task {
 							//fallthrough:
 						default:
 							symlinkElement = doc.createElement("symlink");
-							shortName = formatQtJambiName(name, debug, -1, -1, -1);
+							shortName = formatQtJambiName(osInfo, name, debug, -1, -1, -1);
 							symlinkElement.setAttribute("name", _libdir+"/"+shortName);
 							symlinkElement.setAttribute("target", _libdir+"/"+libName);
 							doc.getDocumentElement().appendChild(symlinkElement);
@@ -718,7 +719,7 @@ public class CreateNativeDeploymentTask extends Task {
 								}
 	    					}
 							symlinkElement = doc.createElement("symlink");
-							shortName = formatQtJambiName(name, debug, qtMajorVersion, -1, -1);
+							shortName = formatQtJambiName(osInfo, name, debug, qtMajorVersion, -1, -1);
 							symlinkElement.setAttribute("name", _libdir+"/"+shortName);
 							symlinkElement.setAttribute("target", _libdir+"/"+libName);
 							doc.getDocumentElement().appendChild(symlinkElement);
@@ -746,7 +747,7 @@ public class CreateNativeDeploymentTask extends Task {
 								}
 	    					}
 							symlinkElement = doc.createElement("symlink");
-							shortName = formatQtJambiName(name, debug, qtMajorVersion, qtMinorVersion, -1);
+							shortName = formatQtJambiName(osInfo, name, debug, qtMajorVersion, qtMinorVersion, -1);
 							symlinkElement.setAttribute("name", _libdir+"/"+shortName);
 							symlinkElement.setAttribute("target", _libdir+"/"+libName);
 							doc.getDocumentElement().appendChild(symlinkElement);
@@ -779,7 +780,8 @@ public class CreateNativeDeploymentTask extends Task {
 				}
 			}
 			
-			java.io.File metainfFile = new java.io.File(directory, "META-INF");
+			java.io.File metainfFile = new java.io.File(tempDirectory!=null ? new java.io.File(tempDirectory) : directory, "META-INF");
+			System.out.println("make directory: "+metainfFile);
 			metainfFile.mkdirs();
 			java.io.File deploymentFile = new java.io.File(metainfFile, "qtjambi-deployment.xml");
         	deploymentFile.delete();
@@ -789,7 +791,7 @@ public class CreateNativeDeploymentTask extends Task {
 				deploymentFile = new java.io.File(metainfFile, "qtjambi-utilities.xml");
 				deploymentFile.delete();
 				isUtilities = true;
-				switch(OSInfo.crossOS()) {
+				switch(osInfo.crossOS()) {
 				case Android:
 					Element libraryElement = doc.createElement("file");
 					libraryElement.setAttribute("name", "utilities/QtAndroidBindings.jar");
@@ -801,7 +803,7 @@ public class CreateNativeDeploymentTask extends Task {
 				default:
 					if(doc.getDocumentElement().hasChildNodes()) {
 						if(!AntUtil.getPropertyAsString(propertyHelper, Constants.OSNAME).startsWith("android") || isUtilities) {
-							libraryIncludes += ",META-INF/" + deploymentFile.getName();
+							System.out.println("write file: "+deploymentFile);
 							try(FileOutputStream fos = new FileOutputStream(deploymentFile)){
 								StreamResult result = new StreamResult(fos);
 								transformer.transform(new DOMSource(doc), result);
@@ -834,6 +836,7 @@ public class CreateNativeDeploymentTask extends Task {
 	private String libraries;
 	private String moduleName;
 	private String outputDirectory;
+	private String tempDirectory;
 	private String jarFile;
 	private boolean debug = false;
 	private boolean forceDebugInfo = false;
@@ -921,9 +924,9 @@ public class CreateNativeDeploymentTask extends Task {
     	}
     }
 
-    public static String formatPluginName(String name, boolean debug, int qtMajorVersion, int qtMinorVersion, int qtPatchlevelVersion) {
+    public static String formatPluginName(OSInfo osInfo, String name, boolean debug, int qtMajorVersion, int qtMinorVersion, int qtPatchlevelVersion) {
         if(debug) {
-            switch(OSInfo.crossOS()) {
+            switch(osInfo.crossOS()) {
             case Windows: return name + "d.dll";
             case MacOS:
                 if(qtMajorVersion==5 && qtMinorVersion<14){
@@ -932,10 +935,10 @@ public class CreateNativeDeploymentTask extends Task {
                     return "lib" + name + ".dylib";
                 }
             case Android:
-            	if(OSInfo.crossArch()==null) {
+            	if(osInfo.crossArch()==null) {
             		return "lib" + name + "_x86_64.so";
             	}else {
-	            	switch(OSInfo.crossArch()) {
+	            	switch(osInfo.crossArch()) {
 	            	case arm:
 	            		return "lib" + name + "_armeabi-v7a.so";
 	            	case arm64:
@@ -952,21 +955,21 @@ public class CreateNativeDeploymentTask extends Task {
             case IOS:
                 return "lib" + name + "_debug.a";
 			default:
-				if(OSInfo.crossOS().isUnixLike())
+				if(osInfo.crossOS().isUnixLike())
 					return "lib" + name + ".so";
 				break;
             }
         } else {
-            switch(OSInfo.crossOS()) {
+            switch(osInfo.crossOS()) {
             case Windows:
                 return name + ".dll";
             case MacOS:
                 return "lib" + name + ".dylib";
             case Android:
-            	if(OSInfo.crossArch()==null) {
+            	if(osInfo.crossArch()==null) {
             		return "lib" + name + "_x86_64.so";
             	}else {
-	            	switch(OSInfo.crossArch()) {
+	            	switch(osInfo.crossArch()) {
 	            	case arm:
 	            		return "lib" + name + "_armeabi-v7a.so";
 	            	case arm64:
@@ -983,7 +986,7 @@ public class CreateNativeDeploymentTask extends Task {
             case IOS:
                 return "lib" + name + ".a";
 			default:
-				if(OSInfo.crossOS().isUnixLike())
+				if(osInfo.crossOS().isUnixLike())
 					return "lib" + name + ".so";
 				break;
             }
@@ -991,19 +994,19 @@ public class CreateNativeDeploymentTask extends Task {
         throw new BuildException("unhandled case...");
     }
 
-	public static String formatQmlPluginName(String name, boolean debug, int qtMajorVersion, int qtMinorVersion, int qtPatchlevelVersion) {
+	public static String formatQmlPluginName(OSInfo osInfo, String name, boolean debug, int qtMajorVersion, int qtMinorVersion, int qtPatchlevelVersion) {
         if (debug) {
-            switch (OSInfo.crossOS()) {
+            switch (osInfo.crossOS()) {
             case Windows: return name + "d.dll";
             case MacOS: 
                 if(qtMajorVersion==5 && qtMinorVersion<14)
                     return "lib" + name + "_debug.dylib";
                 else return "lib" + name + ".dylib";
             case Android:
-            	if(OSInfo.crossArch()==null) {
+            	if(osInfo.crossArch()==null) {
             		return "lib" + name + "_x86_64.so";
             	}else {
-            		switch(OSInfo.crossArch()) {
+            		switch(osInfo.crossArch()) {
 	            	case arm:
 	            		return "lib" + name + "_armeabi-v7a.so";
 	            	case arm64:
@@ -1019,19 +1022,19 @@ public class CreateNativeDeploymentTask extends Task {
             	}
             case IOS: return "lib" + name + "_debug.a";
 			default:
-				if(OSInfo.crossOS().isUnixLike())
+				if(osInfo.crossOS().isUnixLike())
 					return "lib" + name + ".so";
 				break;
             }
         } else {
-            switch (OSInfo.crossOS()) {
+            switch (osInfo.crossOS()) {
             case Windows: return name + ".dll";
             case MacOS: return "lib" + name + ".dylib";
             case Android:
-            	if(OSInfo.crossArch()==null) {
+            	if(osInfo.crossArch()==null) {
             		return "lib" + name + "_x86_64.so";
             	}else {
-            		switch(OSInfo.crossArch()) {
+            		switch(osInfo.crossArch()) {
 	            	case arm:
 	            		return "lib" + name + "_armeabi-v7a.so";
 	            	case arm64:
@@ -1047,7 +1050,7 @@ public class CreateNativeDeploymentTask extends Task {
             	}
             case IOS: return "lib" + name + ".a";
 			default:
-				if(OSInfo.crossOS().isUnixLike())
+				if(osInfo.crossOS().isUnixLike())
 					return "lib" + name + ".so";
 				break;
             }
@@ -1067,11 +1070,11 @@ public class CreateNativeDeploymentTask extends Task {
         return result;
     }
     
-    public static String formatQtName(String name, String infix, boolean debug, int qtMajorVersion, int qtMinorVersion, int qtPatchlevelVersion) {
-    	return formatQtName(name, infix, debug, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, false);
+    public static String formatQtName(OSInfo osInfo, String name, String infix, boolean debug, int qtMajorVersion, int qtMinorVersion, int qtPatchlevelVersion) {
+    	return formatQtName(osInfo, name, infix, debug, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, false);
     }
 
-    public static String formatQtName(String name, String infix, boolean debug, int qtMajorVersion, int qtMinorVersion, int qtPatchlevelVersion, boolean staticLib) {
+    public static String formatQtName(OSInfo osInfo, String name, String infix, boolean debug, int qtMajorVersion, int qtMinorVersion, int qtPatchlevelVersion, boolean staticLib) {
         String tmpVersionString;
         if(qtMajorVersion>=5){
     		if(name.startsWith("Qt") && !name.startsWith("Qt"+qtMajorVersion)){
@@ -1088,7 +1091,7 @@ public class CreateNativeDeploymentTask extends Task {
     	}
         String libPrefix = name.startsWith("lib") ? "" : "lib";
         if(staticLib) {
-        	switch(OSInfo.crossOS()) {
+        	switch(osInfo.crossOS()) {
             case Windows:
                 return name + infix + (debug ? "d" : "") + tmpVersionString + ".lib";
             default:
@@ -1109,7 +1112,7 @@ public class CreateNativeDeploymentTask extends Task {
             }else{
                 tmpDotVersionString = "";
             }
-            switch(OSInfo.crossOS()) {
+            switch(osInfo.crossOS()) {
             case Windows:
                 return name + infix + "d" + tmpVersionString + ".dll";
             case MacOS:
@@ -1120,13 +1123,13 @@ public class CreateNativeDeploymentTask extends Task {
                 }
             case Android:
             	if(infix==null || infix.isEmpty()) {
-                	if(OSInfo.crossArch()==null) {
+                	if(osInfo.crossArch()==null) {
                 		if(infix.isEmpty())
                 			return libPrefix + name + infix + "_x86_64.so";
                 		else
                 			return libPrefix + name + infix + ".so";
                 	}else {
-		            	switch(OSInfo.crossArch()) {
+		            	switch(osInfo.crossArch()) {
 		            	case arm:
 		            		return libPrefix + name + infix + "_armeabi-v7a.so";
 		            	case arm64:
@@ -1144,7 +1147,7 @@ public class CreateNativeDeploymentTask extends Task {
                 return libPrefix + name + infix + ".so";
             case IOS: return "lib" + name + infix + "_debug.a";
 			default:
-				if(OSInfo.crossOS().isUnixLike())
+				if(osInfo.crossOS().isUnixLike())
 	                return libPrefix + name + infix + ".so" + tmpDotVersionString;
 				break;
             }
@@ -1163,19 +1166,19 @@ public class CreateNativeDeploymentTask extends Task {
             }else{
                 tmpDotVersionString = "";
             }
-            switch(OSInfo.crossOS()) {
+            switch(osInfo.crossOS()) {
             case Windows:
                 return name + infix + tmpVersionString + ".dll";
             case MacOS:
                 return libPrefix + name + infix + tmpDotVersionString + ".dylib";
             case Android:
-            	if(OSInfo.crossArch()==null) {
+            	if(osInfo.crossArch()==null) {
             		if(infix.isEmpty())
             			return libPrefix + name + infix + "_x86_64.so";
             		else
             			return libPrefix + name + infix + ".so";
             	}else {
-	            	switch(OSInfo.crossArch()) {
+	            	switch(osInfo.crossArch()) {
 	            	case arm:
 	            		return libPrefix + name + infix + "_armeabi-v7a.so";
 	            	case arm64:
@@ -1192,7 +1195,7 @@ public class CreateNativeDeploymentTask extends Task {
                 return libPrefix + name + infix + ".so";
             case IOS: return "lib" + name + infix + ".a";
 			default:
-				if(OSInfo.crossOS().isUnixLike())
+				if(osInfo.crossOS().isUnixLike())
 	                return libPrefix + name + infix + ".so" + tmpDotVersionString;
 				break;
             }
@@ -1208,7 +1211,7 @@ public class CreateNativeDeploymentTask extends Task {
         return result;
     }
 
-    public static String formatQtPrlName(String name, String infix, boolean debug, int qtMajorVersion, int qtMinorVersion, int qtPatchlevelVersion) {
+    public static String formatQtPrlName(OSInfo osInfo, String name, String infix, boolean debug, int qtMajorVersion, int qtMinorVersion, int qtPatchlevelVersion) {
         // Windows: QtCore.prl QtCored.prl
         //   Linux: libQtCore.prl ??????
         //  MacOSX: libQtCore.prl libQtCore_debug.prl
@@ -1222,7 +1225,7 @@ public class CreateNativeDeploymentTask extends Task {
     	}
         if(debug) {
             String tmpDebugSuffix = "_debug";
-            switch(OSInfo.crossOS()) {
+            switch(osInfo.crossOS()) {
             case Windows:
                 return name + infix + "d" + ".prl";
             case MacOS:
@@ -1231,10 +1234,10 @@ public class CreateNativeDeploymentTask extends Task {
                     return "lib" + name + infix + ".prl";
                 else return "lib" + name + infix + tmpDebugSuffix + ".prl";
             case Android:
-            	if(OSInfo.crossArch()==null) {
+            	if(osInfo.crossArch()==null) {
             		return "lib" + name + infix + "_x86_64.so";
             	}else {
-	            	switch(OSInfo.crossArch()) {
+	            	switch(osInfo.crossArch()) {
 	            	case arm:
 	            		return "lib" + name + infix + "_armeabi-v7a.prl";
 	            	case arm64:
@@ -1249,22 +1252,22 @@ public class CreateNativeDeploymentTask extends Task {
 	            	}
             	}
 			default:
-				if(OSInfo.crossOS().isUnixLike())
+				if(osInfo.crossOS().isUnixLike())
 	                return "lib" + name + infix + ".prl";
 				break;
             }
         } else {
-            switch(OSInfo.crossOS()) {
+            switch(osInfo.crossOS()) {
             case Windows:
                 return name + ".prl";
             case MacOS:
             case IOS:
                 return "lib" + name + infix + ".prl";
             case Android:
-            	if(OSInfo.crossArch()==null) {
+            	if(osInfo.crossArch()==null) {
             		return "lib" + name + infix + "_x86_64.so";
             	}else {
-	            	switch(OSInfo.crossArch()) {
+	            	switch(osInfo.crossArch()) {
 	            	case arm:
 	            		return "lib" + name + infix + "_armeabi-v7a.prl";
 	            	case arm64:
@@ -1279,7 +1282,7 @@ public class CreateNativeDeploymentTask extends Task {
 	            	}
             	}
 			default:
-				if(OSInfo.crossOS().isUnixLike())
+				if(osInfo.crossOS().isUnixLike())
 	                return "lib" + name + infix + ".prl";
 				break;
             }
@@ -1287,10 +1290,10 @@ public class CreateNativeDeploymentTask extends Task {
         throw new BuildException("unhandled case...");
     }
 
-    public static String formatUnversionedPluginName(String name, boolean debug, int qtMajorVersion, int qtMinorVersion, int qtPatchlevelVersion) {
+    public static String formatUnversionedPluginName(OSInfo osInfo, String name, boolean debug, int qtMajorVersion, int qtMinorVersion, int qtPatchlevelVersion) {
         if(debug) {
             String tmpDebugSuffix = "_debug";
-            switch(OSInfo.crossOS()) {
+            switch(osInfo.crossOS()) {
             case Windows:
                 return name + "d.dll";
             case MacOS:
@@ -1298,10 +1301,10 @@ public class CreateNativeDeploymentTask extends Task {
                     return "lib" + name + tmpDebugSuffix + ".dylib";
                 else return "lib" + name + ".dylib";
             case Android:
-            	if(OSInfo.crossArch()==null) {
+            	if(osInfo.crossArch()==null) {
             		return "lib" + name + "_x86_64.so";
             	}else {
-	            	switch(OSInfo.crossArch()) {
+	            	switch(osInfo.crossArch()) {
 	            	case arm:
 	            		return "lib" + name + "_armeabi-v7a.so";
 	            	case arm64:
@@ -1318,21 +1321,21 @@ public class CreateNativeDeploymentTask extends Task {
             case IOS:
                 return "lib" + name + ".a";
 			default:
-				if(OSInfo.crossOS().isUnixLike())
+				if(osInfo.crossOS().isUnixLike())
 	                return "lib" + name + ".so";
 				break;
             }
         } else {
-            switch(OSInfo.crossOS()) {
+            switch(osInfo.crossOS()) {
             case Windows:
                 return name + ".dll";
             case MacOS:
                 return "lib" + name + ".dylib";
             case Android:
-            	if(OSInfo.crossArch()==null) {
+            	if(osInfo.crossArch()==null) {
             		return "lib" + name + "_x86_64.so";
             	}else {
-	            	switch(OSInfo.crossArch()) {
+	            	switch(osInfo.crossArch()) {
 	            	case arm:
 	            		return "lib" + name + "_armeabi-v7a.so";
 	            	case arm64:
@@ -1349,7 +1352,7 @@ public class CreateNativeDeploymentTask extends Task {
             case IOS:
                 return "lib" + name + ".a";
 			default:
-				if(OSInfo.crossOS().isUnixLike())
+				if(osInfo.crossOS().isUnixLike())
 	                return "lib" + name + ".so";
 				break;
             }
@@ -1357,7 +1360,7 @@ public class CreateNativeDeploymentTask extends Task {
         throw new BuildException("unhandled case...");
     }
     
-    public static String formatQtJambiName(String name, boolean debug, int qtMajorVersion, int qtMinorVersion, int qtPatchlevelVersion) {
+    public static String formatQtJambiName(OSInfo osInfo, String name, boolean debug, int qtMajorVersion, int qtMinorVersion, int qtPatchlevelVersion) {
         String tmpVersionString = (qtMajorVersion>=0) ? ""+qtMajorVersion : "";
     	String tmpDotVersionString;
         if(qtMajorVersion>=0){
@@ -1375,16 +1378,16 @@ public class CreateNativeDeploymentTask extends Task {
         }
         if(debug) {
             String tmpDebugSuffix = "_debug";
-            switch(OSInfo.crossOS()) {
+            switch(osInfo.crossOS()) {
             case Windows:
         		return name + "d" + tmpVersionString + ".dll";
             case MacOS:
         		return "lib" + name + tmpDebugSuffix + tmpDotVersionString + ".jnilib";
             case Android:
-            	if(OSInfo.crossArch()==null) {
+            	if(osInfo.crossArch()==null) {
             		return "lib" + name + tmpDebugSuffix + "_x86_64.so";
             	}else {
-	            	switch(OSInfo.crossArch()) {
+	            	switch(osInfo.crossArch()) {
 	            	case arm:
 	            		return "lib" + name + tmpDebugSuffix + "_armeabi-v7a.so";
 	            	case arm64:
@@ -1401,21 +1404,21 @@ public class CreateNativeDeploymentTask extends Task {
                 return "lib" + name + tmpDebugSuffix + ".so";
             case IOS: return "lib" + name + tmpDebugSuffix + ".a";
 			default:
-				if(OSInfo.crossOS().isUnixLike())
+				if(osInfo.crossOS().isUnixLike())
 	                return "lib" + name + tmpDebugSuffix + ".so" + tmpDotVersionString;
 				break;
             }
         } else {
-            switch(OSInfo.crossOS()) {
+            switch(osInfo.crossOS()) {
             case Windows:
         		return name + tmpVersionString + ".dll";
             case MacOS:
         		return "lib" + name + tmpDotVersionString + ".jnilib";
             case Android:
-            	if(OSInfo.crossArch()==null) {
+            	if(osInfo.crossArch()==null) {
             		return "lib" + name + "_x86_64.so";
             	}else {
-	            	switch(OSInfo.crossArch()) {
+	            	switch(osInfo.crossArch()) {
 	            	case arm:
 	            		return "lib" + name + "_armeabi-v7a.so";
 	            	case arm64:
@@ -1432,7 +1435,7 @@ public class CreateNativeDeploymentTask extends Task {
                 return "lib" + name + ".so";
             case IOS: return "lib" + name + ".a";
 			default:
-				if(OSInfo.crossOS().isUnixLike())
+				if(osInfo.crossOS().isUnixLike())
 	                return "lib" + name + ".so" + tmpDotVersionString;
 				break;
             }
@@ -1440,17 +1443,17 @@ public class CreateNativeDeploymentTask extends Task {
         throw new BuildException("unhandled case...");
     }
 
-    public static String formatQtJambiPluginName(String name, boolean debug, String versionString) {
+    public static String formatQtJambiPluginName(OSInfo osInfo, String name, boolean debug, String versionString) {
     	if(debug) {
-            switch(OSInfo.crossOS()) {
+            switch(osInfo.crossOS()) {
             case Windows: return name + "d.dll";
             case MacOS:
                 return "lib" + name + "_debug.dylib";
             case Android:
-            	if(OSInfo.crossArch()==null) {
+            	if(osInfo.crossArch()==null) {
             		return "lib" + name + "_x86_64.so";
             	}else {
-	            	switch(OSInfo.crossArch()) {
+	            	switch(osInfo.crossArch()) {
 	            	case arm:
 	            		return "lib" + name + "_armeabi-v7a.so";
 	            	case arm64:
@@ -1467,21 +1470,21 @@ public class CreateNativeDeploymentTask extends Task {
             case IOS:
                 return "lib" + name + "_debug.a";
 			default:
-				if(OSInfo.crossOS().isUnixLike())
+				if(osInfo.crossOS().isUnixLike())
 	                return "lib" + name + "_debug.so";
 				break;
             }
         } else {
-            switch(OSInfo.crossOS()) {
+            switch(osInfo.crossOS()) {
             case Windows:
                 return name + ".dll";
             case MacOS:
                 return "lib" + name + ".dylib";
             case Android:
-            	if(OSInfo.crossArch()==null) {
+            	if(osInfo.crossArch()==null) {
             		return "lib" + name + "_x86_64.so";
             	}else {
-	            	switch(OSInfo.crossArch()) {
+	            	switch(osInfo.crossArch()) {
 	            	case arm:
 	            		return "lib" + name + "_armeabi-v7a.so";
 	            	case arm64:
@@ -1498,7 +1501,7 @@ public class CreateNativeDeploymentTask extends Task {
             case IOS:
                 return "lib" + name + ".a";
 			default:
-				if(OSInfo.crossOS().isUnixLike())
+				if(osInfo.crossOS().isUnixLike())
 	                return "lib" + name + ".so";
 				break;
             }
@@ -1506,20 +1509,20 @@ public class CreateNativeDeploymentTask extends Task {
         throw new BuildException("unhandled case...");
     }
 
-    public static String formatQtJambiQmlPluginName(String name, boolean debug, String versionString) {
+    public static String formatQtJambiQmlPluginName(OSInfo osInfo, String name, boolean debug, String versionString) {
 //        String tmpDotVersionString = (versionString != null && versionString.length() > 0) ? "." + versionString : "";
          if(debug) {
             String tmpDebugSuffix = "_debug";
-             switch(OSInfo.crossOS()) {
+             switch(osInfo.crossOS()) {
              case Windows:
         		 return name + "d.dll";
              case MacOS:
                 return "lib" + name + tmpDebugSuffix + ".dylib";
              case Android:
-             	if(OSInfo.crossArch()==null) {
+             	if(osInfo.crossArch()==null) {
             		return "lib" + name + "_x86_64.so";
             	}else {
-	             	switch(OSInfo.crossArch()) {
+	             	switch(osInfo.crossArch()) {
 	             	case arm:
 	             		return "lib" + name + "_armeabi-v7a.so";
 	             	case arm64:
@@ -1535,21 +1538,21 @@ public class CreateNativeDeploymentTask extends Task {
             	}
              case IOS: return "lib" + name + tmpDebugSuffix + ".a";
  			default:
-				if(OSInfo.crossOS().isUnixLike())
+				if(osInfo.crossOS().isUnixLike())
 					return "lib" + name + tmpDebugSuffix + ".so";
 				break;
              }
          } else {
-             switch(OSInfo.crossOS()) {
+             switch(osInfo.crossOS()) {
              case Windows:
         		 return name + ".dll";
              case MacOS:
                 return "lib" + name + ".dylib";
              case Android:
-             	if(OSInfo.crossArch()==null) {
+             	if(osInfo.crossArch()==null) {
             		return "lib" + name + "_x86_64.so";
             	}else {
-	             	switch(OSInfo.crossArch()) {
+	             	switch(osInfo.crossArch()) {
 	             	case arm:
 	             		return "lib" + name + "_armeabi-v7a.so";
 	             	case arm64:
@@ -1565,7 +1568,7 @@ public class CreateNativeDeploymentTask extends Task {
             	}
              case IOS: return "lib" + name + ".a";
  			default:
-				if(OSInfo.crossOS().isUnixLike())
+				if(osInfo.crossOS().isUnixLike())
 					return "lib" + name + ".so";
 				break;
              }
@@ -1583,5 +1586,11 @@ public class CreateNativeDeploymentTask extends Task {
 	}
 	public void setJarFile(String jarFile) {
 		this.jarFile = jarFile;
+	}
+	public String getTempDirectory() {
+		return tempDirectory;
+	}
+	public void setTempDirectory(String tempDirectory) {
+		this.tempDirectory = tempDirectory;
 	}
 }

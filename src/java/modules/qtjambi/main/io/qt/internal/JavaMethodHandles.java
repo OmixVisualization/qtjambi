@@ -7,11 +7,17 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Executable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -27,10 +33,66 @@ import io.qt.internal.LibraryUtility.OperatingSystem;
  * @hidden
  */
 final class JavaMethodHandles implements ReflectionUtility.MethodInvocationHandler{
-	interface ProxyFactory{
-		public <T> T asInterfaceInstance(final Class<T> intfc, final MethodHandle target);
+	
+	static class MethodInfo{
+		MethodInfo(Method slot, MethodHandle slotHandle) {
+			this.slot = Objects.requireNonNull(slot);
+			if(slotHandle==null) {
+	        	try {
+	        		slotHandle = ReflectionUtility.getMethodHandle(slot);
+				} catch (Exception e) {
+				}
+	        }
+			this.slotHandle = slotHandle;
+		}
+		final Method slot;
+		final MethodHandle slotHandle;
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + slot.getDeclaringClass().hashCode();
+			result = prime * result + slot.getName().hashCode();
+			if(slotHandle != null) {
+				result = prime * result + slotHandle.type().hashCode();
+			}else {
+				result = prime * result + Arrays.hashCode(slot.getParameterTypes());
+			}
+			return result;
+		}
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			MethodInfo other = (MethodInfo) obj;
+			if (!slot.equals(other.slot))
+				return false;
+			return true;
+		}
 	}
-	public final ProxyFactory resolvedProxyFactory;
+	
+	static class LambdaInfo extends MethodInfo{
+
+		LambdaInfo(Method slot, MethodHandle slotHandle, int lambdaArgsCount) {
+			super(slot, slotHandle);
+			this.lambdaArgsCount = lambdaArgsCount;
+		}
+		
+		final int lambdaArgsCount;
+		
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = super.hashCode();
+			result = prime * result + lambdaArgsCount;
+			return result;
+		}
+	}
+	
 	interface MetaFactory{
 		public CallSite metafactory(MethodHandles.Lookup caller,
                 String interfaceMethodName,
@@ -39,41 +101,37 @@ final class JavaMethodHandles implements ReflectionUtility.MethodInvocationHandl
                 MethodHandle implementation,
                 MethodType dynamicMethodType) throws LambdaConversionException;
 	}
-	public final MetaFactory resolvedMetaFactory;
+	private final MetaFactory resolvedMetaFactory;
 	interface AccessClass{
 		public Class<?> accessClass(MethodHandles.Lookup lookup, Class<?> targetClass) throws IllegalAccessException;
 	}
-	public AccessClass lookupAccessClass;
+	private final AccessClass lookupAccessClass;
 
 	JavaMethodHandles() {
-		ProxyFactory _resolvedProxyFactory = null;
-//		#### MethodHandleProxies are slower than lambdas ####
-//		try {
-//			_resolvedProxyFactory = java.lang.invoke.MethodHandleProxies::asInterfaceInstance;
-//		}catch(Throwable t) {}
-		resolvedProxyFactory = _resolvedProxyFactory;
 		MetaFactory _resolvedMetaFactory = null;
-		try {
-			if(LibraryUtility.operatingSystem==OperatingSystem.Android) {
-				java.lang.invoke.LambdaMetafactory.class.getMethod("metafactory",   MethodHandles.Lookup.class,
-																                    String.class,
-																                    MethodType.class,
-																                    MethodType.class,
-																                    MethodHandle.class,
-																                    MethodType.class);
-			}
-			_resolvedMetaFactory = java.lang.invoke.LambdaMetafactory::metafactory;
-		}catch(Throwable t) {}
-		resolvedMetaFactory = _resolvedMetaFactory;
 		AccessClass _lookupAccessClass = null;
-		try {
-			if(LibraryUtility.operatingSystem==OperatingSystem.Android) {
-				MethodHandles.Lookup.class.getMethod("accessClass", Class.class);
+		if(!Boolean.getBoolean("io.qt.internal.disable-metalambdas")) {
+			try {
+				if(LibraryUtility.operatingSystem==OperatingSystem.Android) {
+					java.lang.invoke.LambdaMetafactory.class.getMethod("metafactory",   MethodHandles.Lookup.class,
+																	                    String.class,
+																	                    MethodType.class,
+																	                    MethodType.class,
+																	                    MethodHandle.class,
+																	                    MethodType.class);
+				}
+				_resolvedMetaFactory = java.lang.invoke.LambdaMetafactory::metafactory;
+			}catch(Throwable t) {}
+			try {
+				if(LibraryUtility.operatingSystem==OperatingSystem.Android) {
+					MethodHandles.Lookup.class.getMethod("accessClass", Class.class);
+				}
+				_lookupAccessClass = MethodHandles.Lookup::accessClass;
+			}catch(Throwable e) {
+				_lookupAccessClass = (_lookup,_cls)->_cls;
 			}
-			_lookupAccessClass = MethodHandles.Lookup::accessClass;
-		}catch(Throwable e) {
-			_lookupAccessClass = (_lookup,_cls)->_cls;
 		}
+		resolvedMetaFactory = _resolvedMetaFactory;
 		lookupAccessClass = _lookupAccessClass;
 	}
 	
@@ -81,30 +139,77 @@ final class JavaMethodHandles implements ReflectionUtility.MethodInvocationHandl
 		mt = mt.wrap().changeReturnType(void.class);
 		return mt;
 	}
+	
+	static class ExecutableHash<Member extends Executable>{
+		ExecutableHash(Member member) {
+			this.member = member;
+		}
 
+		final Member member;
+		
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			if(member != null) {
+				result = prime * result + member.getDeclaringClass().hashCode();
+				result = prime * result + Arrays.hashCode(member.getParameterTypes());
+			}
+			return result;
+		}
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			ExecutableHash<?> other = (ExecutableHash<?>) obj;
+			if (member == null) {
+				if (other.member != null)
+					return false;
+			} else if (!member.equals(other.member))
+				return false;
+			return true;
+		}
+	}
+	
+	static class MethodHash extends ExecutableHash<Method>{
+		MethodHash(Method method) {
+			super(method);
+		}
+		
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = super.hashCode();
+			if(member != null) {
+				result = prime * result + member.getName().hashCode();
+			}
+			return result;
+		}
+	}
+	
+	/**
+	 * This method needs to be called in cached context only!
+	 */
 	@Override
-	@SuppressWarnings("unchecked")
 	public <A,B> Function<A,B> functionFromMethod(Method method){
 		if(method==null)
 			return null;
 		try {
 			Lookup lookup = ReflectionUtility.privateLookup(method.getDeclaringClass());
 			MethodHandle handle = lookup.unreflect(method);
-			if(resolvedMetaFactory!=null) {
+			if(resolvedMetaFactory!=null && !method.getDeclaringClass().isSynthetic()) {
 				try {
-					CallSite site = resolvedMetaFactory.metafactory(ReflectionUtility.privateLookup(method.getDeclaringClass()),
+					CallSite site = resolvedMetaFactory.metafactory(lookup,
 							"apply",
 			                MethodType.methodType(Function.class),
 			                MethodType.methodType(Object.class, Object.class),
 			                handle,
-			                wrap(handle.type()));
+			                handle.type().wrap());
 					return (Function<A,B>)site.getTarget().invokeExact();
-				} catch (Throwable e) {
-				}
-			}
-			if(resolvedProxyFactory!=null) {
-				try {
-					return resolvedProxyFactory.asInterfaceInstance(Function.class, handle);
 				} catch (Throwable e) {
 				}
 			}
@@ -123,20 +228,31 @@ final class JavaMethodHandles implements ReflectionUtility.MethodInvocationHandl
 	}
 	
 	@Override
-	@SuppressWarnings("unchecked")
 	public BiConsumer<Object,QDataStream> streamIO(Method method){
+		java.lang.invoke.MethodHandles.Lookup lookup = ReflectionUtility.privateLookup(method.getDeclaringClass());
 		try {
-			Lookup lookup = ReflectionUtility.privateLookup(method.getDeclaringClass());
-			MethodHandle handle = lookup.unreflect(method);
-			if(resolvedProxyFactory!=null) {
-				try {
-					return resolvedProxyFactory.asInterfaceInstance(BiConsumer.class, handle);
-				} catch (Throwable e) {
+			MethodHandle slotHandle = lookup.unreflect(method);
+			try {
+				if(resolvedMetaFactory!=null && !method.getDeclaringClass().isSynthetic()) {
+					try {
+						CallSite site = resolvedMetaFactory.metafactory(lookup,
+								"accept",
+				                MethodType.methodType(BiConsumer.class),
+				                MethodType.methodType(void.class, Object.class, Object.class),
+				                slotHandle,
+				                wrap(slotHandle.type()));
+						return (BiConsumer<Object,QDataStream>)site.getTarget().invokeExact();
+					} catch (Throwable e) {
+					}
 				}
+			} catch (RuntimeException | Error e) {
+				throw e;
+			} catch (Throwable e) {
+				throw new RuntimeException(e);
 			}
 			return (o,s)->{
 				try {
-					handle.invoke(o, s);
+					slotHandle.invoke(o, s);
 				} catch (RuntimeException | Error e) {
 					throw e;
 				}catch(Throwable t) {
@@ -148,40 +264,39 @@ final class JavaMethodHandles implements ReflectionUtility.MethodInvocationHandl
 		}
 	}
 	
+	private final Map<ExecutableHash<Constructor<?>>,Function<?,?>> genericFactories = Collections.synchronizedMap(new HashMap<>());
+	
 	@Override
 	@SuppressWarnings("unchecked")
 	public <T> Function<Object[],T> getFactory(Constructor<T> constructor) {
 		if(constructor==null)
 			return null;
-		try {
-			java.lang.invoke.MethodHandles.Lookup lookup = ReflectionUtility.privateLookup(constructor.getDeclaringClass());
-			MethodHandle handle = lookup.unreflectConstructor(constructor);
-			if(resolvedProxyFactory!=null) {
-				try {
-					MethodHandle spreader = handle.asSpreader(Object[].class, constructor.getParameterCount());
-					return resolvedProxyFactory.asInterfaceInstance(Function.class, spreader);
-				} catch (Throwable e) {
-				}
-			}
-			return args->{
-				try {
-					if(args!=null) {
-						return (T)handle.invokeWithArguments(args);
-					}else {
-						return (T)handle.invoke();
+		return (Function<Object[],T>)genericFactories.computeIfAbsent(new ExecutableHash<>(constructor), info->{
+			try {
+				java.lang.invoke.MethodHandles.Lookup lookup = ReflectionUtility.privateLookup(info.member.getDeclaringClass());
+				MethodHandle handle = lookup.unreflectConstructor(info.member);
+				return (Function<Object[],?>)args->{
+					try {
+						if(args!=null) {
+							return handle.invokeWithArguments(args);
+						}else {
+							return handle.invoke();
+						}
+					} catch (RuntimeException | Error e) {
+						throw e;
+					}catch(Throwable t) {
+						throw new RuntimeException(t);
 					}
-				} catch (RuntimeException | Error e) {
-					throw e;
-				}catch(Throwable t) {
-					throw new RuntimeException(t);
-				}
-			};
-		} catch (RuntimeException | Error e) {
-			throw e;
-		} catch (Throwable e) {
-			throw new RuntimeException(e);
-		}
+				};
+			} catch (RuntimeException | Error e) {
+				throw e;
+			} catch (Throwable e) {
+				throw new RuntimeException(e);
+			}
+		});
 	}
+	
+	private final Map<ExecutableHash<Constructor<?>>,Object> factories = Collections.synchronizedMap(new HashMap<>());
 	
 	@Override
 	@SuppressWarnings("unchecked")
@@ -190,41 +305,37 @@ final class JavaMethodHandles implements ReflectionUtility.MethodInvocationHandl
 			return null;
 		if(constructor.getParameterCount()!=0)
 			throw new RuntimeException("Parameter count mismatch");
-		try {
-			java.lang.invoke.MethodHandles.Lookup lookup = ReflectionUtility.privateLookup(constructor.getDeclaringClass());
-			MethodHandle handle = lookup.unreflectConstructor(constructor);
-			if(resolvedMetaFactory!=null) {
-				try {
-					CallSite site = resolvedMetaFactory.metafactory(ReflectionUtility.privateLookup(constructor.getDeclaringClass()),
-							"get",
-			                MethodType.methodType(Supplier.class),
-			                MethodType.methodType(Object.class),
-			                handle,
-			                wrap(handle.type()));
-					return (Supplier<T>)site.getTarget().invokeExact();
-				} catch (Throwable e) {
+		return (Supplier<T>)factories.computeIfAbsent(new ExecutableHash<>(constructor), info->{
+			try {
+				java.lang.invoke.MethodHandles.Lookup lookup = ReflectionUtility.privateLookup(info.member.getDeclaringClass());
+				MethodHandle handle = lookup.unreflectConstructor(info.member);
+				if(resolvedMetaFactory!=null && !info.member.getDeclaringClass().isSynthetic()) {
+					try {
+						CallSite site = resolvedMetaFactory.metafactory(lookup,
+								"get",
+				                MethodType.methodType(Supplier.class),
+				                MethodType.methodType(Object.class),
+				                handle,
+				                wrap(handle.type()));
+						return site.getTarget().invokeExact();
+					} catch (Throwable e) {
+					}
 				}
+				return (Supplier<?>)()->{
+					try {
+						return handle.invoke();
+					} catch (RuntimeException | Error e) {
+						throw e;
+					}catch(Throwable t) {
+						throw new RuntimeException(t);
+					}
+				};
+			} catch (RuntimeException | Error e) {
+				throw e;
+			} catch (Throwable e) {
+				throw new RuntimeException(e);
 			}
-			if(resolvedProxyFactory!=null) {
-				try {
-					return resolvedProxyFactory.asInterfaceInstance(Supplier.class, handle);
-				} catch (Throwable e) {
-				}
-			}
-			return ()->{
-				try {
-					return (T)handle.invoke();
-				} catch (RuntimeException | Error e) {
-					throw e;
-				}catch(Throwable t) {
-					throw new RuntimeException(t);
-				}
-			};
-		} catch (RuntimeException | Error e) {
-			throw e;
-		} catch (Throwable e) {
-			throw new RuntimeException(e);
-		}
+		});
 	}
 	
 	@Override
@@ -234,41 +345,37 @@ final class JavaMethodHandles implements ReflectionUtility.MethodInvocationHandl
 			return null;
 		if(constructor.getParameterCount()!=1)
 			throw new RuntimeException("Parameter count mismatch");
-		try {
-			java.lang.invoke.MethodHandles.Lookup lookup = ReflectionUtility.privateLookup(constructor.getDeclaringClass());
-			MethodHandle handle = lookup.unreflectConstructor(constructor);
-			if(resolvedMetaFactory!=null) {
-				try {
-					CallSite site = resolvedMetaFactory.metafactory(ReflectionUtility.privateLookup(constructor.getDeclaringClass()),
-							"apply",
-			                MethodType.methodType(Function.class),
-			                MethodType.methodType(Object.class, Object.class),
-			                handle,
-			                wrap(handle.type()));
-					return (Function<A,T>)site.getTarget().invokeExact();
-				} catch (Throwable e) {
+		return (Function<A,T>)factories.computeIfAbsent(new ExecutableHash<>(constructor), info->{
+			try {
+				java.lang.invoke.MethodHandles.Lookup lookup = ReflectionUtility.privateLookup(info.member.getDeclaringClass());
+				MethodHandle handle = lookup.unreflectConstructor(info.member);
+				if(resolvedMetaFactory!=null && !info.member.getDeclaringClass().isSynthetic()) {
+					try {
+						CallSite site = resolvedMetaFactory.metafactory(lookup,
+								"apply",
+				                MethodType.methodType(Function.class),
+				                MethodType.methodType(Object.class, Object.class),
+				                handle,
+				                wrap(handle.type()));
+						return site.getTarget().invokeExact();
+					} catch (Throwable e) {
+					}
 				}
+				return (Function<?,?>)a->{
+					try {
+						return handle.invoke(a);
+					} catch (RuntimeException | Error e) {
+						throw e;
+					}catch(Throwable t) {
+						throw new RuntimeException(t);
+					}
+				};
+			} catch (RuntimeException | Error e) {
+				throw e;
+			} catch (Throwable e) {
+				throw new RuntimeException(e);
 			}
-			if(resolvedProxyFactory!=null) {
-				try {
-					return resolvedProxyFactory.asInterfaceInstance(Function.class, handle);
-				} catch (Throwable e) {
-				}
-			}
-			return a->{
-				try {
-					return (T)handle.invoke(a);
-				} catch (RuntimeException | Error e) {
-					throw e;
-				}catch(Throwable t) {
-					throw new RuntimeException(t);
-				}
-			};
-		} catch (RuntimeException | Error e) {
-			throw e;
-		} catch (Throwable e) {
-			throw new RuntimeException(e);
-		}
+		});
 	}
 	
 	@Override
@@ -278,41 +385,37 @@ final class JavaMethodHandles implements ReflectionUtility.MethodInvocationHandl
 			return null;
 		if(constructor.getParameterCount()!=2)
 			throw new RuntimeException("Parameter count mismatch");
-		try {
-			java.lang.invoke.MethodHandles.Lookup lookup = ReflectionUtility.privateLookup(constructor.getDeclaringClass());
-			MethodHandle handle = lookup.unreflectConstructor(constructor);
-			if(resolvedMetaFactory!=null) {
-				try {
-					CallSite site = resolvedMetaFactory.metafactory(ReflectionUtility.privateLookup(constructor.getDeclaringClass()),
-							"apply",
-			                MethodType.methodType(BiFunction.class),
-			                MethodType.methodType(Object.class, Object.class, Object.class),
-			                handle,
-			                wrap(handle.type()));
-					return (BiFunction<A,B,T>)site.getTarget().invokeExact();
-				} catch (Throwable e) {
+		return (BiFunction<A,B,T>)factories.computeIfAbsent(new ExecutableHash<>(constructor), info->{
+			try {
+				java.lang.invoke.MethodHandles.Lookup lookup = ReflectionUtility.privateLookup(info.member.getDeclaringClass());
+				MethodHandle handle = lookup.unreflectConstructor(info.member);
+				if(resolvedMetaFactory!=null && !info.member.getDeclaringClass().isSynthetic()) {
+					try {
+						CallSite site = resolvedMetaFactory.metafactory(lookup,
+								"apply",
+				                MethodType.methodType(BiFunction.class),
+				                MethodType.methodType(Object.class, Object.class, Object.class),
+				                handle,
+				                wrap(handle.type()));
+						return site.getTarget().invokeExact();
+					} catch (Throwable e) {
+					}
 				}
+				return (BiFunction<?,?,?>)(a,b)->{
+					try {
+						return handle.invoke(a,b);
+					} catch (RuntimeException | Error e) {
+						throw e;
+					}catch(Throwable t) {
+						throw new RuntimeException(t);
+					}
+				};
+			} catch (RuntimeException | Error e) {
+				throw e;
+			} catch (Throwable e) {
+				throw new RuntimeException(e);
 			}
-			if(resolvedProxyFactory!=null) {
-				try {
-					return resolvedProxyFactory.asInterfaceInstance(BiFunction.class, handle);
-				} catch (Throwable e) {
-				}
-			}
-			return (a,b)->{
-				try {
-					return (T)handle.invoke(a,b);
-				} catch (RuntimeException | Error e) {
-					throw e;
-				}catch(Throwable t) {
-					throw new RuntimeException(t);
-				}
-			};
-		} catch (RuntimeException | Error e) {
-			throw e;
-		} catch (Throwable e) {
-			throw new RuntimeException(e);
-		}
+		});
 	}
 	
 	@Override
@@ -322,41 +425,38 @@ final class JavaMethodHandles implements ReflectionUtility.MethodInvocationHandl
 			return null;
 		if(constructor.getParameterCount()!=3)
 			throw new RuntimeException("Parameter count mismatch");
-		try {
-			java.lang.invoke.MethodHandles.Lookup lookup = ReflectionUtility.privateLookup(constructor.getDeclaringClass());
-			MethodHandle handle = lookup.unreflectConstructor(constructor);
-			if(resolvedMetaFactory!=null) {
-				try {
-					CallSite site = resolvedMetaFactory.metafactory(ReflectionUtility.privateLookup(constructor.getDeclaringClass()),
-							"invoke",
-			                MethodType.methodType(QMetaObject.Method3.class),
-			                MethodType.methodType(Object.class, Object.class, Object.class, Object.class),
-			                handle,
-			                wrap(handle.type()));
-					return (QMetaObject.Method3<A,B,C,T>)site.getTarget().invokeExact();
-				} catch (Throwable e) {
+		return (QMetaObject.Method3<A,B,C,T>)factories.computeIfAbsent(new ExecutableHash<>(constructor), info->{
+			try {
+				java.lang.invoke.MethodHandles.Lookup lookup = ReflectionUtility.privateLookup(info.member.getDeclaringClass());
+				MethodHandle handle = lookup.unreflectConstructor(info.member);
+				if(resolvedMetaFactory!=null && !info.member.getDeclaringClass().isSynthetic()) {
+					try {
+						lookupAccessClass.accessClass(lookup, QMetaObject.class);
+						CallSite site = resolvedMetaFactory.metafactory(lookup,
+								"invoke",
+				                MethodType.methodType(QMetaObject.Method3.class),
+				                MethodType.methodType(Object.class, Object.class, Object.class, Object.class),
+				                handle,
+				                wrap(handle.type()));
+						return site.getTarget().invokeExact();
+					} catch (Throwable e) {
+					}
 				}
+				return (QMetaObject.Method3<?,?,?,?>)(a,b,c)->{
+					try {
+						return handle.invoke(a,b,c);
+					} catch (RuntimeException | Error e) {
+						throw e;
+					}catch(Throwable t) {
+						throw new RuntimeException(t);
+					}
+				};
+			} catch (RuntimeException | Error e) {
+				throw e;
+			} catch (Throwable e) {
+				throw new RuntimeException(e);
 			}
-			if(resolvedProxyFactory!=null) {
-				try {
-					return resolvedProxyFactory.asInterfaceInstance(QMetaObject.Method3.class, handle);
-				} catch (Throwable e) {
-				}
-			}
-			return (a,b,c)->{
-				try {
-					return (T)handle.invoke(a,b,c);
-				} catch (RuntimeException | Error e) {
-					throw e;
-				}catch(Throwable t) {
-					throw new RuntimeException(t);
-				}
-			};
-		} catch (RuntimeException | Error e) {
-			throw e;
-		} catch (Throwable e) {
-			throw new RuntimeException(e);
-		}
+		});
 	}
 	
 	@Override
@@ -366,41 +466,38 @@ final class JavaMethodHandles implements ReflectionUtility.MethodInvocationHandl
 			return null;
 		if(constructor.getParameterCount()!=4)
 			throw new RuntimeException("Parameter count mismatch");
-		try {
-			java.lang.invoke.MethodHandles.Lookup lookup = ReflectionUtility.privateLookup(constructor.getDeclaringClass());
-			MethodHandle handle = lookup.unreflectConstructor(constructor);
-			if(resolvedMetaFactory!=null) {
-				try {
-					CallSite site = resolvedMetaFactory.metafactory(ReflectionUtility.privateLookup(constructor.getDeclaringClass()),
-							"invoke",
-			                MethodType.methodType(QMetaObject.Method4.class),
-			                MethodType.methodType(Object.class, Object.class, Object.class, Object.class, Object.class),
-			                handle,
-			                wrap(handle.type()));
-					return (QMetaObject.Method4<A,B,C,D,T>)site.getTarget().invokeExact();
-				} catch (Throwable e) {
+		return (QMetaObject.Method4<A,B,C,D,T>)factories.computeIfAbsent(new ExecutableHash<>(constructor), info->{
+			try {
+				java.lang.invoke.MethodHandles.Lookup lookup = ReflectionUtility.privateLookup(info.member.getDeclaringClass());
+				MethodHandle handle = lookup.unreflectConstructor(info.member);
+				if(resolvedMetaFactory!=null && !info.member.getDeclaringClass().isSynthetic()) {
+					try {
+						lookupAccessClass.accessClass(lookup, QMetaObject.class);
+						CallSite site = resolvedMetaFactory.metafactory(lookup,
+								"invoke",
+				                MethodType.methodType(QMetaObject.Method4.class),
+				                MethodType.methodType(Object.class, Object.class, Object.class, Object.class, Object.class),
+				                handle,
+				                wrap(handle.type()));
+						return site.getTarget().invokeExact();
+					} catch (Throwable e) {
+					}
 				}
+				return (QMetaObject.Method4<?,?,?,?,?>)(a,b,c,d)->{
+					try {
+						return handle.invoke(a,b,c,d);
+					} catch (RuntimeException | Error e) {
+						throw e;
+					}catch(Throwable t) {
+						throw new RuntimeException(t);
+					}
+				};
+			} catch (RuntimeException | Error e) {
+				throw e;
+			} catch (Throwable e) {
+				throw new RuntimeException(e);
 			}
-			if(resolvedProxyFactory!=null) {
-				try {
-					return resolvedProxyFactory.asInterfaceInstance(QMetaObject.Method4.class, handle);
-				} catch (Throwable e) {
-				}
-			}
-			return (a,b,c,d)->{
-				try {
-					return (T)handle.invoke(a,b,c,d);
-				} catch (RuntimeException | Error e) {
-					throw e;
-				}catch(Throwable t) {
-					throw new RuntimeException(t);
-				}
-			};
-		} catch (RuntimeException | Error e) {
-			throw e;
-		} catch (Throwable e) {
-			throw new RuntimeException(e);
-		}
+		});
 	}
 	
 	@Override
@@ -410,41 +507,38 @@ final class JavaMethodHandles implements ReflectionUtility.MethodInvocationHandl
 			return null;
 		if(constructor.getParameterCount()!=5)
 			throw new RuntimeException("Parameter count mismatch");
-		try {
-			java.lang.invoke.MethodHandles.Lookup lookup = ReflectionUtility.privateLookup(constructor.getDeclaringClass());
-			MethodHandle handle = lookup.unreflectConstructor(constructor);
-			if(resolvedMetaFactory!=null) {
-				try {
-					CallSite site = resolvedMetaFactory.metafactory(ReflectionUtility.privateLookup(constructor.getDeclaringClass()),
-							"invoke",
-			                MethodType.methodType(QMetaObject.Method5.class),
-			                MethodType.methodType(Object.class, Object.class, Object.class, Object.class, Object.class, Object.class),
-			                handle,
-			                wrap(handle.type()));
-					return (QMetaObject.Method5<A,B,C,D,E,T>)site.getTarget().invokeExact();
-				} catch (Throwable e) {
+		return (QMetaObject.Method5<A,B,C,D,E,T>)factories.computeIfAbsent(new ExecutableHash<>(constructor), info->{
+			try {
+				java.lang.invoke.MethodHandles.Lookup lookup = ReflectionUtility.privateLookup(info.member.getDeclaringClass());
+				MethodHandle handle = lookup.unreflectConstructor(info.member);
+				if(resolvedMetaFactory!=null && !info.member.getDeclaringClass().isSynthetic()) {
+					try {
+						lookupAccessClass.accessClass(lookup, QMetaObject.class);
+						CallSite site = resolvedMetaFactory.metafactory(lookup,
+								"invoke",
+				                MethodType.methodType(QMetaObject.Method5.class),
+				                MethodType.methodType(Object.class, Object.class, Object.class, Object.class, Object.class, Object.class),
+				                handle,
+				                wrap(handle.type()));
+						return site.getTarget().invokeExact();
+					} catch (Throwable e) {
+					}
 				}
+				return (QMetaObject.Method5<?,?,?,?,?,?>)(a,b,c,d,e)->{
+					try {
+						return handle.invoke(a,b,c,d,e);
+					} catch (RuntimeException | Error t) {
+						throw t;
+					}catch(Throwable t) {
+						throw new RuntimeException(t);
+					}
+				};
+			} catch (RuntimeException | Error e) {
+				throw e;
+			} catch (Throwable e) {
+				throw new RuntimeException(e);
 			}
-			if(resolvedProxyFactory!=null) {
-				try {
-					return resolvedProxyFactory.asInterfaceInstance(QMetaObject.Method5.class, handle);
-				} catch (Throwable e) {
-				}
-			}
-			return (a,b,c,d,e)->{
-				try {
-					return (T)handle.invoke(a,b,c,d,e);
-				} catch (RuntimeException | Error t) {
-					throw t;
-				}catch(Throwable t) {
-					throw new RuntimeException(t);
-				}
-			};
-		} catch (RuntimeException | Error e) {
-			throw e;
-		} catch (Throwable e) {
-			throw new RuntimeException(e);
-		}
+		});
 	}
 	
 	@Override
@@ -523,390 +617,388 @@ final class JavaMethodHandles implements ReflectionUtility.MethodInvocationHandl
 		}
 	}
 	
-	@Override
-	public SignalUtility.SlotInvoker getSlotInvoker(Method slot, MethodHandle _slotHandle){
-		if(_slotHandle==null) {
-        	try {
-        		_slotHandle = ReflectionUtility.getMethodHandle(slot);
-			} catch (Exception e) {
-			}
-        }
-		if(_slotHandle!=null) {
-			if(resolvedMetaFactory!=null) {
-				do try {
-					CallSite site;
-					List<Class<?>> parameters = new ArrayList<>();
-					for(int i=0; i<_slotHandle.type().parameterCount(); ++i) {
-						parameters.add(Object.class);
-					}
-					MethodType invokeType = MethodType.methodType(void.class, parameters);
-					switch(_slotHandle.type().parameterCount()) {
-					case 1:
-						site = resolvedMetaFactory.metafactory(ReflectionUtility.privateLookup(slot.getDeclaringClass()),
-								"accept",
-				                MethodType.methodType(Consumer.class),
-				                invokeType,
-				                _slotHandle,
-				                wrap(_slotHandle.type()));
-						Consumer<Object> slot1 = (Consumer<Object>)site.getTarget().invokeExact();
-						return (instance, _arguments)->slot1.accept(instance);
-					case 2:
-						site = resolvedMetaFactory.metafactory(ReflectionUtility.privateLookup(slot.getDeclaringClass()),
-								"accept",
-				                MethodType.methodType(BiConsumer.class),
-				                invokeType,
-				                _slotHandle,
-				                wrap(_slotHandle.type()));
-						BiConsumer<Object,Object> slot2 = (BiConsumer<Object,Object>)site.getTarget().invokeExact();
-						return (instance, _arguments)->slot2.accept(instance, _arguments[0]);
-					}
-					MethodHandles.Lookup lookup;
-					lookup = ReflectionUtility.privateLookup(slot.getDeclaringClass());
-					lookupAccessClass.accessClass(lookup, QtUtilities.class);
-					switch(_slotHandle.type().parameterCount()) {
-					case 3:
-						site = resolvedMetaFactory.metafactory(lookup,
-								"accept",
-				                MethodType.methodType(QtUtilities.Consumer3.class),
-				                invokeType,
-				                _slotHandle,
-				                wrap(_slotHandle.type()));
-						QtUtilities.Consumer3<Object,Object,Object> slot3 = (QtUtilities.Consumer3<Object,Object,Object>)site.getTarget().invokeExact();
-						return (instance, _arguments)->slot3.accept(instance, _arguments[0], _arguments[1]);
-					case 4:
-						site = resolvedMetaFactory.metafactory(lookup,
-								"accept",
-				                MethodType.methodType(QtUtilities.Consumer4.class),
-				                invokeType,
-				                _slotHandle,
-				                wrap(_slotHandle.type()));
-						QtUtilities.Consumer4<Object,Object,Object,Object> slot4 = (QtUtilities.Consumer4<Object,Object,Object,Object>)site.getTarget().invokeExact();
-						return (instance, _arguments)->slot4.accept(instance, _arguments[0], _arguments[1], _arguments[2]);
-					case 5:
-						site = resolvedMetaFactory.metafactory(lookup,
-								"accept",
-				                MethodType.methodType(QtUtilities.Consumer5.class),
-				                invokeType,
-				                _slotHandle,
-				                wrap(_slotHandle.type()));
-						QtUtilities.Consumer5<Object,Object,Object,Object,Object> slot5 = (QtUtilities.Consumer5<Object,Object,Object,Object,Object>)site.getTarget().invokeExact();
-						return (instance, _arguments)->slot5.accept(instance, _arguments[0], _arguments[1], _arguments[2], _arguments[3]);
-					case 6:
-						site = resolvedMetaFactory.metafactory(lookup,
-								"accept",
-				                MethodType.methodType(QtUtilities.Consumer6.class),
-				                invokeType,
-				                _slotHandle,
-				                wrap(_slotHandle.type()));
-						QtUtilities.Consumer6<Object,Object,Object,Object,Object,Object> slot6 = (QtUtilities.Consumer6<Object,Object,Object,Object,Object,Object>)site.getTarget().invokeExact();
-						return (instance, _arguments)->slot6.accept(instance, _arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4]);
-					case 7:
-						site = resolvedMetaFactory.metafactory(lookup,
-								"accept",
-				                MethodType.methodType(QtUtilities.Consumer7.class),
-				                invokeType,
-				                _slotHandle,
-				                wrap(_slotHandle.type()));
-						QtUtilities.Consumer7<Object,Object,Object,Object,Object,Object,Object> slot7 = (QtUtilities.Consumer7<Object,Object,Object,Object,Object,Object,Object>)site.getTarget().invokeExact();
-						return (instance, _arguments)->slot7.accept(instance, _arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4], _arguments[5]);
-					case 8:
-						site = resolvedMetaFactory.metafactory(lookup,
-								"accept",
-				                MethodType.methodType(QtUtilities.Consumer8.class),
-				                invokeType,
-				                _slotHandle,
-				                wrap(_slotHandle.type()));
-						QtUtilities.Consumer8<Object,Object,Object,Object,Object,Object,Object,Object> slot8 = (QtUtilities.Consumer8<Object,Object,Object,Object,Object,Object,Object,Object>)site.getTarget().invokeExact();
-						return (instance, _arguments)->slot8.accept(instance, _arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4], _arguments[5], _arguments[6]);
-					case 9:
-						site = resolvedMetaFactory.metafactory(lookup,
-								"accept",
-				                MethodType.methodType(QtUtilities.Consumer9.class),
-				                invokeType,
-				                _slotHandle,
-				                wrap(_slotHandle.type()));
-						QtUtilities.Consumer9<Object,Object,Object,Object,Object,Object,Object,Object,Object> slot9 = (QtUtilities.Consumer9<Object,Object,Object,Object,Object,Object,Object,Object,Object>)site.getTarget().invokeExact();
-						return (instance, _arguments)->slot9.accept(instance, _arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4], _arguments[5], _arguments[6], _arguments[7]);
-					case 10:
-						site = resolvedMetaFactory.metafactory(lookup,
-								"accept",
-				                MethodType.methodType(QtUtilities.Consumer10.class),
-				                invokeType,
-				                _slotHandle,
-				                wrap(_slotHandle.type()));
-						QtUtilities.Consumer10<Object,Object,Object,Object,Object,Object,Object,Object,Object,Object> slot10 = (QtUtilities.Consumer10<Object,Object,Object,Object,Object,Object,Object,Object,Object,Object>)site.getTarget().invokeExact();
-						return (instance, _arguments)->slot10.accept(instance, _arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4], _arguments[5], _arguments[6], _arguments[7], _arguments[8]);
-					}
-				} catch (IllegalAccessException e) {
-				} catch (Throwable e) {
-					if(Boolean.getBoolean("io.qt.internal.enable-lambda-factory-log"))
-						java.util.logging.Logger.getLogger("io.qt.internal").log(java.util.logging.Level.SEVERE, "", e);
-				}
-				while(false);
-			}
-			if(resolvedProxyFactory!=null) {
-				try {
-					MethodHandle slotHandle = _slotHandle.asSpreader(1, Object[].class, _slotHandle.type().parameterCount()-1);
-					return resolvedProxyFactory.asInterfaceInstance(SignalUtility.SlotInvoker.class, slotHandle);
-				} catch (Throwable e) {
-				}
-			}
-			try {
-				MethodHandle slotHandle = _slotHandle.asSpreader(1, Object[].class, _slotHandle.type().parameterCount()-1);
-				return (instance, _arguments)->slotHandle.invoke(instance, _arguments);
-			} catch (Throwable e) {
-			}
-		}
-		return ReflectionUtility.MethodInvocationHandler.super.getSlotInvoker(slot, _slotHandle);
-	}
+	private final Map<MethodInfo,SignalUtility.SlotInvoker> slotInvokers = Collections.synchronizedMap(new HashMap<>());
 	
 	@Override
-	public SignalUtility.StaticSlotInvoker getStaticSlotInvoker(Method slot, MethodHandle _slotHandle){
-		if(_slotHandle==null) {
-        	try {
-        		_slotHandle = ReflectionUtility.getMethodHandle(slot);
-			} catch (Exception e) {
+	public SignalUtility.SlotInvoker getSlotInvoker(Method slot, MethodHandle slotHandle){
+		return slotInvokers.computeIfAbsent(new MethodInfo(slot, slotHandle), methodInfo -> {
+			if(methodInfo.slotHandle!=null) {
+				if(resolvedMetaFactory!=null && !methodInfo.slot.getDeclaringClass().isSynthetic()) {
+					try {
+						CallSite site;
+						List<Class<?>> parameters = new ArrayList<>();
+						for(int i=0; i<methodInfo.slotHandle.type().parameterCount(); ++i) {
+							parameters.add(Object.class);
+						}
+						MethodType invokeType = MethodType.methodType(void.class, parameters);
+						MethodHandles.Lookup lookup = ReflectionUtility.privateLookup(methodInfo.slot.getDeclaringClass());
+						switch(methodInfo.slotHandle.type().parameterCount()) {
+						case 1:
+							site = resolvedMetaFactory.metafactory(lookup,
+									"accept",
+					                MethodType.methodType(Consumer.class),
+					                invokeType,
+					                methodInfo.slotHandle,
+					                wrap(methodInfo.slotHandle.type()));
+							Consumer<Object> slot1 = (Consumer<Object>)site.getTarget().invokeExact();
+							return (instance, _arguments)->slot1.accept(instance);
+						case 2:
+							site = resolvedMetaFactory.metafactory(lookup,
+									"accept",
+					                MethodType.methodType(BiConsumer.class),
+					                invokeType,
+					                methodInfo.slotHandle,
+					                wrap(methodInfo.slotHandle.type()));
+							BiConsumer<Object,Object> slot2 = (BiConsumer<Object,Object>)site.getTarget().invokeExact();
+							return (instance, _arguments)->slot2.accept(instance, _arguments[0]);
+						default: break;
+						}
+						lookupAccessClass.accessClass(lookup, QtUtilities.class);
+						switch(methodInfo.slotHandle.type().parameterCount()) {
+						case 3:
+							site = resolvedMetaFactory.metafactory(lookup,
+									"accept",
+					                MethodType.methodType(QtUtilities.Consumer3.class),
+					                invokeType,
+					                methodInfo.slotHandle,
+					                wrap(methodInfo.slotHandle.type()));
+							QtUtilities.Consumer3<Object,Object,Object> slot3 = (QtUtilities.Consumer3<Object,Object,Object>)site.getTarget().invokeExact();
+							return (instance, _arguments)->slot3.accept(instance, _arguments[0], _arguments[1]);
+						case 4:
+							site = resolvedMetaFactory.metafactory(lookup,
+									"accept",
+					                MethodType.methodType(QtUtilities.Consumer4.class),
+					                invokeType,
+					                methodInfo.slotHandle,
+					                wrap(methodInfo.slotHandle.type()));
+							QtUtilities.Consumer4<Object,Object,Object,Object> slot4 = (QtUtilities.Consumer4<Object,Object,Object,Object>)site.getTarget().invokeExact();
+							return (instance, _arguments)->slot4.accept(instance, _arguments[0], _arguments[1], _arguments[2]);
+						case 5:
+							site = resolvedMetaFactory.metafactory(lookup,
+									"accept",
+					                MethodType.methodType(QtUtilities.Consumer5.class),
+					                invokeType,
+					                methodInfo.slotHandle,
+					                wrap(methodInfo.slotHandle.type()));
+							QtUtilities.Consumer5<Object,Object,Object,Object,Object> slot5 = (QtUtilities.Consumer5<Object,Object,Object,Object,Object>)site.getTarget().invokeExact();
+							return (instance, _arguments)->slot5.accept(instance, _arguments[0], _arguments[1], _arguments[2], _arguments[3]);
+						case 6:
+							site = resolvedMetaFactory.metafactory(lookup,
+									"accept",
+					                MethodType.methodType(QtUtilities.Consumer6.class),
+					                invokeType,
+					                methodInfo.slotHandle,
+					                wrap(methodInfo.slotHandle.type()));
+							QtUtilities.Consumer6<Object,Object,Object,Object,Object,Object> slot6 = (QtUtilities.Consumer6<Object,Object,Object,Object,Object,Object>)site.getTarget().invokeExact();
+							return (instance, _arguments)->slot6.accept(instance, _arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4]);
+						case 7:
+							site = resolvedMetaFactory.metafactory(lookup,
+									"accept",
+					                MethodType.methodType(QtUtilities.Consumer7.class),
+					                invokeType,
+					                methodInfo.slotHandle,
+					                wrap(methodInfo.slotHandle.type()));
+							QtUtilities.Consumer7<Object,Object,Object,Object,Object,Object,Object> slot7 = (QtUtilities.Consumer7<Object,Object,Object,Object,Object,Object,Object>)site.getTarget().invokeExact();
+							return (instance, _arguments)->slot7.accept(instance, _arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4], _arguments[5]);
+						case 8:
+							site = resolvedMetaFactory.metafactory(lookup,
+									"accept",
+					                MethodType.methodType(QtUtilities.Consumer8.class),
+					                invokeType,
+					                methodInfo.slotHandle,
+					                wrap(methodInfo.slotHandle.type()));
+							QtUtilities.Consumer8<Object,Object,Object,Object,Object,Object,Object,Object> slot8 = (QtUtilities.Consumer8<Object,Object,Object,Object,Object,Object,Object,Object>)site.getTarget().invokeExact();
+							return (instance, _arguments)->slot8.accept(instance, _arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4], _arguments[5], _arguments[6]);
+						case 9:
+							site = resolvedMetaFactory.metafactory(lookup,
+									"accept",
+					                MethodType.methodType(QtUtilities.Consumer9.class),
+					                invokeType,
+					                methodInfo.slotHandle,
+					                wrap(methodInfo.slotHandle.type()));
+							QtUtilities.Consumer9<Object,Object,Object,Object,Object,Object,Object,Object,Object> slot9 = (QtUtilities.Consumer9<Object,Object,Object,Object,Object,Object,Object,Object,Object>)site.getTarget().invokeExact();
+							return (instance, _arguments)->slot9.accept(instance, _arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4], _arguments[5], _arguments[6], _arguments[7]);
+						case 10:
+							site = resolvedMetaFactory.metafactory(lookup,
+									"accept",
+					                MethodType.methodType(QtUtilities.Consumer10.class),
+					                invokeType,
+					                methodInfo.slotHandle,
+					                wrap(methodInfo.slotHandle.type()));
+							QtUtilities.Consumer10<Object,Object,Object,Object,Object,Object,Object,Object,Object,Object> slot10 = (QtUtilities.Consumer10<Object,Object,Object,Object,Object,Object,Object,Object,Object,Object>)site.getTarget().invokeExact();
+							return (instance, _arguments)->slot10.accept(instance, _arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4], _arguments[5], _arguments[6], _arguments[7], _arguments[8]);
+						default: break;
+						}
+					} catch (IllegalAccessException e) {
+					} catch (Throwable e) {
+						if(Boolean.getBoolean("io.qt.internal.enable-lambda-factory-log"))
+							java.util.logging.Logger.getLogger("io.qt.internal").log(java.util.logging.Level.SEVERE, "", e);
+					}
+				}
+				MethodHandle _slotHandle = methodInfo.slotHandle;
+				switch(methodInfo.slotHandle.type().parameterCount()) {
+				case 1:
+					return (instance, _arguments)->_slotHandle.invoke(instance);
+				case 2:
+					return (instance, _arguments)->_slotHandle.invoke(instance, _arguments[0]);
+				case 3:
+					return (instance, _arguments)->_slotHandle.invoke(instance, _arguments[0], _arguments[1]);
+				case 4:
+					return (instance, _arguments)->_slotHandle.invoke(instance, _arguments[0], _arguments[1], _arguments[2]);
+				case 5:
+					return (instance, _arguments)->_slotHandle.invoke(instance, _arguments[0], _arguments[1], _arguments[2], _arguments[3]);
+				case 6:
+					return (instance, _arguments)->_slotHandle.invoke(instance, _arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4]);
+				case 7:
+					return (instance, _arguments)->_slotHandle.invoke(instance, _arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4], _arguments[5]);
+				case 8:
+					return (instance, _arguments)->_slotHandle.invoke(instance, _arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4], _arguments[5], _arguments[6]);
+				case 9:
+					return (instance, _arguments)->_slotHandle.invoke(instance, _arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4], _arguments[5], _arguments[6], _arguments[7]);
+				case 10:
+					return (instance, _arguments)->_slotHandle.invoke(instance, _arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4], _arguments[5], _arguments[6], _arguments[7], _arguments[8]);
+				default:
+					try {
+						MethodHandle __slotHandle = methodInfo.slotHandle.asSpreader(1, Object[].class, methodInfo.slotHandle.type().parameterCount()-1);
+						return (instance, _arguments)->__slotHandle.invoke(instance, _arguments);
+					} catch (Throwable e) {
+					}
+				}
 			}
-        }
-		if(_slotHandle!=null) {
-			if(resolvedMetaFactory!=null) {
-				do try {
-					CallSite site;
-					List<Class<?>> parameters = new ArrayList<>();
-					for(int i=0; i<_slotHandle.type().parameterCount(); ++i) {
-						parameters.add(Object.class);
-					}
-					MethodType invokeType = MethodType.methodType(void.class, parameters);
-					switch(_slotHandle.type().parameterCount()) {
-					case 0:
-						site = resolvedMetaFactory.metafactory(ReflectionUtility.privateLookup(slot.getDeclaringClass()),
-								"run",
-				                MethodType.methodType(Runnable.class),
-				                invokeType,
-				                _slotHandle,
-				                wrap(_slotHandle.type()));
-						Runnable slot0 = (Runnable)site.getTarget().invokeExact();
-						return (_arguments)->slot0.run();
-					case 1:
-						site = resolvedMetaFactory.metafactory(ReflectionUtility.privateLookup(slot.getDeclaringClass()),
-								"accept",
-				                MethodType.methodType(Consumer.class),
-				                invokeType,
-				                _slotHandle,
-				                wrap(_slotHandle.type()));
-						Consumer<Object> slot1 = (Consumer<Object>)site.getTarget().invokeExact();
-						return (_arguments)->slot1.accept(_arguments[0]);
-					case 2:
-						site = resolvedMetaFactory.metafactory(ReflectionUtility.privateLookup(slot.getDeclaringClass()),
-								"accept",
-				                MethodType.methodType(BiConsumer.class),
-				                invokeType,
-				                _slotHandle,
-				                wrap(_slotHandle.type()));
-						BiConsumer<Object,Object> slot2 = (BiConsumer<Object,Object>)site.getTarget().invokeExact();
-						return (_arguments)->slot2.accept(_arguments[0], _arguments[1]);
-					}
-					MethodHandles.Lookup lookup;
-					lookup = ReflectionUtility.privateLookup(slot.getDeclaringClass());
-					lookupAccessClass.accessClass(lookup, QtUtilities.class);
-					switch(_slotHandle.type().parameterCount()) {
-					case 3:
-						site = resolvedMetaFactory.metafactory(lookup,
-								"accept",
-				                MethodType.methodType(QtUtilities.Consumer3.class),
-				                invokeType,
-				                _slotHandle,
-				                wrap(_slotHandle.type()));
-						QtUtilities.Consumer3<Object,Object,Object> slot3 = (QtUtilities.Consumer3<Object,Object,Object>)site.getTarget().invokeExact();
-						return (_arguments)->slot3.accept(_arguments[0], _arguments[1], _arguments[2]);
-					case 4:
-						site = resolvedMetaFactory.metafactory(lookup,
-								"accept",
-				                MethodType.methodType(QtUtilities.Consumer4.class),
-				                invokeType,
-				                _slotHandle,
-				                wrap(_slotHandle.type()));
-						QtUtilities.Consumer4<Object,Object,Object,Object> slot4 = (QtUtilities.Consumer4<Object,Object,Object,Object>)site.getTarget().invokeExact();
-						return (_arguments)->slot4.accept(_arguments[0], _arguments[1], _arguments[2], _arguments[3]);
-					case 5:
-						site = resolvedMetaFactory.metafactory(lookup,
-								"accept",
-				                MethodType.methodType(QtUtilities.Consumer5.class),
-				                invokeType,
-				                _slotHandle,
-				                wrap(_slotHandle.type()));
-						QtUtilities.Consumer5<Object,Object,Object,Object,Object> slot5 = (QtUtilities.Consumer5<Object,Object,Object,Object,Object>)site.getTarget().invokeExact();
-						return (_arguments)->slot5.accept(_arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4]);
-					case 6:
-						site = resolvedMetaFactory.metafactory(lookup,
-								"accept",
-				                MethodType.methodType(QtUtilities.Consumer6.class),
-				                invokeType,
-				                _slotHandle,
-				                wrap(_slotHandle.type()));
-						QtUtilities.Consumer6<Object,Object,Object,Object,Object,Object> slot6 = (QtUtilities.Consumer6<Object,Object,Object,Object,Object,Object>)site.getTarget().invokeExact();
-						return (_arguments)->slot6.accept(_arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4], _arguments[5]);
-					case 7:
-						site = resolvedMetaFactory.metafactory(lookup,
-								"accept",
-				                MethodType.methodType(QtUtilities.Consumer7.class),
-				                invokeType,
-				                _slotHandle,
-				                wrap(_slotHandle.type()));
-						QtUtilities.Consumer7<Object,Object,Object,Object,Object,Object,Object> slot7 = (QtUtilities.Consumer7<Object,Object,Object,Object,Object,Object,Object>)site.getTarget().invokeExact();
-						return (_arguments)->slot7.accept(_arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4], _arguments[5], _arguments[6]);
-					case 8:
-						site = resolvedMetaFactory.metafactory(lookup,
-								"accept",
-				                MethodType.methodType(QtUtilities.Consumer8.class),
-				                invokeType,
-				                _slotHandle,
-				                wrap(_slotHandle.type()));
-						QtUtilities.Consumer8<Object,Object,Object,Object,Object,Object,Object,Object> slot8 = (QtUtilities.Consumer8<Object,Object,Object,Object,Object,Object,Object,Object>)site.getTarget().invokeExact();
-						return (_arguments)->slot8.accept(_arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4], _arguments[5], _arguments[6], _arguments[7]);
-					case 9:
-						site = resolvedMetaFactory.metafactory(lookup,
-								"accept",
-				                MethodType.methodType(QtUtilities.Consumer9.class),
-				                invokeType,
-				                _slotHandle,
-				                wrap(_slotHandle.type()));
-						QtUtilities.Consumer9<Object,Object,Object,Object,Object,Object,Object,Object,Object> slot9 = (QtUtilities.Consumer9<Object,Object,Object,Object,Object,Object,Object,Object,Object>)site.getTarget().invokeExact();
-						return (_arguments)->slot9.accept(_arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4], _arguments[5], _arguments[6], _arguments[7], _arguments[8]);
-					}
-				} catch (IllegalAccessException e) {
-				} catch (Throwable e) {
-					e.printStackTrace();
-				} while(true);
-			}
-			if(resolvedProxyFactory!=null) {
-				try {
+			return ReflectionUtility.MethodInvocationHandler.super.getSlotInvoker(methodInfo.slot, methodInfo.slotHandle);
+		});
+	}
+	
+	private final Map<MethodInfo,SignalUtility.StaticSlotInvoker> staticSlotInvokers = Collections.synchronizedMap(new HashMap<>());
+	
+	@Override
+	public SignalUtility.StaticSlotInvoker getStaticSlotInvoker(Method slot, MethodHandle slotHandle){
+		return staticSlotInvokers.computeIfAbsent(new MethodInfo(slot, slotHandle), methodInfo -> {
+				if(methodInfo.slotHandle!=null) {
+					if(resolvedMetaFactory!=null && !methodInfo.slot.getDeclaringClass().isSynthetic()) {
 						try {
-							MethodHandle slotHandle = _slotHandle.asSpreader(0, Object[].class, _slotHandle.type().parameterCount());
-							return resolvedProxyFactory.asInterfaceInstance(SignalUtility.StaticSlotInvoker.class, slotHandle);
+							CallSite site;
+							List<Class<?>> parameters = new ArrayList<>();
+							for(int i=0; i<methodInfo.slotHandle.type().parameterCount(); ++i) {
+								parameters.add(Object.class);
+							}
+							MethodType invokeType = MethodType.methodType(void.class, parameters);
+							MethodHandles.Lookup lookup = ReflectionUtility.privateLookup(methodInfo.slot.getDeclaringClass());
+							switch(methodInfo.slotHandle.type().parameterCount()) {
+							case 0:
+								site = resolvedMetaFactory.metafactory(lookup,
+										"run",
+						                MethodType.methodType(Runnable.class),
+						                invokeType,
+						                methodInfo.slotHandle,
+						                wrap(methodInfo.slotHandle.type()));
+								Runnable slot0 = (Runnable)site.getTarget().invokeExact();
+								return (_arguments)->slot0.run();
+							case 1:
+								site = resolvedMetaFactory.metafactory(lookup,
+										"accept",
+						                MethodType.methodType(Consumer.class),
+						                invokeType,
+						                methodInfo.slotHandle,
+						                wrap(methodInfo.slotHandle.type()));
+								Consumer<Object> slot1 = (Consumer<Object>)site.getTarget().invokeExact();
+								return (_arguments)->slot1.accept(_arguments[0]);
+							case 2:
+								site = resolvedMetaFactory.metafactory(lookup,
+										"accept",
+						                MethodType.methodType(BiConsumer.class),
+						                invokeType,
+						                methodInfo.slotHandle,
+						                wrap(methodInfo.slotHandle.type()));
+								BiConsumer<Object,Object> slot2 = (BiConsumer<Object,Object>)site.getTarget().invokeExact();
+								return (_arguments)->slot2.accept(_arguments[0], _arguments[1]);
+							}
+							lookupAccessClass.accessClass(lookup, QtUtilities.class);
+							switch(methodInfo.slotHandle.type().parameterCount()) {
+							case 3:
+								site = resolvedMetaFactory.metafactory(lookup,
+										"accept",
+						                MethodType.methodType(QtUtilities.Consumer3.class),
+						                invokeType,
+						                methodInfo.slotHandle,
+						                wrap(methodInfo.slotHandle.type()));
+								QtUtilities.Consumer3<Object,Object,Object> slot3 = (QtUtilities.Consumer3<Object,Object,Object>)site.getTarget().invokeExact();
+								return (_arguments)->slot3.accept(_arguments[0], _arguments[1], _arguments[2]);
+							case 4:
+								site = resolvedMetaFactory.metafactory(lookup,
+										"accept",
+						                MethodType.methodType(QtUtilities.Consumer4.class),
+						                invokeType,
+						                methodInfo.slotHandle,
+						                wrap(methodInfo.slotHandle.type()));
+								QtUtilities.Consumer4<Object,Object,Object,Object> slot4 = (QtUtilities.Consumer4<Object,Object,Object,Object>)site.getTarget().invokeExact();
+								return (_arguments)->slot4.accept(_arguments[0], _arguments[1], _arguments[2], _arguments[3]);
+							case 5:
+								site = resolvedMetaFactory.metafactory(lookup,
+										"accept",
+						                MethodType.methodType(QtUtilities.Consumer5.class),
+						                invokeType,
+						                methodInfo.slotHandle,
+						                wrap(methodInfo.slotHandle.type()));
+								QtUtilities.Consumer5<Object,Object,Object,Object,Object> slot5 = (QtUtilities.Consumer5<Object,Object,Object,Object,Object>)site.getTarget().invokeExact();
+								return (_arguments)->slot5.accept(_arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4]);
+							case 6:
+								site = resolvedMetaFactory.metafactory(lookup,
+										"accept",
+						                MethodType.methodType(QtUtilities.Consumer6.class),
+						                invokeType,
+						                methodInfo.slotHandle,
+						                wrap(methodInfo.slotHandle.type()));
+								QtUtilities.Consumer6<Object,Object,Object,Object,Object,Object> slot6 = (QtUtilities.Consumer6<Object,Object,Object,Object,Object,Object>)site.getTarget().invokeExact();
+								return (_arguments)->slot6.accept(_arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4], _arguments[5]);
+							case 7:
+								site = resolvedMetaFactory.metafactory(lookup,
+										"accept",
+						                MethodType.methodType(QtUtilities.Consumer7.class),
+						                invokeType,
+						                methodInfo.slotHandle,
+						                wrap(methodInfo.slotHandle.type()));
+								QtUtilities.Consumer7<Object,Object,Object,Object,Object,Object,Object> slot7 = (QtUtilities.Consumer7<Object,Object,Object,Object,Object,Object,Object>)site.getTarget().invokeExact();
+								return (_arguments)->slot7.accept(_arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4], _arguments[5], _arguments[6]);
+							case 8:
+								site = resolvedMetaFactory.metafactory(lookup,
+										"accept",
+						                MethodType.methodType(QtUtilities.Consumer8.class),
+						                invokeType,
+						                methodInfo.slotHandle,
+						                wrap(methodInfo.slotHandle.type()));
+								QtUtilities.Consumer8<Object,Object,Object,Object,Object,Object,Object,Object> slot8 = (QtUtilities.Consumer8<Object,Object,Object,Object,Object,Object,Object,Object>)site.getTarget().invokeExact();
+								return (_arguments)->slot8.accept(_arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4], _arguments[5], _arguments[6], _arguments[7]);
+							case 9:
+								site = resolvedMetaFactory.metafactory(lookup,
+										"accept",
+						                MethodType.methodType(QtUtilities.Consumer9.class),
+						                invokeType,
+						                methodInfo.slotHandle,
+						                wrap(methodInfo.slotHandle.type()));
+								QtUtilities.Consumer9<Object,Object,Object,Object,Object,Object,Object,Object,Object> slot9 = (QtUtilities.Consumer9<Object,Object,Object,Object,Object,Object,Object,Object,Object>)site.getTarget().invokeExact();
+								return (_arguments)->slot9.accept(_arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4], _arguments[5], _arguments[6], _arguments[7], _arguments[8]);
+							}
+						} catch (IllegalAccessException e) {
+						} catch (Throwable e) {
+							e.printStackTrace();
+						}
+					}
+					MethodHandle _slotHandle = methodInfo.slotHandle;
+					switch(methodInfo.slotHandle.type().parameterCount()) {
+					case 0:
+						return _arguments->_slotHandle.invoke();
+					case 1:
+						return _arguments->_slotHandle.invoke(_arguments[0]);
+					case 2:
+						return _arguments->_slotHandle.invoke(_arguments[0], _arguments[1]);
+					case 3:
+						return _arguments->_slotHandle.invoke(_arguments[0], _arguments[1], _arguments[2]);
+					case 4:
+						return _arguments->_slotHandle.invoke(_arguments[0], _arguments[1], _arguments[2], _arguments[3]);
+					case 5:
+						return _arguments->_slotHandle.invoke(_arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4]);
+					case 6:
+						return _arguments->_slotHandle.invoke(_arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4], _arguments[5]);
+					case 7:
+						return _arguments->_slotHandle.invoke(_arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4], _arguments[5], _arguments[6]);
+					case 8:
+						return _arguments->_slotHandle.invoke(_arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4], _arguments[5], _arguments[6], _arguments[7]);
+					case 9:
+						return _arguments->_slotHandle.invoke(_arguments[0], _arguments[1], _arguments[2], _arguments[3], _arguments[4], _arguments[5], _arguments[6], _arguments[7], _arguments[8]);
+					default:
+						try {
+							MethodHandle __slotHandle = methodInfo.slotHandle.asSpreader(0, Object[].class, methodInfo.slotHandle.type().parameterCount());
+							return _arguments->__slotHandle.invoke(_arguments);
 						} catch (Throwable e) {
 						}
-				} catch (Throwable e) {
+					}
 				}
-			}
-			try {
-				MethodHandle slotHandle = _slotHandle.asSpreader(0, Object[].class, _slotHandle.type().parameterCount());
-				return _arguments->slotHandle.invoke(_arguments);
-			} catch (Throwable e) {
-			}
-		}
-		return ReflectionUtility.MethodInvocationHandler.super.getStaticSlotInvoker(slot, _slotHandle);
+				return ReflectionUtility.MethodInvocationHandler.super.getStaticSlotInvoker(methodInfo.slot, methodInfo.slotHandle);
+		});
 	}
 	
+	private final Map<LambdaInfo,SignalUtility.LambdaArgsSlotInvoker> lambdaArgsSlotInvokers = Collections.synchronizedMap(new HashMap<>());
+	
 	@Override
-	public SignalUtility.LambdaArgsSlotInvoker getSlotInvoker(Method slot, MethodHandle _slotHandle, int lambdaArgsCount){
-		if(_slotHandle==null) {
-        	try {
-        		_slotHandle = ReflectionUtility.getMethodHandle(slot);
-			} catch (Exception e) {
-			}
-        }
-		if(_slotHandle!=null) {
-			if(resolvedProxyFactory!=null) {
+	public SignalUtility.LambdaArgsSlotInvoker getSlotInvoker(Method slot, MethodHandle slotHandle, int lambdaArgsCount){
+		return lambdaArgsSlotInvokers.computeIfAbsent(new LambdaInfo(slot, slotHandle, lambdaArgsCount), info->{
+			if(info.slotHandle!=null) {
 				try {
-					MethodType mt = _slotHandle.type();
+					MethodType mt = info.slotHandle.type();
 					for(int i=0; i<mt.parameterCount(); ++i){
 						mt = mt.changeParameterType(i, Object.class);
 					}
-					_slotHandle = _slotHandle.asType(mt);
-					MethodHandle slotHandle = _slotHandle.asSpreader(1, Object[].class, lambdaArgsCount).asSpreader(2, Object[].class, _slotHandle.type().parameterCount() - 1 - lambdaArgsCount);
-					return resolvedProxyFactory.asInterfaceInstance(SignalUtility.LambdaArgsSlotInvoker.class, slotHandle);
+					MethodHandle tmpSlotHandle = info.slotHandle.asType(mt);
+					MethodHandle _slotHandle = tmpSlotHandle.asSpreader(1, Object[].class, lambdaArgsCount).asSpreader(2, Object[].class, tmpSlotHandle.type().parameterCount() - 1 - lambdaArgsCount);
+					return (instance, args, _arguments)->_slotHandle.invoke(instance, args, _arguments);
 				} catch (Throwable e) {
 				}
 			}
-			try {
-				MethodType mt = _slotHandle.type();
-				for(int i=0; i<mt.parameterCount(); ++i){
-					mt = mt.changeParameterType(i, Object.class);
-				}
-				_slotHandle = _slotHandle.asType(mt);
-				MethodHandle slotHandle = _slotHandle.asSpreader(1, Object[].class, lambdaArgsCount).asSpreader(2, Object[].class, _slotHandle.type().parameterCount() - 1 - lambdaArgsCount);
-				return (instance, args, _arguments)->slotHandle.invoke(instance, args, _arguments);
-			} catch (Throwable e) {
-			}
-		}
-		return ReflectionUtility.MethodInvocationHandler.super.getSlotInvoker(slot, _slotHandle, lambdaArgsCount);
+			return ReflectionUtility.MethodInvocationHandler.super.getSlotInvoker(slot, info.slotHandle, lambdaArgsCount);
+		});
 	}
 	
+	private final Map<LambdaInfo,SignalUtility.StaticLambdaArgsSlotInvoker> staticLambdaArgsSlotInvokers = Collections.synchronizedMap(new HashMap<>());
+	
 	@Override
-	public SignalUtility.StaticLambdaArgsSlotInvoker getStaticSlotInvoker(Method slot, MethodHandle _slotHandle, int lambdaArgsCount){
-		if(_slotHandle==null) {
-        	try {
-        		_slotHandle = ReflectionUtility.getMethodHandle(slot);
-			} catch (Exception e) {
-			}
-        }
-		if(_slotHandle!=null) {
-			if(resolvedProxyFactory!=null) {
+	public SignalUtility.StaticLambdaArgsSlotInvoker getStaticSlotInvoker(Method slot, MethodHandle slotHandle, int lambdaArgsCount){
+		return staticLambdaArgsSlotInvokers.computeIfAbsent(new LambdaInfo(slot, slotHandle, lambdaArgsCount), info->{
+			if(info.slotHandle!=null) {
 				try {
-					MethodType mt = _slotHandle.type();
+					MethodType mt = info.slotHandle.type();
 					for(int i=0; i<mt.parameterCount(); ++i){
 						mt = mt.changeParameterType(i, Object.class);
 					}
-					_slotHandle = _slotHandle.asType(mt);
-					MethodHandle slotHandle = _slotHandle.asSpreader(0, Object[].class, lambdaArgsCount).asSpreader(1, Object[].class, _slotHandle.type().parameterCount() - lambdaArgsCount);
-					return resolvedProxyFactory.asInterfaceInstance(SignalUtility.StaticLambdaArgsSlotInvoker.class, slotHandle);
+					MethodHandle tmpSlotHandle = info.slotHandle.asType(mt);
+					MethodHandle _slotHandle = tmpSlotHandle.asSpreader(0, Object[].class, lambdaArgsCount).asSpreader(1, Object[].class, tmpSlotHandle.type().parameterCount() - lambdaArgsCount);
+					return (args, _arguments)->_slotHandle.invoke(args, _arguments);
 				} catch (Throwable e) {
 				}
 			}
-			try {
-				MethodType mt = _slotHandle.type();
-				for(int i=0; i<mt.parameterCount(); ++i){
-					mt = mt.changeParameterType(i, Object.class);
-				}
-				_slotHandle = _slotHandle.asType(mt);
-				MethodHandle slotHandle = _slotHandle.asSpreader(0, Object[].class, lambdaArgsCount).asSpreader(1, Object[].class, _slotHandle.type().parameterCount() - lambdaArgsCount);
-				return (args, _arguments)->slotHandle.invoke(args, _arguments);
-			} catch (Throwable e) {
-			}
-		}
-		return ReflectionUtility.MethodInvocationHandler.super.getStaticSlotInvoker(slot, _slotHandle, lambdaArgsCount);
+			return ReflectionUtility.MethodInvocationHandler.super.getStaticSlotInvoker(slot, info.slotHandle, lambdaArgsCount);
+		});
 	}
+	
+	private final Map<Field,BiConsumer<?,?>> fieldAccessors = Collections.synchronizedMap(new HashMap<>());
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T,V> BiConsumer<T,V> getFieldSetter(Field f) {
-		java.lang.invoke.MethodHandles.Lookup lookup = ReflectionUtility.privateLookup(f.getDeclaringClass());
-		try {
-			MethodHandle setter = lookup.unreflectSetter(f);
-			if(resolvedMetaFactory!=null) {
-				try {
-					CallSite site = resolvedMetaFactory.metafactory(ReflectionUtility.privateLookup(f.getDeclaringClass()),
-							"accept",
-			                MethodType.methodType(BiConsumer.class),
-			                MethodType.methodType(void.class, Object.class, Object.class),
-			                setter,
-			                wrap(setter.type()));
-					return (BiConsumer<T,V>)site.getTarget().invokeExact();
-				} catch (Throwable e) {
+		if(f==null)
+			return null;
+		return (BiConsumer<T,V>)fieldAccessors.computeIfAbsent(f, field->{
+			java.lang.invoke.MethodHandles.Lookup lookup = ReflectionUtility.privateLookup(field.getDeclaringClass());
+			try {
+				MethodHandle setter = lookup.unreflectSetter(field);
+				if(resolvedMetaFactory!=null && !field.getDeclaringClass().isSynthetic()) {
+					try {
+						CallSite site = resolvedMetaFactory.metafactory(lookup,
+								"accept",
+				                MethodType.methodType(BiConsumer.class),
+				                MethodType.methodType(void.class, Object.class, Object.class),
+				                setter,
+				                wrap(setter.type()));
+						return (BiConsumer<T,V>)site.getTarget().invokeExact();
+					} catch (Throwable e) {
+					}
 				}
+				return (T owner, V value) -> {
+					if(owner==null)
+						throw new NullPointerException();
+					try{
+						setter.invoke(owner, value);
+					} catch (RuntimeException | Error e) {
+						throw e;
+					} catch (Throwable e) {
+						throw new RuntimeException(e);
+					}
+				};
+			} catch (RuntimeException | Error e) {
+				throw e;
+			} catch (Throwable e) {
+				throw new RuntimeException(e);
 			}
-			if(resolvedProxyFactory!=null) {
-				try {
-					return (BiConsumer<T,V>)resolvedProxyFactory.asInterfaceInstance(BiConsumer.class, setter);
-				} catch (Throwable e) {
-				}
-			}
-			return (T owner, V value) -> {
-				if(owner==null)
-					throw new NullPointerException();
-				try{
-					setter.invoke(owner, value);
-				} catch (RuntimeException | Error e) {
-					throw e;
-				} catch (Throwable e) {
-					throw new RuntimeException(e);
-				}
-			};
-		} catch (RuntimeException | Error e) {
-			throw e;
-		} catch (Throwable e) {
-			throw new RuntimeException(e);
-		}
+		});
 	}
 }

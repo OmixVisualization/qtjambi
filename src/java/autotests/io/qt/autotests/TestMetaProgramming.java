@@ -105,6 +105,7 @@ public class TestMetaProgramming extends ApplicationInitializer {
 		Assert.assertTrue(defaultArgConstructor!=null);
 		Object result = QObject.staticMetaObject.newInstance();
 		Assert.assertTrue(result instanceof QObject);
+		Assert.assertTrue(General.internalAccess.isJavaOwnership((QObject)result));
 	}
 	
     @Test

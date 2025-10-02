@@ -477,7 +477,7 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
             }
         }else if(!java_class->typeEntry()->isDestructorPrivate() && java_class->instantiateShellClass()){
             for(const MetaFunction *function : java_class->functions()) {
-                if (function->isConstructor() && !function->wasPrivate()){
+                if (function->functionType()==MetaFunction::ConstructorFunction && !function->wasPrivate()){
                     QStringList ppConditions;
                     for(const MetaArgument *argument : function->arguments()) {
                         if(function->argumentRemoved(argument->argumentIndex()+1)!=ArgumentRemove_No){
@@ -641,7 +641,7 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
               << " : public " << java_class->qualifiedCppName() << Qt::endl
               << "{" << Qt::endl;
             {
-                INDENTATION(INDENT)
+                INDENTATION(INDENT);
                 // Public call throughs for protected functions
                 for(const MetaFunction *function : java_class->publicOverrideFunctions()) {
                     if((functionsInTargetLang.contains(function) || signalsInTargetLang.contains(function))
@@ -673,7 +673,7 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
                 for(MetaEnum * cpp_enum : protectedEnums){
                     s << INDENT << "static inline const std::type_info& __registerEnumTypeInfo_" << cpp_enum->name().replace("::", "_") << "() {" << Qt::endl;
                     {
-                        INDENTATION(INDENT)
+                        INDENTATION(INDENT);
                         const EnumTypeEntry *entry = cpp_enum->typeEntry();
                         const QString qtEnumName = entry->qualifiedCppName();
                         const QString javaEnumName = [java_class,entry]()->QString{

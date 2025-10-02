@@ -66,9 +66,9 @@ public class QMakeTask extends Task {
 
     private boolean recursive;
 
-    public static String executableName() {
+    public static String executableName(OSInfo osInfo) {
         String exe;
-        switch(OSInfo.os()) {
+        switch(osInfo.os()) {
         case Windows:
             exe = "qmake.exe";
             break;
@@ -80,8 +80,9 @@ public class QMakeTask extends Task {
     }
 
     public static String resolveExecutableAbsolutePath(Project project, String executableName, String propertyName) {
+    	OSInfo osInfo = OSInfo.instance(project);
         if(executableName == null)
-            executableName = executableName();
+            executableName = executableName(osInfo);
 
         // If qmakebinary is already absolute use it "/somedir/bin/qmake"
         if(executableName != null) {
@@ -168,7 +169,7 @@ public class QMakeTask extends Task {
         return arguments;
     }
 
-    private List<String> parseParameters() {
+    private List<String> parseParameters(Project project) {
     	PropertyHelper propertyHelper = PropertyHelper.getPropertyHelper(getProject());
         List<String> parameters = new ArrayList<String>();
 
@@ -182,7 +183,7 @@ public class QMakeTask extends Task {
         }
         if("true".equals(AntUtil.getPropertyAsString(propertyHelper, Constants.QTJAMBI_DEBUG_TOOLS)))
         	parameters.add("DEFINES+=QTJAMBI_DEBUG_TOOLS");
-        if(OSInfo.crossOS()==OSInfo.OperationSystem.MacOS) {
+        if(OSInfo.instance(project).crossOS()==OSInfo.OperationSystem.MacOS) {
         	parameters.add("DEFINES+=_XOPEN_SOURCE");
         	if(Boolean.valueOf(AntUtil.getPropertyAsString(propertyHelper, Constants.MAC_OS_GENERATE_FRAMEWORKS))) {
             	parameters.add("QTJAMBI_GENERATE_FRAMEWORKS=true");
@@ -225,7 +226,7 @@ public class QMakeTask extends Task {
             }
 		}
         */
-        if(OSInfo.crossOS()==OSInfo.OperationSystem.MacOS) {
+        if(OSInfo.instance(project).crossOS()==OSInfo.OperationSystem.MacOS) {
         	if(Boolean.valueOf(AntUtil.getPropertyAsString(propertyHelper, Constants.MAC_OS_CONVERT_QT_FRAMEWORK))) {
         		parameters.add("DEFINES+=\"QTJAMBI_NO_DEBUG_PLUGINS\"");
         	}
@@ -272,7 +273,7 @@ public class QMakeTask extends Task {
         if(!arguments.isEmpty())
             command.addAll(arguments);
 
-        List<String> parameters = parseParameters();
+        List<String> parameters = parseParameters(getProject());
         if(!parameters.isEmpty())
             command.addAll(parameters);
 
@@ -320,7 +321,7 @@ public class QMakeTask extends Task {
 //        	command.add(AntUtil.getPropertyAsString(propertyHelper, Constants.QT_SPEC));
         	String binpath = AntUtil.getPropertyAsString(propertyHelper, Constants.BINDIR);
         	Map<String,String> env = null;
-        	if(OSInfo.crossOS()==OperationSystem.Android) {
+        	if(OSInfo.instance(getProject()).crossOS()==OperationSystem.Android) {
         		System.out.println("Preparing NDK for android...");
         		String ndkRoot = AntUtil.getPropertyAsString(propertyHelper, "qtjambi.android.ndk");
         		if(ndkRoot!=null) {
@@ -380,7 +381,7 @@ public class QMakeTask extends Task {
     private final static Map<String,Map<String,String>> queries = Collections.synchronizedMap(new TreeMap<>());
     
 	// Run "qmake -query"
-	public static Map<String,String> query(Task task, String _qmakeExe) {
+	public static Map<String,String> query(OSInfo osInfo, Task task, String _qmakeExe) {
 		return queries.computeIfAbsent(_qmakeExe, qmakeExe->{
 			Map<String,String> result = new TreeMap<>();
 			if(qmakeExe==null) {
@@ -388,7 +389,7 @@ public class QMakeTask extends Task {
 				qmakeExe = QMakeTask.resolveExecutableAbsolutePath(task.getProject(), qmakeExe);
 			}
 			try {
-				String[] sA = Exec.executeCaptureOutput(task, Arrays.asList(qmakeExe, "-query"), new File("."), task.getProject(), null, null, false);
+				String[] sA = Exec.executeCaptureOutput(task, Arrays.asList(qmakeExe, "-query"), new File("."), task.getProject(), osInfo, null, null, false);
 				Util.emitDebugLog(task.getProject(), sA);
 				if (sA != null && sA.length == 2 && sA[0] != null) {
 					for(String line : sA[0].split(sA[0].contains("\r\n") ? "\\\r\\\n" : "\\\n")) {

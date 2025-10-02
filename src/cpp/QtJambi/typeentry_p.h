@@ -135,7 +135,6 @@ public:
 private:
 };
 
-#if QT_VERSION >= 0x050C00
 class QCborValueRefTypeEntry : public AbstractSimpleTypeEntry{
 public:
     using AbstractSimpleTypeEntry::AbstractSimpleTypeEntry;
@@ -143,7 +142,6 @@ public:
     bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
 private:
 };
-#endif
 
 class StringTypeEntry : public AbstractSimpleTypeEntry{
 public:

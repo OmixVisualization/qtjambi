@@ -33,8 +33,8 @@ package io.qt.tools.ant;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -52,6 +52,7 @@ public class FindCompiler {
     private final PropertyHelper propertyHelper;
     private String compilerDetectionLine;
     private String availableCompilers;
+    private final OSInfo osInfo;
 
     public enum Compiler {
         MSVC1998("msvc98"),
@@ -135,7 +136,8 @@ public class FindCompiler {
         }
     }
 
-    public FindCompiler(PropertyHelper propertyHelper, Task task) {
+    public FindCompiler(PropertyHelper propertyHelper, OSInfo osInfo, Task task) {
+    	this.osInfo = Objects.requireNonNull(osInfo);
         this.propertyHelper = propertyHelper;
         this.task = task;
     }
@@ -206,9 +208,9 @@ public class FindCompiler {
      * check if trying to mix 32 bit vm with 64 bit compiler and other way around
      */
     void checkCompilerBits() {
-    	if(OSInfo.crossOS()==null) {
-	        if(OSInfo.os() == OSInfo.OperationSystem.Windows) {
-	        	switch(OSInfo.arch()) {
+    	if(osInfo.crossOS()==null) {
+	        if(osInfo.os() == OSInfo.OperationSystem.Windows) {
+	        	switch(osInfo.arch()) {
 	        	case x86:
 	        		if(compiler!=null && compiler.name.endsWith("64")) {
 	        			System.err.println("WARNING: You are not building for x86 with "+compiler+" compiler...");
@@ -285,7 +287,7 @@ public class FindCompiler {
     }
 
     Compiler decideCompiler() {
-        switch(OSInfo.crossOS()) {
+        switch(osInfo.crossOS()) {
         case Windows:
             checkWindowsCompilers(false);
             break;
@@ -302,7 +304,7 @@ public class FindCompiler {
         	compiler = testForCLANG();
             break;
 		default:
-			if(OSInfo.crossOS().isUnixLike()) {
+			if(osInfo.crossOS().isUnixLike()) {
 	        	compiler = testForCLANG();
 	            if(compiler==null)
 		            compiler = testForGCC();
@@ -315,7 +317,7 @@ public class FindCompiler {
     		Compiler crossCompiler = compiler;
     		this.compilerPathValue = new File(compilerPathValue).getAbsolutePath();
     		try {
-    			switch(OSInfo.os()) {
+    			switch(osInfo.os()) {
                 case Windows:
                     checkWindowsCompilers(true);
                     break;
@@ -331,7 +333,7 @@ public class FindCompiler {
                 	compiler = testForCLANG();
                     break;
         		default:
-        			if(OSInfo.crossOS().isUnixLike()) {
+        			if(osInfo.crossOS().isUnixLike()) {
         	        	compiler = testForCLANG();
         	            if(compiler==null)
         		            compiler = testForGCC();
@@ -366,13 +368,13 @@ public class FindCompiler {
         try {
             List<String> cmdAndArgs = new ArrayList<String>();
             String cmd = "gcc";
-            if(OSInfo.os()==OSInfo.OperationSystem.Windows)
+            if(osInfo.os()==OSInfo.OperationSystem.Windows)
             	cmd += ".exe";
             if(compilerPathValue!=null)
             	cmd = compilerPathValue+File.separator+cmd;
             cmdAndArgs.add(cmd);
             cmdAndArgs.add("-dumpversion");
-            String[] sA = Exec.executeCaptureOutput(task, cmdAndArgs, new File("."), propertyHelper.getProject(), compilerPathValue, null, false);
+            String[] sA = Exec.executeCaptureOutput(task, cmdAndArgs, new File("."), propertyHelper.getProject(), osInfo, compilerPathValue, null, false);
             Util.emitDebugLog(propertyHelper.getProject(), sA);
             if(sA != null && sA.length == 2 && sA[0] != null) {
                 if(match(new String[] { sA[0] }, new String[] { "^3\\.3\\." }))  // sA[0] is stdout
@@ -395,7 +397,7 @@ public class FindCompiler {
             List<String> cmdAndArgs = new ArrayList<String>();
             cmdAndArgs.add("clang");
             cmdAndArgs.add("-dumpversion");
-            String[] sA = Exec.executeCaptureOutput(task, cmdAndArgs, new File("."), propertyHelper.getProject(), compilerPathValue, null, false);
+            String[] sA = Exec.executeCaptureOutput(task, cmdAndArgs, new File("."), propertyHelper.getProject(), osInfo, compilerPathValue, null, false);
             Util.emitDebugLog(propertyHelper.getProject(), sA);
             return Compiler.CLANG;
         } catch(InterruptedException ex) {
@@ -449,7 +451,7 @@ public class FindCompiler {
             	cmd = compilerPathValue+File.separator+cmd;
             cmdAndArgs.add(cmd);
             cmdAndArgs.add("-v");
-            String[] sA = Exec.executeCaptureOutput(task, cmdAndArgs, new File("."), propertyHelper.getProject(), compilerPathValue, null, false);
+            String[] sA = Exec.executeCaptureOutput(task, cmdAndArgs, new File("."), propertyHelper.getProject(), osInfo, compilerPathValue, null, false);
             Util.emitDebugLog(propertyHelper.getProject(), sA);
             if(sA != null && sA.length == 2 && sA[1] != null) {
                 if(match(new String[] { sA[1] }, new String[] { "mingw" }))  // sA[1] is stderr
@@ -480,7 +482,7 @@ public class FindCompiler {
             List<String> cmdAndArgs = new ArrayList<String>();
             cmdAndArgs.add(cmd);
             cmdAndArgs.add("-v");
-            String[] sA = Exec.executeCaptureOutput(task, cmdAndArgs, new File("."), propertyHelper.getProject(), compilerPathValue, null, false);
+            String[] sA = Exec.executeCaptureOutput(task, cmdAndArgs, new File("."), propertyHelper.getProject(), osInfo, compilerPathValue, null, false);
             Util.emitDebugLog(propertyHelper.getProject(), sA);
             if(sA != null && sA.length == 2 && sA[1] != null) {
             	if(sA[1].contains("x86_64-w64-mingw32"))
@@ -508,7 +510,7 @@ public class FindCompiler {
             	cmdAndArgs.add(compilerPathValue+File.separator+"cl.exe");
             else
             	cmdAndArgs.add("cl.exe");   // /version ?
-            String[] sA = Exec.executeCaptureOutput(task, cmdAndArgs, new File("."), propertyHelper.getProject(), compilerPathValue, null, false);
+            String[] sA = Exec.executeCaptureOutput(task, cmdAndArgs, new File("."), propertyHelper.getProject(), osInfo, compilerPathValue, null, false);
             Util.emitDebugLog(propertyHelper.getProject(), sA);
             String stderr = null;
             if(sA != null && sA.length == 2 && sA[1] != null)

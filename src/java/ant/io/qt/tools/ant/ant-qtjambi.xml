@@ -68,6 +68,10 @@
          classname="io.qt.tools.ant.TryCatchTask"/>
     <taskdef name="create-function-pointer-qrc"
          classname="io.qt.tools.ant.CreateFunctionPointerQrcTask"/>
+    <taskdef name="threaded-subant"
+         classname="io.qt.tools.ant.ThreadedSubantTask"/>
+    <taskdef name="register-finished-module"
+         classname="io.qt.tools.ant.RegisterFinishedModuleTask"/>
 
     <typedef name="directory"
          classname="io.qt.tools.ant.Directory"/>

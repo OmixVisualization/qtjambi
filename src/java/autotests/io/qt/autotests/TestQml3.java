@@ -195,7 +195,7 @@ public class TestQml3 extends ApplicationInitializer{
 			super();
 		}
 
-		ExceptionPropertyProvider(QDeclarativeConstructor constructor) {
+		ExceptionPropertyProvider(QPrivateConstructor constructor) {
 			super(constructor);
 		}
 
@@ -258,7 +258,7 @@ public class TestQml3 extends ApplicationInitializer{
 			super();
 		}
 
-		ExceptionProvoker(QDeclarativeConstructor constructor) {
+		ExceptionProvoker(QPrivateConstructor constructor) {
 			super(constructor);
 		}
 

@@ -28,74 +28,22 @@
 ****************************************************************************/
 package io.qt.autotests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Random;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import io.qt.NativeAccess;
-import io.qt.QNoNativeResourcesException;
-import io.qt.QtClassInfo;
-import io.qt.QtPropertyNotify;
-import io.qt.QtPropertyReader;
-import io.qt.QtPropertyWriter;
-import io.qt.QtUtilities;
-import io.qt.autotests.generated.TestInterface;
-import io.qt.core.QByteArray;
-import io.qt.core.QCoreApplication;
-import io.qt.core.QEvent;
-import io.qt.core.QLibraryInfo;
-import io.qt.core.QList;
-import io.qt.core.QMetaMethod;
-import io.qt.core.QMetaObject;
-import io.qt.core.QObject;
-import io.qt.core.QPointF;
-import io.qt.core.QRectF;
-import io.qt.core.QRunnable;
-import io.qt.core.QThread;
-import io.qt.core.QThreadPool;
-import io.qt.core.QUrl;
-import io.qt.core.QVersionNumber;
-import io.qt.core.Qt;
-import io.qt.gui.QColor;
-import io.qt.gui.QGuiApplication;
-import io.qt.gui.QPainter;
-import io.qt.qml.QJSEngine;
-import io.qt.qml.QJSValue;
-import io.qt.qml.QQmlApplicationEngine;
-import io.qt.qml.QQmlComponent;
-import io.qt.qml.QQmlEngine;
-import io.qt.qml.QQmlIncubationController;
-import io.qt.qml.QQmlIncubator;
-import io.qt.qml.QQmlListProperty;
-import io.qt.qml.QQmlParserStatus;
-import io.qt.qml.QQmlProperty;
-import io.qt.qml.QQmlPropertyValueSource;
-import io.qt.qml.QtQml;
-import io.qt.quick.QQuickItem;
-import io.qt.quick.QQuickView;
-import io.qt.quick.widgets.QQuickWidget;
-import io.qt.widgets.QApplication;
-import io.qt.widgets.QGraphicsItem;
-import io.qt.widgets.QGraphicsScene;
-import io.qt.widgets.QStyleOptionGraphicsItem;
-import io.qt.widgets.QWidget;
+import java.lang.ref.*;
+import java.util.*;
+import java.util.concurrent.atomic.*;
+import org.junit.*;
+import io.qt.*;
+import io.qt.autotests.TestMetaObject.SubQObject;
+import io.qt.autotests.TestMetaObject.SubQObject2;
+import io.qt.autotests.generated.*;
+import io.qt.core.*;
+import io.qt.gui.*;
+import io.qt.qml.*;
+import io.qt.quick.*;
+import io.qt.quick.widgets.*;
+import io.qt.widgets.*;
 
 public class TestQml extends ApplicationInitializer{
 	
@@ -111,6 +59,8 @@ public class TestQml extends ApplicationInitializer{
 	public static class TestChild extends QObject
 	{
 		@NativeAccess
+	    @SuppressWarnings("removal")
+		@Deprecated(forRemoval = true)
 		private TestChild(QDeclarativeConstructor dc) throws IllegalAccessException {
 			super(dc);
 		}
@@ -125,6 +75,8 @@ public class TestQml extends ApplicationInitializer{
 	public static class TestObject extends QObject
 	{
 		@NativeAccess
+	    @SuppressWarnings("removal")
+		@Deprecated(forRemoval = true)
 		private TestObject(QDeclarativeConstructor dc) throws IllegalAccessException {
 			super(dc);
 		}
@@ -190,8 +142,9 @@ public class TestQml extends ApplicationInitializer{
 	public static class TestObjectExn extends QObject
 	{
 		@NativeAccess
-		private TestObjectExn(QDeclarativeConstructor dc) throws IllegalAccessException {
-			super(dc);
+		private TestObjectExn(QtConstructInPlace dc) {
+			super((QPrivateConstructor)null);
+			dc.initialize(this);
 			throw new TestException();
 		}
 	};
@@ -199,8 +152,8 @@ public class TestQml extends ApplicationInitializer{
 	public static class TestObjectExn2 extends QQuickItem implements TestInterface, QQmlParserStatus, QQmlPropertyValueSource
 	{
 		@NativeAccess
-		private TestObjectExn2(QDeclarativeConstructor dc) throws IllegalAccessException {
-			super(dc);
+		private TestObjectExn2(QPrivateConstructor dc) {
+			super((QPrivateConstructor)null);
 		}
 
 		@Override
@@ -234,7 +187,7 @@ public class TestQml extends ApplicationInitializer{
 	public static class TestObjectExn3 extends QObject
 	{
 		@NativeAccess
-		private TestObjectExn3(QDeclarativeConstructor dc) throws IllegalAccessException {
+		private TestObjectExn3(QPrivateConstructor dc) {
 			super(dc);
 		}
 	    @QtPropertyReader(name="exn")
@@ -262,6 +215,52 @@ public class TestQml extends ApplicationInitializer{
 		@QtPropertyReader(name="testColor")
 	    public QColor testColor() {return testColor;}
 	}
+	
+	public static class TestMultiInheritanceObject extends QQuickItem implements TestInterface, QQmlParserStatus, QQmlPropertyValueSource
+	{
+		static QQuickItem defaultParent;
+		
+		@NativeAccess
+		private TestMultiInheritanceObject(QtConstructInPlace dc) {
+			super((QPrivateConstructor)null);
+			if(dc.matches(String.class))
+				dc.begin(QQuickItem.class).add(defaultParent).begin(TestInterface.class).addIndex(0).initialize(this);
+			else
+				dc.begin(QQuickItem.class).add(defaultParent).begin(TestInterface.class).add("Default").initialize(this);
+		}
+		
+		@QtInvokable
+		public TestMultiInheritanceObject(String arg) {
+			
+		}
+
+		@Override
+		public void classBegin() {
+		}
+
+		@Override
+		public void componentComplete() {
+		}
+
+		@Override
+		public void setTarget(QQmlProperty arg__1) {
+		}
+		
+		@Override
+		public boolean setReferenceCountTest1(QObject object) {
+			return false;
+		}
+
+		@Override
+		public String method4() {
+			return "TestObjectExn2::method4";
+		}
+
+		@Override
+		public String method5() {
+			return "TestObjectExn2::method5";
+		}
+	};
 	
 	@BeforeClass
 	public static void testInitialize() throws Exception {
@@ -321,6 +320,106 @@ public class TestQml extends ApplicationInitializer{
 		Assert.assertEquals("child2", backEnd._testChildren.get(1).objectName());
 		Assert.assertEquals("child2", backEnd.testChildren().at(1).objectName());
 		Assert.assertEquals(id, QtQml.qmlTypeId("io.qt.test", 1, 0, "TestObject"));
+	}
+	
+	@Test
+    public void testObjectOwnership() {
+		QJSEngine engine = new QJSEngine();
+		QObject testObject = new QObject();
+		QObject scriptValueObject = new QObject();
+		Assert.assertTrue(General.internalAccess.isJavaOwnership(testObject));
+        Assert.assertEquals(QJSEngine.ObjectOwnership.JavaOwnership, QJSEngine.objectOwnership(testObject));
+		QJSValue jsValue = engine.newQObject(testObject);
+        Assert.assertEquals(QJSEngine.ObjectOwnership.JavaScriptOwnership, QJSEngine.objectOwnership(testObject));
+		Assert.assertTrue(General.internalAccess.isCppOwnership(testObject));
+        Assert.assertTrue(jsValue.isQObject());
+        Assert.assertEquals(testObject, jsValue.toQObject());
+        jsValue = engine.toScriptValue(scriptValueObject);
+        Assert.assertEquals(QJSEngine.ObjectOwnership.JavaOwnership, QJSEngine.objectOwnership(scriptValueObject));
+		Assert.assertTrue(General.internalAccess.isJavaOwnership(scriptValueObject));
+        Assert.assertTrue(jsValue.isQObject());
+        Assert.assertEquals(scriptValueObject, jsValue.toQObject());
+        engine.dispose();
+        Assert.assertTrue(testObject.isDisposed());
+        Assert.assertFalse(scriptValueObject.isDisposed());
+        engine = new QJSEngine();
+        testObject = new QObject();
+        QJSEngine.setObjectOwnership(testObject, QJSEngine.ObjectOwnership.JavaOwnership);
+        jsValue = engine.newQObject(testObject);
+        Assert.assertEquals(QJSEngine.ObjectOwnership.JavaOwnership, QJSEngine.objectOwnership(testObject));
+        Assert.assertTrue(General.internalAccess.isJavaOwnership(testObject));
+        engine.dispose();
+        Assert.assertFalse(testObject.isDisposed());
+	}
+	
+	public static class JavaObject extends QObject{
+    	public static final @NonNull QMetaObject staticMetaObject = QMetaObject.forType(JavaObject.class);
+    	@QtInvokable
+		public JavaObject() {
+			super();
+			QJSEngine.setObjectOwnership(this, QJSEngine.ObjectOwnership.JavaOwnership);
+		}
+    	@QtInvokable
+    	public SubQObject createSubQObject(int i, boolean b, String s) {
+    		return new SubQObject(i, b, s);
+    	}
+    	@QtInvokable
+    	public SubQObject returnNull() {
+    		return null;
+    	}
+	}
+	
+	@Test
+    public void testObjectConstruction() {
+		QJSEngine engine = new QJSEngine();
+		engine.globalObject().setProperty("SubQObject", engine.newQMetaObject(SubQObject.staticMetaObject));
+		engine.globalObject().setProperty("SubQObject2", engine.newQMetaObject(SubQObject2.staticMetaObject));
+		engine.globalObject().setProperty("JavaObject", engine.newQMetaObject(JavaObject.staticMetaObject));
+		QJSValue result = engine.evaluate("subObject = new SubQObject(1,false,'test')");
+		Assert.assertTrue(result.isQObject());
+		Assert.assertTrue(result.toQObject() instanceof SubQObject);
+		SubQObject so = (SubQObject)result.toQObject();
+		Assert.assertEquals(QJSEngine.ObjectOwnership.JavaScriptOwnership, QJSEngine.objectOwnership(so));
+		Assert.assertTrue(General.internalAccess.isCppOwnership(so));
+		result = engine.evaluate("new SubQObject2(2,false,'test2', 2., subObject)");
+		Assert.assertTrue(result.isQObject());
+		Assert.assertTrue(result.toQObject() instanceof SubQObject2);
+		SubQObject2 so1 = (SubQObject2)result.toQObject();
+		Assert.assertEquals(so, result.toQObject().parent());
+		result = engine.evaluate("javaObject = new JavaObject()");
+		Assert.assertTrue(result.isQObject());
+		Assert.assertTrue(result.toQObject() instanceof JavaObject);
+		JavaObject jo = (JavaObject)result.toQObject();
+		Assert.assertEquals(null, jo.parent());
+		Assert.assertEquals(QJSEngine.ObjectOwnership.JavaOwnership, QJSEngine.objectOwnership(jo));
+		Assert.assertTrue(General.internalAccess.isJavaOwnership(jo));
+		result = engine.evaluate("javaObject.createSubQObject(2,false,'script-created')");
+		Assert.assertTrue(result.isQObject());
+		Assert.assertTrue(result.toQObject() instanceof SubQObject);
+		SubQObject so2 = (SubQObject)result.toQObject();
+		Assert.assertEquals(null, so2.parent());
+		Assert.assertEquals("script-created", so2.s());
+		Assert.assertEquals(QJSEngine.ObjectOwnership.JavaScriptOwnership, QJSEngine.objectOwnership(so2));
+		Assert.assertTrue(General.internalAccess.isCppOwnership(so2));
+		result = engine.evaluate("javaObject.returnNull()");
+		Assert.assertTrue(result.isNull());
+		result = engine.evaluate("javaObject.createSubQObject(1,false,'for java')");
+		Assert.assertTrue(result.isQObject());
+		Assert.assertTrue(result.toQObject() instanceof SubQObject);
+		SubQObject so3 = (SubQObject)result.toQObject();
+		Assert.assertEquals(null, so3.parent());
+		Assert.assertEquals("for java", so3.s());
+		Assert.assertEquals(QJSEngine.ObjectOwnership.JavaScriptOwnership, QJSEngine.objectOwnership(so3));
+		Assert.assertTrue(General.internalAccess.isCppOwnership(so3));
+		QJSEngine.setObjectOwnership(so3, QJSEngine.ObjectOwnership.JavaOwnership);
+		Assert.assertEquals(QJSEngine.ObjectOwnership.JavaOwnership, QJSEngine.objectOwnership(so3));
+		Assert.assertTrue(General.internalAccess.isJavaOwnership(so3));
+		engine.dispose();
+		Assert.assertTrue(so2.isDisposed());
+		Assert.assertFalse(jo.isDisposed());
+		Assert.assertTrue(so1.isDisposed());
+		Assert.assertTrue(so.isDisposed());
+		Assert.assertFalse(so3.isDisposed());
 	}
 	
 	@Test
@@ -498,6 +597,8 @@ public class TestQml extends ApplicationInitializer{
 			throw e;
 		} catch (Error e) {
 			assertEquals("Cannot initialize interface io.qt.autotests.generated.TestInterface without arguments. Please use the private constructor and QtUtilities.initializeNativeObject(object, arguments...) instead.", e.getMessage());
+		} catch (Throwable e) {
+			Assert.assertEquals(e.getMessage(), Error.class, e.getClass());
 		}
 	}
 	
@@ -514,6 +615,8 @@ public class TestQml extends ApplicationInitializer{
 			throw e;
 		} catch (Error e) {
 			assertEquals("Cannot initialize interface io.qt.autotests.generated.TestInterface without arguments. Please use the private constructor and QtUtilities.initializeNativeObject(object, arguments...) instead.", e.getMessage());
+		} catch (Throwable e) {
+			Assert.assertEquals(e.getMessage(), Error.class, e.getClass());
 		}
 	}
 	
@@ -530,7 +633,31 @@ public class TestQml extends ApplicationInitializer{
 			throw e;
 		} catch (Error e) {
 			assertEquals("Cannot initialize interface io.qt.autotests.generated.TestInterface without arguments. Please use the private constructor and QtUtilities.initializeNativeObject(object, arguments...) instead.", e.getMessage());
+		} catch (Throwable e) {
+			Assert.assertEquals(e.getMessage(), Error.class, e.getClass());
 		}
+	}
+	
+	@Test
+    public void testMultiInheritance_QuickView() {
+		QtQml.qmlClearTypeRegistrations();
+		QtQml.qmlRegisterType(TestMultiInheritanceObject.class, "io.qt.test", 1, 0, "TestObject");
+		QByteArray data = new QByteArray("import io.qt.test 1.0\n" + 
+				"import QtQuick 2.0\n" + 
+				"TestObject {\n" + 
+				"    id: test\n" + 
+				"}");
+		QQuickItem parent = new QQuickItem();
+		TestMultiInheritanceObject.defaultParent = parent;
+		QQmlEngine engine = new QQmlEngine();
+		QQmlComponent component = new QQmlComponent(engine);
+		component.setData(data, (QUrl)null);
+		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
+		Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
+		QObject object = component.create();
+		Assert.assertTrue(object instanceof TestMultiInheritanceObject);
+		Assert.assertEquals(parent, object.parent());
+		parent.dispose();
 	}
 	
 	@Test
@@ -655,7 +782,7 @@ public class TestQml extends ApplicationInitializer{
 	
 	static class MessageBody extends QObject
 	{
-		private MessageBody(QDeclarativeConstructor dc) throws IllegalAccessException {
+		MessageBody(QPrivateConstructor dc) {
 			super(dc);
 		}
 		@QtPropertyWriter(name="text")
@@ -676,7 +803,7 @@ public class TestQml extends ApplicationInitializer{
 	
 	static class MessageAuthor extends QObject
 	{
-		public MessageAuthor(QDeclarativeConstructor dc) throws IllegalAccessException {
+		MessageAuthor(QPrivateConstructor dc) {
 			super(dc);
 		}
 		private MessageAuthor(QObject parent) {
@@ -714,8 +841,10 @@ public class TestQml extends ApplicationInitializer{
 	
 	static class Message extends QObject
 	{
-	    private Message(QDeclarativeConstructor dc) throws IllegalAccessException {
-			super(dc);
+	    private Message(QtConstructInPlace dc) {
+			super((QPrivateConstructor)null);
+			dc.initialize(this);
+			author = new MessageAuthor(this);
 		}
 		@QtPropertyWriter(name="body")
 	    public void setBody(MessageBody a) {
@@ -735,7 +864,7 @@ public class TestQml extends ApplicationInitializer{
 	    @QtPropertyNotify(name="body")
 	    public final Signal0 bodyChanged = new Signal0();
 	    private MessageBody body;
-	    private MessageAuthor author = new MessageAuthor(this);
+	    private MessageAuthor author;
 	}
 	
 	static class MessageBoard extends QObject
@@ -977,7 +1106,7 @@ public class TestQml extends ApplicationInitializer{
 	
 	static class AttachTest extends QObject{
 
-		AttachTest(QDeclarativeConstructor dc) throws IllegalAccessException {
+		AttachTest(QPrivateConstructor dc) {
 			super(dc);
 		}
 		
@@ -1046,9 +1175,10 @@ public class TestQml extends ApplicationInitializer{
 	static class RandomNumberGenerator extends QObject implements QQmlPropertyValueSource
 	{
 		static RandomNumberGenerator instance;
-	    RandomNumberGenerator(QDeclarativeConstructor dc)
+	    RandomNumberGenerator(QtConstructInPlace dc)
 				throws IllegalAccessException {
-			super(dc);
+			super((QPrivateConstructor)null);
+			dc.initialize(this);
 			instance = this;
 		}
 
@@ -1085,7 +1215,7 @@ public class TestQml extends ApplicationInitializer{
 	
 	static class PropertyValueSourceTest extends QObject{
 		
-		PropertyValueSourceTest(QDeclarativeConstructor dc) throws IllegalAccessException {
+		PropertyValueSourceTest(QPrivateConstructor dc) {
 			super(dc);
 		}
 		
@@ -1269,7 +1399,7 @@ public class TestQml extends ApplicationInitializer{
 	public static class MultiInterfaceObject extends QObject implements QRunnable, QGraphicsItem
 	{
 		@NativeAccess
-		private MultiInterfaceObject(QDeclarativeConstructor dc) throws IllegalAccessException {
+		private MultiInterfaceObject(QPrivateConstructor dc) {
 			super(dc);
 		}
 

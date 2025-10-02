@@ -91,6 +91,7 @@
         </if>
     </target>
     <target name="compile-qml" depends="jar_init">
+        <dependencies-to-classpath property="qtjambi.dependencies" jarversion="${qtjambi.jar.version}" dependencies="${qtjambi.required.modules}"/>
         <echo message="Compiling java classes: ${java.srcdir}/qml/${module} excludes: ${module.excludes}"/>
         <pathconvert pathsep=","
             property="multiroot.basedirs">
@@ -127,7 +128,6 @@
             property="sourcedirs2">
             <path refid="sourcedirs"/>
         </pathconvert>
-        <dependencies-to-classpath property="qtjambi.dependencies" jarversion="${qtjambi.jar.version}" dependencies="${qtjambi.required.modules}"/>
         <if>
             <istrue value="${java.module.based}"/>
             <then>
@@ -214,6 +214,7 @@
                 </antcall>
             </then>
         </if>
+		<register-finished-module module="${module}"/>
     </target>
 
     <target name="bundle-qml">
@@ -407,6 +408,10 @@
 				<equals arg1="${qtjambi.osplatform}" arg2="android"/>
 			</or>
 			<then>
+				<condition property="qmltargetdir" value="${outputDir}/${targetdirname}/tests" else="${deploymentdir}/native">
+					<istrue value="${qtjambi.testbuild}"/>
+				</condition>
+				<mkdir dir="${qmltargetdir}/${moduledash}"/>
 				<if>
 					<equals arg1="${qtjambi.osname}" arg2="android-arm"/>
 					<then>
@@ -432,7 +437,8 @@
 											</then>
 											<else>
 												<property name="jar-includes" value="qml/${qml-usc}/*,META-INF/qtjambi-deployment.xml"/>
-												<create-native-deployment outputDirectory="${plugindestdir}" 
+												<create-native-deployment outputDirectory="${qmltargetdir}" 
+																			tempDirectory="${qmltargetdir}/${moduledash}"
 																			debug="${isdebug}" module="${moduledot}" 
 																			libraries="${qml-subdir}" plugin="true" 
 																			jarFile=""
@@ -445,10 +451,6 @@
 						</if>
 					</else>
 				</if>
-				<condition property="qmltargetdir" value="${outputDir}/${targetdirname}/tests" else="${deploymentdir}/native">
-					<istrue value="${qtjambi.testbuild}"/>
-				</condition>
-				<echo>jar-includes=${qmltargetdir}/${subdir}/${jar-includes}</echo>
 				<jar destfile="${qmltargetdir}/${moduledash}-native-${qtjambi.osname}${platformjar.debug.suffix}-${qtjambi.jar.version}.jar">
 					<manifest>
 						<attribute name="Built-By" value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
@@ -459,9 +461,9 @@
 						<attribute name="Bundle-ManifestVersion" value="2"/>
 					</manifest>
 					<fileset dir="${qmltargetdir}/${subdir}" includes="${jar-includes}"/>
+					<fileset dir="${qmltargetdir}/${moduledash}" includes="META-INF/*" erroronmissingdir="false"/>
 				</jar>
-				<delete file="${qmltargetdir}/${subdir}/META-INF/qtjambi-deployment.xml"/>
-				<delete file="${qmltargetdir}/${subdir}/META-INF/qtjambi-utilities.xml"/>
+				<delete dir="${qmltargetdir}/${moduledash}"/>
 			</then>
 		</if>
     </target>

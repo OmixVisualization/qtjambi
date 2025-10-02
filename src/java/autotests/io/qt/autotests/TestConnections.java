@@ -231,22 +231,25 @@ public class TestConnections extends ApplicationInitializer
     @Test public void run_cppCreatedShouldMapToJava() {
         SignalsAndSlots sas = SignalsAndSlots.createConnectedObject();
         assertTrue(sas != null);
-
-        assertEquals(0, sas.slot1_1_called());
-        sas.signal1.emit();
-        assertEquals(1, sas.slot1_1_called());
-        sas.emit_signal_1();
-        assertEquals(2, sas.slot1_1_called());
-
-        sas.signal1.connect(sas::slot1_2);
-
-        assertEquals(0, sas.slot1_2_called());
-        sas.signal1.emit();
-        assertEquals(3, sas.slot1_1_called());
-        assertEquals(1, sas.slot1_2_called());
-        sas.emit_signal_1();
-        assertEquals(4, sas.slot1_1_called());
-        assertEquals(2, sas.slot1_2_called());
+        try {
+	        assertEquals(0, sas.slot1_1_called());
+	        sas.signal1.emit();
+	        assertEquals(1, sas.slot1_1_called());
+	        sas.emit_signal_1();
+	        assertEquals(2, sas.slot1_1_called());
+	
+	        sas.signal1.connect(sas::slot1_2);
+	
+	        assertEquals(0, sas.slot1_2_called());
+	        sas.signal1.emit();
+	        assertEquals(3, sas.slot1_1_called());
+	        assertEquals(1, sas.slot1_2_called());
+	        sas.emit_signal_1();
+	        assertEquals(4, sas.slot1_1_called());
+	        assertEquals(2, sas.slot1_2_called());
+        }finally{
+        	sas.dispose();
+        }
     }
 
     @Test public void run_cppEmitShouldEmitJavaSignal() {

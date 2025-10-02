@@ -1183,7 +1183,7 @@ extern "C" JNIEXPORT jarray JNICALL Java_io_qt_core_QList_asArray
 
 // new QItemSelection(QItemSelection)
 #if QT_CONFIG(itemmodel)
-void __qt_construct_QItemSelection_QItemSelection(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, bool, bool, bool)
+void __qt_construct_QItemSelection_QItemSelection(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, QtJambiAPI::ConstructorOptions)
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QItemSelection(const QModelIndex & topLeft, const QModelIndex & bottomRight)")
     Q_ASSERT(__java_arguments);

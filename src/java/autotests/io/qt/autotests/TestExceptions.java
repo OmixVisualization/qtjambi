@@ -88,11 +88,6 @@ public class TestExceptions extends ApplicationInitializer {
 				}
 
 			    @SuppressWarnings("unused")
-				MultiImpl(QDeclarativeConstructor dc) throws IllegalAccessException {
-					super(dc);
-				}
-
-			    @SuppressWarnings("unused")
 				public MultiImpl(QObject parent) {
 					super(parent);
 				}
@@ -150,11 +145,6 @@ public class TestExceptions extends ApplicationInitializer {
 			class MultiImpl extends QObject implements Runnable, QPaintDevice{
 			    public MultiImpl() {
 					super();
-				}
-
-			    @SuppressWarnings("unused")
-				MultiImpl(QDeclarativeConstructor dc) throws IllegalAccessException {
-					super(dc);
 				}
 
 			    @SuppressWarnings("unused")

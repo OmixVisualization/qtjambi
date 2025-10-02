@@ -29,7 +29,6 @@
 ****************************************************************************/
 package io.qt.core;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -42,12 +41,6 @@ abstract class AbstractList<T> extends AbstractSequentialContainer<T> implements
 		super(p);
 	}
     
-    /**
-     * <p>Creates and returns a copy of this sequential container.</p>
-     */
-    @Override
-    public abstract AbstractList<T> clone();
-    
     @QtUninvokable
 	protected abstract QSequentialIterator<T> begin();
 
@@ -55,6 +48,8 @@ abstract class AbstractList<T> extends AbstractSequentialContainer<T> implements
     protected abstract QSequentialIterator<T> end();
     
     public abstract void removeAt(int i);
+    
+    abstract T takeAt(int i);
     
     public abstract void append(java.util.Collection<T> t);
     
@@ -89,9 +84,7 @@ abstract class AbstractList<T> extends AbstractSequentialContainer<T> implements
     @Override
     @QtUninvokable
     public final T remove(int index) {
-        T result = get(index);
-        this.removeAt(index);
-        return result;
+        return takeAt(index);
     }
 
     /**
@@ -228,31 +221,13 @@ abstract class AbstractList<T> extends AbstractSequentialContainer<T> implements
      * The returned list supports all of the optional list operations supported
      * by this list.
      */
-	@SuppressWarnings("unchecked")
 	@Override
     @QtUninvokable
 	public final List<T> subList(int fromIndex, int toIndex) {
-	    if (fromIndex < 0)
-	        throw new IndexOutOfBoundsException("fromIndex = " + fromIndex);
-	    if (toIndex > size())
-	        throw new IndexOutOfBoundsException("toIndex = " + toIndex);
-	    if (fromIndex > toIndex)
-	        throw new IllegalArgumentException("fromIndex(" + fromIndex +
-	                                       ") > toIndex(" + toIndex + ")");
-	    List<T> sublist = clone();
-	    sublist.clear();
-	    if(!sublist.isEmpty()) {
-		    try {
-		    	sublist = this.getClass().getConstructor().newInstance();
-		    }catch(Throwable e) {
-		    	sublist = new ArrayList<>();
-		    }
-	    }
-	    for (int i = 0; i < toIndex - fromIndex; i++) {
-	        sublist.add(get(fromIndex+i));
-	    }
-	    return sublist;
+	    return mid(fromIndex, toIndex-fromIndex);
 	}
+	
+	abstract AbstractList<T> mid(int pos, int length);
 	
 	/**
      * Retains only the elements in this list that are contained in the
@@ -263,15 +238,6 @@ abstract class AbstractList<T> extends AbstractSequentialContainer<T> implements
 	@Override
     @QtUninvokable
 	public final boolean retainAll(Collection<?> c) {
-		boolean changed = false;
-		for(int i=0; i<size();) {
-			if(c.contains(get(i))) {
-				++i;
-			}else {
-				changed = true;
-				remove(i);
-			}
-		}
-        return changed;
+		return removeIf(c::contains);
 	}
 }

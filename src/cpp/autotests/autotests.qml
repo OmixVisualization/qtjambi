@@ -60,11 +60,6 @@ TypeSystem{
         functionName: "disconnectNotify"
     }
     
-    Rejection{
-        className: "PropertyAndMethodCallTest"
-        functionName: "dumpMetaObject"
-    }
-    
     ValueType{
         name: "Tulip"
         Include{
@@ -1367,6 +1362,18 @@ if(java.util.logging.Logger.getLogger("io.qt.autotests").isLoggable(java.util.lo
                 fileName: "QtJambiWidgets/hashes.h"
                 location: Include.Global
             }
+        }
+        //Rejection{functionName: "dumpMetaObject"}
+        ModifyFunction{
+            signature: "instantiateInPlace(const QMetaMethod&, std::initializer_list<QVariant>)"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+            since: 6.8
         }
     }
     

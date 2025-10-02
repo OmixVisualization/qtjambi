@@ -47,7 +47,7 @@ public final class QDoubleBindable extends QUntypedBindable {
 	 * Creates a new <code>double</code>-typed invalid bindable.
 	 */
 	public QDoubleBindable() {
-		super(null, null);
+		this((QUntypedPropertyData)null, (QBindableInterface)null);
 	}
 	
 	/**

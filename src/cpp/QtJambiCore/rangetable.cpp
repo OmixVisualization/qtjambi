@@ -54,15 +54,15 @@ class QtJambiGenericTableItemModelImpl
     static constexpr bool is_mutable_impl = true;
 
 public:
-    explicit QtJambiGenericTableItemModelImpl(Range &&model, QRangeModel *itemModel)
-        : Base(std::forward<Range>(model), {}, itemModel)
+    explicit QtJambiGenericTableItemModelImpl(Range &&model, QRangeModel *itemModel, QGenericTableItemModelImpl<GenericTable>* owner)
+        : Base(std::forward<Range>(model), {}, itemModel, owner)
     {}
 
 protected:
     QModelIndex indexImpl(int row, int column, const QModelIndex &) const
     {
         if constexpr (Base::dynamicColumns()) {
-            if (column < int(Base::size(*QRangeModelDetails::cpos(*this->m_data.model(), row))))
+            if (column < int(Base::size(*QRangeModelDetails::pos(*this->m_data.model(), row))))
                 return this->createIndex(row, column);
             // if we got here, then column < columnCount(), but this row is to short
             qCritical("QRangeModel: Column-range at row %d is not large enough!", row);
@@ -93,7 +93,7 @@ protected:
         if constexpr (Base::dynamicColumns()) {
             if(Base::size(*this->m_data.model()) == 0)
                 return 0;
-            auto iter = QRangeModelDetails::cbegin(*this->m_data.model());
+            auto iter = QRangeModelDetails::begin(*this->m_data.model());
             int sz = int(Base::size(*iter));
             return sz;
         } else if constexpr (Base::one_dimensional_range) {
@@ -165,7 +165,7 @@ protected:
     decltype(auto) rowDataImpl(const QModelIndex &index) const
     {
         Q_ASSERT(index.row() < int(Base::size(*this->m_data.model())));
-        return *QRangeModelDetails::cpos(*this->m_data.model(), index.row());
+        return *QRangeModelDetails::pos(*this->m_data.model(), index.row());
     }
 
     decltype(auto) rowDataImpl(const QModelIndex &index)
@@ -204,9 +204,7 @@ template<bool is_mutable_range,
 void QGenericTableItemModelImpl<GenericTable>::initializeTable(QRangeModel *itemModel, Args&&... args){
     using Range = RangeWrapperType<TreeType::None,is_mutable_range,is_mutable_row,is_list_range,is_list_row,rowType>;
     using TableType = QtJambiGenericTableItemModelImpl<is_mutable_range,is_mutable_row,is_list_range,is_list_row,rowType>;
-    impl = new TableType(Range{std::move(args)...}, itemModel);
-    callConst_fn = &TableType::callConst;
-    call_fn = &TableType::call;
+    impl = new TableType(Range{std::move(args)...}, itemModel, this);
 }
 
 void QGenericTableItemModelImpl<GenericTable>::initializeTable(QRangeModel *itemModel, GenericTable&& model){

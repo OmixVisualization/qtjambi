@@ -15,6 +15,8 @@ import java.util.TreeSet;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.PropertyHelper;
 import org.apache.tools.ant.Task;
+import org.apache.tools.ant.taskdefs.CallTarget;
+import org.apache.tools.ant.taskdefs.Property;
 
 import io.qt.tools.ant.OSInfo.Architecture;
 
@@ -42,11 +44,25 @@ public class ForeachVersionTask extends Task {
 		String createAndroid = AntUtil.getPropertyAsString(propertyHelper, "android");
 		boolean takeDefaultQt = false;
 		String qmakePath = AntUtil.getPropertyAsString(propertyHelper, "qmake");
+		OSInfo osInfo = new OSInfo();
 		if(qmakePath!=null && !qmakePath.isEmpty()) {
-			if(ndk!=null && !ndk.isEmpty())
-				AntUtil.setProperty(propertyHelper, "qtjambi.android.ndk", ndk);
-			for(String target : targets)
-				this.getProject().executeTarget(target);
+			for(String target : targets) {
+				CallTarget ct = (CallTarget) getProject().createTask("antcall");
+				ct.setOwningTarget(getOwningTarget());
+				ct.init();
+				ct.bindToOwner(this);
+				ct.setInheritAll(false);
+				ct.setTarget(target);
+				Property param = ct.createParam();
+				param.setName("qtjambi.osinfo");
+				param.setValue(OSInfo.initializeNewOSInfo(getProject()));
+				if(ndk!=null && !ndk.isEmpty()) {
+					param = ct.createParam();
+					param.setName("qtjambi.android.ndk");
+					param.setValue(ndk);
+				}
+				ct.execute();
+			}
 			return;
 		}
 		if(dirs==null)
@@ -69,10 +85,23 @@ public class ForeachVersionTask extends Task {
 				if(ndk!=null && !ndk.isEmpty())
 					specProperties.setProperty("qtjambi.android.ndk", ndk);
 				for(String target : targets) {
-					AntUtil.setProperty(propertyHelper, "proxy.target", target);
-					OSInfo.setQMakeXSpec(null);
-					InitializeBuildTask.setTargetProperties(specProperties);
-					getProject().executeTarget("targetproxy");
+					CallTarget ct = (CallTarget) getProject().createTask("antcall");
+					ct.setOwningTarget(getOwningTarget());
+					ct.init();
+					ct.bindToOwner(this);
+					ct.setInheritAll(false);
+					ct.setTarget(target);
+					Property param = ct.createParam();
+					param.setName("qtjambi.osinfo");
+					param.setValue(OSInfo.initializeNewOSInfo(getProject()));
+					for(Object key : specProperties.keySet()) {
+						if(specProperties.get(key)!=null) {
+							param = ct.createParam();
+							param.setName(key.toString());
+							param.setValue(specProperties.get(key));
+						}
+					}
+					ct.execute();
 				}
 			}
 		}else {
@@ -86,12 +115,12 @@ public class ForeachVersionTask extends Task {
 			if(base==null) {
 				takeDefaultQt = "default".equals(dirs);
 				if (!takeDefaultQt) {
-					if(OSInfo.os()==OSInfo.OperationSystem.Windows) {
+					if(osInfo.os()==OSInfo.OperationSystem.Windows) {
 						base = "C:\\Qt";
 						if(base==null || !new java.io.File(base).isDirectory()) {
 							base = null;
 						}
-					}else if(OSInfo.os()==OSInfo.OperationSystem.MacOS) {
+					}else if(osInfo.os()==OSInfo.OperationSystem.MacOS) {
 						base = "/Library/Qt";
 						if(base==null || !new java.io.File(base).isDirectory()) {
 							base = "/System/Qt";
@@ -102,7 +131,7 @@ public class ForeachVersionTask extends Task {
 						if(base==null || !new java.io.File(base).isDirectory()) {
 							base = null;
 						}
-					}else if(OSInfo.os().isUnixLike()) {
+					}else if(osInfo.os().isUnixLike()) {
 						base = "/opt/Qt";
 						if(base==null || !new java.io.File(base).isDirectory()) {
 							base = null;
@@ -125,7 +154,7 @@ public class ForeachVersionTask extends Task {
 			if(takeDefaultQt) {
 				List<java.io.File> qmakes = new ArrayList<>();
 				java.io.File qmake;
-				switch(OSInfo.os()) {
+				switch(osInfo.os()) {
 				case Windows:
 					qmake = Util.TRY_LOCATE_EXEC("qmake.exe", "", "");
 					if(qmake!=null && qmake.exists()) {
@@ -137,7 +166,7 @@ public class ForeachVersionTask extends Task {
 					}
 					break;
 				default:
-					if(!OSInfo.os().isUnixLike()) {
+					if(!osInfo.os().isUnixLike()) {
 						break;
 					}
 				case MacOS:
@@ -146,30 +175,6 @@ public class ForeachVersionTask extends Task {
 					paths.add(0, "/usr/local/bin");
 					paths.add(0, "/usr/bin");
 					String _paths = String.join(File.pathSeparator, paths);
-					qmake = Util.TRY_LOCATE_EXEC("qt5/bin/qmake5", _paths, "");
-					if(qmake!=null && qmake.exists()) {
-						qmakes.add(qmake);
-					}else {
-						qmake = Util.TRY_LOCATE_EXEC("qt5/bin/qmake-qt5", _paths, "");
-						if(qmake!=null && qmake.exists()) {
-							qmakes.add(qmake);
-						}else {
-							qmake = Util.TRY_LOCATE_EXEC("qt5/bin/qmake", _paths, "");
-							if(qmake!=null && qmake.exists()) {
-								qmakes.add(qmake);
-							}else {
-								qmake = Util.TRY_LOCATE_EXEC("qmake5", _paths, "");
-								if(qmake!=null && qmake.exists()) {
-									qmakes.add(qmake);
-								}else {
-									qmake = Util.TRY_LOCATE_EXEC("qmake-qt5", _paths, "");
-									if(qmake!=null && qmake.exists()) {
-										qmakes.add(qmake);
-									}
-								}
-							}
-						}
-					}
 					qmake = Util.TRY_LOCATE_EXEC("qt6/bin/qmake6", _paths, "");
 					if(qmake!=null && qmake.exists()) {
 						qmakes.add(qmake);
@@ -203,8 +208,7 @@ public class ForeachVersionTask extends Task {
 				}
 				if(qmakes.isEmpty()) {
 					// to cause an error...
-					for(String target : targets)
-						this.getProject().executeTarget(target);
+					throw new BuildException("Unable to find qmake");
 				}else {
 					boolean containsTestReport = false;
 					if(!"true".equals(AntUtil.getPropertyAsString(propertyHelper, "skip.report"))) {
@@ -219,18 +223,6 @@ public class ForeachVersionTask extends Task {
 					Properties versionProperties = (Properties)targetProperties.clone();
 					Set<Map<String,String>> queries = new HashSet<>();
 					
-					String versions = AntUtil.getPropertyAsString(propertyHelper, "qtjambi.qtversions");
-					if(versions==null)
-						versions = AntUtil.getPropertyAsString(propertyHelper, "qt");
-					if(versions==null)
-						versions = AntUtil.getPropertyAsString(propertyHelper, "QTVERSION");
-					if(versions==null)
-						versions = AntUtil.getPropertyAsString(propertyHelper, "QTVERSIONS");
-					if(versions==null)
-						versions = System.getenv("QTVERSION");
-					if(versions==null)
-						versions = System.getenv("QTVERSIONS");
-					
 					for (java.io.File file : qmakes) {
 						String absolutePath;
 						try {
@@ -242,7 +234,7 @@ public class ForeachVersionTask extends Task {
 						} catch (Throwable e) {
 							absolutePath = file.getAbsolutePath();
 						}
-						Map<String,String> query = QMakeTask.query(this, absolutePath);
+						Map<String,String> query = QMakeTask.query(osInfo, this, absolutePath);
 						if(queries.contains(query))
 							continue;
 						queries.add(query);
@@ -250,26 +242,50 @@ public class ForeachVersionTask extends Task {
 						specProperties.setProperty("qmake", absolutePath);
 						if(containsTestReport)
 							specProperties.setProperty("skip.report", "true");
-						InitializeBuildTask.setTargetProperties(specProperties);
 						for(String target : targets) {
 							if(!target.equals("tests.report")) {
-								AntUtil.setProperty(propertyHelper, "proxy.target", target);
-								if(versions!=null) {
-									AntUtil.setProperty(propertyHelper, "targetversions", versions);
+								CallTarget ct = (CallTarget) getProject().createTask("antcall");
+								ct.setOwningTarget(getOwningTarget());
+								ct.init();
+								ct.bindToOwner(this);
+								ct.setInheritAll(false);
+								ct.setTarget(target);
+								Property param = ct.createParam();
+								param.setName("qtjambi.osinfo");
+								param.setValue(OSInfo.initializeNewOSInfo(getProject()));
+								for(Object key : specProperties.keySet()) {
+									if(specProperties.get(key)!=null) {
+										param = ct.createParam();
+										param.setName(key.toString());
+										param.setValue(specProperties.get(key));
+									}
 								}
 								try {
-									getProject().executeTarget("targetproxy");
+									ct.execute();
 								}catch(InitializeBuildTask.VersionSkip s) {}
 							}
 						}
-						InitializeBuildTask.setTargetProperties(null);
-						OSInfo.setQMakeXSpec(null);
 						lastProperties = specProperties;
 					}
 					if(containsTestReport && lastProperties!=null) {
+						CallTarget ct = (CallTarget) getProject().createTask("antcall");
+						ct.setOwningTarget(getOwningTarget());
+						ct.init();
+						ct.bindToOwner(this);
+						ct.setInheritAll(false);
+						ct.setTarget("tests.report.impl");
+						Property param = ct.createParam();
+						param.setName("qtjambi.osinfo");
+						param.setValue(OSInfo.initializeNewOSInfo(getProject()));
 						lastProperties.setProperty("skip.report", "false");
-						AntUtil.setProperty(propertyHelper, "proxy.target", "tests.report.impl");
-						getProject().executeTarget("targetproxy");
+						for(Object key : lastProperties.keySet()) {
+							if(lastProperties.get(key)!=null) {
+								param = ct.createParam();
+								param.setName(key.toString());
+								param.setValue(lastProperties.get(key));
+							}
+						}
+						ct.execute();
 					}
 					return;
 				}
@@ -288,7 +304,7 @@ public class ForeachVersionTask extends Task {
 					if(versions==null)
 						versions = System.getenv("QTVERSIONS");
 					FindCompiler.Compiler compiler = null;
-					FindCompiler finder = new FindCompiler(propertyHelper, this);
+					FindCompiler finder = new FindCompiler(propertyHelper, osInfo, this);
 					try {
 						compiler = finder.decideCompiler();
 					} catch (BuildException e1) {
@@ -306,7 +322,7 @@ public class ForeachVersionTask extends Task {
 											iVersion[i] = Integer.parseInt(_v[i]);
 										}
 										String versionString = String.format("%1$s.%2$s", iVersion[0], iVersion[1]);
-										if(!versionStrings.contains(versionString))
+										if(!versionStrings.contains(versionString) && !versionString.startsWith("5."))
 											versionStrings.add(versionString);
 									} catch (NumberFormatException e) {}
 								}
@@ -381,7 +397,7 @@ public class ForeachVersionTask extends Task {
 								String qmake = null;
 								
 								if(!"only".equalsIgnoreCase(createAndroid)) {
-									switch(OSInfo.crossOS()) {
+									switch(osInfo.crossOS()) {
 									case IOS:
 										qtDirs.add(new java.io.File(versionDir, "ios"));
 										break;
@@ -434,8 +450,8 @@ public class ForeachVersionTask extends Task {
 										}
 										break;
 									default:
-										if(OSInfo.crossOS().isUnixLike()){
-											if(OSInfo.arch()==Architecture.arm64) {
+										if(osInfo.crossOS().isUnixLike()){
+											if(osInfo.arch()==Architecture.arm64) {
 												qtDirs.add(new java.io.File(versionDir, "gcc_arm64"));
 												qtDirs.add(new java.io.File(versionDir, "gcc_64"));
 											}else {
@@ -469,7 +485,7 @@ public class ForeachVersionTask extends Task {
 										}
 									}
 									java.io.File qtDir = null;
-									switch(OSInfo.os()) {
+									switch(osInfo.os()) {
 									case MacOS:
 										if(iVersion[0]<6) {
 											qtDir = new java.io.File(versionDir, "clang_64");
@@ -479,7 +495,7 @@ public class ForeachVersionTask extends Task {
 										qmake = "qmake";
 										break;
 									case Linux:
-										if(OSInfo.arch()==Architecture.arm64)
+										if(osInfo.arch()==Architecture.arm64)
 											qtDir = new java.io.File(versionDir, "gcc_arm64");
 										else
 											qtDir = new java.io.File(versionDir, "gcc_64");
@@ -541,7 +557,7 @@ public class ForeachVersionTask extends Task {
 											}
 											if(toolsBin!=null && !toolsBin.isEmpty()) {
 												specProperties.setProperty(Constants.TOOLS_BINDIR, toolsBin);
-												switch(OSInfo.os()) {
+												switch(osInfo.os()) {
 												case Windows:
 													specProperties.setProperty(Constants.TOOLS_QMAKE, "qmake.exe");
 													specProperties.setProperty(Constants.TOOLS_QMAKE_ABSPATH, toolsBin+"\\qmake.exe");
@@ -559,7 +575,7 @@ public class ForeachVersionTask extends Task {
 												specProperties.setProperty(Constants.QMAKE_ABSPATH, new java.io.File(new java.io.File(qtDir, "bin"), qmake).getAbsolutePath());
 											}
 										}
-										switch(OSInfo.os()) {
+										switch(osInfo.os()) {
 										case Windows:
 											if(!new java.io.File(new java.io.File(qtDir, "bin"), "qmake.exe").exists()
 													&& !new java.io.File(new java.io.File(qtDir, "bin"), "qmake.bat").exists()) {
@@ -576,15 +592,27 @@ public class ForeachVersionTask extends Task {
 										specProperties.setProperty("qtjambi.qtdir", dir);
 										if(containsTestReport)
 											specProperties.setProperty("skip.report", "true");
-										InitializeBuildTask.setTargetProperties(specProperties);
 										for(String target : targets) {
 											if(!target.equals("tests.report")) {
-												AntUtil.setProperty(propertyHelper, "proxy.target", target);
-												getProject().executeTarget("targetproxy");
+												CallTarget ct = (CallTarget) getProject().createTask("antcall");
+												ct.setOwningTarget(getOwningTarget());
+												ct.init();
+												ct.bindToOwner(this);
+												ct.setInheritAll(false);
+												ct.setTarget(target);
+												Property param = ct.createParam();
+												param.setName("qtjambi.osinfo");
+												param.setValue(OSInfo.initializeNewOSInfo(getProject()));
+												for(Object key : specProperties.keySet()) {
+													if(specProperties.get(key)!=null) {
+														param = ct.createParam();
+														param.setName(key.toString());
+														param.setValue(specProperties.get(key));
+													}
+												}
+												ct.execute();
 											}
 										}
-										InitializeBuildTask.setTargetProperties(null);
-										OSInfo.setQMakeXSpec(null);
 										versionProperties.setProperty("skip-generate", "true");
 										versionProperties.setProperty("skip-java-build", "true");
 										lastProperties = specProperties;
@@ -593,9 +621,24 @@ public class ForeachVersionTask extends Task {
 							}
 						}
 						if(containsTestReport && lastProperties!=null) {
+							CallTarget ct = (CallTarget) getProject().createTask("antcall");
+							ct.setOwningTarget(getOwningTarget());
+							ct.init();
+							ct.bindToOwner(this);
+							ct.setInheritAll(false);
+							ct.setTarget("tests.report.impl");
 							lastProperties.setProperty("skip.report", "false");
-							AntUtil.setProperty(propertyHelper, "proxy.target", "tests.report.impl");
-							getProject().executeTarget("targetproxy");
+							Property param = ct.createParam();
+							param.setName("qtjambi.osinfo");
+							param.setValue(OSInfo.initializeNewOSInfo(getProject()));
+							for(Object key : lastProperties.keySet()) {
+								if(lastProperties.get(key)!=null) {
+									param = ct.createParam();
+									param.setName(key.toString());
+									param.setValue(lastProperties.get(key));
+								}
+							}
+							ct.execute();
 						}
 						return;
 					}
@@ -603,8 +646,18 @@ public class ForeachVersionTask extends Task {
 					throw new BuildException(base+" is not a directory");
 				}
 			}
-			for(String target : targets)
-				this.getProject().executeTarget(target);
+			for(String target : targets) {
+				CallTarget ct = (CallTarget) getProject().createTask("antcall");
+				ct.setOwningTarget(getOwningTarget());
+				ct.init();
+				ct.bindToOwner(this);
+				ct.setInheritAll(false);
+				ct.setTarget(target);
+				Property param = ct.createParam();
+				param.setName("qtjambi.osinfo");
+				param.setValue(OSInfo.initializeNewOSInfo(getProject()));
+				ct.execute();
+			}
 		}
 	}
 	

@@ -54,6 +54,7 @@ public class InstallNameToolTask extends Task {
 
     @Override
     public void execute() throws NullPointerException {
+    	OSInfo osInfo = OSInfo.instance(getProject());
         getProject().log(this, msg, Project.MSG_INFO);
         
         int qtMajorVersion = Integer.parseInt(""+PropertyHelper.getProperty(getProject(), "qtjambi.soname.version.major"));
@@ -78,7 +79,7 @@ public class InstallNameToolTask extends Task {
         }
         boolean no_otool = false;
         try {
-        	String[] out = Exec.executeCaptureOutput(this, Arrays.asList("otool", "--version"), dirExecute, getProject(), null, null, false);
+        	String[] out = Exec.executeCaptureOutput(this, Arrays.asList("otool", "--version"), dirExecute, getProject(), osInfo, null, null, false);
         	if(out==null || out.length<2 || out[0]==null || !out[0].contains("Apple")) {
         		if(out==null || out.length<=2 || out[1]==null || !out[1].contains("Apple")) {
         			no_otool = true;
@@ -87,7 +88,7 @@ public class InstallNameToolTask extends Task {
         } catch ( Exception e ) {
         	no_otool = true;
         }
-        OToolOut otoolOut = no_otool ? null : getOtoolOut(this, libraryName, dirExecute);
+        OToolOut otoolOut = no_otool ? null : getOtoolOut(osInfo, this, libraryName, dirExecute);
         if(otoolOut==null && !no_otool) {
         	getProject().log(this, "otool does not provide info for " + libraryName, Project.MSG_INFO);
         }
@@ -214,11 +215,11 @@ public class InstallNameToolTask extends Task {
 		Set<String> rpaths = new TreeSet<>();    	
     }
     
-    public static OToolOut getOtoolOut(Task task, String libpath, File outdir) {
+    public static OToolOut getOtoolOut(OSInfo osInfo, Task task, String libpath, File outdir) {
     	task.getProject().log(task, "- analyzing: " + libpath, Project.MSG_INFO);
     	OToolOut result = null;
     	try {
-    		String[] out = Exec.executeCaptureOutput(task, Arrays.asList("otool", "-l", libpath), outdir, task.getProject(), null, null, false);
+    		String[] out = Exec.executeCaptureOutput(task, Arrays.asList("otool", "-l", libpath), outdir, task.getProject(), osInfo, null, null, false);
     		if(out.length==2 && out[0]!=null) {
         		result = new OToolOut();
     			try(BufferedReader reader = new BufferedReader(new StringReader(out[0]))){

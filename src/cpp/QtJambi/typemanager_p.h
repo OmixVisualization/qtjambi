@@ -45,9 +45,7 @@ class QtJambiTypeManager {
 public:
     enum TypePattern : quint64 {
         None = 0,
-#if QT_VERSION >= 0x050000
         Void            = 0x00100000,
-#endif
         Primitive       = 0x00000001,
         Integer         = 0x00000002,
         Long            = 0x00000004,
@@ -84,16 +82,10 @@ public:
         TypeMask = Integer + Long + Boolean + Float + Double + Short + Byte + Char
     };
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    static bool hasRegisteredComparators(int id);
-#endif
     static void splitClassName(QString& className, QString& package, const QString &qualifiedName, QChar separator = QLatin1Char('/'));
 
     static size_t getInternalSize(const QString &internalTypeName);
     static size_t getInternalAlignment(const QString &internalTypeName);
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    static bool isStaticType(const QString &internalTypeName);
-#endif
     static QString getExternalTypeName(JNIEnv* env, const QString &internalTypeName, const QMetaObject * metaObject, const QMetaType& metaType = QMetaType());
     static QString getExternalTypeName(JNIEnv* env, const QString &internalTypeName, const QMetaType& metaType = QMetaType());
     static QString getInternalTypeName(JNIEnv* env, const QString &externalTypeName, jobject classLoader = nullptr, bool useNextSuperclass = true);
@@ -116,9 +108,6 @@ public:
 
     static QStringList parseSignature(const QString &signature, QString *name = nullptr);
     static QtJambiUtils::QHashFunction findHashFunction(bool isPointer, int metaType);
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    static void registerInternalAlignment(const QByteArray &internalTypeName, size_t align);
-#endif
 
 private:
     enum class PointerType{

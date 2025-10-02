@@ -56,9 +56,9 @@ class QRemoteObjectNode___ {
     
     @QtUninvokable
     public final io.qt.core.QStringList instances(Class<? extends io.qt.core.QObject> type){
-        for(io.qt.core.QPair<String, String> info : io.qt.core.QMetaObject.forType(type).classInfos()) {
-            if("RemoteObject Type".equals(info.first)) {
-                return instances(info.second);
+        for(io.qt.core.QMetaClassInfo info : io.qt.core.QMetaObject.forType(type).classInfos()) {
+            if("RemoteObject Type".equals(info.name())) {
+                return instances(info.value());
             }
         }
         return new io.qt.core.QStringList();
@@ -103,7 +103,7 @@ class QRemoteObjectNode___ {
 }// class
 
 class QtRemoteObjects___ {
-    
+
     public static class TypeNameAndMetaobject{
         TypeNameAndMetaobject(String typeName, io.qt.core.QMetaObject metaObject) {
             super();
@@ -116,19 +116,19 @@ class QtRemoteObjects___ {
 
     @QtUninvokable
     public static TypeNameAndMetaobject getTypeNameAndMetaobjectFromClassInfo(io.qt.core.QMetaObject metaObject){
-        String typeName = metaObject.classInfo("RemoteObject Type");
+        io.qt.core.QMetaClassInfo typeName = metaObject.classInfo("RemoteObject Type");
         if (typeName!=null) { //We have an object created from repc or at least with QCLASSINFO defined
             while (metaObject.superClass()!=null) {
                 //At the point superclass doesn't have the same QCLASSINFO_REMOTEOBJECT_TYPE,
                 //we have the metaobject we should work from
-                String _typeName = metaObject.superClass().classInfo("RemoteObject Type");
+                io.qt.core.QMetaClassInfo _typeName = metaObject.superClass().classInfo("RemoteObject Type");
                 if(_typeName!=null) {
                     typeName = _typeName;
                     metaObject = metaObject.superClass();
                 }
             }
         }
-        return new TypeNameAndMetaobject(typeName, metaObject);
+        return new TypeNameAndMetaobject(typeName==null ? null : typeName.value(), metaObject);
     }
     
     @QtUninvokable

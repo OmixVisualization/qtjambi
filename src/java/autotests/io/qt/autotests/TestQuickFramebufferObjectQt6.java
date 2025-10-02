@@ -35,7 +35,7 @@ import io.qt.core.*;
 import io.qt.gui.*;
 import io.qt.qml.*;
 import io.qt.quick.*;
-import static io.qt.autotests.TestQuickQt6.*;
+import static io.qt.autotests.TestQuick.*;
 
 public class TestQuickFramebufferObjectQt6 extends ApplicationInitializer {
 	
@@ -55,8 +55,9 @@ public class TestQuickFramebufferObjectQt6 extends ApplicationInitializer {
 		}
 
 		@NativeAccess
-		private TestFramebufferObject(QDeclarativeConstructor constructor) {
-			super(constructor);
+		private TestFramebufferObject(QtConstructInPlace constructor) {
+			super((QPrivateConstructor)null);
+			constructor.initialize(this);
 			setFlag(QQuickItem.Flag.ItemHasContents, true);
 		}
 

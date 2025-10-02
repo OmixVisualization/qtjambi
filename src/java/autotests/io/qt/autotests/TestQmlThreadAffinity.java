@@ -41,12 +41,16 @@ import io.qt.core.QByteArray;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QEvent;
 import io.qt.core.QEventLoop;
+import io.qt.core.QLibraryInfo;
 import io.qt.core.QMetaObject;
 import io.qt.core.QObject;
+import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QThread;
 import io.qt.core.QTimer;
 import io.qt.core.QUrl;
 import io.qt.core.Qt;
+import io.qt.gui.QGuiApplication;
+import io.qt.gui.QWindow;
 import io.qt.qml.QJSEngine;
 import io.qt.qml.QJSValue;
 import io.qt.qml.QQmlComponent;
@@ -71,6 +75,17 @@ public class TestQmlThreadAffinity extends ApplicationInitializer{
     public static void testDispose() throws Exception {
     	QtUtilities.setThreadAffinityCheckEnabled(false);
     	QtUtilities.setEventThreadAffinityCheckEnabled(false);
+    	if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.MacOS) 
+    			&& QLibraryInfo.version().majorVersion()==6 
+    			&& QLibraryInfo.version().minorVersion()==5) {
+	    	QWindow window = new QWindow();
+	    	window.show();
+	    	QTimer.singleShot(200, QGuiApplication.instance(), QGuiApplication::quit);
+	    	QGuiApplication.exec();
+	    	window.close();
+	    	window.disposeLater();
+	    	window = null;
+    	}
     	ApplicationInitializer.testDispose();
 	}
 	
@@ -222,6 +237,15 @@ public class TestQmlThreadAffinity extends ApplicationInitializer{
 						engine.singletonInstance(0);
 						Assert.fail("QThreadAffinityException expected to be thrown");
 					} catch (QThreadAffinityException e) {
+					}
+					try {
+						try {
+							engine.importModule("");
+							Assert.fail("QThreadAffinityException expected to be thrown");
+						} catch (QThreadAffinityException e) {
+						}
+					}catch(Throwable e){
+						exn[0] = e;
 					}
 					engine.collectGarbage();
 				}catch(Throwable e){

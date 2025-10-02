@@ -34,7 +34,7 @@
 #include "jobjectwrapper.h"
 
 struct ResolvedConstructorInfo{
-    QtJambiShell::ConstructorFunction constructorFunction;
+    QtJambiAPI::ConstructorFn constructorFunction;
     QList<jclass> argumentTypes;
 };
 

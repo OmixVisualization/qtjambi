@@ -37,6 +37,7 @@ import static org.junit.Assert.fail;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Assert;
 import org.junit.Assume;
@@ -768,6 +769,51 @@ public class TestSignals extends ApplicationInitializer{
     	QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
     	QApplication.sendPostedEvents();
     	assertEquals(5.0, receiver.getDoubleValue(), 0.001);
+    }
+	
+	@Test
+    public void testNativeSignalToSlot() {
+		class Receiver extends QObject{
+			AtomicInteger count = new AtomicInteger();
+			void increment() {
+				count.incrementAndGet();
+			}
+		}
+		Receiver receiver = new Receiver();
+		QObject object = new QObject();
+		object.objectNameChanged.connect(receiver, "increment()", Qt.ConnectionType.SingleShotConnection);
+		Assert.assertEquals(0, receiver.count.get());
+		object.setObjectName("Test1");
+		Assert.assertEquals(1, receiver.count.get());
+		object.setObjectName("Test2");
+		Assert.assertEquals(1, receiver.count.get());
+    }
+	
+	@Test
+    public void testNativeSignalToLambda() {
+		AtomicInteger count = new AtomicInteger();
+		QObject object = new QObject();
+		object.objectNameChanged.connect(count::incrementAndGet, Qt.ConnectionType.SingleShotConnection);
+		Assert.assertEquals(0, count.get());
+		object.setObjectName("Test1");
+		Assert.assertEquals(1, count.get());
+		object.setObjectName("Test2");
+		Assert.assertEquals(1, count.get());
+    }
+	
+	static class StaticSender{
+		static final QStaticMemberSignals.Signal0 signal = new QStaticMemberSignals.Signal0();
+	}
+	
+	@Test
+    public void testJavaSignalToLambda() {
+		AtomicInteger count = new AtomicInteger();
+		StaticSender.signal.connect(count::incrementAndGet, Qt.ConnectionType.SingleShotConnection);
+		Assert.assertEquals(0, count.get());
+		StaticSender.signal.emit();
+		Assert.assertEquals(1, count.get());
+		StaticSender.signal.emit();
+		Assert.assertEquals(1, count.get());
     }
 
     public static void main(String args[]) {

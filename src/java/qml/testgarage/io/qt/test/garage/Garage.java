@@ -36,7 +36,7 @@ import io.qt.qml.util.*;
 @QmlElement
 @QtClassInfo(key="DefaultProperty", value="content")
 public class Garage extends QObject {
-	private Garage(QDeclarativeConstructor dc) throws IllegalAccessException {
+	private Garage(QPrivateConstructor dc) {
 		super(dc);
 	}
 	

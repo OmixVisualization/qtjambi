@@ -27,6 +27,7 @@ public class TryCatchTask extends Task {
 		
 		private String throwable = BuildException.class.getName();
 		private boolean print;
+		private String reference = null;
 
 		public CatchBlock() {
 			super();
@@ -46,6 +47,8 @@ public class TryCatchTask extends Task {
 				if (c.isAssignableFrom(t.getClass())) {
 					getProject().setProperty("throwable", t.getClass().getName());
 					getProject().setProperty("message", t.getMessage());
+					if (reference != null)
+						getProject().addReference(reference, t);
 					if(this.print) {
 						t.printStackTrace();
 					}
@@ -57,6 +60,14 @@ public class TryCatchTask extends Task {
 				throw new BuildException(e);
 			}
 		}
+
+		public String getReference() {
+			return reference;
+		}
+
+		public void setReference(String reference) {
+			this.reference = reference;
+		}
 	}
 
 
@@ -66,8 +77,6 @@ public class TryCatchTask extends Task {
 	private Sequential tryBlock = null;
 	private final List<CatchBlock> catchBlocks = new ArrayList<>();
 	private Sequential finallyBlock = null;
-	private String property = null;
-	private String reference = null;
 	
 	public void addTry(Sequential tr) throws BuildException {
 		if (tryBlock != null)
@@ -92,10 +101,6 @@ public class TryCatchTask extends Task {
 		try {
 			tryBlock.perform();
 		} catch (Throwable e) {
-			if (property != null)
-				getProject().setProperty(property, e.getMessage());
-			if (reference != null)
-				getProject().addReference(reference, e);
 			boolean executed = false;
 			for(CatchBlock cb : catchBlocks) {
 				executed = cb.execute(e);

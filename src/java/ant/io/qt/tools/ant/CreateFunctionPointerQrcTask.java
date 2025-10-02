@@ -13,6 +13,7 @@ public class CreateFunctionPointerQrcTask extends Task {
 	
 	@Override
 	public void execute() throws BuildException {
+		OSInfo osInfo = OSInfo.instance(getProject());
 //		System.out.println("Initialize...");
 		PropertyHelper propertyHelper = PropertyHelper.getPropertyHelper(getProject());
 		int qtMajorVersion = Integer.parseInt(AntUtil.getPropertyAsString(propertyHelper, Constants.QT_VERSION_MAJOR));
@@ -22,7 +23,7 @@ public class CreateFunctionPointerQrcTask extends Task {
 			String dlibFormat = "%1$sd.dll";
 			String libFormat = "%1$s.dll";
 //			System.out.println("OS: "+OSInfo.crossOS());
-			switch(OSInfo.crossOS()) {
+			switch(osInfo.crossOS()) {
 			case Windows:
 				dlibFormat = "%1$sd.dll";
 				libFormat = "%1$s.dll";
@@ -54,8 +55,8 @@ public class CreateFunctionPointerQrcTask extends Task {
 					write(new java.io.File(new java.io.File(new java.io.File(dir), "QtJambi"), String.format(fileName, "release-x86_64")), libFormat, qtMajorVersion, qtMinorVersion);
 					write(new java.io.File(new java.io.File(new java.io.File(dir), "QtJambi"), String.format(fileName, "debug-x86_64")), dlibFormat, qtMajorVersion, qtMinorVersion);
 					return;
-				}else if(OSInfo.crossArch()!=null){
-					switch(OSInfo.crossArch()) {
+				}else if(osInfo.crossArch()!=null){
+					switch(osInfo.crossArch()) {
 		        	case arm:
 		        		dlibFormat = "lib%1$s_debug_armeabi-v7a.so"; 
 		        		libFormat = "lib%1$s_armeabi-v7a.so"; break;
@@ -76,7 +77,7 @@ public class CreateFunctionPointerQrcTask extends Task {
 					break;
 				}else return;
 			default:
-				if(OSInfo.crossOS().isUnixLike()) {
+				if(osInfo.crossOS().isUnixLike()) {
 					dlibFormat = "lib%1$s_debug.so";
 					libFormat = "lib%1$s.so";
 				}else {

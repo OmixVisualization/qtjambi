@@ -48,7 +48,7 @@ enum class DebugCounters{
 
 typedef void(*DebugCounter)(DebugCounters debugCounter, const char*className);
 QTJAMBI_EXPORT void registerDebugCounter(DebugCounter increaser);
-
+QTJAMBI_EXPORT size_t sizeOf(JNIEnv * env, const QMetaObject* metaObject);
 }
 
 #endif // TESTAPI_H

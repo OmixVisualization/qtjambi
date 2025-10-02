@@ -24,12 +24,81 @@ import io.qt.core.QMap;
 import io.qt.core.QMetaType;
 import io.qt.core.QMultiHash;
 import io.qt.core.QMultiMap;
+import io.qt.core.QObject;
 import io.qt.core.QPair;
 import io.qt.core.QPoint;
 import io.qt.core.QSet;
+import io.qt.core.QSize;
 
 public class TestContainerAccess extends ApplicationInitializer {
-    @Test
+	
+	static class SubObject extends QObject{
+	}
+    
+	@Test
+    public void testQListRemoveRange() {
+		{
+			QList<QObject> objectList = new QList<>(QObject.class);
+			QObject o = new QObject();
+			o.setObjectName("A");
+			objectList.add(o);
+			o = new QObject();
+			o.setObjectName("B");
+			objectList.add(o);
+			Assert.assertEquals("A", objectList.takeAt(0).objectName());
+			Assert.assertEquals("B", objectList.at(0).objectName());
+		}
+		{
+			QList<SubObject> objectList = new QList<>(SubObject.class);
+			SubObject o = new SubObject();
+			o.setObjectName("A");
+			objectList.add(o);
+			o = new SubObject();
+			o.setObjectName("B");
+			objectList.add(o);
+			Assert.assertEquals("A", objectList.takeAt(0).objectName());
+			Assert.assertEquals("B", objectList.at(0).objectName());
+		}
+		{
+			QList<QSize> list = QList.of(
+					new QSize(0,0),
+					new QSize(1,1),
+					new QSize(2,2),
+					new QSize(3,3),
+					new QSize(4,4),
+					new QSize(5,5),
+					new QSize(6,6),
+					new QSize(7,7),
+					new QSize(8,8),
+					new QSize(9,9)
+					);
+			QList<QSize> list2 = list.clone();
+			list2.remove(2, 3);
+			Assert.assertEquals(QList.of(
+					new QSize(0,0),
+					new QSize(1,1),
+					new QSize(5,5),
+					new QSize(6,6),
+					new QSize(7,7),
+					new QSize(8,8),
+					new QSize(9,9)
+				), list2);
+			list2 = list.clone();
+			list2.remove(6, 2);
+			Assert.assertEquals(QList.of(
+					new QSize(0,0),
+					new QSize(1,1),
+					new QSize(2,2),
+					new QSize(3,3),
+					new QSize(4,4),
+					new QSize(5,5),
+					new QSize(8,8),
+					new QSize(9,9)
+				), list2);
+		}
+	}
+	
+	@Test
     public void testQListFloatDoublePair() {
     	QList<QPair<Float,Double>> container = QList.of(new QPair<>(1.0f, 1.1), new QPair<>(2.0f, 2.2), new QPair<>(3.0f, 3.3));
     	List<QPair<Float,Double>> javaContainer = new ArrayList<>();

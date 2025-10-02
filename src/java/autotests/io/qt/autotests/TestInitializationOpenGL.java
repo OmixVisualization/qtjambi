@@ -36,7 +36,6 @@ import io.qt.core.QTimer;
 import io.qt.gui.QGuiApplication;
 import io.qt.gui.QIcon;
 import io.qt.opengl.QOpenGLWindow;
-import io.qt.widgets.QApplication;
 
 public class TestInitializationOpenGL extends UnitTestInitializer {
     @Test

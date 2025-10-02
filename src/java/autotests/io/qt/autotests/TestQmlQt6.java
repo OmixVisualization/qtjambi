@@ -472,7 +472,7 @@ public class TestQmlQt6 extends ApplicationInitializer{
 		public ObjectType() {
 			super();
 		}
-		public ObjectType(QDeclarativeConstructor constructor) {
+		ObjectType(QPrivateConstructor constructor) {
 			super(constructor);
 		}
 		public ObjectType(QObject parent) {

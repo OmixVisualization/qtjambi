@@ -1,6 +1,7 @@
 package io.qt.tools.ant;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.PropertyHelper;
@@ -12,15 +13,18 @@ public class DependenciesToClassPathTask extends Task {
 	public void execute() throws BuildException {
 		PropertyHelper props = PropertyHelper.getPropertyHelper(getProject());
 		if(dependencies!=null && !dependencies.isEmpty()) {
-			ArrayList<String> list = new ArrayList<>();
+			List<String> moduleList = new ArrayList<>();
+			List<String> jarList = new ArrayList<>();
 			for(String dep : dependencies.split(",")) {
 				dep = dep.trim();
 				if(!dep.isEmpty()) {
+					moduleList.add(dep);
 					dep = dep.replace('.', '-');
-					list.add(dep + "-" + jarVersion + ".jar");
+					jarList.add(dep + "-" + jarVersion + ".jar");
 				}
 			}
-			dependencies = String.join(",", list);
+			dependencies = String.join(",", jarList);
+			ThreadedSubantTask.waitForModules(getProject(), moduleList);
 		}
 		props.setProperty(property, dependencies, true);
 	}

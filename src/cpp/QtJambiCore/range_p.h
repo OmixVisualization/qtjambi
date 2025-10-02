@@ -124,9 +124,9 @@ class QGenericTableItemModelImpl<GenericTable> : public QRangeModelImplBase
 {
 public:
     explicit QGenericTableItemModelImpl(GenericTable &&model, QRangeModel *itemModel);
-    static void callConst(ConstOp op, const QRangeModelImplBase *that, void *r, const void *args);
-    static void call(Op op, QRangeModelImplBase *that, void *r, const void *args);
 private:
+    template <typename C = QGenericTableItemModelImpl<GenericTable>> using Methods = typename C::template MethodTemplates<C>;
+    static void callImpl(size_t index, QtPrivate::QQuasiVirtualInterface<QRangeModelImplBase> &intf, void *ret, void *args);
     void initializeTable(QRangeModel *itemModel, GenericTable&& table);
     void initializeTree(QRangeModel *itemModel, GenericTable&& table);
     template<bool is_mutable_tree,
@@ -144,19 +144,17 @@ private:
              RowType rowType,
              typename... Args>
     void initializeTable(QRangeModel *itemModel, Args&&... args);
-    QRangeModelImplBase* impl = nullptr;
-    decltype(callConst) *callConst_fn = nullptr;
-    decltype(call) *call_fn = nullptr;
+    QtPrivate::QQuasiVirtualInterface<QRangeModelImplBase>* impl = nullptr;
 };
 
 void containerDisposer(AbstractContainerAccess* _access);
 
 template<typename T>
-void initializeModel(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, T&& range, bool __qtjambi_has_derivedMetaObject, bool __qtjambi_has_overrides, bool __qtjambi_is_generic, jobject range0, QObject* parent);
+void initializeModel(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, T&& range, QtJambiAPI::ConstructorOptions __qtjambi_constructor_options, jobject range0, QObject* parent);
 
-inline bool initializeModel(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, bool __qtjambi_has_derivedMetaObject, bool __qtjambi_has_overrides, bool __qtjambi_is_generic, jobject range0,
+inline bool initializeModel(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, QtJambiAPI::ConstructorOptions __qtjambi_constructor_options, jobject range0,
                      void* container,
-                     AbstractSequentialAccess* containerAccess, bool asSingleColumn, QObject* parent, bool isConst = false){
+                     AbstractSequentialAccess* containerAccess, QRangeModel::RowCategory rowCategory, QObject* parent, bool isConst = false){
     std::shared_ptr<int> treeColumnCount{new int{1}};
     TreeType treeType = TreeType::None;
     ClassInfo classInfo;
@@ -208,10 +206,10 @@ inline bool initializeModel(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jn
             row_pointertype = PointerType::SmartPointer;
         }
     }
-    if(asSingleColumn)
+    if(rowCategory==QRangeModel::RowCategory::MultiRoleItem)
         rowType = RowType::Data;
     else if(auto nestedContainerAccess = containerAccess->elementNestedContainerAccess()){
-        rowType = asSingleColumn ? RowType::Data : RowType::Range;
+        rowType = rowCategory==QRangeModel::RowCategory::MultiRoleItem ? RowType::Data : RowType::Range;
         MultiRole::Type multiRoleType = MultiRole::isMultiRole(elementMetaType, nestedContainerAccess);
         is_list_row = dynamic_cast<AbstractListAccess*>(nestedContainerAccess);
         if(AbstractSpanAccess* spanElementAccess = dynamic_cast<AbstractSpanAccess*>(nestedContainerAccess)){
@@ -270,16 +268,16 @@ inline bool initializeModel(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jn
                                                                          is_list_range, is_list_row, rowType, row_pointertype,
                                                                          subrow_pointertype, __jni_env, container,
                                                                          std::move(elementMetaType), std::move(sequentialAccess),
-                                                                         std::move(classInfo), std::move(treeColumnCount)}, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+                                                                         std::move(classInfo), std::move(treeColumnCount)}, __qtjambi_constructor_options, range0, parent);
     return true;
 }
 
 template<typename T>
-void initializeModelBySpanPointer(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, void* container, bool __qtjambi_has_derivedMetaObject, bool __qtjambi_has_overrides, bool __qtjambi_is_generic, jobject range0, QObject* parent){
-    initializeModel(__qtjambi_ptr, __jni_env, __jni_object, reinterpret_cast<QSpan<T>*>(container), __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+void initializeModelBySpanPointer(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, void* container, QtJambiAPI::ConstructorOptions __qtjambi_constructor_options, jobject range0, QObject* parent){
+    initializeModel(__qtjambi_ptr, __jni_env, __jni_object, reinterpret_cast<QSpan<T>*>(container), __qtjambi_constructor_options, range0, parent);
 }
 
-inline bool initializeModelBySpanPointer(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, bool __qtjambi_has_derivedMetaObject, bool __qtjambi_has_overrides, bool __qtjambi_is_generic, jobject range0, bool isConst, bool asSingleColumn, QObject* parent){
+inline bool initializeModelBySpanPointer(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, QtJambiAPI::ConstructorOptions __qtjambi_constructor_options, jobject range0, bool isConst, QRangeModel::RowCategory rowCategory, QObject* parent){
     QPair<void*,AbstractContainerAccess*> containerInfo = ContainerAPI::fromJavaOwner(__jni_env, range0);
     Q_ASSERT(containerInfo.first);
     AbstractSpanAccess* containerAccess = dynamic_cast<AbstractSpanAccess*>(containerInfo.second);
@@ -288,58 +286,58 @@ inline bool initializeModelBySpanPointer(void* __qtjambi_ptr, JNIEnv* __jni_env,
     if(containerAccess->isConst() || isConst){
         switch(elementMetaType.id()){
         case QMetaType::SChar:
-            initializeModelBySpanPointer<const signed char>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+            initializeModelBySpanPointer<const signed char>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
             return true;
         case QMetaType::Char:
-            initializeModelBySpanPointer<const uchar>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+            initializeModelBySpanPointer<const uchar>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
             return true;
         case QMetaType::UChar:
-            initializeModelBySpanPointer<const char>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+            initializeModelBySpanPointer<const char>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
             return true;
         case QMetaType::Char16:
-            initializeModelBySpanPointer<const char16_t>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+            initializeModelBySpanPointer<const char16_t>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
             return true;
         case QMetaType::QChar:
-            initializeModelBySpanPointer<const QChar>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+            initializeModelBySpanPointer<const QChar>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
             return true;
         case QMetaType::UShort:
-            initializeModelBySpanPointer<const ushort>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+            initializeModelBySpanPointer<const ushort>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
             return true;
         case QMetaType::Short:
-            initializeModelBySpanPointer<const short>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+            initializeModelBySpanPointer<const short>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
             return true;
         case QMetaType::UInt:
-            initializeModelBySpanPointer<const uint>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+            initializeModelBySpanPointer<const uint>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
             return true;
         case QMetaType::Int:
-            initializeModelBySpanPointer<const int>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+            initializeModelBySpanPointer<const int>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
             return true;
         case QMetaType::Char32:
-            initializeModelBySpanPointer<const char32_t>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+            initializeModelBySpanPointer<const char32_t>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
             return true;
         case QMetaType::ULong:
-            initializeModelBySpanPointer<const ulong>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+            initializeModelBySpanPointer<const ulong>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
             return true;
         case QMetaType::Long:
-            initializeModelBySpanPointer<const long>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+            initializeModelBySpanPointer<const long>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
             return true;
         case QMetaType::ULongLong:
-            initializeModelBySpanPointer<const unsigned long long>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+            initializeModelBySpanPointer<const unsigned long long>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
             return true;
         case QMetaType::LongLong:
-            initializeModelBySpanPointer<const long long>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+            initializeModelBySpanPointer<const long long>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
             return true;
         case QMetaType::Bool:
-            initializeModelBySpanPointer<const bool>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+            initializeModelBySpanPointer<const bool>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
             return true;
         case QMetaType::Float:
-            initializeModelBySpanPointer<const float>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+            initializeModelBySpanPointer<const float>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
             return true;
         case QMetaType::Double:
-            initializeModelBySpanPointer<const double>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+            initializeModelBySpanPointer<const double>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
             return true;
         case QMetaType::QString:
-            initializeModelBySpanPointer<const QString>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+            initializeModelBySpanPointer<const QString>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
             return true;
         default:
             break;
@@ -347,58 +345,58 @@ inline bool initializeModelBySpanPointer(void* __qtjambi_ptr, JNIEnv* __jni_env,
     }else{
         switch(elementMetaType.id()){
         case QMetaType::SChar:
-            initializeModelBySpanPointer<signed char>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+            initializeModelBySpanPointer<signed char>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
             return true;
         case QMetaType::Char:
-            initializeModelBySpanPointer<uchar>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+            initializeModelBySpanPointer<uchar>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
             return true;
         case QMetaType::UChar:
-            initializeModelBySpanPointer<char>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+            initializeModelBySpanPointer<char>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
             return true;
         case QMetaType::Char16:
-            initializeModelBySpanPointer<char16_t>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+            initializeModelBySpanPointer<char16_t>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
             return true;
         case QMetaType::QChar:
-            initializeModelBySpanPointer<QChar>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+            initializeModelBySpanPointer<QChar>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
             return true;
         case QMetaType::UShort:
-            initializeModelBySpanPointer<ushort>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+            initializeModelBySpanPointer<ushort>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
             return true;
         case QMetaType::Short:
-            initializeModelBySpanPointer<short>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+            initializeModelBySpanPointer<short>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
             return true;
         case QMetaType::UInt:
-            initializeModelBySpanPointer<uint>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+            initializeModelBySpanPointer<uint>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
             return true;
         case QMetaType::Int:
-            initializeModelBySpanPointer<int>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+            initializeModelBySpanPointer<int>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
             return true;
         case QMetaType::Char32:
-            initializeModelBySpanPointer<char32_t>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+            initializeModelBySpanPointer<char32_t>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
             return true;
         case QMetaType::ULong:
-            initializeModelBySpanPointer<ulong>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+            initializeModelBySpanPointer<ulong>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
             return true;
         case QMetaType::Long:
-            initializeModelBySpanPointer<long>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+            initializeModelBySpanPointer<long>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
             return true;
         case QMetaType::ULongLong:
-            initializeModelBySpanPointer<unsigned long long>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+            initializeModelBySpanPointer<unsigned long long>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
             return true;
         case QMetaType::LongLong:
-            initializeModelBySpanPointer<long long>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+            initializeModelBySpanPointer<long long>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
             return true;
         case QMetaType::Bool:
-            initializeModelBySpanPointer<bool>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+            initializeModelBySpanPointer<bool>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
             return true;
         case QMetaType::Float:
-            initializeModelBySpanPointer<float>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+            initializeModelBySpanPointer<float>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
             return true;
         case QMetaType::Double:
-            initializeModelBySpanPointer<double>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+            initializeModelBySpanPointer<double>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
             return true;
         case QMetaType::QString:
-            initializeModelBySpanPointer<QString>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+            initializeModelBySpanPointer<QString>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
             return true;
         default:
             break;
@@ -407,81 +405,79 @@ inline bool initializeModelBySpanPointer(void* __qtjambi_ptr, JNIEnv* __jni_env,
     return initializeModel(__qtjambi_ptr,
                            __jni_env,
                            __jni_object,
-                           __qtjambi_has_derivedMetaObject,
-                           __qtjambi_has_overrides,
-                           __qtjambi_is_generic,
+                           __qtjambi_constructor_options,
                            range0,
                            containerInfo.first,
                            containerAccess,
-                           asSingleColumn,
+                           rowCategory,
                            parent,
                            isConst);
 }
 
 template<template<typename> class Container, typename T>
-void initializeModelBySequentialPointer(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, void* list, bool __qtjambi_has_derivedMetaObject, bool __qtjambi_has_overrides, bool __qtjambi_is_generic, jobject range0, QObject* parent){
-    initializeModel(__qtjambi_ptr, __jni_env, __jni_object, reinterpret_cast<Container<T>*>(list), __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+void initializeModelBySequentialPointer(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, void* list, QtJambiAPI::ConstructorOptions __qtjambi_constructor_options, jobject range0, QObject* parent){
+    initializeModel(__qtjambi_ptr, __jni_env, __jni_object, reinterpret_cast<Container<T>*>(list), __qtjambi_constructor_options, range0, parent);
 }
 
-inline bool initializeModelByListPointer(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, bool __qtjambi_has_derivedMetaObject, bool __qtjambi_has_overrides, bool __qtjambi_is_generic, jobject range0, bool asSingleColumn, QObject* parent){
+inline bool initializeModelByListPointer(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, QtJambiAPI::ConstructorOptions __qtjambi_constructor_options, jobject range0, QRangeModel::RowCategory rowCategory, QObject* parent){
     QPair<void*,AbstractContainerAccess*> containerInfo = ContainerAPI::fromJavaOwner(__jni_env, range0);
     Q_ASSERT(containerInfo.first);
     AbstractSequentialAccess* containerAccess = dynamic_cast<AbstractSequentialAccess*>(containerInfo.second);
     Q_ASSERT(containerAccess);
     switch(containerAccess->elementMetaType().id()){
     case QMetaType::SChar:
-        initializeModelBySequentialPointer<QList, signed char>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+        initializeModelBySequentialPointer<QList, signed char>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
         return true;
     case QMetaType::Char:
-        initializeModelBySequentialPointer<QList, uchar>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+        initializeModelBySequentialPointer<QList, uchar>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
         return true;
     case QMetaType::UChar:
-        initializeModelBySequentialPointer<QList, char>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+        initializeModelBySequentialPointer<QList, char>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
         return true;
     case QMetaType::Char16:
-        initializeModelBySequentialPointer<QList, char16_t>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+        initializeModelBySequentialPointer<QList, char16_t>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
         return true;
     case QMetaType::QChar:
-        initializeModelBySequentialPointer<QList, QChar>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+        initializeModelBySequentialPointer<QList, QChar>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
         return true;
     case QMetaType::UShort:
-        initializeModelBySequentialPointer<QList, ushort>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+        initializeModelBySequentialPointer<QList, ushort>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
         return true;
     case QMetaType::Short:
-        initializeModelBySequentialPointer<QList, short>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+        initializeModelBySequentialPointer<QList, short>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
         return true;
     case QMetaType::UInt:
-        initializeModelBySequentialPointer<QList, uint>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+        initializeModelBySequentialPointer<QList, uint>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
         return true;
     case QMetaType::Int:
-        initializeModelBySequentialPointer<QList, int>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+        initializeModelBySequentialPointer<QList, int>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
         return true;
     case QMetaType::Char32:
-        initializeModelBySequentialPointer<QList, char32_t>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+        initializeModelBySequentialPointer<QList, char32_t>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
         return true;
     case QMetaType::ULong:
-        initializeModelBySequentialPointer<QList, ulong>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+        initializeModelBySequentialPointer<QList, ulong>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
         return true;
     case QMetaType::Long:
-        initializeModelBySequentialPointer<QList, long>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+        initializeModelBySequentialPointer<QList, long>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
         return true;
     case QMetaType::ULongLong:
-        initializeModelBySequentialPointer<QList, unsigned long long>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+        initializeModelBySequentialPointer<QList, unsigned long long>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
         return true;
     case QMetaType::LongLong:
-        initializeModelBySequentialPointer<QList, long long>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+        initializeModelBySequentialPointer<QList, long long>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
         return true;
     case QMetaType::Bool:
-        initializeModelBySequentialPointer<QList, bool>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+        initializeModelBySequentialPointer<QList, bool>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
         return true;
     case QMetaType::Float:
-        initializeModelBySequentialPointer<QList, float>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+        initializeModelBySequentialPointer<QList, float>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
         return true;
     case QMetaType::Double:
-        initializeModelBySequentialPointer<QList, double>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+        initializeModelBySequentialPointer<QList, double>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
         return true;
     case QMetaType::QString:
-        initializeModelBySequentialPointer<QList, QString>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_has_derivedMetaObject, __qtjambi_has_overrides, __qtjambi_is_generic, range0, parent);
+        initializeModelBySequentialPointer<QList, QString>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
         return true;
     default:
         break;
@@ -489,13 +485,11 @@ inline bool initializeModelByListPointer(void* __qtjambi_ptr, JNIEnv* __jni_env,
     return initializeModel(__qtjambi_ptr,
                            __jni_env,
                            __jni_object,
-                           __qtjambi_has_derivedMetaObject,
-                           __qtjambi_has_overrides,
-                           __qtjambi_is_generic,
+                           __qtjambi_constructor_options,
                            range0,
                            containerInfo.first,
                            containerAccess,
-                           asSingleColumn,
+                           rowCategory,
                            parent);
 }
 
