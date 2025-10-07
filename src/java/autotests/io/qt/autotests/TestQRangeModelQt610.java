@@ -161,8 +161,7 @@ public class TestQRangeModelQt610 extends ApplicationInitializer {
 			return "ColorEntryObject(" + colorName + ")";
 		}
 		
-		@QtPropertyMember(enabled = false)
-		public final static QHash<Integer,QByteArray> roleNames = QHash.of(0, new QByteArray("display"), 1, new QByteArray("decoration"), 3, new QByteArray("toolTip"), 40, new QByteArray("modelData"));
+		final static QHash<Integer,QByteArray> roleNames = QHash.of(0, new QByteArray("display"), 1, new QByteArray("decoration"), 3, new QByteArray("toolTip"), 40, new QByteArray("modelData"));
 	}
 	
 	public static class ColorConstTreeEntryGadget extends QRangeModel.ConstTreeRow<ColorConstTreeEntryGadget>{
@@ -206,8 +205,7 @@ public class TestQRangeModelQt610 extends ApplicationInitializer {
 			return new ColorConstTreeEntryGadget(colorName, this);
 		}
 		
-		@QtPropertyMember(enabled = false)
-		public final static QHash<Integer,QByteArray> roleNames = QHash.of(0, new QByteArray("display"), 1, new QByteArray("decoration"), 3, new QByteArray("toolTip"), 40, new QByteArray("modelData"));
+		final static QHash<Integer,QByteArray> roleNames = QHash.of(0, new QByteArray("display"), 1, new QByteArray("decoration"), 3, new QByteArray("toolTip"), 40, new QByteArray("modelData"));
 	}
 	
 	public static class ColorTreeEntryGadget extends QRangeModel.TreeRow<ColorTreeEntryGadget>{
@@ -251,8 +249,7 @@ public class TestQRangeModelQt610 extends ApplicationInitializer {
 			return new ColorTreeEntryGadget(colorName, this);
 		}
 		
-		@QtPropertyMember(enabled = false)
-		public final static QHash<Integer,QByteArray> roleNames = QHash.of(0, new QByteArray("display"), 1, new QByteArray("decoration"), 3, new QByteArray("toolTip"), 40, new QByteArray("modelData"));
+		final static QHash<Integer,QByteArray> roleNames = QHash.of(0, new QByteArray("display"), 1, new QByteArray("decoration"), 3, new QByteArray("toolTip"), 40, new QByteArray("modelData"));
 	}
 	
 	public static class ColorConstTreeEntryObject extends QObject implements QRangeModel.ConstTreeRowInterface<ColorConstTreeEntryObject>{
@@ -305,7 +302,7 @@ public class TestQRangeModelQt610 extends ApplicationInitializer {
 		}
 		
 		@QtPropertyMember(enabled = false)
-		public final static QHash<Integer,QByteArray> roleNames = QHash.of(0, new QByteArray("display"), 1, new QByteArray("decoration"), 3, new QByteArray("toolTip"), 40, new QByteArray("modelData"));
+		final static QHash<Integer,QByteArray> roleNames = QHash.of(0, new QByteArray("display"), 1, new QByteArray("decoration"), 3, new QByteArray("toolTip"), 40, new QByteArray("modelData"));
 	}
 	
 	public static class ColorTreeEntryObject extends QObject implements QRangeModel.TreeRowInterface<ColorTreeEntryObject>{
@@ -362,7 +359,7 @@ public class TestQRangeModelQt610 extends ApplicationInitializer {
 		}
 		
 		@QtPropertyMember(enabled = false)
-		public final static QHash<Integer,QByteArray> roleNames = QHash.of(0, new QByteArray("display"), 1, new QByteArray("decoration"), 258, new QByteArray("parentRow"),3, new QByteArray("toolTip"), 40, new QByteArray("modelData"));
+		final static QHash<Integer,QByteArray> roleNames = QHash.of(0, new QByteArray("display"), 1, new QByteArray("decoration"), 3, new QByteArray("toolTip"), 40, new QByteArray("modelData"));
 	}
 	
 	public static class AbstractRolesTreeEntry<Row extends AbstractRolesTreeEntry<Row>> extends QList<QMap<Integer, QVariant>> implements QRangeModel.ConstTreeRowInterface<Row>{
@@ -433,8 +430,7 @@ public class TestQRangeModelQt610 extends ApplicationInitializer {
 			return new ConstRolesTreeEntry(this, values);
 		}
 		
-		@QtPropertyMember(enabled = false)
-		public final static QHash<Integer,QByteArray> roleNames = QHash.of(40, new QByteArray("modelData"));
+		final static QHash<Integer,QByteArray> roleNames = QHash.of(40, new QByteArray("modelData"));
 	}
 	
 	public static class RolesTreeEntry extends AbstractRolesTreeEntry<RolesTreeEntry> implements QRangeModel.TreeRowInterface<RolesTreeEntry>{
@@ -462,8 +458,7 @@ public class TestQRangeModelQt610 extends ApplicationInitializer {
 			return new RolesTreeEntry(this, values);
 		}
 		
-		@QtPropertyMember(enabled = false)
-		public final static QHash<Integer,QByteArray> roleNames = QHash.of(40, new QByteArray("modelData"));
+		final static QHash<Integer,QByteArray> roleNames = QHash.of(40, new QByteArray("modelData"));
 	}
     
     @Test

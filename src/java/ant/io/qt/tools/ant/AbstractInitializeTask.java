@@ -361,6 +361,7 @@ public abstract class AbstractInitializeTask extends Task {
         }
         mySetProperty(-1, Constants.JAVA8_HOME_TARGET, sourceValue, s, true);
         switch(osInfo.os()) {
+        case Linux:
         case MacOS: 
         	switch(System.getProperty("os.arch").toLowerCase()) {
         	case "arm64":

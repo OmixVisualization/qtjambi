@@ -882,7 +882,6 @@
 								</if>
 							</then>
 							<else>
-								<property name="test.jvm" location="${java.home.target}/bin/java"/>
 								<if>
 									<equals arg1="${qtjambi.osname}" arg2="linux-arm64"/>
 									<then>
@@ -898,8 +897,19 @@
 												<equals arg1="${fork-jvm.OS_ARCH}" arg2="&quot;aarch64&quot;"/>
 											</not>
 											<then>
-												<property name="skip-unittests" value="true"/>
+												<property name="test.jvm" location="${java.arm64.home.target}/bin/java"/>
+												<if>
+													<not>
+														<available file="${test.jvm}" type="file"/>
+													</not>
+													<then>
+														<property name="skip-unittests" value="true"/>
+													</then>
+												</if>
 											</then>
+											<else>
+												<property name="test.jvm" location="${java.home.target}/bin/java"/>
+											</else>
 										</if>
 									</then>
 									<else>
@@ -918,11 +928,23 @@
 														<equals arg1="${fork-jvm.OS_ARCH}" arg2="&quot;x86_64&quot;"/>
 													</not>
 													<then>
-														<property name="skip-unittests" value="true"/>
+														<property name="test.jvm" location="${java.x64.home.target}/bin/java"/>
+														<if>
+															<not>
+																<available file="${test.jvm}" type="file"/>
+															</not>
+															<then>
+																<property name="skip-unittests" value="true"/>
+															</then>
+														</if>
 													</then>
+													<else>
+														<property name="test.jvm" location="${java.home.target}/bin/java"/>
+													</else>
 												</if>
 											</then>
 											<else>
+												<property name="test.jvm" location="${java.home.target}/bin/java"/>
 											</else>
 										</if>
 									</else>

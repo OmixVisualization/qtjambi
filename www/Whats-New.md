@@ -1,4 +1,10 @@
-# What's new in QtJambi 6.9.3
+# What's new in QtJambi 6.10.0
+
+QtJambi 6.10.0 is equivalent to QtJambi 6.9.3.
+
+# History
+
+## What's new in QtJambi 6.9.3
 
 * In-place construction
 * QObject::destructed signal can now execute instance methods of the destroyed object if they are connected by method handle.
@@ -14,8 +20,6 @@
 * New option `io.qt.resource-cache-timeout` to specify how long jar files shall be cached in resource system.
 
 This will be the last release with Maven-published binaries for Qt 6.9.
-
-# History
 
 ## What's new in QtJambi 6.9.2
 

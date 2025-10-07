@@ -753,7 +753,25 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
 
                             if (readerMethod != null) { // yay
                                 reader = PropertyAnnotation.readerAnnotation(readerMethod);
+                                boolean isReader = false;
                                 if (reader == null) {
+                                	isReader = true;
+                                	//don't treat range model tree's parentRow as property
+                                	if((QtJambi_LibraryUtilities.qtMajorVersion==6 && QtJambi_LibraryUtilities.qtMinorVersion>=10) || QtJambi_LibraryUtilities.qtMajorVersion>6) {
+	                                	if("setParentRow".equals(declaredMethodName)) {
+	                                		if(treeRowInterfaceClass==null) {
+	                                			try {
+													treeRowInterfaceClass = QObject.class.getClassLoader().loadClass("io.qt.core.QRangeModel$TreeRowInterface");
+												} catch (Throwable e) {
+												}
+	                                		}
+	                                		if(treeRowInterfaceClass!=null && treeRowInterfaceClass.isAssignableFrom(declaredMethod.getDeclaringClass())) {
+	                                			isReader = false;
+	                                		}
+	                                	}
+                                	}
+                                }
+                                if(isReader) {
                                 	usedGetters.add(readerMethod);
                                     propertyReaders.put(propertyName, readerMethod);
                                     propertyWriters.computeIfAbsent(propertyName, arrayListFactory()).add(declaredMethod);
@@ -2590,6 +2608,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
 				&& cl.getEnclosingClass() != QDeclarableSignals.class && !SignalUtility.findEmitMethods(cl).isEmpty();
 	}
 	
+	private static Class<?> treeRowInterfaceClass;
 	private final static Set<Class<?>> gadgetClasses = Collections.synchronizedSet(new HashSet<>());
 	private final static Set<String> gadgetPackages = Collections.synchronizedSet(new HashSet<>());
 	
