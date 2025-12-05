@@ -275,12 +275,10 @@ public:
     DataJBuffer(JNIEnv *env, const QChar* data, qsizetype capacity);
     DataJBuffer(JNIEnv *env, wchar_t* data, qsizetype capacity);
     DataJBuffer(JNIEnv *env, const wchar_t* data, qsizetype capacity);
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     DataJBuffer(JNIEnv *env, char16_t* data, qsizetype capacity);
     DataJBuffer(JNIEnv *env, const char16_t* data, qsizetype capacity);
     DataJBuffer(JNIEnv *env, char32_t* data, qsizetype capacity);
     DataJBuffer(JNIEnv *env, const char32_t* data, qsizetype capacity);
-#endif
     ~DataJBuffer();
     static void setLimit(JNIEnv *env, jobject buffer, jsize limit);
     void setLimit(jsize limit);
@@ -321,12 +319,10 @@ public:
     PersistentDataJBuffer(JNIEnv *env, const QChar* data, qsizetype capacity);
     PersistentDataJBuffer(JNIEnv *env, wchar_t* data, qsizetype capacity);
     PersistentDataJBuffer(JNIEnv *env, const wchar_t* data, qsizetype capacity);
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     PersistentDataJBuffer(JNIEnv *env, char16_t* data, qsizetype capacity);
     PersistentDataJBuffer(JNIEnv *env, const char16_t* data, qsizetype capacity);
     PersistentDataJBuffer(JNIEnv *env, char32_t* data, qsizetype capacity);
     PersistentDataJBuffer(JNIEnv *env, const char32_t* data, qsizetype capacity);
-#endif
     ~PersistentDataJBuffer();
     inline static void setLimit(JNIEnv *env, jobject buffer, jsize limit){
         DataJBuffer::setLimit(env, buffer, limit);

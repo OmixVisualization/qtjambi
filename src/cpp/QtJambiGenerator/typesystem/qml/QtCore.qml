@@ -34,6 +34,7 @@ TypeSystem{
     defaultSuperClass: "QtObject"
     qtLibrary: "QtCore"
     module: "qtjambi"
+    precompiledHeader: "pch_p.h"
     description: String.raw
 `<p>QtJambi base module containing QtCore, QtGui and QtWidgets.</p>
 <ul>
@@ -65,6 +66,44 @@ TypeSystem{
         Text{content: String.raw`
 QLogging.initialize();
 initializeCurrentThread();`}
+    }
+
+    InjectCode{
+        packageName: "io.qt.internal"
+        target: CodeClass.PackageInitializer
+        position: Position.Beginning
+        Text{content: "final static Class<?> TreeRowInterfaceClass = null;"}
+        until: 6.9
+    }
+
+    InjectCode{
+        packageName: "io.qt.internal"
+        target: CodeClass.PackageInitializer
+        position: Position.Beginning
+        Text{content: "final static Class<?> TreeRowInterfaceClass = io.qt.core.QRangeModel.TreeRowInterface.class;"}
+        since: [6,10]
+    }
+
+    InjectCode{
+        packageName: "io.qt.internal"
+        target: CodeClass.PackageInitializer
+        position: Position.Beginning
+        Text{content: String.raw
+`final static Class<?> QSpanClass = null;
+final static Class<?> QConstSpanClass = null;`
+        }
+        until: 6.6
+    }
+
+    InjectCode{
+        packageName: "io.qt.internal"
+        target: CodeClass.PackageInitializer
+        position: Position.Beginning
+        Text{content: String.raw
+`final static Class<?> QSpanClass = io.qt.core.QSpan.class;
+final static Class<?> QConstSpanClass = io.qt.core.QConstSpan.class;`
+        }
+        since: 6.7
     }
 
     InjectCode{
@@ -123,6 +162,18 @@ exports io.qt;`
             }
     }
 
+    InjectCode{
+        target: CodeClass.MetaInfo
+        position: Position.Position2
+        Text{content: "void initialize_meta_info_QFutureInterface();"}
+    }
+
+    InjectCode{
+        target: CodeClass.MetaInfo
+        position: Position.Beginning
+        Text{content: "initialize_meta_info_QFutureInterface();"}
+    }
+
     Template{
         name: "core.unclonable"
         Text{content: String.raw`
@@ -147,7 +198,7 @@ if(%in){
     %out = [wrapper = JObjectWrapper(%env, %in)](%TYPE value){
             if(JniEnvironment env{200}){
                 QTJAMBI_TRY{
-                    jobject _value = qtjambi_cast<jobject>(env, value);
+                    jobject _value = qtjambi_cast<jobject>(env, std::move(value));
                     Java::Runtime::Consumer::accept(env, wrapper.object(env), _value);
                 }QTJAMBI_CATCH(const JavaException& exn){
                     exn.report(env);
@@ -612,7 +663,7 @@ public final %ITERATOR_TYPE iterator() {
     }
 
     PrimitiveType{
-        name: "hash_type"
+        name: "size_t"
         javaName: "int"
         jniName: "jint"
         preferredConversion: false
@@ -620,7 +671,7 @@ public final %ITERATOR_TYPE iterator() {
     }
 
     PrimitiveType{
-        name: "hash_type"
+        name: "size_t"
         javaName: "long"
         jniName: "jlong"
         preferredConversion: false
@@ -632,10 +683,16 @@ public final %ITERATOR_TYPE iterator() {
         ModifyFunction{
             signature: "operator<<(float)"
             rename: "append"
+            Delegate{
+                name: "writeFloat"
+            }
         }
         ModifyFunction{
             signature: "operator<<(double)"
             rename: "append"
+            Delegate{
+                name: "writeDouble"
+            }
         }
         ModifyFunction{
             signature: "operator>>(float&)"
@@ -764,10 +821,6 @@ Q_UNUSED(__qt_return_value)
 
     Rejection{
         className: "function_ref"
-    }
-
-    Rejection{
-        className: "QFutureSynchronizer"
     }
 
     Rejection{
@@ -2038,10 +2091,6 @@ Q_UNUSED(__qt_return_value)
     }
 
     Rejection{
-        className: "QTextStreamManipulator"
-    }
-
-    Rejection{
         className: "QTextStreamFunction"
     }
 
@@ -2306,10 +2355,6 @@ Q_UNUSED(__qt_return_value)
     }
 
     Rejection{
-        className: "QFuture::const_iterator"
-    }
-
-    Rejection{
         className: "QHash"
         functionName: "equal_range"
     }
@@ -2368,14 +2413,6 @@ Q_UNUSED(__qt_return_value)
 
     Rejection{
         className: "QCborContainerPrivate"
-    }
-
-    Rejection{
-        className: "QException"
-    }
-
-    Rejection{
-        className: "QUnhandledException"
     }
 
     Rejection{
@@ -2643,33 +2680,130 @@ Q_UNUSED(__qt_return_value)
         Rejection{functionName: "escape"}
         Rejection{functionName: "convertFromPlainText"}
         Rejection{functionName: "makePropertyBinding"}
-        Rejection{functionName: "bin"}
-        Rejection{functionName: "bom"}
-        Rejection{functionName: "center"}
-        Rejection{functionName: "dec"}
-        Rejection{functionName: "endl"}
-        Rejection{functionName: "fixed"}
-        Rejection{functionName: "flush"}
-        Rejection{functionName: "forcepoint"}
-        Rejection{functionName: "forcesign"}
-        Rejection{functionName: "hex"}
-        Rejection{functionName: "left"}
-        Rejection{functionName: "lowercasebase"}
-        Rejection{functionName: "lowercasedigits"}
-        Rejection{functionName: "noforcepoint"}
-        Rejection{functionName: "noforcesign"}
-        Rejection{functionName: "noshowbase"}
-        Rejection{functionName: "oct"}
-        Rejection{functionName: "reset"}
-        Rejection{functionName: "right"}
-        Rejection{functionName: "scientific"}
-        Rejection{functionName: "showbase"}
-        Rejection{functionName: "uppercasebase"}
-        Rejection{functionName: "uppercasedigits"}
-        Rejection{functionName: "ws"}
         Rejection{functionName: "compareThreeWay"}
         Rejection{fieldName: "Disambiguated"}
         Rejection{className: "totally_ordered_wrapper"}
+
+        ModifyFunction{
+            signature: "bin(QTextStream &)"
+            remove: RemoveFlag.All
+            isTextStreamFunction: true
+        }
+        ModifyFunction{
+            signature: "oct(QTextStream &)"
+            remove: RemoveFlag.All
+            isTextStreamFunction: true
+        }
+        ModifyFunction{
+            signature: "dec(QTextStream &)"
+            remove: RemoveFlag.All
+            isTextStreamFunction: true
+        }
+        ModifyFunction{
+            signature: "hex(QTextStream &)"
+            remove: RemoveFlag.All
+            isTextStreamFunction: true
+        }
+        ModifyFunction{
+            signature: "showbase(QTextStream &)"
+            remove: RemoveFlag.All
+            isTextStreamFunction: true
+        }
+        ModifyFunction{
+            signature: "forcesign(QTextStream &)"
+            remove: RemoveFlag.All
+            isTextStreamFunction: true
+        }
+        ModifyFunction{
+            signature: "forcepoint(QTextStream &)"
+            remove: RemoveFlag.All
+            isTextStreamFunction: true
+        }
+        ModifyFunction{
+            signature: "noshowbase(QTextStream &)"
+            remove: RemoveFlag.All
+            isTextStreamFunction: true
+        }
+        ModifyFunction{
+            signature: "noforcesign(QTextStream &)"
+            remove: RemoveFlag.All
+            isTextStreamFunction: true
+        }
+        ModifyFunction{
+            signature: "noforcepoint(QTextStream &)"
+            remove: RemoveFlag.All
+            isTextStreamFunction: true
+        }
+        ModifyFunction{
+            signature: "uppercasebase(QTextStream &)"
+            remove: RemoveFlag.All
+            isTextStreamFunction: true
+        }
+        ModifyFunction{
+            signature: "uppercasedigits(QTextStream &)"
+            remove: RemoveFlag.All
+            isTextStreamFunction: true
+        }
+        ModifyFunction{
+            signature: "lowercasebase(QTextStream &)"
+            remove: RemoveFlag.All
+            isTextStreamFunction: true
+        }
+        ModifyFunction{
+            signature: "lowercasedigits(QTextStream &)"
+            remove: RemoveFlag.All
+            isTextStreamFunction: true
+        }
+        ModifyFunction{
+            signature: "fixed(QTextStream &)"
+            remove: RemoveFlag.All
+            isTextStreamFunction: true
+        }
+        ModifyFunction{
+            signature: "scientific(QTextStream &)"
+            remove: RemoveFlag.All
+            isTextStreamFunction: true
+        }
+        ModifyFunction{
+            signature: "left(QTextStream &)"
+            remove: RemoveFlag.All
+            isTextStreamFunction: true
+        }
+        ModifyFunction{
+            signature: "right(QTextStream &)"
+            remove: RemoveFlag.All
+            isTextStreamFunction: true
+        }
+        ModifyFunction{
+            signature: "center(QTextStream &)"
+            remove: RemoveFlag.All
+            isTextStreamFunction: true
+        }
+        ModifyFunction{
+            signature: "endl(QTextStream &)"
+            remove: RemoveFlag.All
+            isTextStreamFunction: true
+        }
+        ModifyFunction{
+            signature: "flush(QTextStream &)"
+            remove: RemoveFlag.All
+            isTextStreamFunction: true
+        }
+        ModifyFunction{
+            signature: "reset(QTextStream &)"
+            remove: RemoveFlag.All
+            isTextStreamFunction: true
+        }
+        ModifyFunction{
+            signature: "bom(QTextStream &)"
+            remove: RemoveFlag.All
+            isTextStreamFunction: true
+        }
+        ModifyFunction{
+            signature: "ws(QTextStream &)"
+            remove: RemoveFlag.All
+            isTextStreamFunction: true
+        }
 
         EnumType{
             name: "InputMethodQuery"
@@ -4453,7 +4587,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_QDirListing_isEnd
             Text{content: "namespace QtJambiPrivate {\n"+
                           "template<>\n"+
                           "struct RegistryHelper<QPointF, false>{\n"+
-                          "    static void registerHashFunction(){ RegistryAPI::registerHashFunction(typeid(QPointF), [](const void* ptr, hash_type seed)->hash_type{ return !ptr ? 0 : qHash(*reinterpret_cast<const QPointF*>(ptr), QHashDummyValue(), seed); }); }\n"+
+                          "    static void registerHashFunction(){ RegistryAPI::registerHashFunction(typeid(QPointF), [](const void* ptr, size_t seed)->size_t{ return !ptr ? 0 : qHash(*reinterpret_cast<const QPointF*>(ptr), QHashDummyValue(), seed); }); }\n"+
                           "};\n"+
                           "}"}
         }
@@ -5068,7 +5202,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_QDirListing_isEnd
                                     if(Java::QtJambi::QtObjectInterface::isAssignableFrom(%env, CoreAPI::getMetaObjectJavaType(%env, __qt_this))){
                                         %in_javaArray[0] = QVariant::fromValue<void*>(nullptr);
                                         scope.addFinalAction([%env, result = &%in_javaArray[0]]() mutable {
-                                            void* _result = *reinterpret_cast<void**>(result->data());
+                                            const void* _result = *reinterpret_cast<void**>(result->data());
                                             if(_result){
                                                 if(jobject obj = QtJambiAPI::findObject(%env, _result)){
                                                     QtJambiAPI::setDefaultOwnership(%env, obj);
@@ -5082,7 +5216,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_QDirListing_isEnd
                                 }else{
                                     %in_javaArray[0] = QVariant(__qt_this->metaType(), nullptr);
                                     if(__qt_this->metaType().flags() & QMetaType::IsPointer){
-                                        scope.addFinalAction([%env, result = reinterpret_cast<void**>(%in_javaArray[0].data())](){
+                                        scope.addFinalAction([%env, result = reinterpret_cast<void*const*>(%in_javaArray[0].data())](){
                                             if(*result)
                                                 QtJambiAPI::setDefaultOwnership(%env, QtJambiAPI::findObject(%env, *result));
                                         });
@@ -5435,7 +5569,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_QDirListing_isEnd
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "    %in.detach();\n"+
-                                  "    %out = qtjambi_cast<jobject>(%env, %in);\n"+
+                                  "    %out = qtjambi_cast<jobject>(%env, std::move(%in));\n"+
                                   "}"}
                 }
             }
@@ -6821,7 +6955,7 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "%out = Java::QtCore::QCborValue$FromCborResult::newInstance(%env, qtjambi_cast<jobject>(%env, %in), qtjambi_cast<jobject>(%env, %2));"}
+                    Text{content: "%out = Java::QtCore::QCborValue$FromCborResult::newInstance(%env, qtjambi_cast<jobject>(%env, std::move(%in)), qtjambi_cast<jobject>(%env, %2));"}
                 }
             }
         }
@@ -7665,6 +7799,7 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
 
         EnumType{
             name: "JsonFormat"
+            until: 6
         }
         ModifyFunction{
             signature: "operator[](QLatin1String) const"
@@ -7771,7 +7906,7 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "%out = Java::QtCore::QJsonDocument$FromJsonResult::newInstance(%env, qtjambi_cast<jobject>(%env, %in), qtjambi_cast<jobject>(%env, error));"}
+                    Text{content: "%out = Java::QtCore::QJsonDocument$FromJsonResult::newInstance(%env, qtjambi_cast<jobject>(%env, std::move(%in)), qtjambi_cast<jobject>(%env, error));"}
                 }
             }
         }
@@ -8057,6 +8192,29 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
         EnumType{
             name: "ParseError"
         }
+        ModifyField{
+            name: "offset"
+            ReplaceType{
+                modifiedType: "int"
+                until: 6
+            }
+            ReplaceType{
+                modifiedType: "long"
+                since: 7
+            }
+            ConversionRule{
+                codeClass: CodeClass.NativeGetter
+                Text{content: "%out = %in;"}
+            }
+            ConversionRule{
+                codeClass: CodeClass.NativeSetter
+                Text{content: String.raw`
+                    #ifndef %out
+                    #    define %out %in
+                    #endif`}
+            }
+            since: [6, 10, 1]
+        }
     }
 
     ValueType{
@@ -8083,6 +8241,10 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
         }
         EnumType{
             name: "Type"
+        }
+        EnumType{
+            name: "JsonFormat"
+            since: 7
         }
         ModifyFunction{
             signature: "QJsonValue(QLatin1StringView)"
@@ -10935,7 +11097,7 @@ if(destinationChildV<0)
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, result);"}
+                    Text{content: "%out = qtjambi_cast<jobject>(%env, std::move(result));"}
                 }
             }
             ModifyArgument{
@@ -11182,447 +11344,6 @@ if(destinationChildV<0)
         }
     }
 
-    ObjectType{
-        name: "QAbstractState"
-        ModifyFunction{
-            signature: "onEntry(QEvent*)"
-            ModifyArgument{
-                index: 1
-                invalidateAfterUse: true
-            }
-        }
-        ModifyFunction{
-            signature: "onExit(QEvent*)"
-            ModifyArgument{
-                index: 1
-                invalidateAfterUse: true
-            }
-        }
-        until: 5
-    }
-
-    ObjectType{
-        name: "QAbstractTransition"
-        EnumType{
-            name: "TransitionType"
-            until: 5
-        }
-        ModifyFunction{
-            signature: "addAnimation(QAbstractAnimation*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcAnimation"
-                    action: ReferenceCount.Add
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "removeAnimation(QAbstractAnimation*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcAnimation"
-                    action: ReferenceCount.Take
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "eventTest(QEvent*)"
-            ModifyArgument{
-                index: 1
-                invalidateAfterUse: true
-            }
-        }
-        ModifyFunction{
-            signature: "onTransition(QEvent*)"
-            ModifyArgument{
-                index: 1
-                invalidateAfterUse: true
-            }
-        }
-        ModifyFunction{
-            signature: "addAnimation(QAbstractAnimation *)"
-            ppCondition: "QT_CONFIG(animation)"
-        }
-        ModifyFunction{
-            signature: "removeAnimation(QAbstractAnimation *)"
-            ppCondition: "QT_CONFIG(animation)"
-        }
-        ModifyFunction{
-            signature: "animations() const"
-            ppCondition: "QT_CONFIG(animation)"
-        }
-        ModifyFunction{
-            signature: "setTargetState(QAbstractState*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcTargetStates"
-                    action: ReferenceCount.ClearAdd
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setTargetStates(const QList<QAbstractState*>&)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcTargetStates"
-                    action: ReferenceCount.ClearAddAll
-                }
-            }
-        }
-        until: 5
-    }
-
-    ObjectType{
-        name: "QState"
-        EnumType{
-            name: "ChildMode"
-            until: 5
-        }
-        EnumType{
-            name: "RestorePolicy"
-            until: 5
-        }
-        ModifyFunction{
-            signature: "addTransition(QAbstractTransition*)"
-            ModifyArgument{
-                index: 1
-                NoNullPointer{
-                }
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "removeTransition(QAbstractTransition*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setErrorState(QAbstractState*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcErrorState"
-                    action: ReferenceCount.Set
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setInitialState(QAbstractState*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcInitialState"
-                    action: ReferenceCount.Set
-                }
-            }
-        }
-        InjectCode{
-            target: CodeClass.Java
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
-                quoteAfterLine: "class QState___"
-                quoteBeforeLine: "}// class"
-            }
-        }
-        ModifyFunction{
-            signature: "addTransition(const QObject *, const char *, QAbstractState *)"
-            ModifyArgument{
-                index: 1
-                NoNullPointer{
-                }
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-            ModifyArgument{
-                index: 3
-                NoNullPointer{
-                }
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-            InjectCode{
-                target: CodeClass.Java
-                position: Position.Beginning
-                ArgumentMap{
-                    index: 2
-                    metaName: "signal"
-                }
-                ArgumentMap{
-                    index: 1
-                    metaName: "sender"
-                }
-                Text{content: "if(signal==null || signal.isEmpty())\n"+
-                              "    return null;\n"+
-                              "if(!signal.startsWith(\"2\")){\n"+
-                              "    io.qt.core.QMetaMethod method = sender.metaObject().method(signal);\n"+
-                              "    if(method!=null && method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal) {\n"+
-                              "        signal = \"2\" + method.cppMethodSignature();\n"+
-                              "    }\n"+
-                              "}"}
-            }
-            InjectCode{
-                target: CodeClass.Java
-                position: Position.End
-                ArgumentMap{
-                    index: 0
-                    metaName: "%0"
-                }
-                ArgumentMap{
-                    index: 3
-                    metaName: "%3"
-                }
-                Text{content: "QtJambi_LibraryUtilities.internal.addReferenceCount(%0, QAbstractTransition.class, \"__rcTargetStates\", false, false, %3);"}
-            }
-        }
-        ModifyFunction{
-            signature: "addTransition(QAbstractState*)"
-            ModifyArgument{
-                index: 1
-                NoNullPointer{
-                }
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-            InjectCode{
-                target: CodeClass.Java
-                position: Position.End
-                ArgumentMap{
-                    index: 0
-                    metaName: "%0"
-                }
-                ArgumentMap{
-                    index: 1
-                    metaName: "%1"
-                }
-                Text{content: "QtJambi_LibraryUtilities.internal.addReferenceCount(%0, QAbstractTransition.class, \"__rcTargetStates\", false, false, %1);"}
-            }
-        }
-        InjectCode{
-            target: CodeClass.Java
-        }
-        until: 5
-    }
-
-    ObjectType{
-        name: "QStateMachine"
-        ObjectType{
-            name: "SignalEvent"
-        }
-        ObjectType{
-            name: "WrappedEvent"
-        }
-        EnumType{
-            name: "Error"
-        }
-        EnumType{
-            name: "EventPriority"
-        }
-        ModifyFunction{
-            signature: "beginMicrostep(QEvent*)"
-            ModifyArgument{
-                index: 1
-                invalidateAfterUse: true
-            }
-        }
-        ModifyFunction{
-            signature: "beginSelectTransitions(QEvent*)"
-            ModifyArgument{
-                index: 1
-                invalidateAfterUse: true
-            }
-        }
-        ModifyFunction{
-            signature: "endMicrostep(QEvent*)"
-            ModifyArgument{
-                index: 1
-                invalidateAfterUse: true
-            }
-        }
-        ModifyFunction{
-            signature: "endSelectTransitions(QEvent*)"
-            ModifyArgument{
-                index: 1
-                invalidateAfterUse: true
-            }
-        }
-        ModifyFunction{
-            signature: "addDefaultAnimation(QAbstractAnimation*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcDefaultAnimations"
-                    action: ReferenceCount.Add
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "removeDefaultAnimation(QAbstractAnimation*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcDefaultAnimations"
-                    action: ReferenceCount.Take
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "addState(QAbstractState*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcStates"
-                    action: ReferenceCount.Add
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "removeState(QAbstractState*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcStates"
-                    action: ReferenceCount.Take
-                }
-            }
-        }
-        until: 5
-    }
-
-    ObjectType{
-        name: "QHistoryState"
-        EnumType{
-            name: "HistoryType"
-            until: 5
-        }
-        ModifyFunction{
-            signature: "setDefaultTransition(QAbstractTransition*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setDefaultState(QAbstractState*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-            InjectCode{
-                target: CodeClass.Java
-                position: Position.End
-                ArgumentMap{
-                    index: 0
-                    metaName: "%0"
-                }
-                ArgumentMap{
-                    index: 1
-                    metaName: "%1"
-                }
-                Text{content: "QtJambi_LibraryUtilities.internal.addReferenceCount(defaultTransition(), QAbstractTransition.class, \"__rcTargetStates\", false, false, %1);"}
-            }
-        }
-        until: 5
-    }
-
-    ObjectType{
-        name: "QSignalTransition"
-        ModifyFunction{
-            signature: "setSenderObject(const QObject*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcSenderObject"
-                    action: ReferenceCount.Set
-                }
-            }
-        }
-        InjectCode{
-            target: CodeClass.Java
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
-                quoteAfterLine: "class QSignalTransition___"
-                quoteBeforeLine: "}// class"
-            }
-        }
-        ModifyFunction{
-            signature: "QSignalTransition(const QObject *, const char *, QState *)"
-            InjectCode{
-                target: CodeClass.Java
-                position: Position.Beginning
-                ArgumentMap{
-                    index: 2
-                    metaName: "signal"
-                }
-                ArgumentMap{
-                    index: 1
-                    metaName: "sender"
-                }
-                Text{content: "if(signal!=null && !signal.startsWith(\"2\")){\n"+
-                              "    io.qt.core.QMetaMethod method = sender.metaObject().method(signal);\n"+
-                              "    if(method!=null && method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal) {\n"+
-                              "        signal = \"2\" + method.cppMethodSignature();\n"+
-                              "    }\n"+
-                              "}"}
-            }
-        }
-        ModifyFunction{
-            signature: "setSignal(const QByteArray &)"
-            InjectCode{
-                target: CodeClass.Java
-                position: Position.Beginning
-                ArgumentMap{
-                    index: 1
-                    metaName: "signal"
-                }
-                Text{content: "if(signal!=null && !signal.startsWith(\"2\")){\n"+
-                              "    io.qt.core.QMetaMethod method = senderObject().metaObject().method(signal.toString());\n"+
-                              "    if(method!=null && method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal) {\n"+
-                              "        signal = new io.qt.core.QByteArray(\"2\");\n"+
-                              "        signal.append(method.cppMethodSignature());\n"+
-                              "    }\n"+
-                              "}"}
-            }
-        }
-        until: 5
-    }
-
-    ObjectType{
-        name: "QEventTransition"
-        ModifyFunction{
-            signature: "setEventSource(QObject*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcEventSource"
-                    action: ReferenceCount.Set
-                }
-            }
-        }
-        until: 5
-    }
-
-    ObjectType{
-        name: "QFinalState"
-        until: 5
-    }
-
     ValueType{
         name: "QMargins"
         ModifyFunction{// don't provide assignment operator in favor to operator-
@@ -11723,15 +11444,6 @@ if(destinationChildV<0)
                     Text{content: "%out = CoreAPI::convertQObjectToJavaObjectCppOwnership(%env, %in);"}
                 }
             }
-        }
-        InjectCode{
-            target: CodeClass.ShellDeclaration
-            position: Position.End
-            Text{content: "#if defined(Q_OS_WIN) && QT_VERSION < QT_VERSION_CHECK(6,0,0)\n"+
-                          "public:\n"+
-                          "    inline bool registerEventNotifier(QWinEventNotifier *) override {return false;}\n"+
-                          "    inline void unregisterEventNotifier(QWinEventNotifier *) override {}\n"+
-                          "#endif"}
         }
         ModifyFunction{
             signature: "interrupt()"
@@ -12012,20 +11724,34 @@ if(destinationChildV<0)
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "qsizetype* %out;\n"+
-                                  "if constexpr(sizeof(int)==sizeof(qsizetype)){\n"+
-                                  "    %out = qtjambi_array_cast<qsizetype*>(%env, %scope, %in, 1);\n"+
-                                  "}else{\n"+
-                                  "    if(int* tmp = qtjambi_array_cast<int*>(%env, %scope, %in, 1)){\n"+
-                                  "        %out = new qsizetype(*tmp);\n"+
-                                  "        %scope.addFinalAction([=]{*tmp = jint(*%out); delete %out;});\n"+
-                                  "    }else{\n"+
-                                  "        %out = nullptr;\n"+
-                                  "    }\n"+
-                                  "}"}
+                    Text{content: "qsizetype* %out = suffix_index_caster<qsizetype>::cast(%env, %scope, %in);"}
                 }
             }
             since: [6, 4]
+        }
+        InjectCode{
+            target: CodeClass.Native
+            position: Position.Beginning
+            Text{content: String.raw`
+                template<typename T, bool = sizeof(jint)==sizeof(T)>
+                struct suffix_index_caster{
+                    static T* cast(JNIEnv *env, QtJambiScope& scope, jintArray in){
+                        return qtjambi_cast<T*>(env, scope, in, 1);
+                    }
+                };
+
+                template<typename T>
+                struct suffix_index_caster<T,false>{
+                    static T* cast(JNIEnv *env, QtJambiScope& scope, jintArray in){
+                        if(jint* tmp = qtjambi_cast<jint*>(env, scope, in, 1)){
+                            qsizetype* result = new qsizetype(*tmp);
+                            scope.addFinalAction([=]{*tmp = jint(*result); delete result;});
+                            return result;
+                        }else{
+                            return nullptr;
+                        }
+                    }
+                };`}
         }
     }
 
@@ -15802,10 +15528,7 @@ try{
             threadAffinity: true
             InjectCode{
                 target: CodeClass.Java
-                ArgumentMap{
-                    index: 1
-                    metaName: "%1"
-                }
+                ArgumentMap{index: 1; metaName: "%1"}
                 Text{content: "if(%1 < 0){\n"+
                               "    throw new IllegalArgumentException(\"Timers cannot have negative intervals.\");\n"+
                               "}\n"+
@@ -15878,10 +15601,7 @@ try{
             signature: "receivers(const char*)const"
             InjectCode{
                 target: CodeClass.Java
-                ArgumentMap{
-                    index: 1
-                    metaName: "%1"
-                }
+                ArgumentMap{index: 1; metaName: "%1"}
                 Text{content: "if(%1==null || %1.isEmpty())\n"+
                               "    return 0;\n"+
                               "if(!%1.startsWith(\"2\")){\n"+
@@ -15940,10 +15660,10 @@ try{
                     Text{content: "#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)\n"+
                                   "for(QByteArray name : QList<QByteArray>(%in)){\n"+
                                   "    if(QtJambiObjectData::isRejectedUserProperty(__qt_this, name))\n"+
-                                  "    %in.removeAll(name);\n"+
+                                  "        %in.removeAll(name);\n"+
                                   "}\n"+
                                   "#endif\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, %in);"}
+                                  "%out = qtjambi_cast<jobject>(%env, std::move(%in));"}
                 }
             }
         }
@@ -15958,6 +15678,7 @@ try{
                     index: 0
                     ReplaceType{
                         modifiedType: "T"
+                        modifiedJavaType: "io.qt.core.QObject"
                         modifiedJniType: "jobject"
                     }
                 }
@@ -16035,6 +15756,7 @@ try{
                     index: 0
                     ReplaceType{
                         modifiedType: "T"
+                        modifiedJavaType: "io.qt.core.QObject"
                         modifiedJniType: "jobject"
                     }
                 }
@@ -16221,6 +15943,7 @@ try{
                     index: 0
                     ReplaceType{
                         modifiedType: "T"
+                        modifiedJavaType: "io.qt.core.QObject"
                         modifiedJniType: "jobject"
                     }
                 }
@@ -17299,6 +17022,9 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
                     modifiedType: "char"
                 }
             }
+            Delegate{
+                name: "writeChar"
+            }
         }
         ModifyFunction{
             signature: "operator>>(quint16&)"
@@ -17359,6 +17085,9 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
         ModifyFunction{
             signature: "operator<<(bool)"
             rename: "append"
+            Delegate{
+                name: "writeBoolean"
+            }
             until: 6.7
         }
         ModifyFunction{
@@ -17368,6 +17097,9 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
                     type: "bool"
                 }
                 rename: "append"
+                Delegate{
+                    name: "writeBoolean"
+                }
             }
             since: 6.8
         }
@@ -17400,14 +17132,23 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
         ModifyFunction{
             signature: "operator<<(qint8)"
             rename: "append"
+            Delegate{
+                name: "writeByte"
+            }
         }
         ModifyFunction{
             signature: "operator<<(qint32)"
             rename: "append"
+            Delegate{
+                name: "writeInt"
+            }
         }
         ModifyFunction{
             signature: "operator<<(qint16)"
             rename: "append"
+            Delegate{
+                name: "writeShort"
+            }
         }
         ModifyFunction{
             signature: "operator>>(qint32&)"
@@ -17490,6 +17231,9 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
         ModifyFunction{
             signature: "operator<<(qint64)"
             rename: "append"
+            Delegate{
+                name: "writeLong"
+            }
         }
         ModifyFunction{
             signature: "operator>>(qint64&)"
@@ -17549,6 +17293,9 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
         ModifyFunction{
             signature: "operator<<(const char*)"
             rename: "append"
+            Delegate{
+                name: "writeString"
+            }
         }
         ModifyFunction{
             signature: "unsetDevice()"
@@ -17663,6 +17410,7 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
 
     ObjectType{
         name: "QTextStream"
+        addTextStreamFunctions: true
 
         EnumType{
             name: "FieldAlignment"
@@ -17714,6 +17462,10 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
             signature: "readLineInto(QString *, qint64)"
             remove: RemoveFlag.All
         }
+        /*ModifyFunction{
+            signature: "operator<<(QTextStreamManipulator)"
+            remove: RemoveFlag.All
+        }*/
         ModifyFunction{
             signature: "operator<<(QLatin1String)"
             remove: RemoveFlag.All
@@ -17738,10 +17490,6 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
             signature: "operator<<(const QStringRef &)"
             remove: RemoveFlag.All
             until: 5
-        }
-        ModifyFunction{
-            signature: "operator<<(QStringView)"
-            remove: RemoveFlag.All
         }
         ModifyFunction{
             signature: "operator<<(signed long)"
@@ -17846,30 +17594,68 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
         ModifyFunction{
             signature: "operator<<(char)"
             rename: "append"
+            Delegate{
+                name: "writeByte"
+            }
         }
         ModifyFunction{
             signature: "operator<<(signed int)"
             rename: "append"
+            Delegate{
+                name: "writeInt"
+            }
         }
         ModifyFunction{
             signature: "operator<<(signed short)"
             rename: "append"
+            Delegate{
+                name: "writeShort"
+            }
         }
         ModifyFunction{
             signature: "operator<<(qlonglong)"
             rename: "append"
+            Delegate{
+                name: "writeLong"
+            }
         }
         ModifyFunction{
             signature: "operator<<(QChar)"
             rename: "append"
+            Delegate{
+                name: "writeChar"
+            }
         }
         ModifyFunction{
             signature: "operator<<(const QByteArray&)"
             rename: "append"
+            Delegate{
+                name: "writeBytes"
+            }
         }
         ModifyFunction{
             signature: "operator<<(const char*)"
             rename: "append"
+            ModifyArgument{
+                index: 1
+                ReplaceType{
+                    modifiedType: "java.lang.@NonNull CharSequence"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "QStringView %out = qtjambi_cast<QStringView>(%env, %scope, %in);"}
+                }
+            }
+            Delegate{
+                name: "writeString"
+            }
+        }
+        ModifyFunction{
+            signature: "operator<<(QStringView)"
+            rename: "append"
+            Delegate{
+                name: "writeString"
+            }
         }
         ModifyFunction{
             signature: "operator<<(QString)"
@@ -17877,8 +17663,15 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
             ModifyArgument{
                 index: 1
                 ReplaceType{
-                    modifiedType: "java.lang.@Nullable CharSequence"
+                    modifiedType: "io.qt.core.@NonNull QString"
                 }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "const QString& %out = qtjambi_cast<const QString&>(%env, %in);"}
+                }
+            }
+            Delegate{
+                name: "writeString"
             }
         }
         ModifyFunction{
@@ -18033,7 +17826,7 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
                 index: 0
                 NoNullPointer{}
                 ReplaceType{
-                    modifiedType: "io.qt.core.QString"
+                    modifiedType: "io.qt.core.@NonNull QString"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -18106,53 +17899,6 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
         }
     }
 
-    ObjectType{
-        name: "QPromise"
-        disableNativeIdUsage: true
-        template: true
-        TemplateArguments{
-            arguments: ["QVariant"]
-        }
-        since: 6
-    }
-
-    ObjectType{
-        name: "QPromise<QVariant>"
-        isGeneric: true
-        forceFinal: true
-        disableNativeIdUsage: true
-        generate: false
-        since: 6
-    }
-
-    ValueType{
-        name: "QFuture"
-        Rejection{
-            functionName: "unwrap"
-        }
-
-        Rejection{
-            functionName: "then"
-        }
-
-        Rejection{
-            functionName: "d"
-        }
-        disableNativeIdUsage: true
-        template: true
-        TemplateArguments{
-            arguments: ["QVariant"]
-        }
-    }
-
-    ValueType{
-        name: "QFuture<QVariant>"
-        isGeneric: true
-        forceFinal: true
-        disableNativeIdUsage: true
-        generate: false
-    }
-
     NamespaceType{
         name: "QtFuture"
         ExtraIncludes{
@@ -18177,11 +17923,168 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
             since: [6, 3]
         }
 
-        Rejection{functionName: "makeExceptionalFuture*"}
-        Rejection{functionName: "makeReadyFuture*"}
-        Rejection{functionName: "makeReadyFuture*"}
-        Rejection{functionName: "makeReadyValueFuture*"}
-        Rejection{functionName: "makeReadyRangeFuture*"}
+        /*ModifyFunction{
+            signature: "makeExceptionalFuture<T>(QException)"
+            remove: RemoveFlag.All
+        }*/
+        ModifyFunction{
+            signature: "makeExceptionalFuture<T>(std::exception_ptr)"
+            Instantiation{
+                Argument{
+                    type: "void"
+                }
+                ModifyArgument{
+                    index: 1
+                    NoNullPointer{}
+                    ReplaceType{
+                        modifiedType: "java.lang.Throwable"
+                        modifiedJniType: "jthrowable"
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "std::exception_ptr %out = std::make_exception_ptr(JavaException(%env, %in));"}
+                    }
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "makeReadyFuture<T,QtPrivate::EnableForNonVoid<T>>(T&&)"
+            Instantiation{
+                Argument{
+                    type: "QVariant"
+                }
+                AddTypeParameter{
+                    name: "T"
+                }
+                ModifyArgument{
+                    index: 1
+                    ReplaceType{
+                        modifiedType: "T"
+                        modifiedJavaType: "java.lang.Object"
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "QVariant %out = qtjambi_cast<QVariant>(%env, %in);"}
+                    }
+                }
+                ModifyArgument{
+                    index: 0
+                    ReplaceType{
+                        modifiedType: "io.qt.core.@NonNull QFuture<T>"
+                    }
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "makeReadyFuture<T>(QList<T>)"
+            Instantiation{
+                Argument{
+                    type: "QVariant"
+                }
+                AddTypeParameter{
+                    name: "T"
+                }
+                ModifyArgument{
+                    index: 0
+                    ReplaceType{
+                        modifiedType: "io.qt.core.@NonNull QFuture<T>"
+                    }
+                }
+                ModifyArgument{
+                    index: 1
+                    ReplaceType{
+                        modifiedType: "java.util.@NonNull Collection<T>"
+                    }
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "makeReadyFuture<T>()"
+            Instantiation{
+                Argument{
+                    type: "void"
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "makeReadyValueFuture<T>(T&&)"
+            Instantiation{
+                Argument{
+                    type: "QVariant"
+                }
+                AddTypeParameter{
+                    name: "T"
+                }
+                ModifyArgument{
+                    index: 0
+                    ReplaceType{
+                        modifiedType: "io.qt.core.@NonNull QFuture<T>"
+                    }
+                }
+                ModifyArgument{
+                    index: 1
+                    ReplaceType{
+                        modifiedType: "T"
+                        modifiedJavaType: "java.lang.Object"
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "QVariant %out = qtjambi_cast<QVariant>(%env, %in);"}
+                    }
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "makeReadyRangeFuture<Container,true>(Container&&)"
+            Instantiation{
+                Argument{
+                    type: "QList<QVariant>"
+                }
+                AddTypeParameter{
+                    name: "T"
+                }
+                ModifyArgument{
+                    index: 0
+                    ReplaceType{
+                        modifiedType: "io.qt.core.@NonNull QFuture<T>"
+                    }
+                }
+                ModifyArgument{
+                    index: 1
+                    ReplaceType{
+                        modifiedType: "java.util.@NonNull Collection<T>"
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "QList<QVariant> %out = qtjambi_cast<QList<QVariant>>(%env, %in);"}
+                    }
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "makeReadyRangeFuture<ValueType>(std::initializer_list<ValueType>)"
+            Instantiation{
+                Argument{
+                    type: "QVariant"
+                }
+                AddTypeParameter{
+                    name: "T"
+                }
+                ModifyArgument{
+                    index: 0
+                    ReplaceType{
+                        modifiedType: "io.qt.core.@NonNull QFuture<T>"
+                    }
+                }
+                ModifyArgument{
+                    index: 1
+                    ReplaceType{
+                        modifiedType: "T @NonNull..."
+                        modifiedJavaType: "java.lang.Object[]"
+                    }
+                }
+            }
+        }
 
         EnumType{
             name: "Launch"
@@ -18225,19 +18128,6 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
             }
             ImportFile{
                 name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
-                quoteAfterLine: "class QtFuture_6_1__"
-                quoteBeforeLine: "}// class"
-                since: [6, 1]
-            }
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
-                quoteAfterLine: "class QtFuture_6_1to5__"
-                quoteBeforeLine: "}// class"
-                since: [6, 1]
-                until: 6.5
-            }
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
                 quoteAfterLine: "class QtFuture_6_3to5__"
                 quoteBeforeLine: "}// class"
                 since: [6, 3]
@@ -18249,15 +18139,21 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
                 quoteBeforeLine: "}// class"
                 since: [6, 6]
             }
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
-                quoteAfterLine: "class QtFuture_6_6to10__"
-                quoteBeforeLine: "}// class"
-                since: [6, 6]
-                until: [6, 10]
-            }
         }
         since: 6
+    }
+
+    Rejection{
+        className: "QException"
+    }
+    Rejection{
+        className: "QUnhandledException"
+    }
+
+    PrimitiveType{
+        name: "std::exception_ptr"
+        javaName: "java.lang.Throwable"
+        jniName: "jthrowable"
     }
 
     ValueType{
@@ -18269,6 +18165,10 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
                 location: Include.Local
             }
             Include{
+                fileName: "future_p.h"
+                location: Include.Local
+            }
+            Include{
                 fileName: "QtJambi/CoreAPI"
                 location: Include.Global
             }
@@ -18277,18 +18177,8 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
                 location: Include.Global
             }
         }
-
-        Rejection{
-            functionName: "get"
-            since: [6, 3]
-        }
-
         Rejection{
             functionName: "resultStoreBase"
-        }
-
-        Rejection{
-            functionName: "reportException"
         }
 
         Rejection{
@@ -18316,6 +18206,39 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
             using: "std::function<void(const QFutureInterfaceBase&)>"
         }
         ModifyFunction{
+            signature: "get<T>(const QFuture<T>&)"
+            Instantiation{
+                Argument{
+                    type: "QVariant"
+                    isImplicit: true
+                }
+                AddTypeParameter{
+                    name: "T"
+                }
+                ModifyArgument{
+                    index: 1
+                    ReplaceType{
+                        modifiedType: "io.qt.core.@NonNull QFuture<T>"
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            const QFuture<void>& %out = QtJambiAPI::convertJavaObjectToNativeReference<QFuture<void>>(%env, %in);
+                            if(const QFutureInterface<QVariant>* fiv = QtJambiAPI::asVariantFutureInterface(&CoreAPI::futureInterface(%out))){
+                                __java_return_value = qtjambi_cast<jobject>(%env, *fiv);
+                            }else{`
+                        }
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Native
+                    position: Position.End
+                    Text{content: "}"}
+                }
+            }
+            since: [6, 3]
+        }
+        ModifyFunction{
             // in Qt6.4.0 this was removed but re-added in 6.4.1 leading to undefined symbol exception
             signature: "cleanContinuation()"
             proxyCall: "CoreAPI::cleanContinuation"
@@ -18327,8 +18250,10 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
             InjectCode{
                 target: CodeClass.Native
                 position: Position.Beginning
-                Text{content: "CoreAPI::invokeAndCatch(%env, __qt_this, [](void* ptr){\n"+
-                              "QFutureInterfaceBase *__qt_this = reinterpret_cast<QFutureInterfaceBase *>(ptr);"}
+                Text{content: String.raw`
+                    CoreAPI::invokeAndCatch(%env, __qt_this, [](void* ptr){
+                    QFutureInterfaceBase *__qt_this = reinterpret_cast<QFutureInterfaceBase *>(ptr);`
+                }
             }
             InjectCode{
                 target: CodeClass.Native
@@ -18393,8 +18318,8 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
                             const auto continuationPtr =
                                     static_cast<const QFutureInterfaceBase *>(continuationFuture.constData());
                             %out = CoreAPI::futurePrivate(continuationPtr);
-                        }
-                        `}
+                        }`
+                    }
                 }
             }
             since: [6,10]
@@ -18446,13 +18371,43 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
                 position: Position.End
                 ArgumentMap{index: 1; metaName: "%1"}
                 Text{content: String.raw`
-if(%1!=null){
-    if(%1.autoDelete()){
-        QtJambi_LibraryUtilities.internal.setCppOwnership(%1);
-    }else{
-        __rcRunnable = %1;
-    }
-}`}
+                    if(%1!=null){
+                        if(%1.autoDelete()){
+                            QtJambi_LibraryUtilities.internal.setCppOwnership(%1);
+                        }else{
+                            __rcRunnable = %1;
+                        }
+                    }`
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "reportException(std::exception_ptr)"
+            ModifyArgument{
+                index: 1
+                NoNullPointer{}
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: String.raw`
+                        std::exception_ptr %out = std::make_exception_ptr(JavaException(%env, %in));
+                        if(QFutureInterface<QVariant>* fi = QtJambiAPI::asVariantFutureInterface(__qt_this))
+                            fi->reportException(%out);
+                        else if(QFutureInterface<void>* fi = QtJambiAPI::asVoidFutureInterface(__qt_this))
+                            fi->reportException(%out);
+                        else{
+                            QString baseType = QLatin1String(QtJambiAPI::typeName(QtJambiPrivate::CheckPointer<QFutureInterfaceBase>::trySupplyType(__qt_this)));
+                            if(baseType==QLatin1String("QFutureInterface_vshell")
+                                || baseType==QLatin1String("QFutureInterface<void>")){
+                                static_cast<QFutureInterface<void>*>(__qt_this)->reportException(%out);
+                                return;
+                            }else if(baseType==QLatin1String("QFutureInterface_shell")
+                                || baseType==QLatin1String("QFutureInterface<QVariant>")){
+                                static_cast<QFutureInterface<QVariant>*>(__qt_this)->reportException(%out);
+                                return;
+                            }
+                        }`
+                    }
+                }
             }
         }
         ModifyFunction{
@@ -18460,18 +18415,29 @@ if(%1!=null){
             InjectCode{
                 target: CodeClass.Native
                 position: Position.Beginning
-                Text{content: String.raw
-`if(QFutureInterface<QVariant>* fi = dynamic_cast<QFutureInterface<QVariant>*>(__qt_this))
-    fi->reportFinished();
-else if(QFutureInterface<void>* fi = dynamic_cast<QFutureInterface<void>*>(__qt_this))
-    fi->reportFinished();
-else`}
+                Text{content: String.raw`
+                    if(QFutureInterface<QVariant>* fi = QtJambiAPI::asVariantFutureInterface(__qt_this))
+                        fi->reportFinished();
+                    else if(QFutureInterface<void>* fi = QtJambiAPI::asVoidFutureInterface(__qt_this))
+                        fi->reportFinished();
+                    else{
+                        QString baseType = QLatin1String(QtJambiAPI::typeName(QtJambiPrivate::CheckPointer<QFutureInterfaceBase>::trySupplyType(__qt_this)));
+                        if(baseType==QLatin1String("QFutureInterface_vshell")
+                            || baseType==QLatin1String("QFutureInterface<void>")){
+                            static_cast<QFutureInterface<void>*>(__qt_this)->reportFinished();
+                            return;
+                        }else if(baseType==QLatin1String("QFutureInterface_shell")
+                            || baseType==QLatin1String("QFutureInterface<QVariant>")){
+                            static_cast<QFutureInterface<QVariant>*>(__qt_this)->reportFinished();
+                            return;
+                        }
+                    }`
+                }
             }
         }
         ModifyFunction{
             signature: "isPaused()const"
             deprecated: true
-            since: 6.0
         }
         ModifyFunction{
             signature: "mutex()const"
@@ -18482,32 +18448,2483 @@ else`}
                     ownership: Ownership.Dependent
                 }
             }
-            since: 6
         }
         ModifyFunction{
-            signature: "mutex(int)const"
+            signature: "swap(QFutureInterfaceBase&)"
             ModifyArgument{
-                index: 0
-                DefineOwnership{
+                index: 1
+                ConversionRule{
                     codeClass: CodeClass.Native
-                    ownership: Ownership.Dependent
+                    Text{content: String.raw`
+                        QFutureInterfaceBase& %out = QtJambiAPI::objectReferenceFromNativeId<QFutureInterfaceBase>(%env, %in);
+                        if(QFutureInterface<void>* fiv = QtJambiAPI::asVoidFutureInterface(__qt_this)){
+                            if(!QtJambiAPI::isVariantFutureInterface(&%out)){
+                                swap(*fiv, %out);
+                            }else{
+                                JavaException::raiseIllegalArgumentException(%env, "Cannot swap QFutureInterface<T> and QFutureInterface<void>." QTJAMBI_STACKTRACEINFO );
+                            }
+                        }else if(QFutureInterface<QVariant>* fiv = QtJambiAPI::asVariantFutureInterface(__qt_this)){
+                            if(!QtJambiAPI::isVoidFutureInterface(&%out)){
+                                swap(*fiv, %out);
+                            }else{
+                                JavaException::raiseIllegalArgumentException(%env, "Cannot swap QFutureInterface<void> and QFutureInterface<T>." QTJAMBI_STACKTRACEINFO );
+                            }
+                        }else`
+                    }
                 }
             }
-            until: 5
         }
         InjectCode{
             target: CodeClass.Java
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
-                quoteAfterLine: "class QFutureInterfaceBase___"
-                quoteBeforeLine: "}// class"
+            Text{content: "private Object __rcRunnable;"}
+        }
+        InjectCode{
+            target: CodeClass.Native
+            Text{content: String.raw`
+                const std::type_info& typeid_QFutureInterfaceBase_shell(){
+                    return typeid(QFutureInterfaceBase_shell);
+                }`
+            }
+        }
+    }
+
+    ValueType{
+        name: "QFutureInterface"
+        disableNativeIdUsage: true
+        template: true
+        noImplicitConstructors: true
+        TemplateArguments{
+            arguments: ["QVariant"]
+        }
+        ModifyFunction{
+            signature: "QFutureInterface(QFutureInterface)"
+            remove: RemoveFlag.All
+        }
+    }
+    Rejection{className: "QFutureInterface<void>"}
+
+    ValueType{
+        name: "QFutureInterface<QVariant>"
+        disableNativeIdUsage: true
+        isGeneric: true
+        noImplicitConstructors: true
+        ExtraIncludes{
+            Include{
+                fileName: "qfuture_impl.h"
+                suppressed: true
+                location: Include.Global
+            }
+            Include{
+                fileName: "QtCore/qfuture_impl.h"
+                suppressed: true
+                location: Include.Global
+            }
+            Include{
+                fileName: "future_p.h"
+                location: Include.Local
+            }
+        }
+        ModifyFunction{
+            signature: "reportAndMoveResult(T&&,int)"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "reportResult(const T*,int)"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "reportFinished()"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "reportException(std::exception_ptr)"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "resultPointer(int)const"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "QFutureInterface(QFutureInterfaceBase)"
+            ModifyArgument{
+                index: 1
+                ReplaceType{
+                    modifiedType: "io.qt.core.@NonNull QFutureInterface<T>"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: String.raw`
+                        const QFutureInterfaceBase& %out = qtjambi_cast<const QFutureInterfaceBase&>(%env, %in);
+                        if(!QtJambiAPI::isVariantFutureInterface(&%out)){
+                            new(__qtjambi_ptr) QFutureInterface_vshell(%out);
+                            return;
+                        }`
+                    }
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "QFutureInterface(QFutureInterface<QVariant>)"
+            access: Modification.Private
+            ModifyArgument{
+                index: 1
+                ReplaceType{
+                    modifiedType: "java.lang.Object"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: String.raw`
+                        if(Java::QtCore::QFutureInterfaceBase$State::isInstanceOf(%env, %in)){
+                            new(__qtjambi_ptr) QFutureInterface_vshell(qtjambi_cast<QFutureInterfaceBase::State>(%env, %in));
+                        }else if(Java::QtCore::QFutureInterfaceBase::isInstanceOf(%env, %in)){
+                            new(__qtjambi_ptr) QFutureInterface_vshell(qtjambi_cast<const QFutureInterfaceBase&>(%env, %in));
+                        }else{
+                            new(__qtjambi_ptr) QFutureInterface_vshell();
+                        }
+                        return;
+                        QFutureInterfaceBase::State %out = QFutureInterfaceBase::NoState;`
+                    }
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "operator=(QFutureInterface<QVariant>)"
+            noImplicitArguments: true
+            ModifyArgument{
+                index: 1
+                ReplaceType{
+                    modifiedType: "io.qt.core.@NonNull QFutureInterface<T>"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: String.raw`
+                        QFutureInterfaceBase* base = __qt_this;
+                        const QFutureInterfaceBase& %out = qtjambi_cast<const QFutureInterfaceBase&>(%env, %in);
+                        if(QFutureInterface<void>* fiv = QtJambiAPI::asVoidFutureInterface(base)){
+                            if(!QtJambiAPI::isVariantFutureInterface(&%out)){
+                                *fiv = %out;
+                            }else{
+                                JavaException::raiseIllegalArgumentException(%env, "Cannot assign QFutureInterface<T> to QFutureInterface<void>." QTJAMBI_STACKTRACEINFO );
+                            }
+                        }else if(QFutureInterface<QVariant>* fiv = QtJambiAPI::asVariantFutureInterface(base)){
+                            if(!QtJambiAPI::isVoidFutureInterface(&%out)){
+                                *fiv = %out;
+                            }else{
+                                JavaException::raiseIllegalArgumentException(%env, "Cannot assign QFutureInterface<void> to QFutureInterface<T>." QTJAMBI_STACKTRACEINFO );
+                            }
+                        }
+                        if constexpr(false)`
+                    }
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "reportFinished(const T *)"
+            ModifyArgument{
+                index: 1
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: String.raw`
+                        QFutureInterfaceBase* base = __qt_this;
+                        if(QtJambiAPI::isVoidFutureInterface(base)){
+                            JavaException::raiseQNoImplementationException(%env, "reportFinished() not available for QFutureInterface<void>." QTJAMBI_STACKTRACEINFO );
+                        }else if(!QtJambiAPI::isVariantFutureInterface(base)){
+                            JavaException::raiseQNoImplementationException(%env, "reportFinished() not available for QFutureInterfaceBase." QTJAMBI_STACKTRACEINFO );
+                        }
+                        QVariant __%in = qtjambi_cast<QVariant>(%env, %in);
+                        const QVariant* %out = &__%in;`
+                    }
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "reportResults(QList<T>,int,int)"
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Beginning
+                Text{content: String.raw`
+                    QFutureInterfaceBase* base = __qt_this;
+                    if(QtJambiAPI::isVoidFutureInterface(base)){
+                        JavaException::raiseQNoImplementationException(%env, "reportResults(QList<T>,int,int) not available for QFutureInterface<void>." QTJAMBI_STACKTRACEINFO );
+                    }else if(!QtJambiAPI::isVariantFutureInterface(base)){
+                        JavaException::raiseQNoImplementationException(%env, "reportResults(QList<T>,int,int) not available for QFutureInterfaceBase." QTJAMBI_STACKTRACEINFO );
+                    }`
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "reportResult(QVariant,int)"
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Beginning
+                Text{content: String.raw`
+                    QFutureInterfaceBase* base = __qt_this;
+                    if(QtJambiAPI::isVoidFutureInterface(base)){
+                        JavaException::raiseQNoImplementationException(%env, "reportResult(T, int) not available for QFutureInterface<void>." QTJAMBI_STACKTRACEINFO );
+                    }else if(!QtJambiAPI::isVariantFutureInterface(base)){
+                        JavaException::raiseQNoImplementationException(%env, "reportResult(T, int) not available for QFutureInterfaceBase." QTJAMBI_STACKTRACEINFO );
+                    }`
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "resultReference(int) const"
+            rename: "result"
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Beginning
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: String.raw`
+                    const QFutureInterfaceBase* base = __qt_this;
+                    if(QtJambiAPI::isVoidFutureInterface(base)){
+                        JavaException::raiseQNoImplementationException(%env, "result(int) not available for QFutureInterface<void>." QTJAMBI_STACKTRACEINFO );
+                    }else if(const QFutureInterface<QVariant>* fiv = QtJambiAPI::asVariantFutureInterface(base)){
+                        if(!fiv->isValid())
+                            JavaException::raiseRuntimeException(%env, "QFutureInterface<T> is invalid." QTJAMBI_STACKTRACEINFO );
+                        if(fiv->hasException())
+                            JavaException::raiseRuntimeException(%env, "QFutureInterface<T> has exception." QTJAMBI_STACKTRACEINFO );
+                        if(%1<0 || %1>=fiv->resultCount())
+                            JavaException::raiseIndexOutOfBoundsException(%env, QString::number(%1) QTJAMBI_STACKTRACEINFO );
+                    }else{
+                        JavaException::raiseQNoImplementationException(%env, "result(int) not available for QFutureInterfaceBase." QTJAMBI_STACKTRACEINFO );
+                    }`
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "results()"
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Beginning
+                Text{content: String.raw`
+                    const QFutureInterfaceBase* base = __qt_this;
+                    if(QtJambiAPI::isVoidFutureInterface(base)){
+                        JavaException::raiseQNoImplementationException(%env, "results() not available for QFutureInterface<void>." QTJAMBI_STACKTRACEINFO );
+                    }else if(!QtJambiAPI::isVariantFutureInterface(base)){
+                        JavaException::raiseQNoImplementationException(%env, "results() not available for QFutureInterfaceBase." QTJAMBI_STACKTRACEINFO );
+                    }`
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "takeResult()"
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Beginning
+                Text{content: String.raw`
+                    QFutureInterfaceBase* base = __qt_this;
+                    if(QtJambiAPI::isVoidFutureInterface(base)){
+                        JavaException::raiseQNoImplementationException(%env, "takeResult() not available for QFutureInterface<void>." QTJAMBI_STACKTRACEINFO );
+                    }else if(QtJambiAPI::isVariantFutureInterface(base)){
+                        CoreAPI::invokeAndCatch(%env, base, [](void* ptr){
+                            reinterpret_cast<QFutureInterfaceBase*>(ptr)->waitForResult(-1);
+                        });
+                        if(!__qt_this->isValid())
+                            JavaException::raiseRuntimeException(%env, "QFutureInterface<T> is invalid." QTJAMBI_STACKTRACEINFO );
+                        if(__qt_this->hasException())
+                            JavaException::raiseRuntimeException(%env, "QFutureInterface<T> has exception." QTJAMBI_STACKTRACEINFO );
+                        if(__qt_this->resultCount()>0)
+                            JavaException::raiseIndexOutOfBoundsException(%env, "0" QTJAMBI_STACKTRACEINFO );
+                    }else{
+                        JavaException::raiseQNoImplementationException(%env, "takeResult() not available for QFutureInterfaceBase." QTJAMBI_STACKTRACEINFO );
+                    }`
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "future()"
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "io.qt.core.@NonNull QFuture<T>"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "%out = qtjambi_cast<jobject>(%env, std::move(%in));"}
+                }
+            }
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Beginning
+                Text{content: String.raw`
+                    QFutureInterfaceBase* base = __qt_this;
+                    if(QFutureInterface<void>* fiv = QtJambiAPI::asVoidFutureInterface(base)){
+                        __java_return_value = qtjambi_cast<jobject>(__jni_env, fiv->future());
+                    }else if(!QtJambiAPI::isVariantFutureInterface(base)){
+                        __java_return_value = qtjambi_cast<jobject>(__jni_env, QFuture<void>(base));
+                    }else{`
+                }
+            }
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.End
+                Text{content: "}"}
+            }
+        }
+        ModifyFunction{
+            signature: "operator==<T>(QFutureInterface<QVariant>,QFutureInterface<T>)"
+            Instantiation{
+                Argument{
+                    type: "QVariant"
+                    isImplicit: true
+                }
+                InjectCode{
+                    target: CodeClass.Native
+                    position: Position.Beginning
+                    ArgumentMap{index: 1; metaName: "%1"}
+                    Text{content: String.raw`
+                        const QFutureInterfaceBase* base1 = __qt_this;
+                        const QFutureInterfaceBase* base2 = &__qt_%1;
+                        if(const QFutureInterface<void>* vbase1 = QtJambiAPI::asVoidFutureInterface(base1))
+                            __java_return_value = vbase1 == QtJambiAPI::asVoidFutureInterface(base2);
+                        else if(!QtJambiAPI::isVariantFutureInterface(base1) && !QtJambiAPI::isVariantFutureInterface(base2))
+                            __java_return_value = false;
+                        else
+                        `}
+                }
             }
         }
         InjectCode{
             target: CodeClass.Native
-            Text{content: "const std::type_info& typeid_QFutureInterfaceBase_shell(){\n"+
-                          "    return typeid(QFutureInterfaceBase_shell);\n"+
-                          "}"}
+            position: Position.Clone
+            Text{content: String.raw`
+                const QFutureInterfaceBase* base = __qt_this;
+                if(const QFutureInterface<void>* fiv = QtJambiAPI::asVoidFutureInterface(base))
+                    __java_return_value = qtjambi_cast<jobject>(__jni_env, *fiv);
+                else if(!QtJambiAPI::isVariantFutureInterface(base))
+                    __java_return_value = qtjambi_cast<jobject>(__jni_env, *base);
+                else`
+            }
+        }
+        InjectCode{
+            target: CodeClass.MetaInfo
+            Text{content: String.raw`
+                {
+                    const std::type_info& typeId = registerValueTypeInfo<QFutureInterface<void>>("QFutureInterface<void>", "io/qt/core/QFutureInterface");
+                    registerConstructorInfos(typeId, 0, &__qt_destruct_QFutureInterface_QVariant_, {});
+                    registerDeleter(typeId, &deleter_QFutureInterface_QVariant_);
+                    registerMetaType<QFutureInterface<void>>("QFutureInterface<void>");
+                    registerDefaultPolymorphyHandler<QFutureInterfaceBase, QFutureInterface<void>>();
+                    registerSizeOfShell(typeId, sizeof(QFutureInterface_vshell));
+                }`
+            }
+        }
+        InjectCode{
+            target: CodeClass.ShellDeclaration
+            position: Position.Position2
+            Text{ content: String.raw`
+                class QFutureInterface_vshell : public QFutureInterface<void>, public QtJambiShellInterface
+                {
+                public:
+                    QFutureInterface_vshell(const QFutureInterfaceBase& dd0);
+                    QFutureInterface_vshell(QFutureInterfaceBase::State initialState0 = QFutureInterfaceBase::NoState);
+                    ~QFutureInterface_vshell() override;
+                    static void operator delete(void * ptr) noexcept;
+                private:
+                    QtJambiShell* __shell() const override final;
+                };`
+            }
+        }
+        InjectCode{
+            target: CodeClass.Deleter
+            position: Position.Beginning
+            Text{content: String.raw`
+                QFutureInterfaceBase *_ptr = reinterpret_cast<QFutureInterfaceBase *>(ptr);
+                #if 0
+                `
+            }
+        }
+        InjectCode{
+            target: CodeClass.Deleter
+            position: Position.Position2
+            Text{content: String.raw`#endif`
+            }
+        }
+        InjectCode{
+            target: CodeClass.Destructor
+            position: Position.Beginning
+            Text{content: String.raw`
+                QFutureInterfaceBase* base = reinterpret_cast<QFutureInterfaceBase*>(%this);
+                if(QFutureInterface_vshell* fiv = dynamic_cast<QFutureInterface_vshell*>(base))
+                    fiv->~QFutureInterface_vshell();
+                else if(QLatin1String(QtJambiAPI::typeName(QtJambiPrivate::CheckPointer<QFutureInterfaceBase>::trySupplyType(base)))==QLatin1String("QFutureInterface_vshell"))
+                    static_cast<QFutureInterface_vshell*>(base)->~QFutureInterface_vshell();
+                else`
+            }
+        }
+        InjectCode{
+            target: CodeClass.Native
+            position: Position.Position2
+            Text{ content: String.raw`
+                QtJambiShell* QFutureInterface_vshell::__shell() const { return *reinterpret_cast<QtJambiShell**>( quintptr(this) + sizeof(QFutureInterface_vshell) ); }
+                QFutureInterface_vshell::QFutureInterface_vshell(const QFutureInterfaceBase& dd0)
+                    : QFutureInterface<void>(dd0)
+                {
+                    QTJAMBI_IN_CONSTRUCTOR_CALL("QFutureInterface<void>::QFutureInterface_vshell(const QFutureInterfaceBase& dd0)", this)
+                    QFutureInterface_vshell::__shell()->constructed(typeid(QFutureInterface<void>));
+                }
+                QFutureInterface_vshell::QFutureInterface_vshell(QFutureInterfaceBase::State initialState0)
+                    : QFutureInterface<void>(initialState0)
+                {
+                    QTJAMBI_IN_CONSTRUCTOR_CALL("QFutureInterface<void>::QFutureInterface_vshell(QFutureInterfaceBase::State initialState0)", this)
+                    QFutureInterface_vshell::__shell()->constructed(typeid(QFutureInterface<void>));
+                }
+                QFutureInterface_vshell::~QFutureInterface_vshell() {
+                    QTJAMBI_IN_DESTRUCTOR_CALL("QFutureInterface<void>::~QFutureInterface<void>()", this)
+                    QFutureInterface_vshell::__shell()->destructed(typeid(QFutureInterface<void>));
+                }
+                void QFutureInterface_vshell::operator delete(void * ptr) noexcept {
+                    reinterpret_cast<QFutureInterface_vshell*>(ptr)->QFutureInterface_vshell::__shell()->tryDeleteShell(typeid(QFutureInterface<void>));
+                }`
+            }
+        }
+        InjectCode{
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class QFutureInterface__"
+                quoteBeforeLine: "}// class"
+            }
+        }
+    }
+
+    ObjectType{
+        name: "QPromise"
+        disableNativeIdUsage: true
+        template: true
+        TemplateArguments{
+            arguments: ["QVariant"]
+        }
+        Rejection{
+            functionName: "emplaceResultAt"
+        }
+        Rejection{
+            functionName: "emplaceResult"
+        }
+        since: 6
+    }
+
+    ObjectType{
+        name: "QPromise<QVariant>"
+        isGeneric: true
+        forceFinal: true
+        disableNativeIdUsage: true
+        since: 6
+        ExtraIncludes{
+            Include{
+                fileName: "qfuture_impl.h"
+                suppressed: true
+                location: Include.Global
+            }
+            Include{
+                fileName: "QtCore/qfuture_impl.h"
+                suppressed: true
+                location: Include.Global
+            }
+            Include{
+                fileName: "future_p.h"
+                location: Include.Local
+            }
+        }
+        ModifyFunction{
+            signature: "QPromise(const QFutureInterface<T>&)"
+            ModifyArgument{
+                index: 1
+                ReplaceType{
+                    modifiedType: "io.qt.core.@Nullable QFutureInterface<T>"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: String.raw`QFutureInterfaceBase* base = QtJambiAPI::convertJavaObjectToNative<QFutureInterfaceBase>(%env, %in);
+                        QFutureInterface<QVariant>* fiv = QtJambiAPI::asVariantFutureInterface(base);
+                        if(!fiv){
+                            new(__qtjambi_ptr) QPromise<void>(*base);
+                            return;
+                        }
+                        const QFutureInterface<QVariant>& %out = *fiv;
+                        `}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "future() const"
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "io.qt.core.@NonNull QFuture<T>"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "%out = qtjambi_cast<jobject>(%env, std::move(%in));"}
+                }
+            }
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Beginning
+                Text{content: String.raw`
+                    const QFutureInterfaceBase* base = reinterpret_cast<const QFutureInterfaceBase*>(__qt_this);
+                    if(!QtJambiAPI::isVariantFutureInterface(base)){
+                        __java_return_value = qtjambi_cast<jobject>(__jni_env, reinterpret_cast<const QPromise<void>*>(__qt_this)->future());
+                    }else{
+                    `}
+            }
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.End
+                Text{content: "}"}
+            }
+        }
+        ModifyFunction{
+            signature: "addResult<U,QtPrivate::EnableIfSameOrConvertible<U, T>>(U&&,int)"
+            ModifyArgument{
+                index: 1
+                ReplaceType{
+                    modifiedType: "T"
+                    modifiedJavaType: "java.lang.Object"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: String.raw`
+                        QFutureInterfaceBase* base = reinterpret_cast<QFutureInterfaceBase*>(__qt_this);
+                        if(!QtJambiAPI::isVariantFutureInterface(base)){
+                            JavaException::raiseQNoImplementationException(%env, "addResult(T,int) not available for QPromise<void>." QTJAMBI_STACKTRACEINFO );
+                        }
+                        QVariant %out = qtjambi_cast<QVariant>(%env, %in);`}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "addResults(const QList<T> &)"
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Beginning
+                Text{content: String.raw`
+                    QFutureInterfaceBase* base = reinterpret_cast<QFutureInterfaceBase*>(__qt_this);
+                    if(!QtJambiAPI::isVariantFutureInterface(base)){
+                        JavaException::raiseQNoImplementationException(%env, "addResults(QList<T>) not available for QPromise<void>." QTJAMBI_STACKTRACEINFO );
+                    }
+                    `}
+            }
+        }
+        ModifyFunction{
+            signature: "setException(std::exception_ptr)"
+            ModifyArgument{
+                index: 1
+                NoNullPointer{}
+            }
+        }
+        ModifyFunction{
+            signature: "swap(QPromise<T>&)"
+            ModifyArgument{
+                index: 1
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: String.raw`
+                        QPromise<QVariant>& %out = QtJambiAPI::convertJavaObjectToNativeReference<QPromise<QVariant>>(%env, %in);
+                        QFutureInterfaceBase* base = reinterpret_cast<QFutureInterfaceBase*>(__qt_this);
+                        QFutureInterfaceBase* %in_base = reinterpret_cast<QFutureInterfaceBase*>(&%out);
+                        if(!QtJambiAPI::isVariantFutureInterface(base)){
+                            if(QtJambiAPI::isVariantFutureInterface(%in_base)){
+                                JavaException::raiseQNoImplementationException(%env, "swap(QPromise<QVariant>&) not available for QPromise<void>." QTJAMBI_STACKTRACEINFO );
+                            }else{
+                                reinterpret_cast<QPromise<void>*>(__qt_this)->swap(reinterpret_cast<QPromise<void>&>(%out));
+                            }
+                        }else if(!QtJambiAPI::isVariantFutureInterface(%in_base)){
+                            JavaException::raiseQNoImplementationException(%env, "swap(QPromise<void>&) not available for QPromise<QVariant>." QTJAMBI_STACKTRACEINFO );
+                        }else
+                        `}
+                }
+            }
+        }
+        InjectCode{
+            target: CodeClass.Java
+            Text{content: String.raw`
+                public static @NonNull QPromise<Void> createVoidPromise() {
+                    return new QPromise<>(QFutureInterface.createVoidFutureInterface());
+                }
+                `}
+        }
+        InjectCode{
+            target: CodeClass.Deleter
+            position: Position.Position3
+            Text{content: String.raw`
+                QFutureInterfaceBase *base = reinterpret_cast<QFutureInterfaceBase *>(ptr);
+                if(!QtJambiAPI::isVariantFutureInterface(base))
+                    delete reinterpret_cast<QPromise<void> *>(ptr);
+                else
+                `
+            }
+        }
+        InjectCode{
+            target: CodeClass.Destructor
+            position: Position.Beginning
+            Text{content: String.raw`
+                QFutureInterfaceBase* base = reinterpret_cast<QFutureInterfaceBase*>(%this);
+                if(!QtJambiAPI::isVariantFutureInterface(base))
+                    reinterpret_cast<QPromise<void>*>(ptr)->~QPromise<void>();
+                else`
+            }
+        }
+        InjectCode{
+            target: CodeClass.MetaInfo
+            Text{content: String.raw`
+{
+    const std::type_info& typeId = registerValueTypeInfo<QPromise<void>>("QPromise<void>", "io/qt/core/QPromise");
+    registerConstructorInfos(typeId, 0, &__qt_destruct_QPromise_QVariant_, {});
+    registerDeleter(typeId, &deleter_QPromise_QVariant_);
+}
+                `}
+        }
+    }
+    Rejection{className: "QPromise<void>"}
+
+    ValueType{
+        name: "QFuture"
+        Rejection{
+            functionName: "unwrap"
+        }
+        Rejection{
+            functionName: "d"
+        }
+        disableNativeIdUsage: true
+        template: true
+        TemplateArguments{
+            arguments: ["QVariant"]
+        }
+        IteratorType{
+            name: "const_iterator"
+            isConst: true
+            genericClass: true
+        }
+    }
+    Rejection{className: "QFuture<void>"}
+    FunctionalType{
+        name: "QFutureRunnable"
+        generate: false
+    }
+    FunctionalType{
+        name: "QFutureSupplier"
+        generate: false
+    }
+    FunctionalType{
+        name: "QFutureConsumer"
+        generate: false
+    }
+    FunctionalType{
+        name: "QFutureFutureConsumer"
+        generate: false
+    }
+    FunctionalType{
+        name: "QFutureFunction"
+        generate: false
+    }
+    FunctionalType{
+        name: "QFutureFutureFunction"
+        generate: false
+    }
+
+    ValueType{
+        name: "QFuture<QVariant>"
+        disableNativeIdUsage: true
+        isGeneric: true
+        ExtraIncludes{
+            Include{
+                fileName: "future_p.h"
+                location: Include.Local
+            }
+            Include{
+                fileName: "qfuture_impl.h"
+                suppressed: true
+                location: Include.Global
+            }
+            Include{
+                fileName: "QtCore/qfuture_impl.h"
+                suppressed: true
+                location: Include.Global
+            }
+        }
+        ModifyFunction{
+            signature: "QFuture<U,QtPrivate::EnableForNonVoid<U>>(QFutureInterface<T>*)"
+            ModifyArgument{
+                index: 1
+                ReplaceType{
+                    modifiedType: "io.qt.core.@Nullable QFutureInterface<T>"
+                }
+                NoNullPointer{}
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: String.raw`QFutureInterfaceBase* base = QtJambiAPI::convertJavaObjectToNative<QFutureInterfaceBase>(%env, %in);
+                        QFutureInterface<QVariant>* %out = QtJambiAPI::asVariantFutureInterface(base);
+                        if(!%out){
+                            new(__qtjambi_ptr) QFuture<void>(base);
+                            return;
+                        }
+                        `}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "QFuture<U,V,QtPrivate::EnableForVoid<V>>(QFuture<U>)"
+            ModifyArgument{
+                index: 1
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: String.raw`
+                        QFuture<QVariant>* _%in = QtJambiAPI::convertJavaObjectToNative<QFuture<QVariant>>(%env, %in);
+                        if(!_%in){
+                            new(__qtjambi_ptr) QFuture<QVariant>();
+                        }
+                        const QFuture<QVariant>& %out = *%_in;
+                        const QFutureInterfaceBase* base = CoreAPI::futureInterface(%_in);
+                        if(!QtJambiAPI::isVariantFutureInterface(base)){
+                            new(__qtjambi_ptr) QFuture<void>(base);
+                            return;
+                        }
+                        `}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "QFuture(QFuture<QVariant>)"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "begin<U,QtPrivate::EnableForNonVoid<U>>()const"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "end<U,QtPrivate::EnableForNonVoid<U>>()const"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "waitForFinished()"
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Beginning
+                Text{content: String.raw`
+CoreAPI::invokeAndCatch(%env, __qt_this, [](void* ptr){
+    QFuture<QVariant> *__qt_this = reinterpret_cast<QFuture<QVariant> *>(ptr);`
+                }
+            }
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.End
+                Text{content: "});"}
+            }
+        }
+        ModifyFunction{
+            signature: "constBegin<U,QtPrivate::EnableForNonVoid<U>>()const"
+            Instantiation{
+                Argument{
+                    type: "QVariant"
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "constEnd<U,QtPrivate::EnableForNonVoid<U>>()const"
+            Instantiation{
+                Argument{
+                    type: "QVariant"
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "QFuture<U,QtPrivate::EnableForVoid<U>>(QFutureInterfaceBase*)"
+            ModifyArgument{
+                index: 1
+                NoNullPointer{}
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: String.raw`QFutureInterfaceBase* base = QtJambiAPI::convertJavaObjectToNative<QFutureInterfaceBase>(%env, %in);
+                        QFutureInterface<QVariant>* %out = QtJambiAPI::asVariantFutureInterface(base);
+                        if(!%out){
+                            new(__qtjambi_ptr) QFuture<void>(base);
+                            return;
+                        }
+                        `}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "resultAt<U,QtPrivate::EnableForNonVoid<U>>(int) const"
+            Instantiation{
+                Argument{
+                    type: "QVariant"
+                    isImplicit: true
+                }
+                InjectCode{
+                    target: CodeClass.Native
+                    position: Position.Beginning
+                    ArgumentMap{index: 1; metaName: "%1"}
+                    Text{content: String.raw`
+                        const QFutureInterfaceBase* base = CoreAPI::futureInterface(__qt_this);
+                        if(const QFutureInterface<QVariant>* fiv = QtJambiAPI::asVariantFutureInterface(base)){
+                            QPair<QFutureInterface<QVariant>*,int> data{const_cast<QFutureInterface<QVariant>*>(fiv), %1};
+                            CoreAPI::invokeAndCatch(%env, &data, [](void* ptr){
+                                QPair<QFutureInterface<QVariant>*,int>* data = reinterpret_cast<QPair<QFutureInterface<QVariant>*,int>*>(ptr);
+                                data->first->waitForResult(data->second);
+                            });
+                            if(%1<0 || %1>=__qt_this->resultCount())
+                                JavaException::raiseIndexOutOfBoundsException(%env, QString::number(%1) QTJAMBI_STACKTRACEINFO );
+                        }else{
+                            JavaException::raiseQNoImplementationException(%env, "resultAt(int) not available for QFuture<void>." QTJAMBI_STACKTRACEINFO );
+                        }
+                        `}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "isResultReadyAt<U,QtPrivate::EnableForNonVoid<U>>(int) const"
+            Instantiation{
+                Argument{
+                    type: "QVariant"
+                    isImplicit: true
+                }
+                InjectCode{
+                    target: CodeClass.Native
+                    position: Position.Beginning
+                    Text{content: String.raw`
+                        const QFutureInterfaceBase* base = CoreAPI::futureInterface(__qt_this);
+                        if(!QtJambiAPI::isVariantFutureInterface(base)){
+                            JavaException::raiseQNoImplementationException(%env, "isResultReadyAt(int) not available for QFuture<void>." QTJAMBI_STACKTRACEINFO );
+                        }
+                        `}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "result<U,QtPrivate::EnableForNonVoid<U>>() const"
+            Instantiation{
+                Argument{
+                    type: "QVariant"
+                    isImplicit: true
+                }
+                InjectCode{
+                    target: CodeClass.Native
+                    position: Position.Beginning
+                    Text{content: String.raw`
+                        const QFutureInterfaceBase* base = CoreAPI::futureInterface(__qt_this);
+                        if(const QFutureInterface<QVariant>* fiv = QtJambiAPI::asVariantFutureInterface(base)){
+                            CoreAPI::invokeAndCatch(%env, const_cast<QFutureInterface<QVariant>*>(fiv), [](void* ptr){
+                                reinterpret_cast<QFutureInterface<QVariant>*>(ptr)->waitForResult(0);
+                            });
+                            if(__qt_this->resultCount()<1)
+                                JavaException::raiseIndexOutOfBoundsException(%env, "1" QTJAMBI_STACKTRACEINFO );
+                        }else{
+                            JavaException::raiseQNoImplementationException(%env, "result() not available for QFuture<void>." QTJAMBI_STACKTRACEINFO );
+                        }
+                        `}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "results<U,QtPrivate::EnableForNonVoid<U>>() const"
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Beginning
+                Text{content: String.raw`
+                    const QFutureInterfaceBase* base = CoreAPI::futureInterface(__qt_this);
+                    if(!QtJambiAPI::isVariantFutureInterface(base)){
+                        JavaException::raiseQNoImplementationException(%env, "results() not available for QFuture<void>." QTJAMBI_STACKTRACEINFO );
+                    }
+                    `}
+            }
+        }
+        ModifyFunction{
+            signature: "takeResult<U,QtPrivate::EnableForNonVoid<U>>()"
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Beginning
+                Text{content: String.raw`
+                    QFutureInterfaceBase* base = CoreAPI::futureInterface(__qt_this);
+                    if(QtJambiAPI::isVariantFutureInterface(base)){
+                        CoreAPI::invokeAndCatch(%env, base, [](void* ptr){
+                            reinterpret_cast<QFutureInterfaceBase*>(ptr)->waitForResult(-1);
+                        });
+                        if(__qt_this->resultCount()<1)
+                            JavaException::raiseIndexOutOfBoundsException(%env, "1" QTJAMBI_STACKTRACEINFO );
+                    }else{
+                        JavaException::raiseQNoImplementationException(%env, "takeResult() not available for QFuture<void>." QTJAMBI_STACKTRACEINFO );
+                    }
+                    `}
+            }
+        }
+        ModifyFunction{
+            signature: "operator=<U,V,QtPrivate::EnableForVoid<V>>(QFuture<U>)"
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Beginning
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: String.raw`
+                    QFutureInterfaceBase* thisbase = CoreAPI::futureInterface(__qt_this);
+                    const QFutureInterfaceBase* base2 = &CoreAPI::futureInterface(__qt_%1);
+                    if(!QtJambiAPI::isVariantFutureInterface(thisbase)){
+                        if(!QtJambiAPI::isVariantFutureInterface(base2)){
+                            *reinterpret_cast<QFuture<void>*>(__qt_this) = *reinterpret_cast<const QFuture<void>*>(&__qt_%1);
+                        }else{
+                            *reinterpret_cast<QFuture<void>*>(__qt_this) = __qt_%1;
+                        }
+                    }else{
+                        if(!QtJambiAPI::isVariantFutureInterface(base2)){
+                            JavaException::raiseQNoImplementationException(%env, "assign(QFuture<void>) not available for QFuture<T>." QTJAMBI_STACKTRACEINFO );
+                        }else{
+                            *__qt_this = __qt_%1;
+                        }
+                    }
+                    if constexpr(false)
+                    `}
+            }
+        }
+        ModifyFunction{
+            signature: "operator==<T>(QFuture<QVariant>,QFuture<T>)"
+            Instantiation{
+                Argument{
+                    type: "QVariant"
+                    isImplicit: true
+                }
+                InjectCode{
+                    target: CodeClass.Native
+                    position: Position.Beginning
+                    ArgumentMap{index: 1; metaName: "%1"}
+                    Text{content: String.raw`
+                        const QFutureInterfaceBase* base1 = CoreAPI::futureInterface(__qt_this);
+                        const QFutureInterfaceBase* base2 = &CoreAPI::futureInterface(__qt_%1);
+                        if(const QFutureInterface<void>* vbase1 = QtJambiAPI::asVoidFutureInterface(base1))
+                            __java_return_value = vbase1 == QtJambiAPI::asVoidFutureInterface(base2);
+                        else if(!QtJambiAPI::isVariantFutureInterface(base1) && !QtJambiAPI::isVariantFutureInterface(base2))
+                            __java_return_value = false;
+                        else
+                        `}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "onFailed<Function,std::enable_if_t<!QtPrivate::ArgResolver<Function>::HasExtraArgs>>(QObject*,Function&&)"
+            Instantiation{
+                Argument{
+                    type: "QFutureRunnable"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "io.qt.core.QFuture$Runnable"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`__java_return_value = qtjambi_cast<jobject>(%env, QFuture<void>(*__qt_this).onFailed(__qt_%1, futurevoid_createExceptionHandlerRunnable(%env, %in)));
+#if 0`}
+                    }
+                }
+                ModifyArgument{
+                    index: 0
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "#endif"}
+                    }
+                    ReplaceType{
+                        modifiedType: "io.qt.core.@NonNull QFuture<Void>"
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QFutureSupplier"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "io.qt.core.QFuture$Supplier<R>"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            if(!QtJambiAPI::isVariantFutureInterface(CoreAPI::futureInterface(__qt_this)))
+                                __java_return_value = qtjambi_cast<jobject>(%env, QFuture<void>(*__qt_this).onFailed(__qt_%1, future_createExceptionHandlerSupplier(%env, %in)));
+                            else
+                                __java_return_value = qtjambi_cast<jobject>(%env, __qt_this->onFailed(__qt_%1, future_createExceptionHandlerSupplier(%env, %in)));
+                            #if 0`}
+                    }
+                }
+                ModifyArgument{
+                    index: 0
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "#endif"}
+                    }
+                    ReplaceType{
+                        modifiedType: "<R> io.qt.core.@NonNull QFuture<R>"
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QFutureConsumer"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "io.qt.core.QFuture$Consumer<@NonNull Throwable>"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`__java_return_value = qtjambi_cast<jobject>(%env, QFuture<void>(*__qt_this).onFailed(__qt_%1, futurevoid_createExceptionHandlerConsumer(%env, %in)));
+#if 0`}
+                    }
+                }
+                ModifyArgument{
+                    index: 0
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "#endif"}
+                    }
+                    ReplaceType{
+                        modifiedType: "io.qt.core.@NonNull QFuture<Void>"
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QFutureFunction"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "io.qt.core.QFuture$Function<@NonNull Throwable, R>"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            if(!QtJambiAPI::isVariantFutureInterface(CoreAPI::futureInterface(__qt_this)))
+                                __java_return_value = qtjambi_cast<jobject>(%env, QFuture<void>(*__qt_this).onFailed(__qt_%1, future_createExceptionHandlerFunction(%env, %in)));
+                            else
+                                __java_return_value = qtjambi_cast<jobject>(%env, __qt_this->onFailed(__qt_%1, future_createExceptionHandlerFunction(%env, %in)));
+                            #if 0`}
+                    }
+                }
+                ModifyArgument{
+                    index: 0
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "#endif"}
+                    }
+                    ReplaceType{
+                        modifiedType: "<R> io.qt.core.@NonNull QFuture<R>"
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QFutureRunnable"
+                    isImplicit: true
+                }
+                AddArgument{
+                    index: 2
+                    name: "exceptionType"
+                    comment: "type of caught exception"
+                    type: "java.lang.@StrictNonNull Class<Failure>"
+                }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    Text{content: String.raw`java.util.Objects.requireNonNull(exceptionType, "Argument 'exceptionType': null not expected.");`}
+                }
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "io.qt.core.QFuture$Runnable"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`__java_return_value = qtjambi_cast<jobject>(%env, QFuture<void>(*__qt_this).onFailed(__qt_%1, futurevoid_createTypedExceptionHandlerRunnable(%env, exceptionType, %in)));
+#if 0`}
+                    }
+                }
+                ModifyArgument{
+                    index: 0
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "#endif"}
+                    }
+                    ReplaceType{
+                        modifiedType: "<Failure extends Throwable> io.qt.core.@NonNull QFuture<Void>"
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QFutureSupplier"
+                    isImplicit: true
+                }
+                AddArgument{
+                    index: 2
+                    name: "exceptionType"
+                    comment: "type of caught exception"
+                    type: "java.lang.@StrictNonNull Class<Failure>"
+                }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    Text{content: String.raw`java.util.Objects.requireNonNull(exceptionType, "Argument 'exceptionType': null not expected.");`}
+                }
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "io.qt.core.QFuture$Supplier<R>"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            if(!QtJambiAPI::isVariantFutureInterface(CoreAPI::futureInterface(__qt_this)))
+                                __java_return_value = qtjambi_cast<jobject>(%env, QFuture<void>(*__qt_this).onFailed(__qt_%1, future_createTypedExceptionHandlerSupplier(%env, exceptionType, %in)));
+                            else
+                                __java_return_value = qtjambi_cast<jobject>(%env, __qt_this->onFailed(future_createTypedExceptionHandlerSupplier(%env, exceptionType, %in)));
+                            #if 0`}
+                    }
+                }
+                ModifyArgument{
+                    index: 0
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "#endif"}
+                    }
+                    ReplaceType{
+                        modifiedType: "<Failure extends Throwable, R> io.qt.core.@NonNull QFuture<R>"
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QFutureConsumer"
+                    isImplicit: true
+                }
+                AddArgument{
+                    index: 2
+                    name: "exceptionType"
+                    comment: "type of caught exception"
+                    type: "java.lang.@StrictNonNull Class<Failure>"
+                }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    Text{content: String.raw`java.util.Objects.requireNonNull(exceptionType, "Argument 'exceptionType': null not expected.");`}
+                }
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "io.qt.core.QFuture$Consumer<@NonNull Failure>"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`__java_return_value = qtjambi_cast<jobject>(%env, QFuture<void>(*__qt_this).onFailed(__qt_%1, futurevoid_createTypedExceptionHandlerConsumer(%env, exceptionType, %in)));
+#if 0`}
+                    }
+                }
+                ModifyArgument{
+                    index: 0
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "#endif"}
+                    }
+                    ReplaceType{
+                        modifiedType: "<Failure extends Throwable> io.qt.core.@NonNull QFuture<Void>"
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QFutureFunction"
+                    isImplicit: true
+                }
+                AddArgument{
+                    index: 2
+                    name: "exceptionType"
+                    comment: "type of caught exception"
+                    type: "java.lang.@StrictNonNull Class<Failure>"
+                }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    Text{content: String.raw`java.util.Objects.requireNonNull(exceptionType, "Argument 'exceptionType': null not expected.");`}
+                }
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "io.qt.core.QFuture$Function<@NonNull Failure, R>"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            if(!QtJambiAPI::isVariantFutureInterface(CoreAPI::futureInterface(__qt_this)))
+                                __java_return_value = qtjambi_cast<jobject>(%env, QFuture<void>(*__qt_this).onFailed(__qt_%1, future_createTypedExceptionHandlerFunction(%env, exceptionType, %in)));
+                            else
+                                __java_return_value = qtjambi_cast<jobject>(%env, __qt_this->onFailed(future_createTypedExceptionHandlerFunction(%env, exceptionType, %in)));
+                            #if 0`}
+                    }
+                }
+                ModifyArgument{
+                    index: 0
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "#endif"}
+                    }
+                    ReplaceType{
+                        modifiedType: "<Failure extends Throwable, R> io.qt.core.@NonNull QFuture<R>"
+                    }
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "onFailed<Function,std::enable_if_t<!QtPrivate::ArgResolver<Function>::HasExtraArgs>>(Function&&)"
+            Instantiation{
+                Argument{
+                    type: "QFutureRunnable"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 1
+                    ReplaceType{
+                        modifiedType: "io.qt.core.QFuture$Runnable"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`__java_return_value = qtjambi_cast<jobject>(%env, QFuture<void>(*__qt_this).onFailed(futurevoid_createExceptionHandlerRunnable(%env, %in)));
+#if 0`}
+                    }
+                }
+                ModifyArgument{
+                    index: 0
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "#endif"}
+                    }
+                    ReplaceType{
+                        modifiedType: "io.qt.core.@NonNull QFuture<Void>"
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QFutureSupplier"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 1
+                    ReplaceType{
+                        modifiedType: "io.qt.core.QFuture$Supplier<R>"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            if(!QtJambiAPI::isVariantFutureInterface(CoreAPI::futureInterface(__qt_this)))
+                                __java_return_value = qtjambi_cast<jobject>(%env, QFuture<void>(*__qt_this).onFailed(future_createExceptionHandlerSupplier(%env, %in)));
+                            else
+                                __java_return_value = qtjambi_cast<jobject>(%env, __qt_this->onFailed(future_createExceptionHandlerSupplier(%env, %in)));
+                            #if 0`}
+                    }
+                }
+                ModifyArgument{
+                    index: 0
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "#endif"}
+                    }
+                    ReplaceType{
+                        modifiedType: "<R> io.qt.core.@NonNull QFuture<R>"
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QFutureConsumer"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 1
+                    ReplaceType{
+                        modifiedType: "io.qt.core.QFuture$Consumer<@NonNull Throwable>"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`__java_return_value = qtjambi_cast<jobject>(%env, QFuture<void>(*__qt_this).onFailed(futurevoid_createExceptionHandlerConsumer(%env, %in)));
+#if 0`}
+                    }
+                }
+                ModifyArgument{
+                    index: 0
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "#endif"}
+                    }
+                    ReplaceType{
+                        modifiedType: "io.qt.core.@NonNull QFuture<Void>"
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QFutureFunction"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 1
+                    ReplaceType{
+                        modifiedType: "io.qt.core.QFuture$Function<@NonNull Throwable, R>"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            if(!QtJambiAPI::isVariantFutureInterface(CoreAPI::futureInterface(__qt_this)))
+                                __java_return_value = qtjambi_cast<jobject>(%env, QFuture<void>(*__qt_this).onFailed(future_createExceptionHandlerFunction(%env, %in)));
+                            else
+                                __java_return_value = qtjambi_cast<jobject>(%env, __qt_this->onFailed(future_createExceptionHandlerFunction(%env, %in)));
+                            #if 0`}
+                    }
+                }
+                ModifyArgument{
+                    index: 0
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "#endif"}
+                    }
+                    ReplaceType{
+                        modifiedType: "<R> io.qt.core.@NonNull QFuture<R>"
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QFutureRunnable"
+                    isImplicit: true
+                }
+                AddArgument{
+                    index: 1
+                    name: "exceptionType"
+                    comment: "type of caught exception"
+                    type: "java.lang.@StrictNonNull Class<Failure>"
+                }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    Text{content: String.raw`java.util.Objects.requireNonNull(exceptionType, "Argument 'exceptionType': null not expected.");`}
+                }
+                ModifyArgument{
+                    index: 1
+                    ReplaceType{
+                        modifiedType: "io.qt.core.QFuture$Runnable"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`__java_return_value = qtjambi_cast<jobject>(%env, QFuture<void>(*__qt_this).onFailed(futurevoid_createTypedExceptionHandlerRunnable(%env, exceptionType, %in)));
+#if 0`}
+                    }
+                }
+                ModifyArgument{
+                    index: 0
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "#endif"}
+                    }
+                    ReplaceType{
+                        modifiedType: "<Failure extends Throwable> io.qt.core.@NonNull QFuture<Void>"
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QFutureSupplier"
+                    isImplicit: true
+                }
+                AddArgument{
+                    index: 1
+                    name: "exceptionType"
+                    comment: "type of caught exception"
+                    type: "java.lang.@StrictNonNull Class<Failure>"
+                }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    Text{content: String.raw`java.util.Objects.requireNonNull(exceptionType, "Argument 'exceptionType': null not expected.");`}
+                }
+                ModifyArgument{
+                    index: 1
+                    ReplaceType{
+                        modifiedType: "io.qt.core.QFuture$Supplier<R>"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            if(!QtJambiAPI::isVariantFutureInterface(CoreAPI::futureInterface(__qt_this)))
+                                __java_return_value = qtjambi_cast<jobject>(%env, QFuture<void>(*__qt_this).onFailed(future_createTypedExceptionHandlerSupplier(%env, exceptionType, %in)));
+                            else
+                                __java_return_value = qtjambi_cast<jobject>(%env, __qt_this->onFailed(future_createTypedExceptionHandlerSupplier(%env, exceptionType, %in)));
+                            #if 0`}
+                    }
+                }
+                ModifyArgument{
+                    index: 0
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "#endif"}
+                    }
+                    ReplaceType{
+                        modifiedType: "<Failure extends Throwable, R> io.qt.core.@NonNull QFuture<R>"
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QFutureConsumer"
+                    isImplicit: true
+                }
+                AddArgument{
+                    index: 1
+                    name: "exceptionType"
+                    comment: "type of caught exception"
+                    type: "java.lang.@StrictNonNull Class<Failure>"
+                }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    Text{content: String.raw`java.util.Objects.requireNonNull(exceptionType, "Argument 'exceptionType': null not expected.");`}
+                }
+                ModifyArgument{
+                    index: 1
+                    ReplaceType{
+                        modifiedType: "io.qt.core.QFuture$Consumer<@NonNull Failure>"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`__java_return_value = qtjambi_cast<jobject>(%env, QFuture<void>(*__qt_this).onFailed(futurevoid_createTypedExceptionHandlerConsumer(%env, exceptionType, %in)));
+#if 0`}
+                    }
+                }
+                ModifyArgument{
+                    index: 0
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "#endif"}
+                    }
+                    ReplaceType{
+                        modifiedType: "<Failure extends Throwable> io.qt.core.@NonNull QFuture<Void>"
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QFutureFunction"
+                    isImplicit: true
+                }
+                AddArgument{
+                    index: 1
+                    name: "exceptionType"
+                    comment: "type of caught exception"
+                    type: "java.lang.@StrictNonNull Class<Failure>"
+                }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    Text{content: String.raw`java.util.Objects.requireNonNull(exceptionType, "Argument 'exceptionType': null not expected.");`}
+                }
+                ModifyArgument{
+                    index: 1
+                    ReplaceType{
+                        modifiedType: "io.qt.core.QFuture$Function<@NonNull Failure, R>"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            if(!QtJambiAPI::isVariantFutureInterface(CoreAPI::futureInterface(__qt_this)))
+                                __java_return_value = qtjambi_cast<jobject>(%env, QFuture<void>(*__qt_this).onFailed(future_createTypedExceptionHandlerFunction(%env, exceptionType, %in)));
+                            else
+                                __java_return_value = qtjambi_cast<jobject>(%env, __qt_this->onFailed(future_createTypedExceptionHandlerFunction(%env, exceptionType, %in)));
+                            #if 0`}
+                    }
+                }
+                ModifyArgument{
+                    index: 0
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "#endif"}
+                    }
+                    ReplaceType{
+                        modifiedType: "<Failure extends Throwable, R> io.qt.core.@NonNull QFuture<R>"
+                    }
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "onCanceled<Function,std::enable_if_t<std::is_invocable_r_v<T, Function>>>(QObject*,Function&&)"
+            Instantiation{
+                Argument{
+                    type: "QFutureRunnable"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "io.qt.core.QFuture$Runnable"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`__java_return_value = qtjambi_cast<jobject>(%env, QFuture<void>(*__qt_this).onCanceled(__qt_%1, futurevoid_createCancelHandlerRunnable(%env, %in)));
+#if 0`}
+                    }
+                }
+                ModifyArgument{
+                    index: 0
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "#endif"}
+                    }
+                    ReplaceType{
+                        modifiedType: "io.qt.core.@NonNull QFuture<Void>"
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QFutureSupplier"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "io.qt.core.QFuture$Supplier<R>"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            if(!QtJambiAPI::isVariantFutureInterface(CoreAPI::futureInterface(__qt_this)))
+                                __java_return_value = qtjambi_cast<jobject>(%env, QFuture<void>(*__qt_this).onCanceled(__qt_%1, future_createCancelHandlerSupplier(%env, %in)));
+                            else
+                                __java_return_value = qtjambi_cast<jobject>(%env, __qt_this->onCanceled(__qt_%1, future_createCancelHandlerSupplier(%env, %in)));
+                            #if 0`}
+                    }
+                }
+                ModifyArgument{
+                    index: 0
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "#endif"}
+                    }
+                    ReplaceType{
+                        modifiedType: "<R> io.qt.core.@NonNull QFuture<R>"
+                    }
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "onCanceled<Function,std::enable_if_t<std::is_invocable_r_v<T, Function>>>(Function&&)"
+            Instantiation{
+                Argument{
+                    type: "QFutureRunnable"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 1
+                    ReplaceType{
+                        modifiedType: "io.qt.core.QFuture$Runnable"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`__java_return_value = qtjambi_cast<jobject>(%env, QFuture<void>(*__qt_this).onCanceled(futurevoid_createCancelHandlerRunnable(%env, %in)));
+#if 0`}
+                    }
+                }
+                ModifyArgument{
+                    index: 0
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "#endif"}
+                    }
+                    ReplaceType{
+                        modifiedType: "io.qt.core.@NonNull QFuture<Void>"
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QFutureSupplier"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 1
+                    ReplaceType{
+                        modifiedType: "io.qt.core.QFuture$Supplier<R>"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            if(!QtJambiAPI::isVariantFutureInterface(CoreAPI::futureInterface(__qt_this)))
+                                __java_return_value = qtjambi_cast<jobject>(%env, QFuture<void>(*__qt_this).onCanceled(future_createCancelHandlerSupplier(%env, %in)));
+                            else
+                                __java_return_value = qtjambi_cast<jobject>(%env, __qt_this->onCanceled(future_createCancelHandlerSupplier(%env, %in)));
+                            #if 0`}
+                    }
+                }
+                ModifyArgument{
+                    index: 0
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "#endif"}
+                    }
+                    ReplaceType{
+                        modifiedType: "<R> io.qt.core.@NonNull QFuture<R>"
+                    }
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "then<Function>(Function&&)"
+            Instantiation{
+                Argument{
+                    type: "QFutureRunnable"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 1
+                    ReplaceType{
+                        modifiedType: "io.qt.core.QFuture$Runnable"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            if(!QtJambiAPI::isVariantFutureInterface(CoreAPI::futureInterface(__qt_this)))
+                                __java_return_value = qtjambi_cast<jobject>(%env, QFuture<void>(*__qt_this).then(future_createVoidRunnable(%env, %in)));
+                            else
+                                __java_return_value = qtjambi_cast<jobject>(%env, __qt_this->then(future_createValueRunnable(%env, %in)));
+#if 0`}
+                    }
+                }
+                ModifyArgument{
+                    index: 0
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "#endif"}
+                    }
+                    ReplaceType{
+                        modifiedType: "io.qt.core.@NonNull QFuture<Void>"
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QFutureSupplier"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 1
+                    ReplaceType{
+                        modifiedType: "io.qt.core.QFuture$Supplier<R>"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            if(!QtJambiAPI::isVariantFutureInterface(CoreAPI::futureInterface(__qt_this)))
+                                __java_return_value = qtjambi_cast<jobject>(%env, QFuture<void>(*__qt_this).then(future_createVoidSupplier(%env, %in)));
+                            else
+                                __java_return_value = qtjambi_cast<jobject>(%env, __qt_this->then(future_createValueSupplier(%env, %in)));
+#if 0`}
+                    }
+                }
+                ModifyArgument{
+                    index: 0
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "#endif"}
+                    }
+                    ReplaceType{
+                        modifiedType: "<R> io.qt.core.@NonNull QFuture<R>"
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QFutureConsumer"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 1
+                    ReplaceType{
+                        modifiedType: "io.qt.core.QFuture$Consumer<R>"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            if(!QtJambiAPI::isVariantFutureInterface(CoreAPI::futureInterface(__qt_this)))
+                                __java_return_value = qtjambi_cast<jobject>(%env, QFuture<void>(*__qt_this).then(future_createVoidConsumer(%env, %in)));
+                            else
+                                __java_return_value = qtjambi_cast<jobject>(%env, __qt_this->then(future_createValueConsumer(%env, %in)));
+#if 0`}
+                    }
+                }
+                ModifyArgument{
+                    index: 0
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "#endif"}
+                    }
+                    ReplaceType{
+                        modifiedType: "<R> io.qt.core.@NonNull QFuture<Void>"
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QFutureFutureConsumer"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 1
+                    ReplaceType{
+                        modifiedType: "io.qt.core.QFuture$FutureConsumer<R>"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            if(!QtJambiAPI::isVariantFutureInterface(CoreAPI::futureInterface(__qt_this)))
+                                __java_return_value = qtjambi_cast<jobject>(%env, QFuture<void>(*__qt_this).then(future_createFutureConsumer<void>(%env, %in)));
+                            else
+                                __java_return_value = qtjambi_cast<jobject>(%env, __qt_this->then(future_createFutureConsumer<QVariant>(%env, %in)));
+#if 0`}
+                    }
+                }
+                ModifyArgument{
+                    index: 0
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "#endif"}
+                    }
+                    ReplaceType{
+                        modifiedType: "<R> io.qt.core.@NonNull QFuture<Void>"
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QFutureFunction"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 1
+                    ReplaceType{
+                        modifiedType: "io.qt.core.QFuture$Function<T,R>"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            if(!QtJambiAPI::isVariantFutureInterface(CoreAPI::futureInterface(__qt_this)))
+                                __java_return_value = qtjambi_cast<jobject>(%env, QFuture<void>(*__qt_this).then(future_createVoidFunction(%env, %in)));
+                            else
+                                __java_return_value = qtjambi_cast<jobject>(%env, __qt_this->then(future_createValueFunction(%env, %in)));
+#if 0`}
+                    }
+                }
+                ModifyArgument{
+                    index: 0
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "#endif"}
+                    }
+                    ReplaceType{
+                        modifiedType: "<R> io.qt.core.@NonNull QFuture<R>"
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QFutureFutureFunction"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 1
+                    ReplaceType{
+                        modifiedType: "io.qt.core.QFuture$FutureFunction<T,R>"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            if(!QtJambiAPI::isVariantFutureInterface(CoreAPI::futureInterface(__qt_this)))
+                                __java_return_value = qtjambi_cast<jobject>(%env, QFuture<void>(*__qt_this).then(future_createFutureFunction<void>(%env, %in)));
+                            else
+                                __java_return_value = qtjambi_cast<jobject>(%env, __qt_this->then(future_createFutureFunction<QVariant>(%env, %in)));
+#if 0`}
+                    }
+                }
+                ModifyArgument{
+                    index: 0
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "#endif"}
+                    }
+                    ReplaceType{
+                        modifiedType: "<R> io.qt.core.@NonNull QFuture<R>"
+                    }
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "then<Function>(QThreadPool*,Function&&)"
+            Instantiation{
+                Argument{
+                    type: "QFutureRunnable"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "io.qt.core.QFuture$Runnable"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            if(!QtJambiAPI::isVariantFutureInterface(CoreAPI::futureInterface(__qt_this)))
+                                __java_return_value = qtjambi_cast<jobject>(%env, QFuture<void>(*__qt_this).then(__qt_%1, future_createVoidRunnable(%env, %in)));
+                            else
+                                __java_return_value = qtjambi_cast<jobject>(%env, __qt_this->then(__qt_%1, future_createValueRunnable(%env, %in)));
+#if 0`}
+                    }
+                }
+                ModifyArgument{
+                    index: 0
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "#endif"}
+                    }
+                    ReplaceType{
+                        modifiedType: "io.qt.core.@NonNull QFuture<Void>"
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QFutureSupplier"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "io.qt.core.QFuture$Supplier<R>"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            if(!QtJambiAPI::isVariantFutureInterface(CoreAPI::futureInterface(__qt_this)))
+                                __java_return_value = qtjambi_cast<jobject>(%env, QFuture<void>(*__qt_this).then(__qt_%1, future_createVoidSupplier(%env, %in)));
+                            else
+                                __java_return_value = qtjambi_cast<jobject>(%env, __qt_this->then(__qt_%1, future_createValueSupplier(%env, %in)));
+#if 0`}
+                    }
+                }
+                ModifyArgument{
+                    index: 0
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "#endif"}
+                    }
+                    ReplaceType{
+                        modifiedType: "<R> io.qt.core.@NonNull QFuture<R>"
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QFutureConsumer"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "io.qt.core.QFuture$Consumer<R>"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            if(!QtJambiAPI::isVariantFutureInterface(CoreAPI::futureInterface(__qt_this)))
+                                __java_return_value = qtjambi_cast<jobject>(%env, QFuture<void>(*__qt_this).then(__qt_%1, future_createVoidConsumer(%env, %in)));
+                            else
+                                __java_return_value = qtjambi_cast<jobject>(%env, __qt_this->then(__qt_%1, future_createValueConsumer(%env, %in)));
+#if 0`}
+                    }
+                }
+                ModifyArgument{
+                    index: 0
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "#endif"}
+                    }
+                    ReplaceType{
+                        modifiedType: "<R> io.qt.core.@NonNull QFuture<Void>"
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QFutureFutureConsumer"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "io.qt.core.QFuture$FutureConsumer<R>"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            if(!QtJambiAPI::isVariantFutureInterface(CoreAPI::futureInterface(__qt_this)))
+                                __java_return_value = qtjambi_cast<jobject>(%env, QFuture<void>(*__qt_this).then(__qt_%1, future_createFutureConsumer<void>(%env, %in)));
+                            else
+                                __java_return_value = qtjambi_cast<jobject>(%env, __qt_this->then(__qt_%1, future_createFutureConsumer<QVariant>(%env, %in)));
+#if 0`}
+                    }
+                }
+                ModifyArgument{
+                    index: 0
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "#endif"}
+                    }
+                    ReplaceType{
+                        modifiedType: "<R> io.qt.core.@NonNull QFuture<Void>"
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QFutureFunction"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "io.qt.core.QFuture$Function<T,R>"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            if(!QtJambiAPI::isVariantFutureInterface(CoreAPI::futureInterface(__qt_this)))
+                                __java_return_value = qtjambi_cast<jobject>(%env, QFuture<void>(*__qt_this).then(__qt_%1, future_createVoidFunction(%env, %in)));
+                            else
+                                __java_return_value = qtjambi_cast<jobject>(%env, __qt_this->then(__qt_%1, future_createValueFunction(%env, %in)));
+#if 0`}
+                    }
+                }
+                ModifyArgument{
+                    index: 0
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "#endif"}
+                    }
+                    ReplaceType{
+                        modifiedType: "<R> io.qt.core.@NonNull QFuture<R>"
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QFutureFutureFunction"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "io.qt.core.QFuture$FutureFunction<T,R>"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            if(!QtJambiAPI::isVariantFutureInterface(CoreAPI::futureInterface(__qt_this)))
+                                __java_return_value = qtjambi_cast<jobject>(%env, QFuture<void>(*__qt_this).then(__qt_%1, future_createFutureFunction<void>(%env, %in)));
+                            else
+                                __java_return_value = qtjambi_cast<jobject>(%env, __qt_this->then(__qt_%1, future_createFutureFunction<QVariant>(%env, %in)));
+#if 0`}
+                    }
+                }
+                ModifyArgument{
+                    index: 0
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "#endif"}
+                    }
+                    ReplaceType{
+                        modifiedType: "<R> io.qt.core.@NonNull QFuture<R>"
+                    }
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "then<Function>(QtFuture::Launch,Function&&)"
+            Instantiation{
+                Argument{
+                    type: "QFutureRunnable"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "io.qt.core.QFuture$Runnable"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            if(!QtJambiAPI::isVariantFutureInterface(CoreAPI::futureInterface(__qt_this)))
+                                __java_return_value = qtjambi_cast<jobject>(%env, QFuture<void>(*__qt_this).then(__qt_%1, future_createVoidRunnable(%env, %in)));
+                            else
+                                __java_return_value = qtjambi_cast<jobject>(%env, __qt_this->then(__qt_%1, future_createValueRunnable(%env, %in)));
+#if 0`}
+                    }
+                }
+                ModifyArgument{
+                    index: 0
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "#endif"}
+                    }
+                    ReplaceType{
+                        modifiedType: "io.qt.core.@NonNull QFuture<Void>"
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QFutureSupplier"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "io.qt.core.QFuture$Supplier<R>"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            if(!QtJambiAPI::isVariantFutureInterface(CoreAPI::futureInterface(__qt_this)))
+                                __java_return_value = qtjambi_cast<jobject>(%env, QFuture<void>(*__qt_this).then(__qt_%1, future_createVoidSupplier(%env, %in)));
+                            else
+                                __java_return_value = qtjambi_cast<jobject>(%env, __qt_this->then(__qt_%1, future_createValueSupplier(%env, %in)));
+#if 0`}
+                    }
+                }
+                ModifyArgument{
+                    index: 0
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "#endif"}
+                    }
+                    ReplaceType{
+                        modifiedType: "<R> io.qt.core.@NonNull QFuture<R>"
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QFutureConsumer"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "io.qt.core.QFuture$Consumer<R>"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            if(!QtJambiAPI::isVariantFutureInterface(CoreAPI::futureInterface(__qt_this)))
+                                __java_return_value = qtjambi_cast<jobject>(%env, QFuture<void>(*__qt_this).then(__qt_%1, future_createVoidConsumer(%env, %in)));
+                            else
+                                __java_return_value = qtjambi_cast<jobject>(%env, __qt_this->then(__qt_%1, future_createValueConsumer(%env, %in)));
+#if 0`}
+                    }
+                }
+                ModifyArgument{
+                    index: 0
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "#endif"}
+                    }
+                    ReplaceType{
+                        modifiedType: "<R> io.qt.core.@NonNull QFuture<Void>"
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QFutureFutureConsumer"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "io.qt.core.QFuture$FutureConsumer<R>"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            if(!QtJambiAPI::isVariantFutureInterface(CoreAPI::futureInterface(__qt_this)))
+                                __java_return_value = qtjambi_cast<jobject>(%env, QFuture<void>(*__qt_this).then(__qt_%1, future_createFutureConsumer<void>(%env, %in)));
+                            else
+                                __java_return_value = qtjambi_cast<jobject>(%env, __qt_this->then(__qt_%1, future_createFutureConsumer<QVariant>(%env, %in)));
+#if 0`}
+                    }
+                }
+                ModifyArgument{
+                    index: 0
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "#endif"}
+                    }
+                    ReplaceType{
+                        modifiedType: "<R> io.qt.core.@NonNull QFuture<Void>"
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QFutureFunction"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "io.qt.core.QFuture$Function<T,R>"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            if(!QtJambiAPI::isVariantFutureInterface(CoreAPI::futureInterface(__qt_this)))
+                                __java_return_value = qtjambi_cast<jobject>(%env, QFuture<void>(*__qt_this).then(__qt_%1, future_createVoidFunction(%env, %in)));
+                            else
+                                __java_return_value = qtjambi_cast<jobject>(%env, __qt_this->then(__qt_%1, future_createValueFunction(%env, %in)));
+#if 0`}
+                    }
+                }
+                ModifyArgument{
+                    index: 0
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "#endif"}
+                    }
+                    ReplaceType{
+                        modifiedType: "<R> io.qt.core.@NonNull QFuture<R>"
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QFutureFutureFunction"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "io.qt.core.QFuture$FutureFunction<T,R>"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            if(!QtJambiAPI::isVariantFutureInterface(CoreAPI::futureInterface(__qt_this)))
+                                __java_return_value = qtjambi_cast<jobject>(%env, QFuture<void>(*__qt_this).then(__qt_%1, future_createFutureFunction<void>(%env, %in)));
+                            else
+                                __java_return_value = qtjambi_cast<jobject>(%env, __qt_this->then(__qt_%1, future_createFutureFunction<QVariant>(%env, %in)));
+#if 0`}
+                    }
+                }
+                ModifyArgument{
+                    index: 0
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "#endif"}
+                    }
+                    ReplaceType{
+                        modifiedType: "<R> io.qt.core.@NonNull QFuture<R>"
+                    }
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "then<Function>(QObject*,Function&&)"
+            Instantiation{
+                Argument{
+                    type: "QFutureRunnable"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "io.qt.core.QFuture$Runnable"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            if(!QtJambiAPI::isVariantFutureInterface(CoreAPI::futureInterface(__qt_this)))
+                                __java_return_value = qtjambi_cast<jobject>(%env, QFuture<void>(*__qt_this).then(__qt_%1, future_createVoidRunnable(%env, %in)));
+                            else
+                                __java_return_value = qtjambi_cast<jobject>(%env, __qt_this->then(__qt_%1, future_createValueRunnable(%env, %in)));
+#if 0`}
+                    }
+                }
+                ModifyArgument{
+                    index: 0
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "#endif"}
+                    }
+                    ReplaceType{
+                        modifiedType: "io.qt.core.@NonNull QFuture<Void>"
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QFutureSupplier"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "io.qt.core.QFuture$Supplier<R>"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            if(!QtJambiAPI::isVariantFutureInterface(CoreAPI::futureInterface(__qt_this)))
+                                __java_return_value = qtjambi_cast<jobject>(%env, QFuture<void>(*__qt_this).then(__qt_%1, future_createVoidSupplier(%env, %in)));
+                            else
+                                __java_return_value = qtjambi_cast<jobject>(%env, __qt_this->then(__qt_%1, future_createValueSupplier(%env, %in)));
+#if 0`}
+                    }
+                }
+                ModifyArgument{
+                    index: 0
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "#endif"}
+                    }
+                    ReplaceType{
+                        modifiedType: "<R> io.qt.core.@NonNull QFuture<R>"
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QFutureConsumer"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "io.qt.core.QFuture$Consumer<R>"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            if(!QtJambiAPI::isVariantFutureInterface(CoreAPI::futureInterface(__qt_this)))
+                                __java_return_value = qtjambi_cast<jobject>(%env, QFuture<void>(*__qt_this).then(__qt_%1, future_createVoidConsumer(%env, %in)));
+                            else
+                                __java_return_value = qtjambi_cast<jobject>(%env, __qt_this->then(__qt_%1, future_createValueConsumer(%env, %in)));
+#if 0`}
+                    }
+                }
+                ModifyArgument{
+                    index: 0
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "#endif"}
+                    }
+                    ReplaceType{
+                        modifiedType: "<R> io.qt.core.@NonNull QFuture<Void>"
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QFutureFutureConsumer"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "io.qt.core.QFuture$FutureConsumer<R>"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            if(!QtJambiAPI::isVariantFutureInterface(CoreAPI::futureInterface(__qt_this)))
+                                __java_return_value = qtjambi_cast<jobject>(%env, QFuture<void>(*__qt_this).then(__qt_%1, future_createFutureConsumer<void>(%env, %in)));
+                            else
+                                __java_return_value = qtjambi_cast<jobject>(%env, __qt_this->then(__qt_%1, future_createFutureConsumer<QVariant>(%env, %in)));
+#if 0`}
+                    }
+                }
+                ModifyArgument{
+                    index: 0
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "#endif"}
+                    }
+                    ReplaceType{
+                        modifiedType: "<R> io.qt.core.@NonNull QFuture<Void>"
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QFutureFunction"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "io.qt.core.QFuture$Function<T,R>"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            if(!QtJambiAPI::isVariantFutureInterface(CoreAPI::futureInterface(__qt_this)))
+                                __java_return_value = qtjambi_cast<jobject>(%env, QFuture<void>(*__qt_this).then(__qt_%1, future_createVoidFunction(%env, %in)));
+                            else
+                                __java_return_value = qtjambi_cast<jobject>(%env, __qt_this->then(__qt_%1, future_createValueFunction(%env, %in)));
+#if 0`}
+                    }
+                }
+                ModifyArgument{
+                    index: 0
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "#endif"}
+                    }
+                    ReplaceType{
+                        modifiedType: "<R> io.qt.core.@NonNull QFuture<R>"
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QFutureFutureFunction"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "io.qt.core.QFuture$FutureFunction<T,R>"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            if(!QtJambiAPI::isVariantFutureInterface(CoreAPI::futureInterface(__qt_this)))
+                                __java_return_value = qtjambi_cast<jobject>(%env, QFuture<void>(*__qt_this).then(__qt_%1, future_createFutureFunction<void>(%env, %in)));
+                            else
+                                __java_return_value = qtjambi_cast<jobject>(%env, __qt_this->then(__qt_%1, future_createFutureFunction<QVariant>(%env, %in)));
+#if 0`}
+                    }
+                }
+                ModifyArgument{
+                    index: 0
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "#endif"}
+                    }
+                    ReplaceType{
+                        modifiedType: "<R> io.qt.core.@NonNull QFuture<R>"
+                    }
+                }
+            }
+        }
+        InjectCode{
+            target: CodeClass.Native
+            position: Position.Clone
+            Text{content: String.raw`
+                const QFutureInterfaceBase* base = CoreAPI::futureInterface(__qt_this);
+                if(!QtJambiAPI::isVariantFutureInterface(base))
+                    __java_return_value = qtjambi_cast<jobject>(__jni_env, QFuture<void>(*__qt_this));
+                else
+                `}
+        }
+        InjectCode{
+            target: CodeClass.MetaInfo
+            Text{content: String.raw`
+{
+    const std::type_info& typeId = registerValueTypeInfo<QFuture<void>>("QFuture<void>", "io/qt/core/QFuture");
+    registerConstructorInfos(typeId, 0, &__qt_destruct_QFuture_QVariant_, {});
+    registerDeleter(typeId, &deleter_QFuture_QVariant_);
+    registerMetaType<QFuture<void>>("QFuture<void>");
+}
+                `}
+        }
+        InjectCode{
+            target: CodeClass.Deleter
+            position: Position.Position3
+            Text{content: String.raw`
+                QFutureInterfaceBase* base = CoreAPI::futureInterface(reinterpret_cast<QFuture<QVariant> *>(%this));
+                if(!QtJambiAPI::isVariantFutureInterface(base))
+                    delete reinterpret_cast<QFuture<void> *>(%this);
+                else`
+            }
+        }
+        InjectCode{
+            target: CodeClass.Destructor
+            position: Position.Beginning
+            Text{content: String.raw`
+                QFutureInterfaceBase* base = CoreAPI::futureInterface(reinterpret_cast<QFuture<QVariant> *>(%this));
+                if(!QtJambiAPI::isVariantFutureInterface(base))
+                    reinterpret_cast<QFuture<void>*>(%this)->~QFuture<void>();
+                else`
+            }
+        }
+        InjectCode{
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class QFuture__"
+                quoteBeforeLine: "}// class"
+            }
         }
     }
 
@@ -18581,8 +20998,8 @@ else`}
         generate: false
     }
 
-    ValueType{
-        name: "QFutureInterface"
+    ObjectType{
+        name: "QFutureSynchronizer"
         disableNativeIdUsage: true
         template: true
         TemplateArguments{
@@ -18590,10 +21007,9 @@ else`}
         }
     }
 
-    ValueType{
-        name: "QFutureInterface<QVariant>"
+    ObjectType{
+        name: "QFutureSynchronizer<QVariant>"
         isGeneric: true
-        forceFinal: true
         disableNativeIdUsage: true
         generate: false
     }
@@ -21711,7 +24127,7 @@ else`}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "jint size = jint(__qt_this->size());\n"+
-                                  "%out = qtjambi_array_cast<jcharArray>(%env, %scope, %in, size);"}
+                                  "%out = qtjambi_cast<jcharArray>(%env, %scope, %in, size);"}
                 }
             }
         }
@@ -21728,7 +24144,7 @@ else`}
                     Text{content: "jint size = 0;\n"+
                                   "while(%in[size]!=0)\n"+
                                   "    ++size;\n"+
-                                  "%out = qtjambi_array_cast<jshortArray>(%env, %scope, %in, size);"}
+                                  "%out = qtjambi_cast<jshortArray>(%env, %scope, %in, size);"}
                 }
             }
         }
@@ -21950,21 +24366,31 @@ else`}
             Instantiation{
                 Argument{
                     type: "qint32"
+                    isImplicit: true
                 }
             }
             Instantiation{
                 Argument{
                     type: "qint64"
+                    isImplicit: true
                 }
             }
             Instantiation{
                 Argument{
                     type: "qint16"
+                    isImplicit: true
                 }
             }
             Instantiation{
                 Argument{
                     type: "qint8"
+                    isImplicit: true
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "bool"
+                    isImplicit: true
                 }
             }
             since: 6.9
@@ -21974,11 +24400,13 @@ else`}
             Instantiation{
                 Argument{
                     type: "double"
+                    isImplicit: true
                 }
             }
             Instantiation{
                 Argument{
                     type: "float"
+                    isImplicit: true
                 }
             }
             since: 6.9
@@ -21988,11 +24416,55 @@ else`}
             Instantiation{
                 Argument{
                     type: "QStringView"
+                    isImplicit: true
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "char16_t"
+                    isImplicit: true
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QString"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 1
+                    ReplaceType{
+                        modifiedType: "java.lang.@NonNull CharSequence"
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "QStringView %out = qtjambi_cast<QStringView>(%env, %scope, %in);"}
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QtJambiString"
+                    isImplicit: true
                 }
             }
             Instantiation{
                 Argument{
                     type: "QByteArrayView"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 1
+                    InhibitImplicitCall{type: "io.qt.core.@NonNull QByteArray"}
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QByteArray"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 1
+                    InhibitImplicitCall{type: "byte @NonNull[]"}
                 }
             }
             since: 6.9
@@ -22092,7 +24564,7 @@ Enum entries for string comparison.
                                   "        %in.insert(\"interface\", QtJambiAPI::getClassName(%env, iface));\n"+
                                   "    }\n"+
                                   "}\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, %in);"}
+                                  "%out = qtjambi_cast<jobject>(%env, std::move(%in));"}
                 }
             }
         }
@@ -22203,7 +24675,7 @@ Enum entries for string comparison.
                                   "        }\n"+
                                   "    }\n"+
                                   "}\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, %in);"}
+                                  "%out = qtjambi_cast<jobject>(%env, std::move(%in));"}
                     until: [6, 2]
                 }
                 ConversionRule{
@@ -22219,7 +24691,7 @@ Enum entries for string comparison.
                                   "    obj.~QPluginParsedMetaData();\n"+
                                   "    new (&obj) QCborValue(map);\n"+
                                   "}\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, %in);"}
+                                  "%out = qtjambi_cast<jobject>(%env, std::move(%in));"}
                     since: [6, 3]
                 }
             }
@@ -22301,7 +24773,7 @@ Enum entries for string comparison.
                                   "        %in.insert(\"interface\", QJsonValue::fromVariant(QVariant::fromValue<JObjectWrapper>(JObjectWrapper(%env, iface))));\n"+
                                   "    }\n"+
                                   "}\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, %in);"}
+                                  "%out = qtjambi_cast<jobject>(%env, std::move(%in));"}
                 }
             }
         }
@@ -22422,24 +24894,16 @@ Enum entries for string comparison.
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "hasRegisteredComparators<T>()"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
             signature: "hasRegisteredMutableViewFunction<From,To>()"
             remove: RemoveFlag.All
-            since: 6
         }
         ModifyFunction{
             signature: "canView(QMetaType,QMetaType)"
             remove: RemoveFlag.All
-            since: 6
         }
         ModifyFunction{
             signature: "hasRegisteredMutableViewFunction(QMetaType,QMetaType)"
             remove: RemoveFlag.All
-            since: 6
         }
         InjectCode{
             ImportFile{
@@ -22449,21 +24913,9 @@ Enum entries for string comparison.
             }
             ImportFile{
                 name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
-                quoteAfterLine: "class QMetaType_5__"
-                quoteBeforeLine: "}// class"
-                until: 5
-            }
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
                 quoteAfterLine: "class QMetaType_toString__"
                 quoteBeforeLine: "}// class"
                 until: 6.4
-            }
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
-                quoteAfterLine: "class QMetaType_6__"
-                quoteBeforeLine: "}// class"
-                since: 6
             }
             ImportFile{
                 name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
@@ -23746,7 +26198,7 @@ else
                                 int typeId = CoreAPI::metaTypeId(%env, clazz, instantiations);
                                 if(typeId==QMetaType::UnknownType || (%in.userType()!=typeId && !%in.convert(typeId)))
                                     %in = QVariant(typeId, nullptr);
-                                %out = qtjambi_cast<jobject>(%env, %in);
+                                %out = qtjambi_cast<jobject>(%env, std::move(%in));
                             }
                             if(%out && !%env->IsInstanceOf(%out, clazz)){
                                 if(Java::Runtime::String::isSameClass(%env, clazz))
@@ -23775,7 +26227,7 @@ else
                                 QMetaType typeId(CoreAPI::metaTypeId(%env, clazz, instantiations));
                                 if(!typeId.isValid() || (%in.metaType()!=typeId && !%in.convert(typeId)))
                                     %in = QVariant(typeId, nullptr);
-                                %out = qtjambi_cast<jobject>(%env, %in);
+                                %out = qtjambi_cast<jobject>(%env, std::move(%in));
                             }
                             if(%out && !%env->IsInstanceOf(%out, clazz)){
                                 if(Java::Runtime::String::isSameClass(%env, clazz))
@@ -23800,6 +26252,16 @@ else
                             instantiations = io.qt.internal.MetaTypeUtility.findSuperInstantiations(clazz);
                         }
                         `}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "swap(QVariant&)"
+            ModifyArgument{
+                index: 1
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "QVariant& %out = QtJambiAPI::convertJavaObjectToNativeReference<QVariant>(%env, %in);"}
                 }
             }
         }
@@ -24960,8 +27422,13 @@ static FilterResetter resetter(%0);
         }
     }
 
-    ValueType{
+    ObjectType{
         name: "QDebug"
+        addTextStreamFunctions: true
+        ModifyFunction{
+            signature: "QTextStreamFunction"
+            InjectCode{ Text{content: "if(disabled) return this;"} }
+        }
         Rejection{
             enumName: "Latin1Content"
         }
@@ -24973,16 +27440,22 @@ static FilterResetter resetter(%0);
             forceInteger: true
         }
         implementing: "java.lang.AutoCloseable, java.lang.Appendable"
-        CustomConstructor{
-            Text{content: "if(copy){\n"+
-                          "    return new(placement) QDebug(*copy);\n"+
-                          "}else{\n"+
-                          "    return new(placement) QDebug(QtDebugMsg);\n"+
-                          "}"}
+        InjectCode{
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class autoclosedelete"
+                quoteBeforeLine: "}// class"
+            }
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class QDebug___"
+                quoteBeforeLine: "}// class"
+            }
         }
-        CustomConstructor{
-            type: CustomConstructor.Default
-            Text{content: "new(placement) QDebug(QtDebugMsg);"}
+        InjectCode{
+            position: Position.Clone
+            Text{content: "clone.__rcDevice = this.__rcDevice;\n"
+                        + "clone.disabled = this.disabled;"}
         }
         ModifyFunction{
             signature: "QDebug(QString *)"
@@ -24990,6 +27463,16 @@ static FilterResetter resetter(%0);
         }
         ModifyFunction{
             signature: "operator=(QDebug)"
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.Beginning
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: "this.__rcDevice = %1.__rcDevice;\n"
+                            + "this.disabled = %1.disabled;"}
+            }
+        }
+        ModifyFunction{
+            signature: "operator<<(QTextStreamManipulator)"
             remove: RemoveFlag.All
         }
         ModifyFunction{
@@ -25006,10 +27489,6 @@ static FilterResetter resetter(%0);
             signature: "operator<<(QStringRef)"
             remove: RemoveFlag.All
             until: 5
-        }
-        ModifyFunction{
-            signature: "operator<<(QStringView)"
-            remove: RemoveFlag.All
         }
         ModifyFunction{
             signature: "operator<<(QUtf8StringView)"
@@ -25063,6 +27542,16 @@ static FilterResetter resetter(%0);
             remove: RemoveFlag.All
         }
         ModifyFunction{
+            signature: "operator<<<Rep,Period>(std::chrono::duration<Rep,Period>)"
+            remove: RemoveFlag.All
+            since: 6.6
+        }
+        ModifyFunction{
+            signature: "operator<<<T,true>(std::optional<T>)"
+            remove: RemoveFlag.All
+            since: 6.7
+        }
+        ModifyFunction{
             signature: "toString<T>(T&&)"
             remove: RemoveFlag.All
             since: 6
@@ -25077,23 +27566,6 @@ static FilterResetter resetter(%0);
             signature: "toBytes<T>(T)"
             remove: RemoveFlag.All
             since: 6.9
-        }
-        InjectCode{
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
-                quoteAfterLine: "class autoclosedelete"
-                quoteBeforeLine: "}// class"
-            }
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
-                quoteAfterLine: "class QDebug___"
-                quoteBeforeLine: "}// class"
-            }
-        }
-        InjectCode{
-            position: Position.Clone
-            Text{content: "clone.__rcDevice = this.__rcDevice;\n"
-                        + "clone.disabled = this.disabled;"}
         }
         ModifyFunction{
             signature: "QDebug(QIODevice *)"
@@ -25141,21 +27613,46 @@ static FilterResetter resetter(%0);
             signature: "operator<<(const char*)"
             rename: "append"
             InjectCode{ Text{content: "if(disabled) return this;"} }
+            ModifyArgument{
+                index: 1
+                ReplaceType{
+                    modifiedType: "java.lang.@NonNull CharSequence"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "QStringView %out = qtjambi_cast<QStringView>(%env, %scope, %in);"}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "operator<<(QStringView)"
+            rename: "append"
+            InjectCode{ Text{content: "if(disabled) return this;"} }
+            ModifyArgument{
+                index: 1
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "const char* %out = qtjambi_cast<const char*>(%env, %scope, %in);"}
+                }
+            }
         }
         ModifyFunction{
             signature: "operator<<(QString)"
             rename: "append"
+            InjectCode{ Text{content: "if(disabled) return this;"} }
             ModifyArgument{
                 index: 1
                 ReplaceType{
-                    modifiedType: "java.lang.@Nullable CharSequence"
+                    modifiedType: "io.qt.core.@NonNull QString"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QString %out = qtjambi_cast<QString>(%env, %1);"}
+                    Text{content: "const QString& %out = qtjambi_cast<const QString&>(%env, %in);"}
                 }
             }
-            InjectCode{ Text{content: "if(disabled) return this;"} }
+            Delegate{
+                name: "writeString"
+            }
         }
         ModifyFunction{
             signature: "operator<<(bool)"
@@ -25220,6 +27717,11 @@ static FilterResetter resetter(%0);
             signature: "maybeSpace()"
             InjectCode{ Text{content: "if(disabled) return this;"} }
         }
+        /*ModifyFunction{
+            signature: "operator<<(QDebug, const QQuickWindow*)"
+            remove: RemoveFlag.All
+            since: 6.2
+        }*/
     }
 
     Rejection{
@@ -25256,7 +27758,7 @@ static FilterResetter resetter(%0);
                     codeClass: CodeClass.Native
                     Text{content:
                              "jsize size = 0;\n"
-                            +"quint32* %out = qtjambi_array_cast<quint32*>(%env, %scope, %in, size);\n"
+                            +"quint32* %out = qtjambi_cast<quint32*>(%env, %scope, %in, size);\n"
                             +"quint32* __qt_%2 = %out + size;"
                     }
                 }
@@ -25355,10 +27857,6 @@ static FilterResetter resetter(%0);
         ModifyArgument{
             index: 2
             invalidateAfterUse: true
-            /*ConversionRule{
-                codeClass: CodeClass.Shell
-                Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %scope, &%in);"}
-            }*/
         }
     }
 
@@ -25688,21 +28186,6 @@ static FilterResetter resetter(%0);
     Rejection{
         className: ""
         functionName: "qSharedBuild"
-    }
-
-    Rejection{
-        className: ""
-        functionName: "qSetRealNumberPrecision"
-    }
-
-    Rejection{
-        className: ""
-        functionName: "qSetPadChar"
-    }
-
-    Rejection{
-        className: ""
-        functionName: "qSetFieldWidth"
     }
 
     Rejection{
@@ -26053,6 +28536,27 @@ static FilterResetter resetter(%0);
     Rejection{
         className: ""
         functionName: "qFormatLogMessage"
+    }
+
+    ValueType{
+        name: "QTextStreamManipulator"
+        generate: false
+    }
+
+    GlobalFunction{
+        signature: "qSetFieldWidth(int)"
+        remove: RemoveFlag.All
+        isTextStreamFunction: true
+    }
+    GlobalFunction{
+        signature: "qSetPadChar(QChar)"
+        remove: RemoveFlag.All
+        isTextStreamFunction: true
+    }
+    GlobalFunction{
+        signature: "qSetRealNumberPrecision(int)"
+        remove: RemoveFlag.All
+        isTextStreamFunction: true
     }
 
     GlobalFunction{
@@ -27778,7 +30282,6 @@ __qt_%1 = qtjambi_cast<QList<QVariant>>(%env, %1);
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QAnyStringView'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QLatin1StringView'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QTextStreamFunction'"}
-    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QTextStreamManipulator'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QDebug::Latin1Content'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QAbstractFileEngine::ExtensionOption const\\*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QAbstractFileEngine::Iterator\\*'"}
@@ -28032,4 +30535,10 @@ __qt_%1 = qtjambi_cast<QList<QVariant>>(%env, %1);
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: class '' inherits from unknown base class 'objc_object'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QDebug::operator<<<Ts...,true>(const std::tuple<Ts>&)*"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'QFactoryLoader(QFactoryLoader)' for function modification in 'QFactoryLoader' not found.*"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: horribly broken type '<T>'"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping field 'QSequentialConstIterator::static_assert' with unmatched type '<T>'"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Missing instantiations for template method *std::chrono::time_point<Clock,Duration>*"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Missing instantiations for template method *std::chrono::duration<Rep,Period>*"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Missing instantiations for template method QDeadlineTimer::deadline<Clock,Duration>()const"}
+    SuppressedWarning{text: "WARNING(JavaGenerator) :: Cloneable class QFuture*<QVariant> is missing an explicit copy constructor"}
 }

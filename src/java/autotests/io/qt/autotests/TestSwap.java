@@ -45,6 +45,7 @@ import io.qt.core.QRect;
 import io.qt.core.QRegularExpression;
 import io.qt.core.QTimer;
 import io.qt.core.QUrl;
+import io.qt.core.QVariant;
 import io.qt.core.Qt;
 import io.qt.gui.QBitmap;
 import io.qt.gui.QBrush;
@@ -289,5 +290,14 @@ public class TestSwap extends ApplicationInitializer{
 		object2.swap(object1);
 		assertEquals("swap: data1 == object2", new QByteArray(RED5x5), new QByteArray(object2.data()));
 		assertEquals("swap: data2 == object1", new QByteArray(WHITE10x10), new QByteArray(object1.data()));
+	}
+	
+	@org.junit.Test
+	public void swapQVariant(){
+    	QVariant variant = new QVariant(1);
+    	QVariant variant2 = new QVariant(2);
+    	variant.swap(variant2);
+		assertEquals(2, variant.toInt());
+		assertEquals(1, variant2.toInt());
 	}
 }

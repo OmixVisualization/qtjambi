@@ -29,33 +29,15 @@
 **
 ****************************************************************************/
 
-#include <QtGui/QGuiApplication>
-#include <QtGui/QGradient>
-#include <QtCore/QMutex>
-
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-#include <QtGui/QOpenGLContext>
-#include <QtGui/qopenglversionfunctions.h>
-#include <QtGui/QOpenGLFunctions_ES2>
-#else
-#include <QtGui/QPointerEvent>
-#include <QtGui/QAction>
-#endif
 #include <QtCore/QtPlugin>
 #include <QtCore/private/qplugin_p.h>
-#include <QGradient>
-#include <QPixmapCache>
-#include <QtJambi/QtJambiAPI>
-#include <QtJambi/CoreAPI>
-#include <QtJambi/GuiAPI>
 #include <private/qguiapplication_p.h>
 #include <qpa/qplatformintegration.h>
-#include <QtJambi/RegistryAPI>
-
-#include <QtJambi/qtjambi_cast.h>
-#include "utils_p.h"
+#include <QtJambi/GuiAPI>
+#if defined(Q_OS_MACOS)
 #include "classes_p.h"
-#include "hashes.h"
+#endif
+#include "pch_p.h"
 
 namespace Java{
 namespace QtGui{
@@ -273,7 +255,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_gui_QPointerEvent_setPoint
 
 #endif
 
-#if QT_VERSION >= QT_VERSION_CHECK(5,12,0)
 // QGradient::QGradient(QGradient::Preset arg__1)
 extern "C" JNIEXPORT jobject JNICALL Java_io_qt_gui_QGradient_create(JNIEnv *__jni_env, jclass, int preset){
     jobject _result{nullptr};
@@ -285,14 +266,11 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_gui_QGradient_create(JNIEnv *__j
     }QTJAMBI_TRY_END
     return _result;
 }
-#endif
-
-#if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
 
 #ifndef QTJAMBI_GENERATOR_RUNNING
 #include <QtGui/private/qcolortransform_p.h>
 
-hash_type qHash(const QColorVector &value, hash_type seed = 0)
+size_t qHash(const QColorVector &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -307,7 +285,7 @@ hash_type qHash(const QColorVector &value, hash_type seed = 0)
     return seed;
 }
 
-hash_type qHash(const QColorMatrix &value, hash_type seed = 0)
+size_t qHash(const QColorMatrix &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -321,7 +299,7 @@ hash_type qHash(const QColorMatrix &value, hash_type seed = 0)
 }
 #endif
 
-hash_type qHash(const QColorTransform &value, hash_type seed)
+size_t qHash(const QColorTransform &value, size_t seed)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6,2,0)
     QColorTransformPrivate* p = *reinterpret_cast<QColorTransformPrivate*const*>(&value);
@@ -346,4 +324,3 @@ hash_type qHash(const QColorTransform &value, hash_type seed)
     }
     return seed;
 }
-#endif //QT_VERSION >= QT_VERSION_CHECK(5,14,0)

@@ -29,12 +29,7 @@
 **
 ****************************************************************************/
 
-#include "qtjambilink_p.h"
-#include "qtjambishell_p.h"
-#include "supertypeinfo_p.h"
-#include "java_p.h"
-#include "containerapi.h"
-#include "qtjambi_cast.h"
+#include "pch_p.h"
 
 extern "C" JNIEXPORT void JNICALL Java_io_qt_internal_NativeUtility_initializeNativeObject(JNIEnv *env, jclass, jclass callingClass, jobject object, jobject link, jobject arguments){
     try{
@@ -345,11 +340,7 @@ extern "C" JNIEXPORT jobject JNICALL\
         return __java_return_value;\
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #define MUTABLE_LIST(TYPE,type) MUTABLE_LIST_IMPL(TYPE,type,List)
-#else
-#define MUTABLE_LIST(TYPE,type) MUTABLE_LIST_IMPL(TYPE,type,Vector)
-#endif
 
 MUTABLE_LIST(B,char)
 MUTABLE_LIST(S,qint16)

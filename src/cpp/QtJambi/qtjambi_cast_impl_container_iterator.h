@@ -35,11 +35,6 @@
 #include "containerapi.h"
 #include "typetests.h"
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-QT_WARNING_DISABLE_GCC("-Wdeprecated-declarations")
-QT_WARNING_DISABLE_DEPRECATED
-#endif
-
 namespace QtJambiPrivate {
 
 template<typename Iterator, bool supported = std::is_pointer<Iterator>::value || supports_increment<Iterator>::value>

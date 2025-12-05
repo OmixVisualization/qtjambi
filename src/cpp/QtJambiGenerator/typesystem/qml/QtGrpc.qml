@@ -107,6 +107,7 @@ TypeSystem{
                     index: 0
                     ReplaceType{
                         modifiedType: "T"
+                        modifiedJavaType: "java.lang.Object"
                         modifiedJniType: "jobject"
                     }
                     ConversionRule{

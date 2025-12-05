@@ -2508,7 +2508,7 @@ if(%in){
     %out = [wrapper = JObjectWrapper(%env, %in)](QByteArray rawData, int layer, int face, int mipmapLevel) -> QByteArray {
         if(JniEnvironmentExceptionHandler env{200}) {
             QTJAMBI_TRY {
-                jobject _rawData = qtjambi_cast<jobject>(env, rawData);
+                jobject _rawData = qtjambi_cast<jobject>(env, std::move(rawData));
                 jobject result = Java::Qt3DRender::QTextureImageData$DataConverter::apply(env, wrapper.object(env), _rawData, layer, face, mipmapLevel);
                 return qtjambi_cast<QByteArray>(env, result);
             } QTJAMBI_CATCH(const JavaException& exn){

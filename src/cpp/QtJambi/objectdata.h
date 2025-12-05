@@ -34,22 +34,6 @@
 #include <typeinfo>
 #include "global.h"
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-using QtJambiObjectData = QObjectUserData;
-#define QTJAMBI_OBJECTUSERDATA_TYPE_ID(TYPE) TYPE::id()
-#define QTJAMBI_OBJECTUSERDATA_ID_TYPE uint
-#define QTJAMBI_GET_OBJECTUSERDATA(TYPE, object) static_cast<TYPE*>(object->userData(TYPE::id()))
-#define QTJAMBI_SET_OBJECTUSERDATA(TYPE, object, data) object->setUserData(TYPE::id(), data)
-#define QTJAMBI_SET_OBJECTUSERDATA_ID(ID, object, data) object->setUserData(ID, data)
-#define QTJAMBI_OBJECTUSERDATA_ID_DECL static uint id();
-#define QTJAMBI_OBJECTUSERDATA_ID_IMPL(STATIC,SCOPE)STATIC uint SCOPE id(){\
-static uint _id = QObject::registerUserData();\
-    return _id;\
-}
-namespace CoreAPI{
-QTJAMBI_EXPORT QDebug& appendToDebugStream(QDebug& debug, uint typeId, const void* ptr);
-}
-#else
 struct QTJAMBI_EXPORT QtJambiObjectData{
 protected:
     QtJambiObjectData();
@@ -78,6 +62,5 @@ public:
 #define QTJAMBI_GET_OBJECTUSERDATA(TYPE, object) QtJambiObjectData::userData<TYPE>(object)
 #define QTJAMBI_SET_OBJECTUSERDATA(TYPE, object, data) QtJambiObjectData::setUserData<TYPE>(object, data)
 #define QTJAMBI_SET_OBJECTUSERDATA_ID(ID, object, data) QtJambiObjectData::setUserData(object, ID, data)
-#endif
 
 #endif // QTJAMBI_OBJECTDATA_H

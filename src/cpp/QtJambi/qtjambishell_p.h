@@ -44,27 +44,27 @@ class InPlaceInitializer;
 
 class QtJambiShellImpl : public QtJambiShell{
 public:
-    QtJambiShellImpl(JNIEnv *__jni_env, jclass objectClass, jobject nativeLink, jobject __jni_object, const std::type_info& typeId, void* ptr, const QMetaType& metaType, bool created_by_java, bool is_shell, const SuperTypeInfos* superTypeInfos,
+    QtJambiShellImpl(JNIEnv *__jni_env, jclass objectClass, jobject nativeLink, jobject __jni_object, const std::type_info& typeId, void* ptr, const QMetaType& metaType, SafeBool created_by_java, SafeBool is_shell, const SuperTypeInfos* superTypeInfos,
                 JavaException& ocurredException);
-    QtJambiShellImpl(JNIEnv *__jni_env, jclass objectClass, jobject nativeLink, jobject __jni_object, const std::type_info& typeId, void* ptr, bool created_by_java, bool is_shell, const SuperTypeInfos* superTypeInfos,
+    QtJambiShellImpl(JNIEnv *__jni_env, jclass objectClass, jobject nativeLink, jobject __jni_object, const std::type_info& typeId, void* ptr, SafeBool created_by_java, SafeBool is_shell, const SuperTypeInfos* superTypeInfos,
                 PtrDeleterFunction destructor_function, JavaException& ocurredException);
-    QtJambiShellImpl(JNIEnv *__jni_env, jclass objectClass, jobject nativeLink, jobject __jni_object, const std::type_info& typeId, void* ptr, bool created_by_java, bool is_shell, const SuperTypeInfos* superTypeInfos, JavaException& ocurredException);
+    QtJambiShellImpl(JNIEnv *__jni_env, jclass objectClass, jobject nativeLink, jobject __jni_object, const std::type_info& typeId, void* ptr, SafeBool created_by_java, SafeBool is_shell, const SuperTypeInfos* superTypeInfos, JavaException& ocurredException);
     QtJambiShellImpl(JNIEnv *__jni_env, jclass objectClass, jobject nativeLink, jobject __jni_object, const std::type_info& typeId, void* ptr,
-                     const QMetaType& metaType, bool created_by_java, bool is_shell, const SuperTypeInfos* superTypeInfos,
+                     const QMetaType& metaType, SafeBool created_by_java, SafeBool is_shell, const SuperTypeInfos* superTypeInfos,
                      PtrOwnerFunction ownerFunction, JavaException& ocurredException);
     QtJambiShellImpl(JNIEnv *__jni_env, jclass objectClass, jobject nativeLink, jobject __jni_object, const std::type_info& typeId, void* ptr,
-                     bool created_by_java, bool is_shell, const SuperTypeInfos* superTypeInfos,
+                     SafeBool created_by_java, SafeBool is_shell, const SuperTypeInfos* superTypeInfos,
                      AbstractContainerAccess* containerAccess, JavaException& ocurredException);
     QtJambiShellImpl(JNIEnv *__jni_env, jclass objectClass, jobject nativeLink, jobject __jni_object, const std::type_info& typeId, void* ptr,
-                     bool created_by_java, bool is_shell, const SuperTypeInfos* superTypeInfos,
+                     SafeBool created_by_java, SafeBool is_shell, const SuperTypeInfos* superTypeInfos,
                      AbstractContainerAccess* containerAccess, PtrDeleterFunction destructor_function, JavaException& ocurredException);
     QtJambiShellImpl(JNIEnv *__jni_env, jclass objectClass, jobject nativeLink, jobject __jni_object, const std::type_info& typeId, void* ptr,
-                     bool created_by_java, bool is_shell, const SuperTypeInfos* superTypeInfos,
+                     SafeBool created_by_java, SafeBool is_shell, const SuperTypeInfos* superTypeInfos,
                      AbstractContainerAccess* containerAccess, PtrDeleterFunction destructor_function, PtrOwnerFunction ownerFunction, JavaException& ocurredException);
-    QtJambiShellImpl(JNIEnv *__jni_env, jclass objectClass, jobject nativeLink, jobject __jni_object, const std::type_info& typeId, void* ptr, bool created_by_java, bool is_shell, const SuperTypeInfos* superTypeInfos,
+    QtJambiShellImpl(JNIEnv *__jni_env, jclass objectClass, jobject nativeLink, jobject __jni_object, const std::type_info& typeId, void* ptr, SafeBool created_by_java, SafeBool is_shell, const SuperTypeInfos* superTypeInfos,
                      PtrDeleterFunction destructor_function, PtrOwnerFunction ownerFunction, JavaException& ocurredException);
-    QtJambiShellImpl(JNIEnv *__jni_env, jclass objectClass, jobject nativeLink, jobject __jni_object, const std::type_info& typeId, QObject* ptr, const QMetaObject* originalMetaObject, bool created_by_java, bool is_shell, bool hasCustomMetaObject, const SuperTypeInfos* superTypeInfos, JavaException& ocurredException);
-    QtJambiShellImpl(JNIEnv *__jni_env, jclass objectClass, jobject nativeLink, jobject __jni_object, const std::type_info& typeId, QThread* ptr, const QMetaObject* originalMetaObject, bool created_by_java, bool is_shell, bool hasCustomMetaObject, const SuperTypeInfos* superTypeInfos, JavaException& ocurredException);
+    QtJambiShellImpl(JNIEnv *__jni_env, jclass objectClass, jobject nativeLink, jobject __jni_object, const std::type_info& typeId, QObject* ptr, const QMetaObject* originalMetaObject, SafeBool created_by_java, SafeBool is_shell, SafeBool hasCustomMetaObject, const SuperTypeInfos* superTypeInfos, JavaException& ocurredException);
+    QtJambiShellImpl(JNIEnv *__jni_env, jclass objectClass, jobject nativeLink, jobject __jni_object, const std::type_info& typeId, QThread* ptr, const QMetaObject* originalMetaObject, SafeBool created_by_java, SafeBool is_shell, SafeBool hasCustomMetaObject, const SuperTypeInfos* superTypeInfos, JavaException& ocurredException);
     ~QtJambiShellImpl() override;
     void deleteShell() override;
     QtJambiScope* returnScope(JNIEnv *env, const std::type_info& typeId, uint index) override;

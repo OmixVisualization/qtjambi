@@ -81,7 +81,7 @@ public:
         bool operator !() const { return type==None; }
     };
 
-    QString translateType(const MetaType *java_type, const MetaClass *context, Option option = NoOption);
+    QString qualifiedJavaType(const MetaType *java_type, const MetaClass *context, Option option = NoOption);
 
     virtual void generateFake(const MetaClass *java_class) override;
 

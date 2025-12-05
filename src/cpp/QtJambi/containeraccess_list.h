@@ -113,7 +113,6 @@ public:
     void* constructContainer(JNIEnv *, void* placement, const ConstContainerAndAccessInfo& copyOf) override {
         return constructContainer(placement, copyOf.container);
     }
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     void* constructContainer(void* placement, void* move) override {
         QTJAMBI_ELEMENT_LOCKER(this);
         return new(placement) QList<T>(std::move(*reinterpret_cast<const QList<T>*>(move)));
@@ -121,7 +120,6 @@ public:
     void* constructContainer(JNIEnv *, void* placement, const ContainerAndAccessInfo& move) override {
         return constructContainer(placement, move.container);
     }
-#endif
     bool destructContainer(void* container) override {
         QTJAMBI_ELEMENT_LOCKER(this);
         reinterpret_cast<QList<T>*>(container)->~QList<T>();
@@ -355,12 +353,7 @@ public:
     void remove(JNIEnv *, const ContainerInfo& container, jint index, jint n) override {
 
         QTJAMBI_ELEMENT_LOCKER(this);
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
         reinterpret_cast<QList<T> *>(container.container)->remove(index, n);
-#else
-        Q_ASSERT(n==1);
-        reinterpret_cast<QList<T> *>(container.container)->removeAt(index);
-#endif
     }
 
     jint removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) override {
@@ -516,12 +509,7 @@ public:
             T _qvalue;
             void *_qvaluePtr = &_qvalue;
             if(m_externalToInternalConverter(env, nullptr, _value, _qvaluePtr, jValueType::l)){
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
                 reinterpret_cast<QList<T> *>(container.container)->insert(index, n, _qvalue);
-#else
-                Q_ASSERT(n==1);
-                reinterpret_cast<QList<T> *>(container.container)->insert(index, _qvalue);
-#endif
             }
         }
 
@@ -553,7 +541,6 @@ public:
         return true;
     }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     jint capacity(JNIEnv *, const void* container) override {
 
         QTJAMBI_ELEMENT_LOCKER(this);
@@ -588,7 +575,6 @@ public:
         reinterpret_cast<QList<T> *>(container.container)->squeeze();
 
     }
-#endif
 
     template<bool is_const>
     class ElementIterator : public AbstractListAccess::ElementIterator{
@@ -667,11 +653,9 @@ template<size_t align, size_t size, bool isStatic>
 struct SequentialContainerAccessFac<QQueue,align,size,isStatic> : SequentialContainerAccessFac<QList,align,size,isStatic>{
 };
 
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 template<size_t align, size_t size, bool isStatic>
 struct SequentialContainerAccessFac<QStack,align,size,isStatic> : SequentialContainerAccessFac<QList,align,size,isStatic>{
 };
-#endif
 }
 
 #endif //defined(QTJAMBI_GENERIC_ACCESS)

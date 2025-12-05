@@ -27,12 +27,7 @@
 **
 ****************************************************************************/
 
-#include "qtjambilink_p.h"
-#include "debugapi.h"
-#include "java_p.h"
-#include "qtjambishell_p.h"
-
-#include <QtCore/QLoggingCategory>
+#include "pch_p.h"
 
 QT_WARNING_DISABLE_GCC("-Wformat-security")
 QT_WARNING_DISABLE_CLANG("-Wformat-security")

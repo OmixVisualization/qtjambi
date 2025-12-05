@@ -413,7 +413,7 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
 	    		Assert.assertTrue("Executable "+exeFile.getAbsolutePath()+" does not exist", exeFile.exists());
 	    		process.setProgram(exeFile.getAbsolutePath());
 	    		process.setArguments(new QStringList(testFile.getAbsolutePath(), uuid.toString()));
-	    		processEnvironment.insert("PATH", qtBinariesPath);
+	    		processEnvironment.insert("PATH", qtBinariesPath+File.pathSeparator+System.getenv("PATH"));
 	    	}else if(osName.startsWith("mac")) {
 	    		File exeFile = new File(targetDir, applicationName+".app/Contents/MacOS/"+applicationName);
 	    		Assert.assertTrue("Executable "+exeFile.getAbsolutePath()+" does not exist", exeFile.exists());

@@ -31,13 +31,8 @@
 #define QTJAMBIREMOTEOBJECTS_HASHES_H
 #include <QtJambi/Global>
 #include <QtRemoteObjects/qtremoteobjectglobal.h>
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#ifndef QTJAMBI_NO_RO_PRIVATE
-#include <QtRemoteObjects/private/qconnectionfactories_p.h>
-#endif
-#endif
 
-inline hash_type qHash(const QRemoteObjectSourceLocationInfo& info, hash_type seed = 0){
+inline size_t qHash(const QRemoteObjectSourceLocationInfo& info, size_t seed = 0){
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
 #else

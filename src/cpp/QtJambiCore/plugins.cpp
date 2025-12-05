@@ -29,6 +29,7 @@
 **
 ****************************************************************************/
 
+#include "pch_p.h"
 #include <QtCore/private/qplugin_p.h>
 #include <QtCore/QJsonObject>
 #include <QtCore/QStaticPlugin>

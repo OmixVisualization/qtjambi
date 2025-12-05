@@ -29,9 +29,7 @@
 
 #include <QtCore/private/qobject_p.h>
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-
-#include "qtjambilink_p.h"
+#include "pch_p.h"
 
 namespace QtJambiPrivate{
 
@@ -316,8 +314,3 @@ void onDynamicPropertyChange(QObject *object, QDynamicPropertyChangeEvent* event
         }
     }
 }
-#else
-void forceRemoveObjectData(QObject*){
-
-}
-#endif

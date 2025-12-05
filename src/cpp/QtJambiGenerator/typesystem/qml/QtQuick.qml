@@ -37,11 +37,17 @@ TypeSystem{
     description: "A declarative framework for building highly dynamic applications with custom user interfaces."
     LoadTypeSystem{name: "QtGuiRhi"; since: 6.6}
     LoadTypeSystem{name: "QtQml"}
-
-    InjectCode{
-        position: Position.Position4
-        Text{content: "if(QtUtilities.isAvailableQtLibrary(\"QmlWorkerScript\"))\n"+
-                      "    QtUtilities.loadQtLibrary(\"QmlWorkerScript\");"}
+    RequiredLibrary{
+        name: "QmlWorkerScript"
+        mode: RequiredLibrary.ProvideOnly
+    }
+    RequiredLibrary{
+        name: "QmlModels"
+        mode: RequiredLibrary.ProvideOnly
+    }
+    RequiredLibrary{
+        name: "QmlMeta"
+        mode: RequiredLibrary.ProvideOnly
     }
     
     InjectCode{
@@ -1700,7 +1706,8 @@ void addRC(Object obj){
         ValueType{
             name: "AttributeSet"
             InjectCode{
-                target: CodeClass.DestructorFunction
+                target: CodeClass.Destructor
+                position: Position.Position1
                 Text{content: "delete[] %this->attributes;"}
             }
             CustomConstructor{
@@ -1762,7 +1769,7 @@ void addRC(Object obj){
                 }
                 ConversionRule{
                     codeClass: CodeClass.NativeGetter
-                    Text{content: "%out = qtjambi_array_cast<jobjectArray>(%env, %scope, %in, __qt_this->count);"}
+                    Text{content: "%out = qtjambi_cast<jobjectArray>(%env, %scope, %in, __qt_this->count);"}
                 }
                 ConversionRule{
                     codeClass: CodeClass.NativeSetter

@@ -1302,7 +1302,7 @@ if(%out_buffer.size()<array.size()*4)
             NoNullPointer{}
             ReplaceType{
                 modifiedType: "float[]"
-                modifiedJniType: "jfloatArray"
+                //modifiedJniType: "jfloatArray"
             }
             ConversionRule{
                 codeClass: CodeClass.NativeGetter

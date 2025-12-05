@@ -35,7 +35,6 @@
 #include "javaapi.h"
 #include "jnienvironment.h"
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #define QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD_QT5(field)
 #define QTJAMBI_REPOSITORY_DEFINE_FIELD_QT5(name,sig)
 #define QTJAMBI_REPOSITORY_DECLARE_LONG_FIELD_QT5(field)
@@ -45,17 +44,6 @@
 #define QTJAMBI_REPOSITORY_DECLARE_LONG_FIELD_QT6(field) QTJAMBI_REPOSITORY_DECLARE_LONG_FIELD(field)
 #define QTJAMBI_REPOSITORY_DEFINE_FIELD_QT6(name,sig) QTJAMBI_REPOSITORY_DEFINE_FIELD(name,sig)
 #define QTJAMBI_REPOSITORY_DEFINE_LONG_FIELD_QT6(name) QTJAMBI_REPOSITORY_DEFINE_LONG_FIELD(name)
-#else
-#define QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD_QT5(field) QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(field)
-#define QTJAMBI_REPOSITORY_DEFINE_FIELD_QT5(name,sig) QTJAMBI_REPOSITORY_DEFINE_FIELD(name,sig)
-#define QTJAMBI_REPOSITORY_DECLARE_LONG_FIELD_QT5(field) QTJAMBI_REPOSITORY_DECLARE_LONG_FIELD(field)
-#define QTJAMBI_REPOSITORY_DEFINE_FIELD_QT5(name,sig) QTJAMBI_REPOSITORY_DEFINE_FIELD(name,sig)
-#define QTJAMBI_REPOSITORY_DEFINE_LONG_FIELD_QT5(name) QTJAMBI_REPOSITORY_DEFINE_LONG_FIELD(name)
-#define QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD_QT6(field)
-#define QTJAMBI_REPOSITORY_DECLARE_LONG_FIELD_QT6(field)
-#define QTJAMBI_REPOSITORY_DEFINE_FIELD_QT6(name,sig)
-#define QTJAMBI_REPOSITORY_DEFINE_LONG_FIELD_QT6(name)
-#endif
 
 namespace Java{
     namespace QtQml{
@@ -129,9 +117,7 @@ namespace Java{
 
         QTJAMBI_REPOSITORY_DECLARE_EMPTY_CLASS(QByteArray)
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
         QTJAMBI_REPOSITORY_DECLARE_EMPTY_CLASS(QByteArrayView)
-#endif
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QtMessageHandler,
                                          QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(accept))
@@ -168,21 +154,7 @@ namespace Java{
             QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(first)
             QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(second))
 
-        QTJAMBI_REPOSITORY_DECLARE_CLASS(QFutureWatcher,
-                                         QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
-                                         QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(future)
-                                         )
-
-        QTJAMBI_REPOSITORY_DECLARE_CLASS(QFuture,        QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
-                                                         QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(d))
-
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-        QTJAMBI_REPOSITORY_DECLARE_CLASS(QPromise,        QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
-                                                          QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(d)
-                                                          QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(nativeInstance))
-        QTJAMBI_REPOSITORY_DECLARE_CLASS(QPromise$NativeInstance,
-                                                          QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(promise))
-#endif
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QFuture,)
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QFutureInterface,
                                                          QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
@@ -572,14 +544,16 @@ namespace Java{
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QFlags,
                                          QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(intValue)
                                          QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(setIntValue))
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QFlags$ConcreteWrapper,
+                                         QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
+
+#if QT_VERSION >= QT_VERSION_CHECK(6,9,0)
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QLongFlags,
                                          QTJAMBI_REPOSITORY_DECLARE_LONG_METHOD(longValue)
                                          QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(setLongValue))
-
-        QTJAMBI_REPOSITORY_DECLARE_CLASS(QFlags$ConcreteWrapper,
-                                         QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QLongFlags$ConcreteWrapper,
                                          QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
+#endif
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QNoNativeResourcesException,
                       QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CONSTRUCTOR())
@@ -861,7 +835,11 @@ namespace Java{
                   QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(metaData))
     QTJAMBI_REPOSITORY_DECLARE_CLASS(BaseBundle,
                   QTJAMBI_REPOSITORY_DECLARE_STRING_METHOD(getString))
-    }
+#if QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QtNativeAccessibility,)
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QtActivityDelegateBase,)
+#endif // QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
+}
 #endif //def Q_OS_ANDROID
 }
 

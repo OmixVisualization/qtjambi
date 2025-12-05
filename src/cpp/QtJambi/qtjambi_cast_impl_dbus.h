@@ -85,11 +85,7 @@ struct QDBusReplyUtility<void>{
     static QDBusReply<QVariant> createFrom(const QDBusReply<void>& dBusReply)
     {
         if(dBusReply.isValid()){
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-            QDBusVariant dbusVariant(QVariant(QMetaType::Void, nullptr));
-#else
             QDBusVariant dbusVariant(QVariant(QMetaType(QMetaType::Void), nullptr));
-#endif
             QDBusMessage message;
             message.setArguments({QVariant::fromValue<QDBusVariant>(dbusVariant)});
             return QDBusReply<QVariant>(message);

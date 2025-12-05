@@ -622,6 +622,19 @@ void ComplexType::setForceFinal(bool newIsFinal)
     emit forceFinalChanged();
 }
 
+bool ComplexType::getAddTextStreamFunctions() const
+{
+    return addTextStreamFunctions;
+}
+
+void ComplexType::setAddTextStreamFunctions(bool newAddTextStreamFunctions)
+{
+    if (addTextStreamFunctions == newAddTextStreamFunctions)
+        return;
+    addTextStreamFunctions = newAddTextStreamFunctions;
+    emit addTextStreamFunctionsChanged();
+}
+
 bool ValueType::getIsPolymorphicBase() const
 {
     return isPolymorphicBase;

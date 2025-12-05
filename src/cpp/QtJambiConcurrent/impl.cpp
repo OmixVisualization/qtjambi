@@ -427,7 +427,7 @@ public:
                 }else
 #endif
                 {
-                    javaResult = qtjambi_cast<jobject>(env, result);
+                    javaResult = qtjambi_cast<jobject>(env, std::move(result));
                 }
 
                 try {

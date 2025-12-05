@@ -52,7 +52,7 @@ public class MakeTask extends Task {
     private boolean failOnError = true;
     private boolean isTools;
 
-    private String compilerName(OSInfo osInfo) {
+    private String makeName(OSInfo osInfo) {
     	String compilerError = (String)PropertyHelper.getProperty(getProject(), "qtjambi.compiler.error");
     	if(compilerError!=null && !compilerError.isEmpty())
     		throw new BuildException(compilerError);
@@ -152,9 +152,9 @@ public class MakeTask extends Task {
     	OSInfo osInfo = OSInfo.instance(getProject());
         getProject().log(this, msg, Project.MSG_INFO);
 
-        String compilerName = compilerName(osInfo);
+        String makeName = makeName(osInfo);
         List<String> commandArray = new ArrayList<String>();
-        commandArray.add(compilerName);
+        commandArray.add(makeName);
 
         if(silent && osInfo.os() != OSInfo.OperationSystem.Windows) {
             commandArray.add("-s");
@@ -177,8 +177,8 @@ public class MakeTask extends Task {
 
         PropertyHelper propertyHelper = PropertyHelper.getPropertyHelper(getProject());
         if (!"false".equalsIgnoreCase(AntUtil.getPropertyAsString(propertyHelper, "parallel"))
-        		&& !compilerName.endsWith("nmake.exe")
-        		&& !compilerName.endsWith("jom.exe")) {
+        		&& !makeName.endsWith("nmake.exe")
+        		&& !makeName.endsWith("jom.exe")) {
         	boolean hasJArg = false;
         	for(String arg : commandArray) {
         		if(arg.startsWith("-j")) {

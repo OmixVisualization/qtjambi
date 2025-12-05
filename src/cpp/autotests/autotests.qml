@@ -850,11 +850,11 @@ constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QPoint>> = false;
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "jsize %out_size = 1;\n"+
-                                  "int* %out = qtjambi_array_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
+                                  "int* %out = qtjambi_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "jintArray %out = qtjambi_array_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
+                    Text{content: "jintArray %out = qtjambi_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
                 }
             }
             ModifyArgument{
@@ -865,11 +865,11 @@ constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QPoint>> = false;
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "jsize %out_size = 1;\n"+
-                                  "int* %out = qtjambi_array_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
+                                  "int* %out = qtjambi_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "jintArray %out = qtjambi_array_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
+                    Text{content: "jintArray %out = qtjambi_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
                 }
             }
         }
@@ -883,11 +883,11 @@ constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QPoint>> = false;
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "jsize %out_size = 1;\n"+
-                                  "int* %out = qtjambi_array_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
+                                  "int* %out = qtjambi_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "jintArray %out = qtjambi_array_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
+                    Text{content: "jintArray %out = qtjambi_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
                 }
             }
             ModifyArgument{
@@ -898,11 +898,11 @@ constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QPoint>> = false;
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "jsize %out_size = 1;\n"+
-                                  "int* %out = qtjambi_array_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
+                                  "int* %out = qtjambi_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "jintArray %out = qtjambi_array_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
+                    Text{content: "jintArray %out = qtjambi_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
                 }
             }
         }
@@ -916,11 +916,11 @@ constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QPoint>> = false;
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "jsize %out_size = 1;\n"+
-                                  "int* %out = qtjambi_array_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
+                                  "int* %out = qtjambi_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "jintArray %out = qtjambi_array_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
+                    Text{content: "jintArray %out = qtjambi_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
                 }
             }
             ModifyArgument{
@@ -931,11 +931,11 @@ constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QPoint>> = false;
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "jsize %out_size = 1;\n"+
-                                  "int* %out = qtjambi_array_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
+                                  "int* %out = qtjambi_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "jintArray %out = qtjambi_array_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
+                    Text{content: "jintArray %out = qtjambi_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
                 }
             }
         }
@@ -949,11 +949,11 @@ constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QPoint>> = false;
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "jsize %out_size = 1;\n"+
-                                  "int* %out = qtjambi_array_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
+                                  "int* %out = qtjambi_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "jintArray %out = qtjambi_array_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
+                    Text{content: "jintArray %out = qtjambi_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
                 }
             }
             ModifyArgument{
@@ -964,11 +964,11 @@ constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QPoint>> = false;
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "jsize %out_size = 1;\n"+
-                                  "int* %out = qtjambi_array_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
+                                  "int* %out = qtjambi_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "jintArray %out = qtjambi_array_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
+                    Text{content: "jintArray %out = qtjambi_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
                 }
             }
         }
@@ -982,11 +982,11 @@ constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QPoint>> = false;
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "jsize %out_size = 1;\n"+
-                                  "int* %out = qtjambi_array_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
+                                  "int* %out = qtjambi_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "jintArray %out = qtjambi_array_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
+                    Text{content: "jintArray %out = qtjambi_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
                 }
             }
             ModifyArgument{
@@ -997,11 +997,11 @@ constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QPoint>> = false;
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "jsize %out_size = 1;\n"+
-                                  "int* %out = qtjambi_array_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
+                                  "int* %out = qtjambi_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "jintArray %out = qtjambi_array_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
+                    Text{content: "jintArray %out = qtjambi_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
                 }
             }
         }
@@ -1540,6 +1540,52 @@ if(java.util.logging.Logger.getLogger("io.qt.autotests").isLoggable(java.util.lo
     
     ObjectType{
         name: "FutureHandler"
+        ExtraIncludes{
+            Include{
+                fileName: "QtCore/QPointer"
+                location: Include.Global
+            }
+        }
+        ModifyFunction{
+            signature: "checkString(QFutureWatcher<QString>*)"
+            ModifyArgument{
+                index: 1
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "QFutureWatcher<QString>* %out = qtjambi_cast<QFutureWatcher<QString>*>(%env, %scope, %in);"}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "checkObject(QFutureWatcher<QObject*>*)"
+            ModifyArgument{
+                index: 1
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "QFutureWatcher<QObject*>* %out = qtjambi_cast<QFutureWatcher<QObject*>*>(%env, %scope, %in);"}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "checkInt(QFutureWatcher<int>*)"
+            ModifyArgument{
+                index: 1
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "QFutureWatcher<int>* %out = qtjambi_cast<QFutureWatcher<int>*>(%env, %scope, %in);"}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "checkVoid(QFutureWatcher<void>*)"
+            ModifyArgument{
+                index: 1
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "QFutureWatcher<void>* %out = qtjambi_cast<QFutureWatcher<void>*>(%env, %scope, %in);"}
+                }
+            }
+        }
     }
     
     ObjectType{
@@ -1552,10 +1598,70 @@ if(java.util.logging.Logger.getLogger("io.qt.autotests").isLoggable(java.util.lo
 		FunctionalType{
 			name: "TestFunction1"
 		}
-		
 		FunctionalType{
 			name: "TestFunction2"
 		}
+        FunctionalType{
+            name: "TestFunction3"
+        }
+        FunctionalType{
+            name: "TestFunction4"
+        }
+        FunctionalType{
+            name: "TestFunction5"
+        }
+        ModifyFunction{
+            signature: "takeTestFunction2(FunctionalTest::TestFunction2)"
+            ModifyArgument{
+                index: 1
+                ReplaceType{
+                    modifiedType: "io.qt.autotests.generated.FunctionalTest$TestFunction2"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "FunctionalTest::TestFunction2 %out = qtjambi_cast<FunctionalTest::TestFunction2>(%env, %in);"}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "takeTestFunction3(FunctionalTest::TestFunction3)"
+            ModifyArgument{
+                index: 1
+                ReplaceType{
+                    modifiedType: "io.qt.autotests.generated.FunctionalTest$TestFunction3"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "FunctionalTest::TestFunction3 %out = qtjambi_cast<FunctionalTest::TestFunction3>(%env, %in);"}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "takeTestFunction4(FunctionalTest::TestFunction4)"
+            ModifyArgument{
+                index: 1
+                ReplaceType{
+                    modifiedType: "io.qt.autotests.generated.FunctionalTest$TestFunction4"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "FunctionalTest::TestFunction4 %out = qtjambi_cast<FunctionalTest::TestFunction4>(%env, %in);"}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "takeTestFunction5(FunctionalTest::TestFunction5)"
+            ModifyArgument{
+                index: 1
+                ReplaceType{
+                    modifiedType: "io.qt.autotests.generated.FunctionalTest$TestFunction5"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "FunctionalTest::TestFunction5 %out = qtjambi_cast<FunctionalTest::TestFunction5>(%env, %in);"}
+                }
+            }
+        }
     }
 
     ObjectType{

@@ -190,7 +190,7 @@ TypeSystem{
         }
     }
     
-    ObjectType{
+    ValueType{
         name: "QPdfSelection"
         ExtraIncludes{
             Include{

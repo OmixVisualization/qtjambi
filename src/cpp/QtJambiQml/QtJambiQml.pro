@@ -42,3 +42,9 @@ CONFIG+=no_private_qt_headers_warning
 
 msvc:QMAKE_CXXFLAGS += /bigobj
 
+!ios:{
+    PRECOMPILED_HEADER = pch_p.h
+    CONFIG += precompile_header
+}else{
+    HEADERS += pch_p.h
+}

@@ -717,7 +717,7 @@ public class TestClassFunctionality extends ApplicationInitializer {
             uuid.setData4(b);
             Assert.fail("IllegalArgumentException expected to be thrown.");
         } catch (IllegalArgumentException e) {
-            assertEquals("Argument 'data4': Wrong number of elements in array. Found: 6, expected: 8", e.getMessage());
+            assertEquals("Wrong number of elements in array. Found: 6, expected: 8", e.getMessage());
         }
 
         // Make sure it wasn't set after all
@@ -731,7 +731,7 @@ public class TestClassFunctionality extends ApplicationInitializer {
             uuid.setData4(b);
             Assert.fail("IllegalArgumentException expected to be thrown.");
         } catch (IllegalArgumentException e) {
-            assertEquals("Argument 'data4': Wrong number of elements in array. Found: 100, expected: 8", e.getMessage());
+            assertEquals("Wrong number of elements in array. Found: 100, expected: 8", e.getMessage());
         }
     }
 

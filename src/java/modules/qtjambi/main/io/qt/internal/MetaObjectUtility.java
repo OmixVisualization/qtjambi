@@ -753,25 +753,8 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
 
                             if (readerMethod != null) { // yay
                                 reader = PropertyAnnotation.readerAnnotation(readerMethod);
-                                boolean isReader = false;
-                                if (reader == null) {
-                                	isReader = true;
-                                	//don't treat range model tree's parentRow as property
-                                	if((QtJambi_LibraryUtilities.qtMajorVersion==6 && QtJambi_LibraryUtilities.qtMinorVersion>=10) || QtJambi_LibraryUtilities.qtMajorVersion>6) {
-	                                	if("setParentRow".equals(declaredMethodName)) {
-	                                		if(treeRowInterfaceClass==null) {
-	                                			try {
-													treeRowInterfaceClass = QObject.class.getClassLoader().loadClass("io.qt.core.QRangeModel$TreeRowInterface");
-												} catch (Throwable e) {
-												}
-	                                		}
-	                                		if(treeRowInterfaceClass!=null && treeRowInterfaceClass.isAssignableFrom(declaredMethod.getDeclaringClass())) {
-	                                			isReader = false;
-	                                		}
-	                                	}
-                                	}
-                                }
-                                if(isReader) {
+                            	//don't treat range model tree's parentRow as property
+                                if(reader == null && !isTreeRowMethod(clazz, declaredMethodName, paramType)) {
                                 	usedGetters.add(readerMethod);
                                     propertyReaders.put(propertyName, readerMethod);
                                     propertyWriters.computeIfAbsent(propertyName, arrayListFactory()).add(declaredMethod);
@@ -2608,7 +2591,6 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
 				&& cl.getEnclosingClass() != QDeclarableSignals.class && !SignalUtility.findEmitMethods(cl).isEmpty();
 	}
 	
-	private static Class<?> treeRowInterfaceClass;
 	private final static Set<Class<?>> gadgetClasses = Collections.synchronizedSet(new HashSet<>());
 	private final static Set<String> gadgetPackages = Collections.synchronizedSet(new HashSet<>());
 	
@@ -2626,6 +2608,13 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
 			java.util.function.Function<Class<?>, Map<String, String>> qmlClassInfogeneratorFunction) {
 		MetaObjectUtility.qmlClassInfoGeneratorFunction = qmlClassInfogeneratorFunction;
 	}
+	
+	static final boolean isTreeRowMethod(Class<?> declaringClass, String declaredMethodName, Class<?> paramType) {
+        return QtJambi_LibraryUtilities.TreeRowInterfaceClass!=null 
+        			&& QtJambi_LibraryUtilities.TreeRowInterfaceClass.isAssignableFrom(declaringClass)
+                    && "setParentRow".equals(declaredMethodName)
+                    && QtJambi_LibraryUtilities.TreeRowInterfaceClass.isAssignableFrom(paramType);
+    }
 }
 
 @NativeAccess

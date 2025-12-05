@@ -47,11 +47,7 @@ public:
     QtJambiScope(JNIEnv *env, jobject object);
     ~QtJambiScope();
     void addFinalAction(QtJambiUtils::Runnable&& action);
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    void addDeletion(int metaTypeId, void* pointer);
-#else
     void addDeletion(QMetaType metaType, void* pointer);
-#endif
     template<typename T>
     void addDeletion(T* pointer){
         addFinalAction(QtJambiUtils::Runnable::deleter(pointer));

@@ -34,9 +34,9 @@
 #include <QtCore/QDeadlineTimer>
 #include <QtJambi/Global>
 
-hash_type qHash(const QHttpPart &value, hash_type seed = 0);
+size_t qHash(const QHttpPart &value, size_t seed = 0);
 
-inline hash_type qHash(const QHstsPolicy& p, hash_type seed = 0){
+inline size_t qHash(const QHstsPolicy& p, size_t seed = 0){
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
 #else
@@ -48,7 +48,7 @@ inline hash_type qHash(const QHstsPolicy& p, hash_type seed = 0){
     return seed;
 }
 
-inline hash_type qHash(const QNetworkAddressEntry& p, hash_type seed = 0){
+inline size_t qHash(const QNetworkAddressEntry& p, size_t seed = 0){
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
 #else
@@ -65,7 +65,7 @@ inline hash_type qHash(const QNetworkAddressEntry& p, hash_type seed = 0){
     return seed;
 }
 
-inline hash_type qHash(const QNetworkCacheMetaData& p, hash_type seed = 0){
+inline size_t qHash(const QNetworkCacheMetaData& p, size_t seed = 0){
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
 #else
@@ -90,26 +90,7 @@ inline hash_type qHash(const QNetworkCacheMetaData& p, hash_type seed = 0){
     return seed;
 }
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-inline hash_type qHash(const QNetworkConfiguration& p, hash_type seed = 0){
-    QtPrivate::QHashCombine hash;
-    seed = hash(seed, int(p.state()));
-    seed = hash(seed, int(p.type()));
-    seed = hash(seed, int(p.purpose()));
-    seed = hash(seed, int(p.bearerType()));
-    seed = hash(seed, int(p.bearerTypeFamily()));
-    seed = hash(seed, p.bearerTypeName());
-    seed = hash(seed, p.identifier());
-    seed = hash(seed, p.isRoamingAvailable());
-    seed = hash(seed, p.name());
-    seed = hash(seed, p.isValid());
-    seed = hash(seed, p.connectTimeout());
-    seed = hash(seed, p.children().size());
-    return seed;
-}
-#endif
-
-inline hash_type qHash(const QSslPreSharedKeyAuthenticator& value, hash_type seed = 0){
+inline size_t qHash(const QSslPreSharedKeyAuthenticator& value, size_t seed = 0){
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
 #else
@@ -123,7 +104,7 @@ inline hash_type qHash(const QSslPreSharedKeyAuthenticator& value, hash_type see
     return seed;
 }
 
-inline hash_type qHash(const QNetworkCookie& p, hash_type seed = 0){
+inline size_t qHash(const QNetworkCookie& p, size_t seed = 0){
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
 #else
@@ -140,7 +121,7 @@ inline hash_type qHash(const QNetworkCookie& p, hash_type seed = 0){
     return seed;
 }
 
-inline hash_type qHash(const QNetworkProxy& p, hash_type seed = 0){
+inline size_t qHash(const QNetworkProxy& p, size_t seed = 0){
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
 #else
@@ -160,7 +141,7 @@ inline hash_type qHash(const QNetworkProxy& p, hash_type seed = 0){
     return seed;
 }
 
-inline hash_type qHash(const QNetworkProxyQuery& p, hash_type seed = 0){
+inline size_t qHash(const QNetworkProxyQuery& p, size_t seed = 0){
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
 #else
@@ -175,7 +156,7 @@ inline hash_type qHash(const QNetworkProxyQuery& p, hash_type seed = 0){
     return seed;
 }
 
-inline hash_type qHash(const QNetworkRequest& p, hash_type seed = 0){
+inline size_t qHash(const QNetworkRequest& p, size_t seed = 0){
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
 #else
@@ -188,7 +169,7 @@ inline hash_type qHash(const QNetworkRequest& p, hash_type seed = 0){
     return seed;
 }
 
-inline hash_type qHash(const QAuthenticator& p, hash_type seed = 0){
+inline size_t qHash(const QAuthenticator& p, size_t seed = 0){
     if(p.isNull())
         return 0;
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
@@ -205,7 +186,7 @@ inline hash_type qHash(const QAuthenticator& p, hash_type seed = 0){
 
 #ifndef QT_NO_SSL
 
-inline hash_type qHash(const QSslKey& p, hash_type seed = 0){
+inline size_t qHash(const QSslKey& p, size_t seed = 0){
     if(p.isNull())
         return 0;
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
@@ -220,7 +201,7 @@ inline hash_type qHash(const QSslKey& p, hash_type seed = 0){
     return seed;
 }
 
-inline hash_type qHash(const QSslCipher& p, hash_type seed = 0){
+inline size_t qHash(const QSslCipher& p, size_t seed = 0){
     if(p.isNull())
         return 0;
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
@@ -239,7 +220,7 @@ inline hash_type qHash(const QSslCipher& p, hash_type seed = 0){
     return seed;
 }
 
-inline hash_type qHash(const QSslConfiguration& p, hash_type seed = 0){
+inline size_t qHash(const QSslConfiguration& p, size_t seed = 0){
     if(p.isNull())
         return 0;
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
@@ -278,9 +259,7 @@ inline hash_type qHash(const QSslConfiguration& p, hash_type seed = 0){
 
 #endif // def QT_NO_SSL
 
-#if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
-
-inline hash_type qHash(const QHttp2Configuration& p, hash_type seed = 0){
+inline size_t qHash(const QHttp2Configuration& p, size_t seed = 0){
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
 #else
@@ -293,8 +272,6 @@ inline hash_type qHash(const QHttp2Configuration& p, hash_type seed = 0){
     seed = hash(seed, p.maxFrameSize());
     return seed;
 }
-
-#endif
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0) && defined(QTJAMBI_GENERATOR_RUNNING)
 size_t qHash(const QHttp1Configuration &value, size_t seed = 0);

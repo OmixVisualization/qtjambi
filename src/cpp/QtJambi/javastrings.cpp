@@ -29,9 +29,7 @@
 **
 ****************************************************************************/
 
-#include "javastrings.h"
-#include "jobjectwrapper.h"
-#include "jnienvironment.h"
+#include "pch_p.h"
 
 J2CStringBuffer::J2CStringBuffer(JNIEnv* env, jstring strg)
     : m_strg(strg),

@@ -68,9 +68,7 @@ public:
              , typename std::enable_if<!std::is_same<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type, InternalToExternalConverter>::value, bool>::type = true
              , typename std::enable_if<!std::is_null_pointer<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type>::value, bool>::type = true
              , typename std::enable_if<!std::is_same<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type, FunctionPointer>::value, bool>::type = true
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
              , typename std::enable_if<std::is_invocable_r<bool, Functor, JNIEnv*, QtJambiScope*, const void*, jvalue&, bool>::value, bool>::type = true
-#endif
              >
     InternalToExternalConverter(Functor&& functor) noexcept
         : InternalToExternalConverter(
@@ -116,9 +114,7 @@ public:
              , typename std::enable_if<!std::is_same<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type, ExternalToInternalConverter>::value, bool>::type = true
              , typename std::enable_if<!std::is_null_pointer<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type>::value, bool>::type = true
              , typename std::enable_if<!std::is_same<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type, FunctionPointer>::value, bool>::type = true
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
              , typename std::enable_if<std::is_invocable_r<bool, Functor, JNIEnv*, QtJambiScope*, jvalue, void* &, jValueType>::value, bool>::type = true
-#endif
              >
     ExternalToInternalConverter(Functor&& functor) noexcept
         : ExternalToInternalConverter(
@@ -143,9 +139,9 @@ private:
 
 class QHashFunction{
     typedef void(*Deleter)(void*);
-    typedef hash_type(*Invoker)(void*, const void*,hash_type);
+    typedef size_t(*Invoker)(void*, const void*,size_t);
 public:
-    typedef hash_type(*FunctionPointer)(const void*,hash_type);
+    typedef size_t(*FunctionPointer)(const void*,size_t);
 
 private:
     explicit QHashFunction(void* data, Invoker invoker, Deleter deleter) noexcept;
@@ -164,14 +160,12 @@ public:
              , typename std::enable_if<!std::is_same<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type, QHashFunction>::value, bool>::type = true
              , typename std::enable_if<!std::is_null_pointer<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type>::value, bool>::type = true
              , typename std::enable_if<!std::is_same<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type, FunctionPointer>::value, bool>::type = true
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-             , typename std::enable_if<std::is_invocable_r<hash_type, Functor, const void*, hash_type>::value, bool>::type = true
-#endif
+             , typename std::enable_if<std::is_invocable_r<size_t, Functor, const void*, size_t>::value, bool>::type = true
              >
     QHashFunction(Functor&& functor) noexcept
         : QHashFunction(
               new typename std::remove_reference<typename std::remove_cv<Functor>::type>::type(std::move(functor)),
-              [](void* data, const void* ptr, hash_type seed) -> hash_type{
+              [](void* data, const void* ptr, size_t seed) -> size_t{
                   typename std::remove_reference<typename std::remove_cv<Functor>::type>::type* fct = reinterpret_cast<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type*>(data);
                   return (*fct)(ptr, seed);
               },
@@ -180,7 +174,7 @@ public:
               }
               ){}
     TYPEUTILS_EXPORT bool operator==(const QHashFunction& other) const noexcept;
-    TYPEUTILS_EXPORT hash_type operator()(const void*, hash_type) const;
+    TYPEUTILS_EXPORT size_t operator()(const void*, size_t) const;
     TYPEUTILS_EXPORT operator bool() const noexcept;
     TYPEUTILS_EXPORT bool operator !() const noexcept;
 private:

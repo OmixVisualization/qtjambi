@@ -388,6 +388,19 @@ void ReplaceType::setModifiedJniType(const QString &newModifiedJniType)
     emit modifiedJniTypeChanged();
 }
 
+QString ReplaceType::getModifiedJavaType() const
+{
+    return modifiedJavaType;
+}
+
+void ReplaceType::setModifiedJavaType(const QString &newModifiedJavaType)
+{
+    if (modifiedJavaType == newModifiedJavaType)
+        return;
+    modifiedJavaType = newModifiedJavaType;
+    emit modifiedJavaTypeChanged();
+}
+
 const QString &NoNullPointer::getDefaultValue() const
 {
     return defaultValue;
@@ -659,6 +672,19 @@ void Instantiation::setNoImplicitArguments(bool newNoImplicitArguments)
         return;
     noImplicitArguments = newNoImplicitArguments;
     emit noImplicitArgumentsChanged();
+}
+
+bool Instantiation::getIsTextStreamFunction() const
+{
+    return isTextStreamFunction;
+}
+
+void Instantiation::setIsTextStreamFunction(bool newIsTextStreamFunction)
+{
+    if (isTextStreamFunction == newIsTextStreamFunction)
+        return;
+    isTextStreamFunction = newIsTextStreamFunction;
+    emit isTextStreamFunctionChanged();
 }
 
 const QString &Argument::getType() const
@@ -1166,6 +1192,32 @@ void ModifyFunction::setNoImplicitArguments(bool newNoImplicitArguments)
         return;
     noImplicitArguments = newNoImplicitArguments;
     emit noImplicitArgumentsChanged();
+}
+
+bool ModifyFunction::getIsTextStreamFunction() const
+{
+    return isTextStreamFunction;
+}
+
+void ModifyFunction::setIsTextStreamFunction(bool newIsTextStreamFunction)
+{
+    if (isTextStreamFunction == newIsTextStreamFunction)
+        return;
+    isTextStreamFunction = newIsTextStreamFunction;
+    emit isTextStreamFunctionChanged();
+}
+
+bool ModifyFunction::getPullDown() const
+{
+    return pullDown;
+}
+
+void ModifyFunction::setPullDown(bool newPullDown)
+{
+    if (pullDown == newPullDown)
+        return;
+    pullDown = newPullDown;
+    emit pullDownChanged();
 }
 
 RemoveFlag::Entries Remove::getCodeClass() const

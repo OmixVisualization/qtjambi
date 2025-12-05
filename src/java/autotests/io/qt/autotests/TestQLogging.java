@@ -51,6 +51,7 @@ import org.junit.Test;
 
 import io.qt.autotests.generated.General;
 import io.qt.autotests.generated.MessageHandler;
+import io.qt.core.QCalendar;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QLibraryInfo;
 import io.qt.core.QLoggingCategory;
@@ -189,6 +190,24 @@ public class TestQLogging extends UnitTestInitializer {
             lastFile.clear();
             lastFunction.clear();
             
+            qDebug().append(QCalendar.System.Julian).close();
+            assertEquals("QCalendar::System::Julian", lastMessage.get(QtMsgType.QtDebugMsg));
+            if(QLibraryInfo.isDebugBuild()) {
+	            assertEquals(TestQLogging.class.getName(), lastFile.get(QtMsgType.QtDebugMsg));
+	            assertEquals("testInstallHandler", lastFunction.get(QtMsgType.QtDebugMsg));
+            }
+            QWindow window = new QWindow();
+            qDebug().append(window).close();
+            assertEquals(window.toString(), lastMessage.get(QtMsgType.QtDebugMsg));
+            if(QLibraryInfo.isDebugBuild()) {
+	            assertEquals(TestQLogging.class.getName(), lastFile.get(QtMsgType.QtDebugMsg));
+	            assertEquals("testInstallHandler", lastFunction.get(QtMsgType.QtDebugMsg));
+            }
+            
+            lastMessage.clear();
+            lastFile.clear();
+            lastFunction.clear();
+            
             QLoggingCategory category = new QLoggingCategory("test");
             QLoggingCategory.CategoryFilter newFilter = _category->{
             	if("test".equals(_category.categoryName()))
@@ -230,7 +249,7 @@ public class TestQLogging extends UnitTestInitializer {
 		            assertEquals("testInstallHandler", lastFunction.get(QtMsgType.QtDebugMsg));
 	            }
 	
-	            qCWarning(category).append("warning").append("sent").close();
+	            qCWarning(category).append("warning").append("sent").ws().endl().close();
 	            assertEquals(null, lastMessage.get(QtMsgType.QtWarningMsg));
 	            if(QLibraryInfo.isDebugBuild()) {
 		            assertEquals(null, lastFile.get(QtMsgType.QtWarningMsg));

@@ -254,7 +254,7 @@ TypeSystem{
                                   "if(!metaSignal.isValid() || metaSignal.methodType()!=QMetaMethod::Signal){\n"+
                                   "    __qt_return_value = false;\n"+
                                   "}else{\n"+
-                                  "    jobject __java_metaSignal = qtjambi_cast<jobject>(%env, metaSignal);\n"+
+                                  "    jobject __java_metaSignal = qtjambi_cast<jobject>(%env, std::move(metaSignal));\n"+
                                   "    if(!__java_metaSignal){\n"+
                                   "        __qt_return_value = false;\n"+
                                   "    }else{\n"+

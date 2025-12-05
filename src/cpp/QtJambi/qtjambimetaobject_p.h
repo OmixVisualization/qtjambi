@@ -47,22 +47,22 @@ class ParameterTypeInfo{
 public:
     ParameterTypeInfo();
     ParameterTypeInfo(
-            int metaTypeId,
+            const QMetaType& metaType,
             jclass _javaClass
         );
     ParameterTypeInfo(
-        int metaTypeId,
+        const QMetaType& metaType,
         const QString& typeName,
         jclass _javaClass
         );
     ParameterTypeInfo(
-            int metaTypeId,
+            const QMetaType& metaType,
             jclass _javaClass,
             QtJambiUtils::InternalToExternalConverter&& internalToExternalConverter,
             QtJambiUtils::ExternalToInternalConverter&& externalToInternalConverter
         );
     ParameterTypeInfo(
-            int metaTypeId,
+            const QMetaType& metaType,
             const QString& typeName,
             jclass _javaClass,
             QtJambiUtils::InternalToExternalConverter&& internalToExternalConverter,
@@ -76,14 +76,14 @@ public:
     bool convertInternalToExternal(JNIEnv* env, QtJambiScope* scope, const void* in, jvalue& out, bool forceBoxedType) const;
     bool convertExternalToInternal(JNIEnv* env, QtJambiScope* scope, jvalue in,void* & out, jValueType valueType) const;
     jclass javaClass() const;
-    int metaType() const;
+    const QMetaType& metaType() const;
     static QtJambiUtils::InternalToExternalConverter default_internalToExternalConverter();
     static QtJambiUtils::ExternalToInternalConverter default_externalToInternalConverter();
     static ParameterTypeInfo voidTypeInfo(JNIEnv* env);
 private:
     void resolveI2E(JNIEnv* env);
     void resolveE2I(JNIEnv* env);
-    int m_qTypeId;
+    QMetaType m_metaType;
     QString m_typeName;
     jclass m_javaClass;
     QtJambiUtils::InternalToExternalConverter m_internalToExternalConverter;

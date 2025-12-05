@@ -1234,7 +1234,7 @@ TypeSystem{
                 index: 0
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "%out = __qt_%1 ? qtjambi_cast<jobject>(%env, %in) : nullptr;"}
+                    Text{content: "%out = __qt_%1 ? qtjambi_cast<jobject>(%env, std::move(%in)) : nullptr;"}
                 }
             }
             since: [6, 2]

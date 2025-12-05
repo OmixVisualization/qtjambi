@@ -81,7 +81,7 @@ TypeSystem{
             position: Position.Beginning
             Text{
                 until: 5
-                content: String.raw`inline hash_type qHash(const QMap<QString, QUrl> &value, hash_type seed = 0){
+                content: String.raw`inline size_t qHash(const QMap<QString, QUrl> &value, size_t seed = 0){
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombineCommutative hash;
 #else
@@ -97,7 +97,7 @@ TypeSystem{
             Text{
                 since: 6
                 until: 6.7
-                content: String.raw`inline hash_type qHash(const QMultiMap<QString, QUrl> &value, hash_type seed = 0){
+                content: String.raw`inline size_t qHash(const QMultiMap<QString, QUrl> &value, size_t seed = 0){
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombineCommutative hash;
 #else

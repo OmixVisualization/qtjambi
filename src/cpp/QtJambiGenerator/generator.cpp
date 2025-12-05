@@ -866,28 +866,29 @@ int GeneratorApplication::generate() {
 }
 
 QStringList readDependencies(const QString& file){
-    QFile f(file);
-    f.open(QIODevice::ReadOnly);
-    QTextStream s(&f);
     QStringList result;
-    while(!s.atEnd()){
-        QString line = s.readLine().trimmed();
-        if(line.startsWith('#')){
-            line = line.mid(1).trimmed();
-            if(line.startsWith("include")){
-                line = line.mid(7).trimmed();
-                if(line.startsWith("<") && line.endsWith(">")){
-                    line.chop(1);
-                    line = line.mid(1);
-                    QStringList include = line.split("/");
-                    if((include.size()==2 && include[0]==include[1]) || include.size()==1){
-                        result << include[0];
+    QFile f(file);
+    if(f.open(QIODevice::ReadOnly)){
+        QTextStream s(&f);
+        while(!s.atEnd()){
+            QString line = s.readLine().trimmed();
+            if(line.startsWith('#')){
+                line = line.mid(1).trimmed();
+                if(line.startsWith("include")){
+                    line = line.mid(7).trimmed();
+                    if(line.startsWith("<") && line.endsWith(">")){
+                        line.chop(1);
+                        line = line.mid(1);
+                        QStringList include = line.split("/");
+                        if((include.size()==2 && include[0]==include[1]) || include.size()==1){
+                            result << include[0];
+                        }
                     }
                 }
             }
         }
+        f.close();
     }
-    f.close();
     return result;
 }
 

@@ -33,9 +33,9 @@
 #include <QtXml/QtXml>
 #include <QtJambi/Global>
 
-inline hash_type qHash(const QDomNamedNodeMap &value, hash_type seed = 0);
+inline size_t qHash(const QDomNamedNodeMap &value, size_t seed = 0);
 
-inline hash_type qHash(const QDomNode &value, hash_type seed = 0)
+inline size_t qHash(const QDomNode &value, size_t seed = 0)
 {
     if(value.parentNode().isNull())
         return 0;
@@ -53,7 +53,7 @@ inline hash_type qHash(const QDomNode &value, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QDomNamedNodeMap &value, hash_type seed)
+inline size_t qHash(const QDomNamedNodeMap &value, size_t seed)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombineCommutative hash;
@@ -67,7 +67,7 @@ inline hash_type qHash(const QDomNamedNodeMap &value, hash_type seed)
     return seed;
 }
 
-inline hash_type qHash(const QDomNodeList &value, hash_type seed = 0)
+inline size_t qHash(const QDomNodeList &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombineCommutative hash;
@@ -81,64 +81,10 @@ inline hash_type qHash(const QDomNodeList &value, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QDomImplementation &impl, hash_type seed = 0)
+inline size_t qHash(const QDomImplementation &impl, size_t seed = 0)
 {
     return qHash(*reinterpret_cast<void*const*>(&impl), seed);
 }
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-inline QT_DEPRECATED_VERSION(5, 15) bool operator==(const QXmlParseException& arg1, const QXmlParseException& arg2){
-    return arg1.columnNumber()==arg2.columnNumber()
-            && arg1.lineNumber()==arg2.lineNumber()
-            && arg1.publicId()==arg2.publicId()
-            && arg1.systemId()==arg2.systemId()
-            && arg1.message()==arg2.message();
-}
-
-inline QT_DEPRECATED_VERSION(5, 15) hash_type qHash(const QXmlParseException &value, hash_type seed = 0)
-{
-    QtPrivate::QHashCombine hash;
-    seed = hash(seed, value.columnNumber());
-    seed = hash(seed, value.lineNumber());
-    seed = hash(seed, value.publicId());
-    seed = hash(seed, value.systemId());
-    seed = hash(seed, value.message());
-    return seed;
-}
-
-inline bool operator==(const QXmlAttributes& arg1, const QXmlAttributes& arg2){
-    if(arg1.count()!=arg2.count())
-        return false;
-    for (int i=0; i< arg1.count(); ++i) {
-        if(arg1.localName(i)!=arg2.localName(i)
-                || arg1.qName(i)!=arg2.qName(i)
-                || arg1.uri(i)!=arg2.uri(i)
-                || arg1.type(i)!=arg2.type(i)
-                || arg1.value(i)!=arg2.value(i)){
-            return false;
-        }
-    }
-    return true;
-}
-
-inline hash_type qHash(const QXmlAttributes &value, hash_type seed = 0)
-{
-#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
-    QtPrivate::QHashCombineCommutative hash;
-#else
-    QtPrivate::QHashCombineCommutative hash(seed);
-#endif
-    seed = hash(seed, value.count());
-    for (int i=0; i< value.count(); ++i) {
-        seed = hash(seed, value.localName(i));
-        seed = hash(seed, value.qName(i));
-        seed = hash(seed, value.uri(i));
-        seed = hash(seed, value.type(i));
-        seed = hash(seed, value.value(i));
-    }
-    return seed;
-}
-#endif
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
 inline bool operator==(const QDomDocument::ParseResult &value1, const QDomDocument::ParseResult &value2){

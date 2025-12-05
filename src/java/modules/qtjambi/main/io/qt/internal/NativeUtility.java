@@ -75,6 +75,15 @@ public abstract class NativeUtility {
 		cleanupThread = new Thread(QueuedCleaner::cleanup);
 		cleanupThread.setName("QtJambiCleanupThread");
 		cleanupThread.setDaemon(true);
+		try {
+			Integer priority = Integer.getInteger("io.qt.cleanup-thread-priority");
+			if(priority!=null) {
+				if(priority>=Thread.MIN_PRIORITY && priority<=Thread.MAX_PRIORITY)
+					cleanupThread.setPriority(priority);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		QtJambi_LibraryUtilities.initialize();
 		cleanupThread.start();
 	}

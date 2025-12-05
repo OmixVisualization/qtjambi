@@ -34,35 +34,35 @@
 #include <QtGui/rhi/qrhi.h>
 #include <QtJambi/Global>
 
-inline hash_type qHash(const QShaderVersion& value, hash_type seed = 0){
+inline size_t qHash(const QShaderVersion& value, size_t seed = 0){
     return qHashMulti(seed, value.version(), value.flags());
 }
 
-inline hash_type qHash(const QShaderDescription::BlockVariable& value, hash_type seed = 0){
+inline size_t qHash(const QShaderDescription::BlockVariable& value, size_t seed = 0){
     return qHashMulti(seed, value.name, value.type, value.offset, value.size, value.arrayDims, value.arrayStride, value.matrixStride, value.matrixIsRowMajor, value.structMembers);
 }
 
-inline hash_type qHash(const QShaderDescription::InOutVariable& value, hash_type seed = 0){
+inline size_t qHash(const QShaderDescription::InOutVariable& value, size_t seed = 0){
     return qHashMulti(seed, value.name, value.type, value.location, value.binding, value.descriptorSet, value.imageFormat, value.imageFlags, value.arrayDims, value.perPatch, value.structMembers);
 }
 
-inline hash_type qHash(const QShaderDescription::UniformBlock& value, hash_type seed = 0){
+inline size_t qHash(const QShaderDescription::UniformBlock& value, size_t seed = 0){
     return qHashMulti(seed, value.blockName, value.structName, value.size, value.binding, value.descriptorSet, value.members);
 }
 
-inline hash_type qHash(const QShaderDescription::PushConstantBlock& value, hash_type seed = 0){
+inline size_t qHash(const QShaderDescription::PushConstantBlock& value, size_t seed = 0){
     return qHashMulti(seed, value.name, value.size, value.members);
 }
 
-inline hash_type qHash(const QShaderDescription::StorageBlock& value, hash_type seed = 0){
+inline size_t qHash(const QShaderDescription::StorageBlock& value, size_t seed = 0){
     return qHashMulti(seed, value.blockName, value.instanceName, value.knownSize, value.binding, value.descriptorSet, value.members, value.runtimeArrayStride, value.qualifierFlags);
 }
 
-inline hash_type qHash(const QShaderDescription::BuiltinVariable& value, hash_type seed = 0){
+inline size_t qHash(const QShaderDescription::BuiltinVariable& value, size_t seed = 0){
     return qHashMulti(seed, value.type, value.varType, value.arrayDims);
 }
 
-inline hash_type qHash(const QShaderDescription& value, hash_type seed = 0){
+inline size_t qHash(const QShaderDescription& value, size_t seed = 0){
     return qHashMulti(seed,
                       value.inputVariables(),
                       value.outputVariables(),

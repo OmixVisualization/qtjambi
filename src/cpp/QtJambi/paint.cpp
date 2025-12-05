@@ -29,11 +29,7 @@
 **
 ****************************************************************************/
 
-#include "qtjambiapi.h"
-#include "paint.h"
-#include "exception.h"
-#include "java_p.h"
-#include "utils_p.h"
+#include "pch_p.h"
 
 AboutToPaint::AboutToPaint(JNIEnv *env, jobject object)
     : m_env(env),

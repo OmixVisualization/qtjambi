@@ -137,13 +137,11 @@ jobject qtjambi_fromScriptValue(JNIEnv *__jni_env, QJSEngine *__qt_this, jobject
 
 QJSValue qtjambi_toScriptValue(JNIEnv *__jni_env, QJSEngine *__qt_this, const QVariant& value);
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #if QT_VERSION >= QT_VERSION_CHECK(6, 1, 0)
 jobject qtjambi_fromManagedValue(JNIEnv *env, QJSEngine *, jobject type, const QJSManagedValue& value);
 QJSManagedValue qtjambi_toManagedValue(JNIEnv *, QJSEngine *__qt_this, const QVariant& variant);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 3, 0)
 jobject qtjambi_fromVariant(JNIEnv *env, QJSEngine *, jobject type, const QVariant& value);
-#endif
 #endif
 #endif
 

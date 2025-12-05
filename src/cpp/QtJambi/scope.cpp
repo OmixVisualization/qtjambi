@@ -29,11 +29,7 @@
 **
 ****************************************************************************/
 
-#include <QtCore/QMetaType>
-#include "scope.h"
-#include "java_p.h"
-#include "qtjambilink_p.h"
-#include "qtjambishell_p.h"
+#include "pch_p.h"
 
 DoFinally::DoFinally(QtJambiUtils::Runnable&& _action) : action(std::move(_action))
 {
@@ -183,6 +179,8 @@ bool invalidateArray(JNIEnv *env, jobjectArray java_array);
 bool forcedInvalidateArray(JNIEnv *env, jobjectArray java_array);
 
 void QtJambiScope::addObjectInvalidation(JNIEnv *env, jobject object, bool persistent){
+    if(!object)
+        return;
     if(persistent){
         addFinalAction([obj = JObjectWrapper(env, object)]() mutable {
             if(JniEnvironmentExceptionInhibitor env{200}){
@@ -213,6 +211,8 @@ void QtJambiScope::addObjectInvalidation(JNIEnv *env, jobject object, bool persi
 }
 
 void QtJambiScope::addObjectInvalidation(JNIEnv *env, QtJambiNativeID nativeId, bool persistent){
+    if(!nativeId)
+        return;
     if(persistent){
         addFinalAction([link = QtJambiLink::fromNativeId(nativeId)](){
             if(link){
@@ -244,6 +244,8 @@ void QtJambiScope::addObjectInvalidation(JNIEnv *env, QtJambiNativeID nativeId, 
 }
 
 void QtJambiScope::addForcedObjectInvalidation(JNIEnv *env, jobject object, bool persistent){
+    if(!object)
+        return;
     if(persistent){
         addFinalAction([obj = JObjectWrapper(env, object)]() mutable {
             if(JniEnvironmentExceptionInhibitor env{200}){
@@ -274,6 +276,8 @@ void QtJambiScope::addForcedObjectInvalidation(JNIEnv *env, jobject object, bool
 }
 
 void QtJambiScope::addForcedObjectInvalidation(JNIEnv *env, QtJambiNativeID nativeId, bool persistent){
+    if(!nativeId)
+        return;
     if(persistent){
         addFinalAction([link = QtJambiLink::fromNativeId(nativeId)](){
             if(link){
@@ -305,6 +309,8 @@ void QtJambiScope::addForcedObjectInvalidation(JNIEnv *env, QtJambiNativeID nati
 }
 
 void QtJambiScope::addContainerInvalidation(JNIEnv *env, jobject object, bool persistent){
+    if(!object)
+        return;
     if(persistent){
         addFinalAction([obj = JObjectWrapper(env, object)]() mutable {
             if(JniEnvironmentExceptionInhibitor env{200}){
@@ -335,6 +341,8 @@ void QtJambiScope::addContainerInvalidation(JNIEnv *env, jobject object, bool pe
 }
 
 void QtJambiScope::addForcedContainerInvalidation(JNIEnv *env, jobject object, bool persistent){
+    if(!object)
+        return;
     if(persistent){
         addFinalAction([obj = JObjectWrapper(env, object)]() mutable {
             if(JniEnvironmentExceptionInhibitor env{200}){
@@ -365,6 +373,8 @@ void QtJambiScope::addForcedContainerInvalidation(JNIEnv *env, jobject object, b
 }
 
 void QtJambiScope::addArrayInvalidation(JNIEnv *env, jobjectArray object, bool persistent){
+    if(!object)
+        return;
     if(persistent){
         addFinalAction([obj = JObjectWrapper(env, object)]() mutable {
             if(JniEnvironmentExceptionInhibitor env{200}){
@@ -395,6 +405,8 @@ void QtJambiScope::addArrayInvalidation(JNIEnv *env, jobjectArray object, bool p
 }
 
 void QtJambiScope::addForcedArrayInvalidation(JNIEnv *env, jobjectArray object, bool persistent){
+    if(!object)
+        return;
     if(persistent){
         addFinalAction([obj = JObjectWrapper(env, object)]() mutable {
             if(JniEnvironmentExceptionInhibitor env{200}){

@@ -49,13 +49,8 @@ TypeSystem{
     LoadTypeSystem{name: "QtQuickTest";         generate: true; unless: "QTJAMBI_NO_QUICKTEST"}
     LoadTypeSystem{name: "QtQuickControls2";    generate: true; unless: "QTJAMBI_NO_QUICKCONTROLS2"}
     LoadTypeSystem{name: "QtQuickWidgets";      generate: true; unless: "QTJAMBI_NO_QUICKWIDGETS"}
-    LoadTypeSystem{name: "QtMacExtras";         generate: true; unless: "QTJAMBI_NO_MACEXTRAS";        until: 5}
-    LoadTypeSystem{name: "QtWinExtras";         generate: true; unless: "QTJAMBI_NO_WINEXTRAS";        until: 5}
-    LoadTypeSystem{name: "QtX11Extras";         generate: true; unless: "QTJAMBI_NO_X11EXTRAS";        until: 5}
     LoadTypeSystem{name: "QtSerialPort";        generate: true; unless: "QTJAMBI_NO_SERIALPORT"}
     LoadTypeSystem{name: "QtSerialBus";         generate: true; unless: "QTJAMBI_NO_SERIALBUS"}
-    LoadTypeSystem{name: "QtScript";            generate: true; unless: "QTJAMBI_NO_SCRIPT";           until: 5}
-    LoadTypeSystem{name: "QtScriptTools";       generate: true; unless: "QTJAMBI_NO_SCRIPTTOOLS";      until: 5}
     LoadTypeSystem{name: "QtMultimedia";        generate: true; unless: "QTJAMBI_NO_MULTIMEDIA"}
     LoadTypeSystem{name: "QtPrintSupport";      generate: true; unless: "QTJAMBI_NO_PRINTSUPPORT"}
     LoadTypeSystem{name: "QtMultimediaWidgets"; generate: true; unless: "QTJAMBI_NO_MULTIMEDIAWIDGETS"}
@@ -77,12 +72,10 @@ TypeSystem{
     LoadTypeSystem{name: "QtWebSockets";        generate: true; unless: "QTJAMBI_NO_WEBSOCKETS"}
     LoadTypeSystem{name: "QtWebChannel";        generate: true; unless: "QTJAMBI_NO_WEBCHANNEL"}
     LoadTypeSystem{name: "QtWebChannelQuick";   generate: true; unless: "QTJAMBI_NO_WEBCHANNELQUICK";  since: 6.6}
-    LoadTypeSystem{name: "QtWebEngine";         generate: true; unless: "QTJAMBI_NO_WEBENGINE";        until: 5}
     LoadTypeSystem{name: "QtWebEngineQuick";    generate: true; unless: "QTJAMBI_NO_WEBENGINEQUICK";   since: 6}
     LoadTypeSystem{name: "QtWebEngineWidgets";  generate: true; unless: "QTJAMBI_NO_WEBENGINEWIDGETS"}
     LoadTypeSystem{name: "QtWebEngineCore";     generate: true; unless: "QTJAMBI_NO_WEBENGINECORE"}
     LoadTypeSystem{name: "QtWebView";           generate: true; unless: "QTJAMBI_NO_WEBVIEW"}
-    LoadTypeSystem{name: "QtGamepad";           generate: true; unless: "QTJAMBI_NO_GAMEPAD"}
     LoadTypeSystem{name: "QtRemoteObjects";     generate: true; unless: "QTJAMBI_NO_REMOTEOBJECTS"}
     LoadTypeSystem{name: "QtScxml";             generate: true; unless: "QTJAMBI_NO_SCXML";            since: [5, 11]}
     LoadTypeSystem{name: "QtBluetooth";         generate: true; unless: "QTJAMBI_NO_BLUETOOTH";        since: [5, 11]}

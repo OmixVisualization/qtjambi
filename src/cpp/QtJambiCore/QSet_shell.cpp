@@ -29,6 +29,7 @@
 
 #include <QtCore/qcompilerdetection.h>
 QT_WARNING_DISABLE_DEPRECATED
+#include "pch_p.h"
 #include <QtCore/QDataStream>
 #include <QtCore/QDebug>
 #include <QtJambi/QtJambiAPI>
@@ -489,7 +490,7 @@ extern "C" JNIEXPORT jint JNICALL Java_io_qt_core_QSet_hashCode
         containerName += containerAccess->elementMetaType().name();
         containerName += ">";
         QMetaType metaType(containerAccess->registerContainer(containerName));
-        hash_type h = CoreAPI::computeHash(metaType, container.first);
+        size_t h = CoreAPI::computeHash(metaType, container.first);
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
         result = jint(quint64(h) ^ quint64(h) >> 32);
 #else

@@ -39,21 +39,21 @@ namespace QtJambiPrivate {
     template<> struct supports_qHash<QBluetoothServiceInfo::Sequence> : supports_qHash<QList<QVariant>>{};
 }
 
-hash_type qHash(const QLowEnergyCharacteristicData &value, hash_type seed = 0);
+size_t qHash(const QLowEnergyCharacteristicData &value, size_t seed = 0);
 
-inline hash_type qHash(const QBluetoothUuid &value, hash_type seed = 0)
+inline size_t qHash(const QBluetoothUuid &value, size_t seed = 0)
 {
     return qHash(value.toByteArray(), seed);
 }
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 6, 0)
-inline hash_type qHash(const QBluetoothAddress &value, hash_type seed = 0)
+inline size_t qHash(const QBluetoothAddress &value, size_t seed = 0)
 {
     return qHash(value.toString(), seed);
 }
 #endif
 
-inline hash_type qHash(const QBluetoothDeviceInfo &value, hash_type seed = 0)
+inline size_t qHash(const QBluetoothDeviceInfo &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -71,16 +71,12 @@ inline hash_type qHash(const QBluetoothDeviceInfo &value, hash_type seed = 0)
     seed = hash(seed, value.majorDeviceClass());
     seed = hash(seed, value.minorDeviceClass());
     seed = hash(seed, value.coreConfigurations());
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    seed = hash(seed, value.serviceUuidsCompleteness());
-#else
     seed = hash(seed, value.manufacturerData());
     seed = hash(seed, value.coreConfigurations());
-#endif
     return seed;
 }
 
-inline hash_type qHash(const QBluetoothHostInfo &value, hash_type seed = 0)
+inline size_t qHash(const QBluetoothHostInfo &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -92,7 +88,7 @@ inline hash_type qHash(const QBluetoothHostInfo &value, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QLowEnergyDescriptor &value, hash_type seed = 0)
+inline size_t qHash(const QLowEnergyDescriptor &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -103,14 +99,11 @@ inline hash_type qHash(const QLowEnergyDescriptor &value, hash_type seed = 0)
     seed = hash(seed, value.type());
     seed = hash(seed, value.uuid());
     seed = hash(seed, value.value());
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    seed = hash(seed, value.handle());
-#endif
     seed = hash(seed, value.isValid());
     return seed;
 }
 
-inline hash_type qHash(const QLowEnergyAdvertisingData &value, hash_type seed = 0)
+inline size_t qHash(const QLowEnergyAdvertisingData &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -128,7 +121,7 @@ inline hash_type qHash(const QLowEnergyAdvertisingData &value, hash_type seed = 
     return seed;
 }
 
-inline hash_type qHash(const QLowEnergyServiceData &value, hash_type seed = 0)
+inline size_t qHash(const QLowEnergyServiceData &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -143,14 +136,7 @@ inline hash_type qHash(const QLowEnergyServiceData &value, hash_type seed = 0)
     return seed;
 }
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-inline hash_type qHash(const QBluetoothTransferRequest &value, hash_type seed = 0)
-{
-    return qHash(value.address(), seed);
-}
-#endif
-
-inline hash_type qHash(const QLowEnergyAdvertisingParameters::AddressInfo &value, hash_type seed = 0)
+inline size_t qHash(const QLowEnergyAdvertisingParameters::AddressInfo &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -162,7 +148,7 @@ inline hash_type qHash(const QLowEnergyAdvertisingParameters::AddressInfo &value
     return seed;
 }
 
-inline hash_type qHash(const QLowEnergyAdvertisingParameters &value, hash_type seed = 0)
+inline size_t qHash(const QLowEnergyAdvertisingParameters &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -177,7 +163,7 @@ inline hash_type qHash(const QLowEnergyAdvertisingParameters &value, hash_type s
     return seed;
 }
 
-inline hash_type qHash(const QLowEnergyDescriptorData &value, hash_type seed = 0)
+inline size_t qHash(const QLowEnergyDescriptorData &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -194,7 +180,7 @@ inline hash_type qHash(const QLowEnergyDescriptorData &value, hash_type seed = 0
     return seed;
 }
 
-inline hash_type qHash(const QLowEnergyCharacteristicData &value, hash_type seed)
+inline size_t qHash(const QLowEnergyCharacteristicData &value, size_t seed)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -213,7 +199,7 @@ inline hash_type qHash(const QLowEnergyCharacteristicData &value, hash_type seed
     return seed;
 }
 
-inline hash_type qHash(const QLowEnergyCharacteristic &value, hash_type seed = 0)
+inline size_t qHash(const QLowEnergyCharacteristic &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -225,15 +211,11 @@ inline hash_type qHash(const QLowEnergyCharacteristic &value, hash_type seed = 0
     seed = hash(seed, int(value.properties()));
     seed = hash(seed, value.isValid());
     seed = hash(seed, value.descriptors());
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    seed = hash(seed, value.handle());
-#else
     seed = hash(seed, value.clientCharacteristicConfiguration());
-#endif
     return seed;
 }
 
-inline hash_type qHash(const QLowEnergyConnectionParameters &value, hash_type seed = 0)
+inline size_t qHash(const QLowEnergyConnectionParameters &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -247,7 +229,7 @@ inline hash_type qHash(const QLowEnergyConnectionParameters &value, hash_type se
     return seed;
 }
 
-inline hash_type qHash(const QBluetoothServiceInfo &value, hash_type seed = 0)
+inline size_t qHash(const QBluetoothServiceInfo &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;

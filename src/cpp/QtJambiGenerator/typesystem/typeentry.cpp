@@ -83,6 +83,7 @@ ComplexTypeEntry *ComplexTypeEntry::copy() const {
     centry->setFunctionModifications(functionModifications());
     centry->setFieldModifications(fieldModifications());
     centry->setDefaultSuperclass(defaultSuperclass());
+    centry->setPrecompiledHeader(precompiledHeader());
     centry->setCodeSnips(codeSnips());
     centry->setTargetLangPackage(javaPackage());
     centry->setTargetTypeSystem(targetTypeSystem());
@@ -296,6 +297,13 @@ bool ComplexTypeEntry::isQAction() const {
 }
 void ComplexTypeEntry::setQAction(bool qw) {
     m_attributes.setFlag(IsQAction, qw);
+}
+
+bool ComplexTypeEntry::isQFuturing() const {
+    return m_attributes.testFlag(IsQFuturing);
+}
+void ComplexTypeEntry::setQFuturing(bool qw) {
+    m_attributes.setFlag(IsQFuturing, qw);
 }
 
 bool ComplexTypeEntry::isQMediaControl() const {
@@ -710,6 +718,36 @@ void ComplexTypeEntry::addImplicitCast(const QString& cast){
     m_implicitCasts.append(cast);
 }
 
+FunctionModificationList ComplexTypeEntry::functionModifications(const QString &signature) const {
+    FunctionModificationList lst;
+    for (const FunctionModification& mod : m_function_mods) {
+        if (mod.signature == signature || (!mod.originalSignature.isEmpty() && mod.originalSignature == signature)) {
+            lst << mod;
+        }
+    }
+    return lst;
+}
+
+const QString &ComplexTypeEntry::precompiledHeader() const{
+    return m_precompiledHeader;
+}
+
+void ComplexTypeEntry::setPrecompiledHeader(const QString &_precompiledHeader){
+    m_precompiledHeader = _precompiledHeader;
+}
+
+bool ComplexTypeEntry::isAddTextStreamFunctions() const
+{
+    return m_addTextStreamFunctions;
+}
+
+void ComplexTypeEntry::setAddTextStreamFunctions(bool newAddTextStreamFunctions)
+{
+    if (m_addTextStreamFunctions == newAddTextStreamFunctions)
+        return;
+    m_addTextStreamFunctions = newAddTextStreamFunctions;
+}
+
 QString PrimitiveTypeEntry::javaObjectName() const {
     static QMap<QString, QString> table;
     if (table.isEmpty()) {
@@ -821,6 +859,14 @@ QString FunctionalTypeEntry::javaQualifier() const {
         return m_qualifier_type->targetLangName();
     }else
         return m_qualifier;
+}
+
+const QString &FunctionalTypeEntry::precompiledHeader() const{
+    return m_precompiledHeader;
+}
+
+void FunctionalTypeEntry::setPrecompiledHeader(const QString &_precompiledHeader){
+    m_precompiledHeader = _precompiledHeader;
 }
 
 QString EnumTypeEntry::javaPackage() const {
@@ -1010,6 +1056,7 @@ IteratorTypeEntry* IteratorTypeEntry::clone(const ComplexTypeEntry* containerTyp
 //    entry->setTypeFlags(typeFlags());
 //    entry->setPreferredConversion(preferredConversion());
     entry->setDefaultSuperclass(defaultSuperclass());
+    entry->setPrecompiledHeader(precompiledHeader());
     entry->setImplements(implements());
 //    entry->setPolymorphicIdValue(polymorphicIdValue());
 //    entry->setExpensePolicy(expensePolicy());
@@ -1062,16 +1109,6 @@ const QString &TypeSystemTypeEntry::targetName() const
 void TypeSystemTypeEntry::setTargetName(const QString &newTargetName)
 {
     m_targetName = newTargetName;
-}
-
-FunctionModificationList ComplexTypeEntry::functionModifications(const QString &signature) const {
-    FunctionModificationList lst;
-    for (const FunctionModification& mod : m_function_mods) {
-        if (mod.signature == signature || (!mod.originalSignature.isEmpty() && mod.originalSignature == signature)) {
-            lst << mod;
-        }
-    }
-    return lst;
 }
 
 TypeSystemTypeEntry::TypeSystemTypeEntry(const QString &name)

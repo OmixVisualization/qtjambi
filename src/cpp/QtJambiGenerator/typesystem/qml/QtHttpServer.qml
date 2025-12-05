@@ -116,7 +116,7 @@ TypeSystem{
                                   "for(ushort s : %in){\n"+
                                   "tmp << int(s);\n"+
                                   "}\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, tmp);"}
+                                  "%out = qtjambi_cast<jobject>(%env, std::move(tmp));"}
                 }
             }
             until: 6.7
@@ -134,7 +134,7 @@ TypeSystem{
                                   "for(ushort s : %in){\n"+
                                   "tmp << int(s);\n"+
                                   "}\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, tmp);"}
+                                  "%out = qtjambi_cast<jobject>(%env, std::move(tmp));"}
                 }
             }
             since: 6.8
@@ -537,6 +537,15 @@ auto %out = [slot = JObjectWrapper(%env, %in)](const QHttpServerRequest & reques
             ModifyArgument{
                 index: 1
                 AddImplicitCall{type: "java.lang.@NonNull String"}
+            }
+        }
+        ModifyFunction{
+            signature: "localPort()const"
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "int"
+                }
             }
         }
     }

@@ -33,14 +33,7 @@
 #include <QtTextToSpeech/QtTextToSpeech>
 #include <QtJambi/Global>
 
-#if !defined(QTJAMBI_GENERATOR_RUNNING) && QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-inline bool operator==(const QVoice& lhs, const QVoice& rhs)
-{
-    return const_cast<QVoice&>(lhs) == rhs;
-}
-#endif
-
-inline hash_type qHash(const QVoice &value, hash_type seed = 0)
+inline size_t qHash(const QVoice &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;

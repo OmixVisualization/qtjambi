@@ -75,27 +75,8 @@ inline bool operator==(const QChannel &lhs, const QChannel &rhs) Q_DECL_NOTHROW
     return false;
 }
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-inline bool operator==(const QAnimationClipData &lhs, const QAnimationClipData &rhs) Q_DECL_NOTHROW
-{
-    if(lhs.name() == rhs.name()
-            && lhs.channelCount() == rhs.channelCount()){
-        QAnimationClipData::const_iterator liter = lhs.begin();
-        QAnimationClipData::const_iterator riter = rhs.begin();
-        QAnimationClipData::const_iterator lend = lhs.end();
-        QAnimationClipData::const_iterator rend = rhs.end();
-        for(; liter!=lend && riter!=rend; ++liter, ++riter){
-            if(!(*liter==*riter))
-                return false;
-        }
-        return true;
-    }
-    return false;
-}
-#endif
-
 #ifndef QTJAMBI_GENERATOR_RUNNING
-inline hash_type qHash(const QKeyFrame &value, hash_type seed = 0)
+inline size_t qHash(const QKeyFrame &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -109,7 +90,7 @@ inline hash_type qHash(const QKeyFrame &value, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QChannelComponent &value, hash_type seed = 0)
+inline size_t qHash(const QChannelComponent &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombineCommutative hash;
@@ -124,14 +105,14 @@ inline hash_type qHash(const QChannelComponent &value, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QChannel &value, hash_type seed = 0)
+inline size_t qHash(const QChannel &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
 #else
     QtPrivate::QHashCombine hash(seed);
 #endif
-    hash_type hashCode = seed;
+    size_t hashCode = seed;
     seed = hash(seed, value.name());
     hashCode = hashCode * 31 + ::qHash(value.channelComponentCount());
     for(const QChannelComponent & c : value){
@@ -140,7 +121,7 @@ inline hash_type qHash(const QChannel &value, hash_type seed = 0)
     return hashCode;
 }
 
-inline hash_type qHash(const QAnimationClipData &value, hash_type seed = 0)
+inline size_t qHash(const QAnimationClipData &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombineCommutative hash;
@@ -160,10 +141,10 @@ inline hash_type qHash(const QAnimationClipData &value, hash_type seed = 0)
 }
 
 #ifdef QTJAMBI_GENERATOR_RUNNING
-hash_type qHash(const Qt3DAnimation::QKeyFrame &value, hash_type seed = 0);
-hash_type qHash(const Qt3DAnimation::QChannelComponent &value, hash_type seed = 0);
-hash_type qHash(const Qt3DAnimation::QChannel &value, hash_type seed = 0);
-hash_type qHash(const Qt3DAnimation::QAnimationClipData &value, hash_type seed = 0);
+size_t qHash(const Qt3DAnimation::QKeyFrame &value, size_t seed = 0);
+size_t qHash(const Qt3DAnimation::QChannelComponent &value, size_t seed = 0);
+size_t qHash(const Qt3DAnimation::QChannel &value, size_t seed = 0);
+size_t qHash(const Qt3DAnimation::QAnimationClipData &value, size_t seed = 0);
 #endif
 
 #endif // HASHES_H

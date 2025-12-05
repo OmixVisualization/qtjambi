@@ -29,13 +29,7 @@
 **
 ****************************************************************************/
 
-#include "javaarrays.h"
-#include "java_p.h"
-#include "utils_p.h"
-#include "jobjectwrapper.h"
-#if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
-#include <QtCore/QSpan>
-#endif
+#include "pch_p.h"
 
 #define PointerArrayINIT(Type,type)\
      : PointerArray(env, pointer, env->New##Type##Array(pointer ? size : 0), pointer ? size : 0) {\
@@ -99,102 +93,105 @@ jsize AbstractPersistentPointerArray::size() const{
 
 CharPointerArray::CharPointerArray(JNIEnv *env, char* pointer, jsize size) PointerArrayINIT(Byte,byte)
 
-    CharPointerArray::~CharPointerArray() PointerArrayDEL(Byte,byte)
+CharPointerArray::~CharPointerArray() PointerArrayDEL(Byte,byte)
 
-    WCharPointerArray::WCharPointerArray(JNIEnv *env, ushort* pointer, jsize size) PointerArrayINIT(Char,char)
+WCharPointerArray::WCharPointerArray(JNIEnv *env, ushort* pointer, jsize size) PointerArrayINIT(Char,char)
 
-    WCharPointerArray::~WCharPointerArray() PointerArrayDEL(Char,char)
+WCharPointerArray::~WCharPointerArray() PointerArrayDEL(Char,char)
 
-    QCharPointerArray::QCharPointerArray(JNIEnv *env, QChar* pointer, jsize size) PointerArrayINIT(Char,char)
+QCharPointerArray::QCharPointerArray(JNIEnv *env, QChar* pointer, jsize size) PointerArrayINIT(Char,char)
 
-    QCharPointerArray::~QCharPointerArray() PointerArrayDEL(Char,char)
+QCharPointerArray::~QCharPointerArray() PointerArrayDEL(Char,char)
 
-    DoublePointerArray::DoublePointerArray(JNIEnv *env, double* pointer, jsize size) PointerArrayINIT(Double,double)
+DoublePointerArray::DoublePointerArray(JNIEnv *env, double* pointer, jsize size) PointerArrayINIT(Double,double)
 
-    DoublePointerArray::~DoublePointerArray() PointerArrayDEL(Double,double)
+DoublePointerArray::~DoublePointerArray() PointerArrayDEL(Double,double)
 
-    FloatPointerArray::FloatPointerArray(JNIEnv *env, float* pointer, jsize size) PointerArrayINIT(Float,float)
+FloatPointerArray::FloatPointerArray(JNIEnv *env, float* pointer, jsize size) PointerArrayINIT(Float,float)
 
-    FloatPointerArray::~FloatPointerArray() PointerArrayDEL(Float,float)
+FloatPointerArray::~FloatPointerArray() PointerArrayDEL(Float,float)
 
-    Int8PointerArray::Int8PointerArray(JNIEnv *env, qint8* pointer, jsize size) PointerArrayINIT(Byte,byte)
+Int8PointerArray::Int8PointerArray(JNIEnv *env, qint8* pointer, jsize size) PointerArrayINIT(Byte,byte)
 
-    Int8PointerArray::~Int8PointerArray() PointerArrayDEL(Byte,byte)
+Int8PointerArray::~Int8PointerArray() PointerArrayDEL(Byte,byte)
 
-    Int16PointerArray::Int16PointerArray(JNIEnv *env, qint16* pointer, jsize size) PointerArrayINIT(Short,short)
+Int16PointerArray::Int16PointerArray(JNIEnv *env, qint16* pointer, jsize size) PointerArrayINIT(Short,short)
 
-    Int16PointerArray::~Int16PointerArray() PointerArrayDEL(Short,short)
+Int16PointerArray::~Int16PointerArray() PointerArrayDEL(Short,short)
 
-    Int32PointerArray::Int32PointerArray(JNIEnv *env, qint32* pointer, jsize size) PointerArrayINIT(Int,int)
+Int32PointerArray::Int32PointerArray(JNIEnv *env, qint32* pointer, jsize size) PointerArrayINIT(Int,int)
 
-    Int32PointerArray::~Int32PointerArray() PointerArrayDEL(Int,int)
+Int32PointerArray::~Int32PointerArray() PointerArrayDEL(Int,int)
 
-    Int64PointerArray::Int64PointerArray(JNIEnv *env, qint64* pointer, jsize size) PointerArrayINIT(Long,long)
+Int64PointerArray::Int64PointerArray(JNIEnv *env, qint64* pointer, jsize size) PointerArrayINIT(Long,long)
 
-    Int64PointerArray::~Int64PointerArray() PointerArrayDEL(Long,long)
+Int64PointerArray::~Int64PointerArray() PointerArrayDEL(Long,long)
 
-    UInt8PointerArray::UInt8PointerArray(JNIEnv *env, quint8* pointer, jsize size) PointerArrayINIT(Byte,byte)
+UInt8PointerArray::UInt8PointerArray(JNIEnv *env, quint8* pointer, jsize size) PointerArrayINIT(Byte,byte)
 
-    UInt8PointerArray::~UInt8PointerArray() PointerArrayDEL(Byte,byte)
+UInt8PointerArray::~UInt8PointerArray() PointerArrayDEL(Byte,byte)
 
-    UInt16PointerArray::UInt16PointerArray(JNIEnv *env, quint16* pointer, jsize size) PointerArrayINIT(Short,short)
+UInt16PointerArray::UInt16PointerArray(JNIEnv *env, quint16* pointer, jsize size) PointerArrayINIT(Short,short)
 
-    UInt16PointerArray::~UInt16PointerArray() PointerArrayDEL(Short,short)
+UInt16PointerArray::~UInt16PointerArray() PointerArrayDEL(Short,short)
 
-    UInt32PointerArray::UInt32PointerArray(JNIEnv *env, quint32* pointer, jsize size) PointerArrayINIT(Int,int)
+UInt32PointerArray::UInt32PointerArray(JNIEnv *env, quint32* pointer, jsize size) PointerArrayINIT(Int,int)
 
-    UInt32PointerArray::~UInt32PointerArray() PointerArrayDEL(Int,int)
+UInt32PointerArray::~UInt32PointerArray() PointerArrayDEL(Int,int)
 
-    UInt64PointerArray::UInt64PointerArray(JNIEnv *env, quint64* pointer, jsize size) PointerArrayINIT(Long,long)
+UInt64PointerArray::UInt64PointerArray(JNIEnv *env, quint64* pointer, jsize size) PointerArrayINIT(Long,long)
 
-    UInt64PointerArray::~UInt64PointerArray() PointerArrayDEL(Long,long)
+UInt64PointerArray::~UInt64PointerArray() PointerArrayDEL(Long,long)
 
-    BoolPointerArray::BoolPointerArray(JNIEnv *env, bool* pointer, jsize size) PointerArrayINIT(Boolean,boolean)
+BoolPointerArray::BoolPointerArray(JNIEnv *env, bool* pointer, jsize size) PointerArrayINIT(Boolean,boolean)
 
-    BoolPointerArray::~BoolPointerArray() PointerArrayDEL(Boolean,boolean)
+BoolPointerArray::~BoolPointerArray() PointerArrayDEL(Boolean,boolean)
 
-    Bool2PointerArray::Bool2PointerArray(JNIEnv *env, uchar* pointer, jsize size) PointerArrayINIT(Boolean,boolean)
+Bool2PointerArray::Bool2PointerArray(JNIEnv *env, uchar* pointer, jsize size) PointerArrayINIT(Boolean,boolean)
 
-    Bool2PointerArray::~Bool2PointerArray() PointerArrayDEL(Boolean,boolean)
+Bool2PointerArray::~Bool2PointerArray() PointerArrayDEL(Boolean,boolean)
 
-    ConstCharPointerArray::ConstCharPointerArray(JNIEnv *env, const char* pointer, jsize size) PointerArrayINIT(Byte,byte)
+ConstCharPointerArray::ConstCharPointerArray(JNIEnv *env, const char* pointer, jsize size) PointerArrayINIT(Byte,byte)
 
-    ConstInt8PointerArray::ConstInt8PointerArray(JNIEnv *env, const qint8* pointer, jsize size) PointerArrayINIT(Byte,byte)
+ConstInt8PointerArray::ConstInt8PointerArray(JNIEnv *env, const qint8* pointer, jsize size) PointerArrayINIT(Byte,byte)
 
-    ConstInt16PointerArray::ConstInt16PointerArray(JNIEnv *env, const qint16* pointer, jsize size) PointerArrayINIT(Short,short)
+ConstInt16PointerArray::ConstInt16PointerArray(JNIEnv *env, const qint16* pointer, jsize size) PointerArrayINIT(Short,short)
 
-    ConstInt32PointerArray::ConstInt32PointerArray(JNIEnv *env, const qint32* pointer, jsize size) PointerArrayINIT(Int,int)
+ConstInt32PointerArray::ConstInt32PointerArray(JNIEnv *env, const qint32* pointer, jsize size) PointerArrayINIT(Int,int)
 
-    ConstInt64PointerArray::ConstInt64PointerArray(JNIEnv *env, const qint64* pointer, jsize size) PointerArrayINIT(Long,long)
+ConstInt64PointerArray::ConstInt64PointerArray(JNIEnv *env, const qint64* pointer, jsize size) PointerArrayINIT(Long,long)
 
-    ConstUInt8PointerArray::ConstUInt8PointerArray(JNIEnv *env, const quint8* pointer, jsize size) PointerArrayINIT(Byte,byte)
+ConstUInt8PointerArray::ConstUInt8PointerArray(JNIEnv *env, const quint8* pointer, jsize size) PointerArrayINIT(Byte,byte)
 
-    ConstUInt16PointerArray::ConstUInt16PointerArray(JNIEnv *env, const quint16* pointer, jsize size) PointerArrayINIT(Short,short)
+ConstUInt16PointerArray::ConstUInt16PointerArray(JNIEnv *env, const quint16* pointer, jsize size) PointerArrayINIT(Short,short)
 
-    ConstUInt32PointerArray::ConstUInt32PointerArray(JNIEnv *env, const quint32* pointer, jsize size) PointerArrayINIT(Int,int)
+ConstUInt32PointerArray::ConstUInt32PointerArray(JNIEnv *env, const quint32* pointer, jsize size) PointerArrayINIT(Int,int)
 
-    ConstUInt64PointerArray::ConstUInt64PointerArray(JNIEnv *env, const quint64* pointer, jsize size) PointerArrayINIT(Long,long)
+ConstUInt64PointerArray::ConstUInt64PointerArray(JNIEnv *env, const quint64* pointer, jsize size) PointerArrayINIT(Long,long)
 
-    ConstBoolPointerArray::ConstBoolPointerArray(JNIEnv *env, const bool* pointer, jsize size) PointerArrayINIT(Boolean,boolean)
+ConstBoolPointerArray::ConstBoolPointerArray(JNIEnv *env, const bool* pointer, jsize size) PointerArrayINIT(Boolean,boolean)
 
-    ConstBool2PointerArray::ConstBool2PointerArray(JNIEnv *env, const uchar* pointer, jsize size) PointerArrayINIT(Boolean,boolean)
+ConstBool2PointerArray::ConstBool2PointerArray(JNIEnv *env, const uchar* pointer, jsize size) PointerArrayINIT(Boolean,boolean)
 
-    ConstWCharPointerArray::ConstWCharPointerArray(JNIEnv *env, const ushort* pointer, jsize size) PointerArrayINIT(Char,char)
+ConstWCharPointerArray::ConstWCharPointerArray(JNIEnv *env, const ushort* pointer, jsize size) PointerArrayINIT(Char,char)
 
-    ConstDoublePointerArray::ConstDoublePointerArray(JNIEnv *env, const double* pointer, jsize size) PointerArrayINIT(Double,double)
+ConstDoublePointerArray::ConstDoublePointerArray(JNIEnv *env, const double* pointer, jsize size) PointerArrayINIT(Double,double)
 
-    ConstFloatPointerArray::ConstFloatPointerArray(JNIEnv *env, const float* pointer, jsize size) PointerArrayINIT(Float,float)
+ConstFloatPointerArray::ConstFloatPointerArray(JNIEnv *env, const float* pointer, jsize size) PointerArrayINIT(Float,float)
 
-    ConstQCharPointerArray::ConstQCharPointerArray(JNIEnv *env, const QChar* pointer, jsize size) PointerArrayINIT(Char,char)
+ConstQCharPointerArray::ConstQCharPointerArray(JNIEnv *env, const QChar* pointer, jsize size) PointerArrayINIT(Char,char)
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-    Char16PointerArray::Char16PointerArray(JNIEnv *env, char16_t* pointer, jsize size) PointerArrayINIT(Char,char)
-    Char16PointerArray::~Char16PointerArray() PointerArrayDEL(Char,char)
-    ConstChar16PointerArray::ConstChar16PointerArray(JNIEnv *env, const char16_t* pointer, jsize size) PointerArrayINIT(Char,char)
-    Char32PointerArray::Char32PointerArray(JNIEnv *env, char32_t* pointer, jsize size) PointerArrayINIT(Int,int)
-    Char32PointerArray::~Char32PointerArray() PointerArrayDEL(Int,int)
-    ConstChar32PointerArray::ConstChar32PointerArray(JNIEnv *env, const char32_t* pointer, jsize size) PointerArrayINIT(Int,int)
-#endif
+Char16PointerArray::Char16PointerArray(JNIEnv *env, char16_t* pointer, jsize size) PointerArrayINIT(Char,char)
+
+Char16PointerArray::~Char16PointerArray() PointerArrayDEL(Char,char)
+
+ConstChar16PointerArray::ConstChar16PointerArray(JNIEnv *env, const char16_t* pointer, jsize size) PointerArrayINIT(Char,char)
+
+Char32PointerArray::Char32PointerArray(JNIEnv *env, char32_t* pointer, jsize size) PointerArrayINIT(Int,int)
+
+Char32PointerArray::~Char32PointerArray() PointerArrayDEL(Int,int)
+
+ConstChar32PointerArray::ConstChar32PointerArray(JNIEnv *env, const char32_t* pointer, jsize size) PointerArrayINIT(Int,int)
 
 #undef PointerArrayINIT
 #undef PointerArrayDEL

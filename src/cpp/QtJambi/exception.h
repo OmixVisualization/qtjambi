@@ -36,9 +36,7 @@
 #include <QtCore/QSharedDataPointer>
 #include <QtCore/QThread>
 #include "global.h"
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #include <QtCore/QAnyStringView>
-#endif
 
 #ifdef QT_DEBUG
 #ifndef QTJAMBI_STACKTRACE
@@ -92,24 +90,6 @@ public:
     static void check(JNIEnv* env);
 #endif
     static void check(JNIEnv* env QTJAMBI_STACKTRACEINFO_DECL );
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    Q_NORETURN static void raiseIllegalArgumentException(JNIEnv* env, const char *message QTJAMBI_STACKTRACEINFO_DECL );
-    Q_NORETURN static void raiseIllegalArgumentException(JNIEnv* env, QString&& message QTJAMBI_STACKTRACEINFO_DECL );
-    Q_NORETURN static void raiseNullPointerException(JNIEnv* env, const char *message QTJAMBI_STACKTRACEINFO_DECL );
-    Q_NORETURN static void raiseNullPointerException(JNIEnv* env, QString&& message QTJAMBI_STACKTRACEINFO_DECL );
-    Q_NORETURN static void raiseQNoImplementationException(JNIEnv* env, const char *message QTJAMBI_STACKTRACEINFO_DECL );
-    Q_NORETURN static void raiseQNoImplementationException(JNIEnv* env, QString&& message QTJAMBI_STACKTRACEINFO_DECL );
-    Q_NORETURN static void raiseError(JNIEnv* env, const char *message QTJAMBI_STACKTRACEINFO_DECL );
-    Q_NORETURN static void raiseError(JNIEnv* env, QString&& message QTJAMBI_STACKTRACEINFO_DECL );
-    Q_NORETURN static void raiseRuntimeException(JNIEnv* env, const char *message QTJAMBI_STACKTRACEINFO_DECL );
-    Q_NORETURN static void raiseRuntimeException(JNIEnv* env, QString&& message QTJAMBI_STACKTRACEINFO_DECL );
-    Q_NORETURN static void raiseUnsupportedOperationException(JNIEnv* env, const char *message QTJAMBI_STACKTRACEINFO_DECL );
-    Q_NORETURN static void raiseUnsupportedOperationException(JNIEnv* env, QString&& message QTJAMBI_STACKTRACEINFO_DECL );
-    Q_NORETURN static void raiseIndexOutOfBoundsException(JNIEnv* env, const char *message QTJAMBI_STACKTRACEINFO_DECL );
-    Q_NORETURN static void raiseIndexOutOfBoundsException(JNIEnv* env, QString&& message QTJAMBI_STACKTRACEINFO_DECL );
-    Q_NORETURN static void raiseQThreadAffinityException(JNIEnv* env, const char *message QTJAMBI_STACKTRACEINFO_DECL , jobject t1, QThread* t2, QThread* t3);
-    Q_NORETURN static void raiseQThreadAffinityException(JNIEnv* env, QString&& message QTJAMBI_STACKTRACEINFO_DECL , jobject t1, QThread* t2, QThread* t3);
-#else
     Q_NORETURN static void raiseIllegalArgumentException(JNIEnv* env, QAnyStringView message QTJAMBI_STACKTRACEINFO_DECL );
     Q_NORETURN static void raiseNullPointerException(JNIEnv* env, QAnyStringView message QTJAMBI_STACKTRACEINFO_DECL );
     Q_NORETURN static void raiseQNoImplementationException(JNIEnv* env, QAnyStringView message QTJAMBI_STACKTRACEINFO_DECL );
@@ -118,7 +98,6 @@ public:
     Q_NORETURN static void raiseUnsupportedOperationException(JNIEnv* env, QAnyStringView message QTJAMBI_STACKTRACEINFO_DECL );
     Q_NORETURN static void raiseIndexOutOfBoundsException(JNIEnv* env, QAnyStringView message QTJAMBI_STACKTRACEINFO_DECL );
     Q_NORETURN static void raiseQThreadAffinityException(JNIEnv* env, QAnyStringView message QTJAMBI_STACKTRACEINFO_DECL , jobject t1, QThread* t2, QThread* t3);
-#endif
 private:
     void update(JNIEnv *env);
     QExplicitlySharedDataPointer<JavaExceptionPrivate> p;

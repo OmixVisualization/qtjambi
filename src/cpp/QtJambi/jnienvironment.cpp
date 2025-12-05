@@ -29,16 +29,7 @@
 **
 ****************************************************************************/
 
-#include <QtCore/QObject>
-#include <QtCore/QAbstractEventDispatcher>
-#include <thread>
-#include <QtCore/QSemaphore>
-#include "jnienvironment.h"
-#include "java_p.h"
-#include "coreapi.h"
-#include "threadutils_p.h"
-#include "qtjambilink_p.h"
-#include "qtjambi_cast.h"
+#include "pch_p.h"
 
 #ifndef JNI_VERSION_1_8
 #define JNI_VERSION_1_8 JNI_VERSION_1_6
@@ -378,11 +369,7 @@ void doInPurgeThread(JNIInvokable &&fun){
         instance->push(std::move(fun));
 }
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#define MutexLocker QMutexLocker
-#else
 #define MutexLocker QMutexLocker<QMutex>
-#endif
 
 struct ThreadDetacher : public QtJambiObjectData {
     EventDispatcherCheck::Data* m_threadData;

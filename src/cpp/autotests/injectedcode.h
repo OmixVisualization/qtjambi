@@ -121,46 +121,6 @@ public:
 };
 #endif
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-class TextCodecSubclass: public QTextCodec
-{
-
-
-public:
-    QString callToUnicode(const QByteArray &ba, ConverterState *state) {
-        return convertToUnicode(ba.data(), ba.size(), state);
-    }
-
-    QByteArray callFromUnicode(const QString &str, ConverterState *state) {
-        return convertFromUnicode(str.data(), str.length(), state);
-    }
-
-    mutable ConverterState *receivedState;
-
-protected:
-    TextCodecSubclass() : QTextCodec() {}
-    QString convertToUnicode(const char *data, int size, ConverterState *state) const {
-        receivedState = state;
-
-        QString returned;
-        for (int i=0; i<size; ++i)
-            returned += (data[i]-3);
-
-        return returned;
-    }
-
-    QByteArray convertFromUnicode(const QChar *data, int size, ConverterState *state) const {
-        receivedState = state;
-
-        QByteArray returned;
-        for (int i=0; i<size; ++i)
-            returned += QChar(data[i].unicode()+3);
-
-        return returned;
-    }
-};
-#endif
-
 class IODeviceSubclass: public QIODevice
 {
 public:
@@ -365,52 +325,6 @@ public slots:
 };
 #endif /* QTJAMBI_NO_SQL */
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-#ifndef QTJAMBI_NO_XML
-class XmlReaderSubclass: public QXmlReader
-{
-public:
-    bool callFeature(const QString &name) {
-        return feature(name, &myOk);
-    }
-
-    bool feature(const QString &name, bool *) const
-    {
-        myName = name;
-        return (name == "true");
-    }
-
-    bool myOk;
-    mutable QString myName;
-};
-
-class XmlEntityResolverSubclass: public QXmlEntityResolver
-{
-public:
-    bool resolveEntity(const QString &publicId, const QString &systemId, QXmlInputSource *&ret)
-    {
-        if (publicId == "c++") {
-            ret = new QXmlInputSource;
-            ret->setData(QString::fromLatin1("Made in C++"));
-        }
-
-        return (systemId != "error");
-    }
-
-    QXmlInputSource *callResolveEntity(const QString &publicId, const QString &systemId)
-    {
-        QXmlInputSource *ptr = 0;
-        bool error = !resolveEntity(publicId, systemId, ptr);
-
-        if (error && ptr != 0)
-            ptr->setData(ptr->data() + QString::fromLatin1(" with error"));
-
-        return ptr;
-    }
-};
-#endif // QTJAMBI_NO_XML
-#endif
-
 class AccessibleTextInterfaceSubclass: public QAccessibleTextInterface
 {
 public:
@@ -514,19 +428,6 @@ public:
 #ifndef QTJAMBI_GENERATOR_RUNNING
 
 namespace Java{
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-namespace QtXml{
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(QXmlEntityResolver$ResolvedEntity,
-                                     QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
-                                     QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_FIELD(error)
-                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(inputSource))
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(QXmlNamespaceSupport$ProcessedName,
-                                     QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(QXmlNamespaceSupport$SplitName,
-                                     QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
-}
-#endif // QT_VERSION < QT_VERSION_CHECK(6,0,0)
-
 #ifndef QTJAMBI_NO_WIDGETS
 namespace QtWidgets{
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QGraphicsItem$BlockedByModalPanelInfo,

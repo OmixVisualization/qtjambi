@@ -33,11 +33,6 @@
 #define CONTAINERS_H
 
 #include <QtCore/QtGlobal>
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-uint qHash(const std::pair<const int&,const int&>& pair);
-uint qHash(const std::pair<const float&,const double&>& pair);
-uint qHash(const std::pair<const short&,const double&>& pair);
-#endif
 
 #include <QtJambiCore/hashes.h>
 
@@ -76,11 +71,7 @@ class QMultiHash_String_int : public QMultiHash<QString, int> { };
 class QMultiHash_int_String : public QMultiHash<QString, int> { };
 class QMultiHash_String : public QMultiHash<QString, QString> { };
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#define QHASHOUT uint
-#else
 #define QHASHOUT size_t
-#endif
 
 namespace ContainerTest{
     QSet<QString> valueAt(QList<QSet<QString>>& container, int position);
@@ -115,7 +106,6 @@ namespace ContainerTest{
     qsizetype containerSize(const QVariant& variant);
     QVariant associativeValue(const QVariant& variant, const QVariant& key);
     bool associativeFind(const QVariant& variant, const QVariant& key);
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     QVariant sequentialAt(const QVariant& variant, int index);
     QVariant sequentialRemoveFirst(QVariant variant);
     QVariant sequentialRemoveLast(QVariant variant);
@@ -126,7 +116,6 @@ namespace ContainerTest{
     QVariant associativeInsertKey(QVariant variant, const QVariant& key);
     QVariant associativeSetValue(QVariant variant, const QVariant& key, const QVariant& value);
     QPair<QVariant,QVariant> associativeFindAndReplace(QVariant variant, const QVariant& key, const QVariant& value);
-#endif
 }
 
 #endif // CONTAINERS_H

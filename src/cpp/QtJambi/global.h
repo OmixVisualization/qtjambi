@@ -87,7 +87,19 @@ typedef void* (*CopyFunction)(const void *);
 
 typedef const class QObject* (*PtrOwnerFunction)(const void *);
 
-using hash_type = decltype(qHash(std::declval<char>()));
+struct SafeBool{
+    SafeBool() = delete;
+    template<typename T, typename = std::enable_if_t<!std::is_same_v<std::decay_t<T>, bool>>>
+    SafeBool(T) = delete;
+    inline SafeBool(bool _value) : value(_value){}
+    inline operator bool() const { return value; }
+    inline bool operator!() const { return !value; }
+    friend inline void swap(SafeBool& a, SafeBool& b){
+        std::swap(a.value, b.value);
+    }
+private:
+    bool value;
+};
 
 #endif // QTJAMBI_GENERATOR_RUNNING
 
@@ -102,12 +114,8 @@ using hash_type = decltype(qHash(std::declval<char>()));
 #define QTJAMBI_OVERLOADED_MACRO(MACRO, ...) QTJAMBI_VA_ARGS_EXPAND(QTJAMBI_OVERLOADED_MACRO_IMP(MACRO, QTJAMBI_VA_ARGS_COUNT(__VA_ARGS__))(__VA_ARGS__))
 #endif
 
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 #define MIN_QT6(MACRO, ...)\
 MACRO(__VA_ARGS__)
-#else
-#define MIN_QT6(...)
-#endif
 
 #if QT_VERSION >= QT_VERSION_CHECK(7,0,0)
 #define MIN_QT7(MACRO, ...)\

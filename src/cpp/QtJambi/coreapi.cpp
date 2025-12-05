@@ -27,17 +27,7 @@
 **
 ****************************************************************************/
 
-#include <QtCore/QCoreApplication>
-#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
-#include <QtCore/QSpan>
-#endif
-#include "coreapi.h"
-#include "typemanager_p.h"
-#include "qtjambilink_p.h"
-#include "qtjambi_cast.h"
-#include "qtjambimetaobject_p.h"
-#include "containeraccess_p.h"
-#include "java_p.h"
+#include "pch_p.h"
 
 #define EXCLUDE_GT_END(strg) strg //.endsWith(">") ? strg+" " : strg
 
@@ -140,7 +130,7 @@ jobject CoreAPI::convertReflectedMethodToMeta(JNIEnv * env, jlong metaObjectPoin
         int index = QtJambiMetaObject::methodFromJMethod(metaObject, env->FromReflectedMethod(reflect_method));
         QMetaMethod method = metaObject->method(index);
         if(method.isValid()){
-            return qtjambi_cast<jobject>(env, method);
+            return qtjambi_cast<jobject>(env, std::move(method));
         }else{
             env->SetObjectArrayElement(ok, 0, nullptr);
             return nullptr;
@@ -255,7 +245,7 @@ jobject invokeMetaMethodImpl(JNIEnv * env, const QMetaMethod& method,
 #endif
                 if(ok && resultPtr){
                     ok = parameterTypeInfos[0].convertInternalToExternal(env, nullptr, resultPtr, result, true);
-                    if(QMetaType(parameterTypeInfos[0].metaType()).flags() & QMetaType::IsPointer){
+                    if(parameterTypeInfos[0].metaType().flags() & QMetaType::IsPointer){
                         if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, result.l)){
                             if(!link->isQObject() || !link->qobject()->parent())
                                 link->setDefaultOwnership(env);
@@ -442,7 +432,7 @@ jobject CoreAPI::invokeMetaMethodOnGadget(JNIEnv * env, QtJambiNativeID _metaMet
 #endif
                     if(ok && resultPtr){
                         ok = parameterTypeInfos[0].convertInternalToExternal(env, nullptr, resultPtr, result, true);
-                        if(QMetaType(parameterTypeInfos[0].metaType()).flags() & QMetaType::IsPointer){
+                        if(parameterTypeInfos[0].metaType().flags() & QMetaType::IsPointer){
                             if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, result.l)){
                                 if(!link->isQObject() || !link->qobject()->parent())
                                     link->setDefaultOwnership(env);
@@ -573,7 +563,7 @@ jobject CoreAPI::readMetaPropertyOnGadget(JNIEnv *env, jobject _this, jobject ga
                 if(result)
                     return val.l;
             }else{
-                return qtjambi_cast<jobject>(env, variant);
+                return qtjambi_cast<jobject>(env, std::move(variant));
             }
         }
     }catch(const JavaException& exn){
@@ -719,6 +709,14 @@ void CoreAPI::registerDependentInterface(JNIEnv *env, jobject dependentObject, j
 void CoreAPI::registerDependentObject(JNIEnv *env, jobject dependentObject, jobject owner){
     QSharedPointer<QtJambiLink> _dependentLink = QtJambiLink::findLinkForJavaObject(env, dependentObject);
     QSharedPointer<QtJambiLink> _ownerLink = QtJambiLink::findLinkForJavaInterface(env, owner);
+    if(_dependentLink && _ownerLink){
+        _ownerLink->registerDependentObject(_dependentLink);
+    }
+}
+
+void CoreAPI::registerDependentObject(QtJambiNativeID dependent, QtJambiNativeID owner){
+    QSharedPointer<QtJambiLink> _dependentLink = QtJambiLink::fromNativeId(dependent);
+    QSharedPointer<QtJambiLink> _ownerLink = QtJambiLink::fromNativeId(owner);
     if(_dependentLink && _ownerLink){
         _ownerLink->registerDependentObject(_dependentLink);
     }
@@ -1135,13 +1133,6 @@ enum class SmartPointerType{
 };
 
 int registerSmartPointerMetaType(const QByteArray& typeName,
-#if QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
-                                 QMetaType::Destructor destructor,
-                                 QMetaType::Constructor constructor,
-#elif QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                                 QMetaType::TypedDestructor destructor,
-                                 QMetaType::TypedConstructor constructor,
-#elif QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
                                  QtPrivate::QMetaTypeInterface::DefaultCtrFn defaultCtr,
                                  QtPrivate::QMetaTypeInterface::CopyCtrFn copyCtr,
                                  QtPrivate::QMetaTypeInterface::MoveCtrFn moveCtr,
@@ -1152,36 +1143,21 @@ int registerSmartPointerMetaType(const QByteArray& typeName,
                                  QtPrivate::QMetaTypeInterface::DataStreamOutFn dataStreamOutFn,
                                  QtPrivate::QMetaTypeInterface::DataStreamInFn dataStreamInFn,
                                  QtPrivate::QMetaTypeInterface::LegacyRegisterOp legacyRegisterOp,
-#endif
                                  uint size,
                                  ushort align,
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
                                  int builtInTypeId,
-#endif
                                  QMetaType::TypeFlags flags);
 
 #if defined(ALLOW_SCOPED_POINTER_METATYPE)
-#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
 Q_GLOBAL_STATIC(QReadWriteLock, gSmartPointersLock)
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-typedef SecureContainer<QHash<int,int>,gSmartPointersLock> ElementMetaTypesOfSmartPointersHash;
-typedef SecureContainer<QHash<int,PtrDeleterFunction>,gSmartPointersLock> ElementDeletersOfSmartPointersHash;
-#else
 typedef SecureContainer<QHash<const QtPrivate::QMetaTypeInterface *,const QtPrivate::QMetaTypeInterface *>,gSmartPointersLock> ElementMetaTypesOfSmartPointersHash;
 typedef SecureContainer<QHash<const QtPrivate::QMetaTypeInterface *,PtrDeleterFunction>,gSmartPointersLock> ElementDeletersOfSmartPointersHash;
-#endif
 Q_GLOBAL_STATIC(ElementMetaTypesOfSmartPointersHash, gElementMetaTypesOfSmartPointers)
 Q_GLOBAL_STATIC(ElementDeletersOfSmartPointersHash, gElementDeletersOfSmartPointers)
-#endif
 
 void clearSmartPointersInfoAtShutdown(){
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    QHash<int,int> hash;
-    QHash<int,PtrDeleterFunction> hash2;
-#else
     QHash<const QtPrivate::QMetaTypeInterface *,const QtPrivate::QMetaTypeInterface *> hash;
     QHash<const QtPrivate::QMetaTypeInterface *,PtrDeleterFunction> hash2;
-#endif
     {
         QWriteLocker locker(gSmartPointersLock());
         Q_UNUSED(locker)
@@ -1234,25 +1210,6 @@ int registerMetaType(JNIEnv* env,
     case SmartPointerType::QScopedPointer: {
         if(metaType.metaObject() && metaType.metaObject()->inherits(&QObject::staticMetaObject)){
             int newMetaType = registerSmartPointerMetaType(typeName.toLocal8Bit(),
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#if QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
-                                                           [](void* ptr){
-                                                               delete reinterpret_cast<QScopedPointer<QObject>*>(ptr);
-                                                           },
-                                                           [](void* result, const void *) -> void* {
-                                                               return new(result) QScopedPointer<QObject>();
-                                                           },
-#else
-                                                           [](int, void *ptr){
-                                                               delete reinterpret_cast<QScopedPointer<QObject>*>(ptr);
-                                                           },
-                                                           [](int, void *ptr, const void *)->void *{
-                                                               return new(ptr) QScopedPointer<QObject>();
-                                                           },
-#endif //QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
-                                                           uint(sizeof(QScopedPointer<QObject>)),
-                                                           ushort(alignof(QScopedPointer<QObject>)),
-#else
                                                            [](const QtPrivate::QMetaTypeInterface *, void *ptr){
                                                                new(ptr)QScopedPointer<QObject>();
                                                            },
@@ -1274,65 +1231,12 @@ int registerMetaType(JNIEnv* env,
                                                            uint(sizeof(QScopedPointer<QObject>)),
                                                            ushort(alignof(QScopedPointer<QObject>)),
                                                            QMetaType::UnknownType,
-#endif
                                                            QMetaType::NeedsConstruction
                                                                | QMetaType::NeedsDestruction
-#if QT_VERSION < QT_VERSION_CHECK(6, 5, 0)
-                                                               | QMetaType::MovableType
-#else
                                                                | QMetaType::RelocatableType
                                                                | QMetaType::NeedsCopyConstruction
                                                                | QMetaType::NeedsMoveConstruction
-#endif
                                                            );
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            struct ConverterFunction : QtPrivate::AbstractConverterFunction{
-                ConverterFunction()
-                    : QtPrivate::AbstractConverterFunction(convert)
-                {
-                }
-
-                static bool convert(const AbstractConverterFunction *, const void *src, void*target){
-                    QScopedPointer<QObject>* p = reinterpret_cast<QScopedPointer<QObject>*>(target);
-                    p->reset(*reinterpret_cast<QObject*const*>(src));
-                    return true;
-                }
-            };
-            registerConverter(new ConverterFunction(), metaType.id(), newMetaType);
-            int jobjectWrapperType = qMetaTypeId<JObjectWrapper>();
-            struct JObjectWrapperConverterFunction : QtPrivate::AbstractConverterFunction{
-                JObjectWrapperConverterFunction()
-                    : QtPrivate::AbstractConverterFunction(convert)
-                {
-                }
-
-                static bool convert(const AbstractConverterFunction *, const void *src, void*target){
-                    QScopedPointer<QObject>* p = reinterpret_cast<QScopedPointer<QObject>*>(target);
-                    const JObjectWrapper& jow = *reinterpret_cast<JObjectWrapper const*>(src);
-                    if(JniEnvironment env{200}){
-                        p->reset(QtJambiAPI::convertJavaObjectToQObject(env, jow.object(env)));
-                    }
-                    return true;
-                }
-            };
-            registerConverter(new JObjectWrapperConverterFunction(), jobjectWrapperType, newMetaType);
-            struct JObjectWrapperReConverterFunction : QtPrivate::AbstractConverterFunction{
-                JObjectWrapperReConverterFunction()
-                    : QtPrivate::AbstractConverterFunction(convert)
-                {
-                }
-
-                static bool convert(const AbstractConverterFunction *, const void *src, void*target){
-                    JObjectWrapper& jow = *reinterpret_cast<JObjectWrapper *>(target);
-                    const QScopedPointer<QObject>* p = reinterpret_cast<const QScopedPointer<QObject>*>(src);
-                    if(JniEnvironment env{200}){
-                        jow = JObjectWrapper(env, QtJambiAPI::convertQObjectToJavaObject(env, p->get()));
-                    }
-                    return true;
-                }
-            };
-            registerConverter(new JObjectWrapperReConverterFunction(), newMetaType, jobjectWrapperType);
-#else
             QMetaType _newMetaType(newMetaType);
             if(!QMetaType::hasRegisteredConverterFunction(metaType, _newMetaType)){
                 QMetaType::registerConverterFunction([](const void *src, void *target)->bool{
@@ -1384,43 +1288,9 @@ int registerMetaType(JNIEnv* env,
                     return true;
                 }, _newMetaType, jqobjectWrapperType);
             }
-#endif
             return newMetaType;
         }else if(!isPointer){
             int newMetaType = registerSmartPointerMetaType(typeName.toLocal8Bit(),
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#if QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
-                                                           qtjambi_function_pointer<16,void(void*)>([elementMetaType = metaType.id()](void* ptr){
-                                                               QScopedPointer<char>* p = reinterpret_cast<QScopedPointer<char>*>(ptr);
-                                                               void* data = p->take();
-                                                               p->~QScopedPointer();
-                                                               if(data)
-                                                                   QMetaType::destroy(elementMetaType, data);
-                                                           }, qHash(typeName)),
-                                                           [](void* result, const void *) -> void* {
-                                                               return new(result) QScopedPointer<char>();
-                                                           },
-#else
-                                                           [](int metaTypeId, void *ptr){
-                                                               QScopedPointer<char>* p = reinterpret_cast<QScopedPointer<char>*>(ptr);
-                                                               void* data = p->take();
-                                                               p->~QScopedPointer();
-                                                               if(data){
-                                                                   int elMt;
-                                                                   {
-                                                                       QReadLocker l(gSmartPointersLock());
-                                                                       elMt = (*gElementMetaTypesOfSmartPointers)[metaTypeId];
-                                                                   }
-                                                                   QMetaType::destroy(elMt, data);
-                                                               }
-                                                           },
-                                                           [](int, void *ptr, const void *)->void *{
-                                                               return new(ptr) QScopedPointer<char>();
-                                                           },
-#endif //QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
-                                                           uint(sizeof(QScopedPointer<char>)),
-                                                           ushort(alignof(QScopedPointer<char>)),
-#else
                                                            [](const QtPrivate::QMetaTypeInterface *, void *ptr){
                                                                new(ptr)QScopedPointer<char>();
                                                            },
@@ -1452,7 +1322,6 @@ int registerMetaType(JNIEnv* env,
                                                            uint(sizeof(QScopedPointer<char>)),
                                                            ushort(alignof(QScopedPointer<char>)),
                                                            QMetaType::UnknownType,
-#endif
                                                            QMetaType::NeedsConstruction
                                                                | QMetaType::NeedsDestruction
 #if QT_VERSION < QT_VERSION_CHECK(6, 5, 0)
@@ -1463,95 +1332,10 @@ int registerMetaType(JNIEnv* env,
                                                                | QMetaType::NeedsMoveConstruction
 #endif
                                                            );
-#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
             {
                 QWriteLocker l(gSmartPointersLock());
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                (*gElementMetaTypesOfSmartPointers)[newMetaType] = metaType.id();
-#else
                 (*gElementMetaTypesOfSmartPointers)[QMetaType(newMetaType).iface()] = QMetaType(metaType).iface();
-#endif
             }
-#endif
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            struct ValueConverterFunction : QtPrivate::AbstractConverterFunction{
-                int _metaType_id;
-
-                ValueConverterFunction(const QMetaType& elementMetaType)
-                    : QtPrivate::AbstractConverterFunction(convert),
-                    _metaType_id(elementMetaType.id())
-                {
-                }
-
-                static bool convert(const AbstractConverterFunction *_f, const void *src, void*target){
-                    const ValueConverterFunction* f = static_cast<const ValueConverterFunction*>(_f);
-                    QScopedPointer<char>* p = reinterpret_cast<QScopedPointer<char>*>(target);
-                    void* data = p->take();
-                    p->reset(reinterpret_cast<char*>(QMetaType::create(f->_metaType_id, src)));
-                    QMetaType::destroy(f->_metaType_id, data);
-                    return true;
-                }
-            };
-            registerConverter(new ValueConverterFunction(metaType), metaType.id(), newMetaType);
-            int jobjectWrapperType = qMetaTypeId<JObjectWrapper>();
-            struct JObjectWrapperConverterFunction : QtPrivate::AbstractConverterFunction{
-                int _metaType_id;
-                QtJambiUtils::ExternalToInternalConverter memberReConverter;
-
-                JObjectWrapperConverterFunction(const QMetaType& elementMetaType, const QtJambiUtils::ExternalToInternalConverter& _memberReConverter)
-                    : QtPrivate::AbstractConverterFunction(convert),
-                    _metaType_id(elementMetaType.id()),
-                    memberReConverter(_memberReConverter)
-                {
-                }
-
-                static bool convert(const AbstractConverterFunction *_f, const void *src, void*target){
-                    const JObjectWrapperConverterFunction* f = static_cast<const JObjectWrapperConverterFunction*>(_f);
-                    QScopedPointer<char>* p = reinterpret_cast<QScopedPointer<char>*>(target);
-                    const JObjectWrapper& jow = *reinterpret_cast<JObjectWrapper const*>(src);
-                    if(JniEnvironment env{200}){
-                        jvalue jv;
-                        jv.l = jow.object(env);
-                        void* out{QMetaType::create(f->_metaType_id)};
-                        if(f->memberReConverter(env, nullptr, jv, out, jValueType::l)){
-                            void* data = p->take();
-                            p->reset(reinterpret_cast<char*>(out));
-                            QMetaType::destroy(f->_metaType_id, data);
-                        }else{
-                            QMetaType::destroy(f->_metaType_id, out);
-                        }
-                    }
-                    return true;
-                }
-            };
-            registerConverter(new JObjectWrapperConverterFunction(metaType, memberReConverter), jobjectWrapperType, newMetaType);
-            struct JObjectWrapperReConverterFunction : QtPrivate::AbstractConverterFunction{
-                int _metaType_id;
-                QtJambiUtils::InternalToExternalConverter memberConverter;
-
-                JObjectWrapperReConverterFunction(const QMetaType& elementMetaType, const QtJambiUtils::InternalToExternalConverter& _memberConverter)
-                    : QtPrivate::AbstractConverterFunction(convert),
-                    _metaType_id(elementMetaType.id()),
-                    memberConverter(_memberConverter)
-                {
-                }
-
-                static bool convert(const AbstractConverterFunction *_f, const void *src, void*target){
-                    const JObjectWrapperReConverterFunction* f = static_cast<const JObjectWrapperReConverterFunction*>(_f);
-                    JObjectWrapper& jow = *reinterpret_cast<JObjectWrapper*>(target);
-                    const QScopedPointer<char>* p = reinterpret_cast<QScopedPointer<char> const*>(src);
-                    if(JniEnvironment env{200}){
-                        jvalue jv;
-                        jv.l = nullptr;
-                        if(f->memberConverter(env, nullptr, p->data(), jv, true)){
-                            jow = JObjectWrapper(env, jv.l);
-                        }
-                    }
-                    return true;
-                }
-            };
-            registerConverter(new JObjectWrapperReConverterFunction(metaType, memberConverter), newMetaType, jobjectWrapperType);
-#else
             QMetaType _newMetaType(newMetaType);
             if(!QMetaType::hasRegisteredConverterFunction(metaType, _newMetaType)){
                 QMetaType::registerConverterFunction([metaType](const void *src, void *target)->bool{
@@ -1596,43 +1380,9 @@ int registerMetaType(JNIEnv* env,
                     return true;
                 }, _newMetaType, jobjectWrapperType);
             }
-#endif
             return newMetaType;
         }else if(deleter_function){
             int newMetaType = registerSmartPointerMetaType(typeName.toLocal8Bit(),
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#if QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
-                                                           qtjambi_function_pointer<16,void(void*)>([deleter_function](void* ptr){
-                                                               QScopedPointer<char>* p = reinterpret_cast<QScopedPointer<char>*>(ptr);
-                                                               void* data = p->take();
-                                                               p->~QScopedPointer();
-                                                               if(data)
-                                                                   deleter_function(data,false);
-                                                           }, qHash(typeName)),
-                                                           [](void* result, const void *) -> void* {
-                                                               return new(result) QScopedPointer<char>();
-                                                           },
-#else
-                                                           [](int metaTypeId, void *ptr){
-                                                               QScopedPointer<char>* p = reinterpret_cast<QScopedPointer<char>*>(ptr);
-                                                               void* data = p->take();
-                                                               p->~QScopedPointer();
-                                                               if(data){
-                                                                   PtrDeleterFunction deleterFn;
-                                                                   {
-                                                                       QReadLocker l(gSmartPointersLock());
-                                                                       deleterFn = (*gElementDeletersOfSmartPointers)[metaTypeId];
-                                                                   }
-                                                                   deleterFn(data, false);
-                                                               }
-                                                           },
-                                                           [](int, void *ptr, const void *)->void *{
-                                                               return new(ptr) QScopedPointer<char>();
-                                                           },
-#endif //QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
-                                                           uint(sizeof(QScopedPointer<char>)),
-                                                           ushort(alignof(QScopedPointer<char>)),
-#else
                                                            [](const QtPrivate::QMetaTypeInterface *, void *ptr){
                                                                new(ptr)QScopedPointer<char>();
                                                            },
@@ -1664,7 +1414,6 @@ int registerMetaType(JNIEnv* env,
                                                            uint(sizeof(QScopedPointer<char>)),
                                                            ushort(alignof(QScopedPointer<char>)),
                                                            QMetaType::UnknownType,
-#endif
                                                            QMetaType::NeedsConstruction
                                                                | QMetaType::NeedsDestruction
 #if QT_VERSION < QT_VERSION_CHECK(6, 5, 0)
@@ -1675,95 +1424,10 @@ int registerMetaType(JNIEnv* env,
                                                                | QMetaType::NeedsMoveConstruction
 #endif
                                                            );
-#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
             {
                 QWriteLocker l(gSmartPointersLock());
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                (*gElementDeletersOfSmartPointers)[newMetaType] = deleter_function;
-#else
                 (*gElementDeletersOfSmartPointers)[QMetaType(newMetaType).iface()] = deleter_function;
-#endif
             }
-#endif
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            struct ValueConverterFunction : QtPrivate::AbstractConverterFunction{
-                int _metaType_id;
-
-                ValueConverterFunction(const QMetaType& elementMetaType)
-                    : QtPrivate::AbstractConverterFunction(convert),
-                    _metaType_id(elementMetaType.id())
-                {
-                }
-
-                static bool convert(const AbstractConverterFunction *_f, const void *src, void*target){
-                    const ValueConverterFunction* f = static_cast<const ValueConverterFunction*>(_f);
-                    QScopedPointer<char>* p = reinterpret_cast<QScopedPointer<char>*>(target);
-                    void* data = p->take();
-                    p->reset(reinterpret_cast<char*>(QMetaType::create(f->_metaType_id, src)));
-                    QMetaType::destroy(f->_metaType_id, data);
-                    return true;
-                }
-            };
-            registerConverter(new ValueConverterFunction(metaType), metaType.id(), newMetaType);
-            int jobjectWrapperType = qMetaTypeId<JObjectWrapper>();
-            struct JObjectWrapperConverterFunction : QtPrivate::AbstractConverterFunction{
-                int _metaType_id;
-                QtJambiUtils::ExternalToInternalConverter memberReConverter;
-
-                JObjectWrapperConverterFunction(const QMetaType& elementMetaType, const QtJambiUtils::ExternalToInternalConverter& _memberReConverter)
-                    : QtPrivate::AbstractConverterFunction(convert),
-                    _metaType_id(elementMetaType.id()),
-                    memberReConverter(_memberReConverter)
-                {
-                }
-
-                static bool convert(const AbstractConverterFunction *_f, const void *src, void*target){
-                    const JObjectWrapperConverterFunction* f = static_cast<const JObjectWrapperConverterFunction*>(_f);
-                    QScopedPointer<char>* p = reinterpret_cast<QScopedPointer<char>*>(target);
-                    const JObjectWrapper& jow = *reinterpret_cast<JObjectWrapper const*>(src);
-                    if(JniEnvironment env{200}){
-                        jvalue jv;
-                        jv.l = jow.object(env);
-                        void* out{QMetaType::create(f->_metaType_id)};
-                        if(f->memberReConverter(env, nullptr, jv, out, jValueType::l)){
-                            void* data = p->take();
-                            p->reset(reinterpret_cast<char*>(out));
-                            QMetaType::destroy(f->_metaType_id, data);
-                        }else{
-                            QMetaType::destroy(f->_metaType_id, out);
-                        }
-                    }
-                    return true;
-                }
-            };
-            registerConverter(new JObjectWrapperConverterFunction(metaType, memberReConverter), jobjectWrapperType, newMetaType);
-            struct JObjectWrapperReConverterFunction : QtPrivate::AbstractConverterFunction{
-                int _metaType_id;
-                QtJambiUtils::InternalToExternalConverter memberConverter;
-
-                JObjectWrapperReConverterFunction(const QMetaType& elementMetaType, const QtJambiUtils::InternalToExternalConverter& _memberConverter)
-                    : QtPrivate::AbstractConverterFunction(convert),
-                    _metaType_id(elementMetaType.id()),
-                    memberConverter(_memberConverter)
-                {
-                }
-
-                static bool convert(const AbstractConverterFunction *_f, const void *src, void*target){
-                    const JObjectWrapperReConverterFunction* f = static_cast<const JObjectWrapperReConverterFunction*>(_f);
-                    JObjectWrapper& jow = *reinterpret_cast<JObjectWrapper*>(target);
-                    const QScopedPointer<char>* p = reinterpret_cast<QScopedPointer<char> const*>(src);
-                    if(JniEnvironment env{200}){
-                        jvalue jv;
-                        jv.l = nullptr;
-                        if(f->memberConverter(env, nullptr, p->data(), jv, true)){
-                            jow = JObjectWrapper(env, jv.l);
-                        }
-                    }
-                    return true;
-                }
-            };
-            registerConverter(new JObjectWrapperReConverterFunction(metaType, memberConverter), newMetaType, jobjectWrapperType);
-#else
             QMetaType _newMetaType(newMetaType);
             if(!QMetaType::hasRegisteredConverterFunction(metaType, _newMetaType)){
                 QMetaType::registerConverterFunction([metaType](const void *src, void *target)->bool{
@@ -1808,7 +1472,6 @@ int registerMetaType(JNIEnv* env,
                     return true;
                 }, _newMetaType, jobjectWrapperType);
             }
-#endif
             return newMetaType;
         }
     }
@@ -1816,7 +1479,6 @@ int registerMetaType(JNIEnv* env,
     case SmartPointerType::QPointer:{
         if(metaType.metaObject() && metaType.metaObject()->inherits(&QObject::staticMetaObject)){
             int newMetaType;
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
             QMetaType basicType = QMetaType::fromType<QPointer<QObject>>();
             if(metaType.id()==QMetaType::QObjectStar){
                 newMetaType = basicType.id();
@@ -1889,107 +1551,12 @@ int registerMetaType(JNIEnv* env,
                     return true;
                 }, _newMetaType, jqobjectWrapperType);
             }
-#else
-            newMetaType = registerSmartPointerMetaType(typeName.toLocal8Bit(),
-#if QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
-                                                       [](void* ptr){
-                                                           reinterpret_cast<QPointer<QObject>*>(ptr)->~QPointer();
-                                                       },
-                                                       [](void* result, const void *) -> void* {
-                                                           return new(result) QPointer<QObject>();
-                                                       },
-#else
-                                                       [](int, void *ptr){
-                                                           reinterpret_cast<QPointer<QObject>*>(ptr)->~QPointer();
-                                                       },
-                                                       [](int, void *ptr, const void *other)->void *{
-                                                           if(other)
-                                                               return new(ptr) QPointer<QObject>(*reinterpret_cast<const QPointer<QObject>*>(other));
-                                                           else
-                                                               return new(ptr) QPointer<QObject>();
-                                                       },
-#endif //QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
-                                                       uint(sizeof(QPointer<QObject>)),
-                                                       ushort(alignof(QPointer<QObject>)),
-                                                       QMetaType::NeedsConstruction
-                                                           | QMetaType::NeedsDestruction
-                                                           | QMetaType::MovableType
-                                                       );
-            struct ConverterFunction : QtPrivate::AbstractConverterFunction{
-                ConverterFunction()
-                    : QtPrivate::AbstractConverterFunction(convert)
-                {
-                }
-
-                static bool convert(const AbstractConverterFunction *, const void *src, void*target){
-                    QPointer<QObject>* p = reinterpret_cast<QPointer<QObject>*>(target);
-                    *p = QPointer<QObject>(*reinterpret_cast<QObject*const*>(src));
-                    return true;
-                }
-            };
-            registerConverter(new ConverterFunction(), metaType.id(), newMetaType);
-            int jobjectWrapperType = qMetaTypeId<JObjectWrapper>();
-            struct JObjectWrapperConverterFunction : QtPrivate::AbstractConverterFunction{
-                JObjectWrapperConverterFunction()
-                    : QtPrivate::AbstractConverterFunction(convert)
-                {
-                }
-
-                static bool convert(const AbstractConverterFunction *, const void *src, void*target){
-                    QPointer<QObject>* p = reinterpret_cast<QPointer<QObject>*>(target);
-                    const JObjectWrapper& jow = *reinterpret_cast<JObjectWrapper const*>(src);
-                    if(JniEnvironment env{200}){
-                        *p = QPointer<QObject>(QtJambiAPI::convertJavaObjectToQObject(env, jow.object(env)));
-                    }
-                    return true;
-                }
-            };
-            registerConverter(new JObjectWrapperConverterFunction(), jobjectWrapperType, newMetaType);
-            struct JObjectWrapperReConverterFunction : QtPrivate::AbstractConverterFunction{
-                JObjectWrapperReConverterFunction()
-                    : QtPrivate::AbstractConverterFunction(convert)
-                {
-                }
-
-                static bool convert(const AbstractConverterFunction *, const void *src, void*target){
-                    JObjectWrapper& jow = *reinterpret_cast<JObjectWrapper *>(target);
-                    const QPointer<QObject>* p = reinterpret_cast<const QPointer<QObject>*>(src);
-                    if(JniEnvironment env{200}){
-                        jow = JObjectWrapper(env, QtJambiAPI::convertQObjectToJavaObject(env, p->data()));
-                    }
-                    return true;
-                }
-            };
-            registerConverter(new JObjectWrapperReConverterFunction(), newMetaType, jobjectWrapperType);
-#endif
             return newMetaType;
         }
         return QMetaType::UnknownType;
     }
     case SmartPointerType::QWeakPointer:{
         int newMetaType = registerSmartPointerMetaType(typeName.toLocal8Bit(),
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#if QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
-                                                       [](void* ptr){
-                                                           reinterpret_cast<QWeakPointer<char>*>(ptr)->~QWeakPointer();
-                                                       },
-                                                       [](void* result, const void *) -> void* {
-                                                           return new(result) QWeakPointer<char>();
-                                                       },
-#else
-                                                       [](int, void *ptr){
-                                                           reinterpret_cast<QWeakPointer<char>*>(ptr)->~QWeakPointer();
-                                                       },
-                                                       [](int, void *ptr, const void *other)->void *{
-                                                           if(other)
-                                                               return new(ptr) QWeakPointer<char>(*reinterpret_cast<const QWeakPointer<char>*>(other));
-                                                           else
-                                                               return new(ptr) QWeakPointer<char>();
-                                                       },
-#endif //QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
-                                                       uint(sizeof(QWeakPointer<char>)),
-                                                       ushort(alignof(QWeakPointer<char>)),
-#else
                                                        [](const QtPrivate::QMetaTypeInterface *, void *ptr){
                                                            new(ptr)QWeakPointer<char>();
                                                        },
@@ -2013,7 +1580,6 @@ int registerMetaType(JNIEnv* env,
                                                        uint(sizeof(QWeakPointer<char>)),
                                                        ushort(alignof(QWeakPointer<char>)),
                                                        QMetaType::UnknownType,
-#endif
                                                        QMetaType::NeedsConstruction
                                                            | QMetaType::NeedsDestruction
 #if QT_VERSION < QT_VERSION_CHECK(6, 5, 0)
@@ -2026,61 +1592,6 @@ int registerMetaType(JNIEnv* env,
 #endif
                                                        );
         if(metaType.metaObject() && metaType.metaObject()->inherits(&QObject::staticMetaObject)){
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            struct ConverterFunction : QtPrivate::AbstractConverterFunction{
-                ConverterFunction()
-                    : QtPrivate::AbstractConverterFunction(convert)
-                {
-                }
-
-                static bool convert(const AbstractConverterFunction *, const void *src, void*target){
-                    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForQObject(*reinterpret_cast<QObject*const*>(src))){
-                        if(JniEnvironment env{200}){
-                            QWeakPointer<QObject>* p = reinterpret_cast<QWeakPointer<QObject>*>(target);
-                            *p = QtJambiAPI::convertJavaObjectToSmartPointer<QSharedPointer,QObject>(env, link->getJavaObjectLocalRef(env));
-                            return true;
-                        }
-                    }
-                    return false;
-                }
-            };
-            registerConverter(new ConverterFunction(), metaType.id(), newMetaType);
-            int jobjectWrapperType = qMetaTypeId<JObjectWrapper>();
-            struct JObjectWrapperConverterFunction : QtPrivate::AbstractConverterFunction{
-                JObjectWrapperConverterFunction()
-                    : QtPrivate::AbstractConverterFunction(convert)
-                {
-                }
-
-                static bool convert(const AbstractConverterFunction *, const void *src, void*target){
-                    if(JniEnvironment env{200}){
-                        QWeakPointer<QObject>* p = reinterpret_cast<QWeakPointer<QObject>*>(target);
-                        const JObjectWrapper& jow = *reinterpret_cast<JObjectWrapper const*>(src);
-                        *p = QtJambiAPI::convertJavaObjectToSmartPointer<QSharedPointer,QObject>(env, jow.object(env));
-                        return true;
-                    }
-                    return false;
-                }
-            };
-            registerConverter(new JObjectWrapperConverterFunction(), jobjectWrapperType, newMetaType);
-            struct JObjectWrapperReConverterFunction : QtPrivate::AbstractConverterFunction{
-                JObjectWrapperReConverterFunction()
-                    : QtPrivate::AbstractConverterFunction(convert)
-                {
-                }
-
-                static bool convert(const AbstractConverterFunction *, const void *src, void*target){
-                    if(JniEnvironment env{200}){
-                        JObjectWrapper& jow = *reinterpret_cast<JObjectWrapper *>(target);
-                        QSharedPointer<QObject> p = *reinterpret_cast<const QWeakPointer<QObject>*>(src);
-                        jow = JObjectWrapper(env, QtJambiAPI::convertSmartPointerToJavaObject(env, p));
-                        return true;
-                    }
-                    return false;
-                }
-            };
-            registerConverter(new JObjectWrapperReConverterFunction(), newMetaType, jobjectWrapperType);
-#else
             QMetaType _newMetaType(newMetaType);
             if(!QMetaType::hasRegisteredConverterFunction(metaType, _newMetaType)){
                 QMetaType::registerConverterFunction([](const void *src, void *target)->bool{
@@ -2140,110 +1651,7 @@ int registerMetaType(JNIEnv* env,
                     return true;
                 }, _newMetaType, jqobjectWrapperType);
             }
-#endif
         }else{
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            int jobjectWrapperType = qMetaTypeId<JObjectWrapper>();
-            if(typeId){
-                struct JObjectWrapperReConverterFunction : QtPrivate::AbstractConverterFunction{
-                    const std::type_info& typeId;
-
-                    JObjectWrapperReConverterFunction(const std::type_info& _typeId)
-                        : QtPrivate::AbstractConverterFunction(convert),
-                        typeId(_typeId)
-                    {
-                    }
-
-                    static bool convert(const AbstractConverterFunction *_f, const void *src, void*target){
-                        const JObjectWrapperReConverterFunction* f = static_cast<const JObjectWrapperReConverterFunction*>(_f);
-                        JObjectWrapper& jow = *reinterpret_cast<JObjectWrapper*>(target);
-                        QSharedPointer<char> p = *reinterpret_cast<QWeakPointer<char> const*>(src);
-                        if(JniEnvironment env{200}){
-                            jow = JObjectWrapper(env, QtJambiAPI::convertSmartPointerToJavaObject(env, f->typeId, p));
-                            return true;
-                        }
-                        return false;
-                    }
-                };
-                registerConverter(new JObjectWrapperReConverterFunction(*typeId), newMetaType, jobjectWrapperType);
-            }else{
-                struct JObjectWrapperReConverterFunction : QtPrivate::AbstractConverterFunction{
-                    QtJambiUtils::InternalToExternalConverter memberConverter;
-
-                    JObjectWrapperReConverterFunction(const QtJambiUtils::InternalToExternalConverter& _memberConverter)
-                        : QtPrivate::AbstractConverterFunction(convert),
-                        memberConverter(_memberConverter)
-                    {
-                    }
-
-                    static bool convert(const AbstractConverterFunction *_f, const void *src, void*target){
-                        const JObjectWrapperReConverterFunction* f = static_cast<const JObjectWrapperReConverterFunction*>(_f);
-                        JObjectWrapper& jow = *reinterpret_cast<JObjectWrapper*>(target);
-                        QSharedPointer<char> p = *reinterpret_cast<QWeakPointer<char> const*>(src);
-                        if(JniEnvironment env{200}){
-                            if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinksForPointer(p.get()).value(0)){
-                                jow = JObjectWrapper(env, link->getJavaObjectLocalRef(env));
-                                return true;
-                            }
-                            jvalue jv;
-                            jv.l = nullptr;
-                            if(f->memberConverter(env, nullptr, p.data(), jv, true)){
-                                jow = JObjectWrapper(env, jv.l);
-                            }
-                        }
-                        return true;
-                    }
-                };
-                registerConverter(new JObjectWrapperReConverterFunction(memberConverter), newMetaType, jobjectWrapperType);
-            }
-            struct ValueConverterFunction : QtPrivate::AbstractConverterFunction{
-                const std::type_info* typeId;
-                ValueConverterFunction(const std::type_info* _typeId)
-                    : QtPrivate::AbstractConverterFunction(convert),
-                    typeId(_typeId)
-                {
-                }
-
-                static bool convert(const AbstractConverterFunction *_f, const void *src, void*target){
-                    const ValueConverterFunction* f = static_cast<const ValueConverterFunction*>(_f);
-                    QWeakPointer<char>* p = reinterpret_cast<QWeakPointer<char>*>(target);
-                    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinksForPointer(*reinterpret_cast<void*const*>(src)).value(0)){
-                        if(JniEnvironment env{200}){
-                            if(link->isSmartPointer()){
-                                *p = QtJambiAPI::convertJavaObjectToQWeakPointer(env, f->typeId, link->getJavaObjectLocalRef(env));
-                                return true;
-                            }
-                        }
-                    }
-                    return false;
-                }
-            };
-            registerConverter(new ValueConverterFunction(typeId), metaType.id(), newMetaType);
-            struct JObjectWrapperConverterFunction : QtPrivate::AbstractConverterFunction{
-                const std::type_info* typeId;
-                JObjectWrapperConverterFunction(const std::type_info* _typeId)
-                    : QtPrivate::AbstractConverterFunction(convert),
-                    typeId(_typeId)
-                {
-                }
-
-                static bool convert(const AbstractConverterFunction *_f, const void *src, void*target){
-                    const JObjectWrapperConverterFunction* f = static_cast<const JObjectWrapperConverterFunction*>(_f);
-                    QWeakPointer<char>* p = reinterpret_cast<QWeakPointer<char>*>(target);
-                    const JObjectWrapper& jow = *reinterpret_cast<JObjectWrapper const*>(src);
-                    if(JniEnvironment env{200}){
-                        if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, jow.object(env))){
-                            jobject jobj = link->getJavaObjectLocalRef(env);
-                            link.clear();
-                            *p = QtJambiAPI::convertJavaObjectToQWeakPointer(env, f->typeId, jobj);
-                            return true;
-                        }
-                    }
-                    return false;
-                }
-            };
-            registerConverter(new JObjectWrapperConverterFunction(typeId), jobjectWrapperType, newMetaType);
-#else
             QMetaType _newMetaType(newMetaType);
             QMetaType jobjectWrapperType = QMetaType::fromType<JObjectWrapper>();
             if(!QMetaType::hasRegisteredConverterFunction(jobjectWrapperType, _newMetaType)){
@@ -2304,39 +1712,11 @@ int registerMetaType(JNIEnv* env,
                     return false;
                 }, jobjectWrapperType, _newMetaType);
             }
-#endif
         }
         return newMetaType;
     }
     case SmartPointerType::QSharedPointer:{
         int newMetaType = registerSmartPointerMetaType(typeName.toLocal8Bit(),
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#if QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
-                                                       [](void* ptr){
-                                                           QSharedPointer<char>* p = reinterpret_cast<QSharedPointer<char>*>(ptr);
-                                                           p->~QSharedPointer();
-                                                       },
-                                                       [](void* result, const void *other) -> void* {
-                                                           if(other)
-                                                               return new(ptr) QSharedPointer<char>(*reinterpret_cast<const QSharedPointer<char>*>(other));
-                                                           else
-                                                               return new(ptr) QSharedPointer<char>();
-                                                       },
-#else
-                                                       [](int, void *ptr){
-                                                           QSharedPointer<char>* p = reinterpret_cast<QSharedPointer<char>*>(ptr);
-                                                           p->~QSharedPointer();
-                                                       },
-                                                       [](int, void *ptr, const void *copy)->void *{
-                                                           if(copy)
-                                                               return new(ptr) QSharedPointer<char>(*reinterpret_cast<const QSharedPointer<char>*>(copy));
-                                                           else
-                                                               return new(ptr) QSharedPointer<char>();
-                                                       },
-#endif //QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
-                                                       uint(sizeof(QSharedPointer<char>)),
-                                                       ushort(alignof(QSharedPointer<char>)),
-#else
                                                        [](const QtPrivate::QMetaTypeInterface *, void *ptr){
                                                            new(ptr)QSharedPointer<char>();
                                                        },
@@ -2369,7 +1749,6 @@ int registerMetaType(JNIEnv* env,
                                                        uint(sizeof(QSharedPointer<char>)),
                                                        ushort(alignof(QSharedPointer<char>)),
                                                        QMetaType::UnknownType,
-#endif
                                                        QMetaType::NeedsConstruction
                                                            | QMetaType::NeedsDestruction
 #if QT_VERSION < QT_VERSION_CHECK(6, 5, 0)
@@ -2382,75 +1761,6 @@ int registerMetaType(JNIEnv* env,
 #endif
                                                        );
         if(metaType.metaObject() && metaType.metaObject()->inherits(&QObject::staticMetaObject)){
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            struct ConverterFunction : QtPrivate::AbstractConverterFunction{
-                ConverterFunction()
-                    : QtPrivate::AbstractConverterFunction(convert)
-                {
-                }
-
-                static bool convert(const AbstractConverterFunction *, const void *src, void*target){
-                    QSharedPointer<QObject>* p = reinterpret_cast<QSharedPointer<QObject>*>(target);
-                    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForQObject(*reinterpret_cast<QObject*const*>(src))){
-                        if(JniEnvironment env{200}){
-                            *p = QtJambiAPI::convertJavaObjectToSmartPointer<QSharedPointer,QObject>(env, link->getJavaObjectLocalRef(env));
-                        }else return false;
-                    }else{
-                        p->reset(*reinterpret_cast<QObject*const*>(src));
-                    }
-                    return true;
-                }
-            };
-            registerConverter(new ConverterFunction(), metaType.id(), newMetaType);
-            struct ReConverterFunction : QtPrivate::AbstractConverterFunction{
-                ReConverterFunction()
-                    : QtPrivate::AbstractConverterFunction(convert)
-                {
-                }
-
-                static bool convert(const AbstractConverterFunction *, const void *src, void*target){
-                    QObject*& p = *reinterpret_cast<QObject**>(target);
-                    p = reinterpret_cast<const QSharedPointer<QObject>*>(src)->data();
-                    return true;
-                }
-            };
-            registerConverter(new ReConverterFunction(), newMetaType, metaType.id());
-            int jobjectWrapperType = qMetaTypeId<JObjectWrapper>();
-            struct JObjectWrapperConverterFunction : QtPrivate::AbstractConverterFunction{
-                JObjectWrapperConverterFunction()
-                    : QtPrivate::AbstractConverterFunction(convert)
-                {
-                }
-
-                static bool convert(const AbstractConverterFunction *, const void *src, void*target){
-                    QSharedPointer<QObject>* p = reinterpret_cast<QSharedPointer<QObject>*>(target);
-                    const JObjectWrapper& jow = *reinterpret_cast<JObjectWrapper const*>(src);
-                    if(JniEnvironment env{200}){
-                        *p = QtJambiAPI::convertJavaObjectToSmartPointer<QSharedPointer,QObject>(env, jow.object(env));
-                        return true;
-                    }
-                    return false;
-                }
-            };
-            registerConverter(new JObjectWrapperConverterFunction(), jobjectWrapperType, newMetaType);
-            struct JObjectWrapperReConverterFunction : QtPrivate::AbstractConverterFunction{
-                JObjectWrapperReConverterFunction()
-                    : QtPrivate::AbstractConverterFunction(convert)
-                {
-                }
-
-                static bool convert(const AbstractConverterFunction *, const void *src, void*target){
-                    JObjectWrapper& jow = *reinterpret_cast<JObjectWrapper *>(target);
-                    const QSharedPointer<QObject>* p = reinterpret_cast<const QSharedPointer<QObject>*>(src);
-                    if(JniEnvironment env{200}){
-                        jow = JObjectWrapper(env, QtJambiAPI::convertSmartPointerToJavaObject(env, *p));
-                        return true;
-                    }
-                    return false;
-                }
-            };
-            registerConverter(new JObjectWrapperReConverterFunction(), newMetaType, jobjectWrapperType);
-#else
             QMetaType _newMetaType(newMetaType);
             if(!QMetaType::hasRegisteredConverterFunction(_newMetaType, metaType)){
                 QMetaType::registerConverterFunction([](const void *src, void *target)->bool{
@@ -2515,63 +1825,7 @@ int registerMetaType(JNIEnv* env,
                     return true;
                 }, _newMetaType, jqobjectWrapperType);
             }
-#endif
         }else{
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            int jobjectWrapperType = qMetaTypeId<JObjectWrapper>();
-            if(typeId){
-                struct JObjectWrapperReConverterFunction : QtPrivate::AbstractConverterFunction{
-                    const std::type_info& typeId;
-
-                    JObjectWrapperReConverterFunction(const std::type_info& _typeId)
-                        : QtPrivate::AbstractConverterFunction(convert),
-                        typeId(_typeId)
-                    {
-                    }
-
-                    static bool convert(const AbstractConverterFunction *_f, const void *src, void*target){
-                        const JObjectWrapperReConverterFunction* f = static_cast<const JObjectWrapperReConverterFunction*>(_f);
-                        JObjectWrapper& jow = *reinterpret_cast<JObjectWrapper*>(target);
-                        const QSharedPointer<char>* p = reinterpret_cast<QSharedPointer<char> const*>(src);
-                        if(JniEnvironment env{200}){
-                            jow = JObjectWrapper(env, QtJambiAPI::convertSmartPointerToJavaObject(env, f->typeId, *p));
-                            return true;
-                        }
-                        return false;
-                    }
-                };
-                registerConverter(new JObjectWrapperReConverterFunction(*typeId), newMetaType, jobjectWrapperType);
-            }else{
-                struct JObjectWrapperReConverterFunction : QtPrivate::AbstractConverterFunction{
-                    QtJambiUtils::InternalToExternalConverter memberConverter;
-
-                    JObjectWrapperReConverterFunction(const QtJambiUtils::InternalToExternalConverter& _memberConverter)
-                        : QtPrivate::AbstractConverterFunction(convert),
-                        memberConverter(_memberConverter)
-                    {
-                    }
-
-                    static bool convert(const AbstractConverterFunction *_f, const void *src, void*target){
-                        const JObjectWrapperReConverterFunction* f = static_cast<const JObjectWrapperReConverterFunction*>(_f);
-                        JObjectWrapper& jow = *reinterpret_cast<JObjectWrapper*>(target);
-                        const QSharedPointer<char>* p = reinterpret_cast<QSharedPointer<char> const*>(src);
-                        if(JniEnvironment env{200}){
-                            if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinksForPointer(p->get()).value(0)){
-                                jow = JObjectWrapper(env, link->getJavaObjectLocalRef(env));
-                                return true;
-                            }
-                            jvalue jv;
-                            jv.l = nullptr;
-                            if(f->memberConverter(env, nullptr, p->data(), jv, true)){
-                                jow = JObjectWrapper(env, jv.l);
-                            }
-                        }
-                        return true;
-                    }
-                };
-                registerConverter(new JObjectWrapperReConverterFunction(memberConverter), newMetaType, jobjectWrapperType);
-            }
-#else
             QMetaType _newMetaType(newMetaType);
             QMetaType jobjectWrapperType = QMetaType::fromType<JObjectWrapper>();
             if(!QMetaType::hasRegisteredConverterFunction(_newMetaType, jobjectWrapperType)){
@@ -2605,87 +1859,7 @@ int registerMetaType(JNIEnv* env,
                     }, _newMetaType, jobjectWrapperType);
                 }
             }
-#endif
             if(!isPointer && metaType.isValid()){
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                struct ValueConverterFunction : QtPrivate::AbstractConverterFunction{
-                    int _metaType_id;
-
-                    ValueConverterFunction(const QMetaType& elementMetaType)
-                        : QtPrivate::AbstractConverterFunction(convert),
-                        _metaType_id(elementMetaType.id())
-                    {
-                    }
-
-                    static bool convert(const AbstractConverterFunction *_f, const void *src, void*target){
-                        const ValueConverterFunction* f = static_cast<const ValueConverterFunction*>(_f);
-                        QSharedPointer<char>* p = reinterpret_cast<QSharedPointer<char>*>(target);
-                        if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinksForPointer(*reinterpret_cast<void*const*>(src)).value(0)){
-                            if(JniEnvironment env{200}){
-                                jobject jobj = link->getJavaObjectLocalRef(env);
-                                link.clear();
-                                *p = QtJambiAPI::convertJavaObjectToQSharedPointer(env, nullptr, jobj);
-                                return true;
-                            }
-                        }
-                        p->reset(reinterpret_cast<char*>(QMetaType::create(f->_metaType_id, src)), MetaTypeDeleter{f->_metaType_id});
-                        return true;
-                    }
-                };
-                registerConverter(new ValueConverterFunction(metaType), metaType.id(), newMetaType);
-                struct ValueReConverterFunction : QtPrivate::AbstractConverterFunction{
-                    int _metaType_id;
-
-                    ValueReConverterFunction(const QMetaType& elementMetaType)
-                        : QtPrivate::AbstractConverterFunction(convert),
-                        _metaType_id(elementMetaType.id())
-                    {
-                    }
-
-                    static bool convert(const AbstractConverterFunction *_f, const void *src, void*target){
-                        const ValueReConverterFunction* f = static_cast<const ValueReConverterFunction*>(_f);
-                        const QSharedPointer<char>* p = reinterpret_cast<const QSharedPointer<char>*>(src);
-                        QMetaType::construct(f->_metaType_id, target, p->get());
-                        return true;
-                    }
-                };
-                registerConverter(new ValueReConverterFunction(metaType), newMetaType, metaType.id());
-                struct JObjectWrapperConverterFunction : QtPrivate::AbstractConverterFunction{
-                    int _metaType_id;
-                    QtJambiUtils::ExternalToInternalConverter memberReConverter;
-
-                    JObjectWrapperConverterFunction(const QMetaType& elementMetaType, const QtJambiUtils::ExternalToInternalConverter& _memberReConverter)
-                        : QtPrivate::AbstractConverterFunction(convert),
-                        _metaType_id(elementMetaType.id()),
-                        memberReConverter(_memberReConverter)
-                    {
-                    }
-
-                    static bool convert(const AbstractConverterFunction *_f, const void *src, void*target){
-                        const JObjectWrapperConverterFunction* f = static_cast<const JObjectWrapperConverterFunction*>(_f);
-                        QSharedPointer<char>* p = reinterpret_cast<QSharedPointer<char>*>(target);
-                        const JObjectWrapper& jow = *reinterpret_cast<JObjectWrapper const*>(src);
-                        if(JniEnvironment env{200}){
-                            if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, jow.object(env))){
-                                jobject jobj = link->getJavaObjectLocalRef(env);
-                                link.clear();
-                                *p = QtJambiAPI::convertJavaObjectToQSharedPointer(env, nullptr, jobj);
-                                return true;
-                            }
-                            jvalue jv;
-                            jv.l = jow.object(env);
-                            void* out{QMetaType::create(f->_metaType_id)};
-                            if(f->memberReConverter(env, nullptr, jv, out, jValueType::l)){
-                                p->reset(reinterpret_cast<char*>(out), MetaTypeDeleter{f->_metaType_id});
-                            }else{
-                                QMetaType::destroy(f->_metaType_id, out);
-                            }
-                        }
-                        return true;
-                    }
-                };
-                registerConverter(new JObjectWrapperConverterFunction(metaType, memberReConverter), jobjectWrapperType, newMetaType);
-#else
                 if(!QMetaType::hasRegisteredConverterFunction(metaType, _newMetaType)){
                     QMetaType::registerConverterFunction([metaType, typeId](const void *src, void *target)->bool{
                         QSharedPointer<char>* p = reinterpret_cast<QSharedPointer<char>*>(target);
@@ -2738,95 +1912,7 @@ int registerMetaType(JNIEnv* env,
                         }, jobjectWrapperType, _newMetaType);
                     }
                 }
-#endif
             }else if(deleter_function){
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                if(metaType.isValid()){
-                    struct ValueConverterFunction : QtPrivate::AbstractConverterFunction{
-                        const std::type_info* typeId;
-                        PtrDeleterFunction deleter_function;
-
-                        ValueConverterFunction(const std::type_info* _typeId, PtrDeleterFunction _deleter_function)
-                            : QtPrivate::AbstractConverterFunction(convert),
-                            typeId(_typeId), deleter_function(_deleter_function)
-                        {
-                        }
-
-                        static bool convert(const AbstractConverterFunction *_f, const void *src, void*target){
-                            const ValueConverterFunction* f = static_cast<const ValueConverterFunction*>(_f);
-                            QSharedPointer<char>* p = reinterpret_cast<QSharedPointer<char>*>(target);
-                            if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinksForPointer(*reinterpret_cast<void*const*>(src)).value(0)){
-                                if(JniEnvironment env{200}){
-                                    jobject jobj = link->getJavaObjectLocalRef(env);
-                                    link.clear();
-                                    *p = QtJambiAPI::convertJavaObjectToQSharedPointer(env, f->typeId, jobj);
-                                    return true;
-                                }
-                            }
-                            p->reset(reinterpret_cast<char*>(*reinterpret_cast<char *const*>(src)), DeleterDeleter{f->deleter_function});
-                            return true;
-                        }
-                    };
-                    registerConverter(new ValueConverterFunction(typeId, deleter_function), metaType.id(), newMetaType);
-
-                    struct ValueReConverterFunction : QtPrivate::AbstractConverterFunction{
-                        int _metaType_id;
-
-                        ValueReConverterFunction(const QMetaType& elementMetaType)
-                            : QtPrivate::AbstractConverterFunction(convert),
-                            _metaType_id(elementMetaType.id())
-                        {
-                        }
-
-                        static bool convert(const AbstractConverterFunction *_f, const void *src, void*target){
-                            const ValueReConverterFunction* f = static_cast<const ValueReConverterFunction*>(_f);
-                            const QSharedPointer<char>* p = reinterpret_cast<const QSharedPointer<char>*>(src);
-                            void* ptr = p->get();
-                            QMetaType::construct(f->_metaType_id, target, &ptr);
-                            return true;
-                        }
-                    };
-                    registerConverter(new ValueReConverterFunction(metaType), newMetaType, metaType.id());
-                }
-
-                int jobjectWrapperType = qMetaTypeId<JObjectWrapper>();
-                struct JObjectWrapperConverterFunction : QtPrivate::AbstractConverterFunction{
-                    const std::type_info* typeId;
-                    PtrDeleterFunction deleter_function;
-                    QtJambiUtils::ExternalToInternalConverter memberReConverter;
-
-                    JObjectWrapperConverterFunction(const std::type_info* _typeId, PtrDeleterFunction _deleter_function, const QtJambiUtils::ExternalToInternalConverter& _memberReConverter)
-                        : QtPrivate::AbstractConverterFunction(convert),
-                        typeId(_typeId), deleter_function(_deleter_function),
-                        memberReConverter(_memberReConverter)
-                    {
-                    }
-
-                    static bool convert(const AbstractConverterFunction *_f, const void *src, void*target){
-                        const JObjectWrapperConverterFunction* f = static_cast<const JObjectWrapperConverterFunction*>(_f);
-                        QSharedPointer<char>* p = reinterpret_cast<QSharedPointer<char>*>(target);
-                        const JObjectWrapper& jow = *reinterpret_cast<JObjectWrapper const*>(src);
-                        if(JniEnvironment env{200}){
-                            if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, jow.object(env))){
-                                jobject jobj = link->getJavaObjectLocalRef(env);
-                                link.clear();
-                                *p = QtJambiAPI::convertJavaObjectToQSharedPointer(env, f->typeId, jobj);
-                                return true;
-                            }
-                            jvalue jv;
-                            jv.l = jow.object(env);
-                            char* ptr{nullptr};
-                            void* out{&ptr};
-                            if(f->memberReConverter(env, nullptr, jv, out, jValueType::l)){
-                                p->reset(ptr, DeleterDeleter{f->deleter_function});
-                            }
-                            return true;
-                        }
-                        return false;
-                    }
-                };
-                registerConverter(new JObjectWrapperConverterFunction(typeId, deleter_function, memberReConverter), jobjectWrapperType, newMetaType);
-#else
                 if(metaType.isValid()){
                     if(!QMetaType::hasRegisteredConverterFunction(metaType, _newMetaType)){
                         QMetaType::registerConverterFunction([deleter_function, typeId](const void *src, void *target)->bool{
@@ -2881,35 +1967,12 @@ int registerMetaType(JNIEnv* env,
                         }, jobjectWrapperType, _newMetaType);
                     }
                 }
-#endif
             }
         }
         return newMetaType;
     }
     case SmartPointerType::weak_ptr:{
         int newMetaType = registerSmartPointerMetaType(typeName.toLocal8Bit(),
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#if QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
-                                                       [](void* ptr){
-                                                           reinterpret_cast<std::weak_ptr<char>*>(ptr)->~weak_ptr();
-                                                       },
-                                                       [](void* result, const void *) -> void* {
-                                                           return new(result) std::weak_ptr<char>();
-                                                       },
-#else
-                                                       [](int, void *ptr){
-                                                           reinterpret_cast<std::weak_ptr<char>*>(ptr)->~weak_ptr();
-                                                       },
-                                                       [](int, void *ptr, const void *other)->void *{
-                                                           if(other)
-                                                               return new(ptr) std::weak_ptr<char>(*reinterpret_cast<const std::weak_ptr<char>*>(other));
-                                                           else
-                                                               return new(ptr) std::weak_ptr<char>();
-                                                       },
-#endif //QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
-                                                       uint(sizeof(std::weak_ptr<char>)),
-                                                       ushort(alignof(std::weak_ptr<char>)),
-#else
                                                        [](const QtPrivate::QMetaTypeInterface *, void *ptr){
                                                            new(ptr)std::weak_ptr<char>();
                                                        },
@@ -2933,7 +1996,6 @@ int registerMetaType(JNIEnv* env,
                                                        uint(sizeof(std::weak_ptr<char>)),
                                                        ushort(alignof(std::weak_ptr<char>)),
                                                        QMetaType::UnknownType,
-#endif
                                                        QMetaType::NeedsConstruction
                                                            | QMetaType::NeedsDestruction
 #if QT_VERSION < QT_VERSION_CHECK(6, 5, 0)
@@ -2946,61 +2008,6 @@ int registerMetaType(JNIEnv* env,
 #endif
                                                        );
         if(metaType.metaObject() && metaType.metaObject()->inherits(&QObject::staticMetaObject)){
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            struct ConverterFunction : QtPrivate::AbstractConverterFunction{
-                ConverterFunction()
-                    : QtPrivate::AbstractConverterFunction(convert)
-                {
-                }
-
-                static bool convert(const AbstractConverterFunction *, const void *src, void*target){
-                    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForQObject(*reinterpret_cast<QObject*const*>(src))){
-                        if(JniEnvironment env{200}){
-                            std::weak_ptr<QObject>* p = reinterpret_cast<std::weak_ptr<QObject>*>(target);
-                            *p = QtJambiAPI::convertJavaObjectToSmartPointer<std::shared_ptr,QObject>(env, link->getJavaObjectLocalRef(env));
-                            return true;
-                        }
-                    }
-                    return false;
-                }
-            };
-            registerConverter(new ConverterFunction(), metaType.id(), newMetaType);
-            int jobjectWrapperType = qMetaTypeId<JObjectWrapper>();
-            struct JObjectWrapperConverterFunction : QtPrivate::AbstractConverterFunction{
-                JObjectWrapperConverterFunction()
-                    : QtPrivate::AbstractConverterFunction(convert)
-                {
-                }
-
-                static bool convert(const AbstractConverterFunction *, const void *src, void*target){
-                    if(JniEnvironment env{200}){
-                        std::weak_ptr<QObject>* p = reinterpret_cast<std::weak_ptr<QObject>*>(target);
-                        const JObjectWrapper& jow = *reinterpret_cast<JObjectWrapper const*>(src);
-                        *p = QtJambiAPI::convertJavaObjectToSmartPointer<std::shared_ptr,QObject>(env, jow.object(env));
-                        return true;
-                    }
-                    return false;
-                }
-            };
-            registerConverter(new JObjectWrapperConverterFunction(), jobjectWrapperType, newMetaType);
-            struct JObjectWrapperReConverterFunction : QtPrivate::AbstractConverterFunction{
-                JObjectWrapperReConverterFunction()
-                    : QtPrivate::AbstractConverterFunction(convert)
-                {
-                }
-
-                static bool convert(const AbstractConverterFunction *, const void *src, void*target){
-                    if(JniEnvironment env{200}){
-                        JObjectWrapper& jow = *reinterpret_cast<JObjectWrapper *>(target);
-                        std::shared_ptr<QObject> p(*reinterpret_cast<const std::weak_ptr<QObject>*>(src));
-                        jow = JObjectWrapper(env, QtJambiAPI::convertSmartPointerToJavaObject(env, p));
-                        return true;
-                    }
-                    return false;
-                }
-            };
-            registerConverter(new JObjectWrapperReConverterFunction(), newMetaType, jobjectWrapperType);
-#else
             QMetaType _newMetaType(newMetaType);
             if(!QMetaType::hasRegisteredConverterFunction(metaType, _newMetaType)){
                 QMetaType::registerConverterFunction([](const void *src, void *target)->bool{
@@ -3060,108 +2067,7 @@ int registerMetaType(JNIEnv* env,
                     return true;
                 }, _newMetaType, jqobjectWrapperType);
             }
-#endif
         }else{
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            int jobjectWrapperType = qMetaTypeId<JObjectWrapper>();
-            if(typeId){
-                struct JObjectWrapperReConverterFunction : QtPrivate::AbstractConverterFunction{
-                    const std::type_info& typeId;
-
-                    JObjectWrapperReConverterFunction(const std::type_info& _typeId)
-                        : QtPrivate::AbstractConverterFunction(convert),
-                        typeId(_typeId)
-                    {
-                    }
-
-                    static bool convert(const AbstractConverterFunction *_f, const void *src, void*target){
-                        const JObjectWrapperReConverterFunction* f = static_cast<const JObjectWrapperReConverterFunction*>(_f);
-                        JObjectWrapper& jow = *reinterpret_cast<JObjectWrapper*>(target);
-                        std::shared_ptr<char> p(*reinterpret_cast<std::weak_ptr<char> const*>(src));
-                        if(JniEnvironment env{200}){
-                            jow = JObjectWrapper(env, QtJambiAPI::convertSmartPointerToJavaObject(env, f->typeId, p));
-                            return true;
-                        }
-                        return false;
-                    }
-                };
-                registerConverter(new JObjectWrapperReConverterFunction(*typeId), newMetaType, jobjectWrapperType);
-            }else{
-                struct JObjectWrapperReConverterFunction : QtPrivate::AbstractConverterFunction{
-                    QtJambiUtils::InternalToExternalConverter memberConverter;
-
-                    JObjectWrapperReConverterFunction(const QtJambiUtils::InternalToExternalConverter& _memberConverter)
-                        : QtPrivate::AbstractConverterFunction(convert),
-                        memberConverter(_memberConverter)
-                    {
-                    }
-
-                    static bool convert(const AbstractConverterFunction *_f, const void *src, void*target){
-                        const JObjectWrapperReConverterFunction* f = static_cast<const JObjectWrapperReConverterFunction*>(_f);
-                        JObjectWrapper& jow = *reinterpret_cast<JObjectWrapper*>(target);
-                        std::shared_ptr<char> p(*reinterpret_cast<std::weak_ptr<char> const*>(src));
-                        if(JniEnvironment env{200}){
-                            if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinksForPointer(p.get()).value(0)){
-                                jow = JObjectWrapper(env, link->getJavaObjectLocalRef(env));
-                                return true;
-                            }
-                            jvalue jv;
-                            jv.l = nullptr;
-                            if(f->memberConverter(env, nullptr, p.get(), jv, true)){
-                                jow = JObjectWrapper(env, jv.l);
-                            }
-                        }
-                        return true;
-                    }
-                };
-                registerConverter(new JObjectWrapperReConverterFunction(memberConverter), newMetaType, jobjectWrapperType);
-            }
-            struct ValueConverterFunction : QtPrivate::AbstractConverterFunction{
-                const std::type_info* typeId;
-                ValueConverterFunction(const std::type_info* _typeId)
-                    : QtPrivate::AbstractConverterFunction(convert),
-                    typeId(_typeId)
-                {
-                }
-
-                static bool convert(const AbstractConverterFunction *_f, const void *src, void*target){
-                    const ValueConverterFunction* f = static_cast<const ValueConverterFunction*>(_f);
-                    std::weak_ptr<char>* p = reinterpret_cast<std::weak_ptr<char>*>(target);
-                    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinksForPointer(*reinterpret_cast<void*const*>(src)).value(0)){
-                        if(JniEnvironment env{200}){
-                            if(link->isSmartPointer()){
-                                *p = QtJambiAPI::convertJavaObjectToWeakPtr(env, f->typeId, link->getJavaObjectLocalRef(env));
-                                return true;
-                            }
-                        }
-                    }
-                    return false;
-                }
-            };
-            registerConverter(new ValueConverterFunction(typeId), metaType.id(), newMetaType);
-            struct JObjectWrapperConverterFunction : QtPrivate::AbstractConverterFunction{
-                const std::type_info* typeId;
-                JObjectWrapperConverterFunction(const std::type_info* _typeId)
-                    : QtPrivate::AbstractConverterFunction(convert),
-                    typeId(_typeId)
-                {
-                }
-
-                static bool convert(const AbstractConverterFunction *_f, const void *src, void*target){
-                    const JObjectWrapperConverterFunction* f = static_cast<const JObjectWrapperConverterFunction*>(_f);
-                    std::weak_ptr<char>* p = reinterpret_cast<std::weak_ptr<char>*>(target);
-                    const JObjectWrapper& jow = *reinterpret_cast<JObjectWrapper const*>(src);
-                    if(JniEnvironment env{200}){
-                        if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, jow.object(env))){
-                            *p = QtJambiAPI::convertJavaObjectToWeakPtr(env, f->typeId, link->getJavaObjectLocalRef(env));
-                            return true;
-                        }
-                    }
-                    return false;
-                }
-            };
-            registerConverter(new JObjectWrapperConverterFunction(typeId), jobjectWrapperType, newMetaType);
-#else
             QMetaType _newMetaType(newMetaType);
             QMetaType jobjectWrapperType = QMetaType::fromType<JObjectWrapper>();
             if(!QMetaType::hasRegisteredConverterFunction(jobjectWrapperType, _newMetaType)){
@@ -3222,39 +2128,11 @@ int registerMetaType(JNIEnv* env,
                     return false;
                 }, jobjectWrapperType, _newMetaType);
             }
-#endif
         }
         return newMetaType;
     }
     case SmartPointerType::shared_ptr:{
         int newMetaType = registerSmartPointerMetaType(typeName.toLocal8Bit(),
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#if QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
-                                                       [](void* ptr){
-                                                           std::shared_ptr<char>* p = reinterpret_cast<std::shared_ptr<char>*>(ptr);
-                                                           p->~shared_ptr();
-                                                       },
-                                                       [](void* result, const void *other) -> void* {
-                                                           if(other)
-                                                               return new(ptr) std::shared_ptr<char>(*reinterpret_cast<const std::shared_ptr<char>*>(other));
-                                                           else
-                                                               return new(ptr) std::shared_ptr<char>();
-                                                       },
-#else
-                                                       [](int, void *ptr){
-                                                           std::shared_ptr<char>* p = reinterpret_cast<std::shared_ptr<char>*>(ptr);
-                                                           p->~shared_ptr();
-                                                       },
-                                                       [](int, void *ptr, const void *copy)->void *{
-                                                            if(copy)
-                                                                return new(ptr) std::shared_ptr<char>(*reinterpret_cast<const std::shared_ptr<char>*>(copy));
-                                                            else
-                                                                return new(ptr) std::shared_ptr<char>();
-                                                       },
-#endif //QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
-                                                       uint(sizeof(std::shared_ptr<char>)),
-                                                       ushort(alignof(std::shared_ptr<char>)),
-#else
                                                        [](const QtPrivate::QMetaTypeInterface *, void *ptr){
                                                            new(ptr)std::shared_ptr<char>();
                                                        },
@@ -3287,7 +2165,6 @@ int registerMetaType(JNIEnv* env,
                                                        uint(sizeof(std::shared_ptr<char>)),
                                                        ushort(alignof(std::shared_ptr<char>)),
                                                        QMetaType::UnknownType,
-#endif
                                                        QMetaType::NeedsConstruction
                                                            | QMetaType::NeedsDestruction
 #if QT_VERSION < QT_VERSION_CHECK(6, 5, 0)
@@ -3894,11 +2771,7 @@ int CoreAPI::registerMetaType(JNIEnv *env, jclass containerType, jobjectArray in
                     const std::type_info* typeId = nullptr;
                     bool isPointer = AbstractContainerAccess::isPointerType(metaType1);
                     if(isPointer){
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                        typeId = getTypeByQtName(metaType1.name().chopped(1));
-#else
                         typeId = getTypeByQtName(QByteArray(metaType1.name()).chopped(1));
-#endif
                     }else{
                         typeId = getTypeByQtName(metaType1.name());
                     }
@@ -3911,11 +2784,7 @@ int CoreAPI::registerMetaType(JNIEnv *env, jclass containerType, jobjectArray in
                     for(QString& name : names){
                         if(name.contains(QLatin1String("%1")))
                             name = name.arg(EXCLUDE_GT_END(elementType));
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                        registeredId = QMetaType::type(name.toLocal8Bit());
-#else
                         registeredId = QMetaType::fromName(name.toLocal8Bit()).id();
-#endif
                         if(registeredId!=QMetaType::UnknownType)
                             return registeredId;
                     }
@@ -4376,20 +3245,12 @@ int qtjambiMetaTypeId(JNIEnv *env, jclass clazz, jobjectArray instantiations, QS
                 }
             }
             if(id==QMetaType::UnknownType){
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                id = QMetaType::type(qPrintable(javaClassName.replace("/", "::").replace("$", "::")));
-#else
                 id = QMetaType::fromName(javaClassName.toUtf8().replace("/", "::").replace("$", "::")).id();
-#endif
                 if(id==QMetaType::UnknownType
                          && !Java::Runtime::Cloneable::isAssignableFrom(env, clazz)
                          && !Java::Runtime::Enum::isAssignableFrom(env, clazz)
                          && !Java::QtJambi::QFlags::isAssignableFrom(env, clazz)){
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                id = QMetaType::type(qPrintable(javaClassName.replace("/", "::").replace("$", "::").append("*")));
-#else
                 id = QMetaType::fromName(javaClassName.toUtf8().replace("/", "::").replace("$", "::").append("*")).id();
-#endif
                 }
 
             }
@@ -4400,16 +3261,16 @@ int qtjambiMetaTypeId(JNIEnv *env, jclass clazz, jobjectArray instantiations, QS
     return id;
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 jclass registeredJavaClassForCustomMetaType(QMetaType metaType);
-#else
-jclass registeredJavaClassForCustomMetaType(const QMetaType& metaType);
-#endif
+const char* registeredClassNameForFunctionalMetaType(QMetaType metaType);
 
 jclass CoreAPI::getClassForMetaType(JNIEnv *env, const QMetaType& metaType)
 {
     QByteArray typeName(metaType.name());
-    const char* name(nullptr);
+    const char* name = registeredClassNameForFunctionalMetaType(metaType);
+    if(name)
+        if(jclass cls = JavaAPI::resolveClass(env, name))
+            return cls;
     if(const std::type_info* typeId = getTypeByMetaType(metaType.id())){
         name = getJavaName(*typeId);
     }
@@ -4587,7 +3448,7 @@ QVariant CoreAPI::convertCheckedObjectToQVariant(JNIEnv *env, jobject object, co
 }
 #undef METATYPE_ID
 
-hash_type CoreAPI::computeHash(const QMetaType& metaType, const void* ptr, hash_type seed, bool* success)
+size_t CoreAPI::computeHash(const QMetaType& metaType, const void* ptr, size_t seed, bool* success)
 {
     QtJambiUtils::QHashFunction hashFunction1 = QtJambiTypeManager::findHashFunction(AbstractContainerAccess::isPointerType(metaType), metaType.id());
     if(success)

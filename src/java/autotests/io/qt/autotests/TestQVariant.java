@@ -34,7 +34,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -2084,13 +2083,7 @@ public class TestQVariant extends ApplicationInitializer {
     private static VariantConstructor variantConstructor;
     private static VariantConstructor variantConstructor() {
     	if(variantConstructor==null) {
-    		try {
-				variantConstructor = (VariantConstructor)Class.forName(TestQVariant.class.getName()+"Qt"+QLibraryInfo.version().majorVersion()+"$VariantConstructor").getConstructor().newInstance();
-			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-					| InvocationTargetException | NoSuchMethodException | SecurityException
-					| ClassNotFoundException e) {
-				e.printStackTrace();
-			}
+    		variantConstructor = new VariantConstructorImpl();
     	}
     	return variantConstructor;
     }
@@ -2106,5 +2099,43 @@ public class TestQVariant extends ApplicationInitializer {
     }
     public static QVariant createVariant(io.qt.core.QMetaType type, java.lang.Object copy){
     	return variantConstructor().create(type, copy);
+    }
+    
+    @Test
+    public void testNull() {
+    	QVariant variant = QVariant.fromValue(null);
+    	assertTrue(variant.isValid());
+    	assertEquals(variant.metaType(), QMetaType.Type.Nullptr);
+    	assertEquals(null, variant.value(Object.class));
+    	Object nll = variant.value();
+    	assertTrue(null==nll);
+    	
+    	variant = QVariant.fromValue(QVariant.NULL);
+    	assertTrue(variant.isValid());
+    	assertEquals(variant.metaType(), QMetaType.Type.Nullptr);
+    	assertEquals(null, variant.value(Object.class));
+    	nll = variant.value();
+    	assertTrue(null==nll);
+    	variant = QVariant.fromValue(QVariant.typedNullable(null, QWidget.class));
+    	assertTrue(variant.isValid());
+    	assertEquals(QMetaType.fromType(QWidget.class), variant.metaType());
+    	assertEquals(null, variant.value(Object.class));
+    	nll = variant.value();
+    	assertTrue(null==nll);
+    }
+	
+	public static class VariantConstructorImpl implements VariantConstructor{
+		public QVariant create(io.qt.core.QMetaType type) {
+    		return new QVariant(type);
+    	}
+    	public QVariant create(io.qt.core.QMetaType type, java.lang.Object copy) {
+    		return new QVariant(type, copy);
+    	}
+    	public QVariant create(io.qt.core.QMetaType.Type type) {
+    		return new QVariant(type);
+    	}
+    	public QVariant create(io.qt.core.QMetaType.Type type, java.lang.Object copy) {
+    		return new QVariant(type, copy);
+    	}
     }
 }

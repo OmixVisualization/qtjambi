@@ -27,50 +27,10 @@
 **
 ****************************************************************************/
 
-#include <qglobal.h>
 #include <QtCore/qcompilerdetection.h>
 QT_WARNING_DISABLE_DEPRECATED
 
-#include <cstring>
-
-#include <QtCore/QAbstractItemModel>
-#include <QtCore/QCoreApplication>
-#include <QtCore/QDir>
-#include <QtCore/QEvent>
-#include <QtCore/QFileInfo>
-#include <QtCore/QLibrary>
-#include <QtCore/QMetaMethod>
-#include <QtCore/QMetaObject>
-#include <QtCore/QSettings>
-#include <QtCore/QStringList>
-#include <QtCore/QThread>
-#include <QtCore/private/qthread_p.h>
-#include <QtCore/QVariant>
-#include <QtCore/QTextStream>
-#include <QtCore/QMutex>
-#include <QtCore/QAbstractEventDispatcher>
-#include <QtCore/QCryptographicHash>
-
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-#include <QtCore/QLinkedList>
-#include <QtCore/QVector>
-#endif
-
-#include <stdio.h>
-#include <string.h>
-
-#include "qtjambiapi.h"
-#include "java_p.h"
-#include "containerapi.h"
-#include "containeraccess.h"
-#include "containeraccess_p.h"
-#include "registryutil_p.h"
-#include "coreapi.h"
-#include "supertypeinfo_p.h"
-#include "qtjambilink_p.h"
-#include "typemanager_p.h"
-
-#include "qtjambi_cast.h"
+#include "pch_p.h"
 
 #if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
 jobject QtJambiAPI::convertQSpanToJavaObject(JNIEnv *env,

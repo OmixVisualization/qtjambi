@@ -79,6 +79,7 @@ import io.qt.core.QSize;
 import io.qt.core.QSizeF;
 import io.qt.core.QThread;
 import io.qt.core.QTimer;
+import io.qt.core.QVariant;
 import io.qt.gui.QAbstractUndoItem;
 import io.qt.gui.QColor;
 import io.qt.gui.QGuiApplication;
@@ -783,6 +784,35 @@ public class TestInterfaces extends ApplicationInitializer {
 		
 		FunctionalObject(){
 		}
+	}
+	
+	@Test
+    public void testFunctionalSameSignature() {
+		FunctionalTest functionalTest = new FunctionalTest();
+		Object anyTestFunction2 = functionalTest.anyTestFunction2();
+		Object anyTestFunction3 = functionalTest.anyTestFunction3();
+		Object anyTestFunction4 = functionalTest.anyTestFunction4();
+		Object anyTestFunction5 = functionalTest.anyTestFunction5();
+		Assert.assertTrue(anyTestFunction2 instanceof FunctionalTest.TestFunction2);
+		Assert.assertTrue(anyTestFunction3 instanceof FunctionalTest.TestFunction3);
+		Assert.assertTrue(anyTestFunction4 instanceof FunctionalTest.TestFunction4);
+		Assert.assertTrue(anyTestFunction5 instanceof FunctionalTest.TestFunction5);
+		QVariant variantTestFunction2 = QVariant.fromValue(anyTestFunction2);
+		QVariant variantTestFunction3 = QVariant.fromValue(anyTestFunction3);
+		QVariant variantTestFunction4 = QVariant.fromValue(anyTestFunction4);
+		QVariant variantTestFunction5 = QVariant.fromValue(anyTestFunction5);
+		Assert.assertEquals(FunctionalTest.TestFunction2.class, variantTestFunction2.metaType().javaType());
+		Assert.assertEquals(FunctionalTest.TestFunction3.class, variantTestFunction3.metaType().javaType());
+		Assert.assertEquals(FunctionalTest.TestFunction4.class, variantTestFunction4.metaType().javaType());
+		Assert.assertEquals(FunctionalTest.TestFunction5.class, variantTestFunction5.metaType().javaType());
+		Assert.assertTrue(variantTestFunction2.value() instanceof FunctionalTest.TestFunction2);
+		Assert.assertTrue(variantTestFunction3.value() instanceof FunctionalTest.TestFunction3);
+		Assert.assertTrue(variantTestFunction4.value() instanceof FunctionalTest.TestFunction4);
+		Assert.assertTrue(variantTestFunction5.value() instanceof FunctionalTest.TestFunction5);
+		functionalTest.takeTestFunction2((FunctionalTest.TestFunction2)anyTestFunction2);
+		functionalTest.takeTestFunction3((FunctionalTest.TestFunction3)anyTestFunction3);
+		functionalTest.takeTestFunction4((FunctionalTest.TestFunction4)anyTestFunction4);
+		functionalTest.takeTestFunction5((FunctionalTest.TestFunction5)anyTestFunction5);
 	}
 	
 	@Test

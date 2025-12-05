@@ -137,6 +137,7 @@ TypeSystem{
                     index: 1
                     ReplaceType{
                         modifiedType: "T"
+                        modifiedJavaType: "java.lang.Object"
                         modifiedJniType: "jobject"
                     }
                 }
@@ -144,6 +145,7 @@ TypeSystem{
                     index: 2
                     ReplaceType{
                         modifiedType: "T"
+                        modifiedJavaType: "java.lang.Object"
                         modifiedJniType: "jobject"
                     }
                 }
@@ -168,6 +170,7 @@ TypeSystem{
                     index: 1
                     ReplaceType{
                         modifiedType: "T"
+                        modifiedJavaType: "java.lang.Object"
                         modifiedJniType: "jobject"
                     }
                 }
@@ -192,6 +195,7 @@ TypeSystem{
                     index: 2
                     ReplaceType{
                         modifiedType: "T"
+                        modifiedJavaType: "java.lang.Object"
                         modifiedJniType: "jobject"
                     }
                 }
@@ -396,7 +400,8 @@ TypeSystem{
             rename: "Closing"
         }
         InjectCode{
-            target: CodeClass.DestructorFunction
+            target: CodeClass.Destructor
+            position: Position.Position1
             Text{content: "if (!%this->m_isClosing)\n"+
                           "    %this->close();"}
         }
@@ -466,7 +471,8 @@ if(%in){
     ObjectType{
         name: "QtROIoDeviceBase"
         InjectCode{
-            target: CodeClass.DestructorFunction
+            target: CodeClass.Destructor
+            position: Position.Position1
             Text{content: "if (!%this->isClosing())\n"+
                           "    %this->close();"}
         }
@@ -524,7 +530,8 @@ if(%in){
     ObjectType{
         name: "ServerIoDevice"
         InjectCode{
-            target: CodeClass.DestructorFunction
+            target: CodeClass.Destructor
+            position: Position.Position1
             until: [5, 11]
             Text{content: "if (!%this->m_isClosing)\n"+
                           "    %this->close();"}
@@ -601,7 +608,8 @@ if(%in){
             write: false
         }
         InjectCode{
-            target: CodeClass.DestructorFunction
+            target: CodeClass.Destructor
+            position: Position.Position1
             until: [5, 11]
             Text{content: "if (!%this->m_isClosing)\n"+
                           "    %this->close();"}

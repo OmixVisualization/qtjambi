@@ -36,26 +36,14 @@
 
 #if !defined(Q_CC_MSVC) && !defined(QTJAMBI_GENERATOR_RUNNING)
 template<typename RET, typename... ARGS>
-inline
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    uint
-#else
-    size_t
-#endif
-            qHash(RET (*value)(ARGS...));
+inline size_t qHash(RET (*value)(ARGS...));
 #endif
 
 #include <QtJambi/typetests.h>
 
 #if !defined(Q_CC_MSVC) && !defined(QTJAMBI_GENERATOR_RUNNING)
 template<typename RET, typename... ARGS>
-inline
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    uint
-#else
-    size_t
-#endif
-            qHash(RET (*value)(ARGS...))
+inline size_t qHash(RET (*value)(ARGS...))
 {
     return qHash(reinterpret_cast<quintptr>(value));
 }
@@ -74,11 +62,6 @@ public:
     QList<int> do_QList_of_int(const QList<int> &l);
 
     QStringList do_QStringList(const QStringList &l);
-
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    QLinkedList<int> do_QLinkedList_of_int(const QLinkedList<int> &l);
-    QVector<int> do_QVector_of_int(const QVector<int> &l);
-#endif
 
     QStack<int> do_QStack_of_int(const QStack<int> &s);
 
@@ -107,13 +90,6 @@ public:
     const QStack<QPair<int,QString>>& constStack() const;
     QStack<QPair<int,QString>>& stackRef();
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    const QLinkedList<QPoint>& constLinkedList() const;
-    QLinkedList<QPoint>& linkedListRef();
-    const QVector<double>& constVector() const;
-    QVector<double>& vectorRef();
-#endif //QT_VERSION < QT_VERSION_CHECK(6,0,0)
-
     const QMap<QString,QPoint>& constMap() const;
     QMap<QString,QPoint>& mapRef();
 
@@ -138,24 +114,6 @@ public:
     typedef std::function<void(int,bool,double)> TestStdFunction;
     static QList<Tulip::TestStdFunction> createListOfStdFunctions();
     static void testStdFunctions(const QList<Tulip::TestStdFunction>& functions);
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    static QVector<QRunnable*> createVectorOfRunnables();
-    static QVector<QEasingCurve::EasingFunction> createVectorOfEasingFunctions();
-    static void testEasingFunctions(const QVector<QEasingCurve::EasingFunction>& functions);
-    static QVector<Tulip::TestStdFunction> createVectorOfStdFunctions();
-    static void testStdFunctions(const QVector<Tulip::TestStdFunction>& functions);
-    static QVector<QObject*> createVectorOfObjects();
-    static QVector<QVector<QRunnable*>> createVectorOfVectorOfRunnables();
-    static QVector<QVector<QObject*>> createVectorOfVectorOfObjects();
-    static QLinkedList<QRunnable*> createLinkedListOfRunnables();
-    static QLinkedList<QEasingCurve::EasingFunction> createLinkedListOfEasingFunctions();
-    static void testEasingFunctions(const QLinkedList<QEasingCurve::EasingFunction>& functions);
-    static QLinkedList<Tulip::TestStdFunction> createLinkedListOfStdFunctions();
-    static void testStdFunctions(const QLinkedList<Tulip::TestStdFunction>& functions);
-    static QLinkedList<QObject*> createLinkedListOfObjects();
-    static QLinkedList<QLinkedList<QRunnable*>> createLinkedListOfLinkedListOfRunnables();
-    static QLinkedList<QLinkedList<QObject*>> createLinkedListOfLinkedListOfObjects();
-#endif
     static QSet<QRunnable*> createSetOfRunnables();
     static QHash<QString,QRunnable*> createStringHashOfRunnables();
     static QMultiHash<QString,QRunnable*> createStringMultiHashOfRunnables();
@@ -183,10 +141,6 @@ private:
     QByteArrayList m_bytearraylist;
     QQueue<QString> m_queue;
     QStack<QPair<int,QString>> m_stack;
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    QVector<double> m_vector;
-    QLinkedList<QPoint> m_linkedlist;
-#endif //QT_VERSION < QT_VERSION_CHECK(6,0,0)
     QMap<QString,QPoint> m_map;
     QHash<int,QPoint> m_hash;
     QMultiMap<QString,QPoint> m_multimap;

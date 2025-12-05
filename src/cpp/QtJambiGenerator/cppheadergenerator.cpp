@@ -142,12 +142,14 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaFunctional *java_class,
       << "#define " << include_block << Qt::endl << Qt::endl;
 
     QSet<QString> included;
+    if(!ftype->precompiledHeader().isEmpty())
+        writeInclude(s, Include(Include::LocalPath, ftype->precompiledHeader()), included);
     {
         IncludeList includes = java_class->typeEntry()->extraIncludes();
         if(java_class->typeEntry()->designatedInterface()){
             includes << java_class->typeEntry()->designatedInterface()->extraIncludes();
         }
-        for(const Include& icl : includes){
+        for(const Include& icl : std::as_const(includes)){
             if(icl.suppressed)
                 writeInclude(s, icl, included);
         }
@@ -179,7 +181,7 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaFunctional *java_class,
     }
     IncludeList list = java_class->typeEntry()->extraIncludes();
     std::sort(list.begin(), list.end());
-    for(const Include &inc : list) {
+    for(const Include& inc : std::as_const(list)){
         if (inc.type != Include::TargetLangImport)
             writeInclude(s, inc, included);
     }
@@ -282,7 +284,6 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
                 writeInclude(s, icl, included);
         }
     }
-    writeInclude(s, Include(Include::IncludePath, QStringLiteral(u"QtCore/QtGlobal")), included);
 
     bool hasDeprecation = java_class->isDeclDeprecated();
     if(!hasDeprecation){
@@ -310,9 +311,11 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
     }
     if(hasDeprecation){
         writeInclude(s, Include(Include::IncludePath, QStringLiteral(u"QtCore/qcompilerdetection.h")), included);
-        s << Qt::endl << "QT_WARNING_DISABLE_DEPRECATED" << Qt::endl
-          << "QT_WARNING_DISABLE_GCC(\"-Wdeprecated-declarations\")" << Qt::endl << Qt::endl;
+        s << Qt::endl << "QT_WARNING_DISABLE_DEPRECATED" << Qt::endl << Qt::endl;
     }
+    if(!java_class->typeEntry()->precompiledHeader().isEmpty())
+        writeInclude(s, Include(Include::LocalPath, java_class->typeEntry()->precompiledHeader()), included);
+    writeInclude(s, Include(Include::IncludePath, QStringLiteral(u"QtCore/QtGlobal")), included);
     writeInjectedCode(s, java_class, {CodeSnip::Position1});
 
     if(java_class->enclosingClass()){
@@ -325,7 +328,7 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
 
     IncludeList list = java_class->typeEntry()->extraIncludes();
     std::sort(list.begin(), list.end());
-    for(const Include &inc : list) {
+    for(const Include& inc : std::as_const(list)){
         if (inc.type == Include::TargetLangImport)
             continue;
         writeInclude(s, inc, included);
@@ -354,6 +357,7 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
     writeInjectedCode(s, java_class, {CodeSnip::Position2});
 
     if (java_class->generateShellClass()) {
+        bool has_virtual_functions = !java_class->virtualFunctions().isEmpty();
         if(java_class->hasVirtualDestructor()){
             s << Qt::endl
               << "class " << shellClassName(java_class)
@@ -420,7 +424,7 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
                 if(java_class->isQObject()){
                     s << "    friend class " << mshellClassName(java_class) << ";" << Qt::endl;
                 }
-                if(java_class->hasVirtualDestructor()){
+                if(has_virtual_functions){
                     s << "    friend class " << oshellClassName(java_class) << ";" << Qt::endl;
                 }
             }
@@ -449,77 +453,13 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
             }
         }
 
-        s << Qt::endl
-          << "class ";
-        if(java_class->hasVirtualDestructor()){
-            s << oshellClassName(java_class);
-            if(java_class->isQObject())
-                s << " : public " << mshellClassName(java_class);
-            else
-                s << " : public " << shellClassName(java_class);
-        }else{
-            s << shellClassName(java_class)
-              << " : public " << java_class->qualifiedCppName();
-        }
-        s << Qt::endl
-          << "{" << Qt::endl;
-        if(!java_class->hasVirtualDestructor()){
-            writeInjectedCode(s, java_class, {CodeSnip::Beginning});
-        }
-        s << "public:" << Qt::endl;
-        if(java_class->hasVirtualDestructor()){
-            if(java_class->isQObject())
-                s << "    using " << mshellClassName(java_class)<< "::" << mshellClassName(java_class) << ";" << Qt::endl;
-            else
-                s << "    using " << shellClassName(java_class)<< "::" << shellClassName(java_class) << ";" << Qt::endl;
-            if(java_class->needsOShellDestructor()){
-                s << "    ~" << oshellClassName(java_class) << "() override;" << Qt::endl;
+        const MetaClass* interfaceClass = nullptr;
+        for(const MetaClass* iface : java_class->interfaces()){
+            ImplementorTypeEntry * origin = static_cast<const InterfaceTypeEntry *>(iface->typeEntry())->origin();
+            if(origin==java_class->typeEntry()){
+                interfaceClass = iface;
+                break;
             }
-        }else if(!java_class->typeEntry()->isDestructorPrivate() && java_class->instantiateShellClass()){
-            for(const MetaFunction *function : java_class->functions()) {
-                if (function->functionType()==MetaFunction::ConstructorFunction && !function->wasPrivate()){
-                    QStringList ppConditions;
-                    for(const MetaArgument *argument : function->arguments()) {
-                        if(function->argumentRemoved(argument->argumentIndex()+1)!=ArgumentRemove_No){
-                            if(!argument->type()->typeEntry()->ppCondition().isEmpty() && !ppConditions.contains(argument->type()->typeEntry()->ppCondition())){
-                                ppConditions << argument->type()->typeEntry()->ppCondition();
-                            }
-                            for(const MetaType* inst : argument->type()->instantiations()){
-                                if(!inst->typeEntry()->ppCondition().isEmpty() && !ppConditions.contains(inst->typeEntry()->ppCondition())){
-                                    ppConditions << inst->typeEntry()->ppCondition();
-                                }
-                            }
-                        }
-                    }
-                    if(!java_class->typeEntry()->ppCondition().isEmpty()){
-                        ppConditions.removeAll(java_class->typeEntry()->ppCondition());
-                    }
-                    if(!ppConditions.isEmpty()){
-                        for (int i=0; i<ppConditions.size(); ++i) {
-                            if(ppConditions[i].contains(QStringLiteral(u"||"))){
-                                ppConditions[i] = QStringLiteral(u"(%1)").arg(ppConditions[i]);
-                            }
-                        }
-                        s << Qt::endl << "#if " << ppConditions.join(" && ") << Qt::endl << Qt::endl;
-                    }
-                    Option option = Option(SkipRemovedArguments);
-                    if(!java_class->hasVirtualDestructor()){
-                        option = Option(option | PlainShell);
-                    }
-                    //if(java_class->isQObject()){
-                        option = Option(option | IncludeDefaultExpression);
-                    //}
-                    if(!function->isPublic())
-                        option = Option(option | EnumAsInts);
-                    writeFunction(s, function, option);
-                    if(!ppConditions.isEmpty()){
-                        s << Qt::endl << "#endif //" << ppConditions.join(" && ") << Qt::endl << Qt::endl;
-                    }
-                }
-            }
-            s << "    ~" << shellClassName(java_class) << "();" << Qt::endl;
-        }else{
-            s << Qt::endl;
         }
 
         QList<const MetaFunction *> functionsInTargetLang;
@@ -534,134 +474,212 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
             if (
                 (!function->isConstructor() ||
                  !java_class->hasUnimplmentablePureVirtualFunction()) &&
-                 !function->isEmptyFunction() &&
-                 !function->hasUnresolvedTemplateTypes()
+                !function->isEmptyFunction() &&
+                !function->hasUnresolvedTemplateTypes()
                 )
                 functionsInTargetLang << function;
         }
         for(MetaFunction *function : java_class->queryFunctions(MetaClass::NormalFunctions
-                                                                           | MetaClass::AbstractFunctions
-                                                                           | MetaClass::NotRemovedFromTargetLang)) {
+                                                                 | MetaClass::AbstractFunctions
+                                                                 | MetaClass::NotRemovedFromTargetLang)) {
             if (function->implementingClass() != java_class &&
-                    !function->hasUnresolvedTemplateTypes() ) {
+                !function->hasUnresolvedTemplateTypes() ) {
                 functionsInTargetLang << function;
             }
         }
 
-        // All functions in original class that should be reimplemented in shell class
-        QList<const MetaFunction *> privatePureVirtuals;
-        for(const MetaFunction *function : java_class->functionsInShellClass()) {
-            if(function->isFinalInCpp() && !function->isVirtualSlot())
-                continue;
-            if(function->wasPrivate()){
-                if(function->isAbstract())
-                    privatePureVirtuals << function;
+        if(has_virtual_functions || !java_class->hasVirtualDestructor()){
+            s << Qt::endl
+              << "class ";
+            if(has_virtual_functions){
+                s << oshellClassName(java_class);
+                if(java_class->isQObject())
+                    s << " : public " << mshellClassName(java_class);
+                else
+                    s << " : public " << shellClassName(java_class);
             }else{
+                s << shellClassName(java_class)
+                  << " : public " << java_class->qualifiedCppName();
+            }
+            s << Qt::endl
+              << "{" << Qt::endl;
+            if(!has_virtual_functions){
+                writeInjectedCode(s, java_class, {CodeSnip::Beginning});
+            }
+            s << "public:" << Qt::endl;
+            if(has_virtual_functions){
+                if(java_class->isQObject())
+                    s << "    using " << mshellClassName(java_class)<< "::" << mshellClassName(java_class) << ";" << Qt::endl;
+                else
+                    s << "    using " << shellClassName(java_class)<< "::" << shellClassName(java_class) << ";" << Qt::endl;
+                if(java_class->needsOShellDestructor()){
+                    s << "    ~" << oshellClassName(java_class) << "() override;" << Qt::endl;
+                }
+            }else if(!java_class->typeEntry()->isDestructorPrivate() && java_class->instantiateShellClass()){
+                for(const MetaFunction *function : java_class->functions()) {
+                    if (function->functionType()==MetaFunction::ConstructorFunction && !function->wasPrivate()){
+                        QStringList ppConditions;
+                        for(const MetaArgument *argument : function->arguments()) {
+                            if(function->argumentRemoved(argument->argumentIndex()+1)!=ArgumentRemove_No){
+                                if(!argument->type()->typeEntry()->ppCondition().isEmpty() && !ppConditions.contains(argument->type()->typeEntry()->ppCondition())){
+                                    ppConditions << argument->type()->typeEntry()->ppCondition();
+                                }
+                                for(const MetaType* inst : argument->type()->instantiations()){
+                                    if(!inst->typeEntry()->ppCondition().isEmpty() && !ppConditions.contains(inst->typeEntry()->ppCondition())){
+                                        ppConditions << inst->typeEntry()->ppCondition();
+                                    }
+                                }
+                            }
+                        }
+                        if(!java_class->typeEntry()->ppCondition().isEmpty()){
+                            ppConditions.removeAll(java_class->typeEntry()->ppCondition());
+                        }
+                        if(!ppConditions.isEmpty()){
+                            for (int i=0; i<ppConditions.size(); ++i) {
+                                if(ppConditions[i].contains(QStringLiteral(u"||"))){
+                                    ppConditions[i] = QStringLiteral(u"(%1)").arg(ppConditions[i]);
+                                }
+                            }
+                            s << Qt::endl << "#if " << ppConditions.join(" && ") << Qt::endl << Qt::endl;
+                        }
+                        Option option = Option(SkipRemovedArguments);
+                        if(!has_virtual_functions){
+                            option = Option(option | PlainShell);
+                        }
+                        //if(java_class->isQObject()){
+                            option = Option(option | IncludeDefaultExpression);
+                        //}
+                        if(!function->isPublic())
+                            option = Option(option | EnumAsInts);
+                        writeFunction(s, function, option);
+                        if(!ppConditions.isEmpty()){
+                            s << Qt::endl << "#endif //" << ppConditions.join(" && ") << Qt::endl << Qt::endl;
+                        }
+                    }
+                }
+                s << "    ~" << shellClassName(java_class) << "();" << Qt::endl;
+            }else{
+                s << Qt::endl;
+            }
+
+            // All functions in original class that should be reimplemented in shell class
+            QList<const MetaFunction *> privatePureVirtuals;
+            for(const MetaFunction *function : java_class->functionsInShellClass()) {
+                if(function->isFinalInCpp() && !function->isVirtualSlot())
+                    continue;
+                if(function->wasPrivate()){
+                    if(function->isAbstract())
+                        privatePureVirtuals << function;
+                }else{
+                    writeFunction(s, function);
+                }
+            }
+            if(java_class->instantiateShellClass()){
+                s << "    static void operator delete(void * ptr) noexcept;" << Qt::endl;
+            }
+
+            s << "private:" << Qt::endl;
+            for(const MetaFunction *function : qAsConst(privatePureVirtuals)) {
                 writeFunction(s, function);
             }
-        }
-
-        const MetaClass* interfaceClass = nullptr;
-        for(const MetaClass* iface : java_class->interfaces()){
-            ImplementorTypeEntry * origin = static_cast<const InterfaceTypeEntry *>(iface->typeEntry())->origin();
-            if(origin==java_class->typeEntry()){
-                interfaceClass = iface;
-                break;
+            if(!has_virtual_functions){
+                if(java_class->instantiateShellClass()){
+                    s << "    QtJambiShell* __shell() const;" << Qt::endl;
+                }
             }
-        }
-        if(java_class->instantiateShellClass()){
-            s << "    static void operator delete(void * ptr) noexcept;" << Qt::endl;
-        }
-
-        s << "private:" << Qt::endl;
-        for(const MetaFunction *function : qAsConst(privatePureVirtuals)) {
-            writeFunction(s, function);
-        }
-        if(!java_class->hasVirtualDestructor()){
-            if(java_class->instantiateShellClass()){
-                s << "    QtJambiShell* __shell() const;" << Qt::endl;
+            if(has_virtual_functions){
+                s << "    jmethodID __shell_javaMethod(int pos) const;" << Qt::endl;
+                if(java_class->typeEntry()->isQAbstractItemModel())
+                    s << "    ModelData* __shell_modelData() const;" << Qt::endl;
             }
-        }
-        if(!java_class->implementableFunctions().isEmpty()){
-            s << "    jmethodID __shell_javaMethod(int pos) const;" << Qt::endl;
-            if(java_class->typeEntry()->isQAbstractItemModel())
-                s << "    ModelData* __shell_modelData() const;" << Qt::endl;
-        }
-        if(!java_class->hasVirtualDestructor()){
-            //writeVariablesSection(s, java_class, interfaceClass!=nullptr);
-            writeInjectedCode(s, java_class, {CodeSnip::Position3, CodeSnip::End});
+            if(!has_virtual_functions){
+                //writeVariablesSection(s, java_class, interfaceClass!=nullptr);
+                writeInjectedCode(s, java_class, {CodeSnip::Position3, CodeSnip::End});
+            }
+
+            s  << "};" << Qt::endl << Qt::endl;
         }
 
-        s  << "};" << Qt::endl << Qt::endl;
-
+        bool needsAccess = false;
         QList<MetaEnum *> protectedEnums;
-        for(MetaEnum *cpp_enum : java_class->enums()){
-            if(cpp_enum->isProtected() || !java_class->isPublic()){
-                protectedEnums << cpp_enum;
-            }
-        }
-        if(interfaceClass){
-            for(MetaEnum *cpp_enum : interfaceClass->enums()){
-                if(cpp_enum->isProtected() || !interfaceClass->isPublic()){
+        QList<const MetaFunction *> publicOverrideFunctions;
+        QList<const MetaFunction *> virtualOverrideFunctions;
+        if(java_class->generateShellClass()){
+            for(MetaEnum *cpp_enum : java_class->enums()){
+                if(cpp_enum->isProtected() || !java_class->isPublic()){
                     protectedEnums << cpp_enum;
                 }
             }
-        }
-
-        bool needsAccess = !protectedEnums.isEmpty() || !java_class->publicOverrideFunctions().isEmpty() || !java_class->virtualOverrideFunctions().isEmpty();
-        if(!needsAccess){
-            for(const MetaField *field : java_class->fields()) {
-                if (field->wasProtected()){
-                    FieldModification mod = java_class->typeEntry()->fieldModification(field->name());
-                    if(mod.isReadable()){
-                        needsAccess = true;
-                        break;
+            if(interfaceClass){
+                for(MetaEnum *cpp_enum : interfaceClass->enums()){
+                    if(cpp_enum->isProtected() || !interfaceClass->isPublic()){
+                        protectedEnums << cpp_enum;
                     }
-                    bool isWritable = true;
-                    if(field->type()->isConstant()){
-                        if(field->type()->indirections().isEmpty()){
-                            isWritable = false;
-                        }else if(field->type()->indirections()[0]){
+                }
+            }
+            for(const MetaFunction *function : java_class->publicOverrideFunctions()) {
+                if((functionsInTargetLang.contains(function) || signalsInTargetLang.contains(function))
+                    && !function->isProxyCall())
+                    publicOverrideFunctions << function;
+            }
+
+            // Override all virtual functions to get the decision on static/virtual call
+            for(const MetaFunction *function : java_class->virtualOverrideFunctions()) {
+                if(!function->hasUnresolvedTemplateTypes()
+                    && !function->isRemovedFrom(java_class, TS::TargetLangCode)
+                    && !function->isRemovedFrom(function->declaringClass(), TS::TargetLangCode)
+                    && !function->isModifiedRemoved(TS::NativeCode)
+                    && !function->wasPrivate()
+                    && (function->implementingClass()==java_class
+                        || function->implementingClass()==java_class->extractInterface()
+                        || ( (java_class->isAbstract() || java_class->isInterface()) && function->isAbstract() ))
+                    ){
+                    virtualOverrideFunctions << function;
+                }
+            }
+            needsAccess = !protectedEnums.isEmpty() || !publicOverrideFunctions.isEmpty() || !virtualOverrideFunctions.isEmpty();
+            if(!needsAccess){
+                for(const MetaField *field : java_class->fields()) {
+                    if (field->wasProtected()){
+                        FieldModification mod = java_class->typeEntry()->fieldModification(field->name());
+                        if(mod.isReadable()){
+                            needsAccess = true;
+                            break;
+                        }
+                        bool isWritable = true;
+                        if(field->type()->isConstant()){
+                            if(field->type()->indirections().isEmpty()){
+                                isWritable = false;
+                            }else if(field->type()->indirections()[0]){
+                                isWritable = false;
+                            }
+                        }else if(!field->type()->indirections().isEmpty()
+                                   && field->type()->indirections()[0]){
                             isWritable = false;
                         }
-                    }else if(!field->type()->indirections().isEmpty()
-                               && field->type()->indirections()[0]){
-                        isWritable = false;
-                    }
-                    if (mod.isWritable() && isWritable) {
-                        needsAccess = true;
-                        break;
+                        if (mod.isWritable() && isWritable) {
+                            needsAccess = true;
+                            break;
+                        }
                     }
                 }
             }
         }
 
-        if(needsAccess && java_class->generateShellClass()){
+        if(needsAccess){
             s << "struct " << (java_class->typeEntry()->designatedInterface() ? java_class->extractInterface()->name() : java_class->name()) << "_access"
               << " : public " << java_class->qualifiedCppName() << Qt::endl
               << "{" << Qt::endl;
             {
                 INDENTATION(INDENT);
                 // Public call throughs for protected functions
-                for(const MetaFunction *function : java_class->publicOverrideFunctions()) {
-                    if((functionsInTargetLang.contains(function) || signalsInTargetLang.contains(function))
-                            && !function->isProxyCall())
-                        writeFunctionOverride(s, function, "__qt_");
+                for(const MetaFunction *function : qAsConst(publicOverrideFunctions)) {
+                    writeFunctionOverride(s, function, "__qt_");
                 }
 
                 // Override all virtual functions to get the decision on static/virtual call
-                for(const MetaFunction *function : java_class->virtualOverrideFunctions()) {
-                    if(!function->hasUnresolvedTemplateTypes()
-                            && !function->isRemovedFrom(java_class, TS::TargetLangCode)
-                            && !function->isRemovedFrom(function->declaringClass(), TS::TargetLangCode)
-                            && !function->isModifiedRemoved(TS::NativeCode)
-                            && !function->wasPrivate()
-                            && (function->implementingClass()==java_class
-                                || function->implementingClass()==java_class->extractInterface()
-                                || ( (java_class->isAbstract() || java_class->isInterface()) && function->isAbstract() ))
-                    ){
-                        writeFunctionOverride(s, function, "__qt_");
-                    }
+                for(const MetaFunction *function : qAsConst(virtualOverrideFunctions)) {
+                    writeFunctionOverride(s, function, "__qt_");
                 }
 
                 // Field accessors

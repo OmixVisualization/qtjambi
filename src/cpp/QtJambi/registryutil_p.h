@@ -45,8 +45,8 @@ class SuperTypeInfos;
 #define OptionalBool std::optional<bool>
 jclass getGlobalClassRef(JNIEnv *env, jclass cls, QByteArrayView className = {});
 
-hash_type qHash(const std::type_index& idx, hash_type seed = 0) Q_DECL_NOEXCEPT;
-hash_type qHash(const char *p, hash_type seed = 0) Q_DECL_NOEXCEPT;
+size_t qHash(const std::type_index& idx, size_t seed = 0) Q_DECL_NOEXCEPT;
+size_t qHash(const char *p, size_t seed = 0) Q_DECL_NOEXCEPT;
 const QMetaObject* registeredOriginalMetaObject(const std::type_info& typeId);
 PtrDeleterFunction deleter(const std::type_info& typeId);
 const char* getInterface(const char*qt_name);
@@ -163,8 +163,6 @@ const char * registeredInterfaceIDForClassName(const QString& className);
 bool isQObject(const std::type_info& typeId);
 QList<jclass> getFlatClassHirarchy(JNIEnv *env, jclass clazz);
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-
 struct JObjectValueWrapperPrivate;
 
 class JObjectValueWrapper : public JObjectWrapper{
@@ -250,7 +248,5 @@ public:
     jobject javaObject(JNIEnv* env) const;
     inline QObject* qobject() const { return m_qobject; }
 };
-
-#endif
 
 #endif // REGISTRYUTIL_P_H

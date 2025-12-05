@@ -364,10 +364,10 @@ public class OSInfo
     	osInfos.remove(project.getProperty("qtjambi.osinfo"));
     }
     
-    public static String initializeNewOSInfo(Project project) {
+    public static OSInfo initializeNewOSInfo() {
     	OSInfo localOSInfo = new OSInfo();
     	osInfos.put(localOSInfo.id, localOSInfo);
-		return localOSInfo.id;
+		return localOSInfo;
     }
 }
 

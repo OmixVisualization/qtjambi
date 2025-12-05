@@ -308,13 +308,67 @@ TypeSystem{
     ObjectType{
         name: "QOAuthHttpServerReplyHandler"
         ModifyFunction{
-            signature: "listen(const QHostAddress &, quint16)"
+            signature: "listen(QHostAddress, quint16)"
             ModifyArgument{
                 index: 1
                 ReplaceDefaultExpression{
                     expression: "new io.qt.network.QHostAddress(io.qt.network.QHostAddress.SpecialAddress.Any)"
                 }
             }
+            ModifyArgument{
+                index: 2
+                ReplaceType{
+                    modifiedType: "int"
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "listen(QSslConfiguration, QHostAddress, quint16)"
+            ModifyArgument{
+                index: 2
+                ReplaceDefaultExpression{
+                    expression: "new io.qt.network.QHostAddress(io.qt.network.QHostAddress.SpecialAddress.Any)"
+                }
+            }
+            ModifyArgument{
+                index: 3
+                ReplaceType{
+                    modifiedType: "int"
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "port()const"
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "int"
+                }
+            }
+        }
+
+        InjectCode{
+            Text{content: String.raw`
+/**
+ * @deprecated please use {@link #listen(io.qt.network.QHostAddress, int)} instead.
+ */
+@SuppressWarnings({"exports"})
+@QtUninvokable
+@Deprecated(forRemoval = true)
+public final boolean listen(io.qt.network.QHostAddress.@NonNull SpecialAddress address, short port) {
+    return listen(address, (int)port);
+}
+
+/**
+ * @deprecated please use {@link #listen(io.qt.network.QHostAddress, int)} instead.
+ */
+@SuppressWarnings({"exports"})
+@QtUninvokable
+@Deprecated(forRemoval = true)
+public final boolean listen(io.qt.network.@NonNull QHostAddress address, short port) {
+    return listen(address, (int)port);
+}
+                `}
         }
     }
     

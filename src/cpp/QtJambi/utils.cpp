@@ -29,117 +29,8 @@
 **
 ****************************************************************************/
 
-#include <QtCore/QMetaType>
-#include <QtCore/QHash>
-#include "registryapi.h"
-#include "utils_p.h"
-#include "coreapi.h"
-#include "containerapi.h"
+#include "pch_p.h"
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-namespace QtPrivate{
-class DummyType{};
-template<>
-struct MetaTypeSmartPointerHelper<DummyType,DummyType>{
-    static bool registerComparatorFunction(const QtPrivate::AbstractComparatorFunction *f, int typeId){
-#if !defined(Q_NO_TEMPLATE_FRIENDS) && !defined(Q_CC_MSVC)
-        if(!QMetaType::hasRegisteredComparators(typeId))
-            return QMetaType::registerComparatorFunction(f, typeId);
-#else
-        Q_UNUSED(typeId)
-        Q_UNUSED(f)
-#endif
-        return false;
-    }
-    static bool registerConverterFunction(const AbstractConverterFunction *f, int from, int to)
-    {
-        if(QMetaType::hasRegisteredConverterFunction(from, to))
-            return false;
-        return QMetaType::registerConverterFunction(f, from, to);
-    }
-    static void unregisterConverterFunction(int from, int to)
-    {
-        QMetaType::unregisterConverterFunction(from, to);
-    }
-    static bool registerDebugStreamOperatorFunction(const AbstractDebugStreamFunction *f, int typeId)
-    {
-#if !defined(Q_NO_TEMPLATE_FRIENDS) && !defined(Q_CC_MSVC)
-        if(!QMetaType::hasRegisteredDebugStreamOperator(typeId))
-            return QMetaType::registerDebugStreamOperatorFunction(f, typeId);
-#else
-        Q_UNUSED(typeId)
-        Q_UNUSED(f)
-#endif
-        return false;
-    }
-};
-}
-
-Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, gFunctionsLock, (QReadWriteLock::Recursive))
-typedef SecureContainer<QHash<int,const QtPrivate::AbstractComparatorFunction *>, gFunctionsLock> ComparatorFunctions;
-Q_GLOBAL_STATIC(ComparatorFunctions, gComparatorFunctions)
-typedef SecureContainer<QHash<int,const QtPrivate::AbstractDebugStreamFunction *>, gFunctionsLock> DebugStreamFunctions;
-Q_GLOBAL_STATIC(DebugStreamFunctions, gDebugStreamFunctions)
-
-bool RegistryAPI::registerComparator(const QtPrivate::AbstractComparatorFunction *f, int typeId){
-    if(QMetaType::hasRegisteredComparators(typeId))
-        return true;
-#if !defined(Q_NO_TEMPLATE_FRIENDS) && !defined(Q_CC_MSVC)
-    return QtPrivate::MetaTypeSmartPointerHelper<QtPrivate::DummyType,QtPrivate::DummyType>::registerComparatorFunction(f, typeId);
-#else
-    QWriteLocker locker(gFunctionsLock());
-    gComparatorFunctions->insert(typeId, f);
-    return true;
-#endif
-}
-
-const QtPrivate::AbstractComparatorFunction * registeredComparator(int typeId){
-    QReadLocker locker(gFunctionsLock());
-    return gComparatorFunctions->value(typeId);
-}
-
-const QtPrivate::AbstractDebugStreamFunction * registeredDebugStreamOperator(int typeId){
-    QReadLocker locker(gFunctionsLock());
-    return gDebugStreamFunctions->value(typeId);
-}
-
-const QtPrivate::AbstractDebugStreamFunction *CoreAPI::registeredDebugStreamOperator(int typeId){
-    QReadLocker locker(gFunctionsLock());
-    return gDebugStreamFunctions->value(typeId);
-}
-
-bool RegistryAPI::registerDebugStreamOperator(const QtPrivate::AbstractDebugStreamFunction *f, int typeId){
-    if(QMetaType::hasRegisteredDebugStreamOperator(typeId))
-        return false;
-#if !defined(Q_NO_TEMPLATE_FRIENDS) && !defined(Q_CC_MSVC)
-    return QtPrivate::MetaTypeSmartPointerHelper<QtPrivate::DummyType,QtPrivate::DummyType>::registerDebugStreamOperatorFunction(f, typeId);
-#else
-    QWriteLocker locker(gFunctionsLock());
-    gDebugStreamFunctions->insert(typeId, f);
-    return true;
-#endif
-}
-
-bool registerConverter(const QtPrivate::AbstractConverterFunction *f, int from, int to){
-#if !defined(Q_NO_TEMPLATE_FRIENDS) && !defined(Q_CC_MSVC)
-    return QtPrivate::MetaTypeSmartPointerHelper<QtPrivate::DummyType,QtPrivate::DummyType>::registerConverterFunction(f, from, to);
-#else
-    if(QMetaType::hasRegisteredConverterFunction(from, to))
-        return false;
-    return QMetaType::registerConverterFunction(f, from, to);
-#endif
-}
-
-void qtjambi_unregister_converter(int from, int to){
-#if !defined(Q_NO_TEMPLATE_FRIENDS) && !defined(Q_CC_MSVC)
-    QtPrivate::MetaTypeSmartPointerHelper<QtPrivate::DummyType,QtPrivate::DummyType>::unregisterConverterFunction(from, to);
-#else
-    QMetaType::unregisterConverterFunction(from, to);
-#endif
-}
-#endif
-
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
 typedef QVariant (*MoveConstruct)(QMetaType type, void *data);
 template<> inline MoveConstruct qvariant_cast<MoveConstruct>(const QVariant &)
@@ -157,11 +48,6 @@ QVariant VariantUtility::createVariant(QMetaType type, void *data){
 QVariant VariantUtility::createVariant(const QMetaType& type, const void *data){
     return QVariant(type, data);
 }
-#else
-QVariant VariantUtility::createVariant(const QMetaType& type, const void *data){
-    return QVariant(type.id(), data);
-}
-#endif
 
 
 struct InternalToExternalConverterPrivate : QSharedData{
@@ -275,7 +161,7 @@ namespace QtJambiUtils{
 QHashFunction::QHashFunction(FunctionPointer functor) noexcept
     : d(!functor ? nullptr : new QHashFunctionPrivate(
             reinterpret_cast<void*>(functor),
-            [](void* data, const void* ptr, hash_type seed) -> hash_type{
+            [](void* data, const void* ptr, size_t seed) -> size_t{
                 FunctionPointer task = reinterpret_cast<FunctionPointer>(data);
                 return (*task)(ptr, seed);
             })){}
@@ -298,7 +184,7 @@ bool QHashFunction::operator !() const noexcept{
     return !d;
 }
 
-hash_type QHashFunction::operator()(const void* ptr, hash_type seed) const{
+size_t QHashFunction::operator()(const void* ptr, size_t seed) const{
     Q_ASSERT(d);
     return d->invoker(d->data, ptr, seed);
 }
@@ -351,85 +237,3 @@ void Runnable::operator()() const{
 }
 
 } // namespace QtJambiUtils
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-bool isLessThan(const QMetaType& keyMetaType, const void * ptr, const void* ptr2){
-    int r = 0;
-    if(QMetaType::compare(ptr, ptr2, keyMetaType.id(), &r))
-        return r<0;
-    const QtPrivate::AbstractComparatorFunction * comparator = registeredComparator(keyMetaType.id());
-    if(comparator && comparator->lessThan)
-        return comparator->lessThan(comparator, ptr, ptr2);
-    if(keyMetaType.id()<QMetaType::User)
-        return QVariant(keyMetaType.id(), ptr)<QVariant(keyMetaType.id(), ptr2);
-    if(keyMetaType.flags() & QMetaType::IsEnumeration){
-        switch(keyMetaType.sizeOf()){
-        case 1: return *reinterpret_cast<const qint8*>(ptr) < *reinterpret_cast<const qint8*>(ptr2);
-        case 2: return *reinterpret_cast<const qint16*>(ptr) < *reinterpret_cast<const qint16*>(ptr2);
-        case 4: return *reinterpret_cast<const qint32*>(ptr) < *reinterpret_cast<const qint32*>(ptr2);
-        case 8: return *reinterpret_cast<const qint64*>(ptr) < *reinterpret_cast<const qint64*>(ptr2);
-        default: break;
-        }
-    }else if(AbstractContainerAccess::isPointerType(keyMetaType)){
-        return *reinterpret_cast<const quintptr*>(ptr) < *reinterpret_cast<const quintptr*>(ptr2);
-    }
-    return false;
-}
-
-bool isEquals(const QMetaType& keyMetaType, const void * ptr, const void* ptr2){
-    int r = 0;
-    if(QMetaType::equals(ptr, ptr2, keyMetaType.id(), &r))
-        return r==0;
-    const QtPrivate::AbstractComparatorFunction * comparator = registeredComparator(keyMetaType.id());
-    if(comparator && comparator->equals)
-        return comparator->equals(comparator, ptr, ptr2);
-    if(comparator && comparator->lessThan)
-        return comparator->lessThan(comparator, ptr, ptr2) && comparator->lessThan(comparator, ptr2, ptr);
-    if(keyMetaType.id()<QMetaType::User)
-        return QVariant(keyMetaType.id(), ptr)==QVariant(keyMetaType.id(), ptr2);
-    if(keyMetaType.flags() & QMetaType::IsEnumeration){
-        switch(keyMetaType.sizeOf()){
-        case 1: return *reinterpret_cast<const qint8*>(ptr) == *reinterpret_cast<const qint8*>(ptr2);
-        case 2: return *reinterpret_cast<const qint16*>(ptr) == *reinterpret_cast<const qint16*>(ptr2);
-        case 4: return *reinterpret_cast<const qint32*>(ptr) == *reinterpret_cast<const qint32*>(ptr2);
-        case 8: return *reinterpret_cast<const qint64*>(ptr) == *reinterpret_cast<const qint64*>(ptr2);
-        default: break;
-        }
-    }else if(AbstractContainerAccess::isPointerType(keyMetaType)){
-        return *reinterpret_cast<const quintptr*>(ptr) == *reinterpret_cast<const quintptr*>(ptr2);
-    }
-    return false;
-}
-
-QDebug& CoreAPI::appendToDebugStream(QDebug& debug, uint typeId, const void* ptr)
-{
-    if(!QMetaType::debugStream(debug, ptr, typeId)){
-        if(const QtPrivate::AbstractDebugStreamFunction *function = registeredDebugStreamOperator(typeId)){
-            function->stream(function, debug, ptr);
-        }else if(typeId<QMetaType::User){
-            QString tmp;
-            {
-                QDebug(&tmp) << QVariant(typeId, ptr);
-            }
-            tmp = tmp.trimmed();
-            QString suffix = QLatin1String("QVariant(%1, ");
-            suffix = suffix.arg(QLatin1String(QMetaType::typeName(typeId)));
-            if(tmp.startsWith(suffix) && tmp.endsWith(")")){
-                tmp = tmp.mid(suffix.length()).chopped(1);
-            }
-            debug.noquote() << tmp;
-        }else if(AbstractContainerAccess::isPointerType(QMetaType(typeId))){
-            debug << QMetaType::typeName(typeId) << "@" << QString::number(*reinterpret_cast<const quintptr*>(ptr), 16);
-        }else if(QMetaType::typeFlags(typeId) & QMetaType::IsEnumeration){
-            switch(QMetaType::sizeOf(typeId)){
-            case 1: return debug << QMetaType::typeName(typeId) << "(" << *reinterpret_cast<const qint8*>(ptr) << ")";
-            case 2: return debug << QMetaType::typeName(typeId) << "(" << *reinterpret_cast<const qint16*>(ptr) << ")";
-            case 4: return debug << QMetaType::typeName(typeId) << "(" << *reinterpret_cast<const qint32*>(ptr) << ")";
-            case 8: return debug << QMetaType::typeName(typeId) << "(" << *reinterpret_cast<const qint64*>(ptr) << ")";
-            default: break;
-            }
-        }
-    }
-    return debug;
-}
-#endif

@@ -55,9 +55,10 @@ HEADERS += \
 OBJECTIVE_SOURCES += utils.mm
 
 !ios:{
-    PRECOMPILED_HEADER = \
-    pch_p.h
+    PRECOMPILED_HEADER = pch_p.h
     CONFIG += precompile_header
+}else{
+    HEADERS += pch_p.h
 }
 
 win32-arm64-msvc* | win32-msvc*: {

@@ -249,11 +249,7 @@ public:
 	
     static QVariant getSpinBox();
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     static QMetaType propertyType(const QObject* object, const QString& propertyName);
-#else
-    static int propertyType(const QObject* object, const QString& propertyName);
-#endif
 
     static QColor fetchColorProperty(const QObject* object, const QString& propertyName);
 
@@ -269,10 +265,6 @@ public:
 
     static void analyze(const JObjectWrapper& object);
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    static bool compare(QObject* object, const QString& property, const QVector<QObject*>& list);
-    static bool compare(QObject* object, const QString& property, const QLinkedList<QObject*>& list);
-#endif
     static bool compare(QObject* object, const QString& property, const QList<QObject*>& list);
 
     static bool compare(QObject* object, const QString& property, const QPair<QObject*,QObject*>& pair);

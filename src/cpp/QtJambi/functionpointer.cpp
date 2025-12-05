@@ -29,19 +29,7 @@
 **
 ****************************************************************************/
 
-#include "functionpointer.h"
-#include "qtjambiapi.h"
-#include "javaapi.h"
-#include <QtCore/QFile>
-#include <QtCore/QTemporaryDir>
-#include <QtCore/QTemporaryFile>
-#include <QtCore/QLibrary>
-#include <QtCore/QUuid>
-#include <QtCore/QCoreApplication>
-#include <QtCore/QDebug>
-#include <memory>
-#include "utils_p.h"
-#include "java_p.h"
+#include "pch_p.h"
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
 #define qAsConst std::as_const

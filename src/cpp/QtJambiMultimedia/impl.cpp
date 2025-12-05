@@ -28,16 +28,7 @@
 ****************************************************************************/
 
 #include <QtCore/QMutex>
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-#include <QtMultimedia/QAudioBuffer>
-#endif
-#include "hashes.h"
-#include "utils_p.h"
-#include <QtJambi/QtJambiAPI>
-#include <QtJambi/JavaAPI>
-#if defined(Q_OS_ANDROID)
-#include <QtJambi/AndroidAPI>
-#endif
+#include "pch_p.h"
 
 namespace Java{
 namespace QtMultimedia{

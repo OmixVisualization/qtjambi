@@ -41,67 +41,8 @@
 
 enum class QtJambiNativeID : jlong;
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0) && defined(QLINKEDLIST_H)
-QT_WARNING_DISABLE_GCC("-Wdeprecated-declarations")
-QT_WARNING_DISABLE_DEPRECATED
-#endif
-
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #define QTJAMBI_METATYPE_FROM_TYPE(T) QMetaType::fromType<typename std::remove_cv<T>::type>()
 #define QTJAMBI_METATYPE_FROM_TYPE2(T) QMetaType::fromType<typename std::remove_cv<T>::type>()
-#else
-namespace QtJambiPrivate{
-
-template <typename T, bool = QMetaTypeId2<T>::Defined>
-struct MetaTypeRegistrationHelper{
-    static int registerMetaType(){
-        return QMetaTypeId2<T>::qt_metatype_id();
-    }
-};
-
-template <typename T>
-struct MetaTypeRegistrationHelper<T,false>{
-    static int registerMetaType(){
-        int id = QtPrivate::QMetaTypeIdHelper<T>::qt_metatype_id();
-        if (id > QMetaType::UnknownType)
-            return id;
-
-        QByteArray normalizedTypeName = QMetaObject::normalizedType(QtJambiAPI::typeName(typeid(T)));
-        id = QMetaType::type(normalizedTypeName);
-        if (id > QMetaType::UnknownType)
-            return id;
-        QMetaType::TypeFlags flags(QtPrivate::QMetaTypeTypeFlags<T>::Flags);
-
-        if (QtPrivate::MetaTypeDefinedHelper<T, QMetaTypeId2<T>::Defined && !QMetaTypeId2<T>::IsBuiltIn>::Defined)
-            flags |= QMetaType::WasDeclaredAsMetaType;
-
-        id = QMetaType::registerNormalizedType(normalizedTypeName,
-                                       QtMetaTypePrivate::QMetaTypeFunctionHelper<T, std::is_arithmetic<T>::value || std::is_enum<T>::value || std::is_pointer<T>::value || is_destructible<T>::value>::Destruct,
-                                       QtMetaTypePrivate::QMetaTypeFunctionHelper<T, std::is_arithmetic<T>::value || std::is_enum<T>::value || std::is_pointer<T>::value || (is_default_constructible<T>::value && is_copy_constructible<T>::value)>::Construct,
-                                       int(sizeof(T)),
-                                       flags,
-                                       QtPrivate::MetaObjectForType<T>::value());
-
-        if (id > QMetaType::UnknownType) {
-            QtPrivate::SequentialContainerConverterHelper<T>::registerConverter(id);
-            QtPrivate::AssociativeContainerConverterHelper<T>::registerConverter(id);
-            QtPrivate::MetaTypePairHelper<T>::registerConverter(id);
-            QtPrivate::MetaTypeSmartPointerHelper<T>::registerConverter(id);
-        }
-        return id;
-    }
-};
-
-template <typename T>
-int registerMetaType(){
-    return MetaTypeRegistrationHelper<typename std::remove_cv<T>::type>::registerMetaType();
-}
-
-}
-
-#define QTJAMBI_METATYPE_FROM_TYPE(T) QtJambiPrivate::registerMetaType<T>()
-#define QTJAMBI_METATYPE_FROM_TYPE2(T) QMetaType(QTJAMBI_METATYPE_FROM_TYPE(T))
-#endif
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
 class AbstractSpanAccess;
@@ -110,10 +51,6 @@ class AbstractSpanAccess;
 namespace ContainerAPI{
 
 QTJAMBI_EXPORT bool testQStack(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType);
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-QTJAMBI_EXPORT bool testQVector(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType);
-QTJAMBI_EXPORT bool testQLinkedList(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType);
-#endif
 QTJAMBI_EXPORT bool testQList(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType);
 QTJAMBI_EXPORT bool testQSet(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType);
 QTJAMBI_EXPORT bool testQQueue(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType);
@@ -123,10 +60,6 @@ QTJAMBI_EXPORT bool testQMap(JNIEnv *env, jobject mapObject, const QMetaType& ex
 QTJAMBI_EXPORT bool testQHash(JNIEnv *env, jobject mapObject, const QMetaType& expectedKeyMetaType, const QMetaType& expectedValueMetaType);
 
 QTJAMBI_EXPORT bool testQStack(JNIEnv *env, jobject collection, const std::type_info& expectedElementType, const QMetaType& expectedElementMetaType);
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-QTJAMBI_EXPORT bool testQVector(JNIEnv *env, jobject collection, const std::type_info& expectedElementType, const QMetaType& expectedElementMetaType);
-QTJAMBI_EXPORT bool testQLinkedList(JNIEnv *env, jobject collection, const std::type_info& expectedElementType, const QMetaType& expectedElementMetaType);
-#endif
 QTJAMBI_EXPORT bool testQList(JNIEnv *env, jobject collection, const std::type_info& expectedElementType, const QMetaType& expectedElementMetaType);
 QTJAMBI_EXPORT bool testQSet(JNIEnv *env, jobject collection, const std::type_info& expectedElementType, const QMetaType& expectedElementMetaType);
 QTJAMBI_EXPORT bool testQQueue(JNIEnv *env, jobject collection, const std::type_info& expectedElementType, const QMetaType& expectedElementMetaType);
@@ -137,12 +70,6 @@ QTJAMBI_EXPORT bool testQHash(JNIEnv *env, jobject mapObject, const std::type_in
 
 QTJAMBI_EXPORT bool getAsQStack(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType, void* &pointer);
 QTJAMBI_EXPORT bool getAsQStack(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType, void* &pointer, AbstractContainerAccess*& access);
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-QTJAMBI_EXPORT bool getAsQVector(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType, void* &pointer);
-QTJAMBI_EXPORT bool getAsQVector(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType, void* &pointer, AbstractContainerAccess*& access);
-QTJAMBI_EXPORT bool getAsQLinkedList(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType, void* &pointer);
-QTJAMBI_EXPORT bool getAsQLinkedList(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType, void* &pointer, AbstractContainerAccess*& access);
-#endif
 QTJAMBI_EXPORT bool getAsQList(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType, void* &pointer);
 QTJAMBI_EXPORT bool getAsQList(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType, void* &pointer, AbstractContainerAccess*& access);
 QTJAMBI_EXPORT bool getAsQSet(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType, void* &pointer);
@@ -159,10 +86,6 @@ QTJAMBI_EXPORT bool getAsQHash(JNIEnv *env, jobject mapObject, const QMetaType& 
 QTJAMBI_EXPORT bool getAsQHash(JNIEnv *env, jobject mapObject, const QMetaType& expectedKeyMetaType, const QMetaType& expectedValueMetaType, void* &pointer, AbstractContainerAccess*& access);
 
 QTJAMBI_EXPORT bool getAsQStack(JNIEnv *env, jobject collection, const std::type_info& expectedElementType, const QMetaType& expectedElementMetaType, void* &pointer);
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-QTJAMBI_EXPORT bool getAsQVector(JNIEnv *env, jobject collection, const std::type_info& expectedElementType, const QMetaType& expectedElementMetaType, void* &pointer);
-QTJAMBI_EXPORT bool getAsQLinkedList(JNIEnv *env, jobject collection, const std::type_info& expectedElementType, const QMetaType& expectedElementMetaType, void* &pointer);
-#endif
 QTJAMBI_EXPORT bool getAsQList(JNIEnv *env, jobject collection, const std::type_info& expectedElementType, const QMetaType& expectedElementMetaType, void* &pointer);
 QTJAMBI_EXPORT bool getAsQSet(JNIEnv *env, jobject collection, const std::type_info& expectedElementType, const QMetaType& expectedElementMetaType, void* &pointer);
 QTJAMBI_EXPORT bool getAsQQueue(JNIEnv *env, jobject collection, const std::type_info& expectedElementType, const QMetaType& expectedElementMetaType, void* &pointer);
@@ -200,38 +123,6 @@ QTJAMBI_EXPORT jobject objectFromQSpan(JNIEnv *__jni_env,
 #endif //QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
 
 QTJAMBI_EXPORT PtrOwnerFunction registeredOwnerFunction(const std::type_info& typeId);
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-template<typename T>
-bool testQVector(JNIEnv *env, jobject collection){
-    return testQVector(env, collection, QtJambiPrivate::qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T));
-}
-
-template<typename T>
-bool testQLinkedList(JNIEnv *env, jobject collection){
-    return testQLinkedList(env, collection, QtJambiPrivate::qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T));
-}
-
-template<typename T>
-bool getAsQLinkedList(JNIEnv *env, jobject collection, QLinkedList<T> * &pointer){
-    return getAsQLinkedList(env, collection, QtJambiPrivate::qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T), reinterpret_cast<void*&>(pointer));
-}
-
-template<typename T>
-bool getAsQVector(JNIEnv *env, jobject collection, QVector<T> * &pointer){
-    return getAsQVector(env, collection, QtJambiPrivate::qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T), reinterpret_cast<void*&>(pointer));
-}
-
-template<typename T>
-bool getAsQLinkedList(JNIEnv *env, jobject collection, QLinkedList<T> * &pointer, AbstractContainerAccess*& access){
-    return getAsQLinkedList(env, collection, QTJAMBI_METATYPE_FROM_TYPE2(T), reinterpret_cast<void*&>(pointer), access);
-}
-
-template<typename T>
-bool getAsQVector(JNIEnv *env, jobject collection, QVector<T> * &pointer, AbstractContainerAccess*& access){
-    return getAsQVector(env, collection, QTJAMBI_METATYPE_FROM_TYPE2(T), reinterpret_cast<void*&>(pointer), access);
-}
-#endif
 
 template<typename T>
 bool testQStack(JNIEnv *env, jobject collection){
@@ -290,46 +181,6 @@ QTJAMBI_EXPORT jobject objectFromQList(JNIEnv *__jni_env,
                                        void*& listPtr,
                                        AbstractListAccess*& setAccess);
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-QTJAMBI_EXPORT jobject objectFromQVector(JNIEnv *__jni_env,
-                                         void*& listPtr,
-                                         AbstractContainerAccess*& setAccess);
-QTJAMBI_EXPORT jobject objectFromQVector(JNIEnv *__jni_env,
-                                         void*& listPtr,
-                                         AbstractVectorAccess*& setAccess);
-#endif
-
-
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-template<typename T>
-struct AsList{
-    typedef QList<T> Type1;
-};
-
-template<>
-struct AsList<QString>{
-    typedef QStringList Type1;
-    typedef QList<QString> Type2;
-};
-
-template<typename T>
-bool getAsQList(JNIEnv *env, jobject collection, typename AsList<T>::Type1 * &pointer){
-    return getAsQList(env, collection, QtJambiPrivate::qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T), reinterpret_cast<void*&>(pointer));
-}
-template<typename T>
-bool getAsQList(JNIEnv *env, jobject collection, typename AsList<T>::Type2 * &pointer){
-    return getAsQList(env, collection, QtJambiPrivate::qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T), reinterpret_cast<void*&>(pointer));
-}
-
-template<typename T>
-bool getAsQList(JNIEnv *env, jobject collection, typename AsList<T>::Type1 * &pointer, AbstractContainerAccess*& access){
-    return getAsQList(env, collection, QTJAMBI_METATYPE_FROM_TYPE2(T), reinterpret_cast<void*&>(pointer), access);
-}
-template<typename T>
-bool getAsQList(JNIEnv *env, jobject collection, typename AsList<T>::Type2 * &pointer, AbstractContainerAccess*& access){
-    return getAsQList(env, collection, QTJAMBI_METATYPE_FROM_TYPE2(T), reinterpret_cast<void*&>(pointer), access);
-}
-#else
 template<typename T>
 bool getAsQList(JNIEnv *env, jobject collection, QList<T> * &pointer, AbstractContainerAccess*& access){
     return getAsQList(env, collection, QTJAMBI_METATYPE_FROM_TYPE2(T), reinterpret_cast<void*&>(pointer), access);
@@ -338,7 +189,6 @@ template<typename T>
 bool getAsQList(JNIEnv *env, jobject collection, QList<T> * &pointer){
     return getAsQList(env, collection, QtJambiPrivate::qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T), reinterpret_cast<void*&>(pointer));
 }
-#endif
 
 template<typename T>
 bool getAsQSet(JNIEnv *env, jobject collection, QSet<T> * &pointer, AbstractContainerAccess*& access){
@@ -404,10 +254,6 @@ bool getAsQHash(JNIEnv *env, jobject mapObject, QHash<K,V> * &pointer){
 
 enum class SequentialContainerType{
     QList,
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    QVector,
-    QLinkedList,
-#endif
     QStack,
     QQueue,
     QSet
@@ -480,12 +326,10 @@ public:
     virtual void* constructContainer(void* placement) = 0;
     virtual void* constructContainer(void* placement, const void* copyOf) = 0;
     virtual void* constructContainer(JNIEnv * env, void* placement, const ConstContainerAndAccessInfo& copyOf) = 0;
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     virtual void* constructContainer(void* placement, void* move) = 0;
     virtual void* constructContainer(JNIEnv * env, void* placement, const ContainerAndAccessInfo& move) = 0;
     void* createContainer(void* moved);
     void* createContainer(JNIEnv *env, const ContainerAndAccessInfo& moved);
-#endif
     virtual bool destructContainer(void* container) = 0;
     virtual int registerContainer(const QByteArray& containerTypeName) = 0;
     virtual const QObject* getOwner(const void* container);
@@ -500,9 +344,6 @@ protected:
     static DataType dataType(const QMetaType& metaType, const QSharedPointer<AbstractContainerAccess>& access);
     AbstractContainerAccess();
     virtual ~AbstractContainerAccess();
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    static bool isStaticType(const QMetaType&);
-#endif
 };
 
 class QTJAMBI_EXPORT AbstractReferenceCountingContainer{
@@ -575,10 +416,8 @@ private:
     void* constructContainer(void* placement) final override;
     void* constructContainer(void* placement, const void* copyOf) final override;
     void* constructContainer(JNIEnv *, void* result, const ConstContainerAndAccessInfo& container) final override;
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     void* constructContainer(void* placement, void* move) final override;
     void* constructContainer(JNIEnv *, void* result, const ContainerAndAccessInfo& move) final override;
-#endif
     bool destructContainer(void* container) final override;
     void assign(void*, const void* ) final override;
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) final override;
@@ -730,78 +569,13 @@ public:
     virtual jboolean contains(JNIEnv * env, const void* container, jobject value) = 0;
     virtual jobject begin(JNIEnv * env, const ExtendedContainerInfo& container) = 0;
     virtual jobject end(JNIEnv * env, const ExtendedContainerInfo& container) = 0;
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     virtual void resize(void* container, qsizetype newSize) = 0;
     virtual jint capacity(JNIEnv * env, const void* container) = 0;
     virtual void fill(JNIEnv * env, const ContainerInfo& container, jobject value, jint size) = 0;
     virtual void resize(JNIEnv * env, const ContainerInfo& container, jint newSize) = 0;
     virtual void squeeze(JNIEnv * env, const ContainerInfo& container) = 0;
-#endif
     Q_DISABLE_COPY_MOVE(AbstractListAccess)
 };
-
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-class QTJAMBI_EXPORT AbstractVectorAccess : public AbstractSequentialAccess{
-protected:
-    ~AbstractVectorAccess() override;
-    AbstractVectorAccess();
-public:
-    AbstractVectorAccess* clone() override = 0;
-    virtual void appendVector(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& containerInfo) = 0;
-    virtual jobject at(JNIEnv * env, const void* container, jint index) = 0;
-    virtual jobject value(JNIEnv * env, const void* container, jint index) = 0;
-    virtual jobject value(JNIEnv * env, const void* container, jint index, jobject defaultValue) = 0;
-    virtual void swapItemsAt(JNIEnv * env, const ContainerInfo& container, jint index1, jint index2) = 0;
-    virtual jboolean startsWith(JNIEnv * env, const void* container, jobject value) = 0;
-    virtual void reserve(JNIEnv * env, const ContainerInfo& container, jint size) = 0;
-    virtual void replace(JNIEnv * env, const ContainerInfo& container, jint index, jobject value) = 0;
-    virtual jint removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) = 0;
-    virtual jboolean equal(JNIEnv * env, const void* container, jobject other) = 0;
-    virtual void move(JNIEnv * env, const ContainerInfo& container, jint index1, jint index2) = 0;
-    virtual ContainerAndAccessInfo mid(JNIEnv * env, const ConstContainerAndAccessInfo& container, jint index1, jint index2) = 0;
-    virtual jint lastIndexOf(JNIEnv * env, const void* container, jobject value, jint index) = 0;
-    virtual jint indexOf(JNIEnv * env, const void* container, jobject value, jint index) = 0;
-    virtual jboolean endsWith(JNIEnv * env, const void* container, jobject value) = 0;
-    virtual jint count(JNIEnv * env, const void* container, jobject value) = 0;
-    virtual jboolean contains(JNIEnv * env, const void* container, jobject value) = 0;
-    virtual jint capacity(JNIEnv * env, const void* container) = 0;
-    virtual void fill(JNIEnv * env, const ContainerInfo& container, jobject value, jint size) = 0;
-    virtual void remove(JNIEnv * env, const ContainerInfo& container, jint index, jint n) = 0;
-    virtual void insert(JNIEnv * env, const ContainerInfo& container, jint index, jint n, jobject value) = 0;
-    virtual void resize(JNIEnv * env, const ContainerInfo& container, jint newSize) = 0;
-    virtual void squeeze(JNIEnv * env, const ContainerInfo& container) = 0;
-    virtual jobject begin(JNIEnv * env, const ExtendedContainerInfo& container) = 0;
-    virtual jobject end(JNIEnv * env, const ExtendedContainerInfo& container) = 0;
-    Q_DISABLE_COPY_MOVE(AbstractVectorAccess)
-};
-
-class QTJAMBI_EXPORT AbstractLinkedListAccess : public AbstractSequentialAccess{
-protected:
-    ~AbstractLinkedListAccess() override;
-    AbstractLinkedListAccess();
-public:
-    AbstractLinkedListAccess* clone() override = 0;
-    virtual void append(JNIEnv * env, const ContainerInfo& container, jobject value) = 0;
-    virtual jobject first(JNIEnv * env, const void* container) = 0;
-    virtual jobject last(JNIEnv * env, const void* container) = 0;
-    virtual jboolean contains(JNIEnv * env, const void* container, jobject value) = 0;
-    virtual jint count(JNIEnv * env, const void* container, jobject value) = 0;
-    virtual jboolean endsWith(JNIEnv * env, const void* container, jobject value) = 0;
-    virtual jboolean equal(JNIEnv * env, const void* container, jobject other) = 0;
-    virtual void prepend(JNIEnv * env, const ContainerInfo& container, jobject value) = 0;
-    virtual void removeFirst(JNIEnv * env, const ContainerInfo& container) = 0;
-    virtual jint removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) = 0;
-    virtual void removeLast(JNIEnv * env, const ContainerInfo& container) = 0;
-    virtual jboolean removeOne(JNIEnv * env, const ContainerInfo& container, jobject value) = 0;
-    virtual jboolean startsWith(JNIEnv * env, const void* container, jobject value) = 0;
-    virtual jobject takeFirst(JNIEnv * env, const ContainerInfo& container) = 0;
-    virtual jobject takeLast(JNIEnv * env, const ContainerInfo& container) = 0;
-    virtual jobject begin(JNIEnv * env, const ExtendedContainerInfo& container) = 0;
-    virtual jobject end(JNIEnv * env, const ExtendedContainerInfo& container) = 0;
-    Q_DISABLE_COPY_MOVE(AbstractLinkedListAccess)
-};
-
-#endif
 
 class QTJAMBI_EXPORT AbstractSetAccess : public AbstractSequentialAccess{
 protected:
@@ -1019,15 +793,15 @@ QTJAMBI_EXPORT QPair<void*,AbstractContainerAccess*> fromJavaOwner(JNIEnv *env, 
 #if defined(QTJAMBI_GENERIC_ACCESS)
 namespace QtJambiPrivate{
 
-typedef hash_type(*HashWrapper)(const void* ptr, hash_type seed, QtJambiUtils::QHashFunction hashFunction);
-typedef hash_type(*HashWrapper2)(const void* ptr, hash_type seed, QtJambiUtils::QHashFunction hashFunction1, QtJambiUtils::QHashFunction hashFunction2);
+typedef size_t(*HashWrapper)(const void* ptr, size_t seed, QtJambiUtils::QHashFunction hashFunction);
+typedef size_t(*HashWrapper2)(const void* ptr, size_t seed, QtJambiUtils::QHashFunction hashFunction1, QtJambiUtils::QHashFunction hashFunction2);
 
 template<typename Container>
-hash_type sequentialContainerHash(const void* ptr, hash_type seed, QtJambiUtils::QHashFunction hashFunction)
+size_t sequentialContainerHash(const void* ptr, size_t seed, QtJambiUtils::QHashFunction hashFunction)
 {
     const Container& container = *reinterpret_cast<const Container*>(ptr);
-    hash_type prime = 31;
-    hash_type result = seed;
+    size_t prime = 31;
+    size_t result = seed;
     result = prime * result + qHash(container.size(), result);
     for(typename Container::const_iterator iter = container.cbegin();
         iter != container.cend(); ++iter){
@@ -1037,11 +811,11 @@ hash_type sequentialContainerHash(const void* ptr, hash_type seed, QtJambiUtils:
 }
 
 template<typename Container>
-hash_type associativeContainerHash(const void* ptr, hash_type seed, QtJambiUtils::QHashFunction hashFunction1, QtJambiUtils::QHashFunction hashFunction2)
+size_t associativeContainerHash(const void* ptr, size_t seed, QtJambiUtils::QHashFunction hashFunction1, QtJambiUtils::QHashFunction hashFunction2)
 {
     const Container& container = *reinterpret_cast<const Container*>(ptr);
-    hash_type prime = 31;
-    hash_type result = seed;
+    size_t prime = 31;
+    size_t result = seed;
     result = prime * result + qHash(container.size(), result);
     for(typename Container::const_iterator iter = container.begin();
          iter != container.end(); ++iter){
@@ -1052,240 +826,15 @@ hash_type associativeContainerHash(const void* ptr, hash_type seed, QtJambiUtils
 }
 
 template<typename Container>
-hash_type pairHashWrapper(const void* ptr, hash_type seed, QtJambiUtils::QHashFunction hashFunction1, QtJambiUtils::QHashFunction hashFunction2){
+size_t pairHashWrapper(const void* ptr, size_t seed, QtJambiUtils::QHashFunction hashFunction1, QtJambiUtils::QHashFunction hashFunction2){
     const Container& container = *reinterpret_cast<const Container*>(ptr);
-    hash_type prime = 31;
-    hash_type result = seed;
+    size_t prime = 31;
+    size_t result = seed;
     result = prime * result + hashFunction1(&container.first, result);
     result = prime * result + hashFunction2(&container.second, result);
     return result;
 }
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-template<typename T, bool enabled = QtJambiPrivate::supports_debugstream<T>::value>
-struct DebugStreamFunction : public QtPrivate::AbstractDebugStreamFunction
-{
-    static QtPrivate::AbstractDebugStreamFunction* create(){ return new DebugStreamFunction(); }
-private:
-    DebugStreamFunction()
-        : AbstractDebugStreamFunction(stream, destroy) {}
-    static void stream(const QtPrivate::AbstractDebugStreamFunction *, QDebug& dbg, const void *r)
-    {
-        const T *rhs = static_cast<const T *>(r);
-        operator<<(dbg, *rhs);
-    }
-
-    static void destroy(QtPrivate::AbstractDebugStreamFunction *_this)
-    {
-        delete static_cast<DebugStreamFunction *>(_this);
-    }
-};
-
-template<typename T>
-struct DebugStreamFunction<T,false>
-{
-    static QtPrivate::AbstractDebugStreamFunction* create(){ return nullptr; }
-};
-
-typedef const QtPrivate::AbstractConverterFunction*(*ConverterFunctionFactory1)(int metaTypeId);
-typedef const QtPrivate::AbstractConverterFunction*(*ConverterFunctionFactory2)(int metaTypeId1, int metaTypeId2);
-
-QTJAMBI_EXPORT int registerSequentialContainerType(const QByteArray& typeName,
-                                                   size_t containerSize, size_t containerAlign,
-                                                   bool isPointer,
-                                                   const QMetaType& metaType,
-                                                   QMetaType::Destructor destructor,
-                                                   QMetaType::Constructor constructor,
-                                                   QMetaType::SaveOperator saveOperator,
-                                                   QMetaType::LoadOperator loadOperator,
-                                                   const QtPrivate::AbstractDebugStreamFunction * debugStreamFunction,
-                                                   const QtPrivate::AbstractComparatorFunction * comparator,
-                                                   ConverterFunctionFactory1 createConverterFunction,
-                                                   HashWrapper hashWrapper,
-                                                   AbstractSequentialAccess* access);
-
-QTJAMBI_EXPORT int registerAssociativeContainerType(const QByteArray& typeName,
-                                                    size_t containerSize, size_t containerAlign,
-                                                    bool isPointer1, const QMetaType& metaType1,
-                                                    bool isPointer2, const QMetaType& metaType2,
-                                                    QMetaType::Destructor destructor,
-                                                    QMetaType::Constructor constructor,
-                                                    QMetaType::SaveOperator saveOperator,
-                                                    QMetaType::LoadOperator loadOperator,
-                                                    const QtPrivate::AbstractDebugStreamFunction * debugStreamFunction,
-                                                    const QtPrivate::AbstractComparatorFunction * comparator,
-                                                    bool isPair,
-                                                    ConverterFunctionFactory2 createConverterFunction,
-                                                    HashWrapper2 hashWrapper,
-                                                    AbstractContainerAccess* access);
-
-template<typename Container, size_t size>
-int registerSequentialContainerType(const QByteArray& typeName, const QMetaType& metaType, AbstractSequentialAccess* access){
-    int newMetaType = QMetaType::type(typeName);
-    if(newMetaType==QMetaType::UnknownType){
-        static QtPrivate::BuiltInEqualsComparatorFunction<Container> comparator;
-        newMetaType = registerSequentialContainerType(typeName, sizeof(Container), Q_ALIGNOF(Container), size==0, metaType,
-                                                      QtMetaTypePrivate::QMetaTypeFunctionHelper<Container>::Destruct,
-                                                      QtMetaTypePrivate::QMetaTypeFunctionHelper<Container>::Construct,
-                                                      QtMetaTypePrivate::QMetaTypeFunctionHelper<Container, size!=0>::Save,
-                                                      QtMetaTypePrivate::QMetaTypeFunctionHelper<Container, size!=0>::Load,
-                                                      DebugStreamFunction<Container>::create(),
-                                                      &comparator,
-                                                      [](int metaTypeId) -> const QtPrivate::AbstractConverterFunction* {
-                                                              struct Converter : QtPrivate::AbstractConverterFunction
-                                                              {
-                                                                  explicit Converter(int metaType)
-                                                                      : QtPrivate::AbstractConverterFunction(convert),
-                                                                        m_metaType(metaType) {}
-                                                                  static bool convert(const QtPrivate::AbstractConverterFunction *_this, const void *in, void *out)
-                                                                  {
-                                                                      QtMetaTypePrivate::QSequentialIterableImpl *t = static_cast<QtMetaTypePrivate::QSequentialIterableImpl *>(out);
-                                                                      t->_iterable = in;
-                                                                      t->_iterator = nullptr;
-                                                                      t->_metaType_id = static_cast<const Converter *>(_this)->m_metaType;
-                                                                      t->_metaType_flags = size==0;
-                                                                      t->_iteratorCapabilities = QtMetaTypePrivate::ForwardCapability;
-                                                                      t->_size = QtMetaTypePrivate::QSequentialIterableImpl::sizeImpl<Container>;
-                                                                      t->_at = QtMetaTypePrivate::QSequentialIterableImpl::atImpl<Container>;
-                                                                      t->_moveToBegin = QtMetaTypePrivate::QSequentialIterableImpl::moveToBeginImpl<Container>;
-                                                                      t->_moveToEnd = QtMetaTypePrivate::QSequentialIterableImpl::moveToEndImpl<Container>;
-                                                                      t->_advance = QtMetaTypePrivate::IteratorOwner<typename Container::const_iterator>::advance;
-                                                                      t->_get = QtMetaTypePrivate::QSequentialIterableImpl::getImpl<Container>;
-                                                                      t->_destroyIter = QtMetaTypePrivate::IteratorOwner<typename Container::const_iterator>::destroy;
-                                                                      t->_equalIter = QtMetaTypePrivate::IteratorOwner<typename Container::const_iterator>::equal;
-                                                                      t->_copyIter = QtMetaTypePrivate::IteratorOwner<typename Container::const_iterator>::assign;
-                                                                      return true;
-                                                                  }
-                                                                  int m_metaType;
-                                                              };
-                                                              return new Converter(metaTypeId);
-                                                          },
-                                                      sequentialContainerHash<Container>,
-                                                      access
-                                                );
-    }
-    return newMetaType;
-}
-
-template<typename Container, size_t size1, size_t size2>
-int registerAssociativeContainerType(const QByteArray& typeName, const QMetaType& metaType1, const QMetaType& metaType2, AbstractAssociativeAccess* access){
-    int newMetaType = QMetaType::type(typeName);
-    if(newMetaType==QMetaType::UnknownType){
-        static QtPrivate::BuiltInEqualsComparatorFunction<Container> comparator;
-        newMetaType = registerAssociativeContainerType(typeName, sizeof(Container), Q_ALIGNOF(Container), size1==0, metaType1, size2==0, metaType2,
-                                                        QtMetaTypePrivate::QMetaTypeFunctionHelper<Container>::Destruct,
-                                                        QtMetaTypePrivate::QMetaTypeFunctionHelper<Container>::Construct,
-                                                        QtMetaTypePrivate::QMetaTypeFunctionHelper<Container, size1!=0 && size2!=0>::Save,
-                                                        QtMetaTypePrivate::QMetaTypeFunctionHelper<Container, size1!=0 && size2!=0>::Load,
-                                                        DebugStreamFunction<Container>::create(),
-                                                        &comparator,
-                                                        false,
-                                                        [](int metaTypeId1, int metaTypeId2) -> const QtPrivate::AbstractConverterFunction* {
-                                                                  struct Converter : QtPrivate::AbstractConverterFunction
-                                                                  {
-                                                                      explicit Converter(int metaType_key, int metaType_value)
-                                                                          : QtPrivate::AbstractConverterFunction(convert),
-                                                                            m_metaType_key(metaType_key), m_metaType_value(metaType_value) {}
-                                                                      static bool convert(const QtPrivate::AbstractConverterFunction *_this, const void *in, void *out)
-                                                                      {
-                                                                          QtMetaTypePrivate::QAssociativeIterableImpl *t = static_cast<QtMetaTypePrivate::QAssociativeIterableImpl *>(out);
-                                                                          t->_iterable = in;
-                                                                          t->_iterator = nullptr;
-                                                                          t->_metaType_id_key = static_cast<const Converter *>(_this)->m_metaType_key;
-                                                                          t->_metaType_flags_key = size1==0;
-                                                                          t->_metaType_id_value = static_cast<const Converter *>(_this)->m_metaType_value;
-                                                                          t->_metaType_flags_value = size2==0;
-                                                                          t->_size = QtMetaTypePrivate::QAssociativeIterableImpl::sizeImpl<Container>;
-                                                                          t->_find = QtMetaTypePrivate::QAssociativeIterableImpl::findImpl<Container>;
-                                                                          t->_begin = QtMetaTypePrivate::QAssociativeIterableImpl::beginImpl<Container>;
-                                                                          t->_end = QtMetaTypePrivate::QAssociativeIterableImpl::endImpl<Container>;
-                                                                          t->_advance = QtMetaTypePrivate::QAssociativeIterableImpl::advanceImpl<Container>;
-                                                                          t->_getKey = QtMetaTypePrivate::QAssociativeIterableImpl::getKeyImpl<Container>;
-                                                                          t->_getValue = QtMetaTypePrivate::QAssociativeIterableImpl::getValueImpl<Container>;
-                                                                          t->_destroyIter = QtMetaTypePrivate::IteratorOwner<typename Container::const_iterator>::destroy;
-                                                                          t->_equalIter = QtMetaTypePrivate::IteratorOwner<typename Container::const_iterator>::equal;
-                                                                          t->_copyIter = QtMetaTypePrivate::IteratorOwner<typename Container::const_iterator>::assign;
-                                                                          return true;
-                                                                      }
-                                                                      int m_metaType_key;
-                                                                      int m_metaType_value;
-                                                                  };
-                                                                  return new Converter(metaTypeId1, metaTypeId2);
-                                                              },
-                                                              associativeContainerHash<Container>,
-                                                              access
-                                                        );
-    }
-    return newMetaType;
-}
-
-template<typename Container>
-QtMetaTypePrivate::VariantData getFirstImpl(const void * const *pair, int metaTypeId, uint flags)
-{
-    return QtMetaTypePrivate::VariantData(metaTypeId, &static_cast<const Container*>(*pair)->first, flags);
-}
-
-template<typename Container>
-QtMetaTypePrivate::VariantData getSecondImpl(const void * const *pair, int metaTypeId, uint flags)
-{
-    return QtMetaTypePrivate::VariantData(metaTypeId, &static_cast<const Container*>(*pair)->second, flags);
-}
-
-template<typename Container, size_t size1, size_t size2>
-int registerQPairType(const QByteArray& typeName, const QMetaType& metaType1, const QMetaType& metaType2, AbstractPairAccess* access){
-    int newMetaType = QMetaType::type(typeName);
-    if(newMetaType==QMetaType::UnknownType){
-        static QtPrivate::BuiltInEqualsComparatorFunction<Container> comparator;
-        newMetaType = registerAssociativeContainerType(typeName, sizeof(Container), Q_ALIGNOF(Container), size1==0, metaType1, size2==0, metaType2,
-                                                        QtMetaTypePrivate::QMetaTypeFunctionHelper<Container>::Destruct,
-                                                        QtMetaTypePrivate::QMetaTypeFunctionHelper<Container>::Construct,
-                                                        QtMetaTypePrivate::QMetaTypeFunctionHelper<Container, size1!=0 && size2!=0>::Save,
-                                                        QtMetaTypePrivate::QMetaTypeFunctionHelper<Container, size1!=0 && size2!=0>::Load,
-                                                        DebugStreamFunction<Container>::create(),
-                                                        &comparator,
-                                                        true,
-                                                        [](int metaType1Id, int metaType2Id) -> const QtPrivate::AbstractConverterFunction* {
-                                                              struct Converter : QtPrivate::AbstractConverterFunction
-                                                              {
-                                                                  explicit Converter(int metaType_first, int metaType_second)
-                                                                      : QtPrivate::AbstractConverterFunction(convert),
-                                                                        m_metaType_first(metaType_first), m_metaType_second(metaType_second) {}
-                                                                  static bool convert(const QtPrivate::AbstractConverterFunction *_this, const void *in, void *out)
-                                                                  {
-                                                                      struct _QPairVariantInterfaceImpl
-                                                                      {
-                                                                          const void *_pair;
-                                                                          int _metaType_id_first;
-                                                                          uint _metaType_flags_first;
-                                                                          int _metaType_id_second;
-                                                                          uint _metaType_flags_second;
-                                                                          QtMetaTypePrivate::VariantData (*_getFirst)(const void * const *p, int metaTypeId, uint flags);
-                                                                          QtMetaTypePrivate::VariantData (*_getSecond)(const void * const *p, int metaTypeId, uint flags);
-                                                                      };
-
-                                                                      _QPairVariantInterfaceImpl *t = static_cast<_QPairVariantInterfaceImpl *>(out);
-                                                                      t->_pair = in;
-                                                                      t->_metaType_id_first = static_cast<const Converter *>(_this)->m_metaType_first;
-                                                                      t->_metaType_flags_first = size1==0;
-                                                                      t->_metaType_id_second = static_cast<const Converter *>(_this)->m_metaType_second;
-                                                                      t->_metaType_flags_second = size2==0;
-                                                                      t->_getFirst = getFirstImpl<Container>;
-                                                                      t->_getSecond = getSecondImpl<Container>;
-                                                                      return true;
-                                                                  }
-                                                                  int m_metaType_first;
-                                                                  int m_metaType_second;
-                                                              };
-                                                              return new Converter(metaType1Id, metaType2Id);
-                                                        },
-                                                        pairHashWrapper<Container>,
-                                                        access
-                                                    );
-    }
-    return newMetaType;
-}
-
-#else
 typedef bool(*MetaSequenceIteratorFactory)(void *src, void *target, const QtMetaContainerPrivate::QMetaSequenceInterface* iface);
 typedef bool(*MetaSequenceConstIteratorFactory)(const void *src, void *target, const QtMetaContainerPrivate::QMetaSequenceInterface* iface);
 typedef bool(*MetaAssociationIteratorFactory)(void *src, void *target, const QtMetaContainerPrivate::QMetaAssociationInterface* iface);
@@ -1423,7 +972,6 @@ static int registerQPairType(const QByteArray& typeName, const QMetaType& metaTy
     }
     return newMetaType;
 }
-#endif
 
 }//namespace QtJambiPrivate
 

@@ -29,6 +29,7 @@
 **
 ****************************************************************************/
 
+#include "pch_p.h"
 #include "utils_p.h"
 #include <QtCore/qendian.h>
 
@@ -36,13 +37,10 @@ namespace Java{
 namespace QtCore{
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QUnhandledException, QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/lang/String;))
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QException, QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/lang/String;))
-#if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QFile$TrashResult,
     QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(ZLjava/lang/String;)
 )
-#endif
 
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QPropertyData,
                                  QTJAMBI_REPOSITORY_DEFINE_METHOD(getValueBypassingBindings,()Ljava/lang/Object;)
                                  QTJAMBI_REPOSITORY_DEFINE_METHOD(setValueBypassingBindings,(Ljava/lang/Object;)Z)
@@ -177,7 +175,6 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QPropertyChangeHandler,
                                  QTJAMBI_REPOSITORY_DEFINE_METHOD(invoke,()V))
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QPropertyNotifier,
                                  QTJAMBI_REPOSITORY_DEFINE_METHOD(invoke,()V))
-#endif
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QString$Predicate,
                                 QTJAMBI_REPOSITORY_DEFINE_METHOD(test,(C)Z)
                                 )
@@ -233,6 +230,10 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QFuture$FutureConsumer,
                                 )
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QFuture$FutureFunction,
                                 QTJAMBI_REPOSITORY_DEFINE_METHOD(apply,(Lio/qt/core/QFuture;)Ljava/lang/Object;)
+                                )
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QFutureInterfaceBase$State,
+                                )
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QFutureInterfaceBase,
                                 )
 #if QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QRangeModel$ConstTreeRowInterface,

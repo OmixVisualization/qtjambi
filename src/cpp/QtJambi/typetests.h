@@ -36,11 +36,6 @@
 #include <QtCore/QDebug>
 #include <QtCore/QDataStream>
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0) && defined(QLINKEDLIST_H)
-QT_WARNING_DISABLE_GCC("-Wdeprecated-declarations")
-QT_WARNING_DISABLE_DEPRECATED
-#endif
-
 namespace QtJambiPrivate {
 
 template<class T>
@@ -61,20 +56,6 @@ struct is_move_assignable : std::is_move_assignable<T>{};
 template<class T>
 struct is_destructible : std::is_destructible<T>{};
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-template<class T1, class T2>
-struct is_default_constructible<QPair<T1,T2>> : std::conditional<std::is_default_constructible<T1>::value && std::is_default_constructible<T2>::value, std::true_type, std::false_type>::type{};
-template<class T1, class T2>
-struct is_copy_constructible<QPair<T1,T2>> : std::conditional<std::is_copy_constructible<T1>::value && std::is_copy_constructible<T2>::value, std::true_type, std::false_type>::type{};
-template<class T1, class T2>
-struct is_move_constructible<QPair<T1,T2>> : std::conditional<std::is_move_constructible<T1>::value && std::is_move_constructible<T2>::value, std::true_type, std::false_type>::type{};
-template<class T1, class T2>
-struct is_copy_assignable<QPair<T1,T2>> : std::conditional<std::is_copy_assignable<T1>::value && std::is_copy_assignable<T2>::value, std::true_type, std::false_type>::type{};
-template<class T1, class T2>
-struct is_move_assignable<QPair<T1,T2>> : std::conditional<std::is_move_assignable<T1>::value && std::is_move_assignable<T2>::value, std::true_type, std::false_type>::type{};
-template<class T1, class T2>
-struct is_destructible<QPair<T1,T2>> : std::conditional<std::is_destructible<T1>::value && std::is_destructible<T2>::value, std::true_type, std::false_type>::type{};
-#endif
 template<class T1, class T2>
 struct is_default_constructible<std::pair<T1,T2>> : std::conditional<std::is_default_constructible<T1>::value && std::is_default_constructible<T2>::value, std::true_type, std::false_type>::type{};
 template<class T1, class T2>
@@ -101,15 +82,6 @@ std::false_type supports_equal_test(...);
 template<class T> struct supports_equal : decltype(supports_equal_test(std::declval<T>())){};
 template<class T, bool> struct supports_equal_conditional : decltype(supports_equal_test(std::declval<T>())){};
 template<class T> struct supports_equal_conditional<T,false> : std::false_type{};
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#ifdef QVECTOR_H
-template<class T> struct supports_equal<QVector<T>> : supports_equal_conditional<QVector<int>,supports_equal<T>::value>{};
-#endif
-#ifdef QLINKEDLIST_H
-template<class T> struct supports_equal<QLinkedList<T>> : supports_equal_conditional<QLinkedList<int>,supports_equal<T>::value>{};
-#endif
-template<class T1, class T2> struct supports_equal<QPair<T1,T2>> : supports_equal_conditional<QPair<int,int>, supports_equal<T1>::value && supports_equal<T2>::value>{};
-#endif
 template<class T> struct supports_equal<QList<T>> : supports_equal_conditional<QList<int>,supports_equal<T>::value>{};
 template<class T> struct supports_equal<QQueue<T>> : supports_equal_conditional<QQueue<int>,supports_equal<T>::value>{};
 template<class T> struct supports_equal<QStack<T>> : supports_equal_conditional<QStack<int>,supports_equal<T>::value>{};
@@ -133,15 +105,6 @@ std::false_type supports_less_than_test(...);
 template<class T> struct supports_less_than : decltype(supports_less_than_test(std::declval<T>())){};
 template<class T, bool> struct supports_less_than_conditional : decltype(supports_less_than_test(std::declval<T>())){};
 template<class T> struct supports_less_than_conditional<T,false> : std::false_type{};
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#ifdef QVECTOR_H
-template<class T> struct supports_less_than<QVector<T>> : supports_less_than_conditional<QVector<int>,supports_less_than<T>::value>{};
-#endif
-#ifdef QLINKEDLIST_H
-template<class T> struct supports_less_than<QLinkedList<T>> : supports_less_than_conditional<QLinkedList<int>,supports_less_than<T>::value>{};
-#endif
-template<class T1, class T2> struct supports_less_than<QPair<T1,T2>> : supports_less_than_conditional<QPair<int,int>, supports_less_than<T1>::value && supports_less_than<T2>::value>{};
-#endif
 template<class T> struct supports_less_than<QList<T>> : supports_less_than_conditional<QList<int>,supports_less_than<T>::value>{};
 template<class T> struct supports_less_than<QQueue<T>> : supports_less_than_conditional<QQueue<int>,supports_less_than<T>::value>{};
 template<class T> struct supports_less_than<QStack<T>> : supports_less_than_conditional<QStack<int>,supports_less_than<T>::value>{};
@@ -165,15 +128,6 @@ std::false_type supports_qHash_test(...);
 template<class T> struct supports_qHash : decltype(supports_qHash_test(std::declval<T>())){};
 template<class T, bool> struct supports_qHash_conditional : decltype(supports_qHash_test(std::declval<T>())){};
 template<class T> struct supports_qHash_conditional<T,false> : std::false_type{};
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#ifdef QVECTOR_H
-template<class T> struct supports_qHash<QVector<T>> : supports_qHash_conditional<QVector<int>,supports_qHash<T>::value>{};
-#endif
-#ifdef QLINKEDLIST_H
-template<class T> struct supports_qHash<QLinkedList<T>> : supports_qHash_conditional<QLinkedList<int>,supports_qHash<T>::value>{};
-#endif
-template<class T1, class T2> struct supports_qHash<QPair<T1,T2>> : supports_qHash_conditional<QPair<int,int>, supports_qHash<T1>::value && supports_qHash<T2>::value>{};
-#endif
 template<class T> struct supports_qHash<QList<T>> : supports_qHash_conditional<QList<int>,supports_qHash<T>::value>{};
 template<class T> struct supports_qHash<QQueue<T>> : supports_qHash_conditional<QQueue<int>,supports_qHash<T>::value>{};
 template<class T> struct supports_qHash<QStack<T>> : supports_qHash_conditional<QStack<int>,supports_qHash<T>::value>{};
@@ -197,15 +151,6 @@ std::false_type supports_debugstream_test(...);
 template<typename T> struct supports_debugstream : decltype(supports_debugstream_test(std::declval<T>())){};
 template<class T, bool> struct supports_debugstream_conditional : decltype(supports_debugstream_test(std::declval<T>())){};
 template<class T> struct supports_debugstream_conditional<T,false> : std::false_type{};
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#ifdef QVECTOR_H
-template<class T> struct supports_debugstream<QVector<T>> : supports_debugstream_conditional<QVector<int>,supports_debugstream<T>::value>{};
-#endif
-#ifdef QLINKEDLIST_H
-template<class T> struct supports_debugstream<QLinkedList<T>> : supports_debugstream_conditional<QLinkedList<int>,supports_debugstream<T>::value>{};
-#endif
-template<class T1, class T2> struct supports_debugstream<QPair<T1,T2>> : supports_debugstream_conditional<QPair<int,int>, supports_debugstream<T1>::value && supports_debugstream<T2>::value>{};
-#endif
 template<class T> struct supports_debugstream<QList<T>> : supports_debugstream_conditional<QList<int>,supports_debugstream<T>::value>{};
 template<class T> struct supports_debugstream<QQueue<T>> : supports_debugstream_conditional<QQueue<int>,supports_debugstream<T>::value>{};
 template<class T> struct supports_debugstream<QStack<T>> : supports_debugstream_conditional<QStack<int>,supports_debugstream<T>::value>{};
@@ -228,15 +173,6 @@ std::false_type supports_stream_operators_test(...);
 template<typename T> struct supports_stream_operators : decltype(supports_stream_operators_test(std::declval<T>())){};
 template<class T, bool> struct supports_stream_operators_conditional : decltype(supports_stream_operators_test(std::declval<T>())){};
 template<class T> struct supports_stream_operators_conditional<T,false> : std::false_type{};
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#ifdef QVECTOR_H
-template<class T> struct supports_stream_operators<QVector<T>> : supports_stream_operators_conditional<QVector<int>,supports_stream_operators<T>::value>{};
-#endif
-#ifdef QLINKEDLIST_H
-template<class T> struct supports_stream_operators<QLinkedList<T>> : supports_stream_operators_conditional<QLinkedList<int>,supports_stream_operators<T>::value>{};
-#endif
-template<class T1, class T2> struct supports_stream_operators<QPair<T1,T2>> : supports_stream_operators_conditional<QPair<int,int>, supports_stream_operators<T1>::value && supports_stream_operators<T2>::value>{};
-#endif
 template<class T> struct supports_stream_operators<QList<T>> : supports_stream_operators_conditional<QList<int>,supports_stream_operators<T>::value>{};
 template<class T> struct supports_stream_operators<QQueue<T>> : supports_stream_operators_conditional<QQueue<int>,supports_stream_operators<T>::value>{};
 template<class T> struct supports_stream_operators<QStack<T>> : supports_stream_operators_conditional<QStack<int>,supports_stream_operators<T>::value>{};
@@ -573,21 +509,6 @@ struct qtjambi_type_container1{
     using type = Container<T>;
 };
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#ifdef QLINKEDLIST_H
-template<typename T>
-struct qtjambi_type_container1<QLinkedList,T>{
-    using type = QLinkedList<QVariant>;
-};
-#endif
-
-#ifdef QVECTOR_H
-template<typename T>
-struct qtjambi_type_container1<QVector,T>{
-    using type = QVector<QVariant>;
-};
-#endif
-#else
 #ifdef QPROPERTY_H
 template<template<typename T> class Property, typename T, int size = sizeof(T), bool isInteger = std::is_integral<T>::value, bool isFloatingPoint = std::is_floating_point<T>::value>
 struct qtjambi_type_property_decider{
@@ -637,7 +558,6 @@ template<typename T>
 struct qtjambi_type_container1<QPropertyChangeHandler,T>{
     using type = QPropertyChangeHandler<void(*)()>;
 };
-#endif
 #endif
 
 #ifdef QLIST_H
@@ -736,13 +656,6 @@ template<typename K, typename T>
 struct qtjambi_type_container2<std::pair,K,T>{
     using type = std::pair<QVariant,QVariant>;
 };
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-template<typename K, typename T>
-struct qtjambi_type_container2<QPair,K,T>{
-    using type = QPair<QVariant,QVariant>;
-};
-#endif
 
 template<typename K, typename T>
 struct qtjambi_type_container2<QMap,K,T>{

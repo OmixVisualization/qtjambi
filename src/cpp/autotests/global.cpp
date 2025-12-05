@@ -400,7 +400,7 @@ QList<bool> General::start_qtjambi_cast_test(jobject list, jobject qObject, jobj
             //results << (qtjambi_cast<const QEasingCurve::EasingFunction&>(env, o) == f1); disallowed
         }
         {
-            QString strg = QLatin1String("test");
+            const QString strg = QLatin1String("test");
             jobject o = qtjambi_cast<jobject>(env, strg);
             QtJambiAPI::addToJavaCollection(env, list, o);
             jstring s = qtjambi_cast<jstring>(env, strg);

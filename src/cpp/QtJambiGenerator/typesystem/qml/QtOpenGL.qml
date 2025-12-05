@@ -3402,12 +3402,13 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                     index: 0
                     ReplaceType{
                         modifiedType: "T"
+                        modifiedJavaType: "io.qt.opengl.QAbstractOpenGLFunctions"
                         modifiedJniType: "jobject"
                     }
                 }
                 AddTypeParameter{
                     name: "T"
-                    extending: "io.qt.opengl.QAbstractOpenGLFunctions"
+                    extending: "io.qt.opengl.@Nullable QAbstractOpenGLFunctions"
                 }
                 AddArgument{
                     index: 1

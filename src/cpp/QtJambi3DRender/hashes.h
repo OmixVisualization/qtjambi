@@ -37,18 +37,16 @@
 namespace Qt3DRender{
     typedef Qt3DCore::QNode QNode;
 }
-hash_type qHash(const Qt3DRender::QLevelOfDetailBoundingSphere& p, hash_type seed = 0);
+size_t qHash(const Qt3DRender::QLevelOfDetailBoundingSphere& p, size_t seed = 0);
 
-#if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
-hash_type qHash(const Qt3DRender::QTextureImageData& p, hash_type seed = 0);
+size_t qHash(const Qt3DRender::QTextureImageData& p, size_t seed = 0);
 
-hash_type qHash(const Qt3DRender::QTextureDataUpdate& p, hash_type seed = 0);
-#endif
+size_t qHash(const Qt3DRender::QTextureDataUpdate& p, size_t seed = 0);
 
 #else
 namespace Qt3DRender{
 	typedef Qt3DCore::QNode QNode;
-    inline hash_type qHash(const QLevelOfDetailBoundingSphere& p, hash_type seed = 0){
+    inline size_t qHash(const QLevelOfDetailBoundingSphere& p, size_t seed = 0){
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
         QtPrivate::QHashCombine hash;
 #else
@@ -58,8 +56,7 @@ namespace Qt3DRender{
         seed = hash(seed, p.radius());
         return seed;
     }
-#if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
-    inline hash_type qHash(const QTextureImageData& p, hash_type seed = 0){
+    inline size_t qHash(const QTextureImageData& p, size_t seed = 0){
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
         QtPrivate::QHashCombineCommutative hash;
 #else
@@ -85,7 +82,7 @@ namespace Qt3DRender{
         return seed;
     }
 
-    inline hash_type qHash(const QTextureDataUpdate& p, hash_type seed = 0){
+    inline size_t qHash(const QTextureDataUpdate& p, size_t seed = 0){
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
         QtPrivate::QHashCombine hash;
 #else
@@ -101,7 +98,6 @@ namespace Qt3DRender{
             seed = hash(seed, *p.data().get());
         return seed;
     }
-#endif
 };
 #endif
 

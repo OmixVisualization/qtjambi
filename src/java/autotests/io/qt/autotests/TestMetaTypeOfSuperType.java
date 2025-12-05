@@ -36,7 +36,7 @@ import io.qt.core.QStringListModel;
 
 public class TestMetaTypeOfSuperType extends ApplicationInitializer {
 	@Test
-    public void test() {
+    public void testMetaTypeOfSuperType() {
 		QMetaType.fromType(QStringListModel.class);
 		QMetaType mt = QMetaType.fromName("QAbstractListModel*");
 		Assert.assertTrue(mt.flags().testFlag(QMetaType.TypeFlag.PointerToQObject));

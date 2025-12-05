@@ -27,10 +27,7 @@
 **
 ****************************************************************************/
 
-#include <QtCore/QMetaType>
-#include "qmlapi.h"
-#include "java_p.h"
-#include "registryutil_p.h"
+#include "pch_p.h"
 
 int QmlAPI::getInterfaceOffset(JNIEnv *env, jclass cls, const std::type_info& interfacetype){
     if(const InterfaceOffsetInfo* info = getInterfaceOffsets(env, cls)){

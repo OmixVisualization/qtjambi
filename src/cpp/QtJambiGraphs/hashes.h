@@ -57,24 +57,24 @@ inline bool operator==(const QSurfaceDataItem& a, const QSurfaceDataItem& b){
     return a.position()==b.position();
 }
 
-inline hash_type qHash(const QBarDataItem &value, hash_type seed = 0){
+inline size_t qHash(const QBarDataItem &value, size_t seed = 0){
     return qHashMulti(seed, value.value(), value.rotation());
 }
 
-inline hash_type qHash(const QScatterDataItem &value, hash_type seed = 0){
+inline size_t qHash(const QScatterDataItem &value, size_t seed = 0){
     return qHashMulti(seed, value.position(), value.rotation());
 }
 
-inline hash_type qHash(const QSurfaceDataItem &value, hash_type seed = 0){
+inline size_t qHash(const QSurfaceDataItem &value, size_t seed = 0){
     return qHash(value.position(), seed);
 }
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
 #if defined(QTJAMBI_GENERATOR_RUNNING)
 bool operator==(const QBarDataRow& a, const QBarDataRow& b);
-hash_type qHash(const QBarDataRow &value, hash_type seed = 0);
+size_t qHash(const QBarDataRow &value, size_t seed = 0);
 #endif
-inline hash_type qHash(const QGraphsLine &value, hash_type seed = 0){
+inline size_t qHash(const QGraphsLine &value, size_t seed = 0){
     struct CustomField
     {
         bool mainColorCustom : 1;

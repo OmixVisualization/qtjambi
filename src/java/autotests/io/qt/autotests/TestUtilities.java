@@ -29,15 +29,27 @@
 ****************************************************************************/
 package io.qt.autotests;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.QLibraryNotFoundError;
 import io.qt.QtUtilities;
 import io.qt.autotests.generated.General;
+import io.qt.core.QLibraryInfo;
+import io.qt.core.QObject;
+import io.qt.core.QOperatingSystemVersion;
+import io.qt.core.QTimer;
+import io.qt.core.Qt;
+import io.qt.gui.QAction;
+import io.qt.gui.QGuiApplication;
+import io.qt.gui.QKeySequence;
+import io.qt.gui.QWindow;
 
 public class TestUtilities extends UnitTestInitializer {
 
@@ -60,5 +72,37 @@ public class TestUtilities extends UnitTestInitializer {
     @Test
     public void testNullClass() {
     	Assert.assertEquals(null, General.internalAccess.getClass(null));
+    }
+	
+	@BeforeClass
+    public static void testInitialize() throws Exception {
+    	ApplicationInitializer.testInitializeWithGui();
+    }
+	
+	@AfterClass
+    public static void testDispose() throws Exception {
+		if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.MacOS) 
+    			&& QLibraryInfo.version().majorVersion()==6 
+    			&& QLibraryInfo.version().minorVersion()==5) {
+	    	QWindow window = new QWindow();
+	    	window.show();
+	    	QTimer.singleShot(200, QGuiApplication.instance(), QGuiApplication::quit);
+	    	QGuiApplication.exec();
+	    	window.close();
+	    	window.disposeLater();
+	    	window = null;
+    	}
+    	ApplicationInitializer.testDispose();
+    }
+	
+    @Test
+    public void testShortcut() {
+        QObject obj = new QObject();
+        QAction act = new QAction(obj);
+        act.setShortcut("Ctrl+A");
+        QKeySequence seq = act.shortcut();
+
+        assertEquals(seq.count(), 1);
+        assertEquals(seq.at(0).toCombined(), Qt.KeyboardModifier.ControlModifier.value() | Qt.Key.Key_A.value());
     }
 }

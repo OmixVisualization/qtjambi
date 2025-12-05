@@ -156,7 +156,6 @@ public:
     void* constructContainer(JNIEnv *, void* placement, const ConstContainerAndAccessInfo& copyOf) override {
         return constructContainer(placement, copyOf.container);
     }
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     void* constructContainer(void* placement, void* move) override {
         QTJAMBI_KEY_VALUE_LOCKER(this);
         return new(placement) QHash<K,T>(std::move(*reinterpret_cast<const QHash<K,T>*>(move)));
@@ -164,7 +163,6 @@ public:
     void* constructContainer(JNIEnv *, void* placement, const ContainerAndAccessInfo& move) override {
         return constructContainer(placement, move.container);
     }
-#endif
     bool destructContainer(void* container) override {
         QTJAMBI_KEY_VALUE_LOCKER(this);
         reinterpret_cast<QHash<K,T>*>(container)->~QHash<K,T>();
@@ -438,9 +436,6 @@ public:
         if(!result.access)
             result.access = ContainerAccessAPI::createContainerAccess(env, SequentialContainerType::QList, m_keyMetaTypeInfo.metaType(),
                                                                                 align1, size1,
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                                AbstractContainerAccess::isStaticType(m_keyMetaTypeInfo.metaType()),
-#endif
                                                                                 AbstractContainerAccess::isPointerType(m_keyMetaTypeInfo.metaType()),
                                                                                 m_keyMetaTypeInfo.hashFunction(),
                                                                                 m_keyInternalToExternalConverter,
@@ -462,9 +457,6 @@ public:
         if(!result.access)
             result.access = ContainerAccessAPI::createContainerAccess(env, SequentialContainerType::QList, m_keyMetaTypeInfo.metaType(),
                                                                                  align1, size1,
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                                 AbstractContainerAccess::isStaticType(m_keyMetaTypeInfo.metaType()),
-#endif
                                                                                  AbstractContainerAccess::isPointerType(m_keyMetaTypeInfo.metaType()),
                                                                                  m_keyMetaTypeInfo.hashFunction(),
                                                                                  m_keyInternalToExternalConverter,
@@ -600,9 +592,6 @@ public:
         if(!result.access)
             result.access = ContainerAccessAPI::createContainerAccess(env, SequentialContainerType::QList, m_valueMetaTypeInfo.metaType(),
                                                       align2, size2,
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                      AbstractContainerAccess::isStaticType(m_valueMetaTypeInfo.metaType()),
-#endif
                                                       AbstractContainerAccess::isPointerType(m_valueMetaTypeInfo.metaType()),
                                                       m_valueMetaTypeInfo.hashFunction(),
                                                       m_valueInternalToExternalConverter,

@@ -38,7 +38,6 @@
 #include <QtCore/QMetaProperty>
 #include <QtCore/QObject>
 #include <QtCore/QFuture>
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #include <QtCore/QProperty>
 #include <QtCore/QPromise>
 
@@ -73,8 +72,6 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(BindableOwner, QString, textProp, &BindableOwner::textChanged)
 };
 
-#endif //QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-
 class FutureHandler{
 private:
     FutureHandler() = delete;
@@ -90,10 +87,14 @@ public:
     static QFutureInterface<int> interfaceInt();
     static QFutureInterface<QObject*> interfaceObject();
     static QFutureInterface<void> interfaceVoid();
-    static QString checkWatcherString(QFutureWatcher<QString>* watcher);
-    static void checkWatcherVoid(QFutureWatcher<void>* watcher);
-    static int checkWatcherInt(QFutureWatcher<int>* watcher);
-    static QObject* checkWatcherObject(QFutureWatcher<QObject*>* watcher);
+    static QString checkString(QFutureInterface<QString> iface);
+    static void checkVoid(QFutureInterface<void> iface);
+    static int checkInt(QFutureInterface<int> iface);
+    static QObject* checkObject(QFutureInterface<QObject*> iface);
+    static QString checkString(QFutureWatcher<QString>* watcher);
+    static void checkVoid(QFutureWatcher<void>* watcher);
+    static int checkInt(QFutureWatcher<int>* watcher);
+    static QObject* checkObject(QFutureWatcher<QObject*>* watcher);
     static QList<int> returnInTheFutureInt(QFuture<int> future);
     static QFuture<QString> returnInTheFuture(const QStringList& strings, ulong delay);
     static QStringList returnInTheFuture(QFuture<QString> future);
@@ -105,12 +106,14 @@ public:
     static QFuture<void> throwInTheFuture(ulong delay, int exceptionType = 0);
     static QFuture<QString> throwInTheFuture(const QStringList& strings, ulong delay, int exceptionType = 0);
     static QStringList throwInTheFuture(QFuture<QString> future);
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-    static void fillStringPromise(QPromise<QString>& promise);
-    static void fillIntPromise(QPromise<int>& promise);
-    static void fillObjectPromise(QPromise<QObject*>& promise);
-    static void fillVariantPromise(QPromise<QVariant>& promise);
-#endif //QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    static void fillString(QFutureInterface<QString>& promise);
+    static void fillInt(QFutureInterface<int>& promise);
+    static void fillObject(QFutureInterface<QObject*>& promise);
+    static void fillVariant(QFutureInterface<QVariant>& promise);
+    static void fillString(QPromise<QString>& promise);
+    static void fillInt(QPromise<int>& promise);
+    static void fillObject(QPromise<QObject*>& promise);
+    static void fillVariant(QPromise<QVariant>& promise);
 };
 
 #endif // BINDABLEOWNER_H

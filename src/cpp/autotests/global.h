@@ -60,7 +60,6 @@
 #include "testdialog.h"
 #include "tulip.h"
 #include "containers.h"
-#include "containers_qt5.h"
 #include "bindableowner.h"
 #include "variants.h"
 #include "general.h"

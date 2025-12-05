@@ -531,4 +531,10 @@ final class LibraryBundle {
 	public String system() {
 		return system;
 	}
+
+	@Override
+	public String toString() {
+		return "LibraryBundle [compiler=" + compiler + ", configuration=" + configuration + ", system=" + system
+				+ ", version=" + version + ", module=" + module + ", url=" + url + ", isDebuginfo=" + isDebuginfo + "]";
+	}
 }

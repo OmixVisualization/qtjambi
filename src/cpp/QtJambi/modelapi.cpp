@@ -27,8 +27,7 @@
 **
 ****************************************************************************/
 
-#include <QtCore/QAbstractItemModel>
-#include "modelapi.h"
+#include "pch_p.h"
 #include <QtCore/private/qobject_p.h>
 
 struct CachedValue{

@@ -12,7 +12,6 @@
         <file alias="QtDataVisualization.qml">typesystem/qml/QtDataVisualization.qml</file>
         <file alias="QtDBus.qml">typesystem/qml/QtDBus.qml</file>
         <file alias="QtDesigner.qml">typesystem/qml/QtDesigner.qml</file>
-        <file alias="QtGamepad.qml">typesystem/qml/QtGamepad.qml</file>
         <file alias="QtGui.qml">typesystem/qml/QtGui.qml</file>
         <file alias="QtGuiQpa.qml">typesystem/qml/QtGuiQpa.qml</file>
         <file alias="QtGuiRhi.qml">typesystem/qml/QtGuiRhi.qml</file>
@@ -20,7 +19,6 @@
         <file alias="QtHttpServer.qml">typesystem/qml/QtHttpServer.qml</file>
         <file alias="QtLocation.qml">typesystem/qml/QtLocation.qml</file>
         <file alias="QtBodymovin.qml">typesystem/qml/QtBodymovin.qml</file>
-        <file alias="QtMacExtras.qml">typesystem/qml/QtMacExtras.qml</file>
         <file alias="QtMultimedia.qml">typesystem/qml/QtMultimedia.qml</file>
         <file alias="QtMultimediaWidgets.qml">typesystem/qml/QtMultimediaWidgets.qml</file>
         <file alias="QtNetwork.qml">typesystem/qml/QtNetwork.qml</file>
@@ -50,8 +48,6 @@
         <file alias="QtQuickControls2.qml">typesystem/qml/QtQuickControls2.qml</file>
         <file alias="QtQuickTest.qml">typesystem/qml/QtQuickTest.qml</file>
         <file alias="QtQuickWidgets.qml">typesystem/qml/QtQuickWidgets.qml</file>
-        <file alias="QtScript.qml">typesystem/qml/QtScript.qml</file>
-        <file alias="QtScriptTools.qml">typesystem/qml/QtScriptTools.qml</file>
         <file alias="QtScxml.qml">typesystem/qml/QtScxml.qml</file>
         <file alias="QtSensors.qml">typesystem/qml/QtSensors.qml</file>
         <file alias="QtSerialBus.qml">typesystem/qml/QtSerialBus.qml</file>
@@ -68,17 +64,14 @@
         <file alias="QtVirtualKeyboard.qml">typesystem/qml/QtVirtualKeyboard.qml</file>
         <file alias="QtWebChannel.qml">typesystem/qml/QtWebChannel.qml</file>
         <file alias="QtWebChannelQuick.qml">typesystem/qml/QtWebChannelQuick.qml</file>
-        <file alias="QtWebEngine.qml">typesystem/qml/QtWebEngine.qml</file>
         <file alias="QtWebEngineCore.qml">typesystem/qml/QtWebEngineCore.qml</file>
         <file alias="QtWebEngineQuick.qml">typesystem/qml/QtWebEngineQuick.qml</file>
         <file alias="QtWebEngineWidgets.qml">typesystem/qml/QtWebEngineWidgets.qml</file>
         <file alias="QtWebSockets.qml">typesystem/qml/QtWebSockets.qml</file>
         <file alias="QtWebView.qml">typesystem/qml/QtWebView.qml</file>
         <file alias="QtWidgets.qml">typesystem/qml/QtWidgets.qml</file>
-        <file alias="QtWinExtras.qml">typesystem/qml/QtWinExtras.qml</file>
         <file alias="QtXmlPatterns.qml">typesystem/qml/QtXmlPatterns.qml</file>
         <file alias="QtXml.qml">typesystem/qml/QtXml.qml</file>
-        <file alias="QtX11Extras.qml">typesystem/qml/QtX11Extras.qml</file>
         <file alias="QtJambiCharts.java">typesystem/java/QtJambiCharts.java</file>
         <file alias="QtJambiConcurrent.java">typesystem/java/QtJambiConcurrent.java</file>
         <file alias="QtJambiCore.java">typesystem/java/QtJambiCore.java</file>
@@ -97,7 +90,7 @@
         <file alias="QtJambiTest.java">typesystem/java/QtJambiTest.java</file>
         <file alias="QtJambiWebEngineQuick.java">typesystem/java/QtJambiWebEngineQuick.java</file>
         <file alias="QtJambiWidgets.java">typesystem/java/QtJambiWidgets.java</file>
-        <file alias="QtJambiWinExtras.java">typesystem/java/QtJambiWinExtras.java</file>
+        <file alias="QtJambiStateMachine.java">typesystem/java/QtJambiStateMachine.java</file>
         <file alias="QtJambiXml.java">typesystem/java/QtJambiXml.java</file>
         <file alias="QtProtobuf.qml">typesystem/qml/QtProtobuf.qml</file>
         <file alias="QtGrpc.qml">typesystem/qml/QtGrpc.qml</file>

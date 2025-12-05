@@ -79,7 +79,7 @@ public:
         Shell               = 0x0004,
         ShellDeclaration    = 0x0008,
         PackageInitializer  = 0x0010,
-        DestructorFunction  = 0x0020,
+        Destructor          = 0x0020,
         Constructors        = 0x0040,
         JavaInterface       = 0x0080,
         Signal              = 0x0100,
@@ -89,7 +89,7 @@ public:
         Setter              = 0x2000,
         NativeGetter        = Native | Getter,
         NativeSetter        = Native | Setter,
-        DeleterFunction     = 0x4000,
+        Deleter             = 0x4000,
         JavaConctreteWrapper= 0x8000
     };
     Q_ENUM(Entries)
@@ -209,15 +209,5 @@ private:
 };
 
 QML_DECLARE_TYPE(AbstractObject)
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-Q_DECLARE_METATYPE(Ownership::Entries)
-Q_DECLARE_METATYPE(Affinity::Entries)
-Q_DECLARE_METATYPE(CodeClass::Entries)
-Q_DECLARE_METATYPE(RemoveFlag::Entries)
-Q_DECLARE_METATYPE(Position::Entries)
-Q_DECLARE_METATYPE(Modification::Entries)
-Q_DECLARE_METATYPE(AccessModifications)
-#endif
 
 #endif // QML_ABSTRACTOBJECT_H

@@ -181,6 +181,9 @@ public:
     bool getForceFinal() const;
     void setForceFinal(bool newIsFinal);
 
+    bool getAddTextStreamFunctions() const;
+    void setAddTextStreamFunctions(bool newAddTextStreamFunctions);
+
 signals:
     void packageNameChanged();
 
@@ -230,6 +233,8 @@ signals:
 
     void forceFinalChanged();
 
+    void addTextStreamFunctionsChanged();
+
 private:
     QString packageName;
     QString implementing;
@@ -255,6 +260,7 @@ private:
     bool notCloneable = false;
     bool pushUpStatics = false;
     bool noInstance = false;
+    bool addTextStreamFunctions = false;
     Q_PROPERTY(QString packageName READ getPackageName WRITE setPackageName NOTIFY packageNameChanged)
     Q_PROPERTY(QString implementing READ getImplementing WRITE setImplementing NOTIFY implementingChanged)
     Q_PROPERTY(QString using READ getUsing WRITE setUsing NOTIFY usingChanged)
@@ -279,6 +285,7 @@ private:
     Q_PROPERTY(bool pushUpStatics READ getPushUpStatics WRITE setPushUpStatics NOTIFY pushUpStaticsChanged FINAL)
     Q_PROPERTY(bool noInstance READ getNoInstance WRITE setNoInstance NOTIFY noInstanceChanged FINAL)
     Q_PROPERTY(bool forceFinal READ getForceFinal WRITE setForceFinal NOTIFY forceFinalChanged FINAL)
+    Q_PROPERTY(bool addTextStreamFunctions READ getAddTextStreamFunctions WRITE setAddTextStreamFunctions NOTIFY addTextStreamFunctionsChanged FINAL)
 };
 
 class ObjectType : public ComplexType

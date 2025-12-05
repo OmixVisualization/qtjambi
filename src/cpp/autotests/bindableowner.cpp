@@ -153,7 +153,32 @@ QFuture<QObject*> FutureHandler::forwardObject(QFuture<QObject*> future){
     return future;
 }
 
-void FutureHandler::checkWatcherVoid(QFutureWatcher<void>* watcher){
+void FutureHandler::checkVoid(QFutureInterface<void> iface){
+    iface.waitForFinished();
+}
+
+QString FutureHandler::checkString(QFutureInterface<QString> iface){
+    iface.waitForResult(0);
+    QString v = iface.resultReference(0);
+    iface.reportResult(v);
+    return v;
+}
+
+int FutureHandler::checkInt(QFutureInterface<int> iface){
+    iface.waitForResult(0);
+    int v = iface.resultReference(0);
+    iface.reportResult(v);
+    return v;
+}
+
+QObject* FutureHandler::checkObject(QFutureInterface<QObject*> iface){
+    iface.waitForResult(0);
+    QObject* v = iface.resultReference(0);
+    iface.reportResult(v);
+    return v;
+}
+
+void FutureHandler::checkVoid(QFutureWatcher<void>* watcher){
     if(watcher){
         watcher->waitForFinished();
     }else{
@@ -163,10 +188,11 @@ void FutureHandler::checkWatcherVoid(QFutureWatcher<void>* watcher){
     }
 }
 
-QString FutureHandler::checkWatcherString(QFutureWatcher<QString>* watcher){
+QString FutureHandler::checkString(QFutureWatcher<QString>* watcher){
     if(watcher){
         watcher->waitForFinished();
-        return watcher->result();
+        QString v = watcher->result();
+        return v;
     }else{
         if(JniEnvironment env{16}){
             JavaException::raiseNullPointerException(env, nullptr QTJAMBI_STACKTRACEINFO );
@@ -175,10 +201,11 @@ QString FutureHandler::checkWatcherString(QFutureWatcher<QString>* watcher){
     }
 }
 
-int FutureHandler::checkWatcherInt(QFutureWatcher<int>* watcher){
+int FutureHandler::checkInt(QFutureWatcher<int>* watcher){
     if(watcher){
         watcher->waitForFinished();
-        return watcher->result();
+        int v = watcher->result();
+        return v;
     }else{
         if(JniEnvironment env{16}){
             JavaException::raiseNullPointerException(env, nullptr QTJAMBI_STACKTRACEINFO );
@@ -187,10 +214,11 @@ int FutureHandler::checkWatcherInt(QFutureWatcher<int>* watcher){
     }
 }
 
-QObject* FutureHandler::checkWatcherObject(QFutureWatcher<QObject*>* watcher){
+QObject* FutureHandler::checkObject(QFutureWatcher<QObject*>* watcher){
     if(watcher){
         watcher->waitForFinished();
-        return watcher->result();
+        QObject* v = watcher->result();
+        return v;
     }else{
         if(JniEnvironment env{16}){
             JavaException::raiseNullPointerException(env, nullptr QTJAMBI_STACKTRACEINFO );
@@ -304,25 +332,48 @@ QFutureInterface<QObject*> FutureHandler::interfaceObject() { return QFutureInte
 
 QFutureInterface<void> FutureHandler::interfaceVoid() { return QFutureInterface<void>(); }
 
+void FutureHandler::fillString(QFutureInterface<QString>& promise){
+    promise.reportResult("A");
+    promise.reportResult("B");
+    promise.reportResult("C");
+    promise.reportResult("D");
+}
+void FutureHandler::fillInt(QFutureInterface<int>& promise){
+    promise.reportResult(345);
+    promise.reportResult(678);
+}
+
+void FutureHandler::fillObject(QFutureInterface<QObject*>& promise){
+    promise.reportResult(QCoreApplication::instance());
+    promise.reportResult(QCoreApplication::instance()->thread());
+    promise.reportResult(QCoreApplication::instance()->thread()->eventDispatcher());
+}
+
+void FutureHandler::fillVariant(QFutureInterface<QVariant>& promise){
+    promise.reportResult("123");
+    promise.reportResult("456");
+    promise.reportResult("789");
+}
+
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-void FutureHandler::fillStringPromise(QPromise<QString>& promise){
+void FutureHandler::fillString(QPromise<QString>& promise){
     promise.addResult("A");
     promise.addResult("B");
     promise.addResult("C");
     promise.addResult("D");
 }
-void FutureHandler::fillIntPromise(QPromise<int>& promise){
+void FutureHandler::fillInt(QPromise<int>& promise){
     promise.addResult(345);
     promise.addResult(678);
 }
 
-void FutureHandler::fillObjectPromise(QPromise<QObject*>& promise){
+void FutureHandler::fillObject(QPromise<QObject*>& promise){
     promise.addResult(QCoreApplication::instance());
     promise.addResult(QCoreApplication::instance()->thread());
     promise.addResult(QCoreApplication::instance()->thread()->eventDispatcher());
 }
 
-void FutureHandler::fillVariantPromise(QPromise<QVariant>& promise){
+void FutureHandler::fillVariant(QPromise<QVariant>& promise){
     promise.addResult("123");
     promise.addResult("456");
     promise.addResult("789");

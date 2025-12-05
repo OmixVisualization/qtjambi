@@ -29,9 +29,7 @@
 **
 ****************************************************************************/
 
-#include "functionalbase.h"
-#include "qtjambishell_p.h"
-#include "java_p.h"
+#include "pch_p.h"
 
 FunctionalBase::FunctionalBase()
     :m_ref(0)

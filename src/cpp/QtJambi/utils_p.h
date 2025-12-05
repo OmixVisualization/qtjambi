@@ -110,14 +110,13 @@ enum class NativeToJavaConversionMode{
     CppOwnership
 };
 
-jobject internal_convertNativeToJavaObject(JNIEnv *env, const void *qt_object, const std::type_info& typeId, const char *qtName, NativeToJavaConversionMode mode, bool *ok = nullptr);
-jobject internal_convertSmartPointerToJavaObject(JNIEnv *env, const char *className,
+jobject convertSmartPointerToJavaObject(JNIEnv *env, const char *className,
                                                 const QSharedPointer<char>& ptr_shared_pointer);
-jobject internal_convertSmartPointerToJavaInterface(JNIEnv *env, const std::type_info& interfaceType,
+jobject convertSmartPointerToJavaInterface(JNIEnv *env, const std::type_info& interfaceType,
                                                 const QSharedPointer<char>& ptr_shared_pointer);
-jobject internal_convertSmartPointerToJavaObject(JNIEnv *env, const char *className,
+jobject convertSmartPointerToJavaObject(JNIEnv *env, const char *className,
                                                  const std::shared_ptr<char>& ptr_shared_pointer);
-jobject internal_convertSmartPointerToJavaInterface(JNIEnv *env, const std::type_info& interfaceType,
+jobject convertSmartPointerToJavaInterface(JNIEnv *env, const std::type_info& interfaceType,
                                                     const std::shared_ptr<char>& ptr_shared_pointer);
 
 class QtJambiLink;

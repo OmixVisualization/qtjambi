@@ -33,10 +33,6 @@
 #include "qtjambi_cast_impl_util.h"
 #include "qtjambi_cast_impl_container_sequential.h"
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-QT_WARNING_DISABLE_GCC("-Wdeprecated-declarations")
-QT_WARNING_DISABLE_DEPRECATED
-#endif
 
 namespace RegistryAPI{
 template<typename T>
@@ -47,22 +43,30 @@ enum class QtJambiNativeID : jlong;
 
 namespace QtJambiPrivate {
 
-template<bool has_scope, template<typename K, typename T> class Container, typename K, typename T>
-struct IntermediateAssociativeContainer : Container<K,T>{
-    IntermediateAssociativeContainer(JNIEnv *env, jobject object, QtJambiScope* scope = nullptr)
-        : Container<K,T>(), m_scope(scope), m_object(env->NewWeakGlobalRef(object)){}
+template<template<typename K, typename T> class Container, typename K, typename T, typename... Args>
+struct IntermediateAssociativeContainer : Container<K,T>, IntermediateData<cast_var_args<Args...>::hasScope, Args...>{
+    typedef IntermediateData<cast_var_args<Args...>::hasScope, Args...> Super;
+    IntermediateAssociativeContainer(jobject object, Args... args)
+        : Container<K,T>(), Super(object, args...){}
     ~IntermediateAssociativeContainer(){
         QTJAMBI_TRY_ANY{
             if(JniEnvironment env{200}){
                 QTJAMBI_TRY{
-                    jobject object = env->NewLocalRef(m_object);
-                    env->DeleteWeakGlobalRef(jweak(m_object));
+                    jobject object = env->NewLocalRef(Super::m_object);
+                    env->DeleteWeakGlobalRef(Super::m_object);
                     if(!env->IsSameObject(object, nullptr)){
                         QtJambiAPI::clearJavaMap(env, object);
                         for(typename Container<K,T>::const_iterator i = Container<K,T>::constBegin(); i!=Container<K,T>::constEnd(); ++i){
                             JniLocalFrame f(env, 64);
-                            jobject key = qtjambi_scoped_cast<has_scope,jobject,decltype(i.key())>::cast(env, i.key(), nullptr, m_scope);
-                            jobject val = qtjambi_scoped_cast<has_scope,jobject,decltype(i.value())>::cast(env, i.value(), nullptr, m_scope);
+                            jobject key;
+                            jobject val;
+                            if constexpr(cast_var_args<Args...>::hasScope){
+                                key = qtjambi_cast<jobject,decltype(i.key()),JNIEnv*,QtJambiScope&>::cast(i.key(), env, Super::m_scope);
+                                val = qtjambi_cast<jobject,decltype(i.value()),JNIEnv*,QtJambiScope&>::cast(i.value(), env, Super::m_scope);
+                            }else{
+                                key = qtjambi_cast<jobject,decltype(i.key()),JNIEnv*>::cast(i.key(), env);
+                                val = qtjambi_cast<jobject,decltype(i.value()),JNIEnv*>::cast(i.value(), env);
+                            }
                             QtJambiAPI::putJavaMap(env, object, key, val);
                         }
                     }
@@ -74,8 +78,6 @@ struct IntermediateAssociativeContainer : Container<K,T>{
             printf("An unknown exception occurred.\n");
         }QTJAMBI_TRY_END
     }
-    QtJambiScope* m_scope;
-    jobject m_object;
 };
 
 typedef bool (*IsAssociativeContainerFunction)(JNIEnv *, jobject, const std::type_info&, const QMetaType&, const std::type_info&, const QMetaType&, void*& pointer);
@@ -100,12 +102,12 @@ public:
     jobject value(JNIEnv * env, const void* ptr) override {
         const Iterator* iterator = static_cast<const Iterator*>(ptr);
         const auto& value = iterator->value();
-        return qtjambi_scoped_cast<false,jobject,decltype(value)>::cast(env, value, nullptr, nullptr);
+        return qtjambi_cast<jobject,decltype(value),JNIEnv*>::cast(value, env);
     }
     jobject key(JNIEnv * env, const void* ptr) override {
         const Iterator* iterator = static_cast<const Iterator*>(ptr);
         const auto& key = iterator->key();
-        return qtjambi_scoped_cast<false,jobject,decltype(key)>::cast(env, key, nullptr, nullptr);
+        return qtjambi_cast<jobject,decltype(key),JNIEnv*>::cast(key, env);
     }
 
     const QMetaType& keyMetaType() override{
@@ -171,7 +173,7 @@ public:
 
     void setValue(JNIEnv * env, void* ptr, jobject newValue) override {
         Iterator* iterator = static_cast<Iterator*>(ptr);
-        iterator->value() = qtjambi_scoped_cast<false,typename std::remove_reference<decltype(iterator->value())>::type,jobject>::cast(env, newValue, nullptr, nullptr);
+        iterator->value() = qtjambi_cast<typename std::remove_reference<decltype(iterator->value())>::type,jobject,JNIEnv*>::cast(newValue, env);
     }
 };
 
@@ -285,7 +287,7 @@ template<template<typename K, typename T> class Container, typename K, typename 
 struct AssociativeContainerContains<Container, K, T, true>{
     static jboolean function(JNIEnv * env, const void* ptr, jobject object) {
         const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
-        return container->contains(qtjambi_scoped_cast<false,K,jobject>::cast(env, object, nullptr, nullptr));
+        return container->contains(qtjambi_cast<K,jobject,JNIEnv*>::cast(object, env));
     }
     static bool function(const void* ptr, const void* object) {
         const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
@@ -305,7 +307,7 @@ template<template<typename K, typename T> class Container, typename K, typename 
 struct AssociativeContainerCountObject<Container, K, T, true>{
     static jint function(JNIEnv * env, const void* ptr, jobject object) {
         const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
-        return container->count(qtjambi_scoped_cast<false,K,jobject>::cast(env, object, nullptr, nullptr));
+        return container->count(qtjambi_cast<K,jobject,JNIEnv*>::cast(object, env));
     }
 };
 
@@ -353,7 +355,7 @@ template<template<typename K, typename T> class Container, typename K, typename 
 struct AssociativeContainerFindPair<Container, K, T, true>{
     static jobject function(JNIEnv *env, const ExtendedContainerInfo& ptr, jobject key) {
         Container<K,T> *container = static_cast<Container<K,T> *>(ptr.container);
-        return qtjambi_associative_iterator_caster<typename Container<K,T>::iterator>::cast(env, ptr.nativeId, container->find(qtjambi_scoped_cast<false,K,jobject>::cast(env, key, nullptr, nullptr)));
+        return qtjambi_associative_iterator_caster<typename Container<K,T>::iterator>::cast(env, ptr.nativeId, container->find(qtjambi_cast<K,jobject,JNIEnv*>::cast(key, env)));
     }
 };
 
@@ -369,7 +371,7 @@ template<template<typename K, typename T> class Container, typename K, typename 
 struct AssociativeContainerConstFindPair<Container, K, T, true>{
     static jobject function(JNIEnv *env, const ConstExtendedContainerInfo& ptr, jobject key) {
         const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr.container);
-        return qtjambi_associative_iterator_caster<typename Container<K,T>::const_iterator>::cast(env, ptr.nativeId, container->constFind(qtjambi_scoped_cast<false,K,jobject>::cast(env, key, nullptr, nullptr)));
+        return qtjambi_associative_iterator_caster<typename Container<K,T>::const_iterator>::cast(env, ptr.nativeId, container->constFind(qtjambi_cast<K,jobject,JNIEnv*>::cast(key, env)));
     }
 };
 
@@ -385,7 +387,7 @@ template<template<typename K, typename T> class Container, typename K, typename 
 struct AssociativeContainerFirst<Container, K, T, true>{
     static jobject function(JNIEnv *env, const void* ptr) {
         const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
-        return qtjambi_scoped_cast<false,jobject,const T>::cast(env, container->first(), nullptr, nullptr);
+        return qtjambi_cast<jobject,const T,JNIEnv*>::cast(container->first(), env);
     }
 };
 
@@ -401,7 +403,7 @@ template<template<typename K, typename T> class Container, typename K, typename 
 struct AssociativeContainerLast<Container, K, T, true>{
     static jobject function(JNIEnv *env, const void* ptr) {
         const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
-        return qtjambi_scoped_cast<false,jobject,const T>::cast(env, container->last(), nullptr, nullptr);
+        return qtjambi_cast<jobject,const T,JNIEnv*>::cast(container->last(), env);
     }
 };
 
@@ -417,7 +419,7 @@ template<template<typename K, typename T> class Container, typename K, typename 
 struct AssociativeContainerFirstKey<Container, K, T, true>{
     static jobject function(JNIEnv *env, const void* ptr) {
         const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
-        return qtjambi_scoped_cast<false,jobject,const K>::cast(env, container->firstKey(), nullptr, nullptr);
+        return qtjambi_cast<jobject,const K,JNIEnv*>::cast(container->firstKey(), env);
     }
 };
 
@@ -433,7 +435,7 @@ template<template<typename K, typename T> class Container, typename K, typename 
 struct AssociativeContainerLastKey<Container, K, T, true>{
     static jobject function(JNIEnv *env, const void* ptr) {
         const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
-        return qtjambi_scoped_cast<false,jobject,const K>::cast(env, container->lastKey(), nullptr, nullptr);
+        return qtjambi_cast<jobject,const K,JNIEnv*>::cast(container->lastKey(), env);
     }
 };
 
@@ -449,7 +451,7 @@ template<template<typename K, typename T> class Container, typename K, typename 
 struct AssociativeContainerKey<Container, K, T, true>{
     static jobject function(JNIEnv *env, const void* ptr, jobject value, jobject defaultKey) {
         const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
-        return qtjambi_scoped_cast<false,jobject,const K>::cast(env, container->key(qtjambi_scoped_cast<false,T,jobject>::cast(env, value, nullptr, nullptr), qtjambi_scoped_cast<false,K,jobject>::cast(env, defaultKey, nullptr, nullptr)), nullptr, nullptr);
+        return qtjambi_cast<jobject,const K,JNIEnv*>::cast(container->key(qtjambi_cast<T,jobject,JNIEnv*>::cast(value, env), qtjambi_cast<K,jobject,JNIEnv*>::cast(defaultKey, env)), env);
     }
 };
 
@@ -486,14 +488,14 @@ struct AssociativeContainerKeysForValue<Container, K, T, true>{
     static ContainerAndAccessInfo function(JNIEnv *env, const ConstContainerInfo& ptr, jobject value) {
         ContainerAndAccessInfo result;
         const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr.container);
-        result.container = new QList<K>(container->keys(qtjambi_scoped_cast<false,T,jobject>::cast(env, value, nullptr, nullptr)));
+        result.container = new QList<K>(container->keys(qtjambi_cast<T,jobject,JNIEnv*>::cast(value, env)));
         result.access = QListAccess<K>::newInstance();
         result.object = ContainerAPI::objectFromQList(env, result.container, result.access);
         return result;
     }
 };
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) && QT_VERSION < QT_VERSION_CHECK(6, 2, 0)
+#if QT_VERSION < QT_VERSION_CHECK(6, 2, 0)
 template<typename K, typename T>
 struct AssociativeContainerKeysForValue<QMultiHash, K, T, true>{
     static ContainerAndAccessInfo function(JNIEnv *env, const ConstContainerInfo& ptr, jobject value) {
@@ -502,7 +504,7 @@ struct AssociativeContainerKeysForValue<QMultiHash, K, T, true>{
         QList<K> _keys;
         typename QMultiHash<K,T>::const_iterator i = reinterpret_cast<const QMultiHash<K,T> *>(container)->begin();
         typename QMultiHash<K,T>::const_iterator end = reinterpret_cast<const QMultiHash<K,T> *>(container)->end();
-        T _qvalue = qtjambi_scoped_cast<false,T,jobject>::cast(env, value, nullptr, nullptr);
+        T _qvalue = qtjambi_cast<T,jobject,JNIEnv*>::cast(value, env);
         while (i != end) {
             if(i.value() == _qvalue)
                 _keys.append(i.key());
@@ -529,7 +531,7 @@ template<template<typename K, typename T> class Container, typename K, typename 
 struct AssociativeContainerLowerBound<Container, K, T, true>{
     static jobject function(JNIEnv *env, const ConstExtendedContainerInfo& ptr, jobject key) {
         const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr.container);
-        return qtjambi_associative_iterator_caster<typename Container<K,T>::const_iterator>::cast(env, ptr.nativeId, container->lowerBound(qtjambi_scoped_cast<false,K,jobject>::cast(env, key, nullptr, nullptr)));
+        return qtjambi_associative_iterator_caster<typename Container<K,T>::const_iterator>::cast(env, ptr.nativeId, container->lowerBound(qtjambi_cast<K,jobject,JNIEnv*>::cast(key, env)));
     }
 };
 
@@ -545,7 +547,7 @@ template<template<typename K, typename T> class Container, typename K, typename 
 struct AssociativeContainerUpperBound<Container, K, T, true>{
     static jobject function(JNIEnv *env, const ConstExtendedContainerInfo& ptr, jobject key) {
         const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr.container);
-        return qtjambi_associative_iterator_caster<typename Container<K,T>::const_iterator>::cast(env, ptr.nativeId, container->upperBound(qtjambi_scoped_cast<false,K,jobject>::cast(env, key, nullptr, nullptr)));
+        return qtjambi_associative_iterator_caster<typename Container<K,T>::const_iterator>::cast(env, ptr.nativeId, container->upperBound(qtjambi_cast<K,jobject,JNIEnv*>::cast(key, env)));
     }
 };
 
@@ -572,7 +574,7 @@ struct AssociativeContainerEquals<Container, K, T, isContainer, true>{
                     jobject entry = QtJambiAPI::nextOfJavaIterator(env, iterator);
                     jobject key = QtJambiAPI::keyOfJavaMapEntry(env, entry);
                     jobject val = QtJambiAPI::valueOfJavaMapEntry(env, entry);
-                    __qt_other_pointer->insert( qtjambi_scoped_cast<false,K,jobject>::cast(env, key, nullptr, nullptr), qtjambi_scoped_cast<false,T,jobject>::cast(env, val, nullptr, nullptr));
+                    __qt_other_pointer->insert( qtjambi_cast<K,jobject,JNIEnv*>::cast(key, env), qtjambi_cast<T,jobject,JNIEnv*>::cast(val, env));
                 }
             }
         }else{
@@ -642,7 +644,7 @@ template<template<typename K, typename T> class Container, typename K, typename 
 struct AssociativeContainerValue<Container, K, T, true>{
     static jobject function(JNIEnv * env, const void* ptr, jobject key, jobject defaultValue) {
             const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
-            return qtjambi_scoped_cast<false,jobject,const T>::cast(env, container->value(qtjambi_scoped_cast<false,K,jobject>::cast(env, key, nullptr, nullptr), qtjambi_scoped_cast<false,T,jobject>::cast(env, defaultValue, nullptr, nullptr)), nullptr, nullptr);
+            return qtjambi_cast<jobject,const T,JNIEnv*>::cast(container->value(qtjambi_cast<K,jobject,JNIEnv*>::cast(key, env), qtjambi_cast<T,jobject,JNIEnv*>::cast(defaultValue, env)), env);
     }
     static const void* function(const void* ptr, const void* key, const void* defaultValue) {
         const Container<K,T> &container = *static_cast<const Container<K,T> *>(ptr);
@@ -689,7 +691,7 @@ struct AssociativeContainerValuesKey<Container, K, T, true>{
     static ContainerAndAccessInfo function(JNIEnv * env, const ConstContainerInfo& ptr, jobject key) {
         ContainerAndAccessInfo result;
         const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr.container);
-        result.container = new QList<T>(container->values(qtjambi_scoped_cast<false,K,jobject>::cast(env, key, nullptr, nullptr)));
+        result.container = new QList<T>(container->values(qtjambi_cast<K,jobject,JNIEnv*>::cast(key, env)));
         result.access = QListAccess<T>::newInstance();
         result.object = ContainerAPI::objectFromQList(env, result.container, result.access);
         return result;
@@ -723,7 +725,7 @@ struct AssociativeContainerElementLessThan{
 template<typename T>
 struct AssociativeContainerElementLessThan<T, true>{
     static bool function(JNIEnv * __jni_env, jobject value1, jobject value2) {
-        return qtjambi_scoped_cast<false,T,jobject>::cast(__jni_env, value1, nullptr, nullptr) < qtjambi_scoped_cast<false,T,jobject>::cast(__jni_env, value2, nullptr, nullptr);
+        return qtjambi_cast<T,jobject,JNIEnv*>::cast(value1, __jni_env) < qtjambi_cast<T,jobject,JNIEnv*>::cast(value2, __jni_env);
     }
 };
 
@@ -740,7 +742,7 @@ template<template<typename K, typename T> class Container, typename K, typename 
 struct AssociativeContainerInsert<Container, K, T, true>{
     static void function(JNIEnv * __jni_env, const ContainerInfo& ptr, jobject key, jobject value) {
         Container<K,T> *container = static_cast<Container<K,T> *>(ptr.container);
-        container->insert(qtjambi_scoped_cast<false,K,jobject>::cast(__jni_env, key, nullptr, nullptr), qtjambi_scoped_cast<false,T,jobject>::cast(__jni_env, value, nullptr, nullptr));
+        container->insert(qtjambi_cast<K,jobject,JNIEnv*>::cast(key, __jni_env), qtjambi_cast<T,jobject,JNIEnv*>::cast(value, __jni_env));
     }
     static void function(void* ptr, const void* key, const void* value) {
         Container<K,T> *container = static_cast<Container<K,T> *>(ptr);
@@ -760,7 +762,7 @@ template<template<typename K, typename T> class Container, typename K, typename 
 struct AssociativeContainerRemove<Container, K, T, true>{
     static jint function(JNIEnv * __jni_env, const ContainerInfo& ptr, jobject key) {
         Container<K,T> *container = static_cast<Container<K,T> *>(ptr.container);
-        return container->remove(qtjambi_scoped_cast<false,K,jobject>::cast(__jni_env, key, nullptr, nullptr));
+        return container->remove(qtjambi_cast<K,jobject,JNIEnv*>::cast(key, __jni_env));
     }
 };
 
@@ -776,7 +778,7 @@ template<template<typename K, typename T> class Container, typename K, typename 
 struct AssociativeContainerTake<Container, K, T, true>{
     static jobject function(JNIEnv * env, const ContainerInfo& ptr, jobject key) {
         Container<K,T> *container = static_cast<Container<K,T> *>(ptr.container);
-        return qtjambi_scoped_cast<false,jobject,const T>::cast(env, container->take(qtjambi_scoped_cast<false,K,jobject>::cast(env, key, nullptr, nullptr)), nullptr, nullptr);
+        return qtjambi_cast<jobject,const T,JNIEnv*>::cast(container->take(qtjambi_cast<K,jobject,JNIEnv*>::cast(key, env)), env);
     }
 };
 
@@ -807,7 +809,7 @@ struct AssociativeContainerUnite<Container, K, T, isContainer, true>{
                     jobject iterator2 = QtJambiAPI::iteratorOfJavaIterable(env, valCollection);
                     while(QtJambiAPI::hasJavaIteratorNext(env, iterator2)) {
                         jobject val = QtJambiAPI::nextOfJavaIterator(env, iterator2);
-                        __qt_other_pointer->insert(qtjambi_scoped_cast<false,K,jobject>::cast(env, key, nullptr, nullptr), qtjambi_scoped_cast<false,T,jobject>::cast(env, val, nullptr, nullptr));
+                        __qt_other_pointer->insert(qtjambi_cast<K,jobject,JNIEnv*>::cast(key, env), qtjambi_cast<T,jobject,JNIEnv*>::cast(val, env));
                     }
                 }
             }
@@ -831,7 +833,7 @@ template<template<typename K, typename T> class Container, typename K, typename 
 struct AssociativeContainerContainsPair<Container, K, T, true>{
     static jboolean function(JNIEnv * env, const void* ptr, jobject key, jobject object) {
         const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
-        return container->contains(qtjambi_scoped_cast<false,K,jobject>::cast(env, key, nullptr, nullptr), qtjambi_scoped_cast<false,T,jobject>::cast(env, object, nullptr, nullptr));
+        return container->contains(qtjambi_cast<K,jobject,JNIEnv*>::cast(key, env), qtjambi_cast<T,jobject,JNIEnv*>::cast(object, env));
     }
 };
 
@@ -847,7 +849,7 @@ template<template<typename K, typename T> class Container, typename K, typename 
 struct AssociativeContainerCountPair<Container, K, T, true>{
     static jint function(JNIEnv * env, const void* ptr, jobject key, jobject object) {
         const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
-        return container->count(qtjambi_scoped_cast<false,K,jobject>::cast(env, key, nullptr, nullptr), qtjambi_scoped_cast<false,T,jobject>::cast(env, object, nullptr, nullptr));
+        return container->count(qtjambi_cast<K,jobject,JNIEnv*>::cast(key, env), qtjambi_cast<T,jobject,JNIEnv*>::cast(object, env));
     }
 };
 
@@ -863,7 +865,7 @@ template<template<typename K, typename T> class Container, typename K, typename 
 struct AssociativeContainerFindPairs<Container, K, T, true>{
     static jobject function(JNIEnv *env, const ExtendedContainerInfo& ptr, jobject key, jobject object) {
         Container<K,T> *container = static_cast<Container<K,T> *>(ptr.container);
-        return qtjambi_associative_iterator_caster<typename Container<K,T>::iterator>::cast(env, ptr.nativeId, container->find(qtjambi_scoped_cast<false,K,jobject>::cast(env, key, nullptr, nullptr), qtjambi_scoped_cast<false,T,jobject>::cast(env, object, nullptr, nullptr)));
+        return qtjambi_associative_iterator_caster<typename Container<K,T>::iterator>::cast(env, ptr.nativeId, container->find(qtjambi_cast<K,jobject,JNIEnv*>::cast(key, env), qtjambi_cast<T,jobject,JNIEnv*>::cast(object, env)));
     }
 };
 
@@ -879,7 +881,7 @@ template<template<typename K, typename T> class Container, typename K, typename 
 struct AssociativeContainerConstFindPairs<Container, K, T, true>{
     static jobject function(JNIEnv *env, const ConstExtendedContainerInfo& ptr, jobject key, jobject object) {
         const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr.container);
-        return qtjambi_associative_iterator_caster<typename Container<K,T>::const_iterator>::cast(env, ptr.nativeId, container->constFind(qtjambi_scoped_cast<false,K,jobject>::cast(env, key, nullptr, nullptr), qtjambi_scoped_cast<false,T,jobject>::cast(env, object, nullptr, nullptr)));
+        return qtjambi_associative_iterator_caster<typename Container<K,T>::const_iterator>::cast(env, ptr.nativeId, container->constFind(qtjambi_cast<K,jobject,JNIEnv*>::cast(key, env), qtjambi_cast<T,jobject,JNIEnv*>::cast(object, env)));
     }
 };
 
@@ -895,7 +897,7 @@ template<template<typename K, typename T> class Container, typename K, typename 
 struct AssociativeContainerRemovePair<Container, K, T, true>{
     static jint function(JNIEnv * env, const ContainerInfo& ptr, jobject key, jobject object) {
         Container<K,T> *container = static_cast<Container<K,T> *>(ptr.container);
-        return container->remove(qtjambi_scoped_cast<false,K,jobject>::cast(env, key, nullptr, nullptr), qtjambi_scoped_cast<false,T,jobject>::cast(env, object, nullptr, nullptr));
+        return container->remove(qtjambi_cast<K,jobject,JNIEnv*>::cast(key, env), qtjambi_cast<T,jobject,JNIEnv*>::cast(object, env));
     }
 };
 
@@ -910,7 +912,7 @@ template<template<typename K, typename T> class Container, typename K, typename 
 struct AssociativeContainerReplacePair<Container, K, T, true>{
     static void function(JNIEnv * env, const ContainerInfo& ptr, jobject key, jobject object) {
         Container<K,T> *container = static_cast<Container<K,T> *>(ptr.container);
-        container->replace(qtjambi_scoped_cast<false,K,jobject>::cast(env, key, nullptr, nullptr), qtjambi_scoped_cast<false,T,jobject>::cast(env, object, nullptr, nullptr));
+        container->replace(qtjambi_cast<K,jobject,JNIEnv*>::cast(key, env), qtjambi_cast<T,jobject,JNIEnv*>::cast(object, env));
     }
 };
 
@@ -1368,14 +1370,12 @@ public:
     void* constructContainer(JNIEnv *, void* placement, const ConstContainerAndAccessInfo& copyOf) override {
         return constructContainer(placement, copyOf.container);
     }
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     void* constructContainer(void* placement, void* move) override {
         return new(placement) QMap<K,T>(std::move(*reinterpret_cast<const QMap<K,T>*>(move)));
     }
     void* constructContainer(JNIEnv *, void* placement, const ContainerAndAccessInfo& move) override {
         return constructContainer(placement, move.container);
     }
-#endif
     bool destructContainer(void* container) override {
         reinterpret_cast<QMap<K,T>*>(container)->~QMap<K,T>();
         return true;
@@ -1690,8 +1690,8 @@ private:
         ~KeyValueIterator() override {};
         bool hasNext() override {return current!=end;};
         QPair<jobject,jobject> next(JNIEnv * env) override {
-            return {qtjambi_scoped_cast<false,jobject,decltype(current.key())>::cast(env, current.key(), nullptr, nullptr),
-                    qtjambi_scoped_cast<false,jobject,decltype(current.value())>::cast(env, current.value(), nullptr, nullptr)};
+            return {qtjambi_cast<jobject,decltype(current.key()),JNIEnv*>::cast(current.key(), env),
+                    qtjambi_cast<jobject,decltype(current.value()),JNIEnv*>::cast(current.value(), env)};
             ++current;
         }
         QPair<const void*,const void*> next() override {
@@ -1835,14 +1835,12 @@ public:
     void* constructContainer(JNIEnv *, void* placement, const ConstContainerAndAccessInfo& copyOf) override {
         return constructContainer(placement, copyOf.container);
     }
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     void* constructContainer(void* placement, void* move) override {
         return new(placement) QMultiMap<K,T>(std::move(*reinterpret_cast<const QMultiMap<K,T>*>(move)));
     }
     void* constructContainer(JNIEnv *, void* placement, const ContainerAndAccessInfo& move) override {
         return constructContainer(placement, move.container);
     }
-#endif
     bool destructContainer(void* container) override {
         reinterpret_cast<QMultiMap<K,T>*>(container)->~QMultiMap<K,T>();
         return true;
@@ -2282,8 +2280,8 @@ private:
         ~KeyValueIterator() override {};
         bool hasNext() override {return current!=end;};
         QPair<jobject,jobject> next(JNIEnv * env) override {
-            QPair<jobject,jobject> result{qtjambi_scoped_cast<false,jobject,decltype(current.key())>::cast(env, current.key(), nullptr, nullptr),
-                                            qtjambi_scoped_cast<false,jobject,decltype(current.value())>::cast(env, current.value(), nullptr, nullptr)};
+            QPair<jobject,jobject> result{qtjambi_cast<jobject,decltype(current.key()),JNIEnv*>::cast(current.key(), env),
+                                            qtjambi_cast<jobject,decltype(current.value()),JNIEnv*>::cast(current.value(), env)};
             ++current;
             return result;
         }
@@ -2457,14 +2455,12 @@ public:
     void* constructContainer(JNIEnv *, void* placement, const ConstContainerAndAccessInfo& copyOf) override {
         return constructContainer(placement, copyOf.container);
     }
- #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     void* constructContainer(void* placement, void* move) override {
         return new(placement) QHash<K,T>(std::move(*reinterpret_cast<const QHash<K,T>*>(move)));
     }
     void* constructContainer(JNIEnv *, void* placement, const ContainerAndAccessInfo& move) override {
         return constructContainer(placement, move.container);
     }
- #endif
     bool destructContainer(void* container) override {
         reinterpret_cast<QHash<K,T>*>(container)->~QHash<K,T>();
         return true;
@@ -2748,8 +2744,8 @@ private:
         ~KeyValueIterator() override {};
         bool hasNext() override {return current!=end;};
         QPair<jobject,jobject> next(JNIEnv * env) override {
-            return {qtjambi_scoped_cast<false,jobject,decltype(current.key())>::cast(env, current.key(), nullptr, nullptr),
-                    qtjambi_scoped_cast<false,jobject,decltype(current.value())>::cast(env, current.value(), nullptr, nullptr)};
+            return {qtjambi_cast<jobject,decltype(current.key()),JNIEnv*>::cast(current.key(), env),
+                    qtjambi_cast<jobject,decltype(current.value()),JNIEnv*>::cast(current.value(), env)};
             ++current;
         }
         QPair<const void*,const void*> next() override {
@@ -2920,14 +2916,12 @@ public:
     void* constructContainer(JNIEnv *, void* placement, const ConstContainerAndAccessInfo& copyOf) override {
         return constructContainer(placement, copyOf.container);
     }
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     void* constructContainer(void* placement, void* move) override {
         return new(placement) QMultiHash<K,T>(std::move(*reinterpret_cast<const QMultiHash<K,T>*>(move)));
     }
     void* constructContainer(JNIEnv *, void* placement, const ContainerAndAccessInfo& move) override {
         return constructContainer(placement, move.container);
     }
-#endif
     bool destructContainer(void* container) override {
         reinterpret_cast<QMultiHash<K,T>*>(container)->~QMultiHash<K,T>();
         return true;
@@ -3286,8 +3280,8 @@ private:
         }
         bool hasNext() override {return current!=end;};
             QPair<jobject,jobject> next(JNIEnv * env) override {
-            QPair<jobject,jobject> result{qtjambi_scoped_cast<false,jobject,decltype(current.key())>::cast(env, current.key(), nullptr, nullptr),
-                                           qtjambi_scoped_cast<false,jobject,decltype(current.value())>::cast(env, current.value(), nullptr, nullptr)};
+            QPair<jobject,jobject> result{qtjambi_cast<jobject,decltype(current.key()),JNIEnv*>::cast(current.key(), env),
+                                           qtjambi_cast<jobject,decltype(current.value()),JNIEnv*>::cast(current.value(), env)};
             ++current;
             return result;
         }
@@ -3405,14 +3399,12 @@ public:
     void* constructContainer(JNIEnv *, void* placement, const ConstContainerAndAccessInfo& copyOf) override {
         return constructContainer(placement, copyOf.container);
     }
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     void* constructContainer(void* placement, void* move) override {
         return new(placement) QPair<K,T>(std::move(*reinterpret_cast<const QPair<K,T>*>(move)));
     }
     void* constructContainer(JNIEnv *, void* placement, const ContainerAndAccessInfo& move) override {
         return constructContainer(placement, move.container);
     }
-#endif
     bool destructContainer(void* container) override {
         reinterpret_cast<QPair<K,T>*>(container)->~QPair<K,T>();
         return true;
@@ -3424,22 +3416,22 @@ public:
 
     jobject first(JNIEnv * env, const void* container) override {
         const QPair<K,T> *pair = static_cast<const QPair<K,T> *>(container);
-        return qtjambi_scoped_cast<false,jobject,const K>::cast(env, pair->first, nullptr, nullptr);
+        return qtjambi_cast<jobject,const K,JNIEnv*>::cast(pair->first, env);
     }
 
     jobject second(JNIEnv * env, const void* container) override {
         const QPair<K,T> *pair = static_cast<const QPair<K,T> *>(container);
-        return qtjambi_scoped_cast<false,jobject,const T>::cast(env, pair->second, nullptr, nullptr);
+        return qtjambi_cast<jobject,const T,JNIEnv*>::cast(pair->second, env);
     }
 
     void setFirst(JNIEnv * env, void* container, jobject first) override {
         QPair<K,T> *pair = static_cast<QPair<K,T> *>(container);
-        pair->first = qtjambi_scoped_cast<false,K,jobject>::cast(env, first, nullptr, nullptr);
+        pair->first = qtjambi_cast<K,jobject,JNIEnv*>::cast(first, env);
     }
 
     void setSecond(JNIEnv * env, void* container, jobject second) override {
         QPair<K,T> *pair = static_cast<QPair<K,T> *>(container);
-        pair->second = qtjambi_scoped_cast<false,T,jobject>::cast(env, second, nullptr, nullptr);
+        pair->second = qtjambi_cast<T,jobject,JNIEnv*>::cast(second, env);
     }
 public:
     QPair<const void*,const void*> elements(const void* container) override {
@@ -3654,33 +3646,6 @@ public:
     }
     std::unique_ptr<AbstractSequentialAccess::ElementIterator> elementIterator(void* container) override {
         return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator<false>(this, *reinterpret_cast<QPair<K,T>*>(container)));
-    }
-};
-
-template<bool has_scope, typename Container, bool is_const, typename K, typename T, void (*put)(JNIEnv *, jobject, jobject, jobject)>
-struct qtjambi_bicollection_fill{
-
-};
-
-template<bool has_scope, typename Container, typename K, typename T, void (*put)(JNIEnv *, jobject, jobject, jobject)>
-struct qtjambi_bicollection_fill<has_scope, Container, true, K, T, put>{
-    static void fill(JNIEnv *env, const Container& container, jobject collection, QtJambiScope* scope){
-        for(typename Container::const_iterator i = container.begin(); i!=container.end(); ++i){
-            put(env, collection,
-                qtjambi_scoped_cast<has_scope,jobject,typename std::add_const<decltype(i.key())>::type>::cast(env, i.key(), nullptr, scope),
-                qtjambi_scoped_cast<has_scope,jobject,typename std::add_const<decltype(i.value())>::type>::cast(env, i.value(), nullptr, scope));
-        }
-    }
-};
-
-template<bool has_scope, typename Container, typename K, typename T, void (*put)(JNIEnv *, jobject, jobject, jobject)>
-struct qtjambi_bicollection_fill<has_scope, Container, false, K, T, put>{
-    static void fill(JNIEnv *env, Container& container, jobject collection, QtJambiScope* scope){
-        for(typename Container::iterator i = container.begin(); i!=container.end(); ++i){
-            put(env, collection,
-                qtjambi_scoped_cast<has_scope,jobject,typename std::add_const<decltype(i.key())>::type>::cast(env, i.key(), nullptr, scope),
-                qtjambi_scoped_cast<has_scope,jobject,typename std::add_const<decltype(i.value())>::type>::cast(env, i.value(), nullptr, scope));
-        }
     }
 };
 

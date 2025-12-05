@@ -29,10 +29,7 @@
 **
 ****************************************************************************/
 
-#include "qtjambiapi.h"
-#include "javabuffers.h"
-#include "java_p.h"
-#include "registryutil_p.h"
+#include "pch_p.h"
 
 jobject getBufferArray(JNIEnv *env, jobject buffer);
 

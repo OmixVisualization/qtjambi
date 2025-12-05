@@ -123,7 +123,6 @@ public:
     void* constructContainer(JNIEnv *, void* placement, const ConstContainerAndAccessInfo& copyOf) override {
         return constructContainer(placement, copyOf.container);
     }
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     void* constructContainer(void* placement, void* move) override {
         QTJAMBI_ELEMENT_LOCKER(this);
         return new(placement) QSet<T>(std::move(*reinterpret_cast<const QSet<T>*>(move)));
@@ -131,7 +130,6 @@ public:
     void* constructContainer(JNIEnv *, void* placement, const ContainerAndAccessInfo& move) override {
         return constructContainer(placement, move.container);
     }
-#endif
     bool destructContainer(void* container) override {
         QTJAMBI_ELEMENT_LOCKER(this);
         reinterpret_cast<QSet<T>*>(container)->~QSet<T>();
@@ -300,9 +298,6 @@ public:
             result.access = ContainerAccessAPI::createContainerAccess(env, SequentialContainerType::QList,
                                                       m_elementMetaTypeInfo.metaType(),
                                                       _align, _size,
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                      AbstractContainerAccess::isStaticType(m_elementMetaTypeInfo.metaType()),
-#endif
                                                       AbstractContainerAccess::isPointerType(m_elementMetaTypeInfo.metaType()),
                                                       m_elementMetaTypeInfo.hashFunction(),
                                                       m_internalToExternalConverter,

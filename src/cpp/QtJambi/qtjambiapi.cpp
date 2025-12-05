@@ -27,18 +27,7 @@
 **
 ****************************************************************************/
 
-#include "qtjambiapi.h"
-#include "javaarrays.h"
-#include "typemanager_p.h"
-#include "exception.h"
-#include "java_p.h"
-#include "qtjambilink_p.h"
-#include "coreapi.h"
-#include <QThreadStorage>
-#include <QScopeGuard>
-#include <cstring>
-
-#include "qtjambi_cast.h"
+#include "pch_p.h"
 
 // type name helpers...
 
@@ -500,7 +489,8 @@ bool QtJambiAPI::isCppOwnership(const QObject* object)
 
 bool QtJambiAPI::isSplitOwnership(const void* object)
 {
-    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(object)){
+    const QList<QSharedPointer<QtJambiLink>> links = QtJambiLink::findLinksForPointer(object);
+    for(const QSharedPointer<QtJambiLink>& link : links){
         return link->ownership()==QtJambiLink::Ownership::Split;
     }
     return false;
@@ -508,7 +498,8 @@ bool QtJambiAPI::isSplitOwnership(const void* object)
 
 bool QtJambiAPI::isJavaOwnership(const void* object)
 {
-    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(object)){
+    const QList<QSharedPointer<QtJambiLink>> links = QtJambiLink::findLinksForPointer(object);
+    for(const QSharedPointer<QtJambiLink>& link : links){
         return link->ownership()==QtJambiLink::Ownership::Java;
     }
     return false;
@@ -516,7 +507,8 @@ bool QtJambiAPI::isJavaOwnership(const void* object)
 
 bool QtJambiAPI::isCppOwnership(const void* object)
 {
-    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(object)){
+    const QList<QSharedPointer<QtJambiLink>> links = QtJambiLink::findLinksForPointer(object);
+    for(const QSharedPointer<QtJambiLink>& link : links){
         return link->ownership()==QtJambiLink::Ownership::Cpp;
     }
     return false;
@@ -823,7 +815,6 @@ void QtJambiAPI::checkNullPointer(JNIEnv *env, const void* ptr, const std::type_
 jobjectArray QtJambiAPI::createObjectArray(JNIEnv *env, const std::type_info& componentType, jsize size){
     jclass arrayElementType = JavaAPI::resolveClass(env, getJavaInterfaceName(componentType));
     JavaException::check(env QTJAMBI_STACKTRACEINFO );
-    Q_ASSERT(arrayElementType && !Java::Runtime::Class::isPrimitive(env, arrayElementType));
     if(Java::Runtime::Class::isPrimitive(env, arrayElementType)){
         if(Java::Runtime::Integer::isPrimitiveType(env, arrayElementType))
             arrayElementType = Java::Runtime::Integer::getClass(env);
@@ -1015,6 +1006,39 @@ jobject QtJambiAPI::findObject(JNIEnv *env, const void * pointer)
     return nullptr;
 }
 
+jobject QtJambiAPI::findObject(JNIEnv *env, const void * pointer, const std::type_info& typeId)
+{
+    if(typeid_equals(typeId, typeid(QString))){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(pointer)){
+            if(link){
+                jobject o = link->getJavaObjectLocalRef(env);
+                if(Java::QtCore::QString::isInstanceOf(env, o)){
+                    return o;
+                }
+            }
+        }
+    }else if(typeid_equals(typeId, typeid(QVariant))){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(pointer)){
+            if(link){
+                jobject o = link->getJavaObjectLocalRef(env);
+                if(Java::QtCore::QVariant::isInstanceOf(env, o)){
+                    return o;
+                }
+            }
+        }
+    }else if(QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, typeId)){
+        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(pointer)){
+            if(link){
+                jobject o = link->getJavaObjectLocalRef(env);
+                if(env->IsInstanceOf(o, typeEntry->javaClass())){
+                    return o;
+                }
+            }
+        }
+    }
+    return nullptr;
+}
+
 jobject QtJambiAPI::findObject(JNIEnv *env, const QObject* pointer)
 {
     if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForQObject(pointer)){
@@ -1145,7 +1169,6 @@ jobject QtJambiAPI::toJavaIntegerObject(JNIEnv *env, jint int_value)
 {
     return Java::Runtime::Integer::valueOf(env, int_value);
 }
-
 
 jobject QtJambiAPI::toJavaDoubleObject(JNIEnv *env, jdouble double_value) {
     return Java::Runtime::Double::valueOf(env, double_value);
@@ -1487,40 +1510,6 @@ bool QtJambiAPI::enumValue(JNIEnv *env, jobject java_object, void* ptr, size_t s
         return false;
     }
 }
-
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-jobject QtJambiAPI::createQPromise(JNIEnv* env, jobject futureInterface, const void* promise, QtJambiScope* scope){
-    for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(promise)){
-        if(link){
-            jobject ni = link->getJavaObjectLocalRef(env);
-            if(Java::QtCore::QPromise$NativeInstance::isInstanceOf(env, ni)){
-                jobject result = Java::QtCore::QPromise$NativeInstance::promise(env, ni);
-                if(result)
-                    return result;
-            }
-        }
-    }
-    jobject result = Java::QtCore::QPromise::newInstance(env, futureInterface, true);
-    jobject ni = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, promise, Java::QtCore::QPromise$NativeInstance::getClass(env));
-    if(scope){
-        JObjectWrapper _result(env, result);
-        scope->addFinalAction([env, _result](){
-            jobject promise = _result.object(env);
-            jobject ni = Java::QtCore::QPromise::nativeInstance(env, promise);
-            Java::QtCore::QPromise::set_nativeInstance(env, promise, nullptr);
-            InvalidateAfterUse::invalidate(env, ni);
-        });
-    }
-    Java::QtCore::QPromise$NativeInstance::set_promise(env, ni, result);
-    Java::QtCore::QPromise::set_nativeInstance(env, result, ni);
-    return result;
-}
-
-void* QtJambiAPI::getNativeQPromise(JNIEnv* env, jobject promise){
-    jobject ni = Java::QtCore::QPromise::nativeInstance(env, promise);
-    return ni ? QtJambiAPI::convertJavaObjectToNative(env, ni) : nullptr;
-}
-#endif
 
 void QtJambiAPI::setQQmlListPropertyElementType(JNIEnv *env, jobject list, jobject elementType){
     Java::QtQml::QQmlListProperty::set_elementType(env, list, elementType);

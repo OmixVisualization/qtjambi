@@ -685,7 +685,9 @@ final class BundleGenerator {
 										boolean isMinGWBuilt, 
 										QVersionNumber version) {
 		if(System.getProperty("os.name").toLowerCase().startsWith("windows")) {
-			File qmake = new File(binDir, "qmake.exe");
+			File qmake = new File(binDir, "host-qmake.bat");
+			if(!qmake.exists())
+				qmake = new File(binDir, "qmake.exe");
 			if(!qmake.exists())
 				qmake = new File(binDir, "qmake.bat");
 			if(qmake.exists()) {
@@ -693,8 +695,10 @@ final class BundleGenerator {
 				process.start(qmake.getAbsolutePath(), QStringList.of("-query", "QT_VERSION"));
 				process.waitForFinished();
 				if(process.exitCode()==0) {
-					version = QVersionNumber.fromString(process.readAllStandardOutput().trimmed().toString());
+					if(process.readAllStandardOutput().trimmed().toString().contains("."))
+						version = QVersionNumber.fromString(process.readAllStandardOutput().trimmed().toString());
 				}
+				process.dispose();
 			}
 		}else {
 			File qmake = new File(binDir, "qmake");
@@ -703,8 +707,10 @@ final class BundleGenerator {
 				process.start(qmake.getAbsolutePath(), QStringList.of("-query", "QT_VERSION"));
 				process.waitForFinished();
 				if(process.exitCode()==0) {
-					version = QVersionNumber.fromString(process.readAllStandardOutput().trimmed().toString());
+					if(process.readAllStandardOutput().trimmed().toString().contains("."))
+						version = QVersionNumber.fromString(process.readAllStandardOutput().trimmed().toString());
 				}
+				process.dispose();
 			}
 		}
 		if(version!=null) {

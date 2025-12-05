@@ -34,1008 +34,386 @@
 
 namespace QtJambiPrivate {
 
-template<bool has_scope, typename O, bool o_is_jni_array_type,
-                         typename T, bool t_is_jni_array_type,
-                         typename I>
-struct qtjambi_array_cast_decider{
-    static O cast(JNIEnv *, T, I&, const char*, QtJambiScope*){
-        Q_STATIC_ASSERT_X(false && !has_scope, "Cannot cast types");
+template<typename O, bool is_const, typename JArray, typename I, bool fixSize, typename... Args>
+struct qtjambi_jarray_to_native_cast_with_sizeconversion;
+
+template<typename JArray,
+         typename T, bool t_is_const,
+         typename I, typename... Args>
+struct qtjambi_native_to_jarray_cast;
+
+template<typename O,
+         bool is_const,
+         typename JArray, bool fixSize, typename... Args>
+struct qtjambi_jarray_to_native_cast;
+
+template<typename O,
+         typename T,
+         typename I, bool fixSize, typename... Args>
+static constexpr auto qtjambi_array_cast_impl() {
+    if constexpr(QtJambiPrivate::is_jni_array_type<O>::value || std::is_same_v<O, jobject> || std::is_same_v<O, jcoreobject>){
+        return qtjambi_native_to_jarray_cast<O, typename std::remove_const<typename std::remove_pointer<T>::type>::type, std::is_const<typename std::remove_pointer<T>::type>::value, I, Args...>{};
+    }else{
+        Q_STATIC_ASSERT_X((QtJambiPrivate::is_jni_array_type<T>::value || std::is_same<T, jobject>::value || std::is_same<T, jcoreobject>::value), "Cannot cast types");
+        if constexpr(std::is_integral_v<I> && (std::is_signed_v<I> == std::is_signed_v<jsize>) && sizeof(I)==sizeof(jsize)){
+            return qtjambi_jarray_to_native_cast<typename std::remove_const<typename std::remove_pointer<O>::type>::type, std::is_const<typename std::remove_pointer<O>::type>::value, T, fixSize, Args...>{};
+        }else{
+            return qtjambi_jarray_to_native_cast_with_sizeconversion<typename std::remove_const<typename std::remove_pointer<O>::type>::type, std::is_const<typename std::remove_pointer<O>::type>::value, T, I, fixSize, Args...>{};
+        }
     }
+}
+
+template<typename O, typename T, typename I, bool fixSize, typename... Args>
+struct qtjambi_array_cast : decltype(qtjambi_array_cast_impl<O, T, I, fixSize, Args...>()) {
 };
 
-template<bool has_scope, typename O,
-                         typename T, bool t_is_const,
-                         typename I>
-struct qtjambi_nativearray_caster{
+template<typename JArray, typename T, bool t_is_const, typename I, typename... Args>
+struct qtjambi_native_to_jarray_cast{
     typedef typename std::conditional<t_is_const, typename std::add_const<T>::type, T>::type T_in;
-    static O cast(JNIEnv *, T_in*, jsize, const char*, QtJambiScope*){
-        Q_STATIC_ASSERT_X(false && !t_is_const, "Cannot cast types");
+
+    static JArray cast(T_in* in, I size, Args...args){
+        Q_STATIC_ASSERT_X(cast_var_args<Args...>::hasJNIEnv, "Cannot cast to jobject without JNIEnv.");
+        if constexpr(std::is_same_v<JArray,jobjectArray>){
+            return castImpl(in, jsize(size), arg_pointer<Args>::ref(args)...);
+        }else if constexpr(std::is_arithmetic_v<T>
+                      || std::is_same_v<T,QChar>
+                      || std::is_same_v<T,QLatin1Char>
+                      || std::is_same_v<T,std::byte>){
+            if constexpr(std::is_same_v<JArray,jobject>){
+                typedef typename jni_type_decider<T>::JArrayType ArrayType;
+                if constexpr(std::is_same_v<ArrayType,jobjectArray>){
+                    return castImpl(in, jsize(size), arg_pointer<Args>::ref(args)...);
+                }else{
+                    typedef typename jni_type<ArrayType>::template JavaFactory<T,t_is_const>::PersistentConverter PersistentConverter;
+                    typedef typename jni_type<ArrayType>::template JavaFactory<T,t_is_const>::Converter Converter;
+                    auto env = cast_var_args<Args...>::env(args...);
+                    if constexpr(cast_var_args<Args...>::hasScope){
+                        PersistentConverter* array = new PersistentConverter(env, in, jsize(size));
+                        cast_var_args<Args...>::scope(args...).addDeletion(array);
+                        return array->array(env);
+                    }else{
+                        Converter array(env, in, jsize(size));
+                        return array.array();
+                    }
+                }
+            }else{
+                typedef typename jni_type<JArray>::template JavaFactory<T,t_is_const>::PersistentConverter PersistentConverter;
+                typedef typename jni_type<JArray>::template JavaFactory<T,t_is_const>::Converter Converter;
+                auto env = cast_var_args<Args...>::env(args...);
+                if constexpr(cast_var_args<Args...>::hasScope){
+                    PersistentConverter* array = new PersistentConverter(env, in, jsize(size));
+                    cast_var_args<Args...>::scope(args...).addDeletion(array);
+                    return array->array(env);
+                }else{
+                    Converter array(env, in, jsize(size));
+                    return array.array();
+                }
+            }
+        }else{
+            Q_STATIC_ASSERT(unuseArgs(sizeof(args)...));
+            Q_STATIC_ASSERT_X(false && !t_is_const, "Cannot cast types");
+        }
+    }
+
+private:
+    static JArray castImpl(T_in* in, jsize size, typename arg_pointer<Args>::type... args){
+        auto env = cast_var_args<typename arg_pointer<Args>::type...>::env(args...);
+        if constexpr(t_is_const){
+            if constexpr(cast_var_args<Args...>::hasScope){
+                PersistentConstObjectPointerArray<T>* array = new PersistentConstObjectPointerArray<T>(env, in, size,
+                                                                                                       [args...](JNIEnv * env,const T& in)->jobject{
+                                                                                                           return qtjambi_cast<jobject,const T&, Args...>::cast(in, arg_pointer<Args>::deref(args, env)...);
+                                                                                                       });
+                cast_var_args<Args...>::scope(args...).addDeletion(array);
+                return array->array(env);
+            }else{
+                ConstObjectPointerArray<T> array(env, in, size,
+                                                 [args...](JNIEnv * env,const T& in)->jobject{
+                                                     return qtjambi_cast<jobject,const T&, Args...>::cast(in, arg_pointer<Args>::deref(args, env)...);
+                                                 });
+                return array.array();
+            }
+        }else{
+            if constexpr(cast_var_args<Args...>::hasScope){
+                PersistentObjectPointerArray<T>* array = new PersistentObjectPointerArray<T>(env, in, size,
+                                                                                             [args...](JNIEnv * env,const T& in)->jobject{
+                                                                                                 return qtjambi_cast<jobject,const T&, Args...>::cast(in, arg_pointer<Args>::deref(args, env)...);
+                                                                                             },
+                                                                                             [args...](T& out,JNIEnv * env,jobject in){
+                                                                                                 out = qtjambi_cast< T, jobject, Args...>::cast(in, arg_pointer<Args>::deref(args, env)...);
+                                                                                             });
+                cast_var_args<Args...>::scope(args...).addDeletion(array);
+                return array->array(env);
+            }else{
+                ObjectPointerArray<T> array(env, in, size,
+                                            [args...](JNIEnv * env,const T& in)->jobject{
+                                                return qtjambi_cast<jobject,const T&, Args...>::cast(in, arg_pointer<Args>::deref(args, env)...);
+                                            },
+                                            [args...](T& out,JNIEnv * env,jobject in){
+                                                out = qtjambi_cast< T, jobject, Args...>::cast(in, arg_pointer<Args>::deref(args, env)...);
+                                            });
+                return array.array();
+            }
+        }
     }
 };
 
-template<bool has_scope, typename O,
-                         bool is_const,
-                         typename JArray>
-struct qtjambi_jarray_caster{
-    static O* cast(JNIEnv *, JArray, jsize&, const char*, QtJambiScope*){
-        Q_STATIC_ASSERT_X(false && !has_scope, "Cannot cast types");
-        return nullptr;
+template<typename O, bool is_const, typename JArray, bool fixSize, typename... Args>
+struct qtjambi_jarray_to_native_cast{
+    typedef typename std::conditional<is_const, typename std::add_const<O>::type, O>::type Out;
+    typedef std::conditional_t<fixSize, jsize, jsize&&> I;
+
+    static Out* cast(JArray in, I size, Args... args){
+        auto env = cast_var_args<Args...>::env(args...);
+        if constexpr(std::is_same_v<JArray,jobjectArray> || std::is_same_v<JArray,jobject>){
+            return castImpl(in, std::move(size), arg_pointer<Args>::ref(args)...);
+        }else if constexpr(std::is_arithmetic_v<O>
+                      || std::is_same_v<O,QChar>
+                      || std::is_same_v<O,QLatin1Char>
+                      || std::is_same_v<O,std::byte>){
+            Q_STATIC_ASSERT_X(cast_var_args<Args...>::hasScope, "Cannot cast array without scope.");
+            typedef typename jni_type<JArray>::template NativeFactory<O,is_const>::PersistentConverter JArrayPointer;
+            JArrayPointer* array = new JArrayPointer(env, in);
+            cast_var_args<Args...>::scope(args...).addDeletion(array);
+            if constexpr(fixSize){
+                if(size>=0 && array->size()>0 && array->size()<size){
+                    JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast array of size %1. Expected size: %2").arg(QString::number(array->size()), QString::number(size)) QTJAMBI_STACKTRACEINFO );
+                }
+            }else{
+                size = jsize(array->size());
+            }
+            return reinterpret_cast<Out*>(array->pointer());
+        }else{
+            Q_STATIC_ASSERT_X(false && !is_const, "Cannot cast types");
+        }
+    }
+
+private:
+    static Out* castImpl(JArray in, I size, typename arg_pointer<Args>::type... args){
+        Q_STATIC_ASSERT_X(cast_var_args<Args...>::hasScope, "Cannot cast array without scope.");
+        auto env = cast_var_args<typename arg_pointer<Args>::type...>::env(args...);
+        if constexpr(is_const){
+            PersistentJConstObjectArrayPointer<O>* array = new PersistentJConstObjectArrayPointer<O>(env, in, [args...](O& out,JNIEnv * env,jobject in){
+                out = qtjambi_cast< O, jobject, Args...>::cast(in, arg_pointer<Args>::deref(args, env)...);
+            });
+            cast_var_args<Args...>::scope(args...).addDeletion(array);
+            if constexpr(fixSize){
+                if(size>=0 && array->size()>0 && array->size()<size){
+                    JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast array of size %1. Expected size: %2").arg(QString::number(array->size()), QString::number(size)) QTJAMBI_STACKTRACEINFO );
+                }
+            }else{
+                size = array->size();
+            }
+            return array->pointer();
+        }else{
+            PersistentJObjectArrayPointer<O>* array = new PersistentJObjectArrayPointer<O>(env, in, [args...](O& out,JNIEnv * env,jobject in){
+                out = qtjambi_cast< O, jobject, Args...>::cast(in, arg_pointer<Args>::deref(args, env)...);
+            }, [args...](JNIEnv * env,const O& in)->jobject{
+                return qtjambi_cast< jobject, const O&, Args...>::cast(in, arg_pointer<Args>::deref(args, env)...);
+            });
+            cast_var_args<Args...>::scope(args...).addDeletion(array);
+            if constexpr(fixSize){
+                if(size>=0 && array->size()>0 && array->size()<size){
+                    JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast array of size %1. Expected size: %2").arg(QString::number(array->size()), QString::number(size)) QTJAMBI_STACKTRACEINFO );
+                }
+            }else{
+                size = array->size();
+            }
+            return array->pointer();
+        }
+    }
+    static Out* castImpl(jobject in, I size, typename arg_pointer<Args>::type... args){
+        auto env = cast_var_args<Args...>::env(args...);
+        if constexpr(std::is_arithmetic_v<O>
+                      || std::is_same_v<O,QChar>
+                      || std::is_same_v<O,QLatin1Char>
+                      || std::is_same_v<O,std::byte>){
+            typedef typename jni_type_decider<O>::JArrayType ArrayType;
+            if constexpr(!std::is_same_v<ArrayType,jobjectArray>){
+                typedef typename jni_type<ArrayType>::template NativeFactory<O,is_const>::PersistentConverter JArrayPointer;
+                if(JArrayPointer::isValidArray(env, in)){
+                    return cast(ArrayType(in), std::move(size), arg_pointer<Args>::ref(args)...);
+                }
+            }
+        }
+        if(QtJambiAPI::isValidArray(env, in, qtjambi_type<O>::id())) {
+            return castImpl(jobjectArray(in), std::move(size), arg_pointer<Args>::ref(args)...);
+        }else{
+            return nullptr;
+        }
     }
 };
 
-template<bool has_scope, typename O, typename T, typename I>
-struct qtjambi_array_cast_decider<has_scope, O, true, T, false, I>
-        : qtjambi_nativearray_caster<has_scope, O, typename std::remove_const<typename std::remove_pointer<T>::type>::type, std::is_const<typename std::remove_pointer<T>::type>::value, I>
+template<typename O, bool is_const, typename JArray, typename I, bool fixSize, typename... Args>
+struct qtjambi_jarray_to_native_cast_with_sizeconversion
 {
-};
-
-template<bool has_scope, typename O, typename T, typename I>
-struct qtjambi_array_cast_decider<has_scope, O, false, T, true, I>
-{
-    static O cast(JNIEnv *env, T in, I& size, const char* nativeTypeName, QtJambiScope* scope){
+    static auto cast(JArray in, I&& size, Args... args){
+        Q_STATIC_ASSERT(unuseArgs(sizeof(args)...));
         jsize _size = jsize(size);
         jsize* _sizePtr = &_size;
         I* sizePtr = &size;
         DoFinally __qt_do_finally([_sizePtr,sizePtr](){ *sizePtr = I(*_sizePtr); });
         Q_UNUSED(__qt_do_finally)
-        return qtjambi_jarray_caster<
-                has_scope,
-                typename std::remove_const<typename std::remove_pointer<O>::type>::type,
-                std::is_const<typename std::remove_pointer<O>::type>::value,
-                T
-            >::cast(env, in, _size, nativeTypeName, scope);
+        return qtjambi_jarray_to_native_cast<
+            O,
+            is_const,
+            JArray, fixSize, Args...>::cast(in, std::move(_size), args...);
     }
 };
 
-template<bool has_scope, typename O, typename T>
-struct qtjambi_array_cast_decider<has_scope, O, false, T, true, jsize>
-        : qtjambi_jarray_caster<has_scope, typename std::remove_const<typename std::remove_pointer<O>::type>::type, std::is_const<typename std::remove_pointer<O>::type>::value, T>
-{
-};
-
-template<bool has_scope, typename T, typename I>
-struct qtjambi_nativearray_caster<has_scope, jobjectArray, T, true, I>{
-    static jobjectArray cast(JNIEnv *env, const T* in, I size, const char* type, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast array without scope.");
-        if(scope==nullptr)
-            JavaException::raiseError(env, "Cannot cast array without scope." QTJAMBI_STACKTRACEINFO );
-        PersistentConstObjectPointerArray<T>* array = new PersistentConstObjectPointerArray<T>(env, in, jsize(size), [scope,type](JNIEnv * env,const T& in)->jobject{
-                                                                                        return qtjambi_cast<jobject>(env, *scope, in, type);
-                                                                                    });
-        scope->addDeletion(array);
-        return array->array(env);
-    }
-};
-
-template<typename T, typename I>
-struct qtjambi_nativearray_caster<false, jobjectArray, T, true, I>{
-    static jobjectArray cast(JNIEnv *env, const T* in, I size, const char* type, QtJambiScope*){
-        ConstObjectPointerArray<T> array(env, in, jsize(size), [type](JNIEnv * env,const T& in)->jobject{
-            return qtjambi_cast<jobject>(env, in, type);
-        });
-        return array.array(env);
-    }
-};
-
-template<bool has_scope, typename T, typename I>
-struct qtjambi_nativearray_caster<has_scope, jobjectArray, T, false, I>{
-    static jobjectArray cast(JNIEnv *env, T* in, I size, const char* type, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast array without scope.");
-        if(scope==nullptr)
-            JavaException::raiseError(env, "Cannot cast array without scope." QTJAMBI_STACKTRACEINFO );
-        PersistentObjectPointerArray<T>* array = new PersistentObjectPointerArray<T>(env, in, jsize(size), [scope,type](JNIEnv * env,const T& in)->jobject{
-                                                                            return qtjambi_cast<jobject>(env, *scope, in, type);
-                                                                        }, [scope,type](T& out,JNIEnv * env,jobject in){
-                                                                            out = qtjambi_cast<T>(env, *scope, in, type);
-                                                                        });
-        scope->addDeletion(array);
-        return array->array(env);
-    }
-};
-
-template<bool has_scope, typename I>
-struct qtjambi_nativearray_caster<has_scope, jintArray, qint32, true, I>{
-    static jintArray cast(JNIEnv *env, const qint32* in, I size, const char*, QtJambiScope* scope){
-        if(scope==nullptr){
-            ConstInt32PointerArray array(env, in, jsize(size));
-            return array.array();
-        }
-        PersistentConstInt32PointerArray* array = new PersistentConstInt32PointerArray(env, in, jsize(size));
-        scope->addDeletion(array);
-        return array->array(env);
-    }
-};
-
-template<typename I>
-struct qtjambi_nativearray_caster<false, jintArray, qint32, true, I>{
-    static jintArray cast(JNIEnv *env, const qint32* in, I size, const char*, QtJambiScope*){
-        return QtJambiAPI::toJIntArray(env, reinterpret_cast<const jint *>(in), jsize(size));
-    }
-};
-
-template<bool has_scope, typename I>
-struct qtjambi_nativearray_caster<has_scope, jintArray, qint32, false, I>{
-    static jintArray cast(JNIEnv *env, qint32* in, I size, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast array without scope.");
-        if(scope==nullptr)
-            JavaException::raiseError(env, "Cannot cast array without scope." QTJAMBI_STACKTRACEINFO );
-        PersistentInt32PointerArray* array = new PersistentInt32PointerArray(env, in, jsize(size));
-        scope->addDeletion(array);
-        return array->array(env);
-    }
-};
-
-template<bool has_scope, typename I>
-struct qtjambi_nativearray_caster<has_scope, jintArray, quint32, true, I>{
-    static jintArray cast(JNIEnv *env, const quint32* in, I size, const char*, QtJambiScope* scope){
-        if(scope==nullptr){
-            ConstInt32PointerArray array(env, reinterpret_cast<const qint32*>(in), jsize(size));
-            return array.array();
-        }
-        PersistentConstInt32PointerArray* array = new PersistentConstInt32PointerArray(env, reinterpret_cast<const qint32*>(in), jsize(size));
-        scope->addDeletion(array);
-        return array->array(env);
-    }
-};
-
-template<typename I>
-struct qtjambi_nativearray_caster<false, jintArray, quint32, true, I>{
-    static jintArray cast(JNIEnv *env, const quint32* in, I size, const char*, QtJambiScope*){
-        return QtJambiAPI::toJIntArray(env, reinterpret_cast<const jint *>(in), jsize(size));
-    }
-};
-
-template<bool has_scope, typename I>
-struct qtjambi_nativearray_caster<has_scope, jintArray, quint32, false, I>{
-    static jintArray cast(JNIEnv *env, quint32* in, I size, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast array without scope.");
-        if(scope==nullptr)
-            JavaException::raiseError(env, "Cannot cast array without scope." QTJAMBI_STACKTRACEINFO );
-        PersistentInt32PointerArray* array = new PersistentInt32PointerArray(env, reinterpret_cast<qint32*>(in), jsize(size));
-        scope->addDeletion(array);
-        return array->array(env);
-    }
-};
-
-template<bool has_scope, typename I>
-struct qtjambi_nativearray_caster<has_scope, jlongArray, qint64, true, I>{
-    static jlongArray cast(JNIEnv *env, const qint64* in, I size, const char*, QtJambiScope* scope){
-        if(scope==nullptr){
-            ConstInt64PointerArray array(env, in, jsize(size));
-            return array.array();
-        }
-        PersistentConstInt64PointerArray* array = new PersistentConstInt64PointerArray(env, in, jsize(size));
-        scope->addDeletion(array);
-        return array->array(env);
-    }
-};
-
-template<typename I>
-struct qtjambi_nativearray_caster<false, jlongArray, qint64, true, I>{
-    static jlongArray cast(JNIEnv *env, const qint64* in, I size, const char*, QtJambiScope*){
-        return QtJambiAPI::toJLongArray(env, reinterpret_cast<const jlong *>(in), jsize(size));
-    }
-};
-
-template<bool has_scope, typename I>
-struct qtjambi_nativearray_caster<has_scope, jlongArray, qint64, false, I>{
-    static jlongArray cast(JNIEnv *env, qint64* in, I size, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast array without scope.");
-        if(scope==nullptr)
-            JavaException::raiseError(env, "Cannot cast array without scope." QTJAMBI_STACKTRACEINFO );
-        PersistentInt64PointerArray* array = new PersistentInt64PointerArray(env, in, jsize(size));
-        scope->addDeletion(array);
-        return array->array(env);
-    }
-};
-
-template<bool has_scope, typename I>
-struct qtjambi_nativearray_caster<has_scope, jlongArray, quint64, true, I>{
-    static jlongArray cast(JNIEnv *env, const quint64* in, I size, const char*, QtJambiScope* scope){
-        if(scope==nullptr){
-            ConstInt64PointerArray array(env, reinterpret_cast<const qint64*>(in), jsize(size));
-            return array.array();
-        }
-        PersistentConstInt64PointerArray* array = new PersistentConstInt64PointerArray(env, reinterpret_cast<const qint64*>(in), jsize(size));
-        scope->addDeletion(array);
-        return array->array(env);
-    }
-};
-
-template<typename I>
-struct qtjambi_nativearray_caster<false, jlongArray, quint64, true, I>{
-    static jlongArray cast(JNIEnv *env, const quint64* in, I size, const char*, QtJambiScope*){
-        return QtJambiAPI::toJLongArray(env, reinterpret_cast<const jlong *>(in), jsize(size));
-    }
-};
-
-template<bool has_scope, typename I>
-struct qtjambi_nativearray_caster<has_scope, jlongArray, quint64, false, I>{
-    static jlongArray cast(JNIEnv *env, quint64* in, I size, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast array without scope.");
-        if(scope==nullptr)
-            JavaException::raiseError(env, "Cannot cast array without scope." QTJAMBI_STACKTRACEINFO );
-        PersistentInt64PointerArray* array = new PersistentInt64PointerArray(env, reinterpret_cast<qint64*>(in), jsize(size));
-        scope->addDeletion(array);
-        return array->array(env);
-    }
-};
-
-template<bool has_scope, typename I>
-struct qtjambi_nativearray_caster<has_scope, jshortArray, qint16, true, I>{
-    static jshortArray cast(JNIEnv *env, const qint16* in, I size, const char*, QtJambiScope* scope){
-        if(scope==nullptr){
-            ConstInt16PointerArray array(env, in, jsize(size));
-            return array.array();
-        }
-        PersistentConstInt16PointerArray* array = new PersistentConstInt16PointerArray(env, in, jsize(size));
-        scope->addDeletion(array);
-        return array->array(env);
-    }
-};
-
-template<typename I>
-struct qtjambi_nativearray_caster<false, jshortArray, qint16, true, I>{
-    static jshortArray cast(JNIEnv *env, const qint16* in, I size, const char*, QtJambiScope*){
-        return QtJambiAPI::toJShortArray(env, reinterpret_cast<const jshort *>(in), jsize(size));
-    }
-};
-
-template<bool has_scope, typename I>
-struct qtjambi_nativearray_caster<has_scope, jshortArray, qint16, false, I>{
-    static jshortArray cast(JNIEnv *env, qint16* in, I size, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast array without scope.");
-        if(scope==nullptr)
-            JavaException::raiseError(env, "Cannot cast array without scope." QTJAMBI_STACKTRACEINFO );
-        PersistentInt16PointerArray* array = new PersistentInt16PointerArray(env, in, jsize(size));
-        scope->addDeletion(array);
-        return array->array(env);
-    }
-};
-
-template<bool has_scope, typename I>
-struct qtjambi_nativearray_caster<has_scope, jshortArray, quint16, true, I>{
-    static jshortArray cast(JNIEnv *env, const quint16* in, I size, const char*, QtJambiScope* scope){
-        if(scope==nullptr){
-            ConstInt16PointerArray array(env, reinterpret_cast<const qint16*>(in), jsize(size));
-            return array.array();
-        }
-        PersistentConstInt16PointerArray* array = new PersistentConstInt16PointerArray(env, reinterpret_cast<const qint16*>(in), jsize(size));
-        scope->addDeletion(array);
-        return array->array(env);
-    }
-};
-
-template<typename I>
-struct qtjambi_nativearray_caster<false, jshortArray, quint16, true, I>{
-    static jshortArray cast(JNIEnv *env, const quint16* in, I size, const char*, QtJambiScope*){
-        return QtJambiAPI::toJShortArray(env, reinterpret_cast<const jshort *>(in), jsize(size));
-    }
-};
-
-template<bool has_scope, typename I>
-struct qtjambi_nativearray_caster<has_scope, jshortArray, quint16, false, I>{
-    static jshortArray cast(JNIEnv *env, quint16* in, I size, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast array without scope.");
-        if(scope==nullptr)
-            JavaException::raiseError(env, "Cannot cast array without scope." QTJAMBI_STACKTRACEINFO );
-        PersistentInt16PointerArray* array = new PersistentInt16PointerArray(env, reinterpret_cast<qint16*>(in), jsize(size));
-        scope->addDeletion(array);
-        return array->array(env);
-    }
-};
-
-template<bool has_scope, typename I>
-struct qtjambi_nativearray_caster<has_scope, jbyteArray, qint8, true, I>{
-    static jbyteArray cast(JNIEnv *env, const qint8* in, I size, const char*, QtJambiScope* scope){
-        if(scope==nullptr){
-            ConstInt8PointerArray array(env, in, jsize(size));
-            return array.array();
-        }
-        PersistentConstInt8PointerArray* array = new PersistentConstInt8PointerArray(env, in, jsize(size));
-        scope->addDeletion(array);
-        return array->array(env);
-    }
-};
-
-template<typename I>
-struct qtjambi_nativearray_caster<false, jbyteArray, qint8, true, I>{
-    static jbyteArray cast(JNIEnv *env, const qint8* in, I size, const char*, QtJambiScope*){
-        return QtJambiAPI::toJByteArray(env, reinterpret_cast<const jbyte *>(in), jsize(size));
-    }
-};
-
-template<bool has_scope, typename I>
-struct qtjambi_nativearray_caster<has_scope, jbyteArray, qint8, false, I>{
-    static jbyteArray cast(JNIEnv *env, qint8* in, I size, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast array without scope.");
-        if(scope==nullptr)
-            JavaException::raiseError(env, "Cannot cast array without scope." QTJAMBI_STACKTRACEINFO );
-        PersistentInt8PointerArray* array = new PersistentInt8PointerArray(env, in, jsize(size));
-        scope->addDeletion(array);
-        return array->array(env);
-    }
-};
-
-template<bool has_scope, typename I>
-struct qtjambi_nativearray_caster<has_scope, jbyteArray, quint8, true, I>{
-    static jbyteArray cast(JNIEnv *env, const quint8* in, I size, const char*, QtJambiScope* scope){
-        if(scope==nullptr){
-            ConstInt8PointerArray array(env, reinterpret_cast<const qint8*>(in), jsize(size));
-            return array.array();
-        }
-        PersistentConstInt8PointerArray* array = new PersistentConstInt8PointerArray(env, reinterpret_cast<const qint8*>(in), jsize(size));
-        scope->addDeletion(array);
-        return array->array(env);
-    }
-};
-
-template<typename I>
-struct qtjambi_nativearray_caster<false, jbyteArray, quint8, true, I>{
-    static jbyteArray cast(JNIEnv *env, const quint8* in, I size, const char*, QtJambiScope*){
-        return QtJambiAPI::toJByteArray(env, reinterpret_cast<const jbyte *>(in), jsize(size));
-    }
-};
-
-template<bool has_scope, typename I>
-struct qtjambi_nativearray_caster<has_scope, jbyteArray, quint8, false, I>{
-    static jbyteArray cast(JNIEnv *env, quint8* in, I size, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast array without scope.");
-        if(scope==nullptr)
-            JavaException::raiseError(env, "Cannot cast array without scope." QTJAMBI_STACKTRACEINFO );
-        PersistentInt8PointerArray* array = new PersistentInt8PointerArray(env, reinterpret_cast<qint8*>(in), jsize(size));
-        scope->addDeletion(array);
-        return array->array(env);
-    }
-};
-
-template<bool has_scope, typename I>
-struct qtjambi_nativearray_caster<has_scope, jbyteArray, char, true, I>{
-    static jbyteArray cast(JNIEnv *env, const char* in, I size, const char*, QtJambiScope* scope){
-        if(scope==nullptr){
-            ConstCharPointerArray array(env, in, jsize(size));
-            return array.array();
-        }
-        PersistentConstCharPointerArray* array = new PersistentConstCharPointerArray(env, reinterpret_cast<const char*>(in), jsize(size));
-        scope->addDeletion(array);
-        return array->array(env);
-    }
-};
-
-template<typename I>
-struct qtjambi_nativearray_caster<false, jbyteArray, char, true, I>{
-    static jbyteArray cast(JNIEnv *env, const char* in, I size, const char*, QtJambiScope*){
-        return QtJambiAPI::toJByteArray(env, reinterpret_cast<const jbyte *>(in), jsize(size));
-    }
-};
-
-template<bool has_scope, typename I>
-struct qtjambi_nativearray_caster<has_scope, jbyteArray, char, false, I>{
-    static jbyteArray cast(JNIEnv *env, char* in, I size, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast array without scope.");
-        if(scope==nullptr)
-            JavaException::raiseError(env, "Cannot cast array without scope." QTJAMBI_STACKTRACEINFO );
-        PersistentCharPointerArray* array = new PersistentCharPointerArray(env, reinterpret_cast<char*>(in), jsize(size));
-        scope->addDeletion(array);
-        return array->array(env);
-    }
-};
-
-template<bool has_scope, typename I>
-struct qtjambi_nativearray_caster<has_scope, jdoubleArray, double, true, I>{
-    static jdoubleArray cast(JNIEnv *env, const double* in, I size, const char*, QtJambiScope* scope){
-        if(scope==nullptr){
-            ConstDoublePointerArray array(env, in, jsize(size));
-            return array.array();
-        }
-        PersistentConstDoublePointerArray* array = new PersistentConstDoublePointerArray(env, in, jsize(size));
-        scope->addDeletion(array);
-        return array->array(env);
-    }
-};
-
-template<typename I>
-struct qtjambi_nativearray_caster<false, jdoubleArray, double, true, I>{
-    static jdoubleArray cast(JNIEnv *env, const double* in, I size, const char*, QtJambiScope*){
-        return QtJambiAPI::toJDoubleArray(env, reinterpret_cast<const jdouble *>(in), jsize(size));
-    }
-};
-
-template<bool has_scope, typename I>
-struct qtjambi_nativearray_caster<has_scope, jdoubleArray, double, false, I>{
-    static jdoubleArray cast(JNIEnv *env, double* in, I size, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast array without scope.");
-        if(scope==nullptr)
-            JavaException::raiseError(env, "Cannot cast array without scope." QTJAMBI_STACKTRACEINFO );
-        PersistentDoublePointerArray* array = new PersistentDoublePointerArray(env, in, jsize(size));
-        scope->addDeletion(array);
-        return array->array(env);
-    }
-};
-
-template<bool has_scope, typename I>
-struct qtjambi_nativearray_caster<has_scope, jfloatArray, float, true, I>{
-    static jfloatArray cast(JNIEnv *env, const float* in, I size, const char*, QtJambiScope* scope){
-        if(scope==nullptr){
-            ConstFloatPointerArray array(env, in, jsize(size));
-            return array.array();
-        }
-        PersistentConstFloatPointerArray* array = new PersistentConstFloatPointerArray(env, in, jsize(size));
-        scope->addDeletion(array);
-        return array->array(env);
-    }
-};
-
-template<typename I>
-struct qtjambi_nativearray_caster<false, jfloatArray, float, true, I>{
-    static jfloatArray cast(JNIEnv *env, const float* in, I size, const char*, QtJambiScope*){
-        return QtJambiAPI::toJFloatArray(env, reinterpret_cast<const jfloat *>(in), jsize(size));
-    }
-};
-
-template<bool has_scope, typename I>
-struct qtjambi_nativearray_caster<has_scope, jfloatArray, float, false, I>{
-    static jfloatArray cast(JNIEnv *env, float* in, I size, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast array without scope.");
-        if(scope==nullptr)
-            JavaException::raiseError(env, "Cannot cast array without scope." QTJAMBI_STACKTRACEINFO );
-        PersistentFloatPointerArray* array = new PersistentFloatPointerArray(env, in, jsize(size));
-        scope->addDeletion(array);
-        return array->array(env);
-    }
-};
-
-template<bool has_scope, typename I>
-struct qtjambi_nativearray_caster<has_scope, jbooleanArray, bool, true, I>{
-    static jbooleanArray cast(JNIEnv *env, const bool* in, I size, const char*, QtJambiScope* scope){
-        if(scope==nullptr){
-            ConstBoolPointerArray array(env, in, jsize(size));
-            return array.array();
-        }
-        PersistentConstBoolPointerArray* array = new PersistentConstBoolPointerArray(env, in, jsize(size));
-        scope->addDeletion(array);
-        return array->array(env);
-    }
-};
-
-template<typename I>
-struct qtjambi_nativearray_caster<false, jbooleanArray, bool, true, I>{
-    static jbooleanArray cast(JNIEnv *env, const bool* in, I size, const char*, QtJambiScope*){
-        ConstBoolPointerArray array(env, in, jsize(size));
-        return array.array();
-    }
-};
-
-template<bool has_scope, typename I>
-struct qtjambi_nativearray_caster<has_scope, jbooleanArray, bool, false, I>{
-    static jbooleanArray cast(JNIEnv *env, bool* in, I size, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast array without scope.");
-        if(scope==nullptr)
-            JavaException::raiseError(env, "Cannot cast array without scope." QTJAMBI_STACKTRACEINFO );
-        PersistentBoolPointerArray* array = new PersistentBoolPointerArray(env, in, jsize(size));
-        scope->addDeletion(array);
-        return array->array(env);
-    }
-};
-
-template<bool has_scope, typename I>
-struct qtjambi_nativearray_caster<has_scope, jbooleanArray, uchar, true, I>{
-    static jbooleanArray cast(JNIEnv *env, const uchar* in, I size, const char*, QtJambiScope* scope){
-        if(scope==nullptr){
-            ConstBool2PointerArray array(env, in, jsize(size));
-            return array.array();
-        }
-        PersistentConstBool2PointerArray* array = new PersistentConstBool2PointerArray(env, in, jsize(size));
-        scope->addDeletion(array);
-        return array->array(env);
-    }
-};
-
-template<typename I>
-struct qtjambi_nativearray_caster<false, jbooleanArray, uchar, true, I>{
-    static jbooleanArray cast(JNIEnv *env, const uchar* in, I size, const char*, QtJambiScope*){
-        ConstBool2PointerArray array(env, in, jsize(size));
-        return array.array();
-    }
-};
-
-template<bool has_scope, typename I>
-struct qtjambi_nativearray_caster<has_scope, jbooleanArray, uchar, false, I>{
-    static jbooleanArray cast(JNIEnv *env, uchar* in, I size, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast array without scope.");
-        if(scope==nullptr)
-            JavaException::raiseError(env, "Cannot cast array without scope." QTJAMBI_STACKTRACEINFO );
-        PersistentBool2PointerArray* array = new PersistentBool2PointerArray(env, in, jsize(size));
-        scope->addDeletion(array);
-        return array->array(env);
-    }
-};
-
-template<bool has_scope, typename I>
-struct qtjambi_nativearray_caster<has_scope, jcharArray, ushort, true, I>{
-    static jcharArray cast(JNIEnv *env, const ushort* in, I size, const char*, QtJambiScope* scope){
-        if(scope==nullptr){
-            ConstWCharPointerArray array(env, in, jsize(size));
-            return array.array();
-        }
-        PersistentConstWCharPointerArray* array = new PersistentConstWCharPointerArray(env, in, jsize(size));
-        scope->addDeletion(array);
-        return array->array(env);
-    }
-};
-
-template<typename I>
-struct qtjambi_nativearray_caster<false, jcharArray, ushort, true, I>{
-    static jcharArray cast(JNIEnv *env, const ushort* in, I size, const char*, QtJambiScope*){
-        return QtJambiAPI::toJCharArray(env, reinterpret_cast<const jchar *>(in), jsize(size));
-    }
-};
-
-template<bool has_scope, typename I>
-struct qtjambi_nativearray_caster<has_scope, jcharArray, ushort, false, I>{
-    static jcharArray cast(JNIEnv *env, ushort* in, I size, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast array without scope.");
-        if(scope==nullptr)
-            JavaException::raiseError(env, "Cannot cast array without scope." QTJAMBI_STACKTRACEINFO );
-        PersistentWCharPointerArray* array = new PersistentWCharPointerArray(env, in, jsize(size));
-        scope->addDeletion(array);
-        return array->array(env);
-    }
-};
-
-template<bool has_scope, typename I>
-struct qtjambi_nativearray_caster<has_scope, jcharArray, wchar_t, true, I>{
-    static jcharArray cast(JNIEnv *env, const wchar_t* in, I size, const char*, QtJambiScope* scope){
-        if(scope==nullptr){
-            ConstWCharPointerArray array(env, reinterpret_cast<const ushort*>(in), jsize(size));
-            return array.array();
-        }
-        PersistentConstWCharPointerArray* array = new PersistentConstWCharPointerArray(env, reinterpret_cast<const ushort*>(in), jsize(size));
-        scope->addDeletion(array);
-        return array->array(env);
-    }
-};
-
-template<typename I>
-struct qtjambi_nativearray_caster<false, jcharArray, wchar_t, true, I>{
-    static jcharArray cast(JNIEnv *env, const wchar_t* in, I size, const char*, QtJambiScope*){
-        return QtJambiAPI::toJCharArray(env, reinterpret_cast<const jchar *>(in), jsize(size));
-    }
-};
-
-template<bool has_scope, typename I>
-struct qtjambi_nativearray_caster<has_scope, jcharArray, wchar_t, false, I>{
-    static jcharArray cast(JNIEnv *env, wchar_t* in, I size, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast array without scope.");
-        if(scope==nullptr)
-            JavaException::raiseError(env, "Cannot cast array without scope." QTJAMBI_STACKTRACEINFO );
-        PersistentWCharPointerArray* array = new PersistentWCharPointerArray(env, reinterpret_cast<ushort*>(in), jsize(size));
-        scope->addDeletion(array);
-        return array->array(env);
-    }
-};
-
-template<bool has_scope, typename I>
-struct qtjambi_nativearray_caster<has_scope, jcharArray, QChar, true, I>{
-    static jcharArray cast(JNIEnv *env, const QChar* in, I size, const char*, QtJambiScope* scope){
-        if(scope==nullptr){
-            ConstQCharPointerArray array(env, in, jsize(size));
-            return array.array();
-        }
-        PersistentConstQCharPointerArray* array = new PersistentConstQCharPointerArray(env, in, jsize(size));
-        scope->addDeletion(array);
-        return array->array(env);
-    }
-};
-
-template<typename I>
-struct qtjambi_nativearray_caster<false, jcharArray, QChar, true, I>{
-    static jcharArray cast(JNIEnv *env, const QChar* in, I size, const char*, QtJambiScope*){
-        return QtJambiAPI::toJCharArray(env, reinterpret_cast<const jchar *>(in), jsize(size));
-    }
-};
-
-template<bool has_scope, typename I>
-struct qtjambi_nativearray_caster<has_scope, jcharArray, QChar, false, I>{
-    static jcharArray cast(JNIEnv *env, QChar* in, I size, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast array without scope.");
-        if(scope==nullptr)
-            JavaException::raiseError(env, "Cannot cast array without scope." QTJAMBI_STACKTRACEINFO );
-        PersistentQCharPointerArray* array = new PersistentQCharPointerArray(env, in, jsize(size));
-        scope->addDeletion(array);
-        return array->array(env);
-    }
-};
-
-template<bool has_scope, typename O>
-struct qtjambi_jarray_caster<has_scope, O, false, jobjectArray>{
-    static O* cast(JNIEnv * env, jobjectArray in, jsize& size, const char* type, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast array without scope.");
-        if(scope==nullptr)
-            JavaException::raiseError(env, "Cannot cast array without scope." QTJAMBI_STACKTRACEINFO );
-        PersistentJObjectArrayPointer<O>* array = new PersistentJObjectArrayPointer<O>(env, in, [scope,type](O& out,JNIEnv * env,jobject in){
-                                                                                    out = qtjambi_cast<O>(env, *scope, in, type);
-                                                                                }, [scope,type](JNIEnv * env,const O& in)->jobject{
-                                                                                    return qtjambi_cast<jobject>(env, *scope, in, type);
-                                                                                });
-        size = array->size();
-        scope->addDeletion(array);
-        return array->pointer();
-    }
-};
-
-template<bool has_scope, typename O>
-struct qtjambi_jarray_caster<has_scope, O, true, jobjectArray>{
-    static const O* cast(JNIEnv * env, jobjectArray in, jsize& size, const char* type, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast array without scope.");
-        if(scope==nullptr)
-            JavaException::raiseError(env, "Cannot cast array without scope." QTJAMBI_STACKTRACEINFO );
-        PersistentJConstObjectArrayPointer<O>* array = new PersistentJConstObjectArrayPointer<O>(env, in, [scope,type](O& out,JNIEnv * env,jobject in){
-                                                                                        out = qtjambi_cast<O>(env, *scope, in, type);
-                                                                                    });
-        size = array->size();
-        scope->addDeletion(array);
-        return array->pointer();
-    }
-};
-
-template<bool has_scope, bool is_const>
-struct qtjambi_jarray_caster<has_scope, qint32, is_const, jintArray>{
-    typedef qint32 O;
-    typedef typename std::conditional<is_const, typename std::add_const<O>::type, O>::type Out;
-    typedef typename std::conditional<is_const, PersistentJConstIntArrayPointer, PersistentJIntArrayPointer>::type JArrayPointer;
-    static Out* cast(JNIEnv * env, jintArray in, jsize& size, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast array without scope.");
-        if(scope==nullptr)
-            JavaException::raiseError(env, "Cannot cast array without scope." QTJAMBI_STACKTRACEINFO );
-        JArrayPointer* array = new JArrayPointer(env, in);
-        size = jsize(array->size());
-        scope->addDeletion(array);
-        return reinterpret_cast<Out*>(array->pointer());
-    }
-};
-
-template<bool has_scope, bool is_const>
-struct qtjambi_jarray_caster<has_scope, quint32, is_const, jintArray>{
-    typedef quint32 O;
-    typedef typename std::conditional<is_const, typename std::add_const<O>::type, O>::type Out;
-    typedef typename std::conditional<is_const, PersistentJConstIntArrayPointer, PersistentJIntArrayPointer>::type JArrayPointer;
-    static Out* cast(JNIEnv * env, jintArray in, jsize& size, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast array without scope.");
-        if(scope==nullptr)
-            JavaException::raiseError(env, "Cannot cast array without scope." QTJAMBI_STACKTRACEINFO );
-        JArrayPointer* array = new JArrayPointer(env, in);
-        size = jsize(array->size());
-        scope->addDeletion(array);
-        return reinterpret_cast<Out*>(array->pointer());
-    }
-};
-
-template<bool has_scope, bool is_const>
-struct qtjambi_jarray_caster<has_scope, qint64, is_const, jlongArray>{
-    typedef qint64 O;
-    typedef typename std::conditional<is_const, typename std::add_const<O>::type, O>::type Out;
-    typedef typename std::conditional<is_const, PersistentJConstLongArrayPointer, PersistentJLongArrayPointer>::type JArrayPointer;
-    static Out* cast(JNIEnv * env, jlongArray in, jsize& size, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast array without scope.");
-        if(scope==nullptr)
-            JavaException::raiseError(env, "Cannot cast array without scope." QTJAMBI_STACKTRACEINFO );
-        JArrayPointer* array = new JArrayPointer(env, in);
-        size = jsize(array->size());
-        scope->addDeletion(array);
-        return reinterpret_cast<Out*>(array->pointer());
-    }
-};
-
-template<bool has_scope, bool is_const>
-struct qtjambi_jarray_caster<has_scope, quint64, is_const, jlongArray>{
-    typedef quint64 O;
-    typedef typename std::conditional<is_const, typename std::add_const<O>::type, O>::type Out;
-    typedef typename std::conditional<is_const, PersistentJConstLongArrayPointer, PersistentJLongArrayPointer>::type JArrayPointer;
-    static Out* cast(JNIEnv * env, jlongArray in, jsize& size, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast array without scope.");
-        if(scope==nullptr)
-            JavaException::raiseError(env, "Cannot cast array without scope." QTJAMBI_STACKTRACEINFO );
-        JArrayPointer* array = new JArrayPointer(env, in);
-        size = jsize(array->size());
-        scope->addDeletion(array);
-        return reinterpret_cast<Out*>(array->pointer());
-    }
-};
-
-template<bool has_scope, bool is_const>
-struct qtjambi_jarray_caster<has_scope, qint16, is_const, jshortArray>{
-    typedef qint16 O;
-    typedef typename std::conditional<is_const, typename std::add_const<O>::type, O>::type Out;
-    typedef typename std::conditional<is_const, PersistentJConstShortArrayPointer, PersistentJShortArrayPointer>::type JArrayPointer;
-    static Out* cast(JNIEnv * env, jshortArray in, jsize& size, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast array without scope.");
-        if(scope==nullptr)
-            JavaException::raiseError(env, "Cannot cast array without scope." QTJAMBI_STACKTRACEINFO );
-        JArrayPointer* array = new JArrayPointer(env, in);
-        size = jsize(array->size());
-        scope->addDeletion(array);
-        return reinterpret_cast<Out*>(array->pointer());
-    }
-};
-
-template<bool has_scope, bool is_const>
-struct qtjambi_jarray_caster<has_scope, quint16, is_const, jshortArray>{
-    typedef quint16 O;
-    typedef typename std::conditional<is_const, typename std::add_const<O>::type, O>::type Out;
-    typedef typename std::conditional<is_const, PersistentJConstShortArrayPointer, PersistentJShortArrayPointer>::type JArrayPointer;
-    static Out* cast(JNIEnv * env, jshortArray in, jsize& size, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast array without scope.");
-        if(scope==nullptr)
-            JavaException::raiseError(env, "Cannot cast array without scope." QTJAMBI_STACKTRACEINFO );
-        JArrayPointer* array = new JArrayPointer(env, in);
-        size = jsize(array->size());
-        scope->addDeletion(array);
-        return reinterpret_cast<Out*>(array->pointer());
-    }
-};
-
-template<bool has_scope, bool is_const>
-struct qtjambi_jarray_caster<has_scope, qint8, is_const, jbyteArray>{
-    typedef qint8 O;
-    typedef typename std::conditional<is_const, typename std::add_const<O>::type, O>::type Out;
-    typedef typename std::conditional<is_const, PersistentJConstByteArrayPointer, PersistentJByteArrayPointer>::type JArrayPointer;
-    static Out* cast(JNIEnv * env, jbyteArray in, jsize& size, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast array without scope.");
-        if(scope==nullptr)
-            JavaException::raiseError(env, "Cannot cast array without scope." QTJAMBI_STACKTRACEINFO );
-        JArrayPointer* array = new JArrayPointer(env, in);
-        size = jsize(array->size());
-        scope->addDeletion(array);
-        return reinterpret_cast<Out*>(array->pointer());
-    }
-};
-
-template<bool has_scope, bool is_const>
-struct qtjambi_jarray_caster<has_scope, quint8, is_const, jbyteArray>{
-    typedef quint8 O;
-    typedef typename std::conditional<is_const, typename std::add_const<O>::type, O>::type Out;
-    typedef typename std::conditional<is_const, PersistentJConstByteArrayPointer, PersistentJByteArrayPointer>::type JArrayPointer;
-    static Out* cast(JNIEnv * env, jbyteArray in, jsize& size, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast array without scope.");
-        if(scope==nullptr)
-            JavaException::raiseError(env, "Cannot cast array without scope." QTJAMBI_STACKTRACEINFO );
-        JArrayPointer* array = new JArrayPointer(env, in);
-        size = jsize(array->size());
-        scope->addDeletion(array);
-        return reinterpret_cast<Out*>(array->pointer());
-    }
-};
-
-template<bool has_scope, bool is_const>
-struct qtjambi_jarray_caster<has_scope, char, is_const, jbyteArray>{
-    typedef char O;
-    typedef typename std::conditional<is_const, typename std::add_const<O>::type, O>::type Out;
-    typedef typename std::conditional<is_const, PersistentJConstByteArrayPointer, PersistentJByteArrayPointer>::type JArrayPointer;
-    static Out* cast(JNIEnv * env, jbyteArray in, jsize& size, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast array without scope.");
-        if(scope==nullptr)
-            JavaException::raiseError(env, "Cannot cast array without scope." QTJAMBI_STACKTRACEINFO );
-        JArrayPointer* array = new JArrayPointer(env, in);
-        size = jsize(array->size());
-        scope->addDeletion(array);
-        return reinterpret_cast<Out*>(array->pointer());
-    }
-};
-
-template<bool has_scope, bool is_const>
-struct qtjambi_jarray_caster<has_scope, ushort, is_const, jcharArray>{
-    typedef ushort O;
-    typedef typename std::conditional<is_const, typename std::add_const<O>::type, O>::type Out;
-    typedef typename std::conditional<is_const, PersistentJConstCharArrayPointer, PersistentJCharArrayPointer>::type JArrayPointer;
-    static Out* cast(JNIEnv * env, jcharArray in, jsize& size, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast array without scope.");
-        if(scope==nullptr)
-            JavaException::raiseError(env, "Cannot cast array without scope." QTJAMBI_STACKTRACEINFO );
-        JArrayPointer* array = new JArrayPointer(env, in);
-        size = jsize(array->size());
-        scope->addDeletion(array);
-        return reinterpret_cast<Out*>(array->pointer());
-    }
-};
-
-template<bool has_scope, bool is_const>
-struct qtjambi_jarray_caster<has_scope, wchar_t, is_const, jcharArray>{
-    typedef wchar_t O;
-    typedef typename std::conditional<is_const, typename std::add_const<O>::type, O>::type Out;
-    typedef typename std::conditional<is_const, PersistentJConstCharArrayPointer, PersistentJCharArrayPointer>::type JArrayPointer;
-    static Out* cast(JNIEnv * env, jcharArray in, jsize& size, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast array without scope.");
-        if(scope==nullptr)
-            JavaException::raiseError(env, "Cannot cast array without scope." QTJAMBI_STACKTRACEINFO );
-        JArrayPointer* array = new JArrayPointer(env, in);
-        size = jsize(array->size());
-        scope->addDeletion(array);
-        return reinterpret_cast<Out*>(array->pointer());
-    }
-};
-
-template<bool has_scope, bool is_const>
-struct qtjambi_jarray_caster<has_scope, QChar, is_const, jcharArray>{
-    typedef QChar O;
-    typedef typename std::conditional<is_const, typename std::add_const<O>::type, O>::type Out;
-    typedef typename std::conditional<is_const, PersistentJConstCharArrayPointer, PersistentJCharArrayPointer>::type JArrayPointer;
-    static Out* cast(JNIEnv * env, jcharArray in, jsize& size, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast array without scope.");
-        if(scope==nullptr)
-            JavaException::raiseError(env, "Cannot cast array without scope." QTJAMBI_STACKTRACEINFO );
-        JArrayPointer* array = new JArrayPointer(env, in);
-        size = jsize(array->size());
-        scope->addDeletion(array);
-        return reinterpret_cast<Out*>(array->pointer());
-    }
-};
-
-template<bool has_scope, bool is_const>
-struct qtjambi_jarray_caster<has_scope, double, is_const, jdoubleArray>{
-    typedef double O;
-    typedef typename std::conditional<is_const, typename std::add_const<O>::type, O>::type Out;
-    typedef typename std::conditional<is_const, PersistentJConstDoubleArrayPointer, PersistentJDoubleArrayPointer>::type JArrayPointer;
-    static Out* cast(JNIEnv * env, jdoubleArray in, jsize& size, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast array without scope.");
-        if(scope==nullptr)
-            JavaException::raiseError(env, "Cannot cast array without scope." QTJAMBI_STACKTRACEINFO );
-        JArrayPointer* array = new JArrayPointer(env, in);
-        size = jsize(array->size());
-        scope->addDeletion(array);
-        return reinterpret_cast<Out*>(array->pointer());
-    }
-};
-
-template<bool has_scope, bool is_const>
-struct qtjambi_jarray_caster<has_scope, float, is_const, jfloatArray>{
-    typedef float O;
-    typedef typename std::conditional<is_const, typename std::add_const<O>::type, O>::type Out;
-    typedef typename std::conditional<is_const, PersistentJConstFloatArrayPointer, PersistentJFloatArrayPointer>::type JArrayPointer;
-    static Out* cast(JNIEnv * env, jfloatArray in, jsize& size, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast array without scope.");
-        if(scope==nullptr)
-            JavaException::raiseError(env, "Cannot cast array without scope." QTJAMBI_STACKTRACEINFO );
-        JArrayPointer* array = new JArrayPointer(env, in);
-        size = jsize(array->size());
-        scope->addDeletion(array);
-        return reinterpret_cast<Out*>(array->pointer());
-    }
-};
-
-template<bool has_scope, bool is_const>
-struct qtjambi_jarray_caster<has_scope, bool, is_const, jbooleanArray>{
-    typedef bool O;
-    typedef typename std::conditional<is_const, typename std::add_const<O>::type, O>::type Out;
-    typedef typename std::conditional<is_const, PersistentJConstBooleanArrayPointer, PersistentJBooleanArrayPointer>::type JArrayPointer;
-    static Out* cast(JNIEnv * env, jbooleanArray in, jsize& size, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast array without scope.");
-        if(scope==nullptr)
-            JavaException::raiseError(env, "Cannot cast array without scope." QTJAMBI_STACKTRACEINFO );
-        JArrayPointer* array = new JArrayPointer(env, in);
-        size = jsize(array->size());
-        scope->addDeletion(array);
-        return reinterpret_cast<Out*>(array->pointer());
-    }
-};
-
-template<bool has_scope, bool is_const>
-struct qtjambi_jarray_caster<has_scope, jboolean, is_const, jbooleanArray>{
-    typedef jboolean O;
-    typedef typename std::conditional<is_const, typename std::add_const<O>::type, O>::type Out;
-    typedef typename std::conditional<is_const, PersistentJConstBooleanArrayPointer, PersistentJBooleanArrayPointer>::type JArrayPointer;
-    static Out* cast(JNIEnv * env, jbooleanArray in, jsize& size, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast array without scope.");
-        if(scope==nullptr)
-            JavaException::raiseError(env, "Cannot cast array without scope." QTJAMBI_STACKTRACEINFO );
-        JArrayPointer* array = new JArrayPointer(env, in);
-        size = jsize(array->size());
-        scope->addDeletion(array);
-        return reinterpret_cast<Out*>(array->booleanArray());
-    }
-};
-
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-template<bool has_scope, bool is_const>
-struct qtjambi_jarray_caster<has_scope, char16_t, is_const, jcharArray>{
-    typedef char16_t O;
-    typedef typename std::conditional<is_const, typename std::add_const<O>::type, O>::type Out;
-    typedef typename std::conditional<is_const, PersistentJConstCharArrayPointer, PersistentJCharArrayPointer>::type JArrayPointer;
-    static Out* cast(JNIEnv * env, jcharArray in, jsize& size, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast array without scope.");
-        if(scope==nullptr)
-            JavaException::raiseError(env, "Cannot cast array without scope." QTJAMBI_STACKTRACEINFO );
-        JArrayPointer* array = new JArrayPointer(env, in);
-        size = jsize(array->size());
-        scope->addDeletion(array);
-        return reinterpret_cast<Out*>(array->pointer());
-    }
-};
-
-template<bool has_scope, bool is_const>
-struct qtjambi_jarray_caster<has_scope, char32_t, is_const, jintArray>{
-    typedef char32_t O;
-    typedef typename std::conditional<is_const, typename std::add_const<O>::type, O>::type Out;
-    typedef typename std::conditional<is_const, PersistentJConstIntArrayPointer, PersistentJIntArrayPointer>::type JArrayPointer;
-    static Out* cast(JNIEnv * env, jintArray in, jsize& size, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast array without scope.");
-        if(scope==nullptr)
-            JavaException::raiseError(env, "Cannot cast array without scope." QTJAMBI_STACKTRACEINFO );
-        JArrayPointer* array = new JArrayPointer(env, in);
-        size = jsize(array->size());
-        scope->addDeletion(array);
-        return reinterpret_cast<Out*>(array->pointer());
-    }
-};
-
-template<bool has_scope, typename I>
-struct qtjambi_nativearray_caster<has_scope, jcharArray, char16_t, true, I>{
-    static jcharArray cast(JNIEnv *env, const char16_t* in, I size, const char*, QtJambiScope* scope){
-        if(scope==nullptr){
-            ConstChar16PointerArray array(env, in, jsize(size));
-            return array.array();
-        }
-        PersistentConstChar16PointerArray* array = new PersistentConstChar16PointerArray(env, in, jsize(size));
-        scope->addDeletion(array);
-        return array->array(env);
-    }
-};
-
-template<bool has_scope, typename I>
-struct qtjambi_nativearray_caster<has_scope, jcharArray, char16_t, false, I>{
-    static jcharArray cast(JNIEnv *env, char16_t* in, I size, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast array without scope.");
-        if(scope==nullptr)
-            JavaException::raiseError(env, "Cannot cast array without scope." QTJAMBI_STACKTRACEINFO );
-        PersistentChar16PointerArray* array = new PersistentChar16PointerArray(env, in, jsize(size));
-        scope->addDeletion(array);
-        return array->array(env);
-    }
-};
-
-template<bool has_scope, typename I>
-struct qtjambi_nativearray_caster<has_scope, jintArray, char32_t, true, I>{
-    static jintArray cast(JNIEnv *env, const char32_t* in, I size, const char*, QtJambiScope* scope){
-        if(scope==nullptr){
-            ConstChar32PointerArray array(env, in, jsize(size));
-            return array.array();
-        }
-        PersistentConstChar32PointerArray* array = new PersistentConstChar32PointerArray(env, in, jsize(size));
-        scope->addDeletion(array);
-        return array->array(env);
-    }
-};
-
-template<bool has_scope, typename I>
-struct qtjambi_nativearray_caster<has_scope, jintArray, char32_t, false, I>{
-    static jintArray cast(JNIEnv *env, char32_t* in, I size, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast array without scope.");
-        if(scope==nullptr)
-            JavaException::raiseError(env, "Cannot cast array without scope." QTJAMBI_STACKTRACEINFO );
-        PersistentChar32PointerArray* array = new PersistentChar32PointerArray(env, in, jsize(size));
-        scope->addDeletion(array);
-        return array->array(env);
-    }
-};
-#endif
-
-template<typename T, size_t N, bool has_scope,
-         bool is_const, bool is_reference>
-struct qtjambi_jnitype_qobject_decider_cast<true, has_scope, std::array<T,N>, false, is_const, is_reference, false, false>
+template<bool forward, typename JniType, typename T, size_t N,
+         bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
+struct qtjambi_jobject_plain_cast<forward, JniType, std::array<T,N>, is_pointer, is_const, is_reference, is_rvalue, Args...>
 {
     typedef std::array<T,N> NativeType;
     typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::add_lvalue_reference<typename std::add_const<NativeType>::type>::type NativeType_in;
-    typedef typename std::add_lvalue_reference<NativeType_c>::type NativeType_out;
+    typedef typename std::conditional<is_reference, typename std::conditional<is_rvalue, typename std::add_rvalue_reference<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_in;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
     typedef typename std::add_pointer<NativeType>::type NativeType_ptr;
-    constexpr static jobject cast(JNIEnv * env, NativeType_in in, const char* nativeTypeName, QtJambiScope* scope){
-        return QtJambiPrivate::qtjambi_array_cast_decider<
-            has_scope,
-            NativeType, QtJambiPrivate::is_jni_array_type<NativeType>::value,
-            const T*, false,
-            size_t
-            >::cast(env, in.data(), N, nativeTypeName, scope);
+    typedef typename std::conditional<forward, NativeType_in, JniType>::type In;
+    typedef typename std::conditional<forward, JniType, NativeType_out>::type Out;
+    typedef typename std::conditional<std::is_same_v<JniType, jobject> || std::is_same_v<JniType, jarray>, typename jni_type_decider<T>::JArrayType, JniType>::type JArrayType;
+
+    static Out cast(In in, Args... args){
+        Q_STATIC_ASSERT(unuseArgs(sizeof(args)...));
+        if constexpr(forward){
+            jsize size = N;
+            if constexpr (is_pointer){
+                return QtJambiPrivate::qtjambi_array_cast<
+                    JArrayType,
+                    const T*,
+                    jsize, true, Args...>::cast(in->data(), size, args...);
+            }else{
+                return QtJambiPrivate::qtjambi_array_cast<
+                    JArrayType,
+                    const T*,
+                    jsize, true, Args...>::cast(in.data(), size, args...);
+            }
+        }else{
+            if constexpr (is_pointer || is_reference){
+                Q_STATIC_ASSERT_X(!is_reference || cast_var_args<Args...>::hasScope, "Cannot cast to std::array<T,N> &");
+                Q_STATIC_ASSERT_X(!is_pointer || cast_var_args<Args...>::hasScope, "Cannot cast to std::array<T,N> *");
+                NativeType* result;
+                if constexpr(is_const){
+                    result = new NativeType(qtjambi_jobject_plain_cast<forward, JniType, NativeType, false, false, false, false, Args...>::cast(in, args...));
+                    cast_var_args<Args...>::scope(args...).addDeletion(result);
+                }else{
+                    result = new NativeType();
+                    if constexpr(jni_type<JniType>::isArray
+                                  && (std::is_arithmetic_v<T>
+                                      || std::is_same_v<T,QChar>
+                                      || std::is_same_v<T,QLatin1Char>
+                                      || std::is_same_v<T,std::byte>)){
+                        typedef typename jni_type<JniType>::template NativeFactory<T,is_const>::PersistentConverter JArrayPointer;
+                        auto env = cast_var_args<Args...>::env(args...);
+                        JArrayPointer* ap = new JArrayPointer(env, JniType(in));
+                        std::memcpy(result->data(), ap->pointer(), sizeof(T) * qMin<size_t,size_t>(N, ap->size()));
+                        cast_var_args<Args...>::scope(args...).addFinalAction([ap, result]() mutable {
+                            std::memcpy(ap->pointer(), result->data(), sizeof(T) * qMin<size_t,size_t>(N, ap->size()));
+                            delete ap;
+                            delete result;
+                        });
+                    }else{
+                        copyArray(in, result, arg_pointer<Args>::ref(args)...);
+                    }
+                }
+                if constexpr(is_pointer)
+                    return result;
+                else
+                    return *result;
+            }else{
+                std::array<T,N> result;
+                if constexpr(jni_type<JniType>::isArray
+                              && (std::is_arithmetic_v<T>
+                              || std::is_same_v<T,QChar>
+                              || std::is_same_v<T,QLatin1Char>
+                              || std::is_same_v<T,std::byte>)){
+                    typedef typename jni_type<JniType>::template NativeFactory<T,is_const>::Converter JArrayPointer;
+                    auto env = cast_var_args<Args...>::env(args...);
+                    JArrayPointer ap(env, JniType(in));
+                    std::memcpy(result.data(), ap.pointer(), sizeof(T) * qMin<size_t,size_t>(N, ap.size()));
+                }else{
+                    copyArray(in, result, arg_pointer<Args>::ref(args)...);
+                }
+                return result;
+            }
+        }
+    }
+private:
+    static void copyArray(jobject in, std::array<T,N>* result, typename arg_pointer<Args>::type... args){
+        auto env = cast_var_args<typename arg_pointer<Args>::type...>::env(args...);
+        if constexpr(std::is_arithmetic_v<T>
+                      || std::is_same_v<T,QChar>
+                      || std::is_same_v<T,QLatin1Char>
+                      || std::is_same_v<T,std::byte>){
+            typedef typename jni_type_decider<T>::JArrayType ArrayType;
+            if constexpr(!std::is_same_v<ArrayType,jobjectArray>){
+                typedef typename jni_type<ArrayType>::template NativeFactory<T,is_const>::PersistentConverter JArrayPointer;
+                if(JArrayPointer::isValidArray(env, in)){
+                    JArrayPointer* ap = new JArrayPointer(env, ArrayType(in));
+                    std::memcpy(result->data(), ap->pointer(), sizeof(T) * qMin<size_t,size_t>(N, ap->size()));
+                    cast_var_args<Args...>::scope(args...).addFinalAction([ap, result]() mutable {
+                        std::memcpy(ap->pointer(), result->data(), sizeof(T) * qMin<size_t,size_t>(N, ap->size()));
+                        delete ap;
+                        delete result;
+                    });
+                    return;
+                }
+            }
+        }
+        if(QtJambiAPI::isValidArray(env, in, qtjambi_type<T>::id())) {
+            copyArray(jobjectArray(in), result, args...);
+        }
+    }
+    static void copyArray(jobject in, std::array<T,N>& result, typename arg_pointer<Args>::type... args){
+        auto env = cast_var_args<typename arg_pointer<Args>::type...>::env(args...);
+        if constexpr(std::is_arithmetic_v<T>
+                      || std::is_same_v<T,QChar>
+                      || std::is_same_v<T,QLatin1Char>
+                      || std::is_same_v<T,std::byte>){
+            typedef typename jni_type_decider<T>::JArrayType ArrayType;
+            if constexpr(!std::is_same_v<ArrayType,jobjectArray>){
+                typedef typename jni_type<ArrayType>::template NativeFactory<T,is_const>::Converter JArrayPointer;
+                if(JArrayPointer::isValidArray(env, in)){
+                    JArrayPointer ap(env, ArrayType(in));
+                    std::memcpy(result.data(), ap.pointer(), sizeof(T) * qMin<size_t,size_t>(N, ap.size()));
+                    return;
+                }
+            }
+        }
+        if(QtJambiAPI::isValidArray(env, in, qtjambi_type<T>::id())) {
+            copyArray(jobjectArray(in), result, args...);
+        }
+    }
+    static void copyArray(jobjectArray array, std::array<T,N>* result, typename arg_pointer<Args>::type... args){
+        Q_STATIC_ASSERT_X(cast_var_args<Args...>::hasScope, "Cannot cast array without scope.");
+        auto env = cast_var_args<typename arg_pointer<Args>::type...>::env(args...);
+        auto ap = new PersistentJObjectArrayPointer<T>(env, array,
+                                                       [args...](T& out,JNIEnv * env,jobject in){
+                                                           out = qtjambi_cast<T, jobject, Args...>::cast(in, arg_pointer<Args>::deref(args, env)...);
+                                                       }, [args...](JNIEnv * env,const T& in)->jobject{
+                                                           return qtjambi_cast<jobject, const T&, Args...>::cast(in, arg_pointer<Args>::deref(args, env)...);
+                                                       });
+        for(size_t l = qMin<size_t,size_t>(N, ap->size()), i = 0; i<l; i++){
+            (*result)[i] = (*ap)[jsize(i)];
+        }
+        cast_var_args<Args...>::scope(args...).addFinalAction([ap, result]() mutable {
+            for(size_t l = qMin<size_t,size_t>(N, ap->size()), i = 0; i<l; i++){
+                (*ap)[jsize(i)] = (*result)[i];
+            }
+            delete ap;
+            delete result;
+        });
+    }
+    static void copyArray(jobjectArray array, std::array<T,N>& result, typename arg_pointer<Args>::type... args){
+        auto env = cast_var_args<typename arg_pointer<Args>::type...>::env(args...);
+        JConstObjectArrayPointer<T> ap(env, array, [args...](T& out,JNIEnv * env,jobject in){
+            out = qtjambi_cast< T, jobject, Args...>::cast(in, arg_pointer<Args>::deref(args, env)...);
+        });
+        for(size_t l = qMin<size_t,size_t>(N, ap.length()), i = 0; i<l; i++){
+            result[i] = ap[jsize(i)];
+        }
     }
 };
 

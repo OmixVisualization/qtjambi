@@ -44,15 +44,13 @@ QTJAMBI_EXPORT jclass resolveClosestQtSuperclass(JNIEnv *env, jclass clazz, jobj
 
 namespace QtJambiPrivate{
 
-QTJAMBI_EXPORT void raiseJavaException(JNIEnv* env, jthrowable newInstance);
+Q_NORETURN QTJAMBI_EXPORT void raiseJavaException(JNIEnv* env, jthrowable newInstance);
 
 #ifdef QTJAMBI_STACKTRACE
-QTJAMBI_EXPORT void raiseJavaException(JNIEnv* env, jthrowable newInstance, const char *methodName, const char *fileName, int lineNumber);
+Q_NORETURN QTJAMBI_EXPORT void raiseJavaException(JNIEnv* env, jthrowable newInstance, const char *methodName, const char *fileName, int lineNumber);
 #endif
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 QTJAMBI_EXPORT jstring convertString(JNIEnv *env, QAnyStringView s);
-#endif
 
 }
 
@@ -70,54 +68,24 @@ QTJAMBI_EXPORT jstring convertString(JNIEnv *env, QAnyStringView s);
         return jthrowable(result);\
     }
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 #ifdef QTJAMBI_STACKTRACE
 #define QTJAMBI_REPOSITORY_DECLARE_THROW_NEW\
-    public: static inline void throwNew(JNIEnv* env, const char* message, const char *methodName, const char *fileName, int lineNumber){\
-        QtJambiPrivate::raiseJavaException(env, newInstanceWithMessage(env, message), methodName, fileName, lineNumber);\
-    }\
-    public: static inline void throwNew(JNIEnv* env, const ::QString& message, const char *methodName, const char *fileName, int lineNumber){\
-        QtJambiPrivate::raiseJavaException(env, newInstanceWithMessage(env, message), methodName, fileName, lineNumber);\
+    public: Q_NORETURN static inline void throwNew(JNIEnv* env, ::QAnyStringView message, const char *methodName, const char *fileName, int lineNumber){\
+        ::QtJambiPrivate::raiseJavaException(env, newInstanceWithMessage(env, message), methodName, fileName, lineNumber);\
     }
 #else
 #define QTJAMBI_REPOSITORY_DECLARE_THROW_NEW\
-    public: static inline void throwNew(JNIEnv* env, const char* message){\
-        QtJambiPrivate::raiseJavaException(env, newInstanceWithMessage(env, message));\
-    }\
-    public: static inline void throwNew(JNIEnv* env, const ::QString& message){\
-        QtJambiPrivate::raiseJavaException(env, newInstanceWithMessage(env, message));\
-    }
-#endif
-
-#define QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CONSTRUCTOR()\
-    QTJAMBI_REPOSITORY_DECLARE_THROWABLE_BASE\
-    public: static inline jthrowable newInstanceWithMessage(JNIEnv* env, const char* message){\
-        return newInstance(env, env->NewStringUTF(message));\
-    }\
-    public: static inline jthrowable newInstanceWithMessage(JNIEnv* env, const ::QString& message){\
-        return newInstance(env, env->NewString(reinterpret_cast<const jchar *>(message.utf16()), jsize(message.length())));\
-    }\
-    QTJAMBI_REPOSITORY_DECLARE_THROW_NEW
-#else
-#ifdef QTJAMBI_STACKTRACE
-#define QTJAMBI_REPOSITORY_DECLARE_THROW_NEW\
-    public: static inline void throwNew(JNIEnv* env, ::QAnyStringView message, const char *methodName, const char *fileName, int lineNumber){\
-        QtJambiPrivate::raiseJavaException(env, newInstanceWithMessage(env, message), methodName, fileName, lineNumber);\
-    }
-#else
-#define QTJAMBI_REPOSITORY_DECLARE_THROW_NEW\
-    public: static inline void throwNew(JNIEnv* env, ::QAnyStringView message){\
-        QtJambiPrivate::raiseJavaException(env, newInstanceWithMessage(env, message));\
+    public: Q_NORETURN static inline void throwNew(JNIEnv* env, ::QAnyStringView message){\
+        ::QtJambiPrivate::raiseJavaException(env, newInstanceWithMessage(env, message));\
     }
 #endif
 
 #define QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CONSTRUCTOR()\
     QTJAMBI_REPOSITORY_DECLARE_THROWABLE_BASE\
     public: static inline jthrowable newInstanceWithMessage(JNIEnv* env, ::QAnyStringView message){\
-        return newInstance(env, QtJambiPrivate::convertString(env, message));\
+        return newInstance(env, ::QtJambiPrivate::convertString(env, message));\
     }\
     QTJAMBI_REPOSITORY_DECLARE_THROW_NEW
-#endif
 
 QT_WARNING_DISABLE_CLANG("-Wdollar-in-identifier-extension")
 
@@ -502,6 +470,15 @@ namespace QtCore{
 
     QTJAMBI_REPOSITORY_DECLARE_EMPTY_CLASS(QObject)
 
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QFutureWatcher,
+                                     QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(future)
+                                     QTJAMBI_REPOSITORY_DECLARE_LONG_FIELD(futureSetter)
+                                     QTJAMBI_REPOSITORY_DECLARE_LONG_FIELD(futureResult)
+                                     QTJAMBI_REPOSITORY_DECLARE_LONG_FIELD(futureGetter)
+                                     QTJAMBI_REPOSITORY_DECLARE_LONG_FIELD(futureInterfaceGetter)
+                                     )
+
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QThread,
         QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(javaThread))
 
@@ -719,15 +696,6 @@ namespace QtCore{
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QAssociativeConstIterator,
                   QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
     )
-
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(QLinkedList,
-                  QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
-    )
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(QVector,
-                  QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
-    )
-#endif
 
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QStringList,
                   QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()

@@ -38,8 +38,7 @@
             <available file="${generator.outputdir}/java/${qtjambi-module-name}" type="dir"/>
             <then>
                 <path id="sourcedirs">
-                    <pathelement location="${java.srcdir}/plugins/${module-name}/main"/>
-                    <pathelement location="${java.srcdir}/plugins/${module-name}/Qt${qtjambi.soname.version.major}"/>
+                    <pathelement location="${java.srcdir}/plugins/${module-name}"/>
                 </path>
                 <ant antfile="${basedir}/../plugins.xml" inheritrefs="true" target="build-plugin">
                     <property name="module" value="${module-name}"/>

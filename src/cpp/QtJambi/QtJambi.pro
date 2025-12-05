@@ -124,7 +124,6 @@ HEADERS += \
     objectdata.h \
     paint.h \
     qmlapi.h \
-    qtjambi_cast_array.h \
     qtjambi_cast_impl.h \
     qtjambi_cast_impl_arithmetic.h \
     qtjambi_cast_impl_array.h \
@@ -164,15 +163,10 @@ HEADERS += \
 
 lessThan(QT_MAJOR_VERSION, 6):{
 SOURCES += \
-    containeraccess_linkedlist.cpp \
     containeraccess_map.cpp \
-    containeraccess_multimap.cpp \
-    containeraccess_vector.cpp \
-    variant.cpp
+    containeraccess_multimap.cpp
 
-HEADERS += \
-    containeraccess_linkedlist.h \
-    containeraccess_vector.h
+HEADERS +=
 }else{
 #win32-arm64-msvc* | win32-msvc*: {
 SOURCES += \
@@ -201,11 +195,6 @@ greaterThan(QT_MAJOR_VERSION, 5):{
 }
 QMAKE_RESOURCE_FLAGS += -no-compress
 
-!ios:{
-    PRECOMPILED_HEADER = qtjambi_pch.h
-    CONFIG += precompile_header
-}
-
 win32-arm64-msvc* | win32-msvc*: {
     QMAKE_CXXFLAGS += /bigobj
 }
@@ -215,6 +204,13 @@ win32-g++* {
     CONFIG(debug, debug|release) {
         QMAKE_CXXFLAGS += -O3
     }
+}
+
+!ios:{
+    PRECOMPILED_HEADER = pch_p.h
+    CONFIG += precompile_header
+}else{
+    HEADERS += pch_p.h
 }
 
 android:LIBS += -landroid

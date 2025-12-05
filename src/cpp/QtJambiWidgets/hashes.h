@@ -35,11 +35,11 @@
 #include <QtJambiGui/hashes.h>
 #include <QtWidgets/QtWidgets>
 
-inline hash_type qHash(const QScrollerProperties & value, hash_type seed = 0)
+inline size_t qHash(const QScrollerProperties & value, size_t seed = 0)
 {
     class ScrollerProperties : public QScrollerProperties{
     public:
-        inline hash_type hashCode(hash_type seed) const{
+        inline size_t hashCode(size_t seed) const{
             return qHash(qintptr(d.get()), seed);
         }
     };
@@ -47,7 +47,7 @@ inline hash_type qHash(const QScrollerProperties & value, hash_type seed = 0)
     return reinterpret_cast<const ScrollerProperties&>(value).hashCode(seed);
 }
 
-inline hash_type qHash(const QTableWidgetSelectionRange& value, hash_type seed = 0)
+inline size_t qHash(const QTableWidgetSelectionRange& value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;

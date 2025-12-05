@@ -51,9 +51,6 @@ namespace ContainerAccessAPI{
 ACCESS_EXPORT AbstractContainerAccess* createContainerAccess(JNIEnv* env, SequentialContainerType containerType,
                                                const QMetaType& metaType,
                                                size_t align, size_t size,
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                               bool isStaticType,
-#endif
                                                bool isPointer,
                                                const QtJambiUtils::QHashFunction& hashFunction,
                                                const QtJambiUtils::InternalToExternalConverter& memberConverter,
@@ -81,7 +78,7 @@ ACCESS_EXPORT AbstractContainerAccess* createContainerAccess(SequentialContainer
 ACCESS_EXPORT AbstractContainerAccess* createContainerAccess(AssociativeContainerType mapType,
                                                const QMetaType& memberMetaType1,
                                                const QMetaType& memberMetaType2);
-ACCESS_EXPORT hash_type pointerHashFunction(const void* ptr, hash_type seed);
+ACCESS_EXPORT size_t pointerHashFunction(const void* ptr, size_t seed);
 }//namespace ContainerAccessAPI
 
 class AbstractNestedSequentialAccess{
@@ -125,21 +122,6 @@ template<>
 struct SequentialContainerAnalyzer<QList>{
     static constexpr SequentialContainerType type = SequentialContainerType::QList;
 };
-
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-#ifdef QVECTOR_H
-template<>
-struct SequentialContainerAnalyzer<QVector>{
-    static constexpr SequentialContainerType type = SequentialContainerType::QVector;
-};
-#endif
-#ifdef QLINKEDLIST_H
-template<>
-struct SequentialContainerAnalyzer<QLinkedList>{
-    static constexpr SequentialContainerType type = SequentialContainerType::QLinkedList;
-};
-#endif
-#endif
 
 template<>
 struct SequentialContainerAnalyzer<QStack>{
@@ -185,15 +167,10 @@ struct AssociativeContainerAnalyzer<QPair>{
     static constexpr AssociativeContainerType type = AssociativeContainerType::QPair;
 };
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-ACCESS_EXPORT bool pointerLessFunction(const void* ptr1, const void* ptr2);
-ACCESS_EXPORT bool pointerEqualFunction(const void* ptr1, const void* ptr2);
-#endif
-
 ACCESS_EXPORT QDebug containerElementDebugStream(QDebug debug, uint i, const void* ptr);
 ACCESS_EXPORT QDataStream & containerElementDataStreamIn(QDataStream & stream, uint i, void* ptr);
 ACCESS_EXPORT QDataStream & containerElementDataStreamOut(QDataStream & stream, uint i, const void* ptr);
-ACCESS_EXPORT hash_type containerElementHash(uint i, const void* ptr, hash_type seed);
+ACCESS_EXPORT size_t containerElementHash(uint i, const void* ptr, size_t seed);
 ACCESS_EXPORT bool containerElementEqual(uint i, const void* ptr, const void* ptr2);
 ACCESS_EXPORT bool containerElementLess(uint i, const void* ptr, const void* ptr2);
 ACCESS_EXPORT void constructContainerElement(uint i, void* ptr, const void* copy = nullptr);
@@ -206,24 +183,12 @@ class MetaTypeInfo{
 public:
     MetaTypeInfo(const QMetaType& metaType,
                  const QtJambiUtils::QHashFunction& hashFunction
-            ) : m_metaType(
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                              metaType.id()
-#else
-                              metaType
-#endif
-                    ),
+            ) : m_metaType(metaType),
                 m_hashFunction(hashFunction)
     {}
 
     MetaTypeInfo(const MetaTypeInfo<index,isPointer>& other)
-        : m_metaType(
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                    other.m_metaType.id()
-#else
-                    other.m_metaType
-#endif
-              ),
+        : m_metaType(other.m_metaType),
           m_hashFunction(other.m_hashFunction)
     {}
 
@@ -245,20 +210,8 @@ class MetaTypeInfo<index,true>{
 public:
     MetaTypeInfo(const QMetaType& metaType,
                  const QtJambiUtils::QHashFunction&
-            ) : m_metaType(
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                        metaType.id()
-#else
-                        metaType
-#endif
-                    ){}
-    MetaTypeInfo(const MetaTypeInfo<index,true>& other) : m_metaType(
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                                                              other.m_metaType.id()
-#else
-                                                              other.m_metaType
-#endif
-                                                              ){}
+            ) : m_metaType(metaType){}
+    MetaTypeInfo(const MetaTypeInfo<index,true>& other) : m_metaType(other.m_metaType){}
 
     const QMetaType& metaType() const {
         return m_metaType;
@@ -275,11 +228,7 @@ protected:
     ~AbstractMetaTypeInfoLocker();
 private:
     int m_index;
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    int m_metaType = 0;
-#else
     QMetaType m_metaType;
-#endif
     QtJambiUtils::QHashFunction m_hashFunction;
 };
 
@@ -319,7 +268,7 @@ struct ContainerElement{
         return ContainerAccessAPI::containerElementDataStreamIn(s, i, &value);
     }
 
-    friend hash_type qHash(const ContainerElement& value, hash_type seed = 0){
+    friend size_t qHash(const ContainerElement& value, size_t seed = 0){
         return ContainerAccessAPI::containerElementHash(i, &value, seed);
     }
 };
@@ -358,7 +307,7 @@ struct ContainerElement<size, i, isStatic, 0, false>{
         return ContainerAccessAPI::containerElementDataStreamIn(s, i, &value);
     }
 
-    friend hash_type qHash(const ContainerElement& value, hash_type seed = 0){
+    friend size_t qHash(const ContainerElement& value, size_t seed = 0){
         return ContainerAccessAPI::containerElementHash(i, &value, seed);
     }
 private:
@@ -399,7 +348,7 @@ struct ContainerElement<1, i, isStatic, 0, false>{
         return ContainerAccessAPI::containerElementDataStreamIn(s, i, &value);
     }
 
-    friend hash_type qHash(const ContainerElement& value, hash_type seed = 0){
+    friend size_t qHash(const ContainerElement& value, size_t seed = 0){
         return ContainerAccessAPI::containerElementHash(i, &value, seed);
     }
 private:
@@ -440,7 +389,7 @@ struct Q_DECL_ALIGN(align) ContainerElement<size, i, isStatic, align, true>{
         return ContainerAccessAPI::containerElementDataStreamIn(s, i, &value);
     }
 
-    friend hash_type qHash(const ContainerElement& value, hash_type seed = 0){
+    friend size_t qHash(const ContainerElement& value, size_t seed = 0){
         return ContainerAccessAPI::containerElementHash(i, &value, seed);
     }
 private:
@@ -481,19 +430,17 @@ struct Q_DECL_ALIGN(align) ContainerElement<1, i, isStatic, align, true>{
         return ContainerAccessAPI::containerElementDataStreamIn(s, i, &value);
     }
 
-    friend hash_type qHash(const ContainerElement& value, hash_type seed = 0){
+    friend size_t qHash(const ContainerElement& value, size_t seed = 0){
         return ContainerAccessAPI::containerElementHash(i, &value, seed);
     }
 private:
     quint8 data;
 };
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 template<size_t size, uint i, bool isStatic, size_t align, bool useAlignment>
-hash_type qHash(const ContainerElement<size, i, isStatic, align, useAlignment>& value, hash_type seed = 0){
+size_t qHash(const ContainerElement<size, i, isStatic, align, useAlignment>& value, size_t seed = 0){
     return containerElementHash(i, &value, seed);
 }
-#endif
 
 template<typename T, bool canLess = QtJambiPrivate::supports_less_than<T>::value>
 struct TryLess{
@@ -872,50 +819,12 @@ struct AssociativeContainerAccessFactoryHelper<Container, align1, size1, align2,
 
 }//namespace ContainerAccessAPI
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-template<size_t size, uint i, size_t align, bool useAlignment>
-class QTypeInfo<ContainerAccessAPI::ContainerElement<size, i, false, align, useAlignment>>
-{
-public:
-    enum {
-        isSpecialized = false,
-        isPointer = false,
-        isIntegral = false,
-        isComplex = true,
-        isStatic = false,
-        isRelocatable = qIsRelocatable<ContainerAccessAPI::ContainerElement<size,i,true, align, useAlignment>>(),
-        isLarge = (size>sizeof(void*)),
-        isDummy = false,
-        sizeOf = size
-    };
-};
-
-template<size_t size, uint i, size_t align, bool useAlignment>
-class QTypeInfo<ContainerAccessAPI::ContainerElement<size, i, true, align, useAlignment>>
-{
-public:
-    enum {
-        isSpecialized = false,
-        isPointer = false,
-        isIntegral = false,
-        isComplex = true,
-        isStatic = true,
-        isRelocatable = qIsRelocatable<ContainerAccessAPI::ContainerElement<size,i,true, align, useAlignment>>(),
-        isLarge = (size>sizeof(void*)),
-        isDummy = false,
-        sizeOf = size
-    };
-};
-#endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 template<size_t sz, uint i, bool isStatic, size_t algn, bool useAlignment>
 struct std::hash<ContainerAccessAPI::ContainerElement<sz, i, isStatic, algn, useAlignment>>{
-    hash_type operator()(const ContainerAccessAPI::ContainerElement<sz, i, isStatic, algn, useAlignment>& element) const noexcept {
+    size_t operator()(const ContainerAccessAPI::ContainerElement<sz, i, isStatic, algn, useAlignment>& element) const noexcept {
         return ::qHash(element);
     }
 };
-#endif
 
 #endif //defined(QTJAMBI_GENERIC_ACCESS)
 

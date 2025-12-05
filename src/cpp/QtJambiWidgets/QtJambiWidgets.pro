@@ -39,9 +39,10 @@ HEADERS += \
     utils_p.h
 
 !ios:{
-    PRECOMPILED_HEADER = \
-    pch_p.h
+    PRECOMPILED_HEADER = pch_p.h
     CONFIG += precompile_header
+}else{
+    HEADERS += pch_p.h
 }
 
 QT = core core-private gui widgets widgets-private

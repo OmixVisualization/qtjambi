@@ -31,12 +31,8 @@
 
 #include <QtCore/qcompilerdetection.h>
 QT_WARNING_DISABLE_DEPRECATED
+#include "pch_p.h"
 #include <QtCore/QtGlobal>
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-#include <QtCore/QLinkedList>
-#include <QtCore/QVector>
-#include <QtCore/QCryptographicHash>
-#endif
 #include <QtCore/private/qfactoryloader_p.h>
 
 #include "containeraccess_p.h"
@@ -48,25 +44,12 @@ QT_WARNING_DISABLE_DEPRECATED
 #include "containeraccess_multimap.h"
 #include "containeraccess_multihash.h"
 #include "containeraccess_set.h"
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-#include "containeraccess_linkedlist.h"
-#include "containeraccess_vector.h"
-#endif
 #endif //defined(QTJAMBI_GENERIC_ACCESS)
-#include "qtjambiapi.h"
-#include "java_p.h"
-#include "containerapi.h"
-#include "qtjambi_cast.h"
-#include "jobjectwrapper.h"
-#include "typemanager_p.h"
-#include "registryutil_p.h"
-#include "qtjambilink_p.h"
 
 Q_GLOBAL_STATIC(QReadWriteLock, gContainerAccessLock)
 QReadWriteLock* containerAccessLock(){
     return gContainerAccessLock();
 }
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 typedef SecureContainer<QMap<int, QtMetaContainerPrivate::QMetaAssociationInterface>, gContainerAccessLock> MetaAssociationHash;
 Q_GLOBAL_STATIC(MetaAssociationHash, gMetaAssociationHash)
 typedef SecureContainer<QMap<int, QtMetaContainerPrivate::QMetaSequenceInterface>, gContainerAccessLock> MetaSequenceHash;
@@ -79,37 +62,26 @@ QMap<int, QtMetaContainerPrivate::QMetaAssociationInterface>& metaAssociationHas
 QMap<int, QtMetaContainerPrivate::QMetaSequenceInterface>& metaSequenceHash(){
     return *gMetaSequenceHash();
 }
-#endif
 
 #if defined(QTJAMBI_GENERIC_ACCESS)
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, gContainerAccessLoader, ("io.qt.qtjambi.ContainerAccess", QLatin1String("/containeraccess"), Qt::CaseInsensitive))
-typedef SecureContainer<QMap<hash_type, ContainerAccessAPI::SequentialContainerAccessFactory>, gContainerAccessLock> SequentialContainerAccessFactoryHash;
-typedef SecureContainer<QMap<hash_type, ContainerAccessAPI::AssociativeContainerAccessFactory>, gContainerAccessLock> AssociativeContainerAccessFactoryHash;
+typedef SecureContainer<QMap<size_t, ContainerAccessAPI::SequentialContainerAccessFactory>, gContainerAccessLock> SequentialContainerAccessFactoryHash;
+typedef SecureContainer<QMap<size_t, ContainerAccessAPI::AssociativeContainerAccessFactory>, gContainerAccessLock> AssociativeContainerAccessFactoryHash;
 Q_GLOBAL_STATIC(SequentialContainerAccessFactoryHash, gSequentialContainerAccessFactoryHash)
 Q_GLOBAL_STATIC(AssociativeContainerAccessFactoryHash, gAssociativeContainerAccessFactoryHash)
 
-inline hash_type qHash(SequentialContainerType containerType, size_t align, size_t size
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                       , bool isStatic
-#endif
+inline size_t qHash(SequentialContainerType containerType, size_t align, size_t size
 ) {
     if(size==0)
         align=0;
     switch(containerType){
     case SequentialContainerType::QStack:
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-        containerType = SequentialContainerType::QVector;
-        break;
-#endif
     case SequentialContainerType::QQueue:
         containerType = SequentialContainerType::QList;
         break;
     default: break;
     }
 
-#if QT_VERSION > QT_VERSION_CHECK(6,0,0)
-    return qHashMulti(0, int(containerType), align, size);
-#else
     QCryptographicHash hashGenerator(
 #ifndef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
                             QCryptographicHash::Md5
@@ -120,36 +92,22 @@ inline hash_type qHash(SequentialContainerType containerType, size_t align, size
     hashGenerator.addData(reinterpret_cast<char*>(&containerType), sizeof(containerType));
     hashGenerator.addData(reinterpret_cast<char*>(&align), sizeof(align));
     hashGenerator.addData(reinterpret_cast<char*>(&size), sizeof(size));
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    switch(containerType){
-    case SequentialContainerType::QList:
-        if(size <= sizeof(void*)){
-            hashGenerator.addData(reinterpret_cast<char*>(&isStatic), sizeof(isStatic));
-        }
-        break;
-    default: break;
-    }
-#endif
     QByteArray result = hashGenerator.result();
-    hash_type h;
-    if(size_t(result.size())==sizeof(hash_type)){
-        h = *reinterpret_cast<hash_type*>(result.data());
+    size_t h;
+    if(size_t(result.size())==sizeof(size_t)){
+        h = *reinterpret_cast<size_t*>(result.data());
     }else{
         h = qHash(result);
     }
     return h;
-#endif
 }
 
-inline hash_type qHash(AssociativeContainerType containerType, size_t align1, size_t size1, size_t align2, size_t size2)
+inline size_t qHash(AssociativeContainerType containerType, size_t align1, size_t size1, size_t align2, size_t size2)
 {
     if(size1==0)
         align1=0;
     if(size2==0)
         align2=0;
-#if QT_VERSION > QT_VERSION_CHECK(6,0,0)
-    return qHashMulti(0, int(containerType), align1, size1, align2, size2);
-#else
     QCryptographicHash hashGenerator(
 #ifndef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
                             QCryptographicHash::Md5
@@ -163,49 +121,33 @@ inline hash_type qHash(AssociativeContainerType containerType, size_t align1, si
     hashGenerator.addData(reinterpret_cast<char*>(&align2), sizeof(align2));
     hashGenerator.addData(reinterpret_cast<char*>(&size2), sizeof(size2));
     QByteArray result = hashGenerator.result();
-    hash_type h;
-    if(size_t(result.size())==sizeof(hash_type)){
-        h = *reinterpret_cast<hash_type*>(result.data());
+    size_t h;
+    if(size_t(result.size())==sizeof(size_t)){
+        h = *reinterpret_cast<size_t*>(result.data());
     }else{
         h = qHash(result);
     }
     return h;
-#endif
 }
 
 ContainerAccessAPI::SequentialContainerAccessFactory findContainerAccessFactory(JNIEnv* env, SequentialContainerType containerType, size_t align, size_t size,
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                  bool isStatic,
-#endif
-                                                                  JavaException& occurredException){
+                                                                                JavaException& occurredException){
     if(size!=0 && align==0){
         align = qMin<size_t>(size, alignof(std::max_align_t));
     }
-    hash_type id = qHash(containerType, align, size
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                , isStatic
-#endif
-                        );
+    size_t id = qHash(containerType, align, size);
     QWriteLocker lock(gContainerAccessLock());
     ContainerAccessAPI::SequentialContainerAccessFactory result = gSequentialContainerAccessFactoryHash->value(id, nullptr);
     if(!result && size==0){
         size = sizeof(void*);
         align = alignof(void*);
-        result = gSequentialContainerAccessFactoryHash->value(id = qHash(containerType, align, size
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                    ,isStatic
-#endif
-                                                    ), nullptr);
+        result = gSequentialContainerAccessFactoryHash->value(id = qHash(containerType, align, size), nullptr);
     }
     if(!result){
         QString containerName;
         switch(containerType){
         case SequentialContainerType::QSet: containerName = "QSet"; break;
         case SequentialContainerType::QStack:
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-        case SequentialContainerType::QVector: containerName = "QVector"; break;
-        case SequentialContainerType::QLinkedList: containerName = "QLinkedList"; break;
-#endif
         case SequentialContainerType::QQueue:
         case SequentialContainerType::QList: containerName = "QList"; break;
         }
@@ -235,7 +177,7 @@ ContainerAccessAPI::AssociativeContainerAccessFactory findContainerAccessFactory
     if(size2!=0 && align2==0){
         align2 = qMin<size_t>(size2, alignof(std::max_align_t));
     }
-    hash_type id = qHash(containerType, align1, size1, align2, size2);
+    size_t id = qHash(containerType, align1, size1, align2, size2);
     QWriteLocker lock(gContainerAccessLock());
     ContainerAccessAPI::AssociativeContainerAccessFactory result = gAssociativeContainerAccessFactoryHash->value(id, nullptr);
     if(!result && size1==0)
@@ -278,17 +220,9 @@ ContainerAccessAPI::AssociativeContainerAccessFactory findContainerAccessFactory
     return result;
 }
 
-void ContainerAccessAPI::registerAccessFactory(SequentialContainerType containerType, size_t align, size_t size, bool
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                     isStatic
-#endif
-                                                     , SequentialContainerAccessFactory factory){
+void ContainerAccessAPI::registerAccessFactory(SequentialContainerType containerType, size_t align, size_t size, bool, SequentialContainerAccessFactory factory){
     QWriteLocker lock(gContainerAccessLock());
-    gSequentialContainerAccessFactoryHash->insert(qHash(containerType, align, size
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                              , isStatic
-#endif
-                                    ), factory);
+    gSequentialContainerAccessFactoryHash->insert(qHash(containerType, align, size), factory);
 }
 
 void ContainerAccessAPI::registerAccessFactory(AssociativeContainerType containerType, size_t align1, size_t size1, size_t align2, size_t size2, AssociativeContainerAccessFactory factory){
@@ -325,25 +259,9 @@ AbstractContainerAccess::DataType dataType(const QMetaType& metaType, const QSha
         if(metaType.flags().testFlag(QMetaType::IsPointer))
             return AbstractContainerAccess::Pointer;
         return AbstractContainerAccess::Value;
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    }else if(metaType.metaObject() && metaType.metaObject()->inherits(&QObject::staticMetaObject)){
-#else
     }else if(metaType.flags().testFlag(QMetaType::PointerToQObject)){
-#endif
         return AbstractContainerAccess::PointerToQObject;
     }else{
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-        if(const std::type_info* typeId = getTypeByMetaType(metaType)){
-            if(registeredFunctionalResolver(*typeId)){
-                return AbstractContainerAccess::FunctionPointer;
-            }
-        }
-        QByteArray typeName(metaType.name());
-        if(typeName.contains("(*)")){
-            return AbstractContainerAccess::FunctionPointer;
-        }else if(typeName.endsWith("*")){
-            return AbstractContainerAccess::Pointer;
-#else
         if(metaType.flags().testFlag(QMetaType::IsPointer)){
             if(const std::type_info* typeId = getTypeByMetaType(metaType)){
                 if(registeredFunctionalResolver(*typeId)){
@@ -353,7 +271,6 @@ AbstractContainerAccess::DataType dataType(const QMetaType& metaType, const QSha
                 return AbstractContainerAccess::FunctionPointer;
             }
             return AbstractContainerAccess::Pointer;
-#endif
         }else{
             return AbstractContainerAccess::Value;
         }
@@ -417,11 +334,7 @@ public:
     OwnerFunctional& operator=(OwnerFunctional& other) noexcept;
     OwnerFunctional& operator=(OwnerFunctional&& other) noexcept;
 
-    template<typename Functor
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-             , typename = std::enable_if_t<std::is_invocable_r_v<const QObject*, Functor, const void *>>
-#endif
-             >
+    template<typename Functor, typename = std::enable_if_t<std::is_invocable_r_v<const QObject*, Functor, const void *>>>
     OwnerFunctional(Functor&& functor) noexcept
         : OwnerFunctional(Data<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type>::from(std::forward<Functor>(functor))){}
 
@@ -477,18 +390,6 @@ template<>
 struct ContainerAccessWrapper<AbstractListAccess>{
     typedef WrapperListAccess type;
 };
-
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-template<>
-struct ContainerAccessWrapper<AbstractLinkedListAccess>{
-    typedef WrapperLinkedListAccess type;
-};
-
-template<>
-struct ContainerAccessWrapper<AbstractVectorAccess>{
-    typedef WrapperVectorAccess type;
-};
-#endif
 
 template<>
 struct ContainerAccessWrapper<AbstractSetAccess>{
@@ -600,7 +501,6 @@ void* WrapperListAccess::constructContainer(JNIEnv * env, void* container, const
     return m_containerAccess->constructContainer(env, container, copyOf);
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 void* WrapperListAccess::constructContainer(void* container, void* moved) {
     return m_containerAccess->constructContainer(container, moved);
 }
@@ -608,7 +508,6 @@ void* WrapperListAccess::constructContainer(void* container, void* moved) {
 void* WrapperListAccess::constructContainer(JNIEnv * env, void* container, const ContainerAndAccessInfo& move) {
     return m_containerAccess->constructContainer(env, container, move);
 }
-#endif
 
 bool WrapperListAccess::destructContainer(void* container) {
     return m_containerAccess->destructContainer(container);
@@ -762,7 +661,6 @@ void WrapperListAccess::clear(JNIEnv * env, const ContainerInfo& container) {
     m_containerAccess->clear(env, container);
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 jint WrapperListAccess::capacity(JNIEnv * env, const void* container) {
     return m_containerAccess->capacity(env, container);
 }
@@ -782,413 +680,6 @@ void WrapperListAccess::resize(void* container, qsizetype newSize) {
 void WrapperListAccess::squeeze(JNIEnv * env, const ContainerInfo& container) {
     return m_containerAccess->squeeze(env, container);
 }
-#endif
-
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-WrapperVectorAccess::WrapperVectorAccess(AbstractVectorAccess* containerAccess)
-    : AbstractVectorAccess(), m_containerAccess(containerAccess) {}
-
-WrapperVectorAccess::~WrapperVectorAccess() {
-    m_containerAccess->dispose();
-    m_containerAccess = nullptr;
-}
-
-AbstractVectorAccess* WrapperVectorAccess::clone() {
-    return m_containerAccess->clone();
-}
-
-const QObject* WrapperVectorAccess::getOwner(const void* container){
-    return m_containerAccess->getOwner(container);
-}
-
-bool WrapperVectorAccess::hasOwnerFunction(){
-    return m_containerAccess->hasOwnerFunction();
-}
-
-AbstractVectorAccess* WrapperVectorAccess::wrappedAccess(){
-    return m_containerAccess;
-}
-
-bool WrapperVectorAccess::isDetached(const void* container) {
-    return m_containerAccess->isDetached(container);
-}
-
-void WrapperVectorAccess::detach(const ContainerInfo& container) {
-    return m_containerAccess->detach(container);
-}
-
-bool WrapperVectorAccess::isSharedWith(const void* container, const void* container2) {
-    return m_containerAccess->isSharedWith(container, container2);
-}
-
-std::unique_ptr<AbstractVectorAccess::ElementIterator> WrapperVectorAccess::elementIterator(const void* container) {
-    return m_containerAccess->elementIterator(container);
-}
-
-std::unique_ptr<AbstractVectorAccess::ElementIterator> WrapperVectorAccess::elementIterator(void* container) {
-    return m_containerAccess->elementIterator(container);
-}
-
-void WrapperVectorAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2) {
-    m_containerAccess->swap(env, container, container2);
-}
-
-void WrapperVectorAccess::dispose()  { delete this; }
-
-void WrapperVectorAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2) {
-    m_containerAccess->assign(env, container, container2);
-}
-
-size_t WrapperVectorAccess::sizeOf() {
-    return m_containerAccess->sizeOf();
-}
-
-void* WrapperVectorAccess::constructContainer(void* container) {
-    return m_containerAccess->constructContainer(container);
-}
-
-void* WrapperVectorAccess::constructContainer(void* container, const void* copyOf) {
-    return m_containerAccess->constructContainer(container, copyOf);
-}
-
-void* WrapperVectorAccess::constructContainer(JNIEnv * env, void* container, const ConstContainerAndAccessInfo& copyOf) {
-    return m_containerAccess->constructContainer(env, container, copyOf);
-}
-
-bool WrapperVectorAccess::destructContainer(void* container) {
-    return m_containerAccess->destructContainer(container);
-}
-
-int WrapperVectorAccess::registerContainer(const QByteArray& containerTypeName) {
-    return m_containerAccess->registerContainer(containerTypeName);
-}
-
-const QMetaType& WrapperVectorAccess::elementMetaType() {
-    return m_containerAccess->elementMetaType();
-}
-
-AbstractContainerAccess* WrapperVectorAccess::elementNestedContainerAccess() {
-    return m_containerAccess->elementNestedContainerAccess();
-}
-
-bool WrapperVectorAccess::hasNestedContainerAccess() {
-    return m_containerAccess->hasNestedContainerAccess();
-}
-
-bool WrapperVectorAccess::hasNestedPointers() {
-    return m_containerAccess->hasNestedPointers();
-}
-
-AbstractContainerAccess::DataType WrapperVectorAccess::elementType() {
-    return m_containerAccess->elementType();
-}
-
-void WrapperVectorAccess::appendVector(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& containerInfo) {
-    m_containerAccess->appendVector(env, container, containerInfo);
-}
-
-jobject WrapperVectorAccess::at(JNIEnv * env, const void* container, jint index) {
-    return m_containerAccess->at(env, container, index);
-}
-
-jobject WrapperVectorAccess::value(JNIEnv * env, const void* container, jint index) {
-    return m_containerAccess->value(env, container, index);
-}
-
-jobject WrapperVectorAccess::value(JNIEnv * env, const void* container, jint index, jobject defaultValue) {
-    return m_containerAccess->value(env, container, index, defaultValue);
-}
-
-void WrapperVectorAccess::swapItemsAt(JNIEnv * env, const ContainerInfo& container, jint index1, jint index2) {
-    m_containerAccess->swapItemsAt(env, container, index1, index2);
-}
-
-jboolean WrapperVectorAccess::startsWith(JNIEnv * env, const void* container, jobject value) {
-    return m_containerAccess->startsWith(env, container, value);
-}
-
-jint WrapperVectorAccess::size(JNIEnv * env, const void* container) {
-    return m_containerAccess->size(env, container);
-}
-
-void WrapperVectorAccess::reserve(JNIEnv * env, const ContainerInfo& container, jint size) {
-    return m_containerAccess->reserve(env, container, size);
-}
-
-void WrapperVectorAccess::replace(JNIEnv * env, const ContainerInfo& container, jint index, jobject value) {
-    m_containerAccess->replace(env, container, index, value);
-}
-
-jint WrapperVectorAccess::removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) {
-    return m_containerAccess->removeAll(env, container, value);
-}
-
-jboolean WrapperVectorAccess::equal(JNIEnv * env, const void* container, jobject other) {
-    return m_containerAccess->equal(env, container, other);
-}
-
-void WrapperVectorAccess::move(JNIEnv * env, const ContainerInfo& container, jint index1, jint index2) {
-    m_containerAccess->move(env, container, index1, index2);
-}
-
-ContainerAndAccessInfo WrapperVectorAccess::mid(JNIEnv * env, const ConstContainerAndAccessInfo& container, jint index1, jint index2) {
-    return m_containerAccess->mid(env, container, index1, index2);
-}
-
-jint WrapperVectorAccess::lastIndexOf(JNIEnv * env, const void* container, jobject value, jint index) {
-    return m_containerAccess->lastIndexOf(env, container, value, index);
-}
-
-jint WrapperVectorAccess::indexOf(JNIEnv * env, const void* container, jobject value, jint index) {
-    return m_containerAccess->indexOf(env, container, value, index);
-}
-
-jboolean WrapperVectorAccess::endsWith(JNIEnv * env, const void* container, jobject value) {
-    return m_containerAccess->endsWith(env, container, value);
-}
-
-jobject WrapperVectorAccess::begin(JNIEnv * env, const ExtendedContainerInfo& container) {
-    return m_containerAccess->begin(env, container);
-}
-
-jobject WrapperVectorAccess::constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) {
-    return m_containerAccess->constBegin(env, container);
-}
-
-jobject WrapperVectorAccess::end(JNIEnv * env, const ExtendedContainerInfo& container) {
-    return m_containerAccess->end(env, container);
-}
-
-jobject WrapperVectorAccess::constEnd(JNIEnv * env, const ConstExtendedContainerInfo& container) {
-    return m_containerAccess->constEnd(env, container);
-}
-
-jint WrapperVectorAccess::count(JNIEnv * env, const void* container, jobject value) {
-    return m_containerAccess->count(env, container, value);
-}
-
-jboolean WrapperVectorAccess::contains(JNIEnv * env, const void* container, jobject value) {
-    return m_containerAccess->contains(env, container, value);
-}
-
-void WrapperVectorAccess::clear(JNIEnv * env, const ContainerInfo& container) {
-    m_containerAccess->clear(env, container);
-}
-
-jint WrapperVectorAccess::capacity(JNIEnv * env, const void* container) {
-    return m_containerAccess->capacity(env, container);
-}
-
-void WrapperVectorAccess::fill(JNIEnv * env, const ContainerInfo& container, jobject value, jint size) {
-    m_containerAccess->fill(env, container, value, size);
-}
-
-void WrapperVectorAccess::remove(JNIEnv * env, const ContainerInfo& container, jint index, jint n) {
-    m_containerAccess->remove(env, container, index, n);
-}
-
-void WrapperVectorAccess::insert(JNIEnv * env, const ContainerInfo& container, jint index, jint n, jobject value) {
-    m_containerAccess->insert(env, container, index, n, value);
-}
-
-void WrapperVectorAccess::resize(JNIEnv * env, const ContainerInfo& container, jint newSize) {
-    return m_containerAccess->resize(env, container, newSize);
-}
-
-void WrapperVectorAccess::squeeze(JNIEnv * env, const ContainerInfo& container) {
-    return m_containerAccess->squeeze(env, container);
-}
-
-void WrapperVectorAccess::assign(void* container, const void* other) {
-    m_containerAccess->assign(container, other);
-}
-
-WrapperLinkedListAccess::WrapperLinkedListAccess(AbstractLinkedListAccess* containerAccess)
-    : AbstractLinkedListAccess(), m_containerAccess(containerAccess) {}
-
-WrapperLinkedListAccess::~WrapperLinkedListAccess() {
-    m_containerAccess->dispose();
-    m_containerAccess = nullptr;
-}
-
-AbstractLinkedListAccess* WrapperLinkedListAccess::clone() {
-    return m_containerAccess->clone();
-}
-
-const QObject* WrapperLinkedListAccess::getOwner(const void* container){
-    return m_containerAccess->getOwner(container);
-}
-
-bool WrapperLinkedListAccess::hasOwnerFunction(){
-    return m_containerAccess->hasOwnerFunction();
-}
-
-AbstractLinkedListAccess* WrapperLinkedListAccess::wrappedAccess(){
-    return m_containerAccess;
-}
-
-bool WrapperLinkedListAccess::isDetached(const void* container) {
-    return m_containerAccess->isDetached(container);
-}
-
-void WrapperLinkedListAccess::assign(void* container, const void* other) {
-    m_containerAccess->assign(container, other);
-}
-
-void WrapperLinkedListAccess::detach(const ContainerInfo& container) {
-    return m_containerAccess->detach(container);
-}
-
-bool WrapperLinkedListAccess::isSharedWith(const void* container, const void* container2) {
-    return m_containerAccess->isSharedWith(container, container2);
-}
-
-void WrapperLinkedListAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2) {
-    m_containerAccess->swap(env, container, container2);
-}
-
-void WrapperLinkedListAccess::dispose() { delete this; }
-
-void WrapperLinkedListAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2) {
-    m_containerAccess->assign(env, container, container2);
-}
-
-size_t WrapperLinkedListAccess::sizeOf() {
-    return m_containerAccess->sizeOf();
-}
-
-void* WrapperLinkedListAccess::constructContainer(void* placement) {
-    return m_containerAccess->constructContainer(placement);
-}
-
-void* WrapperLinkedListAccess::constructContainer(void* placement, const void* copyOf) {
-    return m_containerAccess->constructContainer(placement, copyOf);
-}
-
-void* WrapperLinkedListAccess::constructContainer(JNIEnv * env, void* container, const ConstContainerAndAccessInfo& copyOf) {
-    return m_containerAccess->constructContainer(env, container, copyOf);
-}
-
-bool WrapperLinkedListAccess::destructContainer(void* container) {
-    return m_containerAccess->destructContainer(container);
-}
-
-int WrapperLinkedListAccess::registerContainer(const QByteArray& containerTypeName) {
-    return m_containerAccess->registerContainer(containerTypeName);
-}
-
-std::unique_ptr<AbstractLinkedListAccess::ElementIterator> WrapperLinkedListAccess::elementIterator(const void* container) {
-    return m_containerAccess->elementIterator(container);
-}
-
-std::unique_ptr<AbstractLinkedListAccess::ElementIterator> WrapperLinkedListAccess::elementIterator(void* container) {
-    return m_containerAccess->elementIterator(container);
-}
-
-const QMetaType& WrapperLinkedListAccess::elementMetaType() {
-    return m_containerAccess->elementMetaType();
-}
-
-AbstractContainerAccess* WrapperLinkedListAccess::elementNestedContainerAccess() {
-    return m_containerAccess->elementNestedContainerAccess();
-}
-
-bool WrapperLinkedListAccess::hasNestedContainerAccess() {
-    return m_containerAccess->hasNestedContainerAccess();
-}
-
-bool WrapperLinkedListAccess::hasNestedPointers() {
-    return m_containerAccess->hasNestedPointers();
-}
-
-AbstractContainerAccess::DataType WrapperLinkedListAccess::elementType() {
-    return m_containerAccess->elementType();
-}
-
-void WrapperLinkedListAccess::append(JNIEnv * env, const ContainerInfo& container, jobject value) {
-    m_containerAccess->append(env, container, value);
-}
-
-jobject WrapperLinkedListAccess::first(JNIEnv * env, const void* container) {
-    return m_containerAccess->first(env, container);
-}
-
-jobject WrapperLinkedListAccess::last(JNIEnv * env, const void* container) {
-    return m_containerAccess->last(env, container);
-}
-
-jobject WrapperLinkedListAccess::begin(JNIEnv * env, const ExtendedContainerInfo& container) {
-    return m_containerAccess->begin(env, container);
-}
-
-jobject WrapperLinkedListAccess::constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) {
-    return m_containerAccess->constBegin(env, container);
-}
-
-jobject WrapperLinkedListAccess::end(JNIEnv * env, const ExtendedContainerInfo& container) {
-    return m_containerAccess->end(env, container);
-}
-
-jobject WrapperLinkedListAccess::constEnd(JNIEnv * env, const ConstExtendedContainerInfo& container) {
-    return m_containerAccess->constEnd(env, container);
-}
-
-void WrapperLinkedListAccess::clear(JNIEnv * env, const ContainerInfo& container) {
-    m_containerAccess->clear(env, container);
-}
-
-jboolean WrapperLinkedListAccess::contains(JNIEnv * env, const void* container, jobject value) {
-    return m_containerAccess->contains(env, container, value);
-}
-
-jint WrapperLinkedListAccess::count(JNIEnv * env, const void* container, jobject value) {
-    return m_containerAccess->count(env, container, value);
-}
-
-jboolean WrapperLinkedListAccess::endsWith(JNIEnv * env, const void* container, jobject value) {
-    return m_containerAccess->endsWith(env, container, value);
-}
-
-jboolean WrapperLinkedListAccess::equal(JNIEnv * env, const void* container, jobject other) {
-    return m_containerAccess->equal(env, container, other);
-}
-
-void WrapperLinkedListAccess::prepend(JNIEnv * env, const ContainerInfo& container, jobject value) {
-    return m_containerAccess->prepend(env, container, value);
-}
-
-void WrapperLinkedListAccess::removeFirst(JNIEnv * env, const ContainerInfo& container) {
-    m_containerAccess->removeFirst(env, container);
-}
-
-jint WrapperLinkedListAccess::removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) {
-    return m_containerAccess->removeAll(env, container, value);
-}
-
-void WrapperLinkedListAccess::removeLast(JNIEnv * env, const ContainerInfo& container) {
-    m_containerAccess->removeLast(env, container);
-}
-
-jboolean WrapperLinkedListAccess::removeOne(JNIEnv * env, const ContainerInfo& container, jobject value) {
-    return m_containerAccess->removeOne(env, container, value);
-}
-
-jint WrapperLinkedListAccess::size(JNIEnv * env, const void* container) {
-    return m_containerAccess->size(env, container);
-}
-
-jboolean WrapperLinkedListAccess::startsWith(JNIEnv * env, const void* container, jobject value) {
-    return m_containerAccess->startsWith(env, container, value);
-}
-
-jobject WrapperLinkedListAccess::takeFirst(JNIEnv * env, const ContainerInfo& container) {
-    return m_containerAccess->takeFirst(env, container);
-}
-
-jobject WrapperLinkedListAccess::takeLast(JNIEnv * env, const ContainerInfo& container) {
-    return m_containerAccess->takeLast(env, container);
-}
-#endif
 
 WrapperSetAccess::WrapperSetAccess(AbstractSetAccess* containerAccess)
     : AbstractSetAccess(), m_containerAccess(containerAccess) {}
@@ -1244,7 +735,6 @@ void* WrapperSetAccess::constructContainer(JNIEnv * env, void* container, const 
     return m_containerAccess->constructContainer(env, container, copyOf);
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 void* WrapperSetAccess::constructContainer(void* placement, void* move) {
     return m_containerAccess->constructContainer(placement, move);
 }
@@ -1252,7 +742,6 @@ void* WrapperSetAccess::constructContainer(void* placement, void* move) {
 void* WrapperSetAccess::constructContainer(JNIEnv * env, void* container, const ContainerAndAccessInfo& move) {
     return m_containerAccess->constructContainer(env, container, move);
 }
-#endif
 
 void WrapperSetAccess::assign(void* container, const void* other) {
     m_containerAccess->assign(container, other);
@@ -1435,7 +924,6 @@ void* WrapperMapAccess::constructContainer(JNIEnv * env, void* container, const 
     return m_containerAccess->constructContainer(env, container, copyOf);
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 void* WrapperMapAccess::constructContainer(void* placement, void* move) {
     return m_containerAccess->constructContainer(placement, move);
 }
@@ -1443,7 +931,6 @@ void* WrapperMapAccess::constructContainer(void* placement, void* move) {
 void* WrapperMapAccess::constructContainer(JNIEnv * env, void* container, const ContainerAndAccessInfo& move) {
     return m_containerAccess->constructContainer(env, container, move);
 }
-#endif
 
 size_t WrapperMapAccess::sizeOf() {
     return m_containerAccess->sizeOf();
@@ -1679,7 +1166,6 @@ void* WrapperMultiMapAccess::constructContainer(JNIEnv * env, void* container, c
     return m_containerAccess->constructContainer(env, container, copyOf);
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 void* WrapperMultiMapAccess::constructContainer(void* placement, void* move) {
     return m_containerAccess->constructContainer(placement, move);
 }
@@ -1687,7 +1173,6 @@ void* WrapperMultiMapAccess::constructContainer(void* placement, void* move) {
 void* WrapperMultiMapAccess::constructContainer(JNIEnv * env, void* container, const ContainerAndAccessInfo& move) {
     return m_containerAccess->constructContainer(env, container, move);
 }
-#endif
 
 size_t WrapperMultiMapAccess::sizeOf() {
     return m_containerAccess->sizeOf();
@@ -1964,7 +1449,6 @@ void* WrapperHashAccess::constructContainer(JNIEnv * env, void* container, const
     return m_containerAccess->constructContainer(env, container, copyOf);
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 void* WrapperHashAccess::constructContainer(void* placement, void* move) {
     return m_containerAccess->constructContainer(placement, move);
 }
@@ -1972,7 +1456,6 @@ void* WrapperHashAccess::constructContainer(void* placement, void* move) {
 void* WrapperHashAccess::constructContainer(JNIEnv * env, void* container, const ContainerAndAccessInfo& move) {
     return m_containerAccess->constructContainer(env, container, move);
 }
-#endif
 
 size_t WrapperHashAccess::sizeOf() {
     return m_containerAccess->sizeOf();
@@ -2185,7 +1668,6 @@ void* WrapperMultiHashAccess::constructContainer(JNIEnv * env, void* container, 
     return m_containerAccess->constructContainer(env, container, copyOf);
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 void* WrapperMultiHashAccess::constructContainer(void* placement, void* move) {
     return m_containerAccess->constructContainer(placement, move);
 }
@@ -2193,7 +1675,6 @@ void* WrapperMultiHashAccess::constructContainer(void* placement, void* move) {
 void* WrapperMultiHashAccess::constructContainer(JNIEnv * env, void* container, const ContainerAndAccessInfo& move) {
     return m_containerAccess->constructContainer(env, container, move);
 }
-#endif
 
 size_t WrapperMultiHashAccess::sizeOf() {
     return m_containerAccess->sizeOf();
@@ -2384,49 +1865,8 @@ const void* WrapperMultiHashAccess::value(const void* container, const void* key
 }
 
 bool AbstractContainerAccess::isPointerType(const QMetaType& metaType){
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    if(metaType.sizeOf()==sizeof(void*)){
-        const std::type_info* typeId = getTypeByMetaType(metaType.id());
-        QByteArray name = metaType.name();
-        if(!typeId)
-            typeId = getTypeByQtName(name);
-        if(typeId){
-            if(OptionalBool op = isRegisteredAsPointerType(*typeId)){
-                if(op.value()){
-                    return true;
-                }
-            }
-        }
-        if(name.endsWith("*"))
-            return true;
-        int idx = name.indexOf("(*)");
-        if(idx<0)
-            idx = name.indexOf("(__cdecl*)");
-        if(idx>0){
-            QByteArray prefix = name.left(idx);
-            return prefix.count('<')==prefix.count('>');
-        }
-    }
-    return false;
-#else
     return metaType.flags().testFlag(QMetaType::IsPointer);
-#endif
 }
-
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-bool AbstractContainerAccess::isStaticType(const QMetaType& metaType){
-    {
-        const std::type_info* typeId = getTypeByQtName(metaType.name());
-        if(!typeId)
-            typeId = getTypeByMetaType(metaType.id());
-        if(typeId){
-            if(OptionalBool op = isRegisteredAsStaticType(*typeId))
-                return op.value();
-        }
-    }
-    return QtJambiTypeManager::isStaticType(QLatin1String(metaType.name()));
-}
-#endif
 
 std::function<AbstractContainerAccess*()> getSequentialContainerAccessFactory(SequentialContainerType containerType, const QMetaType& type);
 std::function<AbstractContainerAccess*()> getSequentialContainerAccessFactory(AssociativeContainerType containerType, const QMetaType& keyType, const QMetaType& valueType);
@@ -2435,14 +1875,7 @@ void registerContainerAccessFactory(AssociativeContainerType containerType, cons
 
 namespace ContainerAccessAPI {
 
-hash_type pointerHashFunction(const void* ptr, hash_type seed){ return !ptr ? 0 : ::qHash(*reinterpret_cast<QHashDummyValue*const*>(ptr), seed);}
-
-#if defined(QTJAMBI_GENERIC_ACCESS)
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-bool pointerLessFunction(const void* ptr1, const void* ptr2){ return !ptr1 || !ptr2 ? false : quintptr(*reinterpret_cast<void*const*>(ptr1)) < quintptr(*reinterpret_cast<void*const*>(ptr2));}
-bool pointerEqualFunction(const void* ptr1, const void* ptr2){ return !ptr1 || !ptr2 ? false : quintptr(*reinterpret_cast<void*const*>(ptr1)) == quintptr(*reinterpret_cast<void*const*>(ptr2));}
-#endif
-#endif //defined(QTJAMBI_GENERIC_ACCESS)
+size_t pointerHashFunction(const void* ptr, size_t seed){ return !ptr ? 0 : ::qHash(*reinterpret_cast<QHashDummyValue*const*>(ptr), seed);}
 
 AbstractContainerAccess* createContainerAccess(SequentialContainerType containerType, const QMetaType& memberMetaType){
     AbstractContainerAccess* containerAccess = nullptr;
@@ -2455,14 +1888,6 @@ AbstractContainerAccess* createContainerAccess(SequentialContainerType container
             containerAccess = QtJambiPrivate::QSetAccess<bool>::newInstance();
             break;
         case SequentialContainerType::QStack:
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        case SequentialContainerType::QVector:
-            containerAccess = QtJambiPrivate::QVectorAccess<bool>::newInstance();
-            break;
-        case SequentialContainerType::QLinkedList:
-            containerAccess = QtJambiPrivate::QLinkedListAccess<bool>::newInstance();
-            break;
-#endif
         case SequentialContainerType::QQueue:
         case SequentialContainerType::QList:
             containerAccess = QtJambiPrivate::QListAccess<bool>::newInstance();
@@ -2485,14 +1910,6 @@ AbstractContainerAccess* createContainerAccess(SequentialContainerType container
             containerAccess = QtJambiPrivate::QSetAccess<qint8>::newInstance();
             break;
         case SequentialContainerType::QStack:
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        case SequentialContainerType::QVector:
-            containerAccess = QtJambiPrivate::QVectorAccess<qint8>::newInstance();
-            break;
-        case SequentialContainerType::QLinkedList:
-            containerAccess = QtJambiPrivate::QLinkedListAccess<qint8>::newInstance();
-            break;
-#endif
         case SequentialContainerType::QQueue:
         case SequentialContainerType::QList:
             containerAccess = QtJambiPrivate::QListAccess<qint8>::newInstance();
@@ -2514,14 +1931,6 @@ AbstractContainerAccess* createContainerAccess(SequentialContainerType container
             containerAccess = QtJambiPrivate::QSetAccess<qint16>::newInstance();
             break;
         case SequentialContainerType::QStack:
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        case SequentialContainerType::QVector:
-            containerAccess = QtJambiPrivate::QVectorAccess<qint16>::newInstance();
-            break;
-        case SequentialContainerType::QLinkedList:
-            containerAccess = QtJambiPrivate::QLinkedListAccess<qint16>::newInstance();
-            break;
-#endif
         case SequentialContainerType::QQueue:
         case SequentialContainerType::QList:
             containerAccess = QtJambiPrivate::QListAccess<qint16>::newInstance();
@@ -2543,14 +1952,6 @@ AbstractContainerAccess* createContainerAccess(SequentialContainerType container
             containerAccess = QtJambiPrivate::QSetAccess<qint32>::newInstance();
             break;
         case SequentialContainerType::QStack:
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        case SequentialContainerType::QVector:
-            containerAccess = QtJambiPrivate::QVectorAccess<qint32>::newInstance();
-            break;
-        case SequentialContainerType::QLinkedList:
-            containerAccess = QtJambiPrivate::QLinkedListAccess<qint32>::newInstance();
-            break;
-#endif
         case SequentialContainerType::QQueue:
         case SequentialContainerType::QList:
             containerAccess = QtJambiPrivate::QListAccess<qint32>::newInstance();
@@ -2572,14 +1973,6 @@ AbstractContainerAccess* createContainerAccess(SequentialContainerType container
             containerAccess = QtJambiPrivate::QSetAccess<qint64>::newInstance();
             break;
         case SequentialContainerType::QStack:
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        case SequentialContainerType::QVector:
-            containerAccess = QtJambiPrivate::QVectorAccess<qint64>::newInstance();
-            break;
-        case SequentialContainerType::QLinkedList:
-            containerAccess = QtJambiPrivate::QLinkedListAccess<qint64>::newInstance();
-            break;
-#endif
         case SequentialContainerType::QQueue:
         case SequentialContainerType::QList:
             containerAccess = QtJambiPrivate::QListAccess<qint64>::newInstance();
@@ -2600,14 +1993,6 @@ AbstractContainerAccess* createContainerAccess(SequentialContainerType container
             containerAccess = QtJambiPrivate::QSetAccess<double>::newInstance();
             break;
         case SequentialContainerType::QStack:
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        case SequentialContainerType::QVector:
-            containerAccess = QtJambiPrivate::QVectorAccess<double>::newInstance();
-            break;
-        case SequentialContainerType::QLinkedList:
-            containerAccess = QtJambiPrivate::QLinkedListAccess<double>::newInstance();
-            break;
-#endif
         case SequentialContainerType::QQueue:
         case SequentialContainerType::QList:
             containerAccess = QtJambiPrivate::QListAccess<double>::newInstance();
@@ -2628,14 +2013,6 @@ AbstractContainerAccess* createContainerAccess(SequentialContainerType container
             containerAccess = QtJambiPrivate::QSetAccess<float>::newInstance();
             break;
         case SequentialContainerType::QStack:
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        case SequentialContainerType::QVector:
-            containerAccess = QtJambiPrivate::QVectorAccess<float>::newInstance();
-            break;
-        case SequentialContainerType::QLinkedList:
-            containerAccess = QtJambiPrivate::QLinkedListAccess<float>::newInstance();
-            break;
-#endif
         case SequentialContainerType::QQueue:
         case SequentialContainerType::QList:
             containerAccess = QtJambiPrivate::QListAccess<float>::newInstance();
@@ -2656,14 +2033,6 @@ AbstractContainerAccess* createContainerAccess(SequentialContainerType container
             containerAccess = QtJambiPrivate::QSetAccess<QChar>::newInstance();
             break;
         case SequentialContainerType::QStack:
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        case SequentialContainerType::QVector:
-            containerAccess = QtJambiPrivate::QVectorAccess<QChar>::newInstance();
-            break;
-        case SequentialContainerType::QLinkedList:
-            containerAccess = QtJambiPrivate::QLinkedListAccess<QChar>::newInstance();
-            break;
-#endif
         case SequentialContainerType::QQueue:
         case SequentialContainerType::QList:
             containerAccess = QtJambiPrivate::QListAccess<QChar>::newInstance();
@@ -2678,7 +2047,6 @@ AbstractContainerAccess* createContainerAccess(SequentialContainerType container
 #endif
         }
         break;
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     case QMetaType::Char16:
         switch(containerType){
         case SequentialContainerType::QSet:
@@ -2719,7 +2087,6 @@ AbstractContainerAccess* createContainerAccess(SequentialContainerType container
 #endif
         }
         break;
-#endif
     case QMetaType::QVariant:
         switch(containerType){
         case SequentialContainerType::QSet:
@@ -2727,14 +2094,6 @@ AbstractContainerAccess* createContainerAccess(SequentialContainerType container
             // containerAccess = QtJambiPrivate::QSetAccess<QVariant>::newInstance();
             break;
         case SequentialContainerType::QStack:
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        case SequentialContainerType::QVector:
-            containerAccess = QtJambiPrivate::QVectorAccess<QVariant>::newInstance();
-            break;
-        case SequentialContainerType::QLinkedList:
-            containerAccess = QtJambiPrivate::QLinkedListAccess<QVariant>::newInstance();
-            break;
-#endif
         case SequentialContainerType::QQueue:
         case SequentialContainerType::QList:
             containerAccess = QtJambiPrivate::QListAccess<QVariant>::newInstance();
@@ -2755,14 +2114,6 @@ AbstractContainerAccess* createContainerAccess(SequentialContainerType container
             containerAccess = QtJambiPrivate::QSetAccess<QString>::newInstance();
             break;
         case SequentialContainerType::QStack:
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        case SequentialContainerType::QVector:
-            containerAccess = QtJambiPrivate::QVectorAccess<QString>::newInstance();
-            break;
-        case SequentialContainerType::QLinkedList:
-            containerAccess = QtJambiPrivate::QLinkedListAccess<QString>::newInstance();
-            break;
-#endif
         case SequentialContainerType::QQueue:
         case SequentialContainerType::QList:
             containerAccess = QtJambiPrivate::QListAccess<QString>::newInstance();
@@ -2783,14 +2134,6 @@ AbstractContainerAccess* createContainerAccess(SequentialContainerType container
             containerAccess = QtJambiPrivate::QSetAccess<QObject*>::newInstance();
             break;
         case SequentialContainerType::QStack:
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        case SequentialContainerType::QVector:
-            containerAccess = QtJambiPrivate::QVectorAccess<QObject*>::newInstance();
-            break;
-        case SequentialContainerType::QLinkedList:
-            containerAccess = QtJambiPrivate::QLinkedListAccess<QObject*>::newInstance();
-            break;
-#endif
         case SequentialContainerType::QQueue:
         case SequentialContainerType::QList:
             containerAccess = QtJambiPrivate::QListAccess<QObject*>::newInstance();
@@ -2825,9 +2168,6 @@ AbstractContainerAccess* createContainerAccess(AssociativeContainerType mapType,
 AbstractContainerAccess* createContainerAccess(JNIEnv* env, SequentialContainerType containerType,
                                                          const QMetaType& metaType,
                                                          size_t align, size_t size,
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                         bool isStaticType,
-#endif
                                                          bool isPointer,
                                                          const QtJambiUtils::QHashFunction& hashFunction,
                                                          const QtJambiUtils::InternalToExternalConverter& memberConverter,
@@ -2840,15 +2180,9 @@ AbstractContainerAccess* createContainerAccess(JNIEnv* env, SequentialContainerT
         size = 0;
         align = 0;
     }
-#elif QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+#else
     Q_UNUSED(size);
     Q_UNUSED(align);
-#else
-    if(isPointer){
-        size = sizeof(void*);
-        align = alignof(void*);
-        isStaticType = false;
-    }
 #endif //defined(QTJAMBI_GENERIC_ACCESS)
     Q_ASSERT(metaType.id()!=QMetaType::UnknownType && metaType.id()!=QMetaType::Void);
     AbstractContainerAccess* containerAccess = nullptr;
@@ -2873,12 +2207,7 @@ AbstractContainerAccess* createContainerAccess(JNIEnv* env, SequentialContainerT
             case AbstractContainerAccess::FunctionPointer:
             case AbstractContainerAccess::PointerToQObject:
                 containerAccess = new PointerRCAutoSetAccess(
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                     metaType.id(),
-                                                     align ? align : qMin<size_t>(size, alignof(std::max_align_t)),
-#else
                                                      metaType,
-#endif
                                                      hashFunction,
                                                      memberConverter,
                                                      memberReConverter,
@@ -2889,12 +2218,7 @@ AbstractContainerAccess* createContainerAccess(JNIEnv* env, SequentialContainerT
             default:{
                 if(hasNestedPointers)
                     containerAccess = new NestedPointersRCAutoSetAccess(
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                     metaType.id(),
-                                                     align ? align : qMin<size_t>(size, alignof(std::max_align_t)),
-#else
                                                      metaType,
-#endif
                                                      hashFunction,
                                                      memberConverter,
                                                      memberReConverter,
@@ -2903,12 +2227,7 @@ AbstractContainerAccess* createContainerAccess(JNIEnv* env, SequentialContainerT
                                                     elementType);
                 else
                     containerAccess = new AutoSetAccess(
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                 metaType.id(),
-                                                 align ? align : qMin<size_t>(size, alignof(std::max_align_t)),
-#else
                                                  metaType,
-#endif
                                                  hashFunction,
                                                  memberConverter,
                                                  memberReConverter,
@@ -2919,86 +2238,6 @@ AbstractContainerAccess* createContainerAccess(JNIEnv* env, SequentialContainerT
             }
             break;
         case SequentialContainerType::QStack:
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-        case SequentialContainerType::QVector:
-            switch(elementType){
-            case AbstractContainerAccess::Pointer:
-            case AbstractContainerAccess::FunctionPointer:
-            case AbstractContainerAccess::PointerToQObject:
-                containerAccess = new PointerRCAutoVectorAccess(
-                            metaType.id(),
-                            align ? align : qMin<size_t>(size, alignof(std::max_align_t)),
-                            hashFunction,
-                            memberConverter,
-                            memberReConverter,
-                            memberNestedContainerAccess,
-                            ownerFunction,
-                            elementType);
-                break;
-            default:{
-                if(hasNestedPointers)
-                    containerAccess = new NestedPointersRCAutoVectorAccess(
-                                metaType.id(),
-                                align ? align : qMin<size_t>(size, alignof(std::max_align_t)),
-                                hashFunction,
-                                memberConverter,
-                                memberReConverter,
-                                memberNestedContainerAccess,
-                                ownerFunction,
-                                elementType);
-                else
-                    containerAccess = new AutoVectorAccess(
-                                metaType.id(),
-                                align ? align : qMin<size_t>(size, alignof(std::max_align_t)),
-                                hashFunction,
-                                memberConverter,
-                                memberReConverter,
-                                memberNestedContainerAccess,
-                                ownerFunction,
-                                elementType);
-                }break;
-            }
-            break;
-        case SequentialContainerType::QLinkedList:
-            switch(elementType){
-            case AbstractContainerAccess::Pointer:
-            case AbstractContainerAccess::FunctionPointer:
-            case AbstractContainerAccess::PointerToQObject:
-                containerAccess = new PointerRCAutoLinkedListAccess(
-                            metaType.id(),
-                            align ? align : qMin<size_t>(size, alignof(std::max_align_t)),
-                            hashFunction,
-                            memberConverter,
-                            memberReConverter,
-                            memberNestedContainerAccess,
-                            ownerFunction,
-                            elementType);
-                break;
-            default:{
-                if(hasNestedPointers)
-                    containerAccess = new NestedPointersRCAutoLinkedListAccess(
-                                metaType.id(),
-                                align ? align : qMin<size_t>(size, alignof(std::max_align_t)),
-                                hashFunction,
-                                memberConverter,
-                                memberReConverter,
-                                memberNestedContainerAccess,
-                                ownerFunction,
-                                elementType);
-                else
-                    containerAccess = new AutoLinkedListAccess(
-                                metaType.id(),
-                                align ? align : qMin<size_t>(size, alignof(std::max_align_t)),
-                                hashFunction,
-                                memberConverter,
-                                memberReConverter,
-                                memberNestedContainerAccess,
-                                ownerFunction,
-                                elementType);
-                }break;
-            }
-            break;
-#endif
         case SequentialContainerType::QQueue:
         case SequentialContainerType::QList:
             switch(elementType){
@@ -3006,13 +2245,7 @@ AbstractContainerAccess* createContainerAccess(JNIEnv* env, SequentialContainerT
             case AbstractContainerAccess::FunctionPointer:
             case AbstractContainerAccess::PointerToQObject:
                 containerAccess = new PointerRCAutoListAccess(
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                     metaType.id(),
-                                                     align ? align : qMin<size_t>(size, alignof(std::max_align_t)),
-                                                     isStaticType,
-#else
                                                      metaType,
-#endif
                                                      hashFunction,
                                                      memberConverter,
                                                      memberReConverter,
@@ -3023,13 +2256,7 @@ AbstractContainerAccess* createContainerAccess(JNIEnv* env, SequentialContainerT
             default:{
                 if(hasNestedPointers)
                     containerAccess = new NestedPointersRCAutoListAccess(
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                     metaType.id(),
-                                                     align ? align : qMin<size_t>(size, alignof(std::max_align_t)),
-                                                     isStaticType,
-#else
                                                      metaType,
-#endif
                                                      hashFunction,
                                                      memberConverter,
                                                      memberReConverter,
@@ -3038,13 +2265,7 @@ AbstractContainerAccess* createContainerAccess(JNIEnv* env, SequentialContainerT
                                                     elementType);
                 else
                     containerAccess = new AutoListAccess(
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                 metaType.id(),
-                                                 align ? align : qMin<size_t>(size, alignof(std::max_align_t)),
-                                                 isStaticType,
-#else
                                                  metaType,
-#endif
                                                  hashFunction,
                                                  memberConverter,
                                                  memberReConverter,
@@ -3109,11 +2330,7 @@ AbstractContainerAccess* createContainerAccess(JNIEnv* env, SequentialContainerT
     }
     if(!containerAccess){
         JavaException occurredException;
-        if(SequentialContainerAccessFactory accessFactory = findContainerAccessFactory(env, containerType, align, size,
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                                             isStaticType,
-#endif
-                                                                                             occurredException)){
+        if(SequentialContainerAccessFactory accessFactory = findContainerAccessFactory(env, containerType, align, size, occurredException)){
             QMetaType voidPtr(QMetaType::VoidStar);
             containerAccess = accessFactory(isPointer && !metaType.isValid() ? voidPtr : metaType,
                                             hashFunction,
@@ -3163,20 +2380,11 @@ AbstractContainerAccess* createContainerAccess(JNIEnv* env, AssociativeContainer
         size2 = 0;
         align2 = 0;
     }
-#elif QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+#else
     Q_UNUSED(size1);
     Q_UNUSED(align1);
     Q_UNUSED(size2);
     Q_UNUSED(align2);
-#else
-    if(isPointer1){
-        size1 = sizeof(void*);
-        align1 = alignof(void*);
-    }
-    if(isPointer2){
-        size2 = sizeof(void*);
-        align2 = alignof(void*);
-    }
 #endif //defined(QTJAMBI_GENERIC_ACCESS)
     AbstractContainerAccess::DataType memberType1 = dataType(memberMetaType1, memberNestedContainerAccess1);
     AbstractContainerAccess::DataType memberType2 = dataType(memberMetaType2, memberNestedContainerAccess2);
@@ -3207,24 +2415,14 @@ AbstractContainerAccess* createContainerAccess(JNIEnv* env, AssociativeContainer
         switch(mapType){
         case AssociativeContainerType::QPair:
             containerAccess = new AutoPairAccess(
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                         isPointer1 && !memberMetaType1.isValid() ? QMetaType::VoidStar : memberMetaType1.id(),
-                                         isPointer1 ? alignof(void*) : (align1 ? align1 : qMin<size_t>(size1, alignof(std::max_align_t))),
-#else
                                          isPointer1 && !memberMetaType1.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType1,
-#endif
                                          hashFunction1,
                                          memberConverter1,
                                          memberReConverter1,
                                          memberNestedContainerAccess1,
                                          ownerFunction1,
                                          memberType1,
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                         isPointer2 && !memberMetaType2.isValid() ? QMetaType::VoidStar : memberMetaType2.id(),
-                                         isPointer2 ? alignof(void*) : (align2 ? align2 : qMin<size_t>(size2, alignof(std::max_align_t))),
-#else
                                          isPointer2 && !memberMetaType2.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType2,
-#endif
                                          hashFunction2,
                                          memberConverter2,
                                          memberReConverter2,
@@ -3242,24 +2440,14 @@ AbstractContainerAccess* createContainerAccess(JNIEnv* env, AssociativeContainer
                 case AbstractContainerAccess::FunctionPointer:
                 case AbstractContainerAccess::PointerToQObject:
                     containerAccess = new PointersRCAutoHashAccess(
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer1 && !memberMetaType1.isValid() ? QMetaType::VoidStar : memberMetaType1.id(),
-                                                                         isPointer1 ? alignof(void*) : (align1 ? align1 : qMin<size_t>(size1, alignof(std::max_align_t))),
-#else
                                                                          isPointer1 && !memberMetaType1.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType1,
-#endif
                                                                          hashFunction1,
                                                                          memberConverter1,
                                                                          memberReConverter1,
                                                                          memberNestedContainerAccess1,
                                                                          ownerFunction1,
                                                                          memberType1,
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer2 && !memberMetaType2.isValid() ? QMetaType::VoidStar : memberMetaType2.id(),
-                                                                         isPointer2 ? alignof(void*) : (align2 ? align2 : qMin<size_t>(size2, alignof(std::max_align_t))),
-#else
                                                                          isPointer2 && !memberMetaType2.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType2,
-#endif
                                                                          hashFunction2,
                                                                          memberConverter2,
                                                                          memberReConverter2,
@@ -3270,24 +2458,14 @@ AbstractContainerAccess* createContainerAccess(JNIEnv* env, AssociativeContainer
                 default:
                     if(hasNestedPointers2){
                         containerAccess = new NestedPointersRCAutoHashAccess(
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer1 && !memberMetaType1.isValid() ? QMetaType::VoidStar : memberMetaType1.id(),
-                                                                         isPointer1 ? alignof(void*) : (align1 ? align1 : qMin<size_t>(size1, alignof(std::max_align_t))),
-#else
                                                                          isPointer1 && !memberMetaType1.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType1,
-#endif
                                                                          hashFunction1,
                                                                          memberConverter1,
                                                                          memberReConverter1,
                                                                          memberNestedContainerAccess1,
                                                                          ownerFunction1,
                                                                          memberType1,
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer2 && !memberMetaType2.isValid() ? QMetaType::VoidStar : memberMetaType2.id(),
-                                                                         isPointer2 ? alignof(void*) : (align2 ? align2 : qMin<size_t>(size2, alignof(std::max_align_t))),
-#else
                                                                          isPointer2 && !memberMetaType2.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType2,
-#endif
                                                                          hashFunction2,
                                                                          memberConverter2,
                                                                          memberReConverter2,
@@ -3296,24 +2474,14 @@ AbstractContainerAccess* createContainerAccess(JNIEnv* env, AssociativeContainer
                                                                          memberType2);
                     }else{
                         containerAccess = new KeyPointerRCAutoHashAccess(
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer1 && !memberMetaType1.isValid() ? QMetaType::VoidStar : memberMetaType1.id(),
-                                                                         isPointer1 ? alignof(void*) : (align1 ? align1 : qMin<size_t>(size1, alignof(std::max_align_t))),
-#else
                                                                          isPointer1 && !memberMetaType1.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType1,
-#endif
                                                                          hashFunction1,
                                                                          memberConverter1,
                                                                          memberReConverter1,
                                                                          memberNestedContainerAccess1,
                                                                          ownerFunction1,
                                                                          memberType1,
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer2 && !memberMetaType2.isValid() ? QMetaType::VoidStar : memberMetaType2.id(),
-                                                                         isPointer2 ? alignof(void*) : (align2 ? align2 : qMin<size_t>(size2, alignof(std::max_align_t))),
-#else
                                                                          isPointer2 && !memberMetaType2.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType2,
-#endif
                                                                          hashFunction2,
                                                                          memberConverter2,
                                                                          memberReConverter2,
@@ -3327,24 +2495,14 @@ AbstractContainerAccess* createContainerAccess(JNIEnv* env, AssociativeContainer
             default:{
                     if(hasNestedPointers1){
                         containerAccess = new NestedPointersRCAutoHashAccess(
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer1 && !memberMetaType1.isValid() ? QMetaType::VoidStar : memberMetaType1.id(),
-                                                                         isPointer1 ? alignof(void*) : (align1 ? align1 : qMin<size_t>(size1, alignof(std::max_align_t))),
-#else
                                                                          isPointer1 && !memberMetaType1.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType1,
-#endif
                                                                          hashFunction1,
                                                                          memberConverter1,
                                                                          memberReConverter1,
                                                                          memberNestedContainerAccess1,
                                                                          ownerFunction1,
                                                                          memberType1,
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer2 && !memberMetaType2.isValid() ? QMetaType::VoidStar : memberMetaType2.id(),
-                                                                         isPointer2 ? alignof(void*) : (align2 ? align2 : qMin<size_t>(size2, alignof(std::max_align_t))),
-#else
                                                                          isPointer2 && !memberMetaType2.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType2,
-#endif
                                                                          hashFunction2,
                                                                          memberConverter2,
                                                                          memberReConverter2,
@@ -3357,24 +2515,14 @@ AbstractContainerAccess* createContainerAccess(JNIEnv* env, AssociativeContainer
                         case AbstractContainerAccess::FunctionPointer:
                         case AbstractContainerAccess::PointerToQObject:
                             containerAccess = new ValuePointerRCAutoHashAccess(
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer1 && !memberMetaType1.isValid() ? QMetaType::VoidStar : memberMetaType1.id(),
-                                                                         isPointer1 ? alignof(void*) : (align1 ? align1 : qMin<size_t>(size1, alignof(std::max_align_t))),
-#else
                                                                          isPointer1 && !memberMetaType1.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType1,
-#endif
                                                                          hashFunction1,
                                                                          memberConverter1,
                                                                          memberReConverter1,
                                                                          memberNestedContainerAccess1,
                                                                          ownerFunction1,
                                                                          memberType1,
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer2 && !memberMetaType2.isValid() ? QMetaType::VoidStar : memberMetaType2.id(),
-                                                                         isPointer2 ? alignof(void*) : (align2 ? align2 : qMin<size_t>(size2, alignof(std::max_align_t))),
-#else
                                                                          isPointer2 && !memberMetaType2.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType2,
-#endif
                                                                          hashFunction2,
                                                                          memberConverter2,
                                                                          memberReConverter2,
@@ -3385,24 +2533,14 @@ AbstractContainerAccess* createContainerAccess(JNIEnv* env, AssociativeContainer
                         default:
                             if(hasNestedPointers2){
                                 containerAccess = new NestedPointersRCAutoHashAccess(
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer1 && !memberMetaType1.isValid() ? QMetaType::VoidStar : memberMetaType1.id(),
-                                                                         isPointer1 ? alignof(void*) : (align1 ? align1 : qMin<size_t>(size1, alignof(std::max_align_t))),
-#else
                                                                          isPointer1 && !memberMetaType1.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType1,
-#endif
                                                                          hashFunction1,
                                                                          memberConverter1,
                                                                          memberReConverter1,
                                                                          memberNestedContainerAccess1,
                                                                          ownerFunction1,
                                                                          memberType1,
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer2 && !memberMetaType2.isValid() ? QMetaType::VoidStar : memberMetaType2.id(),
-                                                                         isPointer2 ? alignof(void*) : (align2 ? align2 : qMin<size_t>(size2, alignof(std::max_align_t))),
-#else
                                                                          isPointer2 && !memberMetaType2.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType2,
-#endif
                                                                          hashFunction2,
                                                                          memberConverter2,
                                                                          memberReConverter2,
@@ -3411,24 +2549,14 @@ AbstractContainerAccess* createContainerAccess(JNIEnv* env, AssociativeContainer
                                                                          memberType2);
                             }else{
                                 containerAccess = new AutoHashAccess(
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                             isPointer1 && !memberMetaType1.isValid() ? QMetaType::VoidStar : memberMetaType1.id(),
-                                                             isPointer1 ? alignof(void*) : (align1 ? align1 : qMin<size_t>(size1, alignof(std::max_align_t))),
-#else
                                                              isPointer1 && !memberMetaType1.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType1,
-#endif
                                                              hashFunction1,
                                                              memberConverter1,
                                                              memberReConverter1,
                                                              memberNestedContainerAccess1,
                                                              ownerFunction1,
                                                              memberType1,
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                             isPointer2 && !memberMetaType2.isValid() ? QMetaType::VoidStar : memberMetaType2.id(),
-                                                             isPointer2 ? alignof(void*) : (align2 ? align2 : qMin<size_t>(size2, alignof(std::max_align_t))),
-#else
                                                              isPointer2 && !memberMetaType2.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType2,
-#endif
                                                              hashFunction2,
                                                              memberConverter2,
                                                              memberReConverter2,
@@ -3453,24 +2581,14 @@ AbstractContainerAccess* createContainerAccess(JNIEnv* env, AssociativeContainer
                 case AbstractContainerAccess::FunctionPointer:
                 case AbstractContainerAccess::PointerToQObject:
                     containerAccess = new PointersRCAutoMapAccess(
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer1 && !memberMetaType1.isValid() ? QMetaType::VoidStar : memberMetaType1.id(),
-                                                                         isPointer1 ? alignof(void*) : (align1 ? align1 : qMin<size_t>(size1, alignof(std::max_align_t))),
-#else
                                                                          isPointer1 && !memberMetaType1.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType1,
-#endif
                                                                          hashFunction1,
                                                                          memberConverter1,
                                                                          memberReConverter1,
                                                                          memberNestedContainerAccess1,
                                                                          ownerFunction1,
                                                                          memberType1,
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer2 && !memberMetaType2.isValid() ? QMetaType::VoidStar : memberMetaType2.id(),
-                                                                         isPointer2 ? alignof(void*) : (align2 ? align2 : qMin<size_t>(size2, alignof(std::max_align_t))),
-#else
                                                                          isPointer2 && !memberMetaType2.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType2,
-#endif
                                                                          hashFunction2,
                                                                          memberConverter2,
                                                                          memberReConverter2,
@@ -3481,24 +2599,14 @@ AbstractContainerAccess* createContainerAccess(JNIEnv* env, AssociativeContainer
                 default:
                     if(hasNestedPointers2){
                         containerAccess = new NestedPointersRCAutoMapAccess(
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer1 && !memberMetaType1.isValid() ? QMetaType::VoidStar : memberMetaType1.id(),
-                                                                         isPointer1 ? alignof(void*) : (align1 ? align1 : qMin<size_t>(size1, alignof(std::max_align_t))),
-#else
                                                                          isPointer1 && !memberMetaType1.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType1,
-#endif
                                                                          hashFunction1,
                                                                          memberConverter1,
                                                                          memberReConverter1,
                                                                          memberNestedContainerAccess1,
                                                                          ownerFunction1,
                                                                          memberType1,
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer2 && !memberMetaType2.isValid() ? QMetaType::VoidStar : memberMetaType2.id(),
-                                                                         isPointer2 ? alignof(void*) : (align2 ? align2 : qMin<size_t>(size2, alignof(std::max_align_t))),
-#else
                                                                          isPointer2 && !memberMetaType2.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType2,
-#endif
                                                                          hashFunction2,
                                                                          memberConverter2,
                                                                          memberReConverter2,
@@ -3507,24 +2615,14 @@ AbstractContainerAccess* createContainerAccess(JNIEnv* env, AssociativeContainer
                                                                          memberType2);
                     }else{
                         containerAccess = new KeyPointerRCAutoMapAccess(
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer1 && !memberMetaType1.isValid() ? QMetaType::VoidStar : memberMetaType1.id(),
-                                                                         isPointer1 ? alignof(void*) : (align1 ? align1 : qMin<size_t>(size1, alignof(std::max_align_t))),
-#else
                                                                          isPointer1 && !memberMetaType1.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType1,
-#endif
                                                                          hashFunction1,
                                                                          memberConverter1,
                                                                          memberReConverter1,
                                                                          memberNestedContainerAccess1,
                                                                          ownerFunction1,
                                                                          memberType1,
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer2 && !memberMetaType2.isValid() ? QMetaType::VoidStar : memberMetaType2.id(),
-                                                                         isPointer2 ? alignof(void*) : (align2 ? align2 : qMin<size_t>(size2, alignof(std::max_align_t))),
-#else
                                                                          isPointer2 && !memberMetaType2.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType2,
-#endif
                                                                          hashFunction2,
                                                                          memberConverter2,
                                                                          memberReConverter2,
@@ -3538,24 +2636,14 @@ AbstractContainerAccess* createContainerAccess(JNIEnv* env, AssociativeContainer
             default:{
                     if(hasNestedPointers1){
                         containerAccess = new NestedPointersRCAutoMapAccess(
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer1 && !memberMetaType1.isValid() ? QMetaType::VoidStar : memberMetaType1.id(),
-                                                                         isPointer1 ? alignof(void*) : (align1 ? align1 : qMin<size_t>(size1, alignof(std::max_align_t))),
-#else
                                                                          isPointer1 && !memberMetaType1.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType1,
-#endif
                                                                          hashFunction1,
                                                                          memberConverter1,
                                                                          memberReConverter1,
                                                                          memberNestedContainerAccess1,
                                                                          ownerFunction1,
                                                                          memberType1,
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer2 && !memberMetaType2.isValid() ? QMetaType::VoidStar : memberMetaType2.id(),
-                                                                         isPointer2 ? alignof(void*) : (align2 ? align2 : qMin<size_t>(size2, alignof(std::max_align_t))),
-#else
                                                                          isPointer2 && !memberMetaType2.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType2,
-#endif
                                                                          hashFunction2,
                                                                          memberConverter2,
                                                                          memberReConverter2,
@@ -3568,24 +2656,14 @@ AbstractContainerAccess* createContainerAccess(JNIEnv* env, AssociativeContainer
                         case AbstractContainerAccess::FunctionPointer:
                         case AbstractContainerAccess::PointerToQObject:
                             containerAccess = new ValuePointerRCAutoMapAccess(
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer1 && !memberMetaType1.isValid() ? QMetaType::VoidStar : memberMetaType1.id(),
-                                                                         isPointer1 ? alignof(void*) : (align1 ? align1 : qMin<size_t>(size1, alignof(std::max_align_t))),
-#else
                                                                          isPointer1 && !memberMetaType1.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType1,
-#endif
                                                                          hashFunction1,
                                                                          memberConverter1,
                                                                          memberReConverter1,
                                                                          memberNestedContainerAccess1,
                                                                          ownerFunction1,
                                                                          memberType1,
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer2 && !memberMetaType2.isValid() ? QMetaType::VoidStar : memberMetaType2.id(),
-                                                                         isPointer2 ? alignof(void*) : (align2 ? align2 : qMin<size_t>(size2, alignof(std::max_align_t))),
-#else
                                                                          isPointer2 && !memberMetaType2.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType2,
-#endif
                                                                          hashFunction2,
                                                                          memberConverter2,
                                                                          memberReConverter2,
@@ -3596,24 +2674,14 @@ AbstractContainerAccess* createContainerAccess(JNIEnv* env, AssociativeContainer
                         default:
                             if(hasNestedPointers2){
                                 containerAccess = new NestedPointersRCAutoMapAccess(
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer1 && !memberMetaType1.isValid() ? QMetaType::VoidStar : memberMetaType1.id(),
-                                                                         isPointer1 ? alignof(void*) : (align1 ? align1 : qMin<size_t>(size1, alignof(std::max_align_t))),
-#else
                                                                          isPointer1 && !memberMetaType1.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType1,
-#endif
                                                                          hashFunction1,
                                                                          memberConverter1,
                                                                          memberReConverter1,
                                                                          memberNestedContainerAccess1,
                                                                          ownerFunction1,
                                                                          memberType1,
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer2 && !memberMetaType2.isValid() ? QMetaType::VoidStar : memberMetaType2.id(),
-                                                                         isPointer2 ? alignof(void*) : (align2 ? align2 : qMin<size_t>(size2, alignof(std::max_align_t))),
-#else
                                                                          isPointer2 && !memberMetaType2.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType2,
-#endif
                                                                          hashFunction2,
                                                                          memberConverter2,
                                                                          memberReConverter2,
@@ -3622,24 +2690,14 @@ AbstractContainerAccess* createContainerAccess(JNIEnv* env, AssociativeContainer
                                                                          memberType2);
                             }else{
                                 containerAccess = new AutoMapAccess(
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                             isPointer1 && !memberMetaType1.isValid() ? QMetaType::VoidStar : memberMetaType1.id(),
-                                                             isPointer1 ? alignof(void*) : (align1 ? align1 : qMin<size_t>(size1, alignof(std::max_align_t))),
-#else
                                                              isPointer1 && !memberMetaType1.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType1,
-#endif
                                                              hashFunction1,
                                                              memberConverter1,
                                                              memberReConverter1,
                                                              memberNestedContainerAccess1,
                                                              ownerFunction1,
                                                              memberType1,
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                             isPointer2 && !memberMetaType2.isValid() ? QMetaType::VoidStar : memberMetaType2.id(),
-                                                             isPointer2 ? alignof(void*) : (align2 ? align2 : qMin<size_t>(size2, alignof(std::max_align_t))),
-#else
                                                              isPointer2 && !memberMetaType2.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType2,
-#endif
                                                              hashFunction2,
                                                              memberConverter2,
                                                              memberReConverter2,
@@ -3666,24 +2724,14 @@ AbstractContainerAccess* createContainerAccess(JNIEnv* env, AssociativeContainer
                 case AbstractContainerAccess::FunctionPointer:
                 case AbstractContainerAccess::PointerToQObject:
                     containerAccess = access = new PointersRCAutoMultiHashAccess(
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer1 && !memberMetaType1.isValid() ? QMetaType::VoidStar : memberMetaType1.id(),
-                                                                         isPointer1 ? alignof(void*) : (align1 ? align1 : qMin<size_t>(size1, alignof(std::max_align_t))),
-#else
                                                                          isPointer1 && !memberMetaType1.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType1,
-#endif
                                                                          hashFunction1,
                                                                          memberConverter1,
                                                                          memberReConverter1,
                                                                          memberNestedContainerAccess1,
                                                                          ownerFunction1,
                                                                          memberType1,
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer2 && !memberMetaType2.isValid() ? QMetaType::VoidStar : memberMetaType2.id(),
-                                                                         isPointer2 ? alignof(void*) : (align2 ? align2 : qMin<size_t>(size2, alignof(std::max_align_t))),
-#else
                                                                          isPointer2 && !memberMetaType2.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType2,
-#endif
                                                                          hashFunction2,
                                                                          memberConverter2,
                                                                          memberReConverter2,
@@ -3694,24 +2742,14 @@ AbstractContainerAccess* createContainerAccess(JNIEnv* env, AssociativeContainer
                 default:
                     if(hasNestedPointers2){
                         containerAccess = access = new NestedPointersRCAutoMultiHashAccess(
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer1 && !memberMetaType1.isValid() ? QMetaType::VoidStar : memberMetaType1.id(),
-                                                                         isPointer1 ? alignof(void*) : (align1 ? align1 : qMin<size_t>(size1, alignof(std::max_align_t))),
-#else
                                                                          isPointer1 && !memberMetaType1.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType1,
-#endif
                                                                          hashFunction1,
                                                                          memberConverter1,
                                                                          memberReConverter1,
                                                                          memberNestedContainerAccess1,
                                                                          ownerFunction1,
                                                                          memberType1,
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer2 && !memberMetaType2.isValid() ? QMetaType::VoidStar : memberMetaType2.id(),
-                                                                         isPointer2 ? alignof(void*) : (align2 ? align2 : qMin<size_t>(size2, alignof(std::max_align_t))),
-#else
                                                                          isPointer2 && !memberMetaType2.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType2,
-#endif
                                                                          hashFunction2,
                                                                          memberConverter2,
                                                                          memberReConverter2,
@@ -3720,24 +2758,14 @@ AbstractContainerAccess* createContainerAccess(JNIEnv* env, AssociativeContainer
                                                                          memberType2);
                     }else{
                         containerAccess = access = new KeyPointerRCAutoMultiHashAccess(
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer1 && !memberMetaType1.isValid() ? QMetaType::VoidStar : memberMetaType1.id(),
-                                                                         isPointer1 ? alignof(void*) : (align1 ? align1 : qMin<size_t>(size1, alignof(std::max_align_t))),
-#else
                                                                          isPointer1 && !memberMetaType1.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType1,
-#endif
                                                                          hashFunction1,
                                                                          memberConverter1,
                                                                          memberReConverter1,
                                                                          memberNestedContainerAccess1,
                                                                          ownerFunction1,
                                                                          memberType1,
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer2 && !memberMetaType2.isValid() ? QMetaType::VoidStar : memberMetaType2.id(),
-                                                                         isPointer2 ? alignof(void*) : (align2 ? align2 : qMin<size_t>(size2, alignof(std::max_align_t))),
-#else
                                                                          isPointer2 && !memberMetaType2.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType2,
-#endif
                                                                          hashFunction2,
                                                                          memberConverter2,
                                                                          memberReConverter2,
@@ -3751,24 +2779,14 @@ AbstractContainerAccess* createContainerAccess(JNIEnv* env, AssociativeContainer
             default:{
                     if(hasNestedPointers1){
                         containerAccess = access = new NestedPointersRCAutoMultiHashAccess(
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer1 && !memberMetaType1.isValid() ? QMetaType::VoidStar : memberMetaType1.id(),
-                                                                         isPointer1 ? alignof(void*) : (align1 ? align1 : qMin<size_t>(size1, alignof(std::max_align_t))),
-#else
                                                                          isPointer1 && !memberMetaType1.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType1,
-#endif
                                                                          hashFunction1,
                                                                          memberConverter1,
                                                                          memberReConverter1,
                                                                          memberNestedContainerAccess1,
                                                                          ownerFunction1,
                                                                          memberType1,
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer2 && !memberMetaType2.isValid() ? QMetaType::VoidStar : memberMetaType2.id(),
-                                                                         isPointer2 ? alignof(void*) : (align2 ? align2 : qMin<size_t>(size2, alignof(std::max_align_t))),
-#else
                                                                          isPointer2 && !memberMetaType2.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType2,
-#endif
                                                                          hashFunction2,
                                                                          memberConverter2,
                                                                          memberReConverter2,
@@ -3781,24 +2799,14 @@ AbstractContainerAccess* createContainerAccess(JNIEnv* env, AssociativeContainer
                         case AbstractContainerAccess::FunctionPointer:
                         case AbstractContainerAccess::PointerToQObject:
                             containerAccess = access = new ValuePointerRCAutoMultiHashAccess(
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer1 && !memberMetaType1.isValid() ? QMetaType::VoidStar : memberMetaType1.id(),
-                                                                         isPointer1 ? alignof(void*) : (align1 ? align1 : qMin<size_t>(size1, alignof(std::max_align_t))),
-#else
                                                                          isPointer1 && !memberMetaType1.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType1,
-#endif
                                                                          hashFunction1,
                                                                          memberConverter1,
                                                                          memberReConverter1,
                                                                          memberNestedContainerAccess1,
                                                                          ownerFunction1,
                                                                          memberType1,
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer2 && !memberMetaType2.isValid() ? QMetaType::VoidStar : memberMetaType2.id(),
-                                                                         isPointer2 ? alignof(void*) : (align2 ? align2 : qMin<size_t>(size2, alignof(std::max_align_t))),
-#else
                                                                          isPointer2 && !memberMetaType2.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType2,
-#endif
                                                                          hashFunction2,
                                                                          memberConverter2,
                                                                          memberReConverter2,
@@ -3809,24 +2817,14 @@ AbstractContainerAccess* createContainerAccess(JNIEnv* env, AssociativeContainer
                         default:
                             if(hasNestedPointers2){
                                 containerAccess = access = new NestedPointersRCAutoMultiHashAccess(
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer1 && !memberMetaType1.isValid() ? QMetaType::VoidStar : memberMetaType1.id(),
-                                                                         isPointer1 ? alignof(void*) : (align1 ? align1 : qMin<size_t>(size1, alignof(std::max_align_t))),
-#else
                                                                          isPointer1 && !memberMetaType1.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType1,
-#endif
                                                                          hashFunction1,
                                                                          memberConverter1,
                                                                          memberReConverter1,
                                                                          memberNestedContainerAccess1,
                                                                          ownerFunction1,
                                                                          memberType1,
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer2 && !memberMetaType2.isValid() ? QMetaType::VoidStar : memberMetaType2.id(),
-                                                                         isPointer2 ? alignof(void*) : (align2 ? align2 : qMin<size_t>(size2, alignof(std::max_align_t))),
-#else
                                                                          isPointer2 && !memberMetaType2.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType2,
-#endif
                                                                          hashFunction2,
                                                                          memberConverter2,
                                                                          memberReConverter2,
@@ -3835,24 +2833,14 @@ AbstractContainerAccess* createContainerAccess(JNIEnv* env, AssociativeContainer
                                                                          memberType2);
                             }else{
                                 containerAccess = access = new AutoMultiHashAccess(
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                             isPointer1 && !memberMetaType1.isValid() ? QMetaType::VoidStar : memberMetaType1.id(),
-                                                             isPointer1 ? alignof(void*) : (align1 ? align1 : qMin<size_t>(size1, alignof(std::max_align_t))),
-#else
                                                              isPointer1 && !memberMetaType1.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType1,
-#endif
                                                              hashFunction1,
                                                              memberConverter1,
                                                              memberReConverter1,
                                                              memberNestedContainerAccess1,
                                                              ownerFunction1,
                                                              memberType1,
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                             isPointer2 && !memberMetaType2.isValid() ? QMetaType::VoidStar : memberMetaType2.id(),
-                                                             isPointer2 ? alignof(void*) : (align2 ? align2 : qMin<size_t>(size2, alignof(std::max_align_t))),
-#else
                                                              isPointer2 && !memberMetaType2.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType2,
-#endif
                                                              hashFunction2,
                                                              memberConverter2,
                                                              memberReConverter2,
@@ -3869,7 +2857,6 @@ AbstractContainerAccess* createContainerAccess(JNIEnv* env, AssociativeContainer
         }
             break;
         case AssociativeContainerType::QMultiMap:
-//#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
         {
             AbstractMultiMapAccess* access;
             switch(memberType1){
@@ -3881,24 +2868,14 @@ AbstractContainerAccess* createContainerAccess(JNIEnv* env, AssociativeContainer
                 case AbstractContainerAccess::FunctionPointer:
                 case AbstractContainerAccess::PointerToQObject:
                     containerAccess = access = new PointersRCAutoMultiMapAccess(
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer1 && !memberMetaType1.isValid() ? QMetaType::VoidStar : memberMetaType1.id(),
-                                                                         isPointer1 ? alignof(void*) : (align1 ? align1 : qMin<size_t>(size1, alignof(std::max_align_t))),
-#else
                                                                          isPointer1 && !memberMetaType1.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType1,
-#endif
                                                                          hashFunction1,
                                                                          memberConverter1,
                                                                          memberReConverter1,
                                                                          memberNestedContainerAccess1,
                                                                          ownerFunction1,
                                                                          memberType1,
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer2 && !memberMetaType2.isValid() ? QMetaType::VoidStar : memberMetaType2.id(),
-                                                                         isPointer2 ? alignof(void*) : (align2 ? align2 : qMin<size_t>(size2, alignof(std::max_align_t))),
-#else
                                                                          isPointer2 && !memberMetaType2.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType2,
-#endif
                                                                          hashFunction2,
                                                                          memberConverter2,
                                                                          memberReConverter2,
@@ -3909,24 +2886,14 @@ AbstractContainerAccess* createContainerAccess(JNIEnv* env, AssociativeContainer
                 default:
                     if(hasNestedPointers2){
                         containerAccess = access = new NestedPointersRCAutoMultiMapAccess(
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer1 && !memberMetaType1.isValid() ? QMetaType::VoidStar : memberMetaType1.id(),
-                                                                         isPointer1 ? alignof(void*) : (align1 ? align1 : qMin<size_t>(size1, alignof(std::max_align_t))),
-#else
                                                                          isPointer1 && !memberMetaType1.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType1,
-#endif
                                                                          hashFunction1,
                                                                          memberConverter1,
                                                                          memberReConverter1,
                                                                          memberNestedContainerAccess1,
                                                                          ownerFunction1,
                                                                          memberType1,
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer2 && !memberMetaType2.isValid() ? QMetaType::VoidStar : memberMetaType2.id(),
-                                                                         isPointer2 ? alignof(void*) : (align2 ? align2 : qMin<size_t>(size2, alignof(std::max_align_t))),
-#else
                                                                          isPointer2 && !memberMetaType2.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType2,
-#endif
                                                                          hashFunction2,
                                                                          memberConverter2,
                                                                          memberReConverter2,
@@ -3935,24 +2902,14 @@ AbstractContainerAccess* createContainerAccess(JNIEnv* env, AssociativeContainer
                                                                          memberType2);
                     }else{
                         containerAccess = access = new KeyPointerRCAutoMultiMapAccess(
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer1 && !memberMetaType1.isValid() ? QMetaType::VoidStar : memberMetaType1.id(),
-                                                                         isPointer1 ? alignof(void*) : (align1 ? align1 : qMin<size_t>(size1, alignof(std::max_align_t))),
-#else
                                                                          isPointer1 && !memberMetaType1.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType1,
-#endif
                                                                          hashFunction1,
                                                                          memberConverter1,
                                                                          memberReConverter1,
                                                                          memberNestedContainerAccess1,
                                                                          ownerFunction1,
                                                                          memberType1,
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer2 && !memberMetaType2.isValid() ? QMetaType::VoidStar : memberMetaType2.id(),
-                                                                         isPointer2 ? alignof(void*) : (align2 ? align2 : qMin<size_t>(size2, alignof(std::max_align_t))),
-#else
                                                                          isPointer2 && !memberMetaType2.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType2,
-#endif
                                                                          hashFunction2,
                                                                          memberConverter2,
                                                                          memberReConverter2,
@@ -3966,24 +2923,14 @@ AbstractContainerAccess* createContainerAccess(JNIEnv* env, AssociativeContainer
             default:{
                     if(hasNestedPointers1){
                         containerAccess = access = new NestedPointersRCAutoMultiMapAccess(
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer1 && !memberMetaType1.isValid() ? QMetaType::VoidStar : memberMetaType1.id(),
-                                                                         isPointer1 ? alignof(void*) : (align1 ? align1 : qMin<size_t>(size1, alignof(std::max_align_t))),
-#else
                                                                          isPointer1 && !memberMetaType1.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType1,
-#endif
                                                                          hashFunction1,
                                                                          memberConverter1,
                                                                          memberReConverter1,
                                                                          memberNestedContainerAccess1,
                                                                          ownerFunction1,
                                                                          memberType1,
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer2 && !memberMetaType2.isValid() ? QMetaType::VoidStar : memberMetaType2.id(),
-                                                                         isPointer2 ? alignof(void*) : (align2 ? align2 : qMin<size_t>(size2, alignof(std::max_align_t))),
-#else
                                                                          isPointer2 && !memberMetaType2.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType2,
-#endif
                                                                          hashFunction2,
                                                                          memberConverter2,
                                                                          memberReConverter2,
@@ -3996,24 +2943,14 @@ AbstractContainerAccess* createContainerAccess(JNIEnv* env, AssociativeContainer
                         case AbstractContainerAccess::FunctionPointer:
                         case AbstractContainerAccess::PointerToQObject:
                             containerAccess = access = new ValuePointerRCAutoMultiMapAccess(
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer1 && !memberMetaType1.isValid() ? QMetaType::VoidStar : memberMetaType1.id(),
-                                                                         isPointer1 ? alignof(void*) : (align1 ? align1 : qMin<size_t>(size1, alignof(std::max_align_t))),
-#else
                                                                          isPointer1 && !memberMetaType1.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType1,
-#endif
                                                                          hashFunction1,
                                                                          memberConverter1,
                                                                          memberReConverter1,
                                                                          memberNestedContainerAccess1,
                                                                          ownerFunction1,
                                                                          memberType1,
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer2 && !memberMetaType2.isValid() ? QMetaType::VoidStar : memberMetaType2.id(),
-                                                                         isPointer2 ? alignof(void*) : (align2 ? align2 : qMin<size_t>(size2, alignof(std::max_align_t))),
-#else
                                                                          isPointer2 && !memberMetaType2.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType2,
-#endif
                                                                          hashFunction2,
                                                                          memberConverter2,
                                                                          memberReConverter2,
@@ -4024,24 +2961,14 @@ AbstractContainerAccess* createContainerAccess(JNIEnv* env, AssociativeContainer
                         default:
                             if(hasNestedPointers2){
                                 containerAccess = access = new NestedPointersRCAutoMultiMapAccess(
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer1 && !memberMetaType1.isValid() ? QMetaType::VoidStar : memberMetaType1.id(),
-                                                                         isPointer1 ? alignof(void*) : (align1 ? align1 : qMin<size_t>(size1, alignof(std::max_align_t))),
-#else
                                                                          isPointer1 && !memberMetaType1.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType1,
-#endif
                                                                          hashFunction1,
                                                                          memberConverter1,
                                                                          memberReConverter1,
                                                                          memberNestedContainerAccess1,
                                                                          ownerFunction1,
                                                                          memberType1,
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                                         isPointer2 && !memberMetaType2.isValid() ? QMetaType::VoidStar : memberMetaType2.id(),
-                                                                         isPointer2 ? alignof(void*) : (align2 ? align2 : qMin<size_t>(size2, alignof(std::max_align_t))),
-#else
                                                                          isPointer2 && !memberMetaType2.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType2,
-#endif
                                                                          hashFunction2,
                                                                          memberConverter2,
                                                                          memberReConverter2,
@@ -4050,24 +2977,14 @@ AbstractContainerAccess* createContainerAccess(JNIEnv* env, AssociativeContainer
                                                                          memberType2);
                             }else{
                                 containerAccess = access = new AutoMultiMapAccess(
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                             isPointer1 && !memberMetaType1.isValid() ? QMetaType::VoidStar : memberMetaType1.id(),
-                                                             isPointer1 ? alignof(void*) : (align1 ? align1 : qMin<size_t>(size1, alignof(std::max_align_t))),
-#else
                                                              isPointer1 && !memberMetaType1.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType1,
-#endif
                                                              hashFunction1,
                                                              memberConverter1,
                                                              memberReConverter1,
                                                              memberNestedContainerAccess1,
                                                              ownerFunction1,
                                                              memberType1,
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                             isPointer2 && !memberMetaType2.isValid() ? QMetaType::VoidStar : memberMetaType2.id(),
-                                                             isPointer2 ? alignof(void*) : (align2 ? align2 : qMin<size_t>(size2, alignof(std::max_align_t))),
-#else
                                                              isPointer2 && !memberMetaType2.isValid() ? QMetaType(QMetaType::VoidStar) : memberMetaType2,
-#endif
                                                              hashFunction2,
                                                              memberConverter2,
                                                              memberReConverter2,
@@ -4157,44 +3074,6 @@ AbstractSetAccess* checkContainerAccess(JNIEnv * env, AbstractSetAccess* contain
     }
     return containerAccess;
 }
-
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-AbstractLinkedListAccess* checkContainerAccess(JNIEnv * env, AbstractLinkedListAccess* containerAccess){
-    QtJambiAPI::checkNullPointer(env, containerAccess);
-    if(!dynamic_cast<AbstractReferenceCountingContainer*>(containerAccess)){
-        switch(containerAccess->elementType()){
-        case AbstractContainerAccess::Pointer:
-        case AbstractContainerAccess::FunctionPointer:
-        case AbstractContainerAccess::PointerToQObject:
-            containerAccess = new PointerRCLinkedListAccess(containerAccess);
-            break;
-        default:
-            if(containerAccess->hasNestedPointers())
-                containerAccess = new NestedPointersRCLinkedListAccess(containerAccess);
-            break;
-        }
-    }
-    return containerAccess;
-}
-
-AbstractVectorAccess* checkContainerAccess(JNIEnv * env, AbstractVectorAccess* containerAccess){
-    QtJambiAPI::checkNullPointer(env, containerAccess);
-    if(!dynamic_cast<AbstractReferenceCountingContainer*>(containerAccess)){
-        switch(containerAccess->elementType()){
-        case AbstractContainerAccess::Pointer:
-        case AbstractContainerAccess::FunctionPointer:
-        case AbstractContainerAccess::PointerToQObject:
-            containerAccess = new PointerRCVectorAccess(containerAccess);
-            break;
-        default:
-            if(containerAccess->hasNestedPointers())
-                containerAccess = new NestedPointersRCVectorAccess(containerAccess);
-            break;
-        }
-    }
-    return containerAccess;
-}
-#endif
 
 AbstractHashAccess* checkContainerAccess(JNIEnv * env, AbstractHashAccess* containerAccess){
     QtJambiAPI::checkNullPointer(env, containerAccess);
@@ -4386,7 +3265,6 @@ AbstractWrapperContainerAccess::~AbstractWrapperContainerAccess(){}
 AbstractContainerAccess::AbstractContainerAccess(){}
 AbstractContainerAccess::~AbstractContainerAccess(){}
 void AbstractContainerAccess::dispose(){}
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 void* AbstractContainerAccess::createContainer(void* moved){
     size_t sz = sizeOf();
     if(sz>0){
@@ -4403,7 +3281,6 @@ void* AbstractContainerAccess::createContainer(JNIEnv *env, const ContainerAndAc
         return nullptr;
     }
 }
-#endif
 void* AbstractContainerAccess::createContainer(){
     size_t sz = sizeOf();
     if(sz>0){
@@ -4442,10 +3319,8 @@ size_t AbstractSequentialConstIteratorAccess::sizeOf() {return 0;}
 void* AbstractSequentialConstIteratorAccess::constructContainer(void*) {return nullptr;}
 void* AbstractSequentialConstIteratorAccess::constructContainer(void*,const void*) {return nullptr;}
 void* AbstractSequentialConstIteratorAccess::constructContainer(JNIEnv *,void*,const ConstContainerAndAccessInfo&) {return nullptr;}
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 void* AbstractSequentialConstIteratorAccess::constructContainer(void*,void*) {return nullptr;}
 void* AbstractSequentialConstIteratorAccess::constructContainer(JNIEnv *,void*,const ContainerAndAccessInfo&) {return nullptr;}
-#endif
 bool AbstractSequentialConstIteratorAccess::destructContainer(void*) {return false;}
 int AbstractSequentialConstIteratorAccess::registerContainer(const QByteArray&) {return QMetaType::UnknownType;}
 
@@ -4486,13 +3361,6 @@ void AbstractSpanAccess::clear(JNIEnv * env, const ContainerInfo&){
 
 AbstractListAccess::~AbstractListAccess(){}
 AbstractListAccess::AbstractListAccess(){}
-
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-AbstractVectorAccess::~AbstractVectorAccess(){}
-AbstractVectorAccess::AbstractVectorAccess(){}
-AbstractLinkedListAccess::~AbstractLinkedListAccess(){}
-AbstractLinkedListAccess::AbstractLinkedListAccess(){}
-#endif
 
 AbstractSetAccess::~AbstractSetAccess(){}
 AbstractSetAccess::AbstractSetAccess(){}
@@ -5299,7 +4167,6 @@ void PointerRCListAccess::remove(JNIEnv * env, const ContainerInfo& container, j
     }
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 void PointerRCListAccess::fill(JNIEnv * env, const ContainerInfo& container, jobject value, jint size){
     jint oldSize = WrapperListAccess::size(env, container.container);
     WrapperListAccess::fill(env, container, value, size);
@@ -5307,7 +4174,6 @@ void PointerRCListAccess::fill(JNIEnv * env, const ContainerInfo& container, job
         addRC(env, container.object, value);
     }
 }
-#endif
 
 PointerRCSetAccess::~PointerRCSetAccess(){}
 
@@ -5402,243 +4268,6 @@ void PointerRCSetAccess::unite(JNIEnv * env, const ContainerInfo& container, Con
     WrapperSetAccess::unite(env, container, other);
     updateRC(env, container);
 }
-
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-
-PointerRCLinkedListAccess::~PointerRCLinkedListAccess(){}
-
-PointerRCLinkedListAccess::PointerRCLinkedListAccess(AbstractLinkedListAccess* containerAccess)
-    : WrapperLinkedListAccess(containerAccess), ReferenceCountingSetContainer() {}
-
-PointerRCLinkedListAccess::PointerRCLinkedListAccess(PointerRCLinkedListAccess& other)
-    : WrapperLinkedListAccess(other.WrapperLinkedListAccess::clone()), ReferenceCountingSetContainer() {}
-
-PointerRCLinkedListAccess* PointerRCLinkedListAccess::clone(){
-    return new PointerRCLinkedListAccess(*this);
-}
-
-void PointerRCLinkedListAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
-    WrapperLinkedListAccess::swap(env, container, container2);
-    if(PointerRCLinkedListAccess* access = dynamic_cast<PointerRCLinkedListAccess*>(container2.access)){
-        if(access!=this)
-            swapRC(env, container, container2);
-    }else{
-        updateRC(env, container);
-    }
-}
-
-void PointerRCLinkedListAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
-    WrapperLinkedListAccess::assign(env, container, container2);
-    if(PointerRCLinkedListAccess* access = dynamic_cast<PointerRCLinkedListAccess*>(container2.access)){
-        if(access!=this)
-            assignRC(env, container.object, container2.object);
-    }else{
-        updateRC(env, container);
-    }
-}
-
-void PointerRCLinkedListAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
-    JniLocalFrame frame(env, 200);
-    jobject set = Java::Runtime::ArrayList::newInstance(env);
-    auto iterator = elementIterator(container.container);
-    while(iterator->hasNext()){
-        const void* content = iterator->next();
-        jobject obj{nullptr};
-        switch(elementType()){
-        case PointerToQObject:
-            obj = QtJambiAPI::findObject(env, reinterpret_cast<const QObject*>(content));
-            break;
-        case FunctionPointer:
-            if(const std::type_info* typeId = getTypeByMetaType(elementMetaType())){
-                obj = QtJambiAPI::findFunctionPointerObject(env, content, *typeId);
-                break;
-            }
-            Q_FALLTHROUGH();
-        case Pointer:
-            obj = QtJambiAPI::findObject(env, content);
-            break;
-        default:
-            break;
-        }
-        if(obj)
-            Java::Runtime::Collection::add(env, set, obj);
-    }
-    clearRC(env, container.object);
-    addAllRC(env, container.object, set);
-}
-
-void PointerRCLinkedListAccess::clear(JNIEnv * env, const ContainerInfo& container) {
-    WrapperLinkedListAccess::clear(env, container);
-    clearRC(env, container.object);
-}
-
-void PointerRCLinkedListAccess::append(JNIEnv * env, const ContainerInfo& container, jobject value) {
-    WrapperLinkedListAccess::append(env, container, value);
-    if(value)
-        addRC(env, container.object, value);
-}
-
-void PointerRCLinkedListAccess::prepend(JNIEnv * env, const ContainerInfo& container, jobject value) {
-    WrapperLinkedListAccess::prepend(env, container, value);
-    if(value)
-        addRC(env, container.object, value);
-}
-
-jboolean PointerRCLinkedListAccess::removeOne(JNIEnv * env, const ContainerInfo& container, jobject value) {
-    jboolean result = WrapperLinkedListAccess::removeOne(env, container, value);
-    if(result && !WrapperLinkedListAccess::contains(env, container.container, value)){
-        removeRC(env, container.object, value);
-    }
-    return result;
-}
-
-void PointerRCLinkedListAccess::removeFirst(JNIEnv * env, const ContainerInfo& container) {
-    jobject oldValue = WrapperLinkedListAccess::first(env, container.container);
-    WrapperLinkedListAccess::removeFirst(env, container);
-    if(!WrapperLinkedListAccess::contains(env, container.container, oldValue))
-        removeRC(env, container.object, oldValue);
-}
-
-void PointerRCLinkedListAccess::removeLast(JNIEnv * env, const ContainerInfo& container) {
-    jobject oldValue = WrapperLinkedListAccess::last(env, container.container);
-    WrapperLinkedListAccess::removeLast(env, container);
-    if(!WrapperLinkedListAccess::contains(env, container.container, oldValue))
-        removeRC(env, container.object, oldValue);
-}
-
-jint PointerRCLinkedListAccess::removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) {
-    jint result = WrapperLinkedListAccess::removeAll(env, container, value);
-    removeRC(env, container.object, value, result);
-    return result;
-}
-
-jobject PointerRCLinkedListAccess::takeFirst(JNIEnv * env, const ContainerInfo& container) {
-    jobject result = WrapperLinkedListAccess::takeFirst(env, container);
-    removeRC(env, container.object, result);
-    return result;
-}
-
-jobject PointerRCLinkedListAccess::takeLast(JNIEnv * env, const ContainerInfo& container) {
-    jobject result = WrapperLinkedListAccess::takeLast(env, container);
-    removeRC(env, container.object, result);
-    return result;
-}
-
-PointerRCVectorAccess::~PointerRCVectorAccess(){}
-
-PointerRCVectorAccess::PointerRCVectorAccess(AbstractVectorAccess* containerAccess)
-    : WrapperVectorAccess(containerAccess), ReferenceCountingSetContainer() {}
-
-PointerRCVectorAccess::PointerRCVectorAccess(PointerRCVectorAccess& other)
-    : WrapperVectorAccess(other.WrapperVectorAccess::clone()), ReferenceCountingSetContainer() {}
-
-PointerRCVectorAccess* PointerRCVectorAccess::clone(){
-    return new PointerRCVectorAccess(*this);
-}
-
-void PointerRCVectorAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
-    JniLocalFrame frame(env, 200);
-    jobject set = Java::Runtime::ArrayList::newInstance(env);
-    auto iterator = elementIterator(container.container);
-    while(iterator->hasNext()){
-        const void* content = iterator->next();
-        jobject obj{nullptr};
-        switch(elementType()){
-        case PointerToQObject:
-            obj = QtJambiAPI::findObject(env, reinterpret_cast<const QObject*>(content));
-            break;
-        case FunctionPointer:
-            if(const std::type_info* typeId = getTypeByMetaType(elementMetaType())){
-                obj = QtJambiAPI::findFunctionPointerObject(env, content, *typeId);
-                break;
-            }
-            Q_FALLTHROUGH();
-        case Pointer:
-            obj = QtJambiAPI::findObject(env, content);
-            break;
-        default:
-            break;
-        }
-        if(obj)
-            Java::Runtime::Collection::add(env, set, obj);
-    }
-    clearRC(env, container.object);
-    addAllRC(env, container.object, set);
-}
-
-void PointerRCVectorAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
-    WrapperVectorAccess::swap(env, container, container2);
-    if(PointerRCVectorAccess* access = dynamic_cast<PointerRCVectorAccess*>(container2.access)){
-        if(access!=this)
-            swapRC(env, container, container2);
-    }else{
-        updateRC(env, container);
-    }
-}
-
-void PointerRCVectorAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
-    WrapperVectorAccess::assign(env, container, container2);
-    if(PointerRCVectorAccess* access = dynamic_cast<PointerRCVectorAccess*>(container2.access)){
-        if(access!=this)
-            assignRC(env, container.object, container2.object);
-    }else{
-        updateRC(env, container);
-    }
-}
-
-void PointerRCVectorAccess::appendVector(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& containerInfo) {
-    WrapperVectorAccess::appendVector(env, container, containerInfo);
-    addAllRC(env, container.object, findContainer(env, containerInfo.object));
-}
-
-void PointerRCVectorAccess::replace(JNIEnv * env, const ContainerInfo& container, jint index, jobject value) {
-    jobject oldValue = WrapperVectorAccess::at(env, container.container, index);
-    WrapperVectorAccess::replace(env, container, index, value);
-    if(oldValue && !WrapperVectorAccess::contains(env, container.container, oldValue))
-        removeRC(env, container.object, oldValue);
-    if(value)
-        addRC(env, container.object, value);
-}
-
-jint PointerRCVectorAccess::removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) {
-    jint result = WrapperVectorAccess::removeAll(env, container, value);
-    removeRC(env, container.object, value, result);
-    return result;
-}
-
-void PointerRCVectorAccess::clear(JNIEnv * env, const ContainerInfo& container) {
-    WrapperVectorAccess::clear(env, container);
-    clearRC(env, container.object);
-}
-
-void PointerRCVectorAccess::remove(JNIEnv * env, const ContainerInfo& container, jint index, jint n) {
-    jint size = WrapperVectorAccess::size(env, container.container);
-    jobject removedValues = Java::Runtime::ArrayList::newInstance(env);
-    for(jint i = index; i<=index+n && i<size; ++i){
-        Java::Runtime::Collection::add(env, removedValues, WrapperVectorAccess::at(env, container.container, i));
-    }
-    WrapperVectorAccess::remove(env, container, index, n);
-    jobject iter = Java::Runtime::Collection::iterator(env, removedValues);
-    while(Java::Runtime::Iterator::hasNext(env, iter)){
-        jobject value = Java::Runtime::Iterator::next(env, iter);
-        removeRC(env, container.object, value);
-    }
-}
-
-void PointerRCVectorAccess::insert(JNIEnv * env, const ContainerInfo& container, jint index, jint n, jobject value) {
-    WrapperVectorAccess::insert(env, container, index, n, value);
-    addRC(env, container.object, value);
-}
-
-void PointerRCVectorAccess::fill(JNIEnv * env, const ContainerInfo& container, jobject value, jint size){
-    jint oldSize = WrapperVectorAccess::size(env, container.container);
-    WrapperVectorAccess::fill(env, container, value, size);
-    for(;oldSize<size;++oldSize){
-        addRC(env, container.object, value);
-    }
-}
-
-#endif
 
 KeyPointerRCMapAccess::~KeyPointerRCMapAccess(){}
 
@@ -6916,12 +5545,10 @@ void NestedPointersRCListAccess::remove(JNIEnv * env, const ContainerInfo& conta
     updateRC(env, container);
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 void NestedPointersRCListAccess::fill(JNIEnv * env, const ContainerInfo& container, jobject value, jint size){
     WrapperListAccess::fill(env, container, value, size);
     addNestedValueRC(env, container.object, elementType(), hasNestedPointers(), value);
 }
-#endif
 
 NestedPointersRCSetAccess::NestedPointersRCSetAccess(AbstractSetAccess* containerAccess)
     : WrapperSetAccess(containerAccess), ReferenceCountingSetContainer() {}
@@ -6995,196 +5622,6 @@ void NestedPointersRCSetAccess::unite(JNIEnv * env, const ContainerInfo& contain
     WrapperSetAccess::unite(env, container, other);
     updateRC(env, container);
 }
-
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-
-NestedPointersRCLinkedListAccess::NestedPointersRCLinkedListAccess(AbstractLinkedListAccess* containerAccess)
-    : WrapperLinkedListAccess(containerAccess), ReferenceCountingSetContainer() {}
-
-NestedPointersRCLinkedListAccess::NestedPointersRCLinkedListAccess(NestedPointersRCLinkedListAccess& other)
-    : WrapperLinkedListAccess(other.WrapperLinkedListAccess::clone()), ReferenceCountingSetContainer() {}
-
-NestedPointersRCLinkedListAccess* NestedPointersRCLinkedListAccess::clone(){
-    return new NestedPointersRCLinkedListAccess(*this);
-}
-
-void NestedPointersRCLinkedListAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
-    if(size(env, container.container)==0){
-        clearRC(env, container.object);
-    }else{
-        JniLocalFrame frame(env, 200);
-        jobject set = Java::Runtime::HashSet::newInstance(env);
-        auto access = elementNestedContainerAccess();
-        auto iterator = elementIterator(container.container);
-        while(iterator->hasNext()){
-            unfoldAndAddContainer(env, set, iterator->next(), elementType(), elementMetaType(), access);
-        }
-        if(access)
-            access->dispose();
-        addAllRC(env, container.object, set);
-    }
-}
-
-void NestedPointersRCLinkedListAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
-    WrapperLinkedListAccess::swap(env, container, container2);
-    if(NestedPointersRCLinkedListAccess* access = dynamic_cast<NestedPointersRCLinkedListAccess*>(container2.access)){
-        if(access!=this)
-            swapRC(env, container, container2);
-    }else{
-        updateRC(env, container);
-    }
-}
-
-void NestedPointersRCLinkedListAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
-    WrapperLinkedListAccess::assign(env, container, container2);
-    if(NestedPointersRCLinkedListAccess* access = dynamic_cast<NestedPointersRCLinkedListAccess*>(container2.access)){
-        if(access!=this)
-            assignRC(env, container.object, container2.object);
-    }else{
-        updateRC(env, container);
-    }
-}
-
-void NestedPointersRCLinkedListAccess::clear(JNIEnv * env, const ContainerInfo& container) {
-    WrapperLinkedListAccess::clear(env, container);
-    clearRC(env, container.object);
-}
-
-void NestedPointersRCLinkedListAccess::append(JNIEnv * env, const ContainerInfo& container, jobject value) {
-    WrapperLinkedListAccess::append(env, container, value);
-    addNestedValueRC(env, container.object, elementType(), hasNestedPointers(), value);
-}
-
-void NestedPointersRCLinkedListAccess::prepend(JNIEnv * env, const ContainerInfo& container, jobject value) {
-    WrapperLinkedListAccess::prepend(env, container, value);
-    addNestedValueRC(env, container.object, elementType(), hasNestedPointers(), value);
-}
-
-jboolean NestedPointersRCLinkedListAccess::removeOne(JNIEnv * env, const ContainerInfo& container, jobject value) {
-    jboolean result = WrapperLinkedListAccess::removeOne(env, container, value);
-    if(result){
-        updateRC(env, container);
-    }
-    return result;
-}
-
-void NestedPointersRCLinkedListAccess::removeFirst(JNIEnv * env, const ContainerInfo& container) {
-    WrapperLinkedListAccess::removeFirst(env, container);
-    updateRC(env, container);
-}
-
-void NestedPointersRCLinkedListAccess::removeLast(JNIEnv * env, const ContainerInfo& container) {
-    WrapperLinkedListAccess::removeLast(env, container);
-    updateRC(env, container);
-}
-
-jint NestedPointersRCLinkedListAccess::removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) {
-    jint result = WrapperLinkedListAccess::removeAll(env, container, value);
-    if(result>0){
-        updateRC(env, container);
-    }
-    return result;
-}
-
-jobject NestedPointersRCLinkedListAccess::takeFirst(JNIEnv * env, const ContainerInfo& container) {
-    jobject result = WrapperLinkedListAccess::takeFirst(env, container);
-    updateRC(env, container);
-    return result;
-}
-
-jobject NestedPointersRCLinkedListAccess::takeLast(JNIEnv * env, const ContainerInfo& container) {
-    jobject result = WrapperLinkedListAccess::takeLast(env, container);
-    updateRC(env, container);
-    return result;
-}
-
-NestedPointersRCVectorAccess::NestedPointersRCVectorAccess(AbstractVectorAccess* containerAccess)
-    : WrapperVectorAccess(containerAccess), ReferenceCountingSetContainer() {}
-
-NestedPointersRCVectorAccess::NestedPointersRCVectorAccess(NestedPointersRCVectorAccess& other)
-    : WrapperVectorAccess(other.WrapperVectorAccess::clone()), ReferenceCountingSetContainer() {}
-
-NestedPointersRCVectorAccess* NestedPointersRCVectorAccess::clone(){
-    return new NestedPointersRCVectorAccess(*this);
-}
-
-void NestedPointersRCVectorAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
-    if(size(env, container.container)==0){
-        clearRC(env, container.object);
-    }else{
-        JniLocalFrame frame(env, 200);
-        jobject set = Java::Runtime::HashSet::newInstance(env);
-        auto access = elementNestedContainerAccess();
-        auto iterator = elementIterator(container.container);
-        while(iterator->hasNext()){
-            unfoldAndAddContainer(env, set, iterator->next(), elementType(), elementMetaType(), access);
-        }
-        if(access)
-            access->dispose();
-        addAllRC(env, container.object, set);
-    }
-}
-
-void NestedPointersRCVectorAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
-    WrapperVectorAccess::swap(env, container, container2);
-    if(NestedPointersRCVectorAccess* access = dynamic_cast<NestedPointersRCVectorAccess*>(container2.access)){
-        if(access!=this)
-            swapRC(env, container, container2);
-    }else{
-        updateRC(env, container);
-    }
-}
-
-void NestedPointersRCVectorAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
-    WrapperVectorAccess::assign(env, container, container2);
-    if(NestedPointersRCVectorAccess* access = dynamic_cast<NestedPointersRCVectorAccess*>(container2.access)){
-        if(access!=this)
-            assignRC(env, container.object, container2.object);
-    }else{
-        updateRC(env, container);
-    }
-}
-
-void NestedPointersRCVectorAccess::appendVector(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& containerInfo) {
-    WrapperVectorAccess::appendVector(env, container, containerInfo);
-    updateRC(env, container);
-}
-
-jint NestedPointersRCVectorAccess::removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) {
-    jint result = WrapperVectorAccess::removeAll(env, container, value);
-    if(result>0){
-        updateRC(env, container);
-    }
-    return result;
-}
-
-void NestedPointersRCVectorAccess::clear(JNIEnv * env, const ContainerInfo& container) {
-    WrapperVectorAccess::clear(env, container);
-    clearRC(env, container.object);
-}
-
-void NestedPointersRCVectorAccess::remove(JNIEnv * env, const ContainerInfo& container, jint index, jint n) {
-    WrapperVectorAccess::remove(env, container, index, n);
-    updateRC(env, container);
-}
-
-void NestedPointersRCVectorAccess::insert(JNIEnv * env, const ContainerInfo& container, jint index, jint n, jobject value) {
-    WrapperVectorAccess::insert(env, container, index, n, value);
-    addNestedValueRC(env, container.object, elementType(), hasNestedPointers(), value);
-}
-
-void NestedPointersRCVectorAccess::fill(JNIEnv * env, const ContainerInfo& container, jobject value, jint size){
-    WrapperVectorAccess::fill(env, container, value, size);
-    addNestedValueRC(env, container.object, elementType(), hasNestedPointers(), value);
-}
-
-void NestedPointersRCVectorAccess::replace(JNIEnv * env, const ContainerInfo& container, jint index, jobject value){
-    WrapperVectorAccess::replace(env, container, index, value);
-    updateRC(env, container);
-}
-
-#endif
-
 
 NestedPointersRCMapAccess::NestedPointersRCMapAccess(AbstractMapAccess* containerAccess)
     : WrapperMapAccess(containerAccess), ReferenceCountingSetContainer() {}
@@ -7534,11 +5971,6 @@ jobject NestedPointersRCMultiHashAccess::take(JNIEnv *env, const ContainerInfo& 
 #if defined(QTJAMBI_GENERIC_ACCESS)
 void registerPointerContainerAccess(){
     using namespace ContainerAccessAPI;
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    SequentialContainerAccessFactoryHelper<QLinkedList, 0, 0, false>::registerContainerAccessFactory();
-    SequentialContainerAccessFactoryHelper<QVector, 0, 0, false>::registerContainerAccessFactory();
-    SequentialContainerAccessFactoryHelper<QList, 0, 0, true>::registerContainerAccessFactory();
-#endif
     SequentialContainerAccessFactoryHelper<QList, 0, 0, false>::registerContainerAccessFactory();
     SequentialContainerAccessFactoryHelper<QSet, 0, 0, false>::registerContainerAccessFactory();
     AssociativeContainerAccessFactoryHelper<QHash,0, 0, 0, 0>::registerContainerAccessFactory();
@@ -7558,200 +5990,6 @@ void registerPointerContainerAccess(){
     AssociativeContainerAccessFactoryHelper<QPair, alignof(int), sizeof(int), 0, 0>::registerContainerAccessFactory();
 }
 #endif //defined(QTJAMBI_GENERIC_ACCESS)
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-
-struct SequentialContainerConverter;
-typedef QVector<QSharedPointer<SequentialContainerConverter>> SequentialContainerConverterList;
-Q_GLOBAL_STATIC(SequentialContainerConverterList, gSequentialContainerConverterList)
-struct AssociativeContainerConverter;
-typedef QVector<QSharedPointer<AssociativeContainerConverter>> AssociativeContainerConverterList;
-Q_GLOBAL_STATIC(AssociativeContainerConverterList, gAssociativeContainerConverterList)
-struct PairContainerConverter;
-typedef QVector<QSharedPointer<PairContainerConverter>> PairConverterList;
-Q_GLOBAL_STATIC(PairConverterList, gPairConverterList)
-
-struct PairContainerConverter : QtPrivate::AbstractConverterFunction{
-    explicit PairContainerConverter(QSharedPointer<AbstractPairAccess> pairAccess)
-        : QtPrivate::AbstractConverterFunction(convert), m_pairAccess(pairAccess)
-    {
-        gPairConverterList->append(QSharedPointer<PairContainerConverter>(this));
-    }
-
-    static bool convert(const QtPrivate::AbstractConverterFunction *_this, const void *in, void *out)
-    {
-        if(JniEnvironment env{500}){
-            const PairContainerConverter* converter = static_cast<const PairContainerConverter *>(_this);
-            const JObjectWrapper* javaObject = reinterpret_cast<const JObjectWrapper*>(in);
-            if(converter && javaObject && Java::QtCore::QPair::isInstanceOf(env, javaObject->object(env))){
-                jobject first = Java::QtCore::QPair::first(env, javaObject->object(env));
-                jobject second = Java::QtCore::QPair::second(env, javaObject->object(env));
-                converter->m_pairAccess->setFirst(env, out, first);
-                converter->m_pairAccess->setSecond(env, out, second);
-                return true;
-            }
-        }
-        return false;
-    }
-    QSharedPointer<AbstractPairAccess> m_pairAccess;
-};
-
-void registerContainerConverter(QSharedPointer<AbstractPairAccess> pairAccess, const QMetaType& containerMetaType){
-    if(!QMetaType::hasRegisteredConverterFunction(qMetaTypeId<JObjectWrapper>(), containerMetaType.id())){
-        registerConverter(new PairContainerConverter(pairAccess), qMetaTypeId<JObjectWrapper>(), containerMetaType.id());
-    }
-}
-
-struct SequentialContainerConverter : QtPrivate::AbstractConverterFunction{
-    explicit SequentialContainerConverter(SequentialContainerType containerType, const QMetaType& metaType)
-        : QtPrivate::AbstractConverterFunction(convert),
-          m_containerType(containerType),
-          m_elementMetaType(metaType.id()
-    ){
-        gSequentialContainerConverterList->append(QSharedPointer<SequentialContainerConverter>(this));
-    }
-
-    static bool convert(const QtPrivate::AbstractConverterFunction *_this, const void *in, void *out)
-    {
-        if(JniEnvironment env{500}){
-            const SequentialContainerConverter* converter = static_cast<const SequentialContainerConverter *>(_this);
-            const JObjectWrapper* javaObject = reinterpret_cast<const JObjectWrapper*>(in);
-            if(converter && javaObject && Java::QtJambi::NativeUtility$Object::isInstanceOf(env, javaObject->object(env))){
-                if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, javaObject->object(env))){
-                    if(AbstractContainerAccess* _containerAccess = link->containerAccess()){
-                        switch(converter->m_containerType){
-                        case SequentialContainerType::QStack:
-                        case SequentialContainerType::QVector:
-                            if(AbstractVectorAccess* containerAccess = dynamic_cast<AbstractVectorAccess*>(_containerAccess)){
-                                if(converter->m_elementMetaType==containerAccess->elementMetaType()){
-                                    containerAccess->assign(out, link->pointer());
-                                    return true;
-                                }
-                            }
-                            break;
-                        case SequentialContainerType::QLinkedList:
-                            if(AbstractLinkedListAccess* containerAccess = dynamic_cast<AbstractLinkedListAccess*>(_containerAccess)){
-                                if(converter->m_elementMetaType==containerAccess->elementMetaType()){
-                                    containerAccess->assign(out, link->pointer());
-                                    return true;
-                                }
-                            }
-                            break;
-                        case SequentialContainerType::QQueue:
-                        case SequentialContainerType::QList:
-                            if(AbstractListAccess* containerAccess = dynamic_cast<AbstractListAccess*>(_containerAccess)){
-                                if(converter->m_elementMetaType==containerAccess->elementMetaType()){
-                                    containerAccess->assign(out, link->pointer());
-                                    return true;
-                                }
-                            }
-                            break;
-                        case SequentialContainerType::QSet:
-                            if(AbstractSetAccess* containerAccess = dynamic_cast<AbstractSetAccess*>(_containerAccess)){
-                                if(converter->m_elementMetaType==containerAccess->elementMetaType()){
-                                    containerAccess->assign(out, link->pointer());
-                                    return true;
-                                }
-                            }
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    SequentialContainerType m_containerType;
-    QMetaType m_elementMetaType;
-};
-
-void registerContainerConverter(SequentialContainerType collectionType, const QMetaType& containerMetaType, const QMetaType& elementMetaType){
-    if(!QMetaType::hasRegisteredConverterFunction(qMetaTypeId<JObjectWrapper>(), containerMetaType.id())){
-        SequentialContainerConverter* converter = new SequentialContainerConverter(collectionType, elementMetaType);
-        registerConverter(converter, qMetaTypeId<JObjectWrapper>(), containerMetaType.id());
-        registerConverter(converter, qMetaTypeId<JCollectionWrapper>(), containerMetaType.id());
-    }
-}
-
-struct AssociativeContainerConverter : QtPrivate::AbstractConverterFunction{
-    explicit AssociativeContainerConverter(AssociativeContainerType containerType, const QMetaType& keyMetaType, const QMetaType& valueMetaType)
-        : QtPrivate::AbstractConverterFunction(convert),
-          m_containerType(containerType),
-          m_keyMetaType(keyMetaType.id()),
-          m_valueMetaType(valueMetaType.id())
-    {
-        gAssociativeContainerConverterList->append(QSharedPointer<AssociativeContainerConverter>(this));
-    }
-
-    static bool convert(const QtPrivate::AbstractConverterFunction *_this, const void *in, void *out)
-    {
-        if(JniEnvironment env{500}){
-            const AssociativeContainerConverter* converter = static_cast<const AssociativeContainerConverter *>(_this);
-            const JObjectWrapper* javaObject = reinterpret_cast<const JObjectWrapper*>(in);
-            if(converter && javaObject && Java::QtJambi::NativeUtility$Object::isInstanceOf(env, javaObject->object(env))){
-                if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, javaObject->object(env))){
-                    if(AbstractContainerAccess* _containerAccess = link->containerAccess()){
-                        switch(converter->m_containerType){
-                        case AssociativeContainerType::QMap:
-                            if(AbstractMapAccess* containerAccess = dynamic_cast<AbstractMapAccess*>(_containerAccess)){
-                                if(converter->m_keyMetaType==containerAccess->keyMetaType()
-                                        && converter->m_valueMetaType==containerAccess->valueMetaType()){
-                                    containerAccess->assign(out, link->pointer());
-                                    return true;
-                                }
-                            }
-                            break;
-                        case AssociativeContainerType::QMultiMap:
-                            if(AbstractMultiMapAccess* containerAccess = dynamic_cast<AbstractMultiMapAccess*>(_containerAccess)){
-                                if(converter->m_keyMetaType==containerAccess->keyMetaType()
-                                        && converter->m_valueMetaType==containerAccess->valueMetaType()){
-                                    containerAccess->assign(out, link->pointer());
-                                    return true;
-                                }
-                            }
-                            break;
-                        case AssociativeContainerType::QHash:
-                            if(AbstractHashAccess* containerAccess = dynamic_cast<AbstractHashAccess*>(_containerAccess)){
-                                if(converter->m_keyMetaType==containerAccess->keyMetaType()
-                                        && converter->m_valueMetaType==containerAccess->valueMetaType()){
-                                    containerAccess->assign(out, link->pointer());
-                                    return true;
-                                }
-                            }
-                            break;
-                        case AssociativeContainerType::QMultiHash:
-                            if(AbstractMultiHashAccess* containerAccess = dynamic_cast<AbstractMultiHashAccess*>(_containerAccess)){
-                                if(converter->m_keyMetaType==containerAccess->keyMetaType()
-                                        && converter->m_valueMetaType==containerAccess->valueMetaType()){
-                                    containerAccess->assign(out, link->pointer());
-                                    return true;
-                                }
-                            }
-                            break;
-                        default: break;
-                        }
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    AssociativeContainerType m_containerType;
-    QMetaType m_keyMetaType;
-    QMetaType m_valueMetaType;
-};
-
-void registerContainerConverter(AssociativeContainerType mapType, const QMetaType& containerMetaType, const QMetaType& keyMetaType, const QMetaType& valueMetaType){
-    if(!QMetaType::hasRegisteredConverterFunction(qMetaTypeId<JObjectWrapper>(), containerMetaType.id())){
-        AssociativeContainerConverter* converter = new AssociativeContainerConverter(mapType, keyMetaType, valueMetaType);
-        registerConverter(converter, qMetaTypeId<JObjectWrapper>(), containerMetaType.id());
-        registerConverter(converter, qMetaTypeId<JCollectionWrapper>(), containerMetaType.id());
-    }
-}
-
-#else
 
 void registerContainerConverter(SequentialContainerType collectionType, const QMetaType& containerMetaType, const QMetaType& _elementMetaType){
     QMetaType jCollectionWrapperType = QMetaType::fromType<JCollectionWrapper>();
@@ -7997,4 +6235,3 @@ bool operator==(const ConstRef& ref1, const ConstRef& ref2){
 
 }
 
-#endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)

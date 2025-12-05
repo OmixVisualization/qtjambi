@@ -32,8 +32,6 @@
 
 #include <QtCore/qglobal.h>
 #include <QtTest/qtestcase.h>
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-
 #include <QtWidgets/QtWidgets>
 #include <QtCore/qmetacontainer.h>
 #include <QtTest/QtTest>
@@ -248,8 +246,6 @@ class QMetaAssociationForContainer<QMap<int,QEventPoint>> : public QMetaContaine
 };
 
 }
-
-#endif
 
 #ifndef QTJAMBI_GENERATOR_RUNNING
 namespace QTest{

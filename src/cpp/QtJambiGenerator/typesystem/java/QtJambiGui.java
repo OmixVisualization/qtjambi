@@ -370,7 +370,7 @@ class QImage___ extends QImage {
 
 class QImage::JNI{
 
-void __qt_create_new_QImage_7(void* __qtjambi_ptr, JNIEnv* env, jobject, jvalue* arguments, QtJambiAPI::ConstructorOptions options){
+void __qt_construct_QImage_7(void* __qtjambi_ptr, JNIEnv* env, jobject, jvalue* arguments, QtJambiAPI::ConstructorOptions options){
     QTJAMBI_NATIVE_METHOD_CALL("construct QImage(unsigned char * data, int width, int height, QImage::Format format, QImageCleanupFunction cleanupFunction = nullptr, void *cleanupInfo = nullptr)");
     jobject data = arguments[0].l;
     jint width = arguments[1].i;
@@ -378,13 +378,13 @@ void __qt_create_new_QImage_7(void* __qtjambi_ptr, JNIEnv* env, jobject, jvalue*
     jobject format = arguments[3].l;
     PersistentJConstByteArrayPointer* qt_data = new PersistentJConstByteArrayPointer(env, jbyteArray(data));
     if(options & QtJambiAPI::HasOverrides)
-        new(__qtjambi_ptr) QImage_oshell(*qt_data, width, height, qtjambi_cast<QImage::Format>(env, format), [](void* ptr){ delete reinterpret_cast<JConstByteArrayPointer*>(ptr); }, qt_data);
+        new(__qtjambi_ptr) QImage_oshell(*qt_data, width, height, qtjambi_cast<QImage::Format>(env, format), [](void* ptr){ delete reinterpret_cast<PersistentJConstByteArrayPointer*>(ptr); }, qt_data);
     else
-        new(__qtjambi_ptr) QImage_shell(*qt_data, width, height, qtjambi_cast<QImage::Format>(env, format), [](void* ptr){ delete reinterpret_cast<JConstByteArrayPointer*>(ptr); }, qt_data);
+        new(__qtjambi_ptr) QImage_shell(*qt_data, width, height, qtjambi_cast<QImage::Format>(env, format), [](void* ptr){ delete reinterpret_cast<PersistentJConstByteArrayPointer*>(ptr); }, qt_data);
 
 }
 
-void __qt_create_new_QImage_8(void* __qtjambi_ptr, JNIEnv* env, jobject, jvalue* arguments, QtJambiAPI::ConstructorOptions options){
+void __qt_construct_QImage_8(void* __qtjambi_ptr, JNIEnv* env, jobject, jvalue* arguments, QtJambiAPI::ConstructorOptions options){
     QTJAMBI_NATIVE_METHOD_CALL("construct QImage(unsigned char * data, int width, int height, QImage::Format format, QImageCleanupFunction cleanupFunction = nullptr, void *cleanupInfo = nullptr)");
     jobject data = arguments[0].l;
     jint width = arguments[1].i;
@@ -392,9 +392,9 @@ void __qt_create_new_QImage_8(void* __qtjambi_ptr, JNIEnv* env, jobject, jvalue*
     jobject format = arguments[3].l;
     PersistentJBufferConstData* qt_data = new PersistentJBufferConstData(env, data);
     if(options & QtJambiAPI::HasOverrides)
-        new(__qtjambi_ptr) QImage_oshell(*qt_data, width, height, qtjambi_cast<QImage::Format>(env, format), [](void* ptr){ delete reinterpret_cast<JBufferConstData*>(ptr); }, qt_data);
+        new(__qtjambi_ptr) QImage_oshell(*qt_data, width, height, qtjambi_cast<QImage::Format>(env, format), [](void* ptr){ delete reinterpret_cast<PersistentJBufferConstData*>(ptr); }, qt_data);
     else
-        new(__qtjambi_ptr) QImage_shell(*qt_data, width, height, qtjambi_cast<QImage::Format>(env, format), [](void* ptr){ delete reinterpret_cast<JBufferConstData*>(ptr); }, qt_data);
+        new(__qtjambi_ptr) QImage_shell(*qt_data, width, height, qtjambi_cast<QImage::Format>(env, format), [](void* ptr){ delete reinterpret_cast<PersistentJBufferConstData*>(ptr); }, qt_data);
 }
 
 extern "C" JNIEXPORT void JNICALL Java_io_qt_gui_QImage_initialize_1native__Lio_qt_gui_QImage_2_3BIILio_qt_gui_QImage_00024Format_2
@@ -413,7 +413,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_gui_QImage_initialize_1native__Lio_
         arguments[1].i = width;
         arguments[2].i = height;
         arguments[3].l = format;
-        QtJambiShell::initialize(env, __jni_class, java_object, &__qt_create_new_QImage_7, sizeof(QImage_shell), typeid(QImage), 0, true, arguments);
+        QtJambiShell::initialize(env, __jni_class, java_object, &__qt_construct_QImage_7, sizeof(QImage_shell), typeid(QImage), 0, true, arguments);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
     }QTJAMBI_TRY_END
@@ -436,7 +436,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_gui_QImage_initialize_1native__Lio_
         arguments[1].i = width;
         arguments[2].i = height;
         arguments[3].l = format;
-        QtJambiShell::initialize(env, __jni_class, java_object, &__qt_create_new_QImage_8, sizeof(QImage_shell), typeid(QImage), 0, true, arguments);
+        QtJambiShell::initialize(env, __jni_class, java_object, &__qt_construct_QImage_8, sizeof(QImage_shell), typeid(QImage), 0, true, arguments);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
     }QTJAMBI_TRY_END

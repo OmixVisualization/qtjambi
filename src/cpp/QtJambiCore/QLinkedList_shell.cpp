@@ -557,7 +557,7 @@ extern "C" JNIEXPORT jint JNICALL Java_io_qt_core_QLinkedList_hashCode
         containerName += containerAccess->elementMetaType().name();
         containerName += ">";
         QMetaType metaType(containerAccess->registerContainer(containerName));
-        hash_type h = CoreAPI::computeHash(metaType, container.first);
+        size_t h = CoreAPI::computeHash(metaType, container.first);
         result = jint(h);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);

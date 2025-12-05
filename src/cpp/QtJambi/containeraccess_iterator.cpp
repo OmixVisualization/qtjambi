@@ -29,13 +29,7 @@
 **
 ****************************************************************************/
 
-#include "qtjambiapi.h"
-#include <QtCore/QReadWriteLock>
-#include <QtCore/QMap>
-#include <QtCore/QSharedPointer>
-#include "containeraccess_p.h"
-#include "functionpointer.h"
-#include "registryutil_p.h"
+#include "pch_p.h"
 
 QT_WARNING_DISABLE_GCC("-Winaccessible-base")
 QT_WARNING_DISABLE_CLANG("-Winaccessible-base")

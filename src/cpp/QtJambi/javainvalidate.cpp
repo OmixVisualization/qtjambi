@@ -29,8 +29,7 @@
 **
 ****************************************************************************/
 
-#include "javainvalidate.h"
-#include "qtjambilink_p.h"
+#include "pch_p.h"
 
 bool invalidateJavaObject(JNIEnv *env, jobject java_object)
 {

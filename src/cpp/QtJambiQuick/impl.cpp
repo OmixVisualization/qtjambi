@@ -38,19 +38,19 @@ typedef std::conditional<sizeof(void*)==sizeof(qint64), struct VkDevice_T *, uin
 typedef enum VkImageLayout{}VkImageLayout;
 typedef enum VkFormat{}VkFormat;
 #endif
-
-#include <QtQuick/QQuickRenderTarget>
-#include <QtQuick/QQuickGraphicsDevice>
 #include <qsgtexture_platform.h>
 #endif
 
-#include <QtQuick/QQuickItem>
 #include <QtQml/QQmlPropertyValueSource>
+#include <QtQuick/QQuickItem>
+#include <QtQuick/QQuickRenderTarget>
+#include <QtQuick/QQuickGraphicsDevice>
 #include <QtQuick/QSGGeometry>
-#include "utils_p.h"
 #include <QtJambi/QtJambiAPI>
-#include <QtJambi/qmlapi.h>
-#include <QtJambi/qtjambi_cast.h>
+#include <QtJambi/QmlAPI>
+#include <QtJambi/JavaAPI>
+#include "utils_p.h"
+#include <QtJambi/Cast>
 
 class QmlPropertyValueSource : public QQmlPropertyValueSource{
     void setTarget(const QQmlProperty &) override;
@@ -161,7 +161,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_quick_QSGGeometry_getColoredPoin
 {
     jobject _result{nullptr};
     QTJAMBI_TRY{
-        QSGGeometry::ColoredPoint2D* vertexData = reinterpret_cast<QSGGeometry::ColoredPoint2D*>(pointer);
+        const QSGGeometry::ColoredPoint2D* vertexData = reinterpret_cast<const QSGGeometry::ColoredPoint2D*>(pointer);
         _result = qtjambi_cast<jobject>(__jni_env, vertexData[index]);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -178,7 +178,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_quick_QSGGeometry_getTexturedPoi
 {
     jobject _result{nullptr};
     QTJAMBI_TRY{
-        QSGGeometry::TexturedPoint2D* vertexData = reinterpret_cast<QSGGeometry::TexturedPoint2D*>(pointer);
+        const QSGGeometry::TexturedPoint2D* vertexData = reinterpret_cast<const QSGGeometry::TexturedPoint2D*>(pointer);
         _result = qtjambi_cast<jobject>(__jni_env, vertexData[index]);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -195,7 +195,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_quick_QSGGeometry_getPoint2D
 {
     jobject _result{nullptr};
     QTJAMBI_TRY{
-        QSGGeometry::Point2D* vertexData = reinterpret_cast<QSGGeometry::Point2D*>(pointer);
+        const QSGGeometry::Point2D* vertexData = reinterpret_cast<const QSGGeometry::Point2D*>(pointer);
         _result = qtjambi_cast<jobject>(__jni_env, vertexData[index]);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);

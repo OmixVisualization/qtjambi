@@ -118,6 +118,9 @@ public:
     }
 	
 	typedef std::function<QString(QObject*)> TestFunction2;
+    typedef std::function<QString(QObject*)> TestFunction3;
+    typedef QString(*TestFunction4)(QObject*);
+    typedef QString(*TestFunction5)(QObject*);
 	virtual QString convert(const TestFunction2& testFunction){
         m_last2 = testFunction;
         if(testFunction){
@@ -144,6 +147,48 @@ public:
     TestFunction2 anyTestFunction2(){
         return [](QObject* o)->QString{return o->objectName();};
     }
+    TestFunction3 anyTestFunction3(){
+        return [](QObject* o)->QString{return o->objectName();};
+    }
+    TestFunction4 anyTestFunction4(){
+        return [](QObject* o)->QString{return o->objectName();};
+    }
+    TestFunction5 anyTestFunction5(){
+        return [](QObject* o)->QString{return o->objectName();};
+    }
+
+    QString takeTestFunction2(TestFunction2 fn){
+        if(fn){
+            QObject o;
+            o.setObjectName("TestFunction2");
+            return fn(&o);
+        }
+        return {};
+    }
+    QString takeTestFunction3(TestFunction3 fn){
+        if(fn){
+            QObject o;
+            o.setObjectName("TestFunction3");
+            return fn(&o);
+        }
+        return {};
+    }
+    QString takeTestFunction4(TestFunction4 fn){
+        if(fn){
+            QObject o;
+            o.setObjectName("TestFunction4");
+            return fn(&o);
+        }
+        return {};
+    }
+    QString takeTestFunction5(TestFunction5 fn){
+        if(fn){
+            QObject o;
+            o.setObjectName("TestFunction5");
+            return fn(&o);
+        }
+        return {};
+    }
 
     static QFunctionPointer getFunction(int id);
 	
@@ -157,6 +202,7 @@ protected:
 private:
     TestFunction1 m_last1;
     TestFunction2 m_last2;
+    TestFunction2 m_last3;
 };
 
 #endif

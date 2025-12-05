@@ -29,18 +29,7 @@
 **
 ****************************************************************************/
 
-#include "qtjambiapi.h"
-#include <QtCore/QReadWriteLock>
-#include <QtCore/QMap>
-#include <QtCore/QSharedPointer>
-#include <QtCore/QSequentialIterable>
-#include "containeraccess_p.h"
-#include "functionpointer.h"
-#include "registryapi.h"
-#include "registryutil_p.h"
-#include "qtjambilink_p.h"
-#include "java_p.h"
-#include "coreapi.h"
+#include "pch_p.h"
 
 QT_WARNING_DISABLE_GCC("-Winaccessible-base")
 QT_WARNING_DISABLE_CLANG("-Winaccessible-base")
@@ -532,9 +521,9 @@ int AutoSpanAccess::registerContainer(const QByteArray& typeName)
         if(m_hashFunction){
             insertHashFunctionByMetaType(newMetaType,
                                             [access]
-                                            (const void* ptr, hash_type seed)->hash_type{
+                                            (const void* ptr, size_t seed)->size_t{
                                                 if(ptr){
-                                                    hash_type hashCode = seed;
+                                                    size_t hashCode = seed;
                                                     const QtJambiSpan* p = reinterpret_cast<const QtJambiSpan*>(ptr);
                                                     for(size_t i=0; i<size_t(p->size); ++i){
                                                         const void* element = reinterpret_cast<const char*>(p->begin) + i * access->m_offset;

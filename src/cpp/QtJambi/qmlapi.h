@@ -30,7 +30,7 @@
 #ifndef QMLAPI_H
 #define QMLAPI_H
 
-#include "global.h"
+#include "qtjambiapi.h"
 
 class QObject;
 struct QMetaObject;
@@ -57,9 +57,6 @@ QTJAMBI_EXPORT QObject* createQmlErrorDummyObject(const QMetaObject* metaObject,
 
 QTJAMBI_EXPORT size_t extendedSizeForClass(JNIEnv *env, jclass object_class);
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-QTJAMBI_EXPORT void registerJavaClassForCustomMetaType(JNIEnv *env, int metaType, jclass javaClass);
-#else
 QTJAMBI_EXPORT int registerMetaType(JNIEnv *env, jclass clazz, const QString& javaClassName);
 
 QTJAMBI_EXPORT int registerMetaType(JNIEnv *env, SequentialContainerType containerType, const QMetaType& elementType);
@@ -83,7 +80,6 @@ QTJAMBI_EXPORT int registerQmlMetaType(JNIEnv *env, jclass clazz,
                                              QtPrivate::QMetaTypeInterface::MetaObjectFn metaObjectFn);
 QTJAMBI_EXPORT bool registerMetaTypeConverter(JNIEnv *env, const QMetaType& metaType1, jclass jsvalueClass, const QMetaType& metaType2, jclass targetClass, jmethodID constructor);
 QTJAMBI_EXPORT bool registerQmlExtension(JNIEnv *env, const QMetaObject *extended_meta_object, jclass javaClass);
-#endif
 
 QTJAMBI_EXPORT int getInterfaceOffset(JNIEnv *env, jclass cls, const std::type_info& interfacetype);
 

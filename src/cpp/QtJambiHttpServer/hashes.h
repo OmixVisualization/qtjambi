@@ -37,7 +37,7 @@
 #if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
 
 #include <QtHttpServer/QHttpServerWebSocketUpgradeResponse>
-inline hash_type qHash(const QHttpServerWebSocketUpgradeResponse& value, hash_type seed = 0){
+inline size_t qHash(const QHttpServerWebSocketUpgradeResponse& value, size_t seed = 0){
     return qHashMulti(seed, value.type(), value.denyStatus(), value.denyMessage());
 }
 
@@ -50,7 +50,7 @@ inline bool operator==(const QHttpServerWebSocketUpgradeResponse& value1, const 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 9, 0)
 
 #include <QtHttpServer/QHttpServerConfiguration>
-inline hash_type qHash(const QHttpServerConfiguration& value, hash_type seed = 0){
+inline size_t qHash(const QHttpServerConfiguration& value, size_t seed = 0){
     return qHashMulti(seed, value.rateLimitPerSecond());
 }
 #endif

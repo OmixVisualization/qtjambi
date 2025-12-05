@@ -45,7 +45,6 @@ INCLUDEPATH += ../
 HEADERS += \
     bindableowner.h \
     containers.h \
-    containers_qt5.h \
     enums.h\
     abstractclass.h \
     destruction.h \

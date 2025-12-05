@@ -57,7 +57,7 @@ enum class UnknownEnum{
     E1 = 101,E2,E3,E4
 };
 
-inline hash_type qHash(const UnknownEnum & e, hash_type seed = 0)
+inline size_t qHash(const UnknownEnum & e, size_t seed = 0)
 {
     return qHash(*reinterpret_cast<const qint32*>(&e), seed);
 }
@@ -68,7 +68,7 @@ struct UnknownValue{
     inline bool operator<(const UnknownValue&) const {return false;}
 };
 
-inline hash_type qHash(const UnknownValue &, hash_type = 0)
+inline size_t qHash(const UnknownValue &, size_t = 0)
 {
     return 0;
 }
@@ -88,11 +88,6 @@ public slots:
     void _test3(const QQueue<QVariant>& p){
         emit test3(p);
     }
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    void _test4(const QLinkedList<QColor>& p){
-        emit test4(p);
-    }
-#endif //QT_VERSION < QT_VERSION_CHECK(6,0,0)
     void _test5(const QSet<QPoint>& p){
         emit test5(p);
     }
@@ -141,9 +136,6 @@ signals:
     void test1(const QVector<QPair<QString, QFileInfo>>& vec);
     void test2(const QPair<QString, QQueue<QFileInfo>>& pair);
     void test3(const QQueue<QVariant>& l);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    void test4(const QLinkedList<QColor>& p);
-#endif //QT_VERSION < QT_VERSION_CHECK(6,0,0)
     void test5(const QSet<QPoint>& l);
     void test6(const QSet<QObject*>& l);
     void test7(const QSet<QComboBox*>& l);

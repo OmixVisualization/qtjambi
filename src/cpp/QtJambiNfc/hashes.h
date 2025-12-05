@@ -34,7 +34,7 @@
 #include <QtNfc/QNdefMessage>
 #include <QtJambi/Global>
 
-inline hash_type qHash(const QNearFieldTarget::RequestId &value, hash_type seed = 0)
+inline size_t qHash(const QNearFieldTarget::RequestId &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -46,7 +46,7 @@ inline hash_type qHash(const QNearFieldTarget::RequestId &value, hash_type seed 
     return seed;
 }
 
-inline hash_type qHash(const QNdefMessage &value, hash_type seed = 0)
+inline size_t qHash(const QNdefMessage &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;

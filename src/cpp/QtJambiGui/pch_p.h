@@ -29,13 +29,14 @@
 **
 ****************************************************************************/
 
-#if defined __cplusplus
+#ifndef PCH_P_H
+#define PCH_P_H
 
+#include <QtGui/QtGui>
 #include <QtJambi/QtJambiAPI>
 #include <QtJambi/RegistryAPI>
-#include <qpainter.h>
 #include "hashes.h"
 #include "utils_p.h"
+#include <QtJambi/Cast>
 
-#endif //defined __cplusplus
-
+#endif // PCH_P_H

@@ -30,26 +30,9 @@
 #include <QtCore/qcompilerdetection.h>
 QT_WARNING_DISABLE_DEPRECATED
 
-#include <QtCore/QCoreApplication>
-#include "qtjambiapi.h"
-#include "jobjectwrapper.h"
-#include "java_p.h"
-#include "threadutils_p.h"
-#include "registryutil_p.h"
-#include "typemanager_p.h"
-#include "qtjambi_cast.h"
+#include "pch_p.h"
 
 QT_WARNING_DISABLE_GCC("-Wattributes")
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-QT_WARNING_DISABLE_GCC("-Wdeprecated-declarations")
-QT_WARNING_DISABLE_DEPRECATED
-
-template<>
-inline bool qMapLessThanKey<QVariant>(const QVariant& v1, const QVariant& v2){
-    return v1 < v2;
-}
-#endif
 
 class JObjectWrapperData : public QSharedData{
 protected:
@@ -1858,11 +1841,6 @@ QMap<QVariant,QVariant> JMapWrapper::toMap() const {
             if(k.userType()!=QMetaType::UnknownType){
                 if(type==QMetaType::UnknownType){
                     type = k.userType();
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                    if(!QtJambiTypeManager::hasRegisteredComparators(type)){
-                        break;
-                    }
-#endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                 }else if(type != k.userType()){
                     continue;
                 }
@@ -2193,13 +2171,13 @@ QDebug operator<<(QDebug out, const JObjectWrapper &myObj){
     return out;
 }
 
-hash_type qHash(const JObjectWrapper &value, hash_type seed)
+size_t qHash(const JObjectWrapper &value, size_t seed)
 {
     if(JniEnvironment env{200}){
         if(value.object(env)){
             if(seed)
                 return qHash(Java::Runtime::Object::hashCode(env, value.object(env)), seed);
-            else return hash_type(Java::Runtime::Object::hashCode(env, value.object(env)));
+            else return size_t(Java::Runtime::Object::hashCode(env, value.object(env)));
         }
     }
     return seed;

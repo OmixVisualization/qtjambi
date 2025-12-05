@@ -29,6 +29,7 @@
 
 #include <QtCore/qcompilerdetection.h>
 QT_WARNING_DISABLE_DEPRECATED
+#include "pch_p.h"
 #include <QtCore/QByteArrayList>
 #include <QtCore/QQueue>
 #include <QtCore/QQueue>
@@ -294,7 +295,7 @@ extern "C" JNIEXPORT jint JNICALL Java_io_qt_core_AbstractIterator_hashCode
 #else
             QtPrivate::QHashCombine hash(0);
 #endif
-            hash_type hashValue = 0;
+            size_t hashValue = 0;
             hashValue = hash(hashValue, container.first);
             hashValue = hash(hashValue, isConst);
             hashValue = hash(hashValue, isAssociative);

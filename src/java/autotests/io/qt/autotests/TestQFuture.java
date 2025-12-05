@@ -48,6 +48,7 @@ import io.qt.core.QFutureInterfaceBase;
 import io.qt.core.QFutureWatcher;
 import io.qt.core.QFutureWatcherBase;
 import io.qt.core.QLibraryInfo;
+import io.qt.core.QMetaType;
 import io.qt.core.QObject;
 import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QTimer;
@@ -190,7 +191,7 @@ public class TestQFuture extends ApplicationInitializer {
     	Assume.assumeFalse(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android));
     	QFutureWatcher<String> watcher = new QFutureWatcher<>();
     	watcher.setFuture(FutureHandler.returnInTheFuture(Arrays.asList("testJavaToNativeQFutureWatcher_String"), 500));
-    	Assert.assertEquals("testJavaToNativeQFutureWatcher_String", FutureHandler.checkWatcherString(watcher));
+    	Assert.assertEquals("testJavaToNativeQFutureWatcher_String", FutureHandler.checkString(watcher));
     }
     
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -199,16 +200,16 @@ public class TestQFuture extends ApplicationInitializer {
     	QFutureWatcher watcher = new QFutureWatcher();
     	watcher.setFuture(FutureHandler.finishInTheFuture(500));
     	try{
-    		FutureHandler.checkWatcherString(watcher);
+    		FutureHandler.checkString(watcher);
 			Assert.assertFalse("Exception expected to be thrown.", true);
 		} catch (IllegalArgumentException e) {
 			Assert.assertEquals("Cannot cast QFutureWatcher<void> to QFutureWatcher<QString>.", e.getMessage());
     	}
-    	FutureHandler.checkWatcherVoid(watcher);
+    	FutureHandler.checkVoid(watcher);
     	Assert.assertEquals(0, watcher.children().size());
     	watcher.setFuture(FutureHandler.returnInTheFuture(Arrays.asList("testJavaToNativeQFutureWatcher_Void"), 500));
     	try{
-    		Assert.assertEquals(null, FutureHandler.checkWatcherObject(watcher));
+    		Assert.assertEquals(null, FutureHandler.checkObject(watcher));
 			Assert.assertFalse("Exception expected to be thrown.", true);
 		} catch (IllegalArgumentException e) {
 			Assert.assertEquals("Cannot cast QFutureWatcher<QString> to QFutureWatcher<QObject*>.", e.getMessage());
@@ -265,8 +266,12 @@ public class TestQFuture extends ApplicationInitializer {
     	{
     		QFuture<Integer> future = (QFuture<Integer>)(QFuture)FutureHandler.finishInTheFuture(200);
         	Assert.assertTrue(future.isStarted());
-        	future = FutureHandler.forwardInt(future);
-        	Assert.assertFalse(future.isStarted());
+    		try {
+    			FutureHandler.forwardInt(future);
+				Assert.assertFalse("exception expected to be thrown", true);
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Cannot cast QFuture<void> to QFuture<int>.", e.getMessage());
+			}
     	}
     	
     	{
@@ -430,6 +435,94 @@ public class TestQFuture extends ApplicationInitializer {
 			Assert.assertEquals("An exception has been thrown in native code.", e.getMessage());
 		}
 		Assert.assertTrue(future.isCanceled());
+    }
+    
+    @Test
+    public void testMetaType() {
+    	QMetaType mt = QMetaType.fromObject(new QFuture<>(QFutureInterface.createVoidFutureInterface()));
+    	Assert.assertEquals("QFuture<void>", mt.name());
+    	mt = QMetaType.fromObject(new QFuture<>(new QFutureInterface<>()));
+    	Assert.assertEquals("QFuture<QVariant>", mt.name());
+    	mt = QMetaType.fromObject(QFutureInterface.createVoidFutureInterface());
+    	Assert.assertEquals("QFutureInterface<void>", mt.name());
+    	mt = QMetaType.fromObject(new QFutureInterface<>());
+    	Assert.assertEquals("QFutureInterface<QVariant>", mt.name());
+    }
+    
+    @Test
+    public void testQFutureInterface() {
+    	{
+    		QFutureInterface<Integer> iface = new QFutureInterface<>();
+    		iface.reportStarted();
+    		iface.reportResult(8);
+        	Assert.assertEquals(8, FutureHandler.checkInt(iface));
+        	iface.waitForResult(1);
+        	Assert.assertEquals(8, (int)iface.result(1));
+        	iface.reportFinished(0);
+        	Assert.assertEquals(3, iface.resultCount());
+    	}
+    	{
+    		QFutureInterface<String> iface = new QFutureInterface<>();
+    		iface.reportStarted();
+    		iface.reportResult("testQFutureInterface_String");
+        	Assert.assertEquals("testQFutureInterface_String", FutureHandler.checkString(iface));
+        	iface.waitForResult(1);
+        	Assert.assertEquals("testQFutureInterface_String", iface.result(1));
+        	iface.reportFinished("");
+        	Assert.assertEquals(3, iface.resultCount());
+    	}
+    	{
+    		QObject o = new QObject();
+    		QFutureInterface<QObject> iface = new QFutureInterface<>();
+    		iface.reportStarted();
+        	iface.reportResult(o);
+        	Assert.assertEquals(o, FutureHandler.checkObject(iface));
+        	iface.waitForResult(1);
+        	Assert.assertEquals(o, iface.result(1));
+        	iface.reportFinished(null);
+        	Assert.assertEquals(3, iface.resultCount());
+    	}
+    	{
+    		QFutureInterface<Integer> iface = FutureHandler.interfaceInt();
+    		iface.reportStarted();
+    		iface.reportResult(8);
+        	Assert.assertEquals(8, FutureHandler.checkInt(iface));
+        	iface.waitForResult(1);
+        	Assert.assertEquals(8, (int)iface.result(1));
+        	iface.reportFinished(0);
+        	Assert.assertEquals(3, iface.resultCount());
+    	}
+    	{
+    		QFutureInterface<String> iface = FutureHandler.interfaceString();
+    		iface.reportStarted();
+        	iface.reportResult("testQFutureInterface_String");
+        	Assert.assertEquals("testQFutureInterface_String", FutureHandler.checkString(iface));
+        	iface.waitForResult(1);
+        	Assert.assertEquals("testQFutureInterface_String", iface.result(1));
+        	iface.reportFinished("");
+        	Assert.assertEquals(3, iface.resultCount());
+    	}
+    	{
+    		QObject o = new QObject();
+    		QFutureInterface<QObject> iface = FutureHandler.interfaceObject();
+    		iface.reportStarted();
+        	iface.reportResult(o);
+        	Assert.assertEquals(o, FutureHandler.checkObject(iface));
+        	iface.waitForResult(1);
+        	Assert.assertEquals(o, iface.result(1));
+        	iface.reportFinished(null);
+        	Assert.assertEquals(3, iface.resultCount());
+    	}
+    	{
+    		@SuppressWarnings({ "unchecked", "rawtypes" })
+			QFutureInterface<Integer> iface = (QFutureInterface)FutureHandler.interfaceVoid();
+    		try{
+        		FutureHandler.checkInt(iface);
+    			Assert.assertFalse("Exception expected to be thrown.", true);
+    		} catch (IllegalArgumentException e) {
+    			Assert.assertEquals("Cannot cast QFutureInterface<void> to QFutureInterface<int>.", e.getMessage());
+        	}
+    	}
     }
 
     public static void main(String args[]) {

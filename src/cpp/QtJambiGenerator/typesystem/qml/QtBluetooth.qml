@@ -246,7 +246,7 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "%out = Java::QtBluetooth::QBluetoothDeviceInfo$ServiceUuids::newInstance(%env, qtjambi_cast<jobject>(%env, %in), qtjambi_cast<jobject>(%env, completeness));"}
+                    Text{content: "%out = Java::QtBluetooth::QBluetoothDeviceInfo$ServiceUuids::newInstance(%env, qtjambi_cast<jobject>(%env, std::move(%in)), qtjambi_cast<jobject>(%env, completeness));"}
                 }
             }
             until: [5, 13]
@@ -536,6 +536,24 @@ TypeSystem{
             name: "SocketState"
         }
         ModifyFunction{
+            signature: "peerPort()const"
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "int"
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "localPort()const"
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "int"
+                }
+            }
+        }
+        ModifyFunction{
             signature: "errorString() const"
             rename: "socketErrorString"
         }
@@ -562,6 +580,36 @@ TypeSystem{
 
         EnumType{
             name: "Error"
+        }
+        ModifyFunction{
+            signature: "serverPort()const"
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "int"
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "listen(QBluetoothAddress, quint16)"
+            ModifyArgument{
+                index: 2
+                ReplaceType{
+                    modifiedType: "int"
+                }
+            }
+        }
+        InjectCode{
+            Text{content: String.raw`
+/**
+ * @deprecated please use {@link #listen(io.qt.bluetooth.QBluetoothAddress, int)} instead.
+ */
+@QtUninvokable
+@Deprecated(forRemoval = true)
+public final boolean listen(io.qt.bluetooth.@NonNull QBluetoothAddress address, short port) {
+    return listen(address, (int)port);
+}
+                `}
         }
     }
     

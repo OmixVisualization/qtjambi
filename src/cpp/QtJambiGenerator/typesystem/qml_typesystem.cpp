@@ -141,6 +141,19 @@ void TypeSystem::setDefaultPPCondition(const QString &newDefaultPPCondition)
     emit defaultPPConditionChanged();
 }
 
+QString TypeSystem::getPrecompiledHeader() const
+{
+    return precompiledHeader;
+}
+
+void TypeSystem::setPrecompiledHeader(const QString &newPrecompiledHeader)
+{
+    if (precompiledHeader == newPrecompiledHeader)
+        return;
+    precompiledHeader = newPrecompiledHeader;
+    emit precompiledHeaderChanged();
+}
+
 Module::Module(QObject *parent)
     : AbstractObject{parent}
 {

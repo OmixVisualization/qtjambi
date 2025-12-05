@@ -27,7 +27,9 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qcompilerdetection.h>
+#include <QtCore/QtGlobal>
+#include <QtCore/QDataStream>
+#include <QtCore/QVariant>
 
 QT_WARNING_DISABLE_DEPRECATED
 
@@ -58,37 +60,11 @@ struct QDebugStreamOperatorForType<QVariant::Type, true>
 }
 #endif
 
-#include <QtCore/QMetaType>
-#include <QtCore/QWriteLocker>
-#include <QtCore/QCoreApplication>
-#include <QtCore/QQueue>
-#include <QtCore/QStack>
-#include <QtCore/QDir>
-#include <QtCore/QCborValue>
-#include <QtCore/QLibrary>
-#if defined(QTJAMBI_LIGHTWEIGHT_MODELINDEX)
-#include <QtCore/QModelIndex>
-#endif
-#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
-#include <QtCore/QSpan>
-#endif
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#include <QtCore/QLinkedList>
-#include <QtCore/QVector>
-#include <QtCore/QXmlStreamStringRef>
-#endif
-#include "registryutil_p.h"
-#include "java_p.h"
+#include "pch_p.h"
 #ifdef Q_OS_ANDROID
 #include <QtCore/private/qjnihelpers_p.h>
 #include "androidapi.h"
 #endif
-#include "utils_p.h"
-#include "qtjambilink_p.h"
-#include "threadutils_p.h"
-
-#include "qtjambi_cast.h"
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
 #define qAsConst std::as_const
@@ -1047,6 +1023,41 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *){
         });
         Java::Runtime::URL::getClass(env);
         Java::Runtime::URLConnection::getClass(env);
+#if defined(Q_OS_ANDROID) && QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
+        QLibrary library("libplugins_platforms_qtforandroid");
+        if(library.load()){
+            typedef jint(*Fn)(JavaVM *, void*);
+            Fn onLoad = Fn(library.resolve("JNI_OnLoad"));
+            if(onLoad){
+                onLoad(vm,nullptr);
+            }
+            if(QFunctionPointer accessibilitySupported = library.resolve("Java_org_qtproject_qt_android_QtNativeAccessibility_accessibilitySupported")){
+                JNINativeMethod nativeMethod;
+                nativeMethod.fnPtr = reinterpret_cast<void*>(accessibilitySupported);
+                nativeMethod.name = "accessibilitySupported";
+                nativeMethod.signature = "()Z";
+                env->RegisterNatives(Java::Android::QtNativeAccessibility::getClass(env), &nativeMethod, 1);
+            }
+#if QT_VERSION >= QT_VERSION_CHECK(6, 10, 1)
+            if(QFunctionPointer canOverrideColorSchemeHint = library.resolve("Java_org_qtproject_qt_android_QtActivityDelegateBase_canOverrideColorSchemeHint")){
+                JNINativeMethod nativeMethod;
+                nativeMethod.fnPtr = reinterpret_cast<void*>(canOverrideColorSchemeHint);
+                nativeMethod.name = "canOverrideColorSchemeHint";
+                nativeMethod.signature = "()Z";
+                env->RegisterNatives(Java::Android::QtActivityDelegateBase::getClass(env), &nativeMethod, 1);
+            }
+            if(QFunctionPointer updateUiContrast = library.resolve("Java_org_qtproject_qt_android_QtActivityDelegateBase_updateUiContrast")){
+                JNINativeMethod nativeMethod;
+                nativeMethod.fnPtr = reinterpret_cast<void*>(updateUiContrast);
+                nativeMethod.name = "updateUiContrast";
+                nativeMethod.signature = "(F)V";
+                env->RegisterNatives(Java::Android::QtActivityDelegateBase::getClass(env), &nativeMethod, 1);
+            }
+#endif // QT_VERSION >= QT_VERSION_CHECK(6, 10, 1)
+        }else{
+            qWarning() << library.errorString();
+        }
+#endif
     }catch(const JavaException& e){
         e.raiseInJava(env);
     }catch (const std::exception& exn) {
@@ -1185,25 +1196,6 @@ void shutdown(JNIEnv * env, bool regular)
 }
 
 #ifdef Q_OS_ANDROID
-
-#if QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
-extern "C" JNIEXPORT bool JNICALL
-Java_org_qtproject_qt_android_QtNativeAccessibility_accessibilitySupported(JNIEnv *env, jobject obj)
-{
-    QLibrary library("libplugins_platforms_qtforandroid");
-    if(library.load()){
-        typedef bool (*Fn)(JNIEnv *, jobject);
-        Fn accessibilitySupported = Fn(library.resolve("Java_org_qtproject_qt_android_QtNativeAccessibility_accessibilitySupported"));
-        if(accessibilitySupported){
-            return accessibilitySupported(env,obj);
-        }
-    }else{
-        qWarning() << library.errorString();
-    }
-    return false;
-}
-#endif
-
 int main(int argc, char *argv[])
 {
     if(JniEnvironment env{1024}){

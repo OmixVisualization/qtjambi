@@ -34,7 +34,7 @@
 #include <QtHelp/QtHelp>
 #include <QtJambi/Global>
 
-inline hash_type qHash(const QHelpFilterData &value, hash_type seed = 0)
+inline size_t qHash(const QHelpFilterData &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;

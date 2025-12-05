@@ -89,43 +89,31 @@ class MetaBuilder {
         MetaClass *traverseTypeAlias(TypeAliasModelItem item);
         MetaFunctional *traverseFunctional(TypeAliasModelItem item);
         struct PendingClass{
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            PendingClass() = default;
-            PendingClass(const PendingClass&) = default;
-            inline PendingClass(ScopeModelItem _scope, MetaClass* _metaClass, const QList<ScopeModelItem>& _scopes)
-                : scope(_scope), metaClass(_metaClass), scopes(_scopes) {}
-#endif
             ScopeModelItem scope;
             MetaClass* metaClass = nullptr;
             QList<ScopeModelItem> scopes;
         };
 
         struct PendingFunctional{
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            PendingFunctional() = default;
-            PendingFunctional(const PendingFunctional&) = default;
-            inline PendingFunctional(TypeAliasModelItem _scope, MetaClass* _metaClass, const QList<ScopeModelItem>& _scopes)
-                : scope(_scope), metaClass(_metaClass), scopes(_scopes) {}
-#endif
             TypeAliasModelItem scope;
             MetaClass* metaClass = nullptr;
             QList<ScopeModelItem> scopes;
         };
 
         struct PendingHiddenBaseType{
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            PendingHiddenBaseType() = default;
-            PendingHiddenBaseType(const PendingHiddenBaseType&) = default;
-            inline PendingHiddenBaseType(MetaClass *_subclass, const MetaClass *_hidden_base_class, const TypeInfo& _info)
-                : subclass(_subclass), hidden_base_class(_hidden_base_class), info(_info) {}
-#endif
             MetaClass *subclass = nullptr;
             const MetaClass *hidden_base_class = nullptr;
             TypeInfo info;
         };
 
         MetaClass *traverseClass(ClassModelItem item, QList<PendingClass>& pendingClasses, QList<PendingFunctional>& pendingFunctionals);
-        void setupInheritance(MetaClass *meta_class, QList<PendingHiddenBaseType>& pendingHiddenBaseTypes, QList<MetaClass *>& pendingConstructorUsages, QList<QPair<MetaClass*,MetaClass*>>& pendingPrivateSuperUsages);
+        struct PendingDelegate{
+            MetaClass* meta_class;
+            TypeEntry* base_class_type;
+            bool is_protected = false;
+        };
+
+        void setupInheritance(MetaClass *meta_class, QList<PendingHiddenBaseType>& pendingHiddenBaseTypes, QList<MetaClass *>& pendingConstructorUsages, QList<QPair<MetaClass*,MetaClass*>>& pendingPrivateSuperUsages, QList<PendingDelegate>& pendingDelegates);
         bool setupFunctionTemplateInstantiations(MetaClass *meta_class);
         MetaClass *traverseNamespace(NamespaceModelItem item, QList<PendingClass>& pendingClasses, QList<PendingFunctional>& pendingFunctionals);
         MetaEnum *traverseEnum(EnumModelItem item, MetaClass *enclosing, const QSet<QString> &metaEnums, const QMap<QString,QString>& flagByEnums);
@@ -142,6 +130,7 @@ class MetaBuilder {
         void setupConstructorAvailability(MetaClass *meta_class);
         void setupEquals(MetaClass *meta_class);
         void setupBeginEnd(MetaClass *meta_class);
+        void setupTextStreamFunctions(MetaClass *meta_class);
         void setupComparable(MetaClass *meta_class);
 
         QString translateDefaultValue(const QString& defaultValueExpression, MetaType *type,
@@ -255,6 +244,7 @@ protected:
         TS::TypeDatabase* m_database;
         QString m_generateTypeSystemQML;
         QSet<MetaClass*> m_functions_fixed;
+        QList<MetaFunction*> m_textStreamFunctions;
         QList<QPair<MetaClass*,QString>> m_pendingScopedClasses;
         QList<QPair<QPair<QString,FunctionModelItem>,MetaFunction*>> m_pendingHashFunctions;
         QList<QPair<QPair<QString,FunctionModelItem>,MetaFunction*>> m_pendingSwapFunctions;

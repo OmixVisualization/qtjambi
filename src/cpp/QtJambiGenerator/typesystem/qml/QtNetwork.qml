@@ -34,6 +34,7 @@ TypeSystem{
     defaultSuperClass: "QtObject"
     qtLibrary: "QtNetwork"
     module: "qtjambi.network"
+    precompiledHeader: "pch_p.h"
     description: "Classes to make network programming easier and more portable."
     Template{
         name: "network.read_char*_long_long"
@@ -398,6 +399,15 @@ TypeSystem{
             }
         }
         ModifyFunction{
+            signature: "serverPort()const"
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "int"
+                }
+            }
+        }
+        ModifyFunction{
             signature: "listen(QHostAddress,quint16)"
             ModifyArgument{
                 index: 2
@@ -471,6 +481,15 @@ TypeSystem{
                 }
             }
         }
+        ModifyFunction{
+            signature: "serverPort()const"
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "int"
+                }
+            }
+        }
         since: [6, 4]
     }
     
@@ -497,7 +516,7 @@ TypeSystem{
                     codeClass: CodeClass.Native
                     Text{content: "%out = jlong(%in);\n"+
                                   "if(%4){\n"+
-                                  "    Java::QtNetwork::QHostAddress$HostInfo::set_address(%env, %4, qtjambi_cast<jobject>(%env, host));\n"+
+                                  "    Java::QtNetwork::QHostAddress$HostInfo::set_address(%env, %4, qtjambi_cast<jobject>(%env, std::move(host)));\n"+
                                   "    Java::QtNetwork::QHostAddress$HostInfo::set_port(%env, %4, jshort(port));\n"+
                                   "}"}
                 }
@@ -1797,13 +1816,6 @@ inline auto convertSlot(JNIEnv* _env, jobject _receiver, jobject _slot){
     ValueType{
         name: "QSslPreSharedKeyAuthenticator"
         ppCondition: "!defined(QT_NO_SSL)"
-        ModifyFunction{
-            signature: "operator=(QSslPreSharedKeyAuthenticator)"
-            Delegate{
-                name: "set"
-                deprecated: true
-            }
-        }
     }
     
     ValueType{
@@ -2046,6 +2058,15 @@ inline auto convertSlot(JNIEnv* _env, jobject _receiver, jobject _slot){
             signature: "QDnsLookup(QDnsLookup::Type, QString const&, QHostAddress const&, QObject*)"
             remove: RemoveFlag.All
         }
+        ModifyFunction{
+            signature: "nameserverPort()const"
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "int"
+                }
+            }
+        }
     }
 
     ValueType{
@@ -2085,6 +2106,15 @@ inline auto convertSlot(JNIEnv* _env, jobject _receiver, jobject _slot){
     
     ValueType{
         name: "QDnsServiceRecord"
+        ModifyFunction{
+            signature: "port()const"
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "int"
+                }
+            }
+        }
     }
     
     ValueType{
@@ -2135,6 +2165,15 @@ inline auto convertSlot(JNIEnv* _env, jobject _receiver, jobject _slot){
             javaName: "QDtlsClientVerifier.GeneratorParameters"
             generate: false
             since: [5, 12]
+        }
+        ModifyFunction{
+            signature: "peerPort()const"
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "int"
+                }
+            }
         }
         ModifyFunction{
             signature: "handleTimeout(QUdpSocket *)"

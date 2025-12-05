@@ -28,10 +28,15 @@
 **
 ****************************************************************************/
 
-#include <qobject.h>
+#ifndef PCH_P_H
+#define PCH_P_H
+
 #include <QtCore/QtCore>
 #include <QtJambi/QtJambiAPI>
 #include <QtJambi/RegistryAPI>
-#include <QtJambi/containeraccess_map.h>
-#include <QtJambi/containeraccess_multimap.h>
 #include "utils_p.h"
+#include "utils.h"
+#include "hashes.h"
+#include <QtJambi/Cast>
+
+#endif // PCH_P_H

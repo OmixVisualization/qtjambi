@@ -141,22 +141,22 @@ class CallableHash{
 public:
     static CallableHash& instance();
 
-    Fn functionOf(hash_type hash) const{
+    Fn functionOf(size_t hash) const{
         return Fn(hashes.key(hash));
     }
-    void insert(Fn fn, hash_type hash, Callable&& clb){
+    void insert(Fn fn, size_t hash, Callable&& clb){
         hashes[qintptr(fn)] = hash;
         s[hash] = new storage<Callable>(std::forward<Callable>(clb));
     }
     void dispose(Fn fn){
         if(hashes.contains(qintptr(fn))){
-            hash_type hash = hashes.take(qintptr(fn));
+            size_t hash = hashes.take(qintptr(fn));
             if(storage<Callable>* stor = s.take(hash))
                 delete stor;
         }
         freeFunctions.removeAll(fn);
     }
-    void remove(hash_type hash){
+    void remove(size_t hash){
         if(s.contains(hash)){
             if(storage<Callable>* stor = s.take(hash))
                 delete stor;
@@ -179,7 +179,7 @@ public:
     }
     storage<Callable>* value(Fn fn){
         if(hashes.contains(qintptr(fn))){
-            hash_type hash = hashes[qintptr(fn)];
+            size_t hash = hashes[qintptr(fn)];
             if(s.contains(hash))
                 return s[hash];
         }
@@ -188,9 +188,9 @@ public:
 
     static Ret caller(Fn fn, Args...args);
 private:
-    QHash<qintptr,hash_type> hashes;
+    QHash<qintptr,size_t> hashes;
     QQueue<Fn> freeFunctions;
-    QHash<hash_type,storage<Callable>*> s;
+    QHash<size_t,storage<Callable>*> s;
 };
 
 template<ushort n, ushort count, typename Callable, typename Ret, typename... Args>
@@ -259,7 +259,7 @@ CallableHash<count,Callable,Ret,Args...>& CallableHash<count,Callable,Ret,Args..
 
 
 template<ushort count, typename Callable, typename Ret, typename... Args>
-typename QtJambiAPI::FunctionType<Ret,Args...>::type functionPointer(Callable&& c, hash_type hash, std::function<void()>* deleterFunction, std::function<const Callable*(Ret(*)(Args...))>* reverseFunctionGetter)
+typename QtJambiAPI::FunctionType<Ret,Args...>::type functionPointer(Callable&& c, size_t hash, std::function<void()>* deleterFunction, std::function<const Callable*(Ret(*)(Args...))>* reverseFunctionGetter)
 {
     typedef typename QtJambiAPI::FunctionType<Ret,Args...>::type Fn;
     CallableHash<count,Callable,Ret,Args...>& callables = CallableHash<count,Callable,Ret,Args...>::instance();
@@ -303,7 +303,7 @@ typename QtJambiAPI::FunctionType<Ret,Args...>::type functionPointer(Callable&& 
 } // namespace FunctionPointerPrivate
 
 template<ushort count, typename Fn, typename Callable>
-Fn* qtjambi_function_pointer(Callable&& c, hash_type hash = 0, std::function<void()>* deleterFunction = nullptr, std::function<const Callable*(Fn*)>* reverseFunctionGetter = nullptr)
+Fn* qtjambi_function_pointer(Callable&& c, size_t hash = 0, std::function<void()>* deleterFunction = nullptr, std::function<const Callable*(Fn*)>* reverseFunctionGetter = nullptr)
 {
     return FunctionPointerPrivate::functionPointer<count>(std::move(c), hash, deleterFunction, reverseFunctionGetter);
 }

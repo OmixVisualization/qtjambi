@@ -30,45 +30,14 @@
 ****************************************************************************/
 
 #include <QtCore/qcompilerdetection.h>
+QT_WARNING_DISABLE_DEPRECATED
 
 #if QT_VERSION >= QT_VERSION_CHECK(6,4,0)
 #include <QtCore/private/qobject_p_p.h>
 #endif
 
-QT_WARNING_DISABLE_DEPRECATED
-#include "qtjambiapi.h"
-#include "java_p.h"
-#include "threadutils_p.h"
-#include "registryapi.h"
-#include "registryutil_p.h"
-#include "qtjambilink_p.h"
-#include "typemanager_p.h"
-#include "qtjambimetaobject_p.h"
-#include "coreapi.h"
-
-#include <cstring>
-#include <QtCore/QMetaType>
-#include <QtCore/QRect>
-#include <QtCore/QTime>
-#include <QtCore/QSize>
-#include <QtCore/QBasicTimer>
-#include <QtCore/QTextStream>
-#include <QtCore/QFileInfo>
-#include <QtCore/QThreadStorage>
-
-#include <QtGui/QMouseEvent>
-#include <QtGui/QColor>
-#include <QtGui/QPalette>
-#include <QtGui/QCursor>
-#include <QtGui/QIcon>
-#include <QtGui/QPainter>
-#include <QtGui/QPolygon>
-#include <QtCore/QMetaObject>
-#include <QtCore/QMetaProperty>
+#include "pch_p.h"
 #include <QtCore/private/qmetaobject_p.h>
-
-#include <QDebug>
-#include "qtjambi_cast.h"
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
 #define qAsConst std::as_const
@@ -155,7 +124,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_SignalUtility_00024Nati
             QObject* sender = ptr->sender;
             signal = QMetaObjectPrivate::signal(sender->metaObject(), ptr->signal_index);
         }
-        return qtjambi_cast<jobject>(env, signal);
+        return qtjambi_cast<jobject>(env, std::move(signal));
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
     }
@@ -176,7 +145,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_SignalUtility_00024Nati
                 method = receiver->metaObject()->method(ptr->method());
             }
         }
-        return qtjambi_cast<jobject>(env, method);
+        return qtjambi_cast<jobject>(env, std::move(method));
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
     }
@@ -218,7 +187,7 @@ extern "C" JNIEXPORT jint JNICALL Java_io_qt_internal_SignalUtility_00024NativeC
         QMetaObject::Connection* connection = QtJambiAPI::objectFromNativeId<QMetaObject::Connection>(nativeId);
         QObjectPrivate::Connection* ptr = reinterpret_cast<ConnectionAccess*>(connection)->d_ptr;
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-        hash_type hashValue = qHash(ptr);
+        size_t hashValue = qHash(ptr);
         __java_return_value = jint(quint64(hashValue) ^ quint64(hashValue) >> 32);
 #else
         __java_return_value = qHash(ptr);
@@ -518,7 +487,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_internal_SignalUtility_emitNativeSi
                         if(signalEmitThreadCheckHandler){
                             jobject qobject = link->getJavaObjectLocalRef(env);
                             if(!signalObject)
-                                signalObject = Java::QtCore::QMetaMethod::toSignal(env, qtjambi_cast<jobject>(env, method), qobject);
+                                signalObject = Java::QtCore::QMetaMethod::toSignal(env, qtjambi_cast<jobject>(env, QMetaMethod(method)), qobject);
                             Java::Runtime::BiConsumer::accept(env, signalEmitThreadCheckHandler, qobject, signalObject);
                         }else{
                             qCWarning(internalSignalCategory).noquote().nospace() << "Emitting signal "
@@ -606,7 +575,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_SignalUtility_connectNa
                                                                 Qt::ConnectionType(connectionType),
                                                                 slotObj->types(),
                                                                 qt_signalMethod.enclosingMetaObject());
-        return qtjambi_cast<jobject>(env, c);
+        return qtjambi_cast<jobject>(env, std::move(c));
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
     }
@@ -704,8 +673,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_SignalUtility_connectNa
             env->Throw(t);
             return nullptr;
         }
-        QMetaObject::Connection c = QObject::connect(sender, signalMethod, receiver, slotMethod, Qt::ConnectionType(connectionType));
-        return qtjambi_cast<jobject>(env, c);
+        return qtjambi_cast<jobject>(env, QObject::connect(sender, signalMethod, receiver, slotMethod, Qt::ConnectionType(connectionType)));
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
     }
@@ -738,7 +706,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_SignalUtility_signalMet
         QMetaMethod signalMethod;
         if(senderMetaObjectId)
             signalMethod = reinterpret_cast<const QMetaObject*>(senderMetaObjectId)->method(signal);
-        return qtjambi_cast<jobject>(env, signalMethod);
+        return qtjambi_cast<jobject>(env, std::move(signalMethod));
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
     }
@@ -901,7 +869,7 @@ NativeSlotObject::NativeSlotObject(JNIEnv * env, const QSharedPointer<QtJambiLin
                       if(i == parameterTypeInfos.size()-1){
                           types[i] = 0;
                       }else{
-                          types[i] = parameterTypeInfos[i+1].metaType();
+                          types[i] = parameterTypeInfos[i+1].metaType().id();
                       }
                   }
                   return types;
@@ -1015,8 +983,6 @@ void NativeSlotObject::impl(int which, QSlotObjectBase *this_, QObject *, void *
 }
 
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-
 typedef QVarLengthArray<QArgumentType, 10> QArgumentTypeArray;
 
 namespace QtJambiAPI{
@@ -1048,7 +1014,7 @@ namespace QtJambiAPI{
                           if(i == signal.parameterCount()-1){
                               types[i] = 0;
                           }else{
-                              types[i] = signal.parameterType(i);
+                              types[i] = signal.parameterMetaType(i).id();
                           }
                       }
                       return types;
@@ -1290,5 +1256,3 @@ namespace QtJambiAPI{
         return QObject::connect(sender, signal, receiver, method, type);
     }
 }
-
-#endif

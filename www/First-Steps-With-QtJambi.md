@@ -13,7 +13,7 @@ to your project:
   <version>$VERSION</version>
 </dependency>
 ```
-(exchange `$VERSION` either by `6.8.6`, `6.10.0` or any other published version).
+(exchange `$VERSION` either by `6.8.7`, `6.10.1` or any other published version).
 
 Otherwise, download QtJambi JAR file from [Maven Central Repository](https://search.maven.org/artifact/io.qtjambi/qtjambi/).
 Find the [list of all available QtJambi modules](www/Modules.md).
@@ -36,7 +36,7 @@ public class Test {
 Compile the file:
 
 ``` powershell
-javac -cp qtjambi-6.8.6.jar Test.java
+javac -cp qtjambi-6.8.7.jar Test.java
 ```
 
 ## Executing Example
@@ -46,7 +46,7 @@ For instance, if you are working on Windows download the *windows-x64* binaries 
 from [Maven Central Repository](https://search.maven.org/artifact/io.qtjambi/qtjambi-native-windows-x64/) and add it to java class path. 
 
 Additionally, you need *Qt*. Use the [Qt installer](https://www.qt.io/download-qt-installer) to install Qt on your system.
-Make sure you are using the same Qt version and QtJambi version (the first and second version digit needs to be the same, e.g. 6.8, 6.9 or 6.10).
+Make sure you are using the same Qt version and QtJambi version (the first and second version digit needs to be the same, e.g. 6.8 or 6.10).
 
 On Windows install Qt for MSVC (msvc2022_64), as the Maven-published QtJambi binaries are not compatible with Qt builds based on Mingw pr LLVM-Mingw.
 
@@ -60,19 +60,19 @@ environment (`LD_LIBRARY_PATH` on Linux, `DYLD_FRAMEWORK_PATH` on macOS) or the 
 The example program can be executed this way on Windows:
 
 ``` powershell
-java -cp qtjambi-6.8.6.jar;qtjambi-native-windows-x64-6.8.6.jar;. -Djava.library.path=C:\Qt\6.8.3\msvc2022_64\bin Test
+java -cp qtjambi-6.8.7.jar;qtjambi-native-windows-x64-6.8.7.jar;. -Djava.library.path=C:\Qt\6.8.3\msvc2022_64\bin Test
 ```
 
 On Linux it looks this way:
 
 ``` bash
-java -cp qtjambi-6.8.6.jar:qtjambi-native-linux-x64-6.8.6.jar:. -Djava.library.path=<path to>/Qt/6.8.3/gcc_64/lib Test
+java -cp qtjambi-6.8.7.jar:qtjambi-native-linux-x64-6.8.7.jar:. -Djava.library.path=<path to>/Qt/6.8.3/gcc_64/lib Test
 ```
 
 On macOS you additionally need to use the start parameter -XstartOnFirstThread:
 
 ``` bash
-java -cp qtjambi-6.8.6.jar:qtjambi-native-macos-6.8.6.jar:. -Djava.library.path=<path to>/Qt/6.8.3/macos/lib -XstartOnFirstThread Test
+java -cp qtjambi-6.8.7.jar:qtjambi-native-macos-6.8.7.jar:. -Djava.library.path=<path to>/Qt/6.8.3/macos/lib -XstartOnFirstThread Test
 ```
 
 On Linux, if your distribution provides Qt (of correct version) as system library you don't need to specify library path at all.
@@ -87,7 +87,7 @@ If the example fails with a `UnsatisfiedLinkError` QtJambi libraries and Qt libr
 QtJambi automatically detects the required native component jars if they are located next to their Java counterparts or in a subfolder `native`.
 You can simply skip adding `qtjambi-native-OS-VERSION.jar` to your classpath (`-cp`).
 
-If you intend to use automatic module loading (`java -p <dir>`) you strictly need to place native components in `native` subfolder next to `qtjambi-6.8.6.jar`.
+If you intend to use automatic module loading (`java -p <dir>`) you strictly need to place native components in `native` subfolder next to `qtjambi-6.8.7.jar`.
 
 Native bundles are extracted every time at program startup. By default, this is a process specific temporal directory purged after program shutdown.
 Alternatively, you can use Java system property `io.qt.deploymentdir` to let libraries to be exctacted and persist in user 

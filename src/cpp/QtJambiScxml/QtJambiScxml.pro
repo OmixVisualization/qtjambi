@@ -40,5 +40,4 @@ greaterThan(QT_MAJOR_VERSION, 6):{
     macx: INCLUDEPATH += $$[QT_INSTALL_HEADERS]
 }
 
-SOURCES += \
-    impl.cpp
+SOURCES +=

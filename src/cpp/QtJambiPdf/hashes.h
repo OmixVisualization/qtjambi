@@ -43,20 +43,20 @@
 #include <QtJambi/Global>
 #include <QtJambiGui/hashes.h>
 
-inline hash_type qHash(const QPdfDocumentRenderOptions& value, hash_type seed = 0)
+inline size_t qHash(const QPdfDocumentRenderOptions& value, size_t seed = 0)
 {
     return qHashMulti(seed, value.scaledClipRect(), value.scaledSize(), value.renderFlags(), qint32(value.rotation()));
 }
 
-inline hash_type qHash(const QPdfSelection &value, hash_type seed = 0)
+inline size_t qHash(const QPdfSelection &value, size_t seed = 0)
 {
     return qHashMulti(seed, value.isValid(), value.bounds(), value.text(), value.boundingRectangle(), value.startIndex(), value.endIndex());
 }
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 4, 0)
-inline hash_type qHash(const QPdfDestination &value)
+inline size_t qHash(const QPdfDestination &value)
 {
-    hash_type hashCode = qHash(value.isValid());
+    size_t hashCode = qHash(value.isValid());
     hashCode = hashCode * 31 + qHash(value.page());
     hashCode = hashCode * 31 + qHash(value.location().x());
     hashCode = hashCode * 31 + qHash(value.location().y());
@@ -64,9 +64,9 @@ inline hash_type qHash(const QPdfDestination &value)
     return hashCode;
 }
 
-inline hash_type qHash(const QPdfSearchResult &value)
+inline size_t qHash(const QPdfSearchResult &value)
 {
-    hash_type hashCode = qHash(value.contextBefore());
+    size_t hashCode = qHash(value.contextBefore());
     hashCode = hashCode * 31 + qHash(value.contextAfter());
     hashCode = hashCode * 31 + qHash(value.rectangles());
     hashCode = hashCode * 31 + qHash(static_cast<const QPdfDestination &>(value));
@@ -114,9 +114,9 @@ inline bool operator==(const QPdfLink &value1, const QPdfLink &value2)
             ;
 }
 
-inline hash_type qHash(const QPdfLink &value)
+inline size_t qHash(const QPdfLink &value)
 {
-    hash_type hashCode = qHash(value.contextBefore());
+    size_t hashCode = qHash(value.contextBefore());
     hashCode = hashCode * 31 + qHash(value.contextAfter());
     hashCode = hashCode * 31 + qHash(value.rectangles());
     hashCode = hashCode * 31 + qHash(value.isValid());

@@ -34,260 +34,283 @@
 
 namespace QtJambiPrivate {
 
-template<bool forward, bool has_scope,
+template<bool forward,
          typename EnumType,
-         typename NativeType, bool is_pointer, bool is_const, bool is_reference, bool is_template>
-struct qtjambi_enum_caster{
-    Q_STATIC_ASSERT_X(false && !has_scope, "Cannot cast types");
+         typename NativeType, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
+struct qtjambi_enum_plain_cast{
+    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
+    typedef typename std::conditional<is_reference, typename std::conditional<is_rvalue, typename std::add_rvalue_reference<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_in;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
+    typedef typename std::add_pointer<NativeType>::type NativeType_ptr;
+    typedef typename std::conditional<forward, NativeType_in, EnumType>::type In;
+    typedef typename std::conditional<forward, EnumType, NativeType_out>::type Out;
+
+    static Out cast(In in, Args... args){
+        Q_STATIC_ASSERT(unuseArgs(sizeof(args)...));
+        if constexpr(forward){
+            return EnumType(deref_ptr<is_pointer,const NativeType>::deref(in));
+        }else{
+            Q_STATIC_ASSERT_X(!is_reference || cast_var_args<Args...>::hasScope, "Cannot cast to enumerator reference without scope");
+            Q_STATIC_ASSERT_X(!is_pointer || cast_var_args<Args...>::hasScope, "Cannot cast to enumerator pointer without scope");
+            if constexpr(is_pointer || is_reference){
+                NativeType* result = new NativeType(NativeType(in));
+                cast_var_args<Args...>::scope(args...).addDeletion(result);
+                if constexpr(is_pointer){
+                    return result;
+                }else{
+                    return *result;
+                }
+            }else{
+                return NativeType(in);
+            }
+        }
+    }
 };
 
-template<bool forward, bool has_scope,
+template<bool forward, typename EnumType, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename Args, template<typename... Ts> class NativeType, typename... Ts>
+static constexpr auto qtjambi_enum_container_cast_impl(const NativeType<Ts...>&);
+
+template<bool forward, typename EnumType, typename NativeType, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
+static constexpr auto qtjambi_enum_cast_impl() {
+    if constexpr(is_template<NativeType>::value){
+        return decltype(qtjambi_enum_container_cast_impl<forward, EnumType, is_pointer, is_const, is_reference, is_rvalue, std::tuple<Args...>>(std::declval<const NativeType&>())){};
+    }else{
+        return qtjambi_enum_plain_cast<forward, EnumType, NativeType, is_pointer, is_const, is_reference, is_rvalue, Args...>{};
+    }
+}
+
+template<bool forward,
          typename EnumType,
-         template<typename... Ts> class NativeType, bool is_pointer, bool is_const, bool is_reference,
-         int parameterCount, typename... Ts>
-struct qtjambi_enum_container_cast_decider{
-    Q_STATIC_ASSERT_X(false && !has_scope, "Cannot cast types");
+         typename NativeType, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
+struct qtjambi_enum_cast : decltype(qtjambi_enum_cast_impl<forward, EnumType, NativeType, is_pointer, is_const, is_reference, is_rvalue, Args...>()){
 };
 
-template<bool forward, bool has_scope,
+template<bool forward,
          typename EnumType,
-         template<typename T> class NativeType, bool is_pointer, bool is_const, bool is_reference,
-         typename T>
+         template<typename T> class NativeType, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue,
+         typename T, typename... Args>
 struct qtjambi_enum_container1_cast{
-    Q_STATIC_ASSERT_X(false && !has_scope, "Cannot cast types");
+    Q_STATIC_ASSERT_X(false && !is_pointer, "Cannot cast types");
 };
 
-template<bool forward, bool has_scope,
+template<bool forward,
          typename EnumType,
-         template<typename K, typename T> class NativeType, bool is_pointer, bool is_const, bool is_reference,
-         typename K, typename T>
+         template<typename K, typename T> class NativeType, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue,
+         typename K, typename T, typename... Args>
 struct qtjambi_enum_container2_cast{
-    Q_STATIC_ASSERT_X(false && !has_scope, "Cannot cast types");
+    Q_STATIC_ASSERT_X(false && !is_pointer, "Cannot cast types");
 };
 
-template<bool forward, bool has_scope, typename EnumType, template<typename T> class Container, bool is_pointer, bool is_const, bool is_reference, typename T>
-static constexpr qtjambi_enum_container1_cast<forward, has_scope, EnumType, Container, is_pointer, is_const, is_reference, T> qtjambi_enum_container1_supertype(){
-    return {};
+template<bool forward,
+         typename JniType,
+         template<typename... Ts> class NativeType, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename Args, size_t P, typename... Ts>
+struct qtjambi_enum_container_cast{
+};
+
+template<bool forward, typename EnumType, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename Args, template<typename... Ts> class NativeType, typename... Ts>
+static constexpr auto qtjambi_enum_container_cast_impl(const NativeType<Ts...>&){
+    return qtjambi_enum_container_cast<forward, EnumType, NativeType, is_pointer, is_const, is_reference, is_rvalue, Args, sizeof...(Ts), Ts...>{};
 }
 
-template<bool forward, bool has_scope,
+template<bool forward,
          typename EnumType,
-         template<typename... Ts> class NativeType, bool is_pointer, bool is_const, bool is_reference,
-         typename... Ts>
-struct qtjambi_enum_container_cast_decider<forward, has_scope, EnumType, NativeType, is_pointer, is_const, is_reference, 1, Ts...>
-        : decltype(qtjambi_enum_container1_supertype<forward, has_scope, EnumType, NativeType, is_pointer, is_const, is_reference, Ts...>()){};
+         template<typename T> class NativeType, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename T, typename... Args>
+struct qtjambi_enum_container_cast<forward, EnumType, NativeType, is_pointer, is_const, is_reference, is_rvalue, std::tuple<Args...>, 1, T>
+    : qtjambi_enum_container1_cast<forward, EnumType, NativeType, is_pointer, is_const, is_reference, is_rvalue, T, Args...>{
+};
 
-template<bool forward, bool has_scope, typename EnumType, template<typename K, typename T> class Container, bool is_pointer, bool is_const, bool is_reference, typename K, typename T>
-static constexpr qtjambi_enum_container2_cast<forward, has_scope, EnumType, Container, is_pointer, is_const, is_reference, K, T> qtjambi_enum_container2_supertype(){
-    return {};
-}
-
-template<bool forward, bool has_scope,
+template<bool forward,
          typename EnumType,
-         template<typename... Ts> class NativeType, bool is_pointer, bool is_const, bool is_reference,
-         typename... Ts>
-struct qtjambi_enum_container_cast_decider<forward, has_scope, EnumType, NativeType, is_pointer, is_const, is_reference, 2, Ts...>
-        : decltype(qtjambi_enum_container2_supertype<forward, has_scope, EnumType, NativeType, is_pointer, is_const, is_reference, Ts...>()){};
+         template<typename T, typename K> class NativeType, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename T, typename K, typename... Args>
+struct qtjambi_enum_container_cast<forward, EnumType, NativeType, is_pointer, is_const, is_reference, is_rvalue, std::tuple<Args...>, 2, T, K>
+    : qtjambi_enum_container2_cast<forward, EnumType, NativeType, is_pointer, is_const, is_reference, is_rvalue, T, K, Args...>{
+};
 
-template<bool forward, bool has_scope,
-         typename EnumType,
-         template<typename... Ts> class NativeType, bool is_pointer, bool is_const, bool is_reference,
-         typename... Ts>
-struct qtjambi_enum_caster<forward, has_scope,
+template<typename EnumType, size_t size, typename String, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
+struct qtjambi_enum_from_string_cast{
+    typedef typename std::conditional<is_const, typename std::add_const<String>::type, String>::type String_c;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<String_c>::type, typename std::add_lvalue_reference<String_c>::type>::type In;
+
+    static EnumType cast(In in, Args...){
+        return EnumType(deref_ptr<is_pointer,const String>::deref(in).toLong());
+    }
+};
+
+template<typename EnumType, typename String, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
+struct qtjambi_enum_from_string_cast<EnumType,sizeof(qlonglong),String,is_pointer,is_const,is_reference,is_rvalue,Args...>{
+    typedef typename std::conditional<is_const, typename std::add_const<String>::type, String>::type String_c;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<String_c>::type, typename std::add_lvalue_reference<String_c>::type>::type In;
+
+    static EnumType cast(In in, Args...){
+        return EnumType(deref_ptr<is_pointer,const String>::deref(in).toLong());
+    }
+};
+
+template<typename EnumType, typename String, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
+struct qtjambi_enum_from_string_cast<EnumType,sizeof(qint32),String,is_pointer,is_const,is_reference,is_rvalue,Args...>{
+    typedef typename std::conditional<is_const, typename std::add_const<String>::type, String>::type String_c;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<String_c>::type, typename std::add_lvalue_reference<String_c>::type>::type In;
+
+    static EnumType cast(In in, Args...){
+        return EnumType(deref_ptr<is_pointer,const String>::deref(in).toInt());
+    }
+};
+
+template<typename EnumType, typename String, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
+struct qtjambi_enum_from_string_cast<EnumType,sizeof(qint16),String,is_pointer,is_const,is_reference,is_rvalue,Args...>{
+    typedef typename std::conditional<is_const, typename std::add_const<String>::type, String>::type String_c;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<String_c>::type, typename std::add_lvalue_reference<String_c>::type>::type In;
+
+    static EnumType cast(In in, Args...){
+        return EnumType(deref_ptr<is_pointer,const String>::deref(in).toShort());
+    }
+};
+
+template<typename EnumType, typename String, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
+struct qtjambi_enum_from_string_cast<EnumType,sizeof(qint8),String,is_pointer,is_const,is_reference,is_rvalue,Args...>{
+    typedef typename std::conditional<is_const, typename std::add_const<String>::type, String>::type String_c;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<String_c>::type, typename std::add_lvalue_reference<String_c>::type>::type In;
+
+    static EnumType cast(In in, Args...){
+        return EnumType(qint8(deref_ptr<is_pointer,const String>::deref(in).toInt()));
+    }
+};
+
+template<typename EnumType,
+         bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
+struct qtjambi_enum_plain_cast<true,
                                  EnumType,
-                                 NativeType<Ts...>, is_pointer, is_const, is_reference, true>
-        : qtjambi_enum_container_cast_decider<forward, has_scope, EnumType, NativeType, is_pointer, is_const, is_reference, sizeof...(Ts), Ts...>{
-};
+                                 QString, is_pointer, is_const, is_reference, is_rvalue, Args...>
+        : qtjambi_enum_from_string_cast<EnumType, sizeof(EnumType),QString,is_pointer,is_const,is_reference,is_rvalue,Args...>{};
 
-template<typename EnumType, size_t size>
-struct enum_from_string_decider{
-    static EnumType cast(JNIEnv *, const QString& in, const char*, QtJambiScope*){
-        return EnumType(in.toLong());
-    }
-};
+template<typename EnumType,
+         bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
+struct qtjambi_enum_plain_cast<true,
+                         EnumType,
+                         QStringView, is_pointer, is_const, is_reference, is_rvalue, Args...>
+    : qtjambi_enum_from_string_cast<EnumType, sizeof(EnumType),QStringView,is_pointer,is_const,is_reference,is_rvalue, Args...>{};
 
-template<typename EnumType>
-struct enum_from_string_decider<EnumType,sizeof(qlonglong)>{
-    static EnumType cast(JNIEnv *, const QString& in, const char*, QtJambiScope*){
-        return EnumType(in.toLong());
-    }
-};
+template<typename EnumType,
+         bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
+struct qtjambi_enum_plain_cast<true,
+                         EnumType,
+                         QAnyStringView, is_pointer, is_const, is_reference, is_rvalue, Args...>
+    : qtjambi_enum_from_string_cast<EnumType, sizeof(EnumType),QAnyStringView,is_pointer,is_const,is_reference,is_rvalue,Args...>{};
 
-template<typename EnumType>
-struct enum_from_string_decider<EnumType,sizeof(qint32)>{
-    static EnumType cast(JNIEnv *, const QString& in, const char*, QtJambiScope*){
-        return EnumType(in.toInt());
-    }
-};
+template<typename EnumType,
+         bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
+struct qtjambi_enum_plain_cast<true,
+                         EnumType,
+                         QUtf8StringView, is_pointer, is_const, is_reference, is_rvalue, Args...>
+    : qtjambi_enum_from_string_cast<EnumType, sizeof(EnumType),QUtf8StringView,is_pointer,is_const,is_reference,is_rvalue,Args...>{};
 
-template<typename EnumType>
-struct enum_from_string_decider<EnumType,sizeof(qint16)>{
-    static EnumType cast(JNIEnv *, const QString& in, const char*, QtJambiScope*){
-        return EnumType(in.toShort());
-    }
-};
+template<typename EnumType,
+         bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
+struct qtjambi_enum_plain_cast<true,
+                         EnumType,
+                         QLatin1String, is_pointer, is_const, is_reference, is_rvalue, Args...>
+    : qtjambi_enum_from_string_cast<EnumType, sizeof(EnumType),QLatin1String,is_pointer,is_const,is_reference,is_rvalue,Args...>{};
 
-template<typename EnumType>
-struct enum_from_string_decider<EnumType,sizeof(qint8)>{
-    static EnumType cast(JNIEnv *, const QString& in, const char*, QtJambiScope*){
-        return EnumType(qint8(in.toInt()));
-    }
-};
-
-template<bool has_scope,
-         typename EnumType,
-         bool is_const, bool is_reference>
-struct qtjambi_enum_caster<true, has_scope,
+template<typename EnumType,
+         bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
+struct qtjambi_enum_plain_cast<false,
                                  EnumType,
-                                 QString, false, is_const, is_reference, false>
-        : enum_from_string_decider<EnumType, sizeof(EnumType)>{};
+                                 QString, is_pointer, is_const, is_reference, is_rvalue, Args...>{
+    typedef QString NativeType;
+    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
+    typedef typename std::conditional<is_reference, typename std::conditional<is_rvalue, typename std::add_rvalue_reference<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_in;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
+    typedef typename std::add_pointer<NativeType>::type NativeType_ptr;
 
-template<bool has_scope,
-         typename EnumType,
-         bool is_const, bool is_reference>
-struct qtjambi_enum_caster<false, has_scope,
-                                 EnumType,
-                                 QString, false, is_const, is_reference, false>{
-    static QString cast(JNIEnv *, EnumType in, const char*, QtJambiScope*){
-        Q_STATIC_ASSERT_X(!is_reference, "Cannot cast to QString reference");
-        return QString::number(qint64(in));
+    static NativeType_out cast(EnumType in, Args... args){
+        Q_STATIC_ASSERT(unuseArgs(sizeof(args)...));
+        Q_STATIC_ASSERT_X(!is_reference || cast_var_args<Args...>::hasScope, "Cannot cast to QString reference");
+        Q_STATIC_ASSERT_X(!is_pointer || cast_var_args<Args...>::hasScope, "Cannot cast to QString pointer");
+        if constexpr(is_pointer || is_reference){
+            QString* result = new QString(QString::number(typename std::underlying_type<EnumType>::type(in)));
+            if constexpr(is_pointer){
+                return result;
+            }else{
+                return *result;
+            }
+        }else{
+            return QString::number(typename std::underlying_type<EnumType>::type(in));
+        }
     }
 };
 
-template<bool has_scope,
-         typename EnumType,
-         bool is_const, bool is_reference,
-         typename T>
-struct qtjambi_enum_container1_cast<true, has_scope,
+template<bool forward, typename EnumType,
+         bool is_pointer, bool is_const, bool is_reference, bool is_rvalue,
+         typename T, typename... Args>
+struct qtjambi_enum_container1_cast<forward,
                                           EnumType,
-                                          QFlags, false, is_const, is_reference, T>{
-    typedef typename std::conditional<is_const, typename std::add_const<QFlags<T>>::type, QFlags<T>>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::add_lvalue_reference<NativeType_c>::type NativeType_in;
+                                          QFlags, is_pointer, is_const, is_reference, is_rvalue, T, Args...>{
+    typedef QFlags<T> NativeType;
+    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
+    typedef typename std::conditional<is_reference, typename std::conditional<is_rvalue, typename std::add_rvalue_reference<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_in;
     typedef NativeType_cr NativeType_out;
-    constexpr static EnumType cast(JNIEnv *, NativeType_in in, const char*, QtJambiScope*){
-        return EnumType(int(in));
-    }
-};
+    typedef typename std::conditional<forward, NativeType_in, EnumType>::type In;
+    typedef typename std::conditional<forward, EnumType, NativeType_out>::type Out;
 
-template<bool has_scope,
-         typename EnumType,
-         bool is_const, bool is_reference,
-         typename T>
-struct qtjambi_enum_container1_cast<false, has_scope,
-                                          EnumType,
-                                          QFlags, false, is_const, is_reference, T>{
-    typedef typename std::conditional<is_const, typename std::add_const<QFlags<T>>::type, QFlags<T>>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::add_lvalue_reference<NativeType_c>::type NativeType_in;
-    typedef NativeType_cr NativeType_out;
-    Q_STATIC_ASSERT_X(!is_reference, "Cannot cast to QFlags<T> reference");
-
-    constexpr static NativeType_out cast(JNIEnv *, EnumType in, const char*, QtJambiScope*){
-        return QFlags<T>(in);
-    }
-};
-
-template<bool has_scope,
-         typename EnumType,
-         bool is_const,
-         typename T>
-struct qtjambi_enum_container1_cast<true, has_scope,
-                                          EnumType,
-                                          QFlags, true, is_const, false, T>{
-    typedef typename std::conditional<is_const, typename std::add_const<QFlags<T>>::type, QFlags<T>>::type NativeType_c;
-    typedef typename std::add_pointer<NativeType_c>::type NativeType_in;
-    typedef typename std::add_pointer<NativeType_c>::type NativeType_out;
-    constexpr static EnumType cast(JNIEnv *, NativeType_in in, const char*, QtJambiScope*){
-        return EnumType(int(*in));
-    }
-};
-
-template<bool has_scope,
-         typename EnumType,
-         bool is_const,
-         typename T>
-struct qtjambi_enum_container1_cast<false, has_scope,
-                                          EnumType,
-                                          QFlags, true, is_const, false, T>{
-    typedef typename std::conditional<is_const, typename std::add_const<QFlags<T>>::type, QFlags<T>>::type NativeType_c;
-    typedef typename std::add_pointer<NativeType_c>::type NativeType_in;
-    typedef typename std::add_pointer<NativeType_c>::type NativeType_out;
-    Q_STATIC_ASSERT_X(!has_scope, "Cannot cast to QFlags<T>*");
-
-    static NativeType_out cast(JNIEnv * env, EnumType in, const char*, QtJambiScope* scope){
-        if(!scope)
-            JavaException::raiseError(env, "Cannot cast to QFlags<T>*" QTJAMBI_STACKTRACEINFO );
-        QFlags<T>* result = new QFlags<T>(in);
-        scope->addDeletion(result);
-        return result;
+    static Out cast(In in, Args... args){
+        Q_STATIC_ASSERT(unuseArgs(sizeof(args)...));
+        if constexpr(forward){
+            return EnumType(typename NativeType::Int(deref_ptr<is_pointer,const NativeType>::deref(in)));
+        }else{
+            if constexpr(is_pointer || is_reference){
+                Q_STATIC_ASSERT_X(cast_var_args<Args...>::hasScope, "Cannot cast to QFlags<T>*");
+                NativeType* result = new NativeType(in);
+                cast_var_args<Args...>::scope(args...).addDeletion(result);
+                if constexpr(is_pointer){
+                    return result;
+                }else{
+                    auto env = cast_var_args<Args...>::env(args...);
+                    return qtjambi_deref_value<NativeType, is_default_constructible<NativeType>::value, is_copy_constructible<NativeType>::value, is_const, is_reference>::deref(env, result);
+                }
+            }else{
+                return NativeType(typename NativeType::Int(in));
+            }
+        }
     }
 };
 
 #ifdef QURL_H
-template<bool has_scope,
-         typename EnumType,
-         bool is_const, bool is_reference>
-struct qtjambi_enum_container2_cast<true, has_scope,
-                                          EnumType,
-                                          QUrlTwoFlags, false, is_const, is_reference, QUrl::UrlFormattingOption, QUrl::ComponentFormattingOption>{
-    typedef typename std::conditional<is_const, typename std::add_const<QUrl::FormattingOptions>::type, QUrl::FormattingOptions>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::add_lvalue_reference<NativeType_c>::type NativeType_in;
+
+template<bool forward, typename EnumType,
+         bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
+struct qtjambi_enum_container2_cast<forward,
+                                    EnumType,
+                                    QUrlTwoFlags, is_pointer, is_const, is_reference, is_rvalue, QUrl::UrlFormattingOption, QUrl::ComponentFormattingOption, Args...>{
+    typedef QUrl::FormattingOptions NativeType;
+    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
+    typedef typename std::conditional<is_reference, typename std::conditional<is_rvalue, typename std::add_rvalue_reference<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_in;
     typedef NativeType_cr NativeType_out;
-    static EnumType cast(JNIEnv *, NativeType_in in, const char*, QtJambiScope*){
-        return EnumType(in);
-    }
-};
+    typedef typename std::conditional<forward, NativeType_in, EnumType>::type In;
+    typedef typename std::conditional<forward, EnumType, NativeType_out>::type Out;
 
-template<bool has_scope,
-         typename EnumType,
-         bool is_const, bool is_reference>
-struct qtjambi_enum_container2_cast<false, has_scope,
-                                          EnumType,
-                                          QUrlTwoFlags, false, is_const, is_reference, QUrl::UrlFormattingOption, QUrl::ComponentFormattingOption>{
-    typedef typename std::conditional<is_const, typename std::add_const<QUrl::FormattingOptions>::type, QUrl::FormattingOptions>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::add_lvalue_reference<NativeType_c>::type NativeType_in;
-    typedef NativeType_cr NativeType_out;
-    Q_STATIC_ASSERT_X(!is_reference, "Cannot cast to QUrl::FormattingOptions reference");
-
-    static NativeType_out cast(JNIEnv *, EnumType in, const char*, QtJambiScope*){
-        return QUrl::FormattingOptions(int(in));
-    }
-};
-
-template<bool has_scope,
-         typename EnumType,
-         bool is_const>
-struct qtjambi_enum_container2_cast<true, has_scope,
-                                          EnumType,
-                                          QUrlTwoFlags, true, is_const, false, QUrl::UrlFormattingOption, QUrl::ComponentFormattingOption>{
-    typedef typename std::conditional<is_const, typename std::add_const<QUrl::FormattingOptions>::type, QUrl::FormattingOptions>::type NativeType_c;
-    typedef typename std::add_pointer<NativeType_c>::type NativeType_in;
-    typedef typename std::add_pointer<NativeType_c>::type NativeType_out;
-    static EnumType cast(JNIEnv *, NativeType_in in, const char*, QtJambiScope*){
-        return EnumType(*in);
-    }
-};
-
-template<bool has_scope,
-         typename EnumType,
-         bool is_const>
-struct qtjambi_enum_container2_cast<false, has_scope,
-                                          EnumType,
-                                          QUrlTwoFlags, true, is_const, false, QUrl::UrlFormattingOption, QUrl::ComponentFormattingOption>{
-    typedef typename std::conditional<is_const, typename std::add_const<QUrl::FormattingOptions>::type, QUrl::FormattingOptions>::type NativeType_c;
-    typedef typename std::add_pointer<NativeType_c>::type NativeType_in;
-    typedef typename std::add_pointer<NativeType_c>::type NativeType_out;
-    Q_STATIC_ASSERT_X(!has_scope, "Cannot cast to QUrl::FormattingOptions*");
-
-    static NativeType_out cast(JNIEnv * env, EnumType in, const char*, QtJambiScope* scope){
-        if(!scope)
-            JavaException::raiseError(env, "Cannot cast to QUrl::FormattingOptions*" QTJAMBI_STACKTRACEINFO );
-        QUrl::FormattingOptions* result = new QUrl::FormattingOptions(int(in));
-        scope->addDeletion(result);
-        return result;
+    static Out cast(In in, Args... args){
+        Q_STATIC_ASSERT(unuseArgs(sizeof(args)...));
+        if constexpr(forward){
+            return EnumType(int(deref_ptr<is_pointer,const NativeType>::deref(in)));
+        }else{
+            if constexpr(is_pointer || is_reference){
+                Q_STATIC_ASSERT_X(cast_var_args<Args...>::hasScope, "Cannot cast to QUrl::FormattingOptions*");
+                NativeType* result = new NativeType(in);
+                cast_var_args<Args...>::scope(args...).addDeletion(result);
+                if constexpr(is_pointer){
+                    return result;
+                }else{
+                    auto env = cast_var_args<Args...>::env(args...);
+                    return qtjambi_deref_value<NativeType, is_default_constructible<NativeType>::value, is_copy_constructible<NativeType>::value, is_const, is_reference>::deref(env, result);
+                }
+            }else{
+                return NativeType(int(in));
+            }
+        }
     }
 };
 #endif // QURL_H

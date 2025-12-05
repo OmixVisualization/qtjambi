@@ -29,36 +29,13 @@
 **
 ****************************************************************************/
 
-#include "metainfo.h"
-#include <QtCore/QAbstractEventDispatcher>
-#include <QtCore/QRegularExpression>
-#include <QtCore/private/qcoreapplication_p.h>
+#include "pch_p.h"
 #if (defined(Q_OS_LINUX) || defined(Q_OS_MACOS) || defined(Q_OS_FREEBSD) || defined(Q_OS_NETBSD) || defined(Q_OS_OPENBSD) || defined(Q_OS_SOLARIS)) && !defined(Q_OS_ANDROID)
 #include <signal.h>
 #include <stdio.h>
 #include <map>
 #include <initializer_list>
-#include "threadapi.h"
 #endif
-#include "java_p.h"
-#include "utils_p.h"
-#include "qtjambilink_p.h"
-#include "qtjambimetaobject_p.h"
-#include "qtjambishell_p.h"
-#if QT_VERSION < QT_VERSION_CHECK(6, 8, 0) \
-               || ( (defined(Q_OS_LINUX) \
-                    || defined(Q_OS_MACOS) \
-                    || defined(Q_OS_FREEBSD) \
-                    || defined(Q_OS_NETBSD) \
-                    || defined(Q_OS_OPENBSD) \
-                    || defined(Q_OS_SOLARIS) ) \
-               && !defined(Q_OS_ANDROID))
-#include "threadutils_p.h"
-#endif
-#ifdef Q_OS_ANDROID
-#include "androidapi.h"
-#endif
-#include "qtjambi_cast.h"
 
 void shutdown(JNIEnv * env, bool regular);
 

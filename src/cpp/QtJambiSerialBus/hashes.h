@@ -37,16 +37,14 @@ inline bool operator==(const QCanBusDeviceInfo &value1, const QCanBusDeviceInfo 
     return value1.name()==value2.name()
             && value1.description()==value2.description()
             && value1.serialNumber()==value2.serialNumber()
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
             && value1.plugin()==value2.plugin()
             && value1.alias()==value2.alias()
-#endif
             && value1.channel()==value2.channel()
             && value1.hasFlexibleDataRate()==value2.hasFlexibleDataRate()
             && value1.isVirtual()==value2.isVirtual();
 }
 
-inline hash_type qHash(const QCanBusDeviceInfo &value, hash_type seed = 0)
+inline size_t qHash(const QCanBusDeviceInfo &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -56,10 +54,8 @@ inline hash_type qHash(const QCanBusDeviceInfo &value, hash_type seed = 0)
     seed = hash(seed, value.name());
     seed = hash(seed, value.description());
     seed = hash(seed, value.serialNumber());
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     seed = hash(seed, value.plugin());
     seed = hash(seed, value.alias());
-#endif
     seed = hash(seed, value.channel());
     seed = hash(seed, value.hasFlexibleDataRate());
     seed = hash(seed, value.isVirtual());
@@ -71,7 +67,7 @@ inline bool operator==(const QCanBusFrame::TimeStamp &value1, const QCanBusFrame
             && value1.microSeconds()==value2.microSeconds();
 }
 
-inline hash_type qHash(const QCanBusFrame::TimeStamp &value, hash_type seed = 0)
+inline size_t qHash(const QCanBusFrame::TimeStamp &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -97,7 +93,7 @@ inline bool operator==(const QCanBusFrame &value1, const QCanBusFrame &value2){
             && value1.hasLocalEcho()==value2.hasLocalEcho();
 }
 
-inline hash_type qHash(const QCanBusFrame &value, hash_type seed = 0)
+inline size_t qHash(const QCanBusFrame &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -118,7 +114,7 @@ inline hash_type qHash(const QCanBusFrame &value, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QCanBusDevice::Filter &value, hash_type seed = 0)
+inline size_t qHash(const QCanBusDevice::Filter &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -139,7 +135,7 @@ inline bool operator==(const QModbusDataUnit &value1, const QModbusDataUnit &val
             && value1.valueCount()==value2.valueCount();
 }
 
-inline hash_type qHash(const QModbusDataUnit &value, hash_type seed = 0)
+inline size_t qHash(const QModbusDataUnit &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -167,7 +163,7 @@ inline bool operator==(const QModbusDeviceIdentification &value1, const QModbusD
     return false;
 }
 
-inline hash_type qHash(const QModbusDeviceIdentification &value, hash_type seed = 0)
+inline size_t qHash(const QModbusDeviceIdentification &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -189,7 +185,7 @@ inline bool operator==(const QModbusPdu &value1, const QModbusPdu &value2){
             && value1.data()==value2.data();
 }
 
-inline hash_type qHash(const QModbusPdu &value, hash_type seed = 0)
+inline size_t qHash(const QModbusPdu &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -206,7 +202,7 @@ inline bool operator==(const QModbusRequest &value1, const QModbusRequest &value
     return static_cast<const QModbusPdu&>(value1)==static_cast<const QModbusPdu&>(value2);
 }
 
-inline hash_type qHash(const QModbusRequest &value, hash_type seed = 0)
+inline size_t qHash(const QModbusRequest &value, size_t seed = 0)
 {
     return qHash(static_cast<const QModbusPdu&>(value), seed);
 }
@@ -215,7 +211,7 @@ inline bool operator==(const QModbusResponse &value1, const QModbusResponse &val
     return static_cast<const QModbusPdu&>(value1)==static_cast<const QModbusPdu&>(value2);
 }
 
-inline hash_type qHash(const QModbusResponse &value, hash_type seed = 0)
+inline size_t qHash(const QModbusResponse &value, size_t seed = 0)
 {
     return qHash(static_cast<const QModbusPdu&>(value), seed);
 }

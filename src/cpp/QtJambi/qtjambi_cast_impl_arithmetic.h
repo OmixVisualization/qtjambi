@@ -35,445 +35,509 @@
 namespace QtJambiPrivate {
 
 template<bool forward,
-         bool has_scope,
          typename ArithmeticType,
-         typename NativeType, bool is_enum, bool is_pointer, bool is_const, bool is_reference, bool is_template>
-struct qtjambi_arithmetic_caster{
-    Q_STATIC_ASSERT_X(false && !has_scope, "Cannot cast types");
-};
-
-template<bool has_scope,
-         typename ArithmeticType,
-         typename NativeType, bool is_const, bool is_reference>
-struct qtjambi_arithmetic_caster<true,
-                                 has_scope,
-                                 ArithmeticType,
-                                 NativeType, true, false, is_const, is_reference, false>{
+         typename NativeType, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
+struct qtjambi_arithmetic_plain_cast{
     typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::add_lvalue_reference<NativeType_c>::type NativeType_in;
-    typedef NativeType_cr NativeType_out;
-    constexpr static ArithmeticType cast(JNIEnv *, NativeType_in in, const char*, QtJambiScope*){
-        return ArithmeticType(in);
+    typedef typename std::conditional<is_reference, typename std::conditional<is_rvalue, typename std::add_rvalue_reference<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_in;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
+    typedef typename std::add_pointer<NativeType>::type NativeType_ptr;
+    typedef typename std::conditional<forward, NativeType_in, ArithmeticType>::type In;
+    typedef typename std::conditional<forward, ArithmeticType, NativeType_out>::type Out;
+
+    static Out cast(In in, Args... args){
+        Q_STATIC_ASSERT(unuseArgs(sizeof(args)...));
+        if constexpr(forward){
+            if constexpr(is_pointer){
+                return ArithmeticType(*in);
+            }else{
+                return ArithmeticType(in);
+            }
+        }else{
+            Q_STATIC_ASSERT_X(!is_reference || cast_var_args<Args...>::hasScope, "Cannot cast to arithmetic reference without scope");
+            Q_STATIC_ASSERT_X(!is_pointer || cast_var_args<Args...>::hasScope, "Cannot cast to arithmetic pointer without scope");
+            if constexpr(is_pointer || is_reference){
+                NativeType* result = new NativeType(NativeType(in));
+                cast_var_args<Args...>::scope(args...).addDeletion(result);
+                if constexpr(is_pointer){
+                    return result;
+                }else{
+                    return *result;
+                }
+            }else{
+                return NativeType(in);
+            }
+        }
     }
 };
 
-template<bool has_scope,
-         typename ArithmeticType,
-         typename NativeType, bool is_const, bool is_reference>
-struct qtjambi_arithmetic_caster<false,
-                                 has_scope,
-                                 ArithmeticType,
-                                 NativeType, true, false, is_const, is_reference, false>{
-    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::add_lvalue_reference<NativeType_c>::type NativeType_in;
-    typedef NativeType_cr NativeType_out;
-    Q_STATIC_ASSERT_X(!is_reference, "Cannot cast to enumerator reference");
+template<bool forward, typename ArithmeticType, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename Args, template<typename... Ts> class NativeType, typename... Ts>
+static constexpr auto qtjambi_arithmetic_template_cast_impl(const NativeType<Ts...>&);
 
-    constexpr static NativeType_out cast(JNIEnv *, ArithmeticType in, const char*, QtJambiScope*){
-        return NativeType(in);
+template<bool forward, typename ArithmeticType, typename NativeType, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
+static constexpr auto qtjambi_arithmetic_cast_impl() {
+    if constexpr(is_template<NativeType>::value){
+        return decltype(qtjambi_arithmetic_template_cast_impl<forward, ArithmeticType, is_pointer, is_const, is_reference, is_rvalue, std::tuple<Args...>>(std::declval<const NativeType&>())){};
+    }else{
+        return qtjambi_arithmetic_plain_cast<forward, ArithmeticType, NativeType, is_pointer, is_const, is_reference, is_rvalue, Args...>{};
     }
+}
+
+template<bool forward,
+         typename ArithmeticType,
+         typename NativeType, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
+struct qtjambi_arithmetic_cast : decltype(qtjambi_arithmetic_cast_impl<forward, ArithmeticType, NativeType, is_pointer, is_const, is_reference, is_rvalue, Args...>()){
 };
 
-template<bool has_scope,
-         typename ArithmeticType,
-         bool is_pointer, bool is_const, bool is_reference>
-struct qtjambi_arithmetic_caster<true,
-                                 has_scope,
+template<typename ArithmeticType,
+         bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
+struct qtjambi_arithmetic_plain_cast<true,
                                  ArithmeticType,
-                                 QLatin1Char, false, is_pointer, is_const, is_reference, false>{
+                                 QLatin1Char, is_pointer, is_const, is_reference, is_rvalue, Args...>{
     typedef typename std::conditional<is_const, typename std::add_const<QLatin1Char>::type, QLatin1Char>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
+    typedef typename std::conditional<is_reference, typename std::conditional<is_rvalue, typename std::add_rvalue_reference<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_in;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    constexpr static ArithmeticType cast(JNIEnv *, NativeType_in in, const char*, QtJambiScope*){
-        return ArithmeticType(deref_ptr<is_pointer,QLatin1Char>::deref(in).unicode());
+
+    static ArithmeticType cast(NativeType_in in, Args...){
+        return ArithmeticType(deref_ptr<is_pointer,const QLatin1Char>::deref(in).toLatin1());
     }
 };
 
-template<bool has_scope,
-         typename ArithmeticType,
-         bool is_pointer, bool is_const, bool is_reference>
-struct qtjambi_arithmetic_caster<false,
-                                 has_scope,
+template<typename ArithmeticType,
+         bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
+struct qtjambi_arithmetic_plain_cast<false,
                                  ArithmeticType,
-                                 QLatin1Char, false, is_pointer, is_const, is_reference, false>{
+                                 QLatin1Char, is_pointer, is_const, is_reference, is_rvalue, Args...>{
     typedef typename std::conditional<is_const, typename std::add_const<QLatin1Char>::type, QLatin1Char>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
+    typedef typename std::conditional<is_reference, typename std::conditional<is_rvalue, typename std::add_rvalue_reference<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_in;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    Q_STATIC_ASSERT_X(!is_reference, "Cannot cast to QLatin1Char reference");
-    Q_STATIC_ASSERT_X(!is_pointer, "Cannot cast to QLatin1Char pointer");
 
-    constexpr static NativeType_out cast(JNIEnv *, ArithmeticType in, const char*, QtJambiScope*){
-        return QLatin1Char(char(in));
+    static NativeType_out cast(ArithmeticType in, Args... args){
+        Q_STATIC_ASSERT(unuseArgs(sizeof(args)...));
+        Q_STATIC_ASSERT_X(!is_reference || cast_var_args<Args...>::hasScope, "Cannot cast to QLatin1Char reference without scope");
+        Q_STATIC_ASSERT_X(!is_pointer || cast_var_args<Args...>::hasScope, "Cannot cast to QLatin1Char pointer without scope");
+        if constexpr(is_pointer || is_reference){
+            QLatin1Char* result = new QLatin1Char(char(in));
+            cast_var_args<Args...>::scope(args...).addDeletion(result);
+            if constexpr(is_pointer){
+                return result;
+            }else{
+                return *result;
+            }
+        }else{
+            return QLatin1Char(char(in));
+        }
     }
 };
 
-template<bool has_scope,
-         typename ArithmeticType,
-         bool is_pointer, bool is_const, bool is_reference>
-struct qtjambi_arithmetic_caster<true,
-                                 has_scope,
+template<typename ArithmeticType,
+         bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
+struct qtjambi_arithmetic_plain_cast<true,
                                  ArithmeticType,
-                                 QChar, false, is_pointer, is_const, is_reference, false>{
+                                 QChar, is_pointer, is_const, is_reference, is_rvalue, Args...>{
     typedef typename std::conditional<is_const, typename std::add_const<QChar>::type, QChar>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
+    typedef typename std::conditional<is_reference, typename std::conditional<is_rvalue, typename std::add_rvalue_reference<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_in;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    constexpr static ArithmeticType cast(JNIEnv *, NativeType_in in, const char*, QtJambiScope*){
-        return ArithmeticType(deref_ptr<is_pointer,QChar>::deref(in).unicode());
+
+    static ArithmeticType cast(NativeType_in in, Args...){
+        return ArithmeticType(deref_ptr<is_pointer,const QChar>::deref(in).unicode());
     }
 };
 
-template<bool has_scope,
-         typename ArithmeticType,
-         bool is_pointer, bool is_const, bool is_reference>
-struct qtjambi_arithmetic_caster<false,
-                                 has_scope,
+template<typename ArithmeticType,
+         bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
+struct qtjambi_arithmetic_plain_cast<false,
                                  ArithmeticType,
-                                 QChar, false, is_pointer, is_const, is_reference, false>{
+                                 QChar, is_pointer, is_const, is_reference, is_rvalue, Args...>{
     typedef typename std::conditional<is_const, typename std::add_const<QChar>::type, QChar>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
+    typedef typename std::conditional<is_reference, typename std::conditional<is_rvalue, typename std::add_rvalue_reference<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_in;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    Q_STATIC_ASSERT_X(!is_reference, "Cannot cast to QChar reference");
-    Q_STATIC_ASSERT_X(!is_pointer, "Cannot cast to QChar pointer");
 
-    constexpr static NativeType_out cast(JNIEnv *, ArithmeticType in, const char*, QtJambiScope*){
-        return QChar(ushort(in));
+    static NativeType_out cast(ArithmeticType in, Args... args){
+        Q_STATIC_ASSERT(unuseArgs(sizeof(args)...));
+        Q_STATIC_ASSERT_X(!is_reference || cast_var_args<Args...>::hasScope, "Cannot cast to QChar reference without scope");
+        Q_STATIC_ASSERT_X(!is_pointer || cast_var_args<Args...>::hasScope, "Cannot cast to QChar pointer without scope");
+        if constexpr(is_pointer || is_reference){
+            QChar* result = new QChar(ushort(in));
+            cast_var_args<Args...>::scope(args...).addDeletion(result);
+            if constexpr(is_pointer){
+                return result;
+            }else{
+                return *result;
+            }
+        }else{
+            return QChar(ushort(in));
+        }
+    }
+};
+
+template<typename ArithmeticType,
+         bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
+struct qtjambi_arithmetic_plain_cast<false,
+                                 ArithmeticType,
+                                 QVariant, is_pointer, is_const, is_reference, is_rvalue, Args...>{
+    typedef typename std::conditional<is_const, typename std::add_const<QVariant>::type, QVariant>::type NativeType_c;
+    typedef typename std::conditional<is_reference, typename std::conditional<is_rvalue, typename std::add_rvalue_reference<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_in;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
+
+    static NativeType_out cast(ArithmeticType in, Args... args){
+        Q_STATIC_ASSERT(unuseArgs(sizeof(args)...));
+        Q_STATIC_ASSERT_X(!is_reference || cast_var_args<Args...>::hasScope, "Cannot cast to QVariant reference without scope");
+        Q_STATIC_ASSERT_X(!is_pointer || cast_var_args<Args...>::hasScope, "Cannot cast to QVariant pointer without scope");
+        if constexpr(is_pointer || is_reference){
+            QVariant* result = new QVariant(QVariant::fromValue<ArithmeticType>(in));
+            cast_var_args<Args...>::scope(args...).addDeletion(result);
+            if constexpr(is_pointer){
+                return result;
+            }else{
+                return *result;
+            }
+        }else{
+            return QVariant::fromValue<ArithmeticType>(in);
+        }
     }
 };
 
 template<bool forward,
-         bool has_scope,
          typename ArithmeticType,
-         template<typename... Ts> class NativeType, bool is_pointer, bool is_const, bool is_reference,
-         int parameterCount, typename... Ts>
+         template<typename...> class NativeType, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue,
+         int parameterCount, typename... Args>
 struct qtjambi_arithmetic_container_cast_decider{
-    typedef typename std::conditional<is_const, typename std::add_const<NativeType<Ts...>>::type, NativeType<Ts...>>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
+    typedef typename std::conditional<is_const, typename std::add_const<NativeType<Args...>>::type, NativeType<Args...>>::type NativeType_c;
+    typedef typename std::conditional<is_reference, typename std::conditional<is_rvalue, typename std::add_rvalue_reference<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_in;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    Q_STATIC_ASSERT_X(false && !has_scope, "Cannot cast types");
+    Q_STATIC_ASSERT_X(false && !is_pointer, "Cannot cast types");
 };
 
 template<bool forward,
-         bool has_scope,
          typename ArithmeticType,
-         template<typename T> class NativeType, bool is_pointer, bool is_const, bool is_reference,
-         typename T>
+         template<typename T> class NativeType, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue,
+         typename T, typename... Args>
 struct qtjambi_arithmetic_container1_cast{
-    Q_STATIC_ASSERT_X(false && !has_scope, "Cannot cast types");
+    Q_STATIC_ASSERT_X(false && !is_pointer, "Cannot cast types");
 };
 
 template<bool forward,
-         bool has_scope,
          typename ArithmeticType,
-         template<typename K, typename T> class NativeType, bool is_pointer, bool is_const, bool is_reference,
-         typename K, typename T>
+         template<typename K, typename T> class NativeType, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue,
+         typename K, typename T, typename... Args>
 struct qtjambi_arithmetic_container2_cast{
     typedef typename std::conditional<is_const, typename std::add_const<NativeType<K,T>>::type, NativeType<K,T>>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
+    typedef typename std::conditional<is_reference, typename std::conditional<is_rvalue, typename std::add_rvalue_reference<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_in;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    Q_STATIC_ASSERT_X(false && !has_scope, "Cannot cast types");
+    Q_STATIC_ASSERT_X(false && !is_pointer, "Cannot cast types");
 };
-
-template<bool forward, bool has_scope, typename ArithmeticType, template<typename T> class Container, bool is_pointer, bool is_const, bool is_reference, typename T>
-static constexpr qtjambi_arithmetic_container1_cast<forward, has_scope, ArithmeticType, Container, is_pointer, is_const, is_reference, T> qtjambi_arithmetic_container1_supertype(){
-    return {};
-}
-
-template<bool forward, bool has_scope,
-         typename ArithmeticType,
-         template<typename... Ts> class NativeType, bool is_pointer, bool is_const, bool is_reference,
-         typename... Ts>
-struct qtjambi_arithmetic_container_cast_decider<forward, has_scope, ArithmeticType, NativeType, is_pointer, is_const, is_reference, 1, Ts...>
-        : decltype(qtjambi_arithmetic_container1_supertype<forward, has_scope, ArithmeticType, NativeType, is_pointer, is_const, is_reference, Ts...>()){};
-
-template<bool forward, bool has_scope, typename ArithmeticType, template<typename K, typename T> class Container, bool is_pointer, bool is_const, bool is_reference, typename K, typename T>
-static constexpr qtjambi_arithmetic_container2_cast<forward, has_scope, ArithmeticType, Container, is_pointer, is_const, is_reference, K, T> qtjambi_arithmetic_container2_supertype(){
-    return {};
-}
-
-template<bool forward, bool has_scope,
-         typename ArithmeticType,
-         template<typename... Ts> class NativeType, bool is_pointer, bool is_const, bool is_reference,
-         typename... Ts>
-struct qtjambi_arithmetic_container_cast_decider<forward, has_scope, ArithmeticType, NativeType, is_pointer, is_const, is_reference, 2, Ts...>
-        : decltype(qtjambi_arithmetic_container2_supertype<forward, has_scope, ArithmeticType, NativeType, is_pointer, is_const, is_reference, Ts...>()){};
 
 template<bool forward,
-         bool has_scope,
          typename ArithmeticType,
-         template<typename... Ts> class NativeType, bool is_pointer, bool is_const, bool is_reference,
-         typename... Ts>
-struct qtjambi_arithmetic_caster<forward,
-                                 has_scope,
-                                 ArithmeticType,
-                                 NativeType<Ts...>, false, is_pointer, is_const, is_reference, true>
-        : qtjambi_arithmetic_container_cast_decider<forward, has_scope, ArithmeticType, NativeType, is_pointer, is_const, is_reference, sizeof...(Ts), Ts...>{
+         template<typename... Ts> class NativeType, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename Args, size_t P, typename... Ts>
+struct qtjambi_arithmetic_template_cast{
 };
 
-template<typename ArithmeticType>
+template<bool forward, typename ArithmeticType, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename Args, template<typename... Ts> class NativeType, typename... Ts>
+static constexpr auto qtjambi_arithmetic_template_cast_impl(const NativeType<Ts...>&){
+    return qtjambi_arithmetic_template_cast<forward, ArithmeticType, NativeType, is_pointer, is_const, is_reference, is_rvalue, Args, sizeof...(Ts), Ts...>{};
+}
+
+template<bool forward,
+         typename ArithmeticType,
+         template<typename T> class NativeType, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename T, typename... Args>
+struct qtjambi_arithmetic_template_cast<forward, ArithmeticType, NativeType, is_pointer, is_const, is_reference, is_rvalue, std::tuple<Args...>, 1, T>
+ : qtjambi_arithmetic_container1_cast<forward, ArithmeticType, NativeType, is_pointer, is_const, is_reference, is_rvalue, T, Args...>{
+};
+
+template<bool forward,
+         typename ArithmeticType,
+         template<typename T, typename K> class NativeType, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename T, typename K, typename... Args>
+struct qtjambi_arithmetic_template_cast<forward, ArithmeticType, NativeType, is_pointer, is_const, is_reference, is_rvalue, std::tuple<Args...>, 2, T, K>
+ : qtjambi_arithmetic_container2_cast<forward, ArithmeticType, NativeType, is_pointer, is_const, is_reference, is_rvalue, T, K, Args...>{
+};
+
+template<typename ArithmeticType, typename String, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
 struct arithmetic_from_string_decider{
-    static ArithmeticType cast(JNIEnv *, const QString& in, const char*, QtJambiScope*){
-        return ArithmeticType(in.toLong());
+};
+
+template<typename String, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
+struct arithmetic_from_string_decider<double,String,is_pointer,is_const,is_reference, is_rvalue, Args...>{
+    typedef typename std::conditional<is_const, typename std::add_const<String>::type, String>::type String_c;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<String_c>::type, typename std::add_lvalue_reference<String_c>::type>::type In;
+
+    static double cast(In in, Args...){
+        return deref_ptr<is_pointer,const String>::deref(in).toDouble();
     }
 };
 
-template<>
-struct arithmetic_from_string_decider<double>{
-    static double cast(JNIEnv *, const QString& in, const char*, QtJambiScope*){
-        return in.toDouble();
+template<typename String, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
+struct arithmetic_from_string_decider<float,String,is_pointer,is_const,is_reference, is_rvalue, Args...>{
+    typedef typename std::conditional<is_const, typename std::add_const<String>::type, String>::type String_c;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<String_c>::type, typename std::add_lvalue_reference<String_c>::type>::type In;
+
+    static float cast(In in, Args...){
+        return deref_ptr<is_pointer,const String>::deref(in).toFloat();
     }
 };
 
-template<>
-struct arithmetic_from_string_decider<float>{
-    static float cast(JNIEnv *, const QString& in, const char*, QtJambiScope*){
-        return in.toFloat();
+template<typename String, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
+struct arithmetic_from_string_decider<bool,String,is_pointer,is_const,is_reference, is_rvalue, Args...>{
+    typedef typename std::conditional<is_const, typename std::add_const<String>::type, String>::type String_c;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<String_c>::type, typename std::add_lvalue_reference<String_c>::type>::type In;
+
+    static bool cast(In in, Args...){
+        return !deref_ptr<is_pointer,const String>::deref(in).isEmpty();
     }
 };
 
-template<>
-struct arithmetic_from_string_decider<bool>{
-    static bool cast(JNIEnv *, const QString& in, const char*, QtJambiScope*){
-        return !in.isEmpty();
+template<typename String, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
+struct arithmetic_from_string_decider<qlonglong,String,is_pointer,is_const,is_reference, is_rvalue, Args...>{
+    typedef typename std::conditional<is_const, typename std::add_const<String>::type, String>::type String_c;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<String_c>::type, typename std::add_lvalue_reference<String_c>::type>::type In;
+
+    static qlonglong cast(In in, Args...){
+        return deref_ptr<is_pointer,const String>::deref(in).toLongLong();
     }
 };
 
-template<>
-struct arithmetic_from_string_decider<qlonglong>{
-    static qlonglong cast(JNIEnv *, const QString& in, const char*, QtJambiScope*){
-        return in.toLongLong();
+template<typename String, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
+struct arithmetic_from_string_decider<qulonglong,String,is_pointer,is_const,is_reference, is_rvalue, Args...>{
+    typedef typename std::conditional<is_const, typename std::add_const<String>::type, String>::type String_c;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<String_c>::type, typename std::add_lvalue_reference<String_c>::type>::type In;
+
+    static qulonglong cast(In in, Args...){
+        return deref_ptr<is_pointer,const String>::deref(in).toULongLong();
     }
 };
 
-template<>
-struct arithmetic_from_string_decider<qulonglong>{
-    static qulonglong cast(JNIEnv *, const QString& in, const char*, QtJambiScope*){
-        return in.toULongLong();
+template<typename String, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
+struct arithmetic_from_string_decider<long,String,is_pointer,is_const,is_reference, is_rvalue, Args...>{
+    typedef typename std::conditional<is_const, typename std::add_const<String>::type, String>::type String_c;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<String_c>::type, typename std::add_lvalue_reference<String_c>::type>::type In;
+
+    static long cast(In in, Args...){
+        return deref_ptr<is_pointer,const String>::deref(in).toLong();
     }
 };
 
-template<>
-struct arithmetic_from_string_decider<long>{
-    static long cast(JNIEnv *, const QString& in, const char*, QtJambiScope*){
-        return in.toLong();
+template<typename String, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
+struct arithmetic_from_string_decider<ulong,String,is_pointer,is_const,is_reference,is_rvalue,Args...>{
+    typedef typename std::conditional<is_const, typename std::add_const<String>::type, String>::type String_c;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<String_c>::type, typename std::add_lvalue_reference<String_c>::type>::type In;
+
+    static ulong cast(In in, Args...){
+        return deref_ptr<is_pointer,const String>::deref(in).toULong();
     }
 };
 
-template<>
-struct arithmetic_from_string_decider<ulong>{
-    static ulong cast(JNIEnv *, const QString& in, const char*, QtJambiScope*){
-        return in.toULong();
+template<typename String, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
+struct arithmetic_from_string_decider<int,String,is_pointer,is_const,is_reference,is_rvalue,Args...>{
+    typedef typename std::conditional<is_const, typename std::add_const<String>::type, String>::type String_c;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<String_c>::type, typename std::add_lvalue_reference<String_c>::type>::type In;
+
+    static int cast(In in, Args...){
+        return deref_ptr<is_pointer,const String>::deref(in).toInt();
     }
 };
 
-template<>
-struct arithmetic_from_string_decider<int>{
-    static int cast(JNIEnv *, const QString& in, const char*, QtJambiScope*){
-        return in.toInt();
+template<typename String, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
+struct arithmetic_from_string_decider<uint,String,is_pointer,is_const,is_reference,is_rvalue,Args...>{
+    typedef typename std::conditional<is_const, typename std::add_const<String>::type, String>::type String_c;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<String_c>::type, typename std::add_lvalue_reference<String_c>::type>::type In;
+
+    static uint cast(In in, Args...){
+        return deref_ptr<is_pointer,const String>::deref(in).toUInt();
     }
 };
 
-template<>
-struct arithmetic_from_string_decider<uint>{
-    static uint cast(JNIEnv *, const QString& in, const char*, QtJambiScope*){
-        return in.toUInt();
+template<typename String, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
+struct arithmetic_from_string_decider<short,String,is_pointer,is_const,is_reference,is_rvalue,Args...>{
+    typedef typename std::conditional<is_const, typename std::add_const<String>::type, String>::type String_c;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<String_c>::type, typename std::add_lvalue_reference<String_c>::type>::type In;
+
+    static short cast(In in, Args...){
+        return deref_ptr<is_pointer,const String>::deref(in).toShort();
     }
 };
 
-template<>
-struct arithmetic_from_string_decider<short>{
-    static short cast(JNIEnv *, const QString& in, const char*, QtJambiScope*){
-        return in.toShort();
+template<typename String, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
+struct arithmetic_from_string_decider<ushort,String,is_pointer,is_const,is_reference,is_rvalue,Args...>{
+    typedef typename std::conditional<is_const, typename std::add_const<String>::type, String>::type String_c;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<String_c>::type, typename std::add_lvalue_reference<String_c>::type>::type In;
+
+    static ushort cast(In in, Args...){
+        return deref_ptr<is_pointer,const String>::deref(in).toUShort();
     }
 };
 
-template<>
-struct arithmetic_from_string_decider<ushort>{
-    static ushort cast(JNIEnv *, const QString& in, const char*, QtJambiScope*){
-        return in.toUShort();
+template<typename String, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
+struct arithmetic_from_string_decider<char,String,is_pointer,is_const,is_reference,is_rvalue,Args...>{
+    typedef typename std::conditional<is_const, typename std::add_const<String>::type, String>::type String_c;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<String_c>::type, typename std::add_lvalue_reference<String_c>::type>::type In;
+
+    static char cast(In in, Args...){
+        return char(deref_ptr<is_pointer,const String>::deref(in).toShort());
     }
 };
 
-template<>
-struct arithmetic_from_string_decider<char>{
-    static char cast(JNIEnv *, const QString& in, const char*, QtJambiScope*){
-        return char(in.toShort());
+template<typename String, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
+struct arithmetic_from_string_decider<uchar,String,is_pointer,is_const,is_reference,is_rvalue,Args...>{
+    typedef typename std::conditional<is_const, typename std::add_const<String>::type, String>::type String_c;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<String_c>::type, typename std::add_lvalue_reference<String_c>::type>::type In;
+
+    static uchar cast(In in, Args...){
+        return uchar(deref_ptr<is_pointer,const String>::deref(in).toUShort());
     }
 };
 
-template<>
-struct arithmetic_from_string_decider<uchar>{
-    static uchar cast(JNIEnv *, const QString& in, const char*, QtJambiScope*){
-        return uchar(in.toUShort());
-    }
-};
-
-template<bool has_scope,
-         typename ArithmeticType,
-         bool is_const, bool is_reference>
-struct qtjambi_arithmetic_caster<true,
-                                 has_scope,
+template<typename ArithmeticType,
+         bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
+struct qtjambi_arithmetic_plain_cast<true,
                                  ArithmeticType,
-                                 QString, false, false, is_const, is_reference, false>
-        : arithmetic_from_string_decider<ArithmeticType>{};
+                                 QString, is_pointer, is_const, is_reference, is_rvalue, Args...>
+    : arithmetic_from_string_decider<ArithmeticType,QString,is_pointer,is_const,is_reference,is_rvalue,Args...>{};
 
-template<bool has_scope,
-         typename ArithmeticType,
-         bool is_const, bool is_reference>
-struct qtjambi_arithmetic_caster<false,
-                                 has_scope,
+template<typename ArithmeticType,
+         bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
+struct qtjambi_arithmetic_plain_cast<true,
+                                     ArithmeticType,
+                                     QStringView, is_pointer, is_const, is_reference, is_rvalue, Args...>
+    : arithmetic_from_string_decider<ArithmeticType,QStringView,is_pointer,is_const,is_reference,is_rvalue,Args...>{};
+
+template<typename ArithmeticType,
+         bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
+struct qtjambi_arithmetic_plain_cast<true,
+                                     ArithmeticType,
+                                     QAnyStringView, is_pointer, is_const, is_reference, is_rvalue, Args...>
+    : arithmetic_from_string_decider<ArithmeticType,QAnyStringView,is_pointer,is_const,is_reference,is_rvalue,Args...>{};
+
+template<typename ArithmeticType,
+         bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
+struct qtjambi_arithmetic_plain_cast<true,
+                                     ArithmeticType,
+                                     QUtf8StringView, is_pointer, is_const, is_reference, is_rvalue, Args...>
+    : arithmetic_from_string_decider<ArithmeticType,QUtf8StringView,is_pointer,is_const,is_reference,is_rvalue,Args...>{};
+
+template<typename ArithmeticType,
+         bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
+struct qtjambi_arithmetic_plain_cast<true,
+                                     ArithmeticType,
+                                     QLatin1String, is_pointer, is_const, is_reference, is_rvalue, Args...>
+    : arithmetic_from_string_decider<ArithmeticType,QLatin1String,is_pointer,is_const,is_reference,is_rvalue,Args...>{};
+
+template<typename ArithmeticType,
+         bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
+struct qtjambi_arithmetic_plain_cast<false,
                                  ArithmeticType,
-                                 QString, false, false, is_const, is_reference, false>{
-    Q_STATIC_ASSERT_X(!is_reference, "Cannot cast to QString reference");
+                                 QString, is_pointer, is_const, is_reference, is_rvalue, Args...>{
+    typedef QString NativeType;
+    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
+    typedef typename std::conditional<is_reference, typename std::conditional<is_rvalue, typename std::add_rvalue_reference<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_in;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
+    typedef typename std::add_pointer<NativeType>::type NativeType_ptr;
 
-    static QString cast(JNIEnv *, ArithmeticType in, const char*, QtJambiScope*){
-        return QString::number(in);
+    static NativeType_out cast(ArithmeticType in, Args... args){
+        Q_STATIC_ASSERT(unuseArgs(sizeof(args)...));
+        if constexpr(is_pointer || is_reference){
+            Q_STATIC_ASSERT_X(!is_reference || cast_var_args<Args...>::hasScope, "Cannot cast to QString reference without scope");
+            Q_STATIC_ASSERT_X(!is_pointer || cast_var_args<Args...>::hasScope, "Cannot cast to QString pointer without scope");
+            QString* result = new QString(QString::number(in));
+            cast_var_args<Args...>::scope(args...).addDeletion(result);
+            if constexpr(is_pointer){
+                return result;
+            }else{
+                return *result;
+            }
+        }else{
+            return QString::number(in);
+        }
     }
 };
-
-template<bool has_scope,
-         typename ArithmeticType,
-         bool is_const, bool is_reference,
-         typename T>
-struct qtjambi_arithmetic_container1_cast<true, has_scope,
+template<bool forward, typename ArithmeticType,
+         bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename T, typename... Args>
+struct qtjambi_arithmetic_container1_cast<forward,
                                           ArithmeticType,
-                                          QFlags, false, is_const, is_reference, T>{
-    typedef typename std::conditional<is_const, typename std::add_const<QFlags<T>>::type, QFlags<T>>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::add_lvalue_reference<NativeType_c>::type NativeType_in;
-    typedef NativeType_cr NativeType_out;
-    constexpr static ArithmeticType cast(JNIEnv *, NativeType_in in, const char*, QtJambiScope*){
-        return ArithmeticType(in);
-    }
-};
+                                          QFlags, is_pointer, is_const, is_reference, is_rvalue, T, Args...>{
+    typedef QFlags<T> NativeType;
+    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
+    typedef typename std::conditional<is_reference, typename std::conditional<is_rvalue, typename std::add_rvalue_reference<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_in;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
+    typedef typename std::conditional<forward, NativeType_in, ArithmeticType>::type In;
+    typedef typename std::conditional<forward, ArithmeticType, NativeType_out>::type Out;
 
-template<bool has_scope,
-         typename ArithmeticType,
-         bool is_const, bool is_reference,
-         typename T>
-struct qtjambi_arithmetic_container1_cast<false, has_scope,
-                                          ArithmeticType,
-                                          QFlags, false, is_const, is_reference, T>{
-    typedef typename std::conditional<is_const, typename std::add_const<QFlags<T>>::type, QFlags<T>>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::add_lvalue_reference<NativeType_c>::type NativeType_in;
-    typedef NativeType_cr NativeType_out;
-    Q_STATIC_ASSERT_X(!is_reference, "Cannot cast to QFlags<T> reference");
-
-    constexpr static NativeType_out cast(JNIEnv *, ArithmeticType in, const char*, QtJambiScope*){
-        return QFlags<T>(int(in));
-    }
-};
-
-template<bool has_scope,
-         typename ArithmeticType,
-         bool is_const,
-         typename T>
-struct qtjambi_arithmetic_container1_cast<true, has_scope,
-                                          ArithmeticType,
-                                          QFlags, true, is_const, false, T>{
-    typedef typename std::conditional<is_const, typename std::add_const<QFlags<T>>::type, QFlags<T>>::type NativeType_c;
-    typedef typename std::add_pointer<NativeType_c>::type NativeType_in;
-    typedef typename std::add_pointer<NativeType_c>::type NativeType_out;
-    constexpr static ArithmeticType cast(JNIEnv *, NativeType_in in, const char*, QtJambiScope*){
-        return ArithmeticType(*in);
-    }
-};
-
-template<bool has_scope,
-         typename ArithmeticType,
-         bool is_const,
-         typename T>
-struct qtjambi_arithmetic_container1_cast<false, has_scope,
-                                          ArithmeticType,
-                                          QFlags, true, is_const, false, T>{
-    typedef typename std::conditional<is_const, typename std::add_const<QFlags<T>>::type, QFlags<T>>::type NativeType_c;
-    typedef typename std::add_pointer<NativeType_c>::type NativeType_in;
-    typedef typename std::add_pointer<NativeType_c>::type NativeType_out;
-    Q_STATIC_ASSERT_X(!has_scope, "Cannot cast to QFlags<T>*");
-
-    static NativeType_out cast(JNIEnv * env, ArithmeticType in, const char*, QtJambiScope* scope){
-        if(!scope)
-            JavaException::raiseError(env, "Cannot cast to QFlags<T>*" QTJAMBI_STACKTRACEINFO );
-        QFlags<T>* result = new QFlags<T>(int(in));
-        scope->addDeletion(result);
-        return result;
+    static Out cast(In in, Args... args){
+        Q_STATIC_ASSERT(unuseArgs(sizeof(args)...));
+        if constexpr(forward){
+            if constexpr(is_pointer){
+                return ArithmeticType(*in);
+            }else{
+                return ArithmeticType(in);
+            }
+        }else{
+            Q_STATIC_ASSERT_X(!is_reference || cast_var_args<Args...>::hasScope, "Cannot cast to QFlags<T> reference without scope");
+            Q_STATIC_ASSERT_X(!is_pointer || cast_var_args<Args...>::hasScope, "Cannot cast to QFlags<T> pointer without scope");
+            if constexpr(is_pointer || is_reference){
+                NativeType* result = new NativeType(T(in));
+                cast_var_args<Args...>::scope(args...).addDeletion(result);
+                if constexpr(is_pointer){
+                    return result;
+                }else{
+                    return *result;
+                }
+            }else{
+                return NativeType(T(in));
+            }
+        }
     }
 };
 
 #ifdef QURL_H
-template<bool has_scope,
-         typename ArithmeticType,
-         bool is_const, bool is_reference>
-struct qtjambi_arithmetic_container2_cast<true, has_scope,
+template<bool forward, typename ArithmeticType,
+         bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
+struct qtjambi_arithmetic_container2_cast<forward,
                                           ArithmeticType,
-                                          QUrlTwoFlags, false, is_const, is_reference, QUrl::UrlFormattingOption, QUrl::ComponentFormattingOption>{
-    typedef typename std::conditional<is_const, typename std::add_const<QUrl::FormattingOptions>::type, QUrl::FormattingOptions>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::add_lvalue_reference<NativeType_c>::type NativeType_in;
-    typedef NativeType_cr NativeType_out;
-    constexpr static ArithmeticType cast(JNIEnv *, NativeType_in in, const char*, QtJambiScope*){
-        return ArithmeticType(in);
+                                          QUrlTwoFlags, is_pointer, is_const, is_reference, is_rvalue, QUrl::UrlFormattingOption, QUrl::ComponentFormattingOption, Args...>{
+    typedef QUrl::FormattingOptions NativeType;
+    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
+    typedef typename std::conditional<is_reference, typename std::conditional<is_rvalue, typename std::add_rvalue_reference<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_in;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
+    typedef typename std::conditional<forward, NativeType_in, ArithmeticType>::type In;
+    typedef typename std::conditional<forward, ArithmeticType, NativeType_out>::type Out;
+
+    static Out cast(In in, Args... args){
+        Q_STATIC_ASSERT(unuseArgs(sizeof(args)...));
+        if constexpr(forward){
+            if constexpr(is_pointer){
+                return ArithmeticType(*in);
+            }else{
+                return ArithmeticType(in);
+            }
+        }else{
+            Q_STATIC_ASSERT_X(!is_reference || cast_var_args<Args...>::hasScope, "Cannot cast to QUrl::FormattingOptions reference without scope");
+            Q_STATIC_ASSERT_X(!is_pointer || cast_var_args<Args...>::hasScope, "Cannot cast to QUrl::FormattingOptions pointer without scope");
+            if constexpr(is_pointer || is_reference){
+                QUrl::FormattingOptions* result = new QUrl::FormattingOptions(int(in));
+                cast_var_args<Args...>::scope(args...).addDeletion(result);
+                if constexpr(is_pointer){
+                    return result;
+                }else{
+                    return *result;
+                }
+            }else{
+                return QUrl::FormattingOptions(int(in));
+            }
+        }
     }
 };
 
-template<bool has_scope,
-         typename ArithmeticType,
-         bool is_const, bool is_reference>
-struct qtjambi_arithmetic_container2_cast<false, has_scope,
-                                          ArithmeticType,
-                                          QUrlTwoFlags, false, is_const, is_reference, QUrl::UrlFormattingOption, QUrl::ComponentFormattingOption>{
-    typedef typename std::conditional<is_const, typename std::add_const<QUrl::FormattingOptions>::type, QUrl::FormattingOptions>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::add_lvalue_reference<NativeType_c>::type NativeType_in;
-    typedef NativeType_cr NativeType_out;
-    Q_STATIC_ASSERT_X(!is_reference, "Cannot cast to QUrl::FormattingOptions reference");
-
-    constexpr static NativeType_out cast(JNIEnv *, ArithmeticType in, const char*, QtJambiScope*){
-        return QUrl::FormattingOptions(int(in));
-    }
-};
-
-template<bool has_scope,
-         typename ArithmeticType,
-         bool is_const>
-struct qtjambi_arithmetic_container2_cast<true, has_scope,
-                                          ArithmeticType,
-                                          QUrlTwoFlags, true, is_const, false, QUrl::UrlFormattingOption, QUrl::ComponentFormattingOption>{
-    typedef typename std::conditional<is_const, typename std::add_const<QUrl::FormattingOptions>::type, QUrl::FormattingOptions>::type NativeType_c;
-    typedef typename std::add_pointer<NativeType_c>::type NativeType_in;
-    typedef typename std::add_pointer<NativeType_c>::type NativeType_out;
-    constexpr static ArithmeticType cast(JNIEnv *, NativeType_in in, const char*, QtJambiScope*){
-        return ArithmeticType(*in);
-    }
-};
-
-template<bool has_scope,
-         typename ArithmeticType,
-         bool is_const>
-struct qtjambi_arithmetic_container2_cast<false, has_scope,
-                                          ArithmeticType,
-                                          QUrlTwoFlags, true, is_const, false, QUrl::UrlFormattingOption, QUrl::ComponentFormattingOption>{
-    typedef typename std::conditional<is_const, typename std::add_const<QUrl::FormattingOptions>::type, QUrl::FormattingOptions>::type NativeType_c;
-    typedef typename std::add_pointer<NativeType_c>::type NativeType_in;
-    typedef typename std::add_pointer<NativeType_c>::type NativeType_out;
-    Q_STATIC_ASSERT_X(!has_scope, "Cannot cast to QUrl::FormattingOptions*");
-
-    static NativeType_out cast(JNIEnv * env, ArithmeticType in, const char*, QtJambiScope* scope){
-        if(!scope)
-            JavaException::raiseError(env, "Cannot cast to QUrl::FormattingOptions*" QTJAMBI_STACKTRACEINFO );
-        QUrl::FormattingOptions* result = new QUrl::FormattingOptions(int(in));
-        scope->addDeletion(result);
-        return result;
-    }
-};
 #endif //QURL_H
 
 } // namespace QtJambiPrivate

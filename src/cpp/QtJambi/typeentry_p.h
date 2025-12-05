@@ -71,19 +71,22 @@ public:
     virtual uint offset(const std::type_info& toType) const;
 
     virtual QtJambiTypeEntryPtr getFittingTypeEntry(JNIEnv *env, const void *qt_object, qintptr& offset) const;
-    virtual NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const = 0;
-    virtual bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const = 0;
-    virtual bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const = 0;
-    virtual bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const = 0;
+    virtual NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jobject& output) const = 0;
+    virtual bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jobject& output) const = 0;
+    virtual bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jobject& output) const = 0;
+    virtual bool convertToNative(JNIEnv *env, jobject input, void * output) const = 0;
+    virtual bool convertToNative(JNIEnv *env, jobject input, void * output, QtJambiScope& scope) const;
 
-    static QtJambiTypeEntryPtr getTypeEntry(JNIEnv* env, const std::type_info& typeId);
-    static QtJambiTypeEntryPtr getTypeEntry(JNIEnv* env, const std::type_info& typeId, const char* qtName);
+    static QtJambiTypeEntryPtr getTypeEntry(JNIEnv* env, const std::type_info& typeId, const char* qtName = nullptr);
     static QtJambiTypeEntryPtr getTypeEntryByJavaName(JNIEnv* env, const char* java_name);
     static QtJambiTypeEntryPtr getTypeEntryByJavaName(JNIEnv* env, const QString& java_name);
     static QtJambiTypeEntryPtr getTypeEntryByQtName(JNIEnv* env, const char* qt_name);
     static QtJambiTypeEntryPtr getTypeEntryByIID(JNIEnv* env, const char* iid);
     static NativeToJavaResult convertModelIndexNativeToJava(JNIEnv *env, const QModelIndex *qt_object, NativeToJavaConversionMode mode, jobject& output, QtJambiScope* scope = nullptr);
-    static bool convertModelIndexJavaToNative(JNIEnv *env, jobject java_value, void * output, QtJambiScope* scope);
+    static bool convertModelIndexJavaToNative(JNIEnv *env, jobject java_value, void * output);
+#if defined(QTJAMBI_LIGHTWEIGHT_MODELINDEX)
+    static bool convertModelIndexJavaToNative(JNIEnv *env, jobject java_value, void * output, QtJambiScope& scope);
+#endif
 
 protected:
     QtJambiTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, jmethodID creator_method, size_t value_size);
@@ -105,10 +108,10 @@ public:
     bool isEnum() const final;
     const FlagsTypeEntry* flagType() const;
     EnumTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, jmethodID creator_method, size_t value_size);
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
-    bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
-    bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
-    bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jobject& output) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jobject& output) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jobject& output) const override;
+    bool convertToNative(JNIEnv *env, jobject input, void * output) const override;
 private:
     FlagsTypeEntry* m_flagType;
     friend FlagsTypeEntry;
@@ -119,10 +122,10 @@ public:
     bool isFlags() const final;
     const EnumTypeEntry* enumType() const;
     FlagsTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, jmethodID creator_method, size_t value_size, const EnumTypeEntry* enumType);
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
-    bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
-    bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
-    bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jobject& output) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jobject& output) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jobject& output) const override;
+    bool convertToNative(JNIEnv *env, jobject input, void * output) const override;
 private:
     const EnumTypeEntry* m_enumType;
 };
@@ -130,41 +133,42 @@ private:
 class AbstractSimpleTypeEntry : public QtJambiTypeEntry{
 public:
     AbstractSimpleTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size);
-    bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
-    bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jobject& output) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jobject& output) const override;
 private:
 };
 
 class QCborValueRefTypeEntry : public AbstractSimpleTypeEntry{
 public:
     using AbstractSimpleTypeEntry::AbstractSimpleTypeEntry;
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
-    bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jobject& output) const override;
+    bool convertToNative(JNIEnv *env, jobject input, void * output) const override;
 private:
 };
 
 class StringTypeEntry : public AbstractSimpleTypeEntry{
 public:
     using AbstractSimpleTypeEntry::AbstractSimpleTypeEntry;
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
-    bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
-    bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
-    bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jobject& output) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jobject& output) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jobject& output) const override;
+    bool convertToNative(JNIEnv *env, jobject input, void * output) const override;
+    bool convertToNative(JNIEnv *env, jobject input, void * output, QtJambiScope& scope) const override;
 private:
     template<template<typename> class SmartPointer>
-    bool convertSmartPointerToJava(JNIEnv *env, const SmartPointer<char>& smartPointer, jvalue& output, jValueType valueType) const;
+    bool convertSmartPointerToJava(JNIEnv *env, const SmartPointer<char>& smartPointer, jobject& output) const;
 };
 
 class QVariantTypeEntry : public AbstractSimpleTypeEntry{
 public:
     using AbstractSimpleTypeEntry::AbstractSimpleTypeEntry;
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
-    bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
-    bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
-    bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jobject& output) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jobject& output) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jobject& output) const override;
+    bool convertToNative(JNIEnv *env, jobject input, void * output) const override;
 private:
     template<template<typename> class SmartPointer>
-    bool convertSmartPointerToJava(JNIEnv *env, const SmartPointer<char>& smartPointer, jvalue& output, jValueType valueType) const;
+    bool convertSmartPointerToJava(JNIEnv *env, const SmartPointer<char>& smartPointer, jobject& output) const;
 };
 
 class ShellableTypeEntry : public QtJambiTypeEntry{
@@ -229,10 +233,10 @@ public:
                         const QMetaType& qt_meta_type,
                         bool is_std_function
                     );
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
-    bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
-    bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
-    bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jobject& output) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jobject& output) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jobject& output) const override;
+    bool convertToNative(JNIEnv *env, jobject input, void * output) const override;
 private:
     jclass m_java_impl_class;
     jclass m_java_wrapper_class;
@@ -246,15 +250,15 @@ public:
     bool isObject() const final;
     PtrDeleterFunction deleter() const;
     TypeInfoSupplier typeInfoSupplier() const;
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
-    bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
-    bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
-    bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jobject& output) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jobject& output) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jobject& output) const override;
+    bool convertToNative(JNIEnv *env, jobject input, void * output) const override;
 private:
     virtual bool isValue() const;
     virtual bool isInterface() const;
     template<template<typename> class SmartPointer>
-    bool convertSmartPointerToJava(JNIEnv *env, const SmartPointer<char>& smartPointer, jvalue& output, jValueType valueType) const;
+    bool convertSmartPointerToJava(JNIEnv *env, const SmartPointer<char>& smartPointer, jobject& output) const;
 protected:
     ObjectTypeAbstractEntry(JNIEnv* env,
                     const std::type_info& typeId,
@@ -288,13 +292,13 @@ public:
     bool isQObject() const final;
     const QMetaObject* originalMetaObject() const;
     QtJambiTypeEntryPtr getFittingTypeEntry(JNIEnv *env, const void *qt_object, qintptr& offset) const override;
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
-    bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
-    bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jvalue& output, jValueType valueType) const override;
-    bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jobject& output) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jobject& output) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jobject& output) const override;
+    bool convertToNative(JNIEnv *env, jobject input, void * output) const override;
 private:
     template<template<typename> class SmartPointer>
-    bool convertSmartPointerToJava(JNIEnv *env, const SmartPointer<QObject>& smartPointer, jvalue& output, jValueType valueType) const;
+    bool convertSmartPointerToJava(JNIEnv *env, const SmartPointer<QObject>& smartPointer, jobject& output) const;
 protected:
     QObjectTypeAbstractEntry(JNIEnv* env,
                      const std::type_info& typeId,

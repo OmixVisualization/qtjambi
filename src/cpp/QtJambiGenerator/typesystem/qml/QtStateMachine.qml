@@ -69,6 +69,7 @@ TypeSystem{
                     action: ReferenceCount.Add
                 }
             }
+            ppCondition: "QT_CONFIG(animation)"
         }
         ModifyFunction{
             signature: "removeAnimation(QAbstractAnimation*)"
@@ -79,6 +80,7 @@ TypeSystem{
                     action: ReferenceCount.Take
                 }
             }
+            ppCondition: "QT_CONFIG(animation)"
         }
         ModifyFunction{
             signature: "eventTest(QEvent*)"
@@ -93,14 +95,6 @@ TypeSystem{
                 index: 1
                 invalidateAfterUse: true
             }
-        }
-        ModifyFunction{
-            signature: "addAnimation(QAbstractAnimation *)"
-            ppCondition: "QT_CONFIG(animation)"
-        }
-        ModifyFunction{
-            signature: "removeAnimation(QAbstractAnimation *)"
-            ppCondition: "QT_CONFIG(animation)"
         }
         ModifyFunction{
             signature: "animations() const"
@@ -181,7 +175,7 @@ TypeSystem{
         InjectCode{
             target: CodeClass.Java
             ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                name: ":/io/qtjambi/generator/typesystem/QtJambiStateMachine.java"
                 quoteAfterLine: "class QState___"
                 quoteBeforeLine: "}// class"
             }
@@ -215,14 +209,15 @@ TypeSystem{
                     index: 1
                     metaName: "sender"
                 }
-                Text{content: "if(signal==null || signal.isEmpty())\n"+
-                              "    return null;\n"+
-                              "if(!signal.startsWith(\"2\")){\n"+
-                              "    io.qt.core.QMetaMethod method = sender.metaObject().method(signal);\n"+
-                              "    if(method!=null && method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal) {\n"+
-                              "        signal = \"2\" + method.cppMethodSignature();\n"+
-                              "    }\n"+
-                              "}"}
+                Text{content: String.raw`
+                            if(signal==null || signal.isEmpty())
+                                return null;
+                            if(!signal.startsWith("2")){
+                                io.qt.core.QMetaMethod method = sender.metaObject().method(signal);
+                                if(method!=null && method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal) {
+                                    signal = "2" + method.cppMethodSignature();
+                                }
+                            }`}
             }
             InjectCode{
                 target: CodeClass.Java
@@ -408,7 +403,7 @@ TypeSystem{
         InjectCode{
             target: CodeClass.Java
             ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                name: ":/io/qtjambi/generator/typesystem/QtJambiStateMachine.java"
                 quoteAfterLine: "class QSignalTransition___"
                 quoteBeforeLine: "}// class"
             }
@@ -426,16 +421,23 @@ TypeSystem{
                     index: 1
                     metaName: "sender"
                 }
-                Text{content: "if(signal!=null && !signal.startsWith(\"2\")){\n"+
-                              "    io.qt.core.QMetaMethod method = sender.metaObject().method(signal);\n"+
-                              "    if(method!=null && method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal) {\n"+
-                              "        signal = \"2\" + method.cppMethodSignature();\n"+
-                              "    }\n"+
-                              "}"}
+                Text{content: String.raw`
+                            if(signal!=null && !signal.startsWith("2")){
+                                io.qt.core.QMetaMethod method = sender.metaObject().method(signal);
+                                if(method!=null && method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal) {
+                                    signal = "2" + method.cppMethodSignature();
+                                }
+                            }`}
             }
         }
         ModifyFunction{
             signature: "setSignal(const QByteArray &)"
+            ModifyArgument{
+                index: 1
+                AddImplicitCall{
+                    type: "java.lang.@NonNull String"
+                }
+            }
             InjectCode{
                 target: CodeClass.Java
                 position: Position.Beginning
@@ -443,13 +445,14 @@ TypeSystem{
                     index: 1
                     metaName: "signal"
                 }
-                Text{content: "if(signal!=null && !signal.startsWith(\"2\")){\n"+
-                              "    io.qt.core.QMetaMethod method = senderObject().metaObject().method(signal.toString());\n"+
-                              "    if(method!=null && method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal) {\n"+
-                              "        signal = new io.qt.core.QByteArray(\"2\");\n"+
-                              "        signal.append(method.cppMethodSignature());\n"+
-                              "    }\n"+
-                              "}"}
+                Text{content: String.raw`
+if(signal!=null && !signal.startsWith("2")){
+    io.qt.core.QMetaMethod method = senderObject().metaObject().method(signal.toString());
+    if(method!=null && method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal) {
+        signal.assign("2");
+        signal.append(method.cppMethodSignature());
+    }
+}`}
             }
         }
     }

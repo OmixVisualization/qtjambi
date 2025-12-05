@@ -80,6 +80,7 @@ class MetaClassList : public  QList<MetaClass *> {
         };
 
         MetaClass *findClass(const QString &name, NameFlag nameFlag = All) const;
+        MetaClass *findClass(const TypeEntry *entry) const;
         MetaEnumValue *findEnumValue(const QString &string) const;
         MetaEnum *findEnum(const EnumTypeEntry *entry) const;
 
@@ -237,7 +238,9 @@ class MetaType {
             QVariantPattern,
             JObjectWrapperPattern,
             ArrayPattern,
-            TemplateArgumentPattern
+            ExceptionPattern,
+            TemplateArgumentPattern,
+            VoidPattern
         };
 
         MetaType() :
@@ -285,6 +288,8 @@ class MetaType {
 
         // returns true if the typs is used as a non complex primitive, no & or *'s
         bool isPrimitive() const { return m_pattern == PrimitivePattern; }
+
+        bool isException() const { return m_pattern == ExceptionPattern; }
 
         bool isPrimitiveChar() const { return isQChar() && m_type_entry && m_type_entry->isQChar(); }
 
@@ -699,7 +704,7 @@ class MetaFunction : public MetaAttributes {
     bool isNoExcept() const;
     bool isBlockExceptions() const;
     bool isRethrowExceptions() const;
-    QString typeReplaced(int argument_index, QString* jniType = nullptr) const;
+    QString typeReplaced(int argument_index, QString* javaType = nullptr, QString* jniType = nullptr) const;
     bool isRemovedFromAllLanguages(const MetaClass *) const;
     bool isRemovedFrom(const MetaClass *, TS::Language language) const;
 
@@ -790,6 +795,9 @@ class MetaFunction : public MetaAttributes {
     void setReturnValueComment(const QString& returnValueComment);
 
     static const MetaArgument *argumentByIndex(const MetaArgumentList& arguments, int index);
+    uint isTextStreamFormat() const;
+    void setIsTextStreamFormat(uint newIsTextStreamFormat);
+
 private:
     QString m_name;
     QString m_original_name;
@@ -810,11 +818,12 @@ private:
     MetaArgumentList m_arguments;
     MetaTemplateParameterList m_templateParameters;
     OperatorType m_operatorType;
-    uint m_constant          : 1;
-    uint m_variadics         : 1;
-    uint m_declExplicit      : 1;
-    uint m_template          : 1;
-    uint m_invalid           : 1;
+    uint m_constant           : 1;
+    uint m_variadics          : 1;
+    uint m_declExplicit       : 1;
+    uint m_template           : 1;
+    uint m_invalid            : 1;
+    uint m_isTextStreamFormat : 1;
     mutable int m_actualMinimumArgumentCount;
     const MetaField *m_accessedField;
     QString m_deprecatedComment;
@@ -943,7 +952,7 @@ class MetaFunctional : public MetaAttributes {
         bool useArgumentAsVarArgs(int key) const;
         bool insertUtilArgument(int key) const;
         bool implementPlainDelegate(int key) const;
-        QString typeReplaced(int argument_index, QString* jniType = nullptr) const;
+        QString typeReplaced(int argument_index, QString* javaType = nullptr, QString* jniType = nullptr) const;
         QString conversionRule(TS::Language language, int idx) const;
         bool hasConversionRule(TS::Language language, int idx) const;
         bool resetObjectAfterUse(int argument_idx) const;
@@ -1139,7 +1148,9 @@ class MetaClass : public MetaAttributes {
         bool generateShellClass() const;
         bool instantiateShellClass() const;
         void setNeedsOShellDestructor(bool b);
+        void setTemplateInstantiation(bool b);
         bool needsOShellDestructor() const;
+        bool isTemplateInstantiation() const;
 
         bool hasVirtualSlots() const { return m_has_virtual_slots; }
         bool hasVirtualFunctions() const { return !isFinal() && m_has_virtuals; }
@@ -1306,7 +1317,8 @@ class MetaClass : public MetaAttributes {
     uint m_usingProtectedBaseConstructors : 1;
     uint m_usingPublicBaseConstructors : 1;
     uint m_needsOShellDestructor : 1;
-    uint m_reserved : 14;
+    uint m_isTemplateInstantiation : 1;
+    uint m_reserved : 13;
 
         const MetaClass *m_enclosing_class;
         MetaClass *m_base_class;

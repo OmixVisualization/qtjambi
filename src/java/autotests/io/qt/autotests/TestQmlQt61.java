@@ -34,8 +34,8 @@ import static io.qt.qml.QtQml.qmlRegisterType;
 import org.junit.Assert;
 import org.junit.Test;
 
-import io.qt.autotests.TestQmlQt6.AutoGadgetValueType;
-import io.qt.autotests.TestQmlQt6.CustomValueType;
+import io.qt.autotests.TestQml4.AutoGadgetValueType;
+import io.qt.autotests.TestQml4.CustomValueType;
 import io.qt.autotests.generated.General;
 import io.qt.core.QObject;
 import io.qt.core.QVariant;

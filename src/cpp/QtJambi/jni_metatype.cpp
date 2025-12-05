@@ -29,14 +29,7 @@
 **
 ****************************************************************************/
 
-#include "global.h"
-#include "registryutil_p.h"
-#include "typemanager_p.h"
-#include "java_p.h"
-#include "qtjambimetaobject_p.h"
-#include "coreapi.h"
-#include "qmlapi.h"
-#include "qtjambi_cast.h"
+#include "pch_p.h"
 
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 #define qtjambiMetaType QMetaType::fromType
@@ -325,8 +318,8 @@ extern "C" JNIEXPORT bool JNICALL Java_io_qt_internal_MetaTypeUtility_registerCo
         QtJambiUtils::InternalToExternalConverter converter2 = QtJambiTypeManager::getInternalToExternalConverter(env, metaType2.name(), metaType2, class2);
         QtJambiUtils::ExternalToInternalConverter reconverter2 = QtJambiTypeManager::getExternalToInternalConverter(env, class2, metaType2.name(), metaType2);
         if(converter1 && reconverter1 && converter2 && reconverter2){
-            ParameterTypeInfo parameter1{metaTypeId1, class1, std::move(converter1), std::move(reconverter1)};
-            ParameterTypeInfo parameter2{metaTypeId2, class2, std::move(converter2), std::move(reconverter2)};
+            ParameterTypeInfo parameter1{metaType1, class1, std::move(converter1), std::move(reconverter1)};
+            ParameterTypeInfo parameter2{metaType2, class2, std::move(converter2), std::move(reconverter2)};
             JObjectWrapper converter(env, converterFn);
             return QMetaType::registerConverterFunction([converter, parameter1, parameter2](const void *src, void *target)->bool{
                 if(JniEnvironment env{500}){
@@ -340,7 +333,7 @@ extern "C" JNIEXPORT bool JNICALL Java_io_qt_internal_MetaTypeUtility_registerCo
                         }catch(const JavaException&){
                             return false;
                         }
-                        if(!result && !(QMetaType(parameter2.metaType()).flags() & QMetaType::IsPointer))
+                        if(!result && !(parameter2.metaType().flags() & QMetaType::IsPointer))
                             return false;
                         jv.l = result;
                         return parameter2.convertExternalToInternal(env, nullptr, jv, target, jValueType::l);

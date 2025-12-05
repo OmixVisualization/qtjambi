@@ -29,14 +29,7 @@
 **
 ****************************************************************************/
 
-#include <QtCore/QCoreApplication>
-#include <QtCore/QFileInfo>
-#include <QtCore/QDir>
-#include "qtjambiapi.h"
-#include "coreapi.h"
-#include "java_p.h"
-#include "threadutils_p.h"
-#include "qtjambi_cast.h"
+#include "pch_p.h"
 
 void checkThreadConstructingApplication(JNIEnv *env, const std::type_info& constructedType);
 

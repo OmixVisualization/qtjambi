@@ -30,14 +30,9 @@
 ****************************************************************************/
 
 #include <QtCore/qcompilerdetection.h>
+#include <QtCore/QSettings>
 QT_WARNING_DISABLE_DEPRECATED
-#include <QtCore/QtCore>
-#include <stdlib.h>
-#include <unordered_set>
-#include <unordered_map>
-#include <set>
-#include "qtjambiapi.h"
-#include "qtjambi_cast.h"
+#include "pch_p.h"
 
 #ifndef QT_NO_DEBUG
 QT_WARNING_DISABLE_GCC("-Wstringop-overflow")
@@ -68,6 +63,9 @@ uint qHash(const UnknownClass&){return 0;}
 uint qHash(const QMap<QString,int>&){return 0;}
 //uint qHash(const QLinkedList<QString,int>&){return 0;}
 
+enum class EnumClass{
+    None
+};
 
 void test(JNIEnv *env){
     using namespace RegistryAPI;
@@ -88,6 +86,7 @@ void test(JNIEnv *env){
     {
         QString s;
         qtjambi_cast<jobject>(env, s);
+        qtjambi_cast<jcoreobject>(env, s);
         qtjambi_cast<jstring>(env, s);
         qtjambi_cast<jstring>(env, &s);
 
@@ -142,9 +141,7 @@ void test(JNIEnv *env){
 
         qtjambi_cast<QLatin1String>(env, jo);
         qtjambi_cast<const QLatin1String>(env, jo);
-        qtjambi_cast<QLatin1String*>(env, jo);
         qtjambi_cast<QLatin1String&>(env, scope, jo);
-        qtjambi_cast<const QLatin1String*>(env, jo);
         qtjambi_cast<const QLatin1String&>(env, scope, jo);
     }
 
@@ -168,14 +165,6 @@ void test(JNIEnv *env){
         qtjambi_cast<jstring>(env, s);
         qtjambi_cast<jstring>(env, &s);
     }
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    {
-        QStringRef s;
-        qtjambi_cast<jobject>(env, s);
-        qtjambi_cast<jstring>(env, s);
-        qtjambi_cast<jstring>(env, &s);
-    }
-#else
     {
         QByteArrayView s;
         qtjambi_cast<jobject>(env, s);
@@ -231,7 +220,6 @@ void test(JNIEnv *env){
         qtjambi_cast<const QUtf8StringView*>(env, scope, jo);
         qtjambi_cast<const QUtf8StringView&>(env, scope, jo);
     }
-#endif
     {
         qtjambi_cast<jobject>(env, QFutureInterface<void>());
         qtjambi_cast<jobject>(env, QFutureInterface<int>());
@@ -261,15 +249,13 @@ void test(JNIEnv *env){
         qtjambi_cast<QFuture<QVariant>&>(env, scope, jobject(nullptr));
     }
     {
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
         void* ptr = nullptr;
         qtjambi_cast<jobject>(env, *reinterpret_cast<QPromise<void>*>(ptr));
-        qtjambi_cast<jobject>(env, *reinterpret_cast<QPromise<int>*>(ptr));
+        qtjambi_cast<jobject>(env, scope, *reinterpret_cast<QPromise<int>*>(ptr));
         qtjambi_cast<jobject>(env, *reinterpret_cast<QPromise<QVariant>*>(ptr));
         qtjambi_cast<QPromise<void>&>(env, scope, jobject(nullptr));
         qtjambi_cast<QPromise<int>&>(env, scope, jobject(nullptr));
         qtjambi_cast<QPromise<QVariant>&>(env, scope, jobject(nullptr));
-#endif
     }
     {
         qtjambi_cast<jobject>(env, std::vector<int>());
@@ -289,10 +275,10 @@ void test(JNIEnv *env){
     }
     {
         QtJambiUtils::QHashFunction hashFunction1;
-        QtJambiUtils::QHashFunction hashFunction2 = [](const void*, hash_type)->hash_type{ return 0; };
+        QtJambiUtils::QHashFunction hashFunction2 = [](const void*, size_t)->size_t{ return 0; };
         QtJambiUtils::QHashFunction hashFunction3 = hashFunction2;
-        hashFunction3 = [](const void*, hash_type)->hash_type{ return 0; };
-        QtJambiUtils::QHashFunction hashFunction4(QtJambiUtils::QHashFunction([](const void*, hash_type)->hash_type{ return 0; }));
+        hashFunction3 = [](const void*, size_t)->size_t{ return 0; };
+        QtJambiUtils::QHashFunction hashFunction4(QtJambiUtils::QHashFunction([](const void*, size_t)->size_t{ return 0; }));
         hashFunction3(nullptr,0);
         QtJambiUtils::QHashFunction hashFunction5 = nullptr;
     }
@@ -1736,6 +1722,21 @@ void test(JNIEnv *env){
                 QWeakPointer<const QSet<QString>>* container = nullptr;
                 qtjambi_cast<jobject>(env, scope, container);
                 //qtjambi_cast<QWeakPointer<const QSet<QString>>*>(env, scope, o); //  Cannot cast to QWeakPointer<T> *
+            }
+            {
+                QSettings::ReadFunc fn = [](QIODevice &, QSettings::SettingsMap &)->bool{return false;};
+                jobject o = qtjambi_cast<jobject>(env, fn, "QSettings::ReadFunc");
+                qtjambi_cast<QSettings::ReadFunc>(env, o);
+            }
+            {
+                std::function<bool(QIODevice &, QSettings::SettingsMap &)> fn = [](QIODevice &, QSettings::SettingsMap &)->bool{return false;};
+                jobject o = qtjambi_cast<jobject>(env, fn);
+                qtjambi_cast<std::function<bool(QIODevice &, QSettings::SettingsMap &)>>(env, o);
+            }
+            {
+                EnumClass ec = EnumClass::None;
+                jobject o = qtjambi_cast<jobject>(env, ec);
+                qtjambi_cast<EnumClass>(env, o);
             }
         }
     }

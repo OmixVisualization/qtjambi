@@ -34,6 +34,7 @@ TypeSystem{
     defaultSuperClass: "QtObject"
     qtLibrary: "QtGui"
     module: "qtjambi"    
+    precompiledHeader: "pch_p.h"
     LoadTypeSystem{name: "QtCore"}
 
     InjectCode{
@@ -4139,11 +4140,11 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "jsize %out_size = 1;\n"+
-                                  "int* %out = qtjambi_array_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
+                                  "int* %out = qtjambi_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "jintArray %out = qtjambi_array_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
+                    Text{content: "jintArray %out = qtjambi_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
                 }
             }
             ModifyArgument{
@@ -4154,11 +4155,11 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "jsize %out_size = 1;\n"+
-                                  "int* %out = qtjambi_array_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
+                                  "int* %out = qtjambi_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "jintArray %out = qtjambi_array_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
+                    Text{content: "jintArray %out = qtjambi_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
                 }
             }
         }
@@ -4172,11 +4173,11 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "jsize %out_size = 1;\n"+
-                                  "int* %out = qtjambi_array_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
+                                  "int* %out = qtjambi_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "jintArray %out = qtjambi_array_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
+                    Text{content: "jintArray %out = qtjambi_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
                 }
             }
             ModifyArgument{
@@ -4187,11 +4188,11 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "jsize %out_size = 1;\n"+
-                                  "int* %out = qtjambi_array_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
+                                  "int* %out = qtjambi_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "jintArray %out = qtjambi_array_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
+                    Text{content: "jintArray %out = qtjambi_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
                 }
             }
         }
@@ -4205,11 +4206,11 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "jsize %out_size = 1;\n"+
-                                  "int* %out = qtjambi_array_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
+                                  "int* %out = qtjambi_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "jintArray %out = qtjambi_array_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
+                    Text{content: "jintArray %out = qtjambi_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
                 }
             }
             ModifyArgument{
@@ -4220,11 +4221,11 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "jsize %out_size = 1;\n"+
-                                  "int* %out = qtjambi_array_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
+                                  "int* %out = qtjambi_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "jintArray %out = qtjambi_array_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
+                    Text{content: "jintArray %out = qtjambi_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
                 }
             }
         }
@@ -4238,11 +4239,11 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "jsize %out_size = 1;\n"+
-                                  "int* %out = qtjambi_array_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
+                                  "int* %out = qtjambi_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "jintArray %out = qtjambi_array_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
+                    Text{content: "jintArray %out = qtjambi_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
                 }
             }
             ModifyArgument{
@@ -4253,11 +4254,11 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "jsize %out_size = 1;\n"+
-                                  "int* %out = qtjambi_array_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
+                                  "int* %out = qtjambi_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "jintArray %out = qtjambi_array_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
+                    Text{content: "jintArray %out = qtjambi_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
                 }
             }
         }
@@ -4271,11 +4272,11 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "jsize %out_size = 1;\n"+
-                                  "int* %out = qtjambi_array_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
+                                  "int* %out = qtjambi_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "jintArray %out = qtjambi_array_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
+                    Text{content: "jintArray %out = qtjambi_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
                 }
             }
             ModifyArgument{
@@ -4286,11 +4287,11 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "jsize %out_size = 1;\n"+
-                                  "int* %out = qtjambi_array_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
+                                  "int* %out = qtjambi_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "jintArray %out = qtjambi_array_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
+                    Text{content: "jintArray %out = qtjambi_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
                 }
             }
         }
@@ -7453,33 +7454,18 @@ const char* %out = info.name;
                     Text{content: String.raw`
 jobject %out{nullptr};
 switch(%1){
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-case QIconEngine::IconNameHook:
-    %out = QtJambiAPI::convertQStringToJavaObject(%env, reinterpret_cast<QString*>(%in));
-    %scope.addObjectInvalidation(%env, %out);
-    break;
-case QIconEngine::AvailableSizesHook:
-    %out = qtjambi_cast<jobject>(%env, reinterpret_cast<QIconEngine::AvailableSizesArgument*>(%in));
-    %scope.addObjectInvalidation(%env, %out);
-    break;
-#endif
 case QIconEngine::IsNullHook:
-    {
-        PersistentBoolPointerArray* pointer = new PersistentBoolPointerArray(%env, reinterpret_cast<bool*>(%in), 1);
-        %scope.addDeletion(pointer);
-        %out = pointer->array();
-    }
+    %out = qtjambi_cast<jbooleanArray>(%env, %scope, reinterpret_cast<bool*>(%in), 1);
     break;
 case QIconEngine::ScaledPixmapHook:
-    %out = qtjambi_cast<jobject>(%env, reinterpret_cast<QIconEngine::ScaledPixmapArgument*>(%in));
-    %scope.addObjectInvalidation(%env, %out);
+    %out = qtjambi_cast<jobject>(%env, %scope, reinterpret_cast<QIconEngine::ScaledPixmapArgument*>(%in));
     break;
 default:
-    switch(__jni_env->GetObjectRefType(jobject(data1))){
+    switch(%env->GetObjectRefType(jobject(%in))){
     case JNILocalRefType:
     case JNIGlobalRefType:
     case JNIWeakGlobalRefType:
-        __java_data1 = jobject(data1);
+        %out = jobject(%in);
         break;
         default:
         break;
@@ -7493,19 +7479,9 @@ default:
                     Text{content: String.raw`
 void* %out{nullptr};
 switch(__qt_%1){
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-case QIconEngine::IconNameHook:
-    %out = qtjambi_cast<QString*>(%env, %in);
-    break;
-case QIconEngine::AvailableSizesHook:
-    %out = qtjambi_cast<QIconEngine::AvailableSizesArgument*>(%env, %in);
-    break;
-#endif
 case QIconEngine::IsNullHook:
     if(JBooleanArrayPointer::isValidArray(__jni_env, data1)){
-        PersistentJBooleanArrayPointer* pointer = new PersistentJBooleanArrayPointer(%env, jbooleanArray(%in));
-        %scope.addDeletion(pointer);
-        %out = pointer->pointer();
+        %out = qtjambi_cast<bool*>(%env, %scope, jbooleanArray(%in), 1);
     }
     break;
 case QIconEngine::ScaledPixmapHook:
@@ -7858,7 +7834,7 @@ default:
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jobject %out = %in ? qtjambi_cast<jobject>(%env, __image) : nullptr;"}
+                    Text{content: "jobject %out = %in ? qtjambi_cast<jobject>(%env, std::move(__image)) : nullptr;"}
                 }
             }
         }
@@ -9132,7 +9108,8 @@ default:
             }
         }
         InjectCode{
-            target: CodeClass.DestructorFunction
+            target: CodeClass.Destructor
+            position: Position.Position1
             Text{content: String.raw`
 if(QPainter* painter = %oshellclass::sharedPainter()){
     if(painter->isActive()){
@@ -9142,7 +9119,8 @@ if(QPainter* painter = %oshellclass::sharedPainter()){
                 `}
         }
         InjectCode{
-            target: CodeClass.DeleterFunction
+            target: CodeClass.Deleter
+            position: Position.Position1
             Text{content: String.raw`
 struct PaintDeviceAccess : QPaintDevice{
     inline QPainter* getSharedPainter() const { return sharedPainter(); }
@@ -10701,7 +10679,7 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "%out = Java::QtGui::QQuaternion$Axes::newInstance(%env, qtjambi_cast<jobject>(%env, xAxis), qtjambi_cast<jobject>(%env, yAxis), qtjambi_cast<jobject>(%env, zAxis));"}
+                    Text{content: "%out = Java::QtGui::QQuaternion$Axes::newInstance(%env, qtjambi_cast<jobject>(%env, std::move(xAxis)), qtjambi_cast<jobject>(%env, std::move(yAxis)), qtjambi_cast<jobject>(%env, std::move(zAxis)));"}
                 }
             }
         }
@@ -10735,7 +10713,7 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "%out = Java::QtGui::QQuaternion$AxisAndAngle::newInstance(%env, qtjambi_cast<jobject>(%env, axis), fValue);"}
+                    Text{content: "%out = Java::QtGui::QQuaternion$AxisAndAngle::newInstance(%env, qtjambi_cast<jobject>(%env, std::move(axis)), fValue);"}
                 }
             }
         }
@@ -11994,7 +11972,7 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 index: 0
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "%out = ok ? qtjambi_cast<jobject>(%env, %in) : nullptr;"}
+                    Text{content: "%out = ok ? qtjambi_cast<jobject>(%env, std::move(%in)) : nullptr;"}
                 }
             }
         }
@@ -13249,7 +13227,7 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
         InjectCode{
             target: CodeClass.Native
             position: Position.Beginning
-            Text{content: "hash_type qHash(const QColorTransform &value, hash_type seed = 0);"}
+            Text{content: "size_t qHash(const QColorTransform &value, size_t seed = 0);"}
         }
         since: [5, 14]
     }
@@ -14557,6 +14535,7 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                     index: 0
                     ReplaceType{
                         modifiedType: "T"
+                        modifiedJavaType: "io.qt.gui.QAbstractOpenGLFunctions"
                         modifiedJniType: "jobject"
                     }
                 }

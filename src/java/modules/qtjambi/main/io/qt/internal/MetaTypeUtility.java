@@ -575,7 +575,7 @@ public final class MetaTypeUtility {
 				}
 			}
 			if (parameterizedType.getRawType() instanceof Class<?>) {
-				if (ContainerUtility.isQConstSpan((Class<?>) parameterizedType.getRawType())) {
+				if (QtJambi_LibraryUtilities.QConstSpanClass!=null && QtJambi_LibraryUtilities.QConstSpanClass.isAssignableFrom((Class<?>) parameterizedType.getRawType())) {
 					String spanPropertyName = internalTypeNameOfClass(clazz, genericType, annotatedType);
 					int id = findMetaType(spanPropertyName);
 					if (id != QMetaType.Type.UnknownType.value()) {
@@ -595,10 +595,10 @@ public final class MetaTypeUtility {
 							}
 						}
 						if(elementType!=0) {
-							if(ContainerUtility.isQSpan((Class<?>) parameterizedType.getRawType())) {
-								return QMetaType.qRegisterMetaType(ContainerUtility.spanClass(), new QMetaType(elementType));
+							if(QtJambi_LibraryUtilities.QSpanClass!=null && QtJambi_LibraryUtilities.QSpanClass.isAssignableFrom((Class<?>) parameterizedType.getRawType())) {
+								return QMetaType.qRegisterMetaType(QtJambi_LibraryUtilities.QSpanClass, new QMetaType(elementType));
 							}else {
-								return QMetaType.qRegisterMetaType(ContainerUtility.spanConstClass(), new QMetaType(elementType));
+								return QMetaType.qRegisterMetaType(QtJambi_LibraryUtilities.QConstSpanClass, new QMetaType(elementType));
 							}
 						}else {
 							return id;
@@ -612,7 +612,7 @@ public final class MetaTypeUtility {
 					} else {
 						return registerQmlListProperty(listPropertyName);
 					}
-				} else if ((ContainerUtility.isSequentialContainerType(clazz)
+				} else if ((isSequentialContainerType(clazz)
 						|| List.class==parameterizedType.getRawType()
 						|| Collection.class==parameterizedType.getRawType()
 						|| Deque.class==parameterizedType.getRawType()
@@ -645,7 +645,7 @@ public final class MetaTypeUtility {
 					}
 					if(elementType!=0) {
 						int cotainerMetaType;
-						if(ContainerUtility.isSequentialContainerType(clazz)) {
+						if(isSequentialContainerType(clazz)) {
 							cotainerMetaType = QMetaType.qRegisterMetaType(clazz, new QMetaType(elementType));
 						}else if(Deque.class==parameterizedType.getRawType()) {
 							cotainerMetaType = QMetaType.qRegisterMetaType(QStack.class, new QMetaType(elementType));
@@ -780,7 +780,7 @@ public final class MetaTypeUtility {
 					}
 					return "QQmlListProperty<" + argumentName + ">";
 				}
-			}else if (ContainerUtility.isQConstSpan(cls) && genericType instanceof ParameterizedType) {
+			}else if (QtJambi_LibraryUtilities.QConstSpanClass!=null && QtJambi_LibraryUtilities.QConstSpanClass.isAssignableFrom(cls) && genericType instanceof ParameterizedType) {
 				ParameterizedType ptype = (ParameterizedType) genericType;
 				Type actualTypes[] = ptype.getActualTypeArguments();
 				AnnotatedElement actualAnnotatedTypes[] = null;
@@ -795,7 +795,7 @@ public final class MetaTypeUtility {
 					if (argumentName.endsWith("*")) {
 						argumentName = argumentName.substring(0, argumentName.length() - 1);
 					}
-					return ContainerUtility.isQSpan(cls) ? "QSpan<" + argumentName + ">" : "QSpan<const " + argumentName + ">";
+					return QtJambi_LibraryUtilities.QSpanClass!=null && QtJambi_LibraryUtilities.QSpanClass.isAssignableFrom(cls) ? "QSpan<" + argumentName + ">" : "QSpan<const " + argumentName + ">";
 				}
 			}else if (( cls==QMap.class
 						|| cls==QHash.class
@@ -855,7 +855,7 @@ public final class MetaTypeUtility {
 					}
 				}
 			}else if ((
-					ContainerUtility.isSequentialContainerType(cls)
+					isSequentialContainerType(cls)
 					|| cls==Collection.class
 					|| cls==Queue.class
 					|| cls==Deque.class
@@ -982,7 +982,7 @@ public final class MetaTypeUtility {
         				return QMetaType.Type.QByteArrayList;
         			}else if(clazz==QList.class && instantiations[0].id()==QMetaType.Type.QVariant.value()) {
         				return QMetaType.Type.QVariantList;
-        			}else if(ContainerUtility.isSequentialContainerType(clazz)) {
+        			}else if(isSequentialContainerType(clazz)) {
     					return String.format("%1$s<%2$s>", clazz.getSimpleName(), instantiations[0].name());
         			}else if(SmartPointer.class.isAssignableFrom(clazz)) {
         				if(instantiations[0].name().endsWith("*"))
@@ -997,8 +997,8 @@ public final class MetaTypeUtility {
         				return String.format("QStack<%1$s>", instantiations[0].name());
         			}else if(clazz.isInterface() && java.util.List.class.isAssignableFrom(clazz)) {
         				return String.format("QList<%1$s>", instantiations[0].name());
-        			}else if(ContainerUtility.isQConstSpan(clazz)) {
-        				if(ContainerUtility.isQSpan(clazz)) {
+        			}else if(QtJambi_LibraryUtilities.QConstSpanClass!=null && QtJambi_LibraryUtilities.QConstSpanClass.isAssignableFrom(clazz)) {
+        				if(QtJambi_LibraryUtilities.QSpanClass!=null && QtJambi_LibraryUtilities.QSpanClass.isAssignableFrom(clazz)) {
         					return String.format("QSpan<%1$s>", instantiations[0].name());
         				}else {
         					return String.format("QSpan<const %1$s>", instantiations[0].name());
@@ -1109,5 +1109,12 @@ public final class MetaTypeUtility {
     		}
     	}
         return new QMetaType[0];
+    }
+    
+    private static boolean isSequentialContainerType(Class<?> cls) {
+    	return cls==QList.class
+    			|| cls==QQueue.class
+    			|| cls==QStack.class
+    			|| cls==QSet.class;
     }
 }

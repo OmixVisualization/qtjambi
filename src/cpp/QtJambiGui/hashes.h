@@ -56,12 +56,12 @@ inline bool operator <(const QColor& c1, const QColor& c2){
 }
 #endif
 
-inline hash_type qHash(const QPixmap &value, hash_type seed = 0)
+inline size_t qHash(const QPixmap &value, size_t seed = 0)
 {
     return qHash(quintptr(value.handle()), seed);
 }
 
-inline hash_type qHash(const QCursor &cursor, hash_type seed = 0)
+inline size_t qHash(const QCursor &cursor, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -70,7 +70,7 @@ inline hash_type qHash(const QCursor &cursor, hash_type seed = 0)
 #endif
     seed = hash(seed, int(cursor.shape()));
     if(cursor.shape()==Qt::BitmapCursor){
-#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0) && QT_VERSION < QT_VERSION_CHECK(6, 5, 0)
+#if QT_VERSION < QT_VERSION_CHECK(6, 5, 0)
         seed = hash(seed, cursor.bitmap(Qt::ReturnByValue));
         seed = hash(seed, cursor.mask(Qt::ReturnByValue));
 #else
@@ -83,17 +83,17 @@ inline hash_type qHash(const QCursor &cursor, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QPixelFormat &value, hash_type seed = 0)
+inline size_t qHash(const QPixelFormat &value, size_t seed = 0)
 {
     return genericHash(value, seed);
 }
 
-inline hash_type qHash(const QColor &color, hash_type seed = 0)
+inline size_t qHash(const QColor &color, size_t seed = 0)
 {
     return qHash(quint64(color.rgba64()), seed);
 }
 
-inline hash_type qHash(const QBrush &brush, hash_type seed = 0)
+inline size_t qHash(const QBrush &brush, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -105,8 +105,7 @@ inline hash_type qHash(const QBrush &brush, hash_type seed = 0)
     return seed;
 }
 
-#if QT_VERSION >= 0x050000
-inline hash_type qHash(const QGradient &gradient, hash_type seed = 0)
+inline size_t qHash(const QGradient &gradient, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombineCommutative hash;
@@ -124,7 +123,7 @@ inline hash_type qHash(const QGradient &gradient, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QLinearGradient &gradient, hash_type seed = 0)
+inline size_t qHash(const QLinearGradient &gradient, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -139,7 +138,7 @@ inline hash_type qHash(const QLinearGradient &gradient, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QRadialGradient &gradient, hash_type seed = 0)
+inline size_t qHash(const QRadialGradient &gradient, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -157,7 +156,7 @@ inline hash_type qHash(const QRadialGradient &gradient, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QConicalGradient &gradient, hash_type seed = 0)
+inline size_t qHash(const QConicalGradient &gradient, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombineCommutative hash;
@@ -170,9 +169,8 @@ inline hash_type qHash(const QConicalGradient &gradient, hash_type seed = 0)
     seed = hash(seed, static_cast<const QGradient &>(gradient));
     return seed;
 }
-#endif
 
-inline hash_type qHash(const QRegion &region, hash_type seed = 0)
+inline size_t qHash(const QRegion &region, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -185,7 +183,7 @@ inline hash_type qHash(const QRegion &region, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QPolygon &polygon, hash_type seed = 0)
+inline size_t qHash(const QPolygon &polygon, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -198,7 +196,7 @@ inline hash_type qHash(const QPolygon &polygon, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QPalette &palette, hash_type seed = 0)
+inline size_t qHash(const QPalette &palette, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -213,50 +211,14 @@ inline hash_type qHash(const QPalette &palette, hash_type seed = 0)
     return seed;
 }
 
-#if QT_VERSION < 0x050300
-inline hash_type qHash(const QFont &font, hash_type seed = 0)
-{
-    QtPrivate::QHashCombine hash;
-    hash_type hashCode = font.pixelSize();
-    hashCode = hashCode * 31 + font.weight();
-    hashCode = hashCode * 31 + int(font.style());
-    hashCode = hashCode * 31 + font.stretch();
-    hashCode = hashCode * 31 + int(font.styleHint());
-    hashCode = hashCode * 31 + int(font.styleStrategy());
-    hashCode = hashCode * 31 + int(font.fixedPitch());
-    seed = hash(seed, font.family());
-    seed = hash(seed, font.pointSize());
-    hashCode = hashCode * 31 + int(font.underline());
-    hashCode = hashCode * 31 + int(font.overline());
-    hashCode = hashCode * 31 + int(font.strikeOut());
-    hashCode = hashCode * 31 + int(font.kerning());
-    return seed;
-}
-#endif
-
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-inline hash_type qHash(const QMatrix &matrix, hash_type seed) noexcept
-{
-    QtPrivate::QHashCombine hash;
-    seed = hash(seed, matrix.m11());
-    seed = hash(seed, matrix.m12());
-    seed = hash(seed, matrix.m21());
-    seed = hash(seed, matrix.m22());
-    seed = hash(seed, matrix.dx());
-    seed = hash(seed, matrix.dy());
-    return seed;
-}
-#endif
-
-inline hash_type qHash(const QImage &image, hash_type seed = 0)
+inline size_t qHash(const QImage &image, size_t seed = 0)
 {
     if(image.isNull())
         return seed;
     return qHash(image.cacheKey(), seed);
 }
 
-inline hash_type qHash(const QPen &pen, hash_type seed = 0)
+inline size_t qHash(const QPen &pen, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -272,7 +234,7 @@ inline hash_type qHash(const QPen &pen, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QPolygonF &polygon, hash_type seed = 0)
+inline size_t qHash(const QPolygonF &polygon, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -287,7 +249,7 @@ inline hash_type qHash(const QPolygonF &polygon, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QVector2D &vec, hash_type seed = 0)
+inline size_t qHash(const QVector2D &vec, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -299,7 +261,7 @@ inline hash_type qHash(const QVector2D &vec, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QVector3D &vec, hash_type seed = 0)
+inline size_t qHash(const QVector3D &vec, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -312,7 +274,7 @@ inline hash_type qHash(const QVector3D &vec, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QVector4D &vec, hash_type seed = 0)
+inline size_t qHash(const QVector4D &vec, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -326,7 +288,7 @@ inline hash_type qHash(const QVector4D &vec, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QFontMetrics &value, hash_type seed = 0)
+inline size_t qHash(const QFontMetrics &value, size_t seed = 0)
 {
     struct FontMetrics{
         QExplicitlySharedDataPointer<QFontPrivate> p;
@@ -334,7 +296,7 @@ inline hash_type qHash(const QFontMetrics &value, hash_type seed = 0)
     return qHash(quintptr(reinterpret_cast<const FontMetrics&>(value).p.constData()), seed);
 }
 
-inline hash_type qHash(const QFontMetricsF &value, hash_type seed = 0)
+inline size_t qHash(const QFontMetricsF &value, size_t seed = 0)
 {
     struct FontMetrics{
         QExplicitlySharedDataPointer<QFontPrivate> p;
@@ -342,7 +304,7 @@ inline hash_type qHash(const QFontMetricsF &value, hash_type seed = 0)
     return qHash(quintptr(reinterpret_cast<const FontMetrics&>(value).p.constData()), seed);
 }
 
-inline hash_type qHash(const QGlyphRun &value, hash_type seed = 0)
+inline size_t qHash(const QGlyphRun &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -367,80 +329,57 @@ inline hash_type qHash(const QGlyphRun &value, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QAccessible::State &value, hash_type seed = 0)
+inline size_t qHash(const QAccessible::State &value, size_t seed = 0)
 {
     return genericHash(value, seed);
 }
 
-inline hash_type qHash(const QMatrix2x2 &value, hash_type seed = 0)
+inline size_t qHash(const QMatrix2x2 &value, size_t seed = 0)
 {
     return genericHash(value, seed);
 }
 
-inline hash_type qHash(const QMatrix2x3 &value, hash_type seed = 0)
+inline size_t qHash(const QMatrix2x3 &value, size_t seed = 0)
 {
     return genericHash(value, seed);
 }
 
-inline hash_type qHash(const QMatrix2x4 &value, hash_type seed = 0)
+inline size_t qHash(const QMatrix2x4 &value, size_t seed = 0)
 {
     return genericHash(value, seed);
 }
 
-inline hash_type qHash(const QMatrix3x2 &value, hash_type seed = 0)
+inline size_t qHash(const QMatrix3x2 &value, size_t seed = 0)
 {
     return genericHash(value, seed);
 }
 
-inline hash_type qHash(const QMatrix3x3 &value, hash_type seed = 0)
+inline size_t qHash(const QMatrix3x3 &value, size_t seed = 0)
 {
     return genericHash(value, seed);
 }
 
-inline hash_type qHash(const QMatrix3x4 &value, hash_type seed = 0)
+inline size_t qHash(const QMatrix3x4 &value, size_t seed = 0)
 {
     return genericHash(value, seed);
 }
 
-inline hash_type qHash(const QMatrix4x2 &value, hash_type seed = 0)
+inline size_t qHash(const QMatrix4x2 &value, size_t seed = 0)
 {
     return genericHash(value, seed);
 }
 
-inline hash_type qHash(const QMatrix4x3 &value, hash_type seed = 0)
+inline size_t qHash(const QMatrix4x3 &value, size_t seed = 0)
 {
     return genericHash(value, seed);
 }
 
-inline hash_type qHash(const QMatrix4x4 &value, hash_type seed = 0)
+inline size_t qHash(const QMatrix4x4 &value, size_t seed = 0)
 {
     return genericHash(value, seed);
 }
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-inline hash_type qHash(const QOpenGLDebugMessage &value, hash_type seed = 0)
-{
-    QtPrivate::QHashCombine hash;
-    seed = hash(seed, int(value.source()));
-    seed = hash(seed, int(value.type()));
-    seed = hash(seed, int(value.severity()));
-    seed = hash(seed, value.id());
-    seed = hash(seed, value.message());
-    return seed;
-}
-
-inline hash_type qHash(const QOpenGLFramebufferObjectFormat &value, hash_type seed = 0)
-{
-    QtPrivate::QHashCombine hash;
-    seed = hash(seed, value.samples());
-    seed = hash(seed, value.mipmap());
-    seed = hash(seed, int(value.attachment()));
-    seed = hash(seed, value.textureTarget());
-    seed = hash(seed, value.internalTextureFormat());
-    return seed;
-}
-#else
-inline hash_type qHash(const QEventPoint &value, hash_type seed = 0)
+inline size_t qHash(const QEventPoint &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -489,21 +428,19 @@ inline hash_type qHash(const QEventPoint &value, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QPageRanges::Range &value, hash_type seed = 0)
+inline size_t qHash(const QPageRanges::Range &value, size_t seed = 0)
 {
     return genericHash(value, seed);
 }
 
-inline hash_type qHash(const QPageRanges &value, hash_type seed = 0)
+inline size_t qHash(const QPageRanges &value, size_t seed = 0)
 {
     return qHash(value.toRangeList(), seed);
 }
 
-#endif
+size_t qHash(const QTextFormat &value, size_t seed = 0);
 
-hash_type qHash(const QTextFormat &value, hash_type seed = 0);
-
-inline hash_type qHash(const QTextLayout::FormatRange &value, hash_type seed = 0)
+inline size_t qHash(const QTextLayout::FormatRange &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -516,7 +453,7 @@ inline hash_type qHash(const QTextLayout::FormatRange &value, hash_type seed = 0
     return seed;
 }
 
-inline hash_type qHash(const QPageSize &value, hash_type seed = 0)
+inline size_t qHash(const QPageSize &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -535,7 +472,7 @@ inline hash_type qHash(const QPageSize &value, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QPageLayout &value, hash_type seed = 0)
+inline size_t qHash(const QPageLayout &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -557,7 +494,7 @@ inline hash_type qHash(const QPageLayout &value, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QPainterPath::Element &value, hash_type seed = 0)
+inline size_t qHash(const QPainterPath::Element &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -570,7 +507,7 @@ inline hash_type qHash(const QPainterPath::Element &value, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QPainterPath &value, hash_type seed = 0)
+inline size_t qHash(const QPainterPath &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -585,12 +522,12 @@ inline hash_type qHash(const QPainterPath &value, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QTextOption::Tab &value, hash_type seed = 0)
+inline size_t qHash(const QTextOption::Tab &value, size_t seed = 0)
 {
     return genericHash(value, seed);
 }
 
-inline hash_type qHash(const QTextOption &value, hash_type seed = 0)
+inline size_t qHash(const QTextOption &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -608,7 +545,7 @@ inline hash_type qHash(const QTextOption &value, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QStaticText &value, hash_type seed = 0)
+inline size_t qHash(const QStaticText &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -624,22 +561,21 @@ inline hash_type qHash(const QStaticText &value, hash_type seed = 0)
     return seed;
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
-inline hash_type qHash(const QColorSpace &value, hash_type seed = 0)
+inline size_t qHash(const QColorSpace &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
 #else
     QtPrivate::QHashCombine hash(seed);
 #endif
-    seed = hash(seed, hash_type(value.primaries()));
-    seed = hash(seed, hash_type(value.transferFunction()));
+    seed = hash(seed, size_t(value.primaries()));
+    seed = hash(seed, size_t(value.transferFunction()));
     seed = hash(seed, value.gamma());
     seed = hash(seed, value.isValid());
     return seed;
 }
 #if QT_VERSION >= QT_VERSION_CHECK(6,9,0)
-inline hash_type qHash(const QColorSpace::PrimaryPoints &value, hash_type seed = 0)
+inline size_t qHash(const QColorSpace::PrimaryPoints &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -659,9 +595,8 @@ inline hash_type qHash(const QColorSpace::PrimaryPoints &value, hash_type seed =
     return seed;
 }
 #endif
-#endif
 
-inline hash_type qHash(const QSurfaceFormat &value, hash_type seed = 0)
+inline size_t qHash(const QSurfaceFormat &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -672,11 +607,7 @@ inline hash_type qHash(const QSurfaceFormat &value, hash_type seed = 0)
     seed = hash(seed, int(value.profile()));
     seed = hash(seed, int(value.renderableType()));
     seed = hash(seed, int(value.options()));
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     seed = hash(seed, value.colorSpace());
-#else
-    seed = hash(seed, int(value.colorSpace()));
-#endif
     seed = hash(seed, value.depthBufferSize());
     seed = hash(seed, value.stencilBufferSize());
     seed = hash(seed, value.redBufferSize());
@@ -692,19 +623,19 @@ inline hash_type qHash(const QSurfaceFormat &value, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QQuaternion &value, hash_type seed = 0)
+inline size_t qHash(const QQuaternion &value, size_t seed = 0)
 {
     return genericHash(value, seed);
 }
 
 #if QT_VERSION < QT_VERSION_CHECK(6,6,0)
-inline hash_type qHash(const QPixmapCache::Key &value, hash_type seed = 0)
+inline size_t qHash(const QPixmapCache::Key &value, size_t seed = 0)
 {
     return genericHash(value, seed);
 }
 #endif
 
-inline hash_type qHash(const QTextFragment &value, hash_type seed = 0)
+inline size_t qHash(const QTextFragment &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -716,12 +647,12 @@ inline hash_type qHash(const QTextFragment &value, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QTextBlock::iterator &value, hash_type seed = 0)
+inline size_t qHash(const QTextBlock::iterator &value, size_t seed = 0)
 {
     return genericHash(value, seed);
 }
 
-inline hash_type qHash(const QTextBlock &value, hash_type seed = 0)
+inline size_t qHash(const QTextBlock &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -733,7 +664,7 @@ inline hash_type qHash(const QTextBlock &value, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QTextCursor &value, hash_type seed = 0)
+inline size_t qHash(const QTextCursor &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -746,9 +677,9 @@ inline hash_type qHash(const QTextCursor &value, hash_type seed = 0)
     return seed;
 }
 
-hash_type qHash(const QTextLength &value, hash_type seed = 0);
+size_t qHash(const QTextLength &value, size_t seed = 0);
 
-inline hash_type qHash(const QTextFormat &value, hash_type seed)
+inline size_t qHash(const QTextFormat &value, size_t seed)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -798,7 +729,7 @@ inline hash_type qHash(const QTextFormat &value, hash_type seed)
     return seed;
 }
 
-inline hash_type qHash(const QTextFrame &value, hash_type seed = 0)
+inline size_t qHash(const QTextFrame &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -811,12 +742,12 @@ inline hash_type qHash(const QTextFrame &value, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QTextFrame::iterator &value, hash_type seed = 0)
+inline size_t qHash(const QTextFrame::iterator &value, size_t seed = 0)
 {
     return genericHash(value, seed);
 }
 
-inline hash_type qHash(const QTextLength &value, hash_type seed)
+inline size_t qHash(const QTextLength &value, size_t seed)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -828,7 +759,7 @@ inline hash_type qHash(const QTextLength &value, hash_type seed)
     return seed;
 }
 
-inline hash_type qHash(const QTextTableCell &value, hash_type seed = 0)
+inline size_t qHash(const QTextTableCell &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -845,7 +776,7 @@ inline hash_type qHash(const QTextTableCell &value, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QAbstractTextDocumentLayout::Selection &value, hash_type seed = 0)
+inline size_t qHash(const QAbstractTextDocumentLayout::Selection &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -862,7 +793,7 @@ inline bool operator==(const QAbstractTextDocumentLayout::Selection &v1, const Q
             && v1.format==v2.format;
 }
 
-inline hash_type qHash(const QRgba64 &value, hash_type seed = 0)
+inline size_t qHash(const QRgba64 &value, size_t seed = 0)
 {
     return qHash(value.operator unsigned long long(), seed);
 }
@@ -871,7 +802,7 @@ inline bool operator==(const QRgba64 &v1, const QRgba64 &v2){
     return v1.operator unsigned long long()==v2.operator unsigned long long();
 }
 
-inline hash_type qHash(const QAbstractTextDocumentLayout::PaintContext &value, hash_type seed = 0)
+inline size_t qHash(const QAbstractTextDocumentLayout::PaintContext &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -900,7 +831,7 @@ inline bool operator==(const QIconEngine::ScaledPixmapArgument &v1, const QIconE
            && v1.pixmap.handle()==v2.pixmap.handle();
 }
 
-inline hash_type qHash(const QIconEngine::ScaledPixmapArgument &value, hash_type seed = 0)
+inline size_t qHash(const QIconEngine::ScaledPixmapArgument &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -918,27 +849,10 @@ inline hash_type qHash(const QIconEngine::ScaledPixmapArgument &value, hash_type
 #if QT_VERSION >= QT_VERSION_CHECK(6, 9, 0)
 
 #include <QtGui/QFontVariableAxis>
-inline hash_type qHash(const QFontVariableAxis& value, hash_type seed = 0){
+inline size_t qHash(const QFontVariableAxis& value, size_t seed = 0){
     return qHashMulti(seed, value.defaultValue(), value.maximumValue(), value.minimumValue(), value.name(), value.tag());
 }
 #endif
-
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-inline bool operator==(const QIconEngine::AvailableSizesArgument &v1, const QIconEngine::AvailableSizesArgument &v2){
-    return v1.sizes==v2.sizes
-        && v1.mode==v2.mode
-        && v1.state==v2.state;
-}
-
-inline hash_type qHash(const QIconEngine::AvailableSizesArgument &value, hash_type seed = 0)
-{
-    QtPrivate::QHashCombine hash;
-    seed = hash(seed, value.sizes);
-    seed = hash(seed, value.mode);
-    seed = hash(seed, value.state);
-    return seed;
-}
-#endif //QT_VERSION >= QT_VERSION_CHECK(5,14,0)
 
 #ifdef QTJAMBI_GENERATOR_RUNNING
 #define QTJAMBIMATRIX(M,N) QMatrix##M##x##N
@@ -974,7 +888,7 @@ public:\
     class QTJAMBIMATRIX(M,N){\
     QTJAMBI_MATRIX_CONTENT(M,N)\
     };\
-    hash_type qHash(const QTJAMBIMATRIX(M,N) &);
+    size_t qHash(const QTJAMBIMATRIX(M,N) &);
 QTJAMBI_MATRIX(2,2)
 QTJAMBI_MATRIX(2,3)
 QTJAMBI_MATRIX(2,4)
@@ -984,9 +898,7 @@ QTJAMBI_MATRIX(3,4)
 QTJAMBI_MATRIX(4,2)
 QTJAMBI_MATRIX(4,3)
 
-#if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
-hash_type qHash(const QColorTransform &value, hash_type seed = 0);
-#endif //QT_VERSION >= QT_VERSION_CHECK(5,14,0)
+size_t qHash(const QColorTransform &value, size_t seed = 0);
 
 #endif
 

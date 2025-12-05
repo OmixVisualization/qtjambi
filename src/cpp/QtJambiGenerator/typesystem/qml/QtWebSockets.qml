@@ -87,6 +87,24 @@ TypeSystem{
                 }
             }
         }
+        ModifyFunction{
+            signature: "peerPort()const"
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "int"
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "localPort()const"
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "int"
+                }
+            }
+        }
     }
     
     ObjectType{
@@ -95,11 +113,26 @@ TypeSystem{
         EnumType{name: "SslMode"}
 
         ModifyFunction{
-            signature: "listen(const QHostAddress &, quint16)"
+            signature: "listen(QHostAddress, quint16)"
             ModifyArgument{
                 index: 1
                 ReplaceDefaultExpression{
                     expression: "new io.qt.network.QHostAddress(io.qt.network.QHostAddress.SpecialAddress.Any)"
+                }
+            }
+            ModifyArgument{
+                index: 2
+                ReplaceType{
+                    modifiedType: "int"
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "serverPort()const"
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "int"
                 }
             }
         }
@@ -120,40 +153,76 @@ TypeSystem{
                 NoNullPointer{
                 }
             }
+            ppCondition: "!defined(QT_NO_SSL)"
+        }
+        ModifyFunction{
+            signature: "peerVerifyError(QSslError)"
+            ppCondition: "!defined(QT_NO_SSL)"
+        }
+        ModifyFunction{
+            signature: "sslErrors(QList<QSslError>)"
+            ppCondition: "!defined(QT_NO_SSL)"
+        }
+        ModifyFunction{
+            signature: "alertSent(QSsl::AlertLevel, QSsl::AlertType, QString)"
+            ppCondition: "!defined(QT_NO_SSL)"
+        }
+        ModifyFunction{
+            signature: "alertReceived(QSsl::AlertLevel, QSsl::AlertType, QString)"
+            ppCondition: "!defined(QT_NO_SSL)"
+        }
+        ModifyFunction{
+            signature: "handshakeInterruptedOnError(QSslError)"
+            ppCondition: "!defined(QT_NO_SSL)"
+        }
+        ModifyFunction{
+            signature: "setSslConfiguration(QSslConfiguration)"
+            ppCondition: "!defined(QT_NO_SSL)"
+        }
+        ModifyFunction{
+            signature: "sslConfiguration() const"
+            ppCondition: "!defined(QT_NO_SSL)"
+        }
+        ModifyFunction{
+            signature: "setProxy(QNetworkProxy)"
+            ppCondition: "!defined(QT_NO_NETWORKPROXY)"
+        }
+        ModifyFunction{
+            signature: "proxy() const"
+            ppCondition: "!defined(QT_NO_NETWORKPROXY)"
+        }
+
+        InjectCode{
+            Text{content: String.raw`
+/**
+ * @deprecated please use {@link #listen(io.qt.network.QHostAddress, int)} instead.
+ */
+@SuppressWarnings({"exports"})
+@QtUninvokable
+@Deprecated(forRemoval = true)
+public final boolean listen(io.qt.network.QHostAddress.@NonNull SpecialAddress address, short port) {
+    return listen(address, (int)port);
+}
+
+/**
+ * @deprecated please use {@link #listen(io.qt.network.QHostAddress, int)} instead.
+ */
+@SuppressWarnings({"exports"})
+@QtUninvokable
+@Deprecated(forRemoval = true)
+public final boolean listen(io.qt.network.@NonNull QHostAddress address, short port) {
+    return listen(address, (int)port);
+}
+                `}
         }
     }
     
-    ValueType{
+    ObjectType{
         name: "QWebSocketCorsAuthenticator"
-        CustomConstructor{
-            Text{content: "if(copy){\n"+
-                          "    return new(placement) QWebSocketCorsAuthenticator(*copy);\n"+
-                          "}else{\n"+
-                          "    return new(placement) QWebSocketCorsAuthenticator(\"\");\n"+
-                          "}"}
-        }
-        CustomConstructor{
-            type: CustomConstructor.Default
-            Text{content: "new(placement) QWebSocketCorsAuthenticator(\"\");"}
-        }
-        ModifyFunction{
-            signature: "operator=(QWebSocketCorsAuthenticator)"
-            Delegate{
-                name: "set"
-                deprecated: true
-            }
-        }
     }
     
     ValueType{
         name: "QWebSocketHandshakeOptions"
-        ModifyFunction{
-            signature: "operator=(QWebSocketHandshakeOptions)"
-            Delegate{
-                name: "set"
-                deprecated: true
-            }
-        }
         since: [6, 4]
     }
     

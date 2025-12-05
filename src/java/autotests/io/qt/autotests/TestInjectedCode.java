@@ -1122,7 +1122,6 @@ public class TestInjectedCode extends ApplicationInitializer {
         assertEquals(418, img.width());
     }
 
-    @SuppressWarnings("deprecation")
 	@Test
     public void testQCursorBitmap() {
         QCursor cursor = new QCursor(Qt.CursorShape.CrossCursor);
@@ -1154,18 +1153,27 @@ public class TestInjectedCode extends ApplicationInitializer {
     }
 
     @Test
-    public void testQImageConstructedFromByteArray() {
+    public void testQImageConstructedFromData() {
         QImage img = new QImage(":io/qt/autotests/svgcards-example.png");
 
         assertFalse(img.isNull());
         
         byte bytes[] = img.bytes();
+		ByteBuffer bits = img.bits();
+		assertTrue(bits.isReadOnly());
+		assertTrue(bits.isDirect());
         
         assertTrue(bytes.length>0);
         
         QImage img2 = new QImage(bytes, img.width(), img.height(), img.format());
 
         assertEquals(img, img2);
+        img2.dispose();
+        
+        QImage img3 = new QImage(bits, img.width(), img.height(), img.format());
+
+        assertEquals(img, img3);
+        img3.dispose();
     }
 
     @Test
@@ -2130,6 +2138,109 @@ public class TestInjectedCode extends ApplicationInitializer {
     	QAction action = new QAction((QObject)null);
     	action.setMenu(null);
     	action.menu();
+    }
+    
+	@Test
+    public void testByteArrayView() {
+		io.qt.core.QByteArrayView bv = new io.qt.core.QByteArrayView("ByteArray\0View".getBytes());
+		for(@SuppressWarnings("unused") Byte b : bv) {
+		}
+		assertEquals(new io.qt.core.QByteArray("ByteArray\0View".getBytes()), bv.toByteArray());
+		assertEquals("ByteArray\0View", bv.toString());
+		assertEquals("ByteArray\0View", new String(bv.toArray()));
+		bv.dispose();
+		bv = new io.qt.core.QByteArrayView(new io.qt.core.QByteArray("ByteArray\0View".getBytes()));
+		assertEquals(new io.qt.core.QByteArray("ByteArray\0View".getBytes()), bv.toByteArray());
+		assertEquals("ByteArray\0View", bv.toString());
+		assertEquals("ByteArray\0View", new String(bv.toArray()));
+		bv.dispose();
+		bv = new io.qt.core.QByteArrayView("ByteArray\0View".getBytes());
+		assertEquals(new io.qt.core.QByteArray("ByteArray\0View".getBytes()), bv.toByteArray());
+		assertEquals("ByteArray\0View", bv.toString());
+		assertEquals("ByteArray\0View", new String(bv.toArray()));
+		bv.dispose();
+		bv = new io.qt.core.QByteArrayView("ByteArrayView");
+		assertEquals(new io.qt.core.QByteArray("ByteArrayView"), bv.toByteArray());
+		assertEquals("ByteArrayView", bv.toString());
+		assertEquals("ByteArrayView", new String(bv.toArray()));
+		bv.dispose();
+		bv = new io.qt.core.QByteArrayView(ByteBuffer.wrap("ByteArray\0View".getBytes()));
+		assertEquals("ByteArray\0View", bv.toByteArray().toString());
+		assertEquals("ByteArray\0View", bv.toString());
+		assertEquals("ByteArray\0View", new String(bv.toArray()));
+		bv.dispose();
+		bv = new io.qt.core.QByteArrayView("ByteArrayView".getBytes(), 2, 4);
+		assertEquals(new io.qt.core.QByteArray("teAr"), bv.toByteArray());
+		assertEquals("teAr", bv.toString());
+		assertEquals("teAr", new String(bv.toArray()));
+		bv.dispose();
+		bv = new io.qt.core.QByteArrayView(ByteBuffer.wrap("ByteArrayView".getBytes(), 2, 4));
+		assertEquals(new io.qt.core.QByteArray("teAr"), bv.toByteArray());
+		assertEquals("teAr", bv.toString());
+		assertEquals("teAr", new String(bv.toArray()));
+		bv.dispose();
+	}
+	
+    @Test
+    public void testQLineFintersection() {
+        QLineF line1 = new QLineF(10, 0, 10, 20);
+        QLineF line2 = new QLineF(0, 10, 20, 10);
+
+        QPointF intersectionPoint = new QPointF();
+
+        assertEquals(QLineF.IntersectionType.BoundedIntersection, line1.intersects(line2, intersectionPoint));
+        assertEquals(10.0, intersectionPoint.x(), 0.0);
+        assertEquals(10.0, intersectionPoint.y(), 0.0);
+
+        line2 = new QLineF(0, 30, 20, 30);
+        assertEquals(QLineF.IntersectionType.UnboundedIntersection, line1.intersects(line2, intersectionPoint));
+        assertEquals(10.0, intersectionPoint.x(), 0.0);
+        assertEquals(30.0, intersectionPoint.y(), 0.0);
+
+        line2 = new QLineF(11, 0, 11, 20);
+        assertEquals(QLineF.IntersectionType.NoIntersection, line1.intersects(line2, null));
+    }
+    
+    @Test
+    public void testQListBuffers() {
+    	io.qt.core.QList<Character> list = new io.qt.core.QList<>(char.class);
+    	list.fill('X', 8);
+    	assertArrayEquals(new Character[] {'X','X','X','X','X','X','X','X'}, list.toArray(new Character[list.size()]));
+    	assertEquals(8, list.size());
+    	CharBuffer rbuffer = QList.asCharBuffer(list);
+//    	try{
+//    		rbuffer.put('A');
+//    		Assert.fail("ReadOnlyBufferException expected to be thrown");
+//    	} catch (ReadOnlyBufferException e) {
+//		}
+    	assertEquals('X', rbuffer.get());
+    	CharBuffer wbuffer = General.internalAccess.mutableDataC(list);
+    	assertEquals(list.capacity(), wbuffer.capacity());
+    	wbuffer.put('A');
+    	assertArrayEquals(new Character[] {'A','X','X','X','X','X','X','X'}, list.toArray(new Character[list.size()]));
+    	// on most JRE versions wbuffer is operating on shared data of list.
+    	// thus, changing or deleting of list does not affect Buffer.
+    	Object att = null;
+    	try {
+			att = General.internalAccess.readField(wbuffer, General.internalAccess.getClass(wbuffer), "att", Object.class);
+		} catch (Throwable e1) {
+		}
+    	if(att instanceof QList) {
+    		Assert.assertTrue(list.isSharedWith((QList<?>)att));
+    		list.append('A');
+    		assertArrayEquals(new Character[] {'A','X','X','X','X','X','X','X','A'}, list.toArray(new Character[list.size()]));
+    		assertArrayEquals(new Character[] {'A','X','X','X','X','X','X','X'}, list.toArray(new Character[list.size()]));
+	    	list.dispose();
+			wbuffer.put('M');
+			assertArrayEquals(new Character[] {'A','M','X','X','X','X','X','X'}, list.toArray(new Character[list.size()]));
+    	}else{
+	    	list.dispose();
+	    	try {
+				wbuffer.put('M');
+				Assert.fail("BufferOverflowException expected to be thrown");
+			} catch (BufferOverflowException e) {
+			}
+    	}
     }
     
     public static void main(String args[]) {

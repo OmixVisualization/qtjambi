@@ -43,6 +43,8 @@ import io.qt.gui.QPaintEvent;
 import io.qt.gui.QPainter;
 import io.qt.gui.QPaintingOutsidePaintEventException;
 import io.qt.gui.QPixmap;
+import io.qt.opengl.QOpenGLWindow;
+import io.qt.opengl.widgets.QOpenGLWidget;
 import io.qt.widgets.QWidget;
 
 public class TestPaintOnWidget extends ApplicationInitializer{
@@ -257,6 +259,104 @@ public class TestPaintOnWidget extends ApplicationInitializer{
 	    	loop.dispose();
     	}
 	}
+    
+    @Test
+    public void testPaintingInWidgetPaintGLViaBegin() {
+    	QPainter[] activePainter = {null};
+    	QEventLoop loop = new QEventLoop();
+    	QOpenGLWidget widget = new QOpenGLWidget() {
+			@Override
+			protected void paintGL() {
+		    	try {
+					QPainter painter = new QPainter();
+			    	assertTrue(painter.begin(this));
+			    	painter.drawLine(1, 1, 5, 5);
+			    	activePainter[0] = painter;
+		    	}finally {
+		    		loop.quit();
+		    	}
+			}
+    	};
+    	widget.setVisible(true);
+    	QTimer.singleShot(5000, loop::quit);
+    	loop.exec();
+    	widget.setVisible(false);
+    	assertTrue("paintGL() not called", activePainter[0]!=null);
+    	assertTrue(activePainter[0].isDisposed());
+    }
+    
+    @Test
+    public void testPaintingInWidgetPaintGLViaConstructor() {
+    	QPainter[] activePainter = {null};
+    	QEventLoop loop = new QEventLoop();
+    	QOpenGLWidget widget = new QOpenGLWidget() {
+			@Override
+			protected void paintGL() {
+		    	try {
+					QPainter painter = new QPainter(this);
+			    	painter.drawLine(1, 1, 5, 5);
+			    	activePainter[0] = painter;
+		    	}finally {
+		    		loop.quit();
+		    	}
+			}
+    	};
+    	widget.setVisible(true);
+    	QTimer.singleShot(5000, loop::quit);
+    	loop.exec();
+    	widget.setVisible(false);
+    	assertTrue("paintGL() not called", activePainter[0]!=null);
+    	assertTrue(activePainter[0].isDisposed());
+    }
+    
+    @Test
+    public void testPaintingInWindowPaintGLViaBegin() {
+    	QPainter[] activePainter = {null};
+    	QEventLoop loop = new QEventLoop();
+    	QOpenGLWindow widget = new QOpenGLWindow() {
+			@Override
+			protected void paintGL() {
+		    	try {
+					QPainter painter = new QPainter();
+			    	assertTrue(painter.begin(this));
+			    	painter.drawLine(1, 1, 5, 5);
+			    	activePainter[0] = painter;
+		    	}finally {
+		    		loop.quit();
+		    	}
+			}
+    	};
+    	widget.setVisible(true);
+    	QTimer.singleShot(5000, loop::quit);
+    	loop.exec();
+    	widget.setVisible(false);
+    	assertTrue("paintGL() not called", activePainter[0]!=null);
+    	assertTrue(activePainter[0].isDisposed());
+    }
+    
+    @Test
+    public void testPaintingInWindowPaintGLViaConstructor() {
+    	QPainter[] activePainter = {null};
+    	QEventLoop loop = new QEventLoop();
+    	QOpenGLWindow widget = new QOpenGLWindow() {
+			@Override
+			protected void paintGL() {
+		    	try {
+					QPainter painter = new QPainter(this);
+			    	painter.drawLine(1, 1, 5, 5);
+			    	activePainter[0] = painter;
+		    	}finally {
+		    		loop.quit();
+		    	}
+			}
+    	};
+    	widget.setVisible(true);
+    	QTimer.singleShot(5000, loop::quit);
+    	loop.exec();
+    	widget.setVisible(false);
+    	assertTrue("paintGL() not called", activePainter[0]!=null);
+    	assertTrue(activePainter[0].isDisposed());
+    }
     
     public static void main(String args[]) {
         org.junit.runner.JUnitCore.main(TestPaintOnWidget.class.getName());

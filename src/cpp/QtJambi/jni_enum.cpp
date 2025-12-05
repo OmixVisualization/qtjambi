@@ -29,8 +29,7 @@
 **
 ****************************************************************************/
 
-#include "exception.h"
-#include "utils_p.h"
+#include "pch_p.h"
 
 extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_EnumUtility_resolveLongEnum(JNIEnv *env, jclass, jint hashCode, jclass enumClass, jlong value, jstring entryName){
     try{

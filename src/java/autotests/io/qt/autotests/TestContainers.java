@@ -32,6 +32,7 @@ package io.qt.autotests;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -347,6 +348,11 @@ public class TestContainers extends ApplicationInitializer {
 	@Test
     public void run_testQList_outofbounds() {
         QList_int list = new QList_int();
+        try { 
+        	list.remove(23, 14); 
+        	fail("IndexOutOfBoundsException expected to be thrown");
+    	} catch (IndexOutOfBoundsException e) {
+    	}
 
         boolean got;
 

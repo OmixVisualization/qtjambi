@@ -29,11 +29,9 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qcompilerdetection.h>
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#include "pch_p.h"
 
-#include "qtjambimetaobject_p.h"
-#include "qtjambi_cast.h"
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 
 extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_PropertyUtility_getPropertyForField(JNIEnv *env, jclass, jobject jmetaObject, jobject reflectField){
     const QMetaObject* metaObject = qtjambi_cast<const QMetaObject*>(env, jmetaObject);
@@ -44,7 +42,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_PropertyUtility_getProp
             if(prop.isValid()){
                 if(const QtJambiMetaObject* dynamicMetaObject = QtJambiMetaObject::cast(prop.enclosingMetaObject())){
                     if(field==dynamicMetaObject->getQPropertyField(prop.relativePropertyIndex())){
-                        return qtjambi_cast<jobject>(env, prop);
+                        return qtjambi_cast<jobject>(env, std::move(prop));
                     }
                 }
             }

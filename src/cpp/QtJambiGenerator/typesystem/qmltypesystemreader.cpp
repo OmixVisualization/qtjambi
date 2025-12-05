@@ -138,6 +138,7 @@ class QmlTypeSystemReaderPrivate {
     QVersionNumber m_qtVersion;
     QString m_defaultPackage;
     QString m_defaultPPCondition;
+    QString m_precompiledHeader;
     QString m_defaultSuperclass;
     QStringList m_importInputDirectoryList;
     QStringList m_typesystemDirectoryList;
@@ -222,6 +223,7 @@ void QmlTypeSystemReaderPrivate::parseTypeSystem(TypeSystem* typeSystem, const Q
             m_defaultPackage = typeSystem->getPackageName();
             m_defaultSuperclass = typeSystem->getDefaultSuperClass();
             m_defaultPPCondition = typeSystem->getDefaultPPCondition();
+            m_precompiledHeader = typeSystem->getPrecompiledHeader();
             bool noExports = typeSystem->getNoExports();
             QString moduleName = typeSystem->getModule();
             QString description = typeSystem->getDescription();
@@ -487,8 +489,8 @@ void QmlTypeSystemReaderPrivate::parseInjectCode(InjectCode* element, ComplexTyp
         {CodeClass::MetaInfo, TS::MetaInfo},
         {CodeClass::Shell, TS::ShellCode},
         {CodeClass::ShellDeclaration, TS::ShellDeclaration},
-        {CodeClass::DestructorFunction, TS::DestructorFunction},
-        {CodeClass::DeleterFunction, TS::DeleterFunction},
+        {CodeClass::Destructor, TS::DestructorFunction},
+        {CodeClass::Deleter, TS::DeleterFunction},
         {CodeClass::Constructors, TS::Constructors},
         {CodeClass::JavaConctreteWrapper, TS::ConctreteWrapper},
         {CodeClass::Signal, TS::Signal}
@@ -535,8 +537,8 @@ void QmlTypeSystemReaderPrivate::parseInjectCode(InjectCode* element, Functional
         {CodeClass::MetaInfo, TS::MetaInfo},
         {CodeClass::Shell, TS::ShellCode},
         {CodeClass::ShellDeclaration, TS::ShellDeclaration},
-        {CodeClass::DestructorFunction, TS::DestructorFunction},
-        {CodeClass::DeleterFunction, TS::DeleterFunction},
+        {CodeClass::Destructor, TS::DestructorFunction},
+        {CodeClass::Deleter, TS::DeleterFunction},
         {CodeClass::Constructors, TS::Constructors},
         {CodeClass::Signal, TS::Signal},
         {CodeClass::JavaInterface, TS::Interface},
@@ -859,6 +861,7 @@ void QmlTypeSystemReaderPrivate::parseAttributesOfComplexType(ComplexType* eleme
                 ctype->designatedInterface()->setInclude(incl);
         }
     }
+    ctype->setAddTextStreamFunctions(element->getAddTextStreamFunctions());
     ctype->setForceFinal(element->getForceFinal());
     ctype->setSkipMetaTypeRegistration(element->getNoMetaType());
     if (element->getDisableNativeIdUsage())
@@ -944,12 +947,14 @@ void QmlTypeSystemReaderPrivate::parseAttributesOfComplexType(ComplexType* eleme
     ctype->setTargetTypeSystem(m_defaultPackage);
     ctype->setTargetLangPackage(package);
     ctype->setDefaultSuperclass(defaultSuperclass);
+    ctype->setPrecompiledHeader(m_precompiledHeader);
     ctype->setImplements(implements);
     if(ctype->designatedInterface()){
         ctype->designatedInterface()->setGenericClass(ctype->isGenericClass());
         ctype->designatedInterface()->setTargetTypeSystem(m_defaultPackage);
         ctype->designatedInterface()->setTargetLangPackage(package);
         ctype->designatedInterface()->setDefaultSuperclass(defaultSuperclass);
+        ctype->designatedInterface()->setPrecompiledHeader(m_precompiledHeader);
         ctype->designatedInterface()->setImplements(implements);
         if (ctype->isForceAbstract())
             ctype->designatedInterface()->setForceAbstract();
@@ -1764,6 +1769,7 @@ void QmlTypeSystemReaderPrivate::parseModifyArgument(ModifyArgument* element, Ab
                             TypesystemException::raise(QStringLiteral(u"Missing required property ReplaceType.modifiedType"));
                         }
                         argumentModification.modified_type = childElement->getModifiedType();
+                        argumentModification.modified_java_type = childElement->getModifiedJavaType();
                         argumentModification.modified_jni_type = childElement->getModifiedJniType();
 
                     }
@@ -1886,6 +1892,9 @@ TemplateInstantiation QmlTypeSystemReaderPrivate::parseInstantiation(Instantiati
 
         if (element->getNoImplicitArguments()) {
             mod.modifiers |= TS::Modification::NoImplicitArguments;
+        }
+        if (element->getIsTextStreamFunction()) {
+            mod.modifiers |= TS::Modification::IsTextStreamFunction;
         }
         if (element->getDeprecated()) {
             mod.modifiers |= TS::Modification::Deprecated;
@@ -2080,7 +2089,7 @@ void QmlTypeSystemReaderPrivate::parseModifyFunction(ModifyFunction* element, Ty
                     signature = signature.replace(prefix.prefix, prefix._namespace);
             }
             if (signature.isEmpty()) {
-                TypesystemException::raise(QStringLiteral(u"No signature"));
+                TypesystemException::raise(QStringLiteral(u"No signature in FunctionModification"));
             }
             AccessModifications accesses = element->getAccess();
             QString rename = element->getRename();
@@ -2113,6 +2122,12 @@ void QmlTypeSystemReaderPrivate::parseModifyFunction(ModifyFunction* element, Ty
             }
             if (element->getNoImplicitArguments()) {
                 mod.modifiers |= TS::Modification::NoImplicitArguments;
+            }
+            if (element->getIsTextStreamFunction()) {
+                mod.modifiers |= TS::Modification::IsTextStreamFunction;
+            }
+            if (element->getPullDown()) {
+                mod.modifiers |= TS::Modification::PullDown;
             }
             if (element->getBlockExceptions()) {
                 mod.modifiers |= TS::Modification::BlockExcept;
@@ -2147,7 +2162,7 @@ void QmlTypeSystemReaderPrivate::parseModifyFunction(ModifyFunction* element, Ty
                 mod.removal = TS::NoLanguage;
                 break;
             default:
-                TypesystemException::raise(QStringLiteral(u"Unsupported remove attribute"));
+                TypesystemException::raise(QStringLiteral(u"Unsupported remove attribute in FunctionModification '%1'").arg(mod.originalSignature));
                 break;
             }
             mod.association = element->getAssociatedTo();
@@ -2212,7 +2227,7 @@ void QmlTypeSystemReaderPrivate::parseModifyFunction(ModifyFunction* element, Ty
                 }else if(Remove* childElement = qobject_cast<Remove*>(item)){
                     if (checkQtVersion(childElement)){
                         if(element->getRemove()!=RemoveFlag::None){
-                            TypesystemException::raise(QStringLiteral(u"REMOVE is already specified as attribute"));
+                            TypesystemException::raise(QStringLiteral(u"REMOVE is already specified as attribute in FunctionModification '%1'").arg(mod.originalSignature));
                         }
                         switch(childElement->getCodeClass()){
                         case RemoveFlag::All:
@@ -2228,28 +2243,28 @@ void QmlTypeSystemReaderPrivate::parseModifyFunction(ModifyFunction* element, Ty
                             mod.removal = TS::NoLanguage;
                             break;
                         default:
-                            TypesystemException::raise(QStringLiteral(u"Unsupported codeClass attribute"));
+                            TypesystemException::raise(QStringLiteral(u"Unsupported codeClass attribute in FunctionModification '%1'").arg(mod.originalSignature));
                             break;
                         }
                         for(AbstractObject* item2 : item->childrenList()){
-                            TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2").arg(item2->metaObject()->className(), item->metaObject()->className()));
+                            TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2 in FunctionModification '%3'").arg(item2->metaObject()->className(), item->metaObject()->className(), mod.originalSignature));
                         }
                     }
                 }else if(Rename* childElement = qobject_cast<Rename*>(item)){
                     if (checkQtVersion(childElement)){
                         rename = childElement->getTo();
                         for(AbstractObject* item2 : item->childrenList()){
-                            TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2").arg(item2->metaObject()->className(), item->metaObject()->className()));
+                            TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2 in FunctionModification '%3'").arg(item2->metaObject()->className(), item->metaObject()->className(), mod.originalSignature));
                         }
                     }
                 }else if(Access* childElement = qobject_cast<Access*>(item)){
                     if (checkQtVersion(childElement)){
                         if(int(accesses)!=0){
-                            TypesystemException::raise(QStringLiteral(u"ACCESS is already specified as property"));
+                            TypesystemException::raise(QStringLiteral(u"ACCESS is already specified as property in FunctionModification '%1'").arg(mod.originalSignature));
                         }
                         accesses = childElement->getModifier();
                         for(AbstractObject* item2 : item->childrenList()){
-                            TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2").arg(item2->metaObject()->className(), item->metaObject()->className()));
+                            TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2 in FunctionModification '%3'").arg(item2->metaObject()->className(), item->metaObject()->className(), mod.originalSignature));
                         }
                     }
                 }else if(AddArgument* childElement = qobject_cast<AddArgument*>(item)){
@@ -2264,7 +2279,7 @@ void QmlTypeSystemReaderPrivate::parseModifyFunction(ModifyFunction* element, Ty
                         argumentModification.comment = childElement->getComment();
                         mod.argument_mods.append(argumentModification);
                         for(AbstractObject* item2 : item->childrenList()){
-                            TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2").arg(item2->metaObject()->className(), item->metaObject()->className()));
+                            TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2 in FunctionModification '%3'").arg(item2->metaObject()->className(), item->metaObject()->className(), mod.originalSignature));
                         }
                     }
                 }else if(AddTypeParameter* childElement = qobject_cast<AddTypeParameter*>(item)){
@@ -2274,7 +2289,7 @@ void QmlTypeSystemReaderPrivate::parseModifyFunction(ModifyFunction* element, Ty
                         argumentModification.modified_type = childElement->getExtending();
                         mod.argument_mods.append(argumentModification);
                         for(AbstractObject* item2 : item->childrenList()){
-                            TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2").arg(item2->metaObject()->className(), item->metaObject()->className()));
+                            TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2 in FunctionModification '%3'").arg(item2->metaObject()->className(), item->metaObject()->className(), mod.originalSignature));
                         }
                     }
                 }else if(InjectCode* childElement = qobject_cast<InjectCode*>(item)){
@@ -2303,7 +2318,7 @@ void QmlTypeSystemReaderPrivate::parseModifyFunction(ModifyFunction* element, Ty
                                         [&mod](const QString&,const CodeSnip &snip){mod.snips << snip;},
                                         true);
                 }else{
-                    TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2").arg(item->metaObject()->className(), element->metaObject()->className()));
+                    TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2 '%3'").arg(item->metaObject()->className(), element->metaObject()->className(), mod.originalSignature));
                 }
             }
 
@@ -2335,19 +2350,31 @@ void QmlTypeSystemReaderPrivate::parseModifyFunction(ModifyFunction* element, Ty
             }
             if(entry->isComplex()){
                 if(!mod.targetType.isEmpty()){
-                    TypesystemException::raise(QStringLiteral(u"Unexpected atribute targetType"));
+                    TypesystemException::raise(QStringLiteral(u"Unexpected atribute 'targetType' in FunctionModification '%1'").arg(mod.originalSignature));
+                }
+                for(const TemplateInstantiation& inst : std::as_const(mod.template_instantiations)){
+                    if(!inst.targetType.isEmpty()){
+                        QStringList args;
+                        for(const auto& arg : inst.arguments){
+                            if(!arg.type.isEmpty())
+                                args << arg.type;
+                            else
+                                args << arg.value;
+                        }
+                        TypesystemException::raise(QStringLiteral(u"Unexpected atribute 'targetType' in Instantiation '<%1>' of FunctionModification '%2'").arg(args.join(","), mod.originalSignature));
+                    }
                 }
                 reinterpret_cast<ComplexTypeEntry*>(entry)->addFunctionModification(mod);
                 if(entry->designatedInterface())
                     entry->designatedInterface()->addFunctionModification(mod);
             }else if(entry->isTypeSystem()){
                 if(mod.targetType.isEmpty() && mod.removal != TS::All){
-                    TypesystemException::raise(QStringLiteral(u"Either define target-type or remove all for global functions"));
+                    TypesystemException::raise(QStringLiteral(u"Either define 'targetType' or 'remove: All' for GlobalFunction '%1'").arg(mod.originalSignature));
                 }
                 reinterpret_cast<TypeSystemTypeEntry*>(entry)->addFunctionModification(mod);
             }
         }catch(const TypesystemException& exn){
-            TypesystemException::raise(QStringLiteral(u"%1 of function '%2'").arg(QLatin1String(exn.what()), signature));
+            TypesystemException::raise(QStringLiteral(u"%1 of FunctionModification '%2'").arg(QLatin1String(exn.what()), signature));
         }
     }
 }
@@ -2377,26 +2404,26 @@ void QmlTypeSystemReaderPrivate::parseModifyField(ModifyField* element, ComplexT
                     if (checkQtVersion(childElement)){
                         rename = childElement->getTo();
                         for(AbstractObject* item2 : item->childrenList()){
-                            TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2").arg(item2->metaObject()->className(), item->metaObject()->className()));
+                            TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2 in ModifyField '%3'").arg(item2->metaObject()->className(), item->metaObject()->className(), fm.name));
                         }
                     }
                 }else if(Access* childElement = qobject_cast<Access*>(item)){
                     if (checkQtVersion(childElement)){
                         if(int(accesses)!=0){
-                            TypesystemException::raise(QStringLiteral(u"ACCESS is already specified as property"));
+                            TypesystemException::raise(QStringLiteral(u"ACCESS is already specified as property in ModifyField '%1'").arg(fm.name));
                         }
                         accesses = childElement->getModifier();
                         for(AbstractObject* item2 : item->childrenList()){
-                            TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2").arg(item2->metaObject()->className(), item->metaObject()->className()));
+                            TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2 in ModifyField '%3'").arg(item2->metaObject()->className(), item->metaObject()->className(), fm.name));
                         }
                     }
                 }else if(ReplaceType* childElement = qobject_cast<ReplaceType*>(item)){
                     if (checkQtVersion(childElement)){
                         for(AbstractObject* item2 : item->childrenList()){
-                            TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2").arg(item2->metaObject()->className(), item->metaObject()->className()));
+                            TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2 in ModifyField '%3'").arg(item2->metaObject()->className(), item->metaObject()->className(), fm.name));
                         }
                         if (childElement->getModifiedType().isEmpty()) {
-                            TypesystemException::raise(QStringLiteral(u"Missing required property ReplaceType.modifiedType"));
+                            TypesystemException::raise(QStringLiteral(u"Missing required property ReplaceType.modifiedType in ModifyField '%1'").arg(fm.name));
                         }
                         fm.modified_type = childElement->getModifiedType();
                         fm.modified_jni_type = childElement->getModifiedJniType();
@@ -2411,7 +2438,7 @@ void QmlTypeSystemReaderPrivate::parseModifyField(ModifyField* element, ComplexT
                 }else if(ReferenceCount* childElement = qobject_cast<ReferenceCount*>(item)){
                     if (checkQtVersion(childElement)){
                         for(AbstractObject* item2 : item->childrenList()){
-                            TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2").arg(item2->metaObject()->className(), item->metaObject()->className()));
+                            TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2 in ModifyField '%3'").arg(item2->metaObject()->className(), item->metaObject()->className(), fm.name));
                         }
                         TS::ReferenceCount rc;
                         rc.threadSafe = childElement->getIsThreadSafe();
@@ -2428,13 +2455,13 @@ void QmlTypeSystemReaderPrivate::parseModifyField(ModifyField* element, ComplexT
                         rc.action = actions[childElement->getAction()];
                         rc.variableName = childElement->getVariableName();
                         if (rc.action != TS::ReferenceCount::Ignore && rc.variableName.isEmpty()) {
-                            TypesystemException::raise(QStringLiteral(u"ReferenceCount.variableName must be specified"));
+                            TypesystemException::raise(QStringLiteral(u"ReferenceCount.variableName must be specified in ModifyField '%1'").arg(fm.name));
                         }
                         bool ok = false;
                         uint ka = childElement->getKeyArgument();
                         rc.keyArgument = ok ? ka : 0;
                         if (rc.action == TS::ReferenceCount::Put && rc.keyArgument<=0) {
-                            TypesystemException::raise(QStringLiteral(u"ReferenceCount.keyArgument must be specified and greater than 0"));
+                            TypesystemException::raise(QStringLiteral(u"ReferenceCount.keyArgument must be specified and greater than 0 in ModifyField '%1'").arg(fm.name));
                         }
                         rc.declareVariable = childElement->getDeclareVariable();
                         rc.condition = childElement->getCondition();
@@ -2453,14 +2480,14 @@ void QmlTypeSystemReaderPrivate::parseModifyField(ModifyField* element, ComplexT
                 }else if(NoNullPointer* childElement = qobject_cast<NoNullPointer*>(item)){
                     if (checkQtVersion(childElement)){
                         for(AbstractObject* item2 : item->childrenList()){
-                            TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2").arg(item2->metaObject()->className(), item->metaObject()->className()));
+                            TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2 in ModifyField '%3'").arg(item2->metaObject()->className(), item->metaObject()->className(), fm.name));
                         }
                         fm.no_null_pointers = true;
                     }
                 }else if(DefineOwnership* childElement = qobject_cast<DefineOwnership*>(item)){
                     if (checkQtVersion(childElement)){
                         for(AbstractObject* item2 : item->childrenList()){
-                            TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2").arg(item2->metaObject()->className(), item->metaObject()->className()));
+                            TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2 in ModifyField '%3'").arg(item2->metaObject()->className(), item->metaObject()->className(), fm.name));
                         }
 
                         static const QHash<Ownership::Entries, TS::Ownership> ownershipNames{
@@ -2474,7 +2501,7 @@ void QmlTypeSystemReaderPrivate::parseModifyField(ModifyField* element, ComplexT
                         };
 
                         if(!ownershipNames.contains(childElement->getOwnership()))
-                            TypesystemException::raise(QStringLiteral(u"Unsupported ownership property"));
+                            TypesystemException::raise(QStringLiteral(u"Unsupported ownership property in ModifyField '%1'").arg(fm.name));
 
                         static const QHash<CodeClass::Entries, TS::Language> languageNames{
                             {CodeClass::Java, TS::TargetLangCode},
@@ -2485,11 +2512,11 @@ void QmlTypeSystemReaderPrivate::parseModifyField(ModifyField* element, ComplexT
                         if(childElement->getOwnership()==Ownership::Ignore)
                             _languageNames.insert(CodeClass::NoLanguage, TS::NoLanguage);
                         if (!_languageNames.contains(childElement->getCodeClass()))
-                            TypesystemException::raise(QStringLiteral(u"Unsupported codeClass property"));
+                            TypesystemException::raise(QStringLiteral(u"Unsupported codeClass property in ModifyField '%1'").arg(fm.name));
                         fm.ownerships[_languageNames[childElement->getCodeClass()]] = TS::OwnershipRule{ownershipNames[childElement->getOwnership()], childElement->getCondition()};
                     }
                 }else{
-                    TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2").arg(item->metaObject()->className(), element->metaObject()->className()));
+                    TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2 '%3'").arg(item->metaObject()->className(), element->metaObject()->className(), fm.name));
                 }
             }
 
@@ -2522,7 +2549,7 @@ void QmlTypeSystemReaderPrivate::parseModifyField(ModifyField* element, ComplexT
             if(entry->designatedInterface())
                 entry->designatedInterface()->addFieldModification(fm);
         }catch(const TypesystemException& exn){
-            TypesystemException::raise(QStringLiteral(u"%1 of field '%2'").arg(QLatin1String(exn.what()), fm.name));
+            TypesystemException::raise(QStringLiteral(u"%1 of ModifyField '%2'").arg(QLatin1String(exn.what()), fm.name));
         }
     }
 }
@@ -2590,6 +2617,7 @@ void QmlTypeSystemReaderPrivate::parseFunctionalType(const QString& nameSpace, F
             }
             fentry->setTargetLangPackage(element->getPackageName().isEmpty() ? m_defaultPackage : element->getPackageName());
             fentry->setTargetTypeSystem(m_defaultPackage);
+            fentry->setPrecompiledHeader(m_precompiledHeader);
             fentry->setImplements(element->getImplementing());
             fentry->setPPCondition(element->getPpCondition());
             fentry->setUsing(element->getUsing());

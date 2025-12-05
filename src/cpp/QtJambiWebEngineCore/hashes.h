@@ -34,7 +34,7 @@
 #include <QtCore/QtCore>
 #include <QtWebEngineCore/QtWebEngineCore>
 
-inline hash_type qHash(const QWebEngineHttpRequest &value, hash_type seed = 0)
+inline size_t qHash(const QWebEngineHttpRequest &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -48,7 +48,7 @@ inline hash_type qHash(const QWebEngineHttpRequest &value, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QWebEngineUrlScheme &value, hash_type seed = 0)
+inline size_t qHash(const QWebEngineUrlScheme &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -62,7 +62,7 @@ inline hash_type qHash(const QWebEngineUrlScheme &value, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QWebEngineRegisterProtocolHandlerRequest &value, hash_type seed = 0)
+inline size_t qHash(const QWebEngineRegisterProtocolHandlerRequest &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -74,7 +74,7 @@ inline hash_type qHash(const QWebEngineRegisterProtocolHandlerRequest &value, ha
     return seed;
 }
 
-inline hash_type qHash(const QWebEngineQuotaRequest &value, hash_type seed = 0)
+inline size_t qHash(const QWebEngineQuotaRequest &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -91,16 +91,9 @@ inline bool operator==(const QWebEngineFindTextResult& arg1, const QWebEngineFin
             && arg1.activeMatch()==arg2.activeMatch();
 }
 
-inline hash_type qHash(const QWebEngineFindTextResult &value, hash_type seed = 0)
+inline size_t qHash(const QWebEngineFindTextResult &value, size_t seed = 0)
 {
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     return qHashMulti(seed, value.numberOfMatches(), value.activeMatch());
-#else
-    QtPrivate::QHashCombine hash;
-    seed = hash(seed, value.numberOfMatches());
-    seed = hash(seed, value.activeMatch());
-    return seed;
-#endif // QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 }
 
 inline bool operator==(const QWebEngineCookieStore::FilterRequest& arg1, const QWebEngineCookieStore::FilterRequest& arg2){
@@ -109,21 +102,12 @@ inline bool operator==(const QWebEngineCookieStore::FilterRequest& arg1, const Q
             && arg1.thirdParty==arg2.thirdParty;
 }
 
-inline hash_type qHash(const QWebEngineCookieStore::FilterRequest &value, hash_type seed = 0)
+inline size_t qHash(const QWebEngineCookieStore::FilterRequest &value, size_t seed = 0)
 {
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     return qHashMulti(seed, value.thirdParty, value.origin, value.firstPartyUrl);
-#else
-    QtPrivate::QHashCombine hash;
-    seed = hash(seed, value.thirdParty);
-    seed = hash(seed, value.origin);
-    seed = hash(seed, value.firstPartyUrl);
-    return seed;
-#endif // QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-inline hash_type qHash(const QWebEngineScript &value, hash_type seed = 0)
+inline size_t qHash(const QWebEngineScript &value, size_t seed = 0)
 {
     return qHashMulti(seed, value.name(), value.worldId(), value.sourceCode(), value.injectionPoint(), value.runsOnSubFrames());
 }
@@ -136,7 +120,7 @@ inline bool operator==(const QWebEngineCertificateError& arg1, const QWebEngineC
             && arg1.url()==arg2.url();
 }
 
-inline hash_type qHash(const QWebEngineCertificateError &value, hash_type seed = 0)
+inline size_t qHash(const QWebEngineCertificateError &value, size_t seed = 0)
 {
     return qHashMulti(seed, value.certificateChain(), value.url(), value.description(), value.isOverridable(), value.type());
 }
@@ -150,73 +134,33 @@ inline bool operator==(const QWebEngineHistoryItem& arg1, const QWebEngineHistor
             && arg1.isValid()==arg2.isValid();
 }
 
-inline hash_type qHash(const QWebEngineHistoryItem &value, hash_type seed = 0)
+inline size_t qHash(const QWebEngineHistoryItem &value, size_t seed = 0)
 {
     return qHashMulti(seed, value.originalUrl(), value.url(), value.title(), value.lastVisited(), value.iconUrl(), value.isValid());
 }
+#if defined(QTJAMBI_GENERATOR_RUNNING)
+bool operator==(const QWebEngineFullScreenRequest& arg1, const QWebEngineFullScreenRequest& arg2);
+size_t qHash(const QWebEngineFullScreenRequest &value, size_t seed = 0);
+#endif //defined(QTJAMBI_GENERATOR_RUNNING)
 
-inline bool operator==(const QWebEngineFullScreenRequest& arg1, const QWebEngineFullScreenRequest& arg2){
-    return reinterpret_cast<const QExplicitlySharedDataPointer<char>&>(arg1).constData() == reinterpret_cast<const QExplicitlySharedDataPointer<char>&>(arg2).constData();
-}
-
-inline hash_type qHash(const QWebEngineFullScreenRequest &value, hash_type seed = 0)
-{
-    return qHash(qintptr(reinterpret_cast<const QExplicitlySharedDataPointer<char>&>(value).constData()), seed);
-}
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 4, 0)
 #if defined(QTJAMBI_GENERATOR_RUNNING)
-hash_type qHash(const QWebEngineFileSystemAccessRequest& value, hash_type seed = 0);
-#else
-#include <QtWebEngineCore/QWebEngineFileSystemAccessRequest>
-
-namespace QtWebEngineCore{
-class FileSystemAccessPermissionRequestManagerQt{
-public:
-    static hash_type hash(const QWebEngineFileSystemAccessRequest& value, hash_type seed){
-        return qHash(quintptr(&*value.d_ptr), seed);
-    }
-};
-}
-
-inline hash_type qHash(const QWebEngineFileSystemAccessRequest& value, hash_type seed = 0)
-{
-    return QtWebEngineCore::FileSystemAccessPermissionRequestManagerQt::hash(value, seed);
-}
+size_t qHash(const QWebEngineFileSystemAccessRequest& value, size_t seed = 0);
 #endif //defined(QTJAMBI_GENERATOR_RUNNING)
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
-inline hash_type qHash(const QWebEnginePermission &value, hash_type seed = 0){
-    struct WebEnginePermission : QWebEnginePermission{
-        void* get() const{
-            return d_ptr.get();
-        }
-    };
-    return qHash(reinterpret_cast<const WebEnginePermission*>(&value)->get(), seed);
-}
-
+#if defined(QTJAMBI_GENERATOR_RUNNING)
+size_t qHash(const QWebEnginePermission &value, size_t seed = 0);
+#endif
 #if QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
 #if defined(QTJAMBI_GENERATOR_RUNNING)
-hash_type qHash(const QWebEngineFrame &value, hash_type seed = 0);
-#else
-#include <QtWebEngineCore/QWebEngineFrame>
-
-class QQuickWebEngineViewPrivate{
-public:
-    static hash_type hash(const QWebEngineFrame &value, hash_type seed) {
-        return qHashMulti(seed, value.m_adapter.toStrongRef().get(), value.m_id);
-    }
-};
-inline hash_type qHash(const QWebEngineFrame &value, hash_type seed = 0){
-    return qHash(QQuickWebEngineViewPrivate::hash(value, seed), seed);
-}
+size_t qHash(const QWebEngineFrame &value, size_t seed = 0);
 #endif
 #endif //QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
 
 #endif //QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
 
 #endif // QT_VERSION >= QT_VERSION_CHECK(6, 4, 0)
-
-#endif // QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 
 #endif // QTJAMBIQWEBENGINECORE_HASHES_H

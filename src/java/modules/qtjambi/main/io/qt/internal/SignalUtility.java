@@ -516,30 +516,6 @@ abstract class SignalUtility {
         			flags |= ct.value();
 				}
         	}
-    		/* is done elsewhere
-    		if(lambdaArgs==null 
-    		    && (receiver instanceof QObject || 
-					( receiver instanceof QMetaObject.AbstractSignal 
-						&& slot.getName().equals("emit") 
-						&& ((AbstractSignal)receiver).methodIndex()>=0
-						&& ((AbstractSignal)receiver).containingObject() instanceof QObject) )) {
-        		QObject receiverObject;
-        		QMetaMethod slotMethod = null;
-        		if(receiver instanceof QObject) {
-        			receiverObject = (QObject)receiver;
-        			slotMethod = QMetaMethod.fromReflectedMethod(slot);
-        		}else {
-        			AbstractSignal otherSignal = (AbstractSignal)receiver;
-        			receiverObject = (QObject)otherSignal.containingObject();
-    				slotMethod = otherSignal.signalMethod();
-        		}
-        		if(slotMethod!=null && slotMethod.isValid()) {
-        			try{
-        				return connectNativeToMetaMethod(NativeUtility.checkedNativeId(senderObject), methodIndex, metaObjectId, NativeUtility.checkedNativeId(receiverObject), NativeUtility.checkedNativeId(slotMethod), flags);
-        			} catch (QMisfittingSignatureException e) {
-        			}
-        		}
-    		}*/
     		
 			if(slotHandle==null){
 				try{

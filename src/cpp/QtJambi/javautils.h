@@ -988,11 +988,7 @@ private: jfieldID __##field;\
         return jclass(env->NewLocalRef(_this.__##cls));\
     }
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#define QRecursiveMutexLocker QMutexLocker
-#else
 #define QRecursiveMutexLocker QMutexLocker<QRecursiveMutex>
-#endif
 
 #define QTJAMBI_REPOSITORY_DEFINE_CLASS(package, type_name, content)\
 const type_name& type_name::__qt_get_this(JNIEnv *env){\

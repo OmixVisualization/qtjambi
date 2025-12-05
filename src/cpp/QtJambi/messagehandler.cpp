@@ -27,13 +27,7 @@
 **
 ****************************************************************************/
 
-#include <QtCore/QReadWriteLock>
-#include "qtjambiapi.h"
-#include "java_p.h"
-#include "qtjambilink_p.h"
-#include "coreapi.h"
-
-#include "qtjambi_cast.h"
+#include "pch_p.h"
 
 Q_GLOBAL_STATIC(QReadWriteLock, gMessageHandlerLock)
 typedef SecureContainer<QSet<QtMsgType>,gMessageHandlerLock> Messages;
@@ -52,9 +46,9 @@ void qtjambi_messagehandler_proxy(QtMsgType type, const QMessageLogContext & con
             try{
                 jobject msgType = qtjambi_cast<jobject>(env, type);
                 jobject _context = qtjambi_cast<jobject>(env, &context);
+                QTJAMBI_INVALIDATE_AFTER_USE(env, _context);
                 jobject msg = qtjambi_cast<jstring>(env, message);
                 Java::QtCore::QLogging::acceptInstalled(env, msgType, _context, msg);
-                InvalidateAfterUse::invalidate(env, _context);
             }catch(const JavaException& exn){
                 env.handleException(exn, nullptr);
             }

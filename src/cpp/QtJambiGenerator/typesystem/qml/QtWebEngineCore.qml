@@ -34,6 +34,7 @@ TypeSystem{
     defaultSuperClass: "QtObject"
     qtLibrary: "QtWebEngineCore"
     module: "qtjambi.webenginecore"
+    precompiledHeader: "pch_p.h"
     Description{
         text: "Provides public API shared by both modules {@code qtjambi.webengine} and {@code qtjambi.webenginewidgets}."
         until: 5
@@ -46,19 +47,20 @@ TypeSystem{
 
     Template{
         name: "webc.comsumer.function"
-        Text{content: "std::function<void(%TYPE)> %out;\n"+
-                      "if(%in){\n"+
-                      "    %out = [wrapper = JObjectWrapper(%env, %in)](%TYPE value){\n"+
-                      "                    if(JniEnvironment env{200}){\n"+
-                      "                        QTJAMBI_TRY{\n"+
-                      "                            jobject _value = qtjambi_cast<jobject>(env, value);\n"+
-                      "                            Java::Runtime::Consumer::accept(env, wrapper.object(env), _value);\n"+
-                      "                        }QTJAMBI_CATCH(const JavaException& exn){\n"+
-                      "                            exn.report(env);\n"+
-                      "                        }QTJAMBI_TRY_END\n"+
-                      "                    }\n"+
-                      "                };\n"+
-                      "}"}
+        Text{content: String.raw`
+std::function<void(%TYPE)> %out;
+if(%in){
+    %out = [wrapper = JObjectWrapper(%env, %in)](%TYPE value){
+                    if(JniEnvironment env{200}){
+                        QTJAMBI_TRY{
+                            jobject _value = qtjambi_cast<jobject>(env, value);
+                            Java::Runtime::Consumer::accept(env, wrapper.object(env), _value);
+                        }QTJAMBI_CATCH(const JavaException& exn){
+                            exn.report(env);
+                        }QTJAMBI_TRY_END
+                    }
+                };
+}`}
     }
     
     
@@ -169,6 +171,24 @@ TypeSystem{
         EnumType{
             name: "AccessFlag"
         }
+        InjectCode{
+            target: CodeClass.Native
+            position: Position.Beginning
+            Text{content: String.raw`
+namespace QtWebEngineCore{
+class FileSystemAccessPermissionRequestManagerQt{
+public:
+    static size_t hash(const QWebEngineFileSystemAccessRequest& value, size_t seed){
+        return qHash(quintptr(&*value.d_ptr), seed);
+    }
+};
+}
+
+size_t qHash(const QWebEngineFileSystemAccessRequest& value, size_t seed = 0)
+{
+    return QtWebEngineCore::FileSystemAccessPermissionRequestManagerQt::hash(value, seed);
+}`}
+        }
         since: [6, 4]
     }
     
@@ -206,21 +226,22 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "std::function<bool(const QWebEngineCookieStore::FilterRequest &)> %out;\n"+
-                                  "if(%in){\n"+
-                                  "    %out = [wrapper = JObjectWrapper(%env, %in)](const QWebEngineCookieStore::FilterRequest & value) -> bool {\n"+
-                                  "                    bool result{false};\n"+
-                                  "                    if(JniEnvironment env{200}){\n"+
-                                  "                        QTJAMBI_TRY{\n"+
-                                  "                            jobject _value = qtjambi_cast<jobject>(env, value);\n"+
-                                  "                            result = Java::Runtime::Predicate::test(env, wrapper.object(env), _value);\n"+
-                                  "                        }QTJAMBI_CATCH(const JavaException& exn){\n"+
-                                  "                            exn.report(env);\n"+
-                                  "                        }QTJAMBI_TRY_END\n"+
-                                  "                    }\n"+
-                                  "                    return result;\n"+
-                                  "                };\n"+
-                                  "}"}
+                    Text{content: String.raw`
+std::function<bool(const QWebEngineCookieStore::FilterRequest &)> %out;
+if(%in){
+    %out = [wrapper = JObjectWrapper(%env, %in)](const QWebEngineCookieStore::FilterRequest & value) -> bool {
+                    bool result{false};
+                    if(JniEnvironment env{200}){
+                        QTJAMBI_TRY{
+                            jobject _value = qtjambi_cast<jobject>(env, value);
+                            result = Java::Runtime::Predicate::test(env, wrapper.object(env), _value);
+                        }QTJAMBI_CATCH(const JavaException& exn){
+                            exn.report(env);
+                        }QTJAMBI_TRY_END
+                    }
+                    return result;
+                };
+}`}
                 }
             }
         }
@@ -580,17 +601,19 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jstring %out = nullptr;\n"+
-                                  "if(%in){\n"+
-                                  "    %out = qtjambi_cast<jstring>(%env, %4);\n"+
-                                  "}"}
+                    Text{content: String.raw`
+                        jstring %out = nullptr;
+                        if(%in){
+                            %out = qtjambi_cast<jstring>(%env, %4);
+                        }`}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "bool %out = %in;\n"+
-                                  "if(%out && %in){\n"+
-                                  "    *%4 = qtjambi_cast<QString>(%env, %in);\n"+
-                                  "}"}
+                    Text{content: String.raw`
+                        bool %out = %in;
+                        if(%out && %in){
+                            *%4 = qtjambi_cast<QString>(%env, %in);
+                        }`}
                 }
             }
             ModifyArgument{
@@ -602,8 +625,8 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QString %in;\n"+
-                                  "QString* %out = &%in;"}
+                    Text{content: String.raw`QString %in;
+                                  QString* %out = &%in;`}
                 }
             }
         }
@@ -712,20 +735,21 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "std::function<void(std::unique_ptr<QWebEngineNotification>)> %out;\n"+
-                                  "if(%in){\n"+
-                                  "    %out = [wrapper = JObjectWrapper(%env, %in)](std::unique_ptr<QWebEngineNotification> value){\n"+
-                                  "                    if(JniEnvironment env{200}){\n"+
-                                  "                        QTJAMBI_TRY{\n"+
-                                  "                            QtJambiScope __qtjambi_scope;\n"+
-                                  "                            jobject _value = qtjambi_cast<jobject>(env, __qtjambi_scope, value);\n"+
-                                  "                            Java::Runtime::Consumer::accept(env, wrapper.object(env), _value);\n"+
-                                  "                        }QTJAMBI_CATCH(const JavaException& exn){\n"+
-                                  "                            exn.report(env);\n"+
-                                  "                        }QTJAMBI_TRY_END\n"+
-                                  "                    }\n"+
-                                  "                };\n"+
-                                  "}"}
+                    Text{content: String.raw`
+std::function<void(std::unique_ptr<QWebEngineNotification>)> %out;
+if(%in){
+    %out = [wrapper = JObjectWrapper(%env, %in)](std::unique_ptr<QWebEngineNotification> value){
+                    if(JniEnvironment env{200}){
+                        QTJAMBI_TRY{
+                            QtJambiScope __qtjambi_scope;
+                            jobject _value = qtjambi_cast<jobject>(env, __qtjambi_scope, value);
+                            Java::Runtime::Consumer::accept(env, wrapper.object(env), _value);
+                        }QTJAMBI_CATCH(const JavaException& exn){
+                            exn.report(env);
+                        }QTJAMBI_TRY_END
+                    }
+                };
+}`}
                 }
             }
         }
@@ -744,20 +768,21 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "std::function<void(const QIcon &, const QUrl &)> %out;\n"+
-                                  "if(%in){\n"+
-                                  "    %out = [wrapper = JObjectWrapper(%env, %in)](const QIcon & icon, const QUrl & url){\n"+
-                                  "                    if(JniEnvironment env{200}){\n"+
-                                  "                        QTJAMBI_TRY{\n"+
-                                  "                            jobject _icon = qtjambi_cast<jobject>(env, icon);\n"+
-                                  "                            jobject _url = qtjambi_cast<jobject>(env, url);\n"+
-                                  "                            Java::Runtime::BiConsumer::accept(env, wrapper.object(env), _icon, _url);\n"+
-                                  "                        }QTJAMBI_CATCH(const JavaException& exn){\n"+
-                                  "                            exn.report(env);\n"+
-                                  "                        }QTJAMBI_TRY_END\n"+
-                                  "                    }\n"+
-                                  "                };\n"+
-                                  "}"}
+                    Text{content: String.raw`
+std::function<void(const QIcon &, const QUrl &)> %out;
+if(%in){
+    %out = [wrapper = JObjectWrapper(%env, %in)](const QIcon & icon, const QUrl & url){
+                    if(JniEnvironment env{200}){
+                        QTJAMBI_TRY{
+                            jobject _icon = qtjambi_cast<jobject>(env, icon);
+                            jobject _url = qtjambi_cast<jobject>(env, url);
+                            Java::Runtime::BiConsumer::accept(env, wrapper.object(env), _icon, _url);
+                        }QTJAMBI_CATCH(const JavaException& exn){
+                            exn.report(env);
+                        }QTJAMBI_TRY_END
+                    }
+                };
+}`}
                 }
             }
         }
@@ -773,21 +798,22 @@ TypeSystem{
                 index: 3
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "std::function<void(const QIcon &, const QUrl &, const QUrl &)> %out;\n"+
-                                  "if(%in){\n"+
-                                  "    %out = [wrapper = JObjectWrapper(%env, %in)](const QIcon & icon, const QUrl & url, const QUrl & url2){\n"+
-                                  "                    if(JniEnvironment env{200}){\n"+
-                                  "                        QTJAMBI_TRY{\n"+
-                                  "                            jobject _icon = qtjambi_cast<jobject>(env, icon);\n"+
-                                  "                            jobject _url = qtjambi_cast<jobject>(env, url);\n"+
-                                  "                            jobject _url2 = qtjambi_cast<jobject>(env, url2);\n"+
-                                  "                            Java::QtWebEngineCore::QWebEngineProfile$IconAvailableCallback::accept(env, wrapper.object(env), _icon, _url, _url2);\n"+
-                                  "                        }QTJAMBI_CATCH(const JavaException& exn){\n"+
-                                  "                            exn.report(env);\n"+
-                                  "                        }QTJAMBI_TRY_END\n"+
-                                  "                    }\n"+
-                                  "                };\n"+
-                                  "}"}
+                    Text{content: String.raw`
+std::function<void(const QIcon &, const QUrl &, const QUrl &)> %out;
+if(%in){
+    %out = [wrapper = JObjectWrapper(%env, %in)](const QIcon & icon, const QUrl & url, const QUrl & url2){
+                    if(JniEnvironment env{200}){
+                        QTJAMBI_TRY{
+                            jobject _icon = qtjambi_cast<jobject>(env, icon);
+                            jobject _url = qtjambi_cast<jobject>(env, url);
+                            jobject _url2 = qtjambi_cast<jobject>(env, url2);
+                            Java::QtWebEngineCore::QWebEngineProfile$IconAvailableCallback::accept(env, wrapper.object(env), _icon, _url, _url2);
+                        }QTJAMBI_CATCH(const JavaException& exn){
+                            exn.report(env);
+                        }QTJAMBI_TRY_END
+                    }
+                };
+}`}
                 }
             }
         }
@@ -854,13 +880,6 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/webengine/core,QWebEngineProfile$IconAvail
         EnumType{
             name: "Type"
         }
-        CustomConstructor{
-            Text{content: "if(copy){\n"+
-                          "    return new(placement) QWebEngineCertificateError(*copy);\n"+
-                          "}else{\n"+
-                          "    return nullptr;\n"+
-                          "}"}
-        }
         since: [6, 2]
     }
     
@@ -916,6 +935,23 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/webengine/core,QWebEngineProfile$IconAvail
                 deprecated: true
             }
         }
+        InjectCode{
+            target: CodeClass.Native
+            position: Position.Beginning
+            Text{content: String.raw`
+class QWebEnginePagePrivate{
+public:
+    static const void* get(const QWebEngineFullScreenRequest &value) {
+        return value.d_ptr.get();
+    }
+};
+size_t qHash(const QWebEngineFullScreenRequest &value, size_t seed = 0){
+    return qHash(QWebEnginePagePrivate::get(value), seed);
+}
+bool operator==(const QWebEngineFullScreenRequest& arg1, const QWebEngineFullScreenRequest& arg2){
+    return QWebEnginePagePrivate::get(arg1)==QWebEnginePagePrivate::get(arg2);
+}`}
+        }
         since: [6, 2]
     }
     
@@ -946,13 +982,6 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/webengine/core,QWebEngineProfile$IconAvail
     
     ValueType{
         name: "QWebEngineHistoryItem"
-        CustomConstructor{
-            Text{content: "if(copy){\n"+
-                          "    return new(placement) QWebEngineHistoryItem(*copy);\n"+
-                          "}else{\n"+
-                          "    return nullptr;\n"+
-                          "}"}
-        }
         ModifyFunction{
             signature: "operator=(QWebEngineHistoryItem)"
             Delegate{
@@ -1170,6 +1199,20 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/webengine/core,QWebEngineProfile$IconAvail
                 }
             }
         }
+        InjectCode{
+            target: CodeClass.Native
+            position: Position.Beginning
+            Text{content: String.raw`
+class QWebEnginePagePrivate{
+public:
+    static inline size_t hash(const QWebEngineFrame &value, size_t seed) {
+        return qHashMulti(seed, value.m_adapter.toStrongRef().get(), value.m_id);
+    }
+};
+size_t qHash(const QWebEngineFrame &value, size_t seed = 0){
+    return QWebEnginePagePrivate::hash(value, seed);
+}`}
+        }
         since: 6.8
     }
 
@@ -1187,7 +1230,20 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/webengine/core,QWebEngineProfile$IconAvail
         EnumType{
             name: "State"
         }
-
+        InjectCode{
+            target: CodeClass.Native
+            position: Position.Beginning
+            Text{content: String.raw`
+class QWebEnginePagePrivate{
+public:
+    static const void* get(const QWebEnginePermission &value) {
+        return value.d_ptr.get();
+    }
+};
+size_t qHash(const QWebEnginePermission &value, size_t seed = 0){
+    return qHash(QWebEnginePagePrivate::get(value), seed);
+}`}
+        }
         since: 6.8
     }
 

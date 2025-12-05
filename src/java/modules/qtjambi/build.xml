@@ -93,29 +93,29 @@
 			<pathelement location="${antfile.dir}/Retro-JDK${retroversion}"/>
 			<pathelement location="${antfile.dir}/${jsr305-dir}"/>
 		</path>
-		<condition property="Qt6-span" value="Qt6-nospan" else="Qt6-span">
-			<and>
-				<equals arg1="${qtjambi.soname.version.major}" arg2="6"/>
-				<less arg1="${qtjambi.soname.version.minor}" arg2="7"/>
-			</and>
-		</condition>
-		<condition property="Qt6-future" value="Qt6.0-future" else="Qt6.10-future">
-			<and>
-				<equals arg1="${qtjambi.soname.version.major}" arg2="6"/>
-				<less arg1="${qtjambi.soname.version.minor}" arg2="10"/>
-			</and>
-		</condition>
-		<condition property="Qt6-bindings" value="Qt6.0-bindings" else="Qt6.5-bindings">
+		<if>
 			<and>
 				<equals arg1="${qtjambi.soname.version.major}" arg2="6"/>
 				<less arg1="${qtjambi.soname.version.minor}" arg2="5"/>
 			</and>
-		</condition>
-		<extendpath refid="sourcedirs">
-			<pathelement location="${antfile.dir}/${Qt6-bindings}"/>
-			<pathelement location="${antfile.dir}/${Qt6-future}"/>
-			<pathelement location="${antfile.dir}/${Qt6-span}"/>
-		</extendpath>
+			<then>
+				<extendpath refid="sourcedirs" location="${antfile.dir}/Qt6.0-bindings"/>
+			</then>
+			<else>
+				<!-- Qt 6.5 and higher -->
+				<extendpath refid="sourcedirs" location="${antfile.dir}/Qt6.5-bindings"/>
+			</else>
+		</if>
+		<if>
+			<and>
+				<equals arg1="${qtjambi.soname.version.major}" arg2="6"/>
+				<greater-or-equals arg1="${qtjambi.soname.version.minor}" arg2="7"/>
+			</and>
+			<then>
+				<!-- Qt 6.9 and higher -->
+				<extendpath refid="sourcedirs" location="${antfile.dir}/Qt6-span"/>
+			</then>
+		</if>
 		<if>
 			<and>
 				<equals arg1="${qtjambi.soname.version.major}" arg2="6"/>

@@ -64,6 +64,9 @@ public:
     QString getDefaultPPCondition() const;
     void setDefaultPPCondition(const QString &newDefaultPPCondition);
 
+    QString getPrecompiledHeader() const;
+    void setPrecompiledHeader(const QString &newPrecompiledHeader);
+
 signals:
     void packageNameChanged();
 
@@ -81,6 +84,8 @@ signals:
 
     void defaultPPConditionChanged();
 
+    void precompiledHeaderChanged();
+
 private:
     QString packageName;
     QString targetName;
@@ -90,6 +95,7 @@ private:
     QString module;
     QString description;
     QString defaultPPCondition;
+    QString precompiledHeader;
     Q_PROPERTY(QString packageName READ getPackageName WRITE setPackageName NOTIFY packageNameChanged)
     Q_PROPERTY(QString defaultSuperClass READ getDefaultSuperClass WRITE setDefaultSuperClass NOTIFY defaultSuperClassChanged)
     Q_PROPERTY(QString qtLibrary READ getQtLibrary WRITE setQtLibrary NOTIFY qtLibraryChanged)
@@ -98,6 +104,7 @@ private:
     Q_PROPERTY(QString description READ getDescription WRITE setDescription NOTIFY descriptionChanged)
     Q_PROPERTY(QString targetName READ getTargetName WRITE setTargetName NOTIFY targetNameChanged)
     Q_PROPERTY(QString defaultPPCondition READ getDefaultPPCondition WRITE setDefaultPPCondition NOTIFY defaultPPConditionChanged FINAL)
+    Q_PROPERTY(QString precompiledHeader READ getPrecompiledHeader WRITE setPrecompiledHeader NOTIFY precompiledHeaderChanged FINAL)
 };
 
 class Module : public AbstractObject{

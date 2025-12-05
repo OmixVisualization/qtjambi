@@ -32,6 +32,7 @@
 include(../QtJambi/configure.pri)
 
 HEADERS += \
+    future_p.h \
     hashes.h \
     range_p.h \
     range_p_p.h \
@@ -64,9 +65,10 @@ QT = core core-private
 CONFIG+=no_private_qt_headers_warning
 
 !ios:{
-    PRECOMPILED_HEADER = \
-    pch_p.h
+    PRECOMPILED_HEADER = pch_p.h
     CONFIG += precompile_header
+}else{
+    HEADERS += pch_p.h
 }
 
 win32-arm64-msvc* | win32-msvc*: {

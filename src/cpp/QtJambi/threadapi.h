@@ -70,7 +70,7 @@ typedef void (*ConstructorFn)(void*, JNIEnv*, jobject, jvalue*, QtJambiAPI::Cons
 class QtJambiThreadShell{
 public:
     typedef QtJambiAPI::ConstructorFn ConstructorFunction;
-    static QTJAMBI_EXPORT void initialize(JNIEnv *env, jclass callingClass, jobject object, ConstructorFunction constructorFunction, size_t size, const std::type_info& typeId, uint returnScopeRequired, const QMetaObject& originalMetaObject, bool isShell, bool hasCustomMetaObject, jvalue* arguments = nullptr);
+    static QTJAMBI_EXPORT void initialize(JNIEnv *env, jclass callingClass, jobject object, ConstructorFunction constructorFunction, size_t size, const std::type_info& typeId, uint returnScopeRequired, const QMetaObject& originalMetaObject, SafeBool isShell, SafeBool hasCustomMetaObject, jvalue* arguments = nullptr);
 };
 
 #endif // QTJAMBI_THREADAPI_H

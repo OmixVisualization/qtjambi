@@ -36,9 +36,9 @@
 #include <QtOpenGL/QtOpenGL>
 #include <QtJambiGui/hashes.h>
 
-inline hash_type qHash(const QOpenGLDebugMessage &value)
+inline size_t qHash(const QOpenGLDebugMessage &value)
 {
-    hash_type hashCode = 1;
+    size_t hashCode = 1;
     hashCode = hashCode * 31 + qHash(int(value.source()));
     hashCode = hashCode * 31 + qHash(int(value.type()));
     hashCode = hashCode * 31 + qHash(int(value.severity()));
@@ -47,9 +47,9 @@ inline hash_type qHash(const QOpenGLDebugMessage &value)
     return hashCode;
 }
 
-inline hash_type qHash(const QOpenGLFramebufferObjectFormat &value)
+inline size_t qHash(const QOpenGLFramebufferObjectFormat &value)
 {
-    hash_type hashCode = 1;
+    size_t hashCode = 1;
     hashCode = hashCode * 31 + qHash(value.samples());
     hashCode = hashCode * 31 + qHash(value.mipmap());
     hashCode = hashCode * 31 + qHash(int(value.attachment()));

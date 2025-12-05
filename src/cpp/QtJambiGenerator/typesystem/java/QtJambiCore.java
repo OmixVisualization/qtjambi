@@ -13975,66 +13975,6 @@ class QObject_6__ extends QObject {
 
 }// class
 
-class QSignalTransition___ {
-
-    /**
-     * Overloaded constructor for {@link #QSignalTransition(io.qt.core.QMetaObject.AbstractSignal, io.qt.core.QState)}.
-     */
-    public QSignalTransition(io.qt.core.QMetaObject.AbstractSignal signal) {
-        this(signal, null);
-    }
-
-    /**
-     * Constructs a new signal transition associated with the given signal of the given sender object and with the given sourceState.
-     */
-    public QSignalTransition(io.qt.core.QMetaObject.AbstractSignal signal, QState sourceState) {
-        super((QPrivateConstructor)null);
-        if(signal.containingObject() instanceof io.qt.core.QObject) {
-            io.qt.core.QObject sender = (io.qt.core.QObject)signal.containingObject();
-            String signalSignature = "2" + sender.metaObject().methods().get(signal.methodIndex()).cppMethodSignature();
-            initialize_native(this, sender, signalSignature, sourceState);
-        }else {
-            throw new IllegalArgumentException("Signal is not owned by a QObject.");
-        }
-    }
-
-    /**
-     * Sets the signal associated with this signal transition.
-     */
-    @QtUninvokable
-    public final void setSignal(io.qt.core.QMetaObject.AbstractSignal signal) {
-        if (signal.containingObject() instanceof io.qt.core.QObject) {
-            io.qt.core.QObject sender = (io.qt.core.QObject) signal.containingObject();
-            String signalSignature = "2" + sender.metaObject().methods().get(signal.methodIndex()).cppMethodSignature();
-            setSenderObject(sender);
-            setSignal(new io.qt.core.QByteArray(signalSignature));
-        } else {
-            throw new IllegalArgumentException("Signal is not owned by a QObject.");
-        }
-    }
-
-}// class
-
-class QState___ {
-
-    /**
-     * Adds a transition associated with the given signal of the given sender
-     * object, and returns the new QSignalTransition object. The transition has this
-     * state as the source, and the given target as the target state.
-     */
-    @QtUninvokable
-    public final QSignalTransition addTransition(io.qt.core.QMetaObject.AbstractSignal signal, QAbstractState target) {
-        if (signal.containingObject() instanceof io.qt.core.QObject && signal.methodIndex() != 0) {
-            io.qt.core.QObject sender = (io.qt.core.QObject) signal.containingObject();
-            String signalSignature = "2" + sender.metaObject().methods().get(signal.methodIndex()).cppMethodSignature();
-            return addTransition(sender, signalSignature, target);
-        } else {
-            throw new IllegalArgumentException("Signal is not owned by a QObject.");
-        }
-    }
-
-}// class
-
 abstract class QUrl___ extends QUrl {
 
     /**
@@ -15583,429 +15523,17 @@ class QDebug___ extends QDebug {
      */
     @Override
     @QtUninvokable
-    public final @NonNull QDebug append(CharSequence csq, int start, int end) {
+    public final @NonNull QDebug append(@NonNull CharSequence csq, int start, int end) {
         if (!disabled)
             append(csq == null ? "null" : csq.subSequence(start, end));
         return this;
     }
 
     /**
-     * <p>
-     * See <a href="@docRoot/qt.html#endl"><code>Qt::endl</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QDebug endl() {
-        if (!disabled)
-            endl(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void endl(long __this__nativeId);
-
-    /**
-     * <p>
-     * See <a href="@docRoot/qt.html#flush"><code>Qt::flush</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QDebug flush() {
-        if (!disabled)
-            flush(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void flush(long __this__nativeId);
-
-    /**
-     * <p>
-     * See <a href="@docRoot/qt.html#reset"><code>Qt::reset</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QDebug reset() {
-        if (!disabled)
-            reset(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void reset(long __this__nativeId);
-
-    /**
-     * <p>
-     * See <a href="@docRoot/qt.html#bin"><code>Qt::bin</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QDebug bin() {
-        if (!disabled)
-            bin(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void bin(long __this__nativeId);
-
-    /**
-     * <p>
-     * See <a href="@docRoot/qt.html#oct"><code>Qt::oct</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QDebug oct() {
-        if (!disabled)
-            oct(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void oct(long __this__nativeId);
-
-    /**
-     * <p>
-     * See <a href="@docRoot/qt.html#hex"><code>Qt::hex</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QDebug hex() {
-        if (!disabled)
-            hex(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void hex(long __this__nativeId);
-
-    /**
-     * <p>
-     * See <a href="@docRoot/qt.html#dec"><code>Qt::dec</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QDebug dec() {
-        if (!disabled)
-            dec(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void dec(long __this__nativeId);
-
-    /**
-     * <p>
-     * See <a href="@docRoot/qt.html#showbase"><code>Qt::showbase</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QDebug showbase() {
-        if (!disabled)
-            showbase(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void showbase(long __this__nativeId);
-
-    /**
-     * <p>
-     * See <a href="@docRoot/qt.html#forcesign"><code>Qt::forcesign</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QDebug forcesign() {
-        if (!disabled)
-            forcesign(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void forcesign(long __this__nativeId);
-
-    /**
-     * <p>
-     * See <a href="@docRoot/qt.html#forcepoint"><code>Qt::forcepoint</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QDebug forcepoint() {
-        if (!disabled)
-            forcepoint(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void forcepoint(long __this__nativeId);
-
-    /**
-     * <p>
-     * See <a href="@docRoot/qt.html#noshowbase"><code>Qt::noshowbase</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QDebug noshowbase() {
-        if (!disabled)
-            noshowbase(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void noshowbase(long __this__nativeId);
-
-    /**
-     * <p>
-     * See <a href="@docRoot/qt.html#noforcesign"><code>Qt::noforcesign</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QDebug noforcesign() {
-        if (!disabled)
-            noforcesign(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void noforcesign(long __this__nativeId);
-
-    /**
-     * <p>
-     * See <a href="@docRoot/qt.html#noforcepoint"><code>Qt::noforcepoint</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QDebug noforcepoint() {
-        if (!disabled)
-            noforcepoint(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void noforcepoint(long __this__nativeId);
-
-    /**
-     * <p>
-     * See
-     * <a href="@docRoot/qt.html#uppercasebase"><code>Qt::uppercasebase</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QDebug uppercasebase() {
-        if (!disabled)
-            uppercasebase(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void uppercasebase(long __this__nativeId);
-
-    /**
-     * <p>
-     * See <a href=
-     * "@docRoot/qt.html#uppercasedigits"><code>Qt::uppercasedigits</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QDebug uppercasedigits() {
-        if (!disabled)
-            uppercasedigits(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void uppercasedigits(long __this__nativeId);
-
-    /**
-     * <p>
-     * See
-     * <a href="@docRoot/qt.html#lowercasebase"><code>Qt::lowercasebase</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QDebug lowercasebase() {
-        if (!disabled)
-            lowercasebase(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void lowercasebase(long __this__nativeId);
-
-    /**
-     * <p>
-     * See <a href=
-     * "@docRoot/qt.html#lowercasedigits"><code>Qt::lowercasedigits</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QDebug lowercasedigits() {
-        if (!disabled)
-            lowercasedigits(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void lowercasedigits(long __this__nativeId);
-
-    /**
-     * <p>
-     * See <a href="@docRoot/qt.html#fixed"><code>Qt::fixed</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QDebug fixed() {
-        if (!disabled)
-            fixed(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void fixed(long __this__nativeId);
-
-    /**
-     * <p>
-     * See <a href="@docRoot/qt.html#scientific"><code>Qt::scientific</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QDebug scientific() {
-        if (!disabled)
-            scientific(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void scientific(long __this__nativeId);
-
-    /**
-     * <p>
-     * See <a href="@docRoot/qt.html#left"><code>Qt::left</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QDebug left() {
-        if (!disabled)
-            left(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void left(long __this__nativeId);
-
-    /**
-     * <p>
-     * See <a href="@docRoot/qt.html#right"><code>Qt::right</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QDebug right() {
-        if (!disabled)
-            right(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void right(long __this__nativeId);
-
-    /**
-     * <p>
-     * See <a href="@docRoot/qt.html#center"><code>Qt::center</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QDebug center() {
-        if (!disabled)
-            center(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void center(long __this__nativeId);
-
-    /**
-     * <p>
-     * See <a href="@docRoot/qt.html#bom"><code>Qt::bom</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QDebug bom() {
-        if (!disabled)
-            bom(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void bom(long __this__nativeId);
-
-    /**
-     * <p>
-     * See <a href="@docRoot/qt.html#ws"><code>Qt::ws</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QDebug ws() {
-        if (!disabled)
-            ws(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void ws(long __this__nativeId);
-
-    /**
-     * <p>
-     * See <a href=
-     * "@docRoot/qtextstream.html#qSetFieldWidth"><code>qSetFieldWidth(int width)</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QDebug qSetFieldWidth(int width) {
-        if (!disabled)
-            setFieldWidth(QtJambi_LibraryUtilities.internal.nativeId(this), width);
-        return this;
-    }
-
-    @QtUninvokable
-    private native void setFieldWidth(long __this__nativeId, int width);
-
-    /**
-     * <p>
-     * See <a href=
-     * "@docRoot/qtextstream.html#qSetRealNumberPrecision"><code>qSetRealNumberPrecision(int precision)</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QDebug qSetRealNumberPrecision(int precision) {
-        if (!disabled)
-            setRealNumberPrecision(QtJambi_LibraryUtilities.internal.nativeId(this), precision);
-        return this;
-    }
-
-    @QtUninvokable
-    private native void setRealNumberPrecision(long __this__nativeId, int precision);
-
-    /**
-     * <p>
-     * See <a href=
-     * "@docRoot/qtextstream.html#qSetPadChar"><code>qSetPadChar(QChar ch)</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QDebug qSetPadChar(char ch) {
-        if (!disabled)
-            setPadChar(QtJambi_LibraryUtilities.internal.nativeId(this), ch);
-        return this;
-    }
-
-    @QtUninvokable
-    private native void setPadChar(long __this__nativeId, char ch);
-
-    /**
      * <p>See <a href="@docRoot/qdebug.html#QDebug-1"><code>QDebug::QDebug(QString*)</code></a></p>
      */
     @SuppressWarnings("hiding")
-    public <String extends Object & Appendable & CharSequence> QDebug(String string){
+    public <String extends Object & Appendable & CharSequence> QDebug(@StrictNonNull String string){
         this(new QTextStream.StringDevice<String>(java.util.Objects.requireNonNull(string, "Argument 'string': null not expected."), QIODevice.OpenModeFlag.WriteOnly.asFlags()));
     }
 
@@ -16018,7 +15546,36 @@ class QDebug___ extends QDebug {
     @QtUninvokable
     public final @NonNull QDebug append(java.lang.Object obj) {
         if (!disabled) {
-            QMetaType metaType = QList.getMetaType(obj);
+            if(obj instanceof QString) {
+                return append((QString)obj);
+            }else if(obj instanceof QByteArray) {
+                return append((QByteArray)obj);
+            }else if(obj instanceof QByteArrayView) {
+                return append((QByteArrayView)obj);
+            }else if(obj instanceof java.nio.ByteBuffer) {
+                return append((java.nio.ByteBuffer)obj);
+            }else if(obj instanceof Character) {
+                return append((char)obj);
+            }else if(obj instanceof byte[]) {
+                return append((byte[])obj);
+            }else if(obj instanceof Byte) {
+                return append((byte)obj);
+            }else if(obj instanceof Double) {
+                return append((double)obj);
+            }else if(obj instanceof Float) {
+                return append((float)obj);
+            }else if(obj instanceof Integer) {
+                return append((int)obj);
+            }else if(obj instanceof String) {
+                return append((String)obj);
+            }else if(obj instanceof Long) {
+                return append((long)obj);
+            }else if(obj instanceof Short) {
+                return append((short)obj);
+            }else if(obj instanceof CharSequence) {
+                return append((CharSequence)obj);
+            }
+            QMetaType metaType = QMetaType.fromObject(obj);
             debugStream(QtJambi_LibraryUtilities.internal.nativeId(this),
                     QtJambi_LibraryUtilities.internal.checkedNativeId(metaType), obj);
         }
@@ -16060,7 +15617,7 @@ class QTextStream___ extends QTextStream {
      */
     @Override
     @QtUninvokable
-    public final @NonNull QTextStream append(CharSequence csq, int start, int end) {
+    public final @NonNull QTextStream append(@NonNull CharSequence csq, int start, int end) {
         return append(csq == null ? "null" : csq.subSequence(start, end));
     }
 
@@ -16086,7 +15643,7 @@ class QTextStream___ extends QTextStream {
      */
     @QtUninvokable
     @SuppressWarnings("hiding")
-    public final <String extends @NonNull Object & Appendable & CharSequence> void setString(String string,
+    public final <String extends Object & Appendable & CharSequence> void setString(@StrictNonNull String string,
             QIODevice.@NonNull OpenModeFlag @NonNull... openMode) {
         setString(string, new QIODevice.OpenMode(openMode));
     }
@@ -16099,7 +15656,7 @@ class QTextStream___ extends QTextStream {
      */
     @QtUninvokable
     @SuppressWarnings("hiding")
-    public final <String extends @NonNull Object & Appendable & CharSequence> void setString(String string) {
+    public final <String extends Object & Appendable & CharSequence> void setString(@StrictNonNull String string) {
         setString(string, new QIODevice.OpenMode(4));
     }
 
@@ -16111,7 +15668,7 @@ class QTextStream___ extends QTextStream {
      */
     @QtUninvokable
     @SuppressWarnings("hiding")
-    public final <String extends @NonNull Object & Appendable & CharSequence> void setString(String string,
+    public final <String extends Object & Appendable & CharSequence> void setString(@StrictNonNull String string,
             QIODevice.@NonNull OpenMode openMode) {
         flush();
         setDevice(new StringDevice<String>(
@@ -16155,7 +15712,7 @@ class QTextStream___ extends QTextStream {
      * <p>See <a href="@docRoot/qtextstream.html#QTextStream-3"><code>QTextStream::QTextStream(QString *, QIODeviceBase::OpenMode)</code></a></p>
      */
     @SuppressWarnings("hiding")
-    public <String extends @NonNull Object & Appendable & CharSequence> QTextStream(String string, QIODevice.@NonNull OpenModeFlag @NonNull... openMode) {
+    public <String extends Object & Appendable & CharSequence> QTextStream(@StrictNonNull String string, QIODevice.@NonNull OpenModeFlag @NonNull... openMode) {
         this(string, new QIODevice.OpenMode(openMode));
     }
 
@@ -16163,7 +15720,7 @@ class QTextStream___ extends QTextStream {
      * <p>See <a href="@docRoot/qtextstream.html#QTextStream-3"><code>QTextStream::QTextStream(QString *, QIODeviceBase::OpenMode)</code></a></p>
      */
     @SuppressWarnings("hiding")
-    public <String extends @NonNull Object & Appendable & CharSequence> QTextStream(String string) {
+    public <String extends Object & Appendable & CharSequence> QTextStream(@StrictNonNull String string) {
         this(string, new QIODevice.OpenMode(3));
     }
 
@@ -16171,7 +15728,7 @@ class QTextStream___ extends QTextStream {
      * <p>See <a href="@docRoot/qtextstream.html#QTextStream-3"><code>QTextStream::QTextStream(QString *, QIODeviceBase::OpenMode)</code></a></p>
      */
     @SuppressWarnings("hiding")
-    public <String extends @NonNull Object & Appendable & CharSequence> QTextStream(String string, QIODevice.@NonNull OpenMode openMode){
+    public <String extends Object & Appendable & CharSequence> QTextStream(@StrictNonNull String string, QIODevice.@NonNull OpenMode openMode){
         this(new StringDevice<String>(java.util.Objects.requireNonNull(string, "Argument 'string': null not expected."), openMode));
     }
 
@@ -16276,502 +15833,6 @@ class QTextStream___ extends QTextStream {
             return cursor;
         }
     }
-
-    /**
-     * <p>
-     * See <a href=
-     * "@docRoot/qtextstream.html#operator-lt-lt-1"><code>QTextStream::operator&lt;&lt;</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QTextStream writeString(java.lang.String s) {
-        return append(s);
-    }
-
-    /**
-     * <p>
-     * See <a href=
-     * "@docRoot/qtextstream.html#operator-lt-lt-1"><code>QTextStream::operator&lt;&lt;</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QTextStream writeString(java.lang.CharSequence s) {
-        return append(s);
-    }
-
-    /**
-     * <p>
-     * See <a href=
-     * "@docRoot/qtextstream.html#operator-lt-lt-1"><code>QTextStream::operator&lt;&lt;</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QTextStream writeDouble(double v) {
-        return append(v);
-    }
-
-    /**
-     * <p>
-     * See <a href=
-     * "@docRoot/qtextstream.html#operator-lt-lt-1"><code>QTextStream::operator&lt;&lt;</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QTextStream writeByte(byte v) {
-        return append(v);
-    }
-
-    /**
-     * <p>
-     * See <a href=
-     * "@docRoot/qtextstream.html#operator-lt-lt-1"><code>QTextStream::operator&lt;&lt;</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QTextStream writeBytes(QByteArray v) {
-        return append(v);
-    }
-
-    /**
-     * <p>
-     * See <a href=
-     * "@docRoot/qtextstream.html#operator-lt-lt-1"><code>QTextStream::operator&lt;&lt;</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QTextStream writeChar(char v) {
-        return append(v);
-    }
-
-    /**
-     * <p>
-     * See <a href=
-     * "@docRoot/qtextstream.html#operator-lt-lt-1"><code>QTextStream::operator&lt;&lt;</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QTextStream writeFloat(float v) {
-        return append(v);
-    }
-
-    /**
-     * <p>
-     * See <a href=
-     * "@docRoot/qtextstream.html#operator-lt-lt-1"><code>QTextStream::operator&lt;&lt;</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QTextStream writeInt(int v) {
-        return append(v);
-    }
-
-    /**
-     * <p>
-     * See <a href=
-     * "@docRoot/qtextstream.html#operator-lt-lt-1"><code>QTextStream::operator&lt;&lt;</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QTextStream writeLong(long v) {
-        return append(v);
-    }
-
-    /**
-     * <p>
-     * See <a href=
-     * "@docRoot/qtextstream.html#operator-lt-lt-1"><code>QTextStream::operator&lt;&lt;</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QTextStream writeShort(short v) {
-        return append(v);
-    }
-
-    /**
-     * <p>
-     * See <a href="@docRoot/qt.html#endl"><code>Qt::endl</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QTextStream endl() {
-        endl(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void endl(long __this__nativeId);
-
-    /**
-     * <p>
-     * See <a href="@docRoot/qt.html#flush"><code>Qt::flush</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QTextStream flush() {
-        flush(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void flush(long __this__nativeId);
-
-    /**
-     * <p>
-     * See <a href="@docRoot/qt.html#reset"><code>Qt::reset</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QTextStream reset() {
-        reset(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void reset(long __this__nativeId);
-
-    /**
-     * <p>
-     * See <a href="@docRoot/qt.html#bin"><code>Qt::bin</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QTextStream bin() {
-        bin(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void bin(long __this__nativeId);
-
-    /**
-     * <p>
-     * See <a href="@docRoot/qt.html#oct"><code>Qt::oct</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QTextStream oct() {
-        oct(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void oct(long __this__nativeId);
-
-    /**
-     * <p>
-     * See <a href="@docRoot/qt.html#hex"><code>Qt::hex</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QTextStream hex() {
-        hex(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void hex(long __this__nativeId);
-
-    /**
-     * <p>
-     * See <a href="@docRoot/qt.html#dec"><code>Qt::dec</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QTextStream dec() {
-        dec(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void dec(long __this__nativeId);
-
-    /**
-     * <p>
-     * See <a href="@docRoot/qt.html#showbase"><code>Qt::showbase</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QTextStream showbase() {
-        showbase(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void showbase(long __this__nativeId);
-
-    /**
-     * <p>
-     * See <a href="@docRoot/qt.html#forcesign"><code>Qt::forcesign</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QTextStream forcesign() {
-        forcesign(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void forcesign(long __this__nativeId);
-
-    /**
-     * <p>
-     * See <a href="@docRoot/qt.html#forcepoint"><code>Qt::forcepoint</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QTextStream forcepoint() {
-        forcepoint(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void forcepoint(long __this__nativeId);
-
-    /**
-     * <p>
-     * See <a href="@docRoot/qt.html#noshowbase"><code>Qt::noshowbase</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QTextStream noshowbase() {
-        noshowbase(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void noshowbase(long __this__nativeId);
-
-    /**
-     * <p>
-     * See <a href="@docRoot/qt.html#noforcesign"><code>Qt::noforcesign</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QTextStream noforcesign() {
-        noforcesign(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void noforcesign(long __this__nativeId);
-
-    /**
-     * <p>
-     * See <a href="@docRoot/qt.html#noforcepoint"><code>Qt::noforcepoint</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QTextStream noforcepoint() {
-        noforcepoint(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void noforcepoint(long __this__nativeId);
-
-    /**
-     * <p>
-     * See
-     * <a href="@docRoot/qt.html#uppercasebase"><code>Qt::uppercasebase</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QTextStream uppercasebase() {
-        uppercasebase(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void uppercasebase(long __this__nativeId);
-
-    /**
-     * <p>
-     * See <a href=
-     * "@docRoot/qt.html#uppercasedigits"><code>Qt::uppercasedigits</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QTextStream uppercasedigits() {
-        uppercasedigits(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void uppercasedigits(long __this__nativeId);
-
-    /**
-     * <p>
-     * See
-     * <a href="@docRoot/qt.html#lowercasebase"><code>Qt::lowercasebase</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QTextStream lowercasebase() {
-        lowercasebase(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void lowercasebase(long __this__nativeId);
-
-    /**
-     * <p>
-     * See <a href=
-     * "@docRoot/qt.html#lowercasedigits"><code>Qt::lowercasedigits</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QTextStream lowercasedigits() {
-        lowercasedigits(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void lowercasedigits(long __this__nativeId);
-
-    /**
-     * <p>
-     * See <a href="@docRoot/qt.html#fixed"><code>Qt::fixed</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QTextStream fixed() {
-        fixed(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void fixed(long __this__nativeId);
-
-    /**
-     * <p>
-     * See <a href="@docRoot/qt.html#scientific"><code>Qt::scientific</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QTextStream scientific() {
-        scientific(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void scientific(long __this__nativeId);
-
-    /**
-     * <p>
-     * See <a href="@docRoot/qt.html#left"><code>Qt::left</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QTextStream left() {
-        left(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void left(long __this__nativeId);
-
-    /**
-     * <p>
-     * See <a href="@docRoot/qt.html#right"><code>Qt::right</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QTextStream right() {
-        right(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void right(long __this__nativeId);
-
-    /**
-     * <p>
-     * See <a href="@docRoot/qt.html#center"><code>Qt::center</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QTextStream center() {
-        center(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void center(long __this__nativeId);
-
-    /**
-     * <p>
-     * See <a href="@docRoot/qt.html#bom"><code>Qt::bom</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QTextStream bom() {
-        bom(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void bom(long __this__nativeId);
-
-    /**
-     * <p>
-     * See <a href="@docRoot/qt.html#ws"><code>Qt::ws</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QTextStream ws() {
-        ws(QtJambi_LibraryUtilities.internal.nativeId(this));
-        return this;
-    }
-
-    @QtUninvokable
-    private native void ws(long __this__nativeId);
-
-    /**
-     * <p>
-     * See <a href=
-     * "@docRoot/qtextstream.html#qSetFieldWidth"><code>qSetFieldWidth(int width)</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QTextStream qSetFieldWidth(int width) {
-        setFieldWidth(QtJambi_LibraryUtilities.internal.nativeId(this), width);
-        return this;
-    }
-
-    @QtUninvokable
-    private native void setFieldWidth(long __this__nativeId, int width);
-
-    /**
-     * <p>
-     * See <a href=
-     * "@docRoot/qtextstream.html#qSetRealNumberPrecision"><code>qSetRealNumberPrecision(int precision)</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QTextStream qSetRealNumberPrecision(int precision) {
-        setRealNumberPrecision(QtJambi_LibraryUtilities.internal.nativeId(this), precision);
-        return this;
-    }
-
-    @QtUninvokable
-    private native void setRealNumberPrecision(long __this__nativeId, int precision);
-
-    /**
-     * <p>
-     * See <a href=
-     * "@docRoot/qtextstream.html#qSetPadChar"><code>qSetPadChar(QChar ch)</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QTextStream qSetPadChar(char ch) {
-        setPadChar(QtJambi_LibraryUtilities.internal.nativeId(this), ch);
-        return this;
-    }
-
-    @QtUninvokable
-    private native void setPadChar(long __this__nativeId, char ch);
-
 }// class
 
 class QBitArray___ extends QBitArray {
@@ -17384,13 +16445,6 @@ class QAbstractFileEngine_UnMapExtensionOption___ extends QAbstractFileEngine_Un
     }
 }// class
 
-class QFutureInterfaceBase___ {
-    @QtUninvokable
-    public native final void reportException(Throwable e);
-
-    private Object __rcRunnable;
-}// class
-
 class QtFuture___ {
     /**
      * <p>
@@ -17788,70 +16842,6 @@ class QtFuture___ {
 
 }// class
 
-class QtFuture_6_1to5__ {
-    /**
-     * <p>
-     * See <a href=
-     * "@docRoot/qtfuture.html#makeReadyFuture"><code>QtFuture::makeReadyFuture(T)</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public static <T> @NonNull QFuture<T> makeReadyFuture(T value) {
-        QFutureInterface<T> promise = new QFutureInterface<>();
-        promise.reportStarted();
-        promise.reportResult(value);
-        promise.reportFinished();
-        return promise.future();
-    }
-
-    /**
-     * <p>
-     * See <a href=
-     * "@docRoot/qtfuture.html#makeReadyFuture-2"><code>QtFuture::makeReadyFuture(QList&lt;T>)</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public static <T> @NonNull QFuture<T> makeReadyFuture(java.util.@NonNull Collection<T> values) {
-        QFutureInterface<T> promise = new QFutureInterface<>();
-        promise.reportStarted();
-        promise.reportResults(values);
-        promise.reportFinished();
-        return promise.future();
-    }
-
-    /**
-     * <p>
-     * See <a href=
-     * "@docRoot/qtfuture.html#makeReadyFuture-1"><code>QtFuture::makeReadyFuture()</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public static @NonNull QFuture<Void> makeReadyFuture() {
-        QFutureInterface<Void> promise = QFutureInterface.createVoidFutureInterface();
-        promise.reportStarted();
-        promise.reportFinished();
-        return promise.future();
-    }
-
-}// class
-
-class QtFuture_6_1__ {
-    /**
-     * <p>
-     * See <a href=
-     * "@docRoot/qtfuture.html#makeExceptionalFuture"><code>QtFuture::makeExceptionalFuture(QException)</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public static @NonNull QFuture<Void> makeExceptionalFuture(@StrictNonNull Throwable exception) {
-        QFutureInterface<Void> promise = QFutureInterface.createVoidFutureInterface();
-        promise.reportStarted();
-        promise.reportException(exception);
-        promise.reportFinished();
-        return promise.future();
-    }
-}// class
-
 class QtFuture_6_3to5__ {
     /**
      * <p>
@@ -17930,82 +16920,7 @@ class QtFuture_6_3to5__ {
     }
 }// class
 
-class QtFuture_6_6to10__ {
-    /**
-     * Use makeReadyValueFuture() instead
-     */
-    @QtUninvokable
-    @Deprecated(forRemoval = true, since = "6.6")
-    public static <T> @NonNull QFuture<T> makeReadyFuture(T value) {
-        return makeReadyValueFuture(value);
-    }
-
-    /**
-     * Use makeReadyRangeFuture() instead
-     */
-    @QtUninvokable
-    @Deprecated(forRemoval = true, since = "6.6")
-    public static <T> @NonNull QFuture<T> makeReadyFuture(java.util.@NonNull Collection<T> values) {
-        return makeReadyRangeFuture(values);
-    }
-
-    /**
-     * Use makeReadyVoidFuture() instead
-     */
-    @QtUninvokable
-    @Deprecated(forRemoval = true, since = "6.6")
-    public static @NonNull QFuture<Void> makeReadyFuture() {
-        return makeReadyVoidFuture();
-    }
-}// class
-
 class QtFuture_6_6__ {
-    /**
-     * <p>
-     * See <a href=
-     * "@docRoot/qtfuture.html#makeReadyValueFuture"><code>QtFuture::makeReadyValueFuture(T)</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public static <T> @NonNull QFuture<T> makeReadyValueFuture(T value) {
-        QFutureInterface<T> promise = new QFutureInterface<>();
-        promise.reportStarted();
-        promise.reportResult(value);
-        promise.reportFinished();
-        return promise.future();
-    }
-
-    /**
-     * <p>
-     * See <a href=
-     * "@docRoot/qtfuture.html#makeReadyRangeFuture"><code>QtFuture::makeReadyRangeFuture(QList&lt;T>)</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public static <T> @NonNull QFuture<T> makeReadyRangeFuture(java.util.@NonNull Collection<T> values) {
-        QFutureInterface<T> promise = new QFutureInterface<>();
-        promise.reportStarted();
-        promise.reportResults(values);
-        promise.reportFinished();
-        return promise.future();
-    }
-
-    /**
-     * <p>
-     * See <a href=
-     * "@docRoot/qtfuture.html#makeReadyRangeFuture"><code>QtFuture::makeReadyRangeFuture(std::initializer_list&lt;T>)</code></a>
-     * </p>
-     */
-    @SafeVarargs
-    @QtUninvokable
-    public static <T> @NonNull QFuture<T> makeReadyRangeFuture(T value0, T @NonNull... valuesN) {
-        QFutureInterface<T> promise = new QFutureInterface<>();
-        promise.reportStarted();
-        promise.reportResults(QList.of(value0, valuesN));
-        promise.reportFinished();
-        return promise.future();
-    }
-
     /**
      * <p>
      * See <a href=
@@ -18197,77 +17112,41 @@ class QPropertyAnimation___ extends QPropertyAnimation {
 
 }// class
 
-class QMetaType_5__ extends QMetaType {
-    private static int metaTypeIdByName(java.lang.String typeName) {
-        return type(typeName);
-    }
-
-    @QtUninvokable
-    public static @NonNull QMetaType fromObject(@Nullable Object obj) {
-        if (obj == null)
-            return new QMetaType(QMetaType.Type.Nullptr);
-        Class<?> objClass = QtJambi_LibraryUtilities.internal.getClass(obj);
-        if (obj instanceof QList) {
-            return QMetaType.fromType(objClass, ((QList<?>) obj).elementMetaType());
-        } else if (obj instanceof QLinkedList) {
-            return QMetaType.fromType(objClass, ((QLinkedList<?>) obj).elementMetaType());
-        } else if (obj instanceof QVector) {
-            return QMetaType.fromType(objClass, ((QVector<?>) obj).elementMetaType());
-        } else if (obj instanceof QQueue) {
-            return QMetaType.fromType(objClass, ((QQueue<?>) obj).elementMetaType());
-        } else if (obj instanceof QStack) {
-            return QMetaType.fromType(objClass, ((QStack<?>) obj).elementMetaType());
-        } else if (obj instanceof QSet) {
-            return QMetaType.fromType(objClass, ((QSet<?>) obj).elementMetaType());
-        } else if (obj instanceof QMultiMap) {
-            return QMetaType.fromType(objClass, ((QMultiMap<?, ?>) obj).keyMetaType(),
-                    ((QMultiMap<?, ?>) obj).valueMetaType());
-        } else if (obj instanceof QMap) {
-            return QMetaType.fromType(objClass, ((QMap<?, ?>) obj).keyMetaType(), ((QMap<?, ?>) obj).valueMetaType());
-        } else if (obj instanceof QMultiHash) {
-            return QMetaType.fromType(objClass, ((QMultiHash<?, ?>) obj).keyMetaType(),
-                    ((QMultiHash<?, ?>) obj).valueMetaType());
-        } else if (obj instanceof QHash) {
-            return QMetaType.fromType(objClass, ((QHash<?, ?>) obj).keyMetaType(), ((QHash<?, ?>) obj).valueMetaType());
-        }
-        return QMetaType.fromType(objClass);
-    }
-}// class
-
-class QMetaType_6__ extends QMetaType {
-    private static int metaTypeIdByName(java.lang.String typeName) {
-        return fromName(typeName).id();
-    }
-
-    @QtUninvokable
-    public static @NonNull QMetaType fromObject(@Nullable Object obj) {
-        if (obj == null)
-            return new QMetaType(QMetaType.Type.Nullptr);
-        Class<?> objClass = QtJambi_LibraryUtilities.internal.getClass(obj);
-        if (obj instanceof QList) {
-            return QMetaType.fromType(objClass, ((QList<?>) obj).elementMetaType());
-        } else if (obj instanceof QQueue) {
-            return QMetaType.fromType(objClass, ((QQueue<?>) obj).elementMetaType());
-        } else if (obj instanceof QStack) {
-            return QMetaType.fromType(objClass, ((QStack<?>) obj).elementMetaType());
-        } else if (obj instanceof QSet) {
-            return QMetaType.fromType(objClass, ((QSet<?>) obj).elementMetaType());
-        } else if (obj instanceof QMultiMap) {
-            return QMetaType.fromType(objClass, ((QMultiMap<?, ?>) obj).keyMetaType(),
-                    ((QMultiMap<?, ?>) obj).valueMetaType());
-        } else if (obj instanceof QMap) {
-            return QMetaType.fromType(objClass, ((QMap<?, ?>) obj).keyMetaType(), ((QMap<?, ?>) obj).valueMetaType());
-        } else if (obj instanceof QMultiHash) {
-            return QMetaType.fromType(objClass, ((QMultiHash<?, ?>) obj).keyMetaType(),
-                    ((QMultiHash<?, ?>) obj).valueMetaType());
-        } else if (obj instanceof QHash) {
-            return QMetaType.fromType(objClass, ((QHash<?, ?>) obj).keyMetaType(), ((QHash<?, ?>) obj).valueMetaType());
-        }
-        return QMetaType.fromType(objClass);
-    }
-}// class
-
 class QMetaType___ extends QMetaType {
+     private static int metaTypeIdByName(java.lang.String typeName) {
+         return fromName(typeName).id();
+     }
+
+     @QtUninvokable
+     public static @NonNull QMetaType fromObject(@Nullable Object obj) {
+         if (obj == null)
+             return new QMetaType(QMetaType.Type.Nullptr);
+         Class<?> objClass = QtJambi_LibraryUtilities.internal.getClass(obj);
+         if (obj instanceof QList) {
+             return QMetaType.fromType(objClass, ((QList<?>) obj).elementMetaType());
+         } else if (obj instanceof QQueue) {
+             return QMetaType.fromType(objClass, ((QQueue<?>) obj).elementMetaType());
+         } else if (obj instanceof QStack) {
+             return QMetaType.fromType(objClass, ((QStack<?>) obj).elementMetaType());
+         } else if (obj instanceof QSet) {
+             return QMetaType.fromType(objClass, ((QSet<?>) obj).elementMetaType());
+         } else if (obj instanceof QMultiMap) {
+             return QMetaType.fromType(objClass, ((QMultiMap<?, ?>) obj).keyMetaType(),
+                     ((QMultiMap<?, ?>) obj).valueMetaType());
+         } else if (obj instanceof QMap) {
+             return QMetaType.fromType(objClass, ((QMap<?, ?>) obj).keyMetaType(), ((QMap<?, ?>) obj).valueMetaType());
+         } else if (obj instanceof QMultiHash) {
+             return QMetaType.fromType(objClass, ((QMultiHash<?, ?>) obj).keyMetaType(),
+                     ((QMultiHash<?, ?>) obj).valueMetaType());
+         } else if (obj instanceof QHash) {
+             return QMetaType.fromType(objClass, ((QHash<?, ?>) obj).keyMetaType(), ((QHash<?, ?>) obj).valueMetaType());
+         } else if (obj instanceof QFuture) {
+             return ((QFuture<?>) obj).metaType();
+         } else if (obj instanceof QFutureInterface) {
+             return ((QFutureInterface<?>) obj).metaType();
+         }
+         return QMetaType.fromType(objClass);
+     }
 
     /**
      * Overloaded constructor for {@link #QMetaType(int)}.
@@ -49947,108 +48826,9 @@ class QDataStream___ {
      * </p>
      */
     @QtUninvokable
-    public final @NonNull QDataStream writeString(java.lang.String s) {
-        return append(s);
-    }
-
-    /**
-     * <p>
-     * See <a href=
-     * "@docRoot/qdatastream.html#operator-lt-lt-1"><code>QDataStream::operator&lt;&lt;</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QDataStream writeDouble(double v) {
-        return append(v);
-    }
-
-    /**
-     * <p>
-     * See <a href=
-     * "@docRoot/qdatastream.html#operator-lt-lt-1"><code>QDataStream::operator&lt;&lt;</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QDataStream writeByte(byte v) {
-        return append(v);
-    }
-
-    /**
-     * <p>
-     * See <a href=
-     * "@docRoot/qdatastream.html#operator-lt-lt-1"><code>QDataStream::operator&lt;&lt;</code></a>
-     * </p>
-     */
-    @QtUninvokable
     public final @NonNull QDataStream append(byte[] v) {
-        writeBytes(v);
+        writeRawData(v);
         return this;
-    }
-
-    /**
-     * <p>
-     * See <a href=
-     * "@docRoot/qdatastream.html#operator-lt-lt-1"><code>QDataStream::operator&lt;&lt;</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QDataStream writeChar(char v) {
-        return append(v);
-    }
-
-    /**
-     * <p>
-     * See <a href=
-     * "@docRoot/qdatastream.html#operator-lt-lt-1"><code>QDataStream::operator&lt;&lt;</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QDataStream writeFloat(float v) {
-        return append(v);
-    }
-
-    /**
-     * <p>
-     * See <a href=
-     * "@docRoot/qdatastream.html#operator-lt-lt-1"><code>QDataStream::operator&lt;&lt;</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QDataStream writeInt(int v) {
-        return append(v);
-    }
-
-    /**
-     * <p>
-     * See <a href=
-     * "@docRoot/qdatastream.html#operator-lt-lt-1"><code>QDataStream::operator&lt;&lt;</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QDataStream writeLong(long v) {
-        return append(v);
-    }
-
-    /**
-     * <p>
-     * See <a href=
-     * "@docRoot/qdatastream.html#operator-lt-lt-1"><code>QDataStream::operator&lt;&lt;</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QDataStream writeShort(short v) {
-        return append(v);
-    }
-
-    /**
-     * <p>
-     * See <a href=
-     * "@docRoot/qdatastream.html#operator-lt-lt-1"><code>QDataStream::operator&lt;&lt;</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final @NonNull QDataStream writeBoolean(boolean v) {
-        return append(v);
     }
 }// class
 
@@ -50076,7 +48856,7 @@ class QString__ {
      */
     @Override
     @QtUninvokable
-    public final @NonNull QString append(CharSequence csq, int start, int end) throws java.io.IOException {
+    public final @NonNull QString append(@Nullable CharSequence csq, int start, int end) throws java.io.IOException {
         return append(csq == null ? "null" : csq.subSequence(start, end));
     }
 
@@ -50104,6 +48884,16 @@ class QString__ {
                 _this = _this.arg((long) arg);
             else if (arg instanceof Float)
                 _this = _this.arg((float) arg);
+            else if (arg instanceof Boolean)
+                _this = _this.arg((boolean) arg);
+            else if (arg instanceof QByteArrayView)
+                _this = _this.arg((QByteArrayView) arg);
+            else if (arg instanceof QByteArray)
+                _this = _this.arg((QByteArray) arg);
+            else if (arg instanceof QString)
+                _this = _this.arg((QString) arg);
+            else if (arg instanceof String)
+                _this = _this.arg((String) arg);
             else if (arg instanceof CharSequence)
                 _this = _this.arg((CharSequence) arg);
             else if (arg != null)
@@ -50123,7 +48913,7 @@ class QString__ {
      * @return formatted string
      */
     @QtUninvokable
-    public static @NonNull QString format(CharSequence format, Object... args) {
+    public static @NonNull QString format(@NonNull CharSequence format, Object... args) {
         QString strg;
         if (format instanceof QString) {
             strg = (QString) format;
@@ -50140,7 +48930,7 @@ class QString__ {
      * @return utf8
      */
     @QtUninvokable
-    public static native @NonNull QByteArray toUtf8(CharSequence string);
+    public static native @NonNull QByteArray toUtf8(@NonNull CharSequence string);
 
     /**
      * Static version of {@link QString#toLatin1()}
@@ -50149,7 +48939,7 @@ class QString__ {
      * @return latin1
      */
     @QtUninvokable
-    public static native @NonNull QByteArray toLatin1(CharSequence string);
+    public static native @NonNull QByteArray toLatin1(@NonNull CharSequence string);
 
     /**
      * Static version of {@link QString#toLocal8Bit()}
@@ -50158,7 +48948,7 @@ class QString__ {
      * @return local8Bit
      */
     @QtUninvokable
-    public static native @NonNull QByteArray toLocal8Bit(CharSequence string);
+    public static native @NonNull QByteArray toLocal8Bit(@NonNull CharSequence string);
 
     /**
      * <p>
@@ -51533,6 +50323,166 @@ class QAbstractFileEngineHandler_6__ {
     @QtUninvokable
     private static native QAbstractFileEngineHandler fromFileNameTestRegexp(FileEngineFactory factory, long regexp,
             long offset, int matchType, int matchOptions);
+}// class
+
+class QFutureInterface__ {
+     /**
+      * <p>Overloaded factory for {@link #createVoidFutureInterface(io.qt.core.QFutureInterfaceBase.State)}
+      *  with <code>initialState = io.qt.core.QFutureInterfaceBase.State.NoState</code>.</p>
+      */
+     public static @NonNull QFutureInterface<Void> createVoidFutureInterface() {
+         return createVoidFutureInterface(QFutureInterfaceBase.State.NoState);
+     }
+
+     public static @NonNull QFutureInterface<Void> createVoidFutureInterface(QFutureInterfaceBase.@NonNull State initialState) {
+         return new QFutureInterface<>((Object)initialState);
+     }
+
+     public static @NonNull QFutureInterface<Void> createVoidFutureInterface(@StrictNonNull QFutureInterfaceBase other) {
+         return new QFutureInterface<>((Object)other);
+     }
+
+     public static <T> @NonNull QFutureInterface<T> canceledResult() {
+         return new QFutureInterface<>(QFutureInterfaceBase.State.resolve(QFutureInterfaceBase.State.Started.value() | QFutureInterfaceBase.State.Finished.value() | QFutureInterfaceBase.State.Canceled.value()));
+     }
+     native QMetaType metaType();
+}// class
+
+class QFuture__ {
+     /**
+      * <p>Similar to <code>Runnable</code> but potentially throwing exception.</p>
+      * @see java.lang.Runnable
+      */
+     @FunctionalInterface
+     public interface Runnable {
+         /**
+          * @see java.lang.Runnable#run()
+          * @throws Throwable
+          */
+         void run() throws Throwable;
+     }
+
+     /**
+      * <p>Similar to <code>Supplier</code> but potentially throwing exception.</p>
+      * @see java.util.function.Supplier
+      */
+     @FunctionalInterface
+     public interface Supplier<T> {
+         /**
+          * @see java.util.function.Supplier#get()
+          * @throws Throwable
+          */
+         T get() throws Throwable;
+     }
+
+     /**
+      * <p>Similar to <code>Consumer</code> but potentially throwing exception.</p>
+      * @see java.util.function.Consumer
+      */
+     @FunctionalInterface
+     public interface Consumer<T> {
+         /**
+          * @see java.util.function.Consumer#accept(Object)
+          * @throws Throwable
+          */
+         void accept(T t) throws Throwable;
+     }
+
+     /**
+      * <p>Similar to <code>Function</code> but potentially throwing exception.</p>
+      * @see java.util.function.Function
+      */
+     @FunctionalInterface
+     public interface Function<T, R> {
+         /**
+          * @see java.util.function.Function#apply(Object)
+          * @throws Throwable
+          */
+         R apply(T t) throws Throwable;
+     }
+
+     /**
+      * <p>Similar to <code>Consumer</code> but potentially throwing exception.</p>
+      * @see java.util.function.Consumer
+      */
+     @FunctionalInterface
+     public interface FutureConsumer<T> {
+         /**
+          * @see java.util.function.Consumer#accept(Object)
+          * @throws Throwable
+          */
+         void accept(QFuture<T> t) throws Throwable;
+     }
+
+     /**
+      * <p>Similar to <code>Function</code> but potentially throwing exception.</p>
+      * @see java.util.function.Function
+      */
+     @FunctionalInterface
+     public interface FutureFunction<T, R> {
+         /**
+          * @see java.util.function.Function#apply(Object)
+          * @throws Throwable
+          */
+         R apply(QFuture<T> t) throws Throwable;
+     }
+
+     /**
+      * <p>See <a href="http://doc.qt.io/qt/qfuture.html#unwrap">QFuture::unwrap()</a></p>
+      */
+     public @NonNull QFuture<T> unwrap(){
+          QFutureInterface<T> promise = new QFutureInterface<>(QFutureInterfaceBase.State.Pending);
+          this.then((QFuture<T> nested)->{
+               promise.reportStarted();
+               try {
+                    for(T result : nested.results()) {
+                         if(result instanceof QFuture) {
+                              @SuppressWarnings("unchecked")
+                              QFuture<T> future = ((QFuture<T>) result).unwrap();
+                              promise.reportResults(future.results());
+                         }else{
+                             promise.reportResult(result);
+                         }
+                    }
+               }catch(Throwable e) {
+                    promise.reportException(e);
+               }
+               promise.reportFinished();
+          }).onCanceled(() -> {
+               promise.reportCanceled();
+               promise.reportFinished();
+          });
+          return promise.future();
+     }
+
+     /**
+      * <p>See <a href="http://doc.qt.io/qt/qfuture.html#unwrap">QFuture::unwrap()</a></p>
+      */
+     public <U> @NonNull QFuture<U> unwrap(@StrictNonNull Class<U> flatType){
+          java.util.Objects.requireNonNull(flatType, "Argument 'flatType': null not expected.");
+          QFutureInterface<U> promise = new QFutureInterface<>(QFutureInterfaceBase.State.Pending);
+          this.then((QFuture<T> nested)->{
+               promise.reportStarted();
+               try {
+                    for(T result : nested.results()) {
+                         if(result instanceof QFuture) {
+                             QFuture<U> future = ((QFuture<?>) result).unwrap(flatType);
+                             promise.reportResults(future.results());
+                         }else if(result==null || flatType.isInstance(result)){
+                             promise.reportResult(flatType.cast(result));
+                         }
+                    }
+               }catch(Throwable e) {
+                    promise.reportException(e);
+               }
+               promise.reportFinished();
+          }).onCanceled(() -> {
+               promise.reportCanceled();
+               promise.reportFinished();
+          });
+          return promise.future();
+     }
+     native QMetaType metaType();
 }// class
 
 class QMutexLocker___ {

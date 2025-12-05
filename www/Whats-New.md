@@ -1,8 +1,17 @@
-# What's new in QtJambi 6.10.0
+# What's new in QtJambi 6.10.1
 
-QtJambi 6.10.0 is equivalent to QtJambi 6.9.3.
+* Removing Qt5 backward compatibility
+* QFuture and QPromise are now native wrapper types
+* The new internal class `io.qt.internal.LibraryExtractor` (main) can be used to extract all required QtJambi libraries.
+* `QQmlInfo` not mirrors native API entirely.
+* All appearances of quint16 http ports now map to Java's int type.
+* Fixed memory leak in using function pointers.
 
 # History
+
+## What's new in QtJambi 6.10.0
+
+QtJambi 6.10.0 is equivalent to QtJambi 6.9.3.
 
 ## What's new in QtJambi 6.9.3
 
@@ -23,7 +32,7 @@ This will be the last release with Maven-published binaries for Qt 6.9.
 
 ## What's new in QtJambi 6.9.2
 
-* 6.8.6 linux libraries are based on GLIBC 2.29 again
+* 6.8.7 linux libraries are based on GLIBC 2.29 again
 * Ready for Qt 6.10
 
 ## What's new in QtJambi 6.9.1

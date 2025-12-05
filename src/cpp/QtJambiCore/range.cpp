@@ -29,6 +29,7 @@
 **
 ****************************************************************************/
 
+#include "pch_p.h"
 #include "range_p_p.h"
 
 #if QT_VERSION >= QT_VERSION_CHECK(6,10,0)

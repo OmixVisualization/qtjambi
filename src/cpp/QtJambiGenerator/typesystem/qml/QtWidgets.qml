@@ -34,6 +34,7 @@ TypeSystem{
     defaultSuperClass: "QtObject"
     qtLibrary: "QtWidgets"
     module: "qtjambi"
+    precompiledHeader: "pch_p.h"
     LoadTypeSystem{name: "QtGui"; unless: "QTJAMBI_NO_GUI"}
     Template{
         name: "gui.addAction"
@@ -2387,7 +2388,7 @@ try{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "%out = !okHolder ? qtjambi_cast<jobject>(%env, %in) : nullptr;"}
+                    Text{content: "%out = !okHolder ? qtjambi_cast<jobject>(%env, std::move(%in)) : nullptr;"}
                 }
             }
         }
@@ -3128,7 +3129,7 @@ try{
                 index: 0
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "%out = ok ? qtjambi_cast<jobject>(%env, %in) : nullptr;"}
+                    Text{content: "%out = ok ? qtjambi_cast<jobject>(%env, std::move(%in)) : nullptr;"}
                 }
             }
             ModifyArgument{
@@ -3149,7 +3150,7 @@ try{
                 index: 0
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "%out = ok ? qtjambi_cast<jobject>(%env, %in) : nullptr;"}
+                    Text{content: "%out = ok ? qtjambi_cast<jobject>(%env, std::move(%in)) : nullptr;"}
                 }
             }
             ModifyArgument{
@@ -5840,7 +5841,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "jsize %out_size = 4;\n"+
-                                  "int* %out = qtjambi_array_cast<int*>(%env, %scope, %in, %out_size);"}
+                                  "int* %out = qtjambi_cast<int*>(%env, %scope, %in, %out_size);"}
                 }
             }
             ModifyArgument{
@@ -10221,7 +10222,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "jsize %out_size = 4;\n"+
-                                  "int* %out = qtjambi_array_cast<int*>(%env, %scope, %in, %out_size);"}
+                                  "int* %out = qtjambi_cast<int*>(%env, %scope, %in, %out_size);"}
                 }
             }
             ModifyArgument{
@@ -10844,7 +10845,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 index: 0
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "%out = %in.isEmpty() ? nullptr : qtjambi_cast<jobject>(%env, %in);"}
+                    Text{content: "%out = %in.isEmpty() ? nullptr : qtjambi_cast<jobject>(%env, std::move(%in));"}
                 }
             }
         }
@@ -10869,7 +10870,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "if(!%in.isEmpty()){\n"+
-                                  "    %out = Java::QtWidgets::QFileDialog$Result::newInstance(%env, qtjambi_cast<jstring>(%env, %in), qtjambi_cast<jobject>(%env, %5));\n"+
+                                  "    %out = Java::QtWidgets::QFileDialog$Result::newInstance(%env, qtjambi_cast<jstring>(%env, %in), qtjambi_cast<jobject>(%env, std::move(%5)));\n"+
                                   "}"}
                 }
             }
@@ -10895,7 +10896,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "if(!%in.isEmpty()){\n"+
-                                  "    %out = Java::QtWidgets::QFileDialog$Result::newInstance(%env, qtjambi_cast<jobject>(%env, %in), qtjambi_cast<jobject>(%env, %5));\n"+
+                                  "    %out = Java::QtWidgets::QFileDialog$Result::newInstance(%env, qtjambi_cast<jobject>(%env, %in), qtjambi_cast<jobject>(%env, std::move(%5)));\n"+
                                   "}"}
                 }
             }
@@ -10921,7 +10922,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "if(!%in.isEmpty()){\n"+
-                                  "    %out = Java::QtWidgets::QFileDialog$Result::newInstance(%env, qtjambi_cast<jstring>(%env, %in), qtjambi_cast<jobject>(%env, %5));\n"+
+                                  "    %out = Java::QtWidgets::QFileDialog$Result::newInstance(%env, qtjambi_cast<jstring>(%env, %in), qtjambi_cast<jobject>(%env, std::move(%5)));\n"+
                                   "}"}
                 }
             }
@@ -10947,7 +10948,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "if(!%in.isEmpty()){\n"+
-                                  "    %out = Java::QtWidgets::QFileDialog$Result::newInstance(%env, qtjambi_cast<jobject>(%env, %in), qtjambi_cast<jobject>(%env, %5));\n"+
+                                  "    %out = Java::QtWidgets::QFileDialog$Result::newInstance(%env, qtjambi_cast<jobject>(%env, %in), qtjambi_cast<jobject>(%env, std::move(%5)));\n"+
                                   "}"}
                 }
             }
@@ -10973,7 +10974,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "if(!%in.isEmpty()){\n"+
-                                  "    %out = Java::QtWidgets::QFileDialog$Result::newInstance(%env, qtjambi_cast<jobject>(%env, %in), qtjambi_cast<jobject>(%env, %5));\n"+
+                                  "    %out = Java::QtWidgets::QFileDialog$Result::newInstance(%env, qtjambi_cast<jobject>(%env, %in), qtjambi_cast<jobject>(%env, std::move(%5)));\n"+
                                   "}"}
                 }
             }
@@ -10999,7 +11000,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "if(!%in.isEmpty()){\n"+
-                                  "    %out = Java::QtWidgets::QFileDialog$Result::newInstance(%env, qtjambi_cast<jobject>(%env, %in), qtjambi_cast<jobject>(%env, %5));\n"+
+                                  "    %out = Java::QtWidgets::QFileDialog$Result::newInstance(%env, qtjambi_cast<jobject>(%env, %in), qtjambi_cast<jobject>(%env, std::move(%5)));\n"+
                                   "}"}
                 }
             }
@@ -12790,7 +12791,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "jsize %out_size = 4;\n"+
-                                  "qreal* %out = qtjambi_array_cast<qreal*>(%env, %scope, %in, %out_size);"}
+                                  "qreal* %out = qtjambi_cast<qreal*>(%env, %scope, %in, %out_size);"}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
@@ -12813,7 +12814,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                                   "    if(%4)\n"+
                                   "        *%4 = array[3];\n"+
                                   "    });\n"+
-                                  "jdoubleArray %out = qtjambi_array_cast<jdoubleArray>(%env, %scope, array, 4);"}
+                                  "jdoubleArray %out = qtjambi_cast<jdoubleArray>(%env, %scope, array, 4);"}
                 }
             }
             ModifyArgument{
@@ -12954,7 +12955,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "jsize %out_size = 4;\n"+
-                                  "qreal* %out = qtjambi_array_cast<qreal*>(%env, %scope, %in, %out_size);"}
+                                  "qreal* %out = qtjambi_cast<qreal*>(%env, %scope, %in, %out_size);"}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
@@ -13795,7 +13796,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "jsize %out_size = 4;\n"+
-                                  "qreal* %out = qtjambi_array_cast<qreal*>(%env, %scope, %in, %out_size);"}
+                                  "qreal* %out = qtjambi_cast<qreal*>(%env, %scope, %in, %out_size);"}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
@@ -13887,7 +13888,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "jsize %out_size = 4;\n"+
-                                  "qreal* %out = qtjambi_array_cast<qreal*>(%env, %scope, %in, %out_size);"}
+                                  "qreal* %out = qtjambi_cast<qreal*>(%env, %scope, %in, %out_size);"}
                 }
             }
             ModifyArgument{

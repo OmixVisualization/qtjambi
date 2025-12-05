@@ -30,39 +30,14 @@
 ****************************************************************************/
 
 #include <QtCore/qcompilerdetection.h>
-
 QT_WARNING_DISABLE_DEPRECATED
 
-#include "qtjambiapi.h"
-#include "java_p.h"
-#include "qtjambilink_p.h"
-#include "threadapi.h"
-#include "threadutils_p.h"
+#include "pch_p.h"
 #include <QtCore/private/qthread_p.h>
 #include <QtCore/private/qobject_p.h>
-
-#include <qglobal.h>
-
-#include <QtCore/QAbstractItemModel>
-#include <QtCore/QCoreApplication>
 #include <QtCore/private/qcoreapplication_p.h>
-#include <QtCore/QDir>
-#include <QtCore/QEvent>
-#include <QtCore/QFileInfo>
-#include <QtCore/QLibrary>
-#include <QtCore/QMetaMethod>
-#include <QtCore/QMetaObject>
-#include <QtCore/QSettings>
-#include <QtCore/QStringList>
-#include <QtCore/QThread>
 #include <QtCore/private/qthread_p.h>
-#include <QtCore/QVariant>
-#include <QtCore/QTextStream>
-#include <QtCore/QMutex>
-#include <QtCore/QAbstractEventDispatcher>
-#include <QtCore/QSemaphore>
-#include <stdio.h>
-#include <string.h>
+
 #if defined(Q_OS_LINUX)
 #include <sys/syscall.h>
 #include <unistd.h>
@@ -89,11 +64,7 @@ bool threadRequiresCoreApplication(QThread* thread){
 #endif
 }
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#define MutexLocker QMutexLocker
-#else
 #define MutexLocker QMutexLocker<QMutex>
-#endif
 
 AbstractThreadEvent::AbstractThreadEvent()
     : QEvent(QEvent::DeferredDelete)

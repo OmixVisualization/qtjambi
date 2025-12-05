@@ -159,10 +159,12 @@ public class GeneratorTask extends Task {
         if(outputPreprocessFile != null)
             commandList.add("--output-preprocess-file=" + outputPreprocessFile);
         
+        PropertyHelper props = PropertyHelper.getPropertyHelper(getProject());
+
         if(qtjambiVersion!=null)
         	commandList.add("--qtjambi-version=" + qtjambiVersion);
-
-        PropertyHelper props = PropertyHelper.getPropertyHelper(getProject());
+        else
+        	commandList.add("--qtjambi-version=" + props.getProperty("qtjambi.patchversion"));
 
         Object o;
 		o = AntUtil.getProperty(props, Constants.GENERATOR_PREPROC_DEFINES);

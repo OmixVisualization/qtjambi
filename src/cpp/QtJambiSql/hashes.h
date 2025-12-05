@@ -33,7 +33,7 @@
 #include <QtSql/QtSql>
 #include <QtJambi/Global>
 
-inline hash_type qHash(const QSqlError &value, hash_type seed = 0)
+inline size_t qHash(const QSqlError &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -49,18 +49,14 @@ inline hash_type qHash(const QSqlError &value, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QSqlField &value, hash_type seed = 0)
+inline size_t qHash(const QSqlField &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
 #else
     QtPrivate::QHashCombine hash(seed);
 #endif
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    seed = hash(seed, QMetaType::typeName(value.type()));
-#else
     seed = hash(seed, value.metaType().name());
-#endif
     seed = hash(seed, int(value.requiredStatus()));
     seed = hash(seed, value.name());
     seed = hash(seed, value.tableName());
@@ -77,7 +73,7 @@ inline hash_type qHash(const QSqlField &value, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QSqlRecord &value, hash_type seed = 0)
+inline size_t qHash(const QSqlRecord &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombineCommutative hash;

@@ -44,4 +44,17 @@ QString Modification::accessModifierString() const {
     return QString();
 }
 
+FieldModification::FieldModification()
+    : name(),
+    modified_type(),
+    modified_java_type(),
+    modified_jni_type(),
+    ownerships(),
+    referenceCounts(),
+    conversion_rules(),
+    no_null_pointers(false)
+{}
+bool FieldModification::isReadable() const { return modifiers & Readable; }
+bool FieldModification::isWritable() const { return modifiers & Writable; }
+
 }

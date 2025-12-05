@@ -29,14 +29,7 @@
 **
 ****************************************************************************/
 
-#include "qtjambiapi.h"
-
-#include "java_p.h"
-#ifdef Q_OS_ANDROID
-#include "androidapi.h"
-#endif
-#include "registryutil_p.h"
-#include <QtCore/QMutex>
+#include "pch_p.h"
 
 #ifdef POST_CLASS_REF_ACTION
 #undef POST_CLASS_REF_ACTION
@@ -798,32 +791,21 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QAssociativeConstIterator,
 )
 
 QTJAMBI_REPOSITORY_DEFINE_EMPTY_CLASS(io/qt/core,QByteArray)
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 QTJAMBI_REPOSITORY_DEFINE_EMPTY_CLASS(io/qt/core,QByteArrayView)
-#endif
 
 QTJAMBI_REPOSITORY_DEFINE_EMPTY_CLASS(io/qt/core,QObject)
 
     QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QFutureWatcher,
-        QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(JJJ)
+        QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;)
         QTJAMBI_REPOSITORY_DEFINE_METHOD(future,()Lio/qt/core/QFuture;)
+        QTJAMBI_REPOSITORY_DEFINE_FIELD(futureSetter,J)
+        QTJAMBI_REPOSITORY_DEFINE_FIELD(futureResult,J)
+        QTJAMBI_REPOSITORY_DEFINE_FIELD(futureGetter,J)
+        QTJAMBI_REPOSITORY_DEFINE_FIELD(futureInterfaceGetter,J)
     )
 
     QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QFuture,
-        QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/core/QFutureInterfaceBase;Z)
-        QTJAMBI_REPOSITORY_DEFINE_FIELD(d,Lio/qt/core/QFutureInterfaceBase;)
     )
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QPromise,
-        QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/core/QFutureInterfaceBase;Z)
-        QTJAMBI_REPOSITORY_DEFINE_FIELD(d,Lio/qt/core/QFutureInterfaceBase;)
-        QTJAMBI_REPOSITORY_DEFINE_FIELD(nativeInstance,Lio/qt/core/QPromise$NativeInstance;)
-    )
-    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QPromise$NativeInstance,
-        QTJAMBI_REPOSITORY_DEFINE_FIELD(promise,Lio/qt/core/QPromise;)
-    )
-#endif
-
     QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QAbstractItemModel,
                                     )
     QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QFutureInterface,
@@ -1411,18 +1393,20 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt,QFlags,
     QTJAMBI_REPOSITORY_DEFINE_METHOD(setIntValue,(I)V)
 )
 
-QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt,QLongFlags,
-    QTJAMBI_REPOSITORY_DEFINE_METHOD(longValue,()J)
-    QTJAMBI_REPOSITORY_DEFINE_METHOD(setLongValue,(J)V)
-)
-
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt,QFlags$ConcreteWrapper,
     QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(I)
 )
 
+#if QT_VERSION >= QT_VERSION_CHECK(6,9,0)
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt,QLongFlags,
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(longValue,()J)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(setLongValue,(J)V)
+)
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt,QLongFlags$ConcreteWrapper,
     QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(J)
 )
+
+#endif
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt,QtEnumerator,
                                 QTJAMBI_REPOSITORY_DEFINE_METHOD(value,()I)
@@ -1793,17 +1777,17 @@ QTJAMBI_REPOSITORY_DEFINE_METHOD(getReturnType,()Ljava/lang/Class;)
 
 #ifdef Q_OS_ANDROID
 namespace Android{
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-QTJAMBI_REPOSITORY_DEFINE_CLASS(org/qtproject/qt5/android,QtNative,
-              QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(activity, ()Landroid/app/Activity;)
-              QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(service, ()Landroid/app/Service;)
-              QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(getContext, ()Landroid/content/Context;))
-#else
+#if QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
+QTJAMBI_REPOSITORY_DEFINE_CLASS(org/qtproject/qt/android,QtNativeAccessibility,)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 10, 1)
+QTJAMBI_REPOSITORY_DEFINE_CLASS(org/qtproject/qt/android,QtActivityDelegateBase,)
+#endif // QT_VERSION >= QT_VERSION_CHECK(6, 10, 1)
+#endif // QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
+
 QTJAMBI_REPOSITORY_DEFINE_CLASS(org/qtproject/qt/android,QtNative,
               QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(activity, ()Landroid/app/Activity;)
               QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(service, ()Landroid/app/Service;)
               QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(getContext, ()Landroid/content/Context;))
-#endif
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(android/content,Context,
               QTJAMBI_REPOSITORY_DEFINE_METHOD(getApplicationInfo, ()Landroid/content/pm/ApplicationInfo;))

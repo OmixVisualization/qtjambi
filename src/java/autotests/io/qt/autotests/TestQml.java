@@ -41,6 +41,8 @@ import io.qt.autotests.generated.*;
 import io.qt.core.*;
 import io.qt.gui.*;
 import io.qt.qml.*;
+import io.qt.qml.QQmlIncubationController.WhileFlag;
+import io.qt.qml.QQmlIncubator.Status;
 import io.qt.quick.*;
 import io.qt.quick.widgets.*;
 import io.qt.widgets.*;
@@ -307,6 +309,78 @@ public class TestQml extends ApplicationInitializer{
 		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
 		Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
 		QObject root = component.create();
+		Assert.assertTrue(root instanceof TestObject);
+		TestObject backEnd = (TestObject)root;
+//		backEnd.event(new QEvent(QEvent.Type.User));
+		Assert.assertEquals("backend", backEnd.objectName());
+		backEnd.setUserName("test");
+		Assert.assertEquals("test", backEnd.userName());
+		Assert.assertEquals("test", backEnd.userName2());
+		Assert.assertEquals(2, backEnd._testChildren.size());
+		Assert.assertEquals("child1", backEnd._testChildren.get(0).objectName());
+		Assert.assertEquals("child1", backEnd.testChildren().at(0).objectName());
+		Assert.assertEquals("child2", backEnd._testChildren.get(1).objectName());
+		Assert.assertEquals("child2", backEnd.testChildren().at(1).objectName());
+		Assert.assertEquals(id, QtQml.qmlTypeId("io.qt.test", 1, 0, "TestObject"));
+	}
+	
+	@Test
+    public void run_testIncubated() {
+		QtQml.qmlClearTypeRegistrations();
+		QtQml.qmlRegisterType(TestChild.class, "io.qt.test", 1, 0, "TestChild");
+		int id = QtQml.qmlRegisterType(TestObject.class, "io.qt.test", 1, 0, "TestObject");
+		QByteArray data = new QByteArray("import io.qt.test 1.0\n" + 
+				"import QtQuick 2.0\n" + 
+				"TestObject {\n" + 
+				"    id: backend\n" + 
+				"    objectName: \"backend\"\n" +
+				"    onUserNameChanged: userName2 = userName\n" +
+				"    testChildren: [TestChild{objectName: \"child1\"}, TestChild{objectName: \"child2\"}]\n" +
+				"}");
+		QQmlEngine engine = new QQmlEngine();
+		class PeriodicIncubationController extends QObject implements QQmlIncubationController {
+			private final int timer;
+			public PeriodicIncubationController() {
+				timer = startTimer(16);
+			}
+			public void stop() {
+				killTimer(timer);
+				disposeLater();
+			}
+			protected void timerEvent(QTimerEvent e){
+				incubateFor(5);
+			}
+		};
+		PeriodicIncubationController control = new PeriodicIncubationController();
+		engine.setIncubationController(control);
+		QQmlComponent component = new QQmlComponent(engine);
+		component.setData(data, (QUrl)null);
+		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
+		Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
+		QEventLoop loop = new QEventLoop();
+		QQmlIncubator incubator = new QQmlIncubator(QQmlIncubator.IncubationMode.Asynchronous) {
+			@Override
+			protected void statusChanged(@NonNull Status status) {
+				switch(status) {
+				case Loading:
+					break;
+				case Null:
+					break;
+				case Error:
+				case Ready:
+					loop.quit();
+					break;
+				default:
+					break;
+				}
+			}
+		};
+		component.create(incubator);
+		if(incubator.isLoading())
+			loop.exec();
+		engine.setIncubationController(null);
+		control.stop();
+		QObject root = incubator.object();
 		Assert.assertTrue(root instanceof TestObject);
 		TestObject backEnd = (TestObject)root;
 //		backEnd.event(new QEvent(QEvent.Type.User));

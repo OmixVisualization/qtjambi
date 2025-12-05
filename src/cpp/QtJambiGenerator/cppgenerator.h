@@ -83,7 +83,7 @@ public:
     static QString shellClassName(const MetaFunctional *java_class);
     static QStringList getFunctionPPConditions(const MetaFunction *java_function);
 
-    static QString translateType(const MetaType *java_type, Option option = NoOption);
+    static QString jniName(const MetaType *java_type, Option option = NoOption);
 
     static QString marshalledArguments(const MetaFunction *java_function);
 

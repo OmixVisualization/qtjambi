@@ -50,10 +50,10 @@
 #include <QtCore/qcompilerdetection.h>
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 9, 0)
-#define __GLIBCXX__
-#include <QtCore/qcompare.h>
-#undef __GLIBCXX__
-#endif
+#   define __GLIBCXX__
+#   include <QtCore/qcompare.h>
+#   undef __GLIBCXX__
+#endif // QT_VERSION >= QT_VERSION_CHECK(6, 9, 0)
 
 #define seed_seq initializer_list<uint>const
 
@@ -75,8 +75,8 @@
 #define QSETTINGS_H
 #include <QtCore/QtCore>
 #if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0) && !defined(QPERMISSIONS_H)
-#include <QtCore/qpermissions.h>
-#endif
+#   include <QtCore/qpermissions.h>
+#endif // QT_VERSION >= QT_VERSION_CHECK(6, 5, 0) && !defined(QPERMISSIONS_H)
 #include <QtCore/qfloat16.h>
 #undef QSETTINGS_H
 #define Q_OS_WIN
@@ -91,59 +91,22 @@
 #define GL_COLOR_BUFFER_BIT               0x00004000
 
 #ifndef QTJAMBI_NO_GUI
-#define QACCESSIBLE_H
-#undef QSCREEN_PLATFORM_H
+#   define QACCESSIBLE_H
+#   undef QSCREEN_PLATFORM_H
 typedef struct __GLsync *GLsync;
-#include <QtGui/QtGui>
+#   include <QtGui/QtGui>
 typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const void *userParam);
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#include <QtGui/QOpenGLFunctions_1_0>
-#include <QtGui/QOpenGLFunctions_1_1>
-#include <QtGui/QOpenGLFunctions_1_2>
-#include <QtGui/QOpenGLFunctions_1_3>
-#include <QtGui/QOpenGLFunctions_1_4>
-#include <QtGui/QOpenGLFunctions_1_5>
-#include <QtGui/QOpenGLFunctions_2_0>
-#include <QtGui/QOpenGLFunctions_2_1>
-#include <QtGui/QOpenGLFunctions_3_0>
-#include <QtGui/QOpenGLFunctions_3_1>
-#include <QtGui/QOpenGLFunctions_3_2_Compatibility>
-#include <QtGui/QOpenGLFunctions_3_2_Core>
-#include <QtGui/QOpenGLFunctions_3_3_Compatibility>
-#include <QtGui/QOpenGLFunctions_3_3_Core>
-#include <QtGui/QOpenGLFunctions_4_0_Compatibility>
-#include <QtGui/QOpenGLFunctions_4_0_Core>
-#include <QtGui/QOpenGLFunctions_4_1_Compatibility>
-#include <QtGui/QOpenGLFunctions_4_1_Core>
-#include <QtGui/QOpenGLFunctions_4_2_Compatibility>
-#include <QtGui/QOpenGLFunctions_4_2_Core>
-#include <QtGui/QOpenGLFunctions_4_3_Compatibility>
-#include <QtGui/QOpenGLFunctions_4_3_Core>
-#include <QtGui/QOpenGLFunctions_4_4_Compatibility>
-#include <QtGui/QOpenGLFunctions_4_4_Core>
-#include <QtGui/QOpenGLFunctions_4_5_Compatibility>
-#include <QtGui/QOpenGLFunctions_4_5_Core>
 
-#ifndef QT_OPENGL_ES_2
-#define QT_OPENGL_ES_2
-#include <QtGui/qopenglfunctions_es2.h>
-#undef QT_OPENGL_ES_2
-#else
-#include <QtGui/QOpenGLFunctions_ES2>
-#endif
+#   undef QACCESSIBLE_H
+#   define quint64 bool
+#   include <QtGui/qaccessible.h>
+#   undef quint64
+#   include <QtGui/qpa/qplatformintegration.h>
 
-#endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-
-#undef QACCESSIBLE_H
-#define quint64 bool
-#include <QtGui/qaccessible.h>
-#undef quint64
-#include <QtGui/qpa/qplatformintegration.h>
-
-#if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
-#include <QtGui/rhi/qrhi.h>
-#include <QtGui/rhi/qshader.h>
-#include <QtGui/rhi/qshaderdescription.h>
+#   if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
+#       include <QtGui/rhi/qrhi.h>
+#       include <QtGui/rhi/qshader.h>
+#       include <QtGui/rhi/qshaderdescription.h>
 #       ifndef Q_OS_WIN
 #       	define Q_OS_WIN
 #       	ifndef Q_OS_MACOS
@@ -167,498 +130,417 @@ typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,
 #		else
 #       	include <QtGui/rhi/qrhi_platform.h>
 #		endif
-#include <QtJambiGuiRhi/hashes.h>
-#endif
+#       include <QtJambiGuiRhi/hashes.h>
+#   endif // QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
-#include <QtGui/qutimimeconverter.h>
-#include <QtGui/qwindowsmimeconverter.h>
-#endif
+#   if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+#       include <QtGui/qutimimeconverter.h>
+#       include <QtGui/qwindowsmimeconverter.h>
+#   endif // QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#include <QtPlatformHeaders/QtPlatformHeaders>
-#endif
-#include <QtJambiGui/hashes.h>
-#endif
-
+#   include <QtJambiGui/hashes.h>
+#endif // QTJAMBI_NO_GUI
 
 #ifndef QTJAMBI_NO_NETWORK
-#include <QtNetwork/qtnetworkglobal.h>
-#undef QT_NO_SSL
-#include <QtNetwork/QtNetwork>
-#include <QtJambiNetwork/hashes.h>
-#endif
+#   include <QtNetwork/qtnetworkglobal.h>
+#   undef QT_NO_SSL
+#   include <QtNetwork/QtNetwork>
+#   include <QtJambiNetwork/hashes.h>
+#endif // QTJAMBI_NO_NETWORK
 
 #ifndef QTJAMBI_NO_WIDGETS
-#include <QtWidgets/QtWidgets>
-#include <QtJambiWidgets/hashes.h>
-#endif
+#   include <QtWidgets/QtWidgets>
+#   include <QtJambiWidgets/hashes.h>
+#endif // QTJAMBI_NO_WIDGETS
 
 #ifndef QTJAMBI_NO_UITOOLS
-#include <QtUiTools/QtUiTools>
-#endif
+#   include <QtUiTools/QtUiTools>
+#endif // QTJAMBI_NO_UITOOLS
 
 #ifndef QTJAMBI_NO_ACTIVEX
-#ifdef Q_OBJECT_FAKE
-#undef Q_OBJECT_FAKE
-#endif
-#define Q_OBJECT_FAKE
-#if QT_VERSION < QT_VERSION_CHECK(6, 5, 0)
-#include <ActiveQt/ActiveQt>
-#else
-#include <ActiveQt/QtActiveQt>
-#endif
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-#include <QtAxContainer/QtAxContainer>
-#endif
-#endif
+#   ifdef Q_OBJECT_FAKE
+#       undef Q_OBJECT_FAKE
+#   endif // Q_OBJECT_FAKE
+#   define Q_OBJECT_FAKE
+#   if QT_VERSION < QT_VERSION_CHECK(6, 5, 0)
+#       include <ActiveQt/ActiveQt>
+#   else
+#       include <ActiveQt/QtActiveQt>
+#   endif // QT_VERSION < QT_VERSION_CHECK(6, 5, 0)
+#   include <QtAxContainer/QtAxContainer>
+#endif // QTJAMBI_NO_ACTIVEX
 
 #ifndef QTJAMBI_NO_DESIGNER
-#define DEPRECATED_HEADER_QtDesigner_customwidget_h
-#include <QtUiPlugin/QtUiPlugin>
-#include <QtDesigner/QtDesigner>
-#endif
+#   define DEPRECATED_HEADER_QtDesigner_customwidget_h
+#   include <QtUiPlugin/QtUiPlugin>
+#   include <QtDesigner/QtDesigner>
+#endif // QTJAMBI_NO_DESIGNER
+
 #ifndef QTJAMBI_NO_UI4
-#include <QtDesigner/private/ui4_p.h>
-#endif
+#   include <QtDesigner/private/ui4_p.h>
+#endif // QTJAMBI_NO_UI4
 
 #ifndef QTJAMBI_NO_QML
-#include <QtQml/QtQml>
-#include <QtJambiQml/hashes.h>
-#endif
+#   include <QtQml/QtQml>
+#   include <QtJambiQml/hashes.h>
+#endif // QTJAMBI_NO_QML
 
 #ifndef QTJAMBI_NO_QUICK
-#   if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#       include <QtQuick/QtQuick>
-#		define Q_QUICK_PRIVATE_EXPORT
-#   else
-#		include <QtQuick/qtquickglobal.h>
-#       ifndef Q_OS_WIN
-#       	define Q_OS_WIN
-#       	ifndef Q_OS_MACOS
-#       		define Q_OS_MACOS
-#       		define Q_OS_APPLE
-#       		include <QtQuick/QQuickRenderTarget>
-#       		include <QtQuick/QQuickGraphicsDevice>
-#       		undef Q_OS_MACOS
-#       		undef Q_OS_APPLE
-#			else
-#       		include <QtQuick/QQuickRenderTarget>
-#       		include <QtQuick/QQuickGraphicsDevice>
-#			endif
-#       	undef Q_OS_WIN
-#       elif !defined(Q_OS_MACOS)
-#       	define Q_OS_MACOS
+#   include <QtQuick/qtquickglobal.h>
+#   ifndef Q_OS_WIN
+#       define Q_OS_WIN
+#       ifndef Q_OS_MACOS
+#           define Q_OS_MACOS
 #       	define Q_OS_APPLE
-#       		include <QtQuick/QQuickRenderTarget>
-#       		include <QtQuick/QQuickGraphicsDevice>
-#       	undef Q_OS_MACOS
+#   		include <QtQuick/QQuickRenderTarget>
+#    		include <QtQuick/QQuickGraphicsDevice>
+#           undef Q_OS_MACOS
 #       	undef Q_OS_APPLE
-#		else
-#       	include <QtQuick/QQuickRenderTarget>
+#   	else
+#    		include <QtQuick/QQuickRenderTarget>
+#           include <QtQuick/QQuickGraphicsDevice>
+#       endif
+#   	undef Q_OS_WIN
+#    elif !defined(Q_OS_MACOS)
+#       define Q_OS_MACOS
+#   	define Q_OS_APPLE
+#           include <QtQuick/QQuickRenderTarget>
 #       	include <QtQuick/QQuickGraphicsDevice>
-#		endif
-#       include <QtQuick/QtQuick>
-#   endif
-#	include <QtQuick/private/qquickevents_p_p.h>
+#   	undef Q_OS_MACOS
+#    	undef Q_OS_APPLE
+#   else
+#       include <QtQuick/QQuickRenderTarget>
+#   	include <QtQuick/QQuickGraphicsDevice>
+#	endif
+#   include <QtQuick/QtQuick>
+#   include <QtQuick/private/qquickevents_p_p.h>
 #   include <QtJambiQuick/hashes.h>
-#endif
+#endif // QTJAMBI_NO_QUICK
 
 #ifndef QTJAMBI_NO_QUICKWIDGETS
-#include <QtQuickWidgets/QtQuickWidgets>
-#endif
+#   include <QtQuickWidgets/QtQuickWidgets>
+#endif // QTJAMBI_NO_QUICKWIDGETS
 
 #ifndef QTJAMBI_NO_QUICKTEST
-#include <QtQuickTest/QtQuickTest>
-#endif
+#   include <QtQuickTest/QtQuickTest>
+#endif // QTJAMBI_NO_QUICKTEST
 
 #ifndef QTJAMBI_NO_QUICKCONTROLS2
-#include <QtQuickControls2/QtQuickControls2>
-#endif
+#   include <QtQuickControls2/QtQuickControls2>
+#endif // QTJAMBI_NO_QUICKCONTROLS2
 
 #ifndef QTJAMBI_NO_XML
-#include <QtXml/QtXml>
-#include <QtJambiXml/hashes.h>
-#endif
+#   include <QtXml/QtXml>
+#   include <QtJambiXml/hashes.h>
+#endif // QTJAMBI_NO_XML
 
 #ifndef QTJAMBI_NO_PRINTSUPPORT
     #include <QtPrintSupport/QtPrintSupport>
-#endif
+#endif // QTJAMBI_NO_PRINTSUPPORT
 #ifndef QTJAMBI_NO_CONCURRENT
     #include <QtConcurrent/QtConcurrent>
-#endif
+#endif // QTJAMBI_NO_CONCURRENT
 
 #ifndef QTJAMBI_NO_NETWORKAUTH
-#include <QtNetworkAuth/QtNetworkAuth>
-#endif
+#   include <QtNetworkAuth/QtNetworkAuth>
+#endif // QTJAMBI_NO_NETWORKAUTH
 
 #ifndef QTJAMBI_NO_VIRTUAL_KEYBOARD
-#include <QtVirtualKeyboard/QtVirtualKeyboard>
-#endif
+#   include <QtVirtualKeyboard/QtVirtualKeyboard>
+#endif // QTJAMBI_NO_VIRTUAL_KEYBOARD
 
 #ifndef QTJAMBI_NO_QUICK3D
-#include <QtQuick3D/QtQuick3D>
-#include <QtJambiQuick3D/hashes.h>
-#endif
+#   include <QtQuick3D/QtQuick3D>
+#   include <QtJambiQuick3D/hashes.h>
+#endif // QTJAMBI_NO_QUICK3D
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 6, 0)
-#ifndef QTJAMBI_NO_DATA_VISUALIZATION
-#include <QtDataVisualization/QtDataVisualization>
-#include <QtJambiDataVisualization/hashes.h>
-#endif
-#ifndef QTJAMBI_NO_CHARTS
-#include <QtCharts/QtCharts>
-#endif
+#   ifndef QTJAMBI_NO_DATA_VISUALIZATION
+#       include <QtDataVisualization/QtDataVisualization>
+#       include <QtJambiDataVisualization/hashes.h>
+#   endif
+#   ifndef QTJAMBI_NO_CHARTS
+#       include <QtCharts/QtCharts>
+#   endif
 #else
-#ifndef QTJAMBI_NO_GRAPHS
-#include <QtGraphs/QtGraphs>
-#include <QtJambiGraphs/hashes.h>
-#endif
-
-#ifndef QTJAMBI_NO_GRAPHS_WIDGETS
-#include <QtGraphsWidgets/QtGraphsWidgets>
-#endif
-#endif
+#   ifndef QTJAMBI_NO_GRAPHS
+#       include <QtGraphs/QtGraphs>
+#       include <QtJambiGraphs/hashes.h>
+#   endif
+#   ifndef QTJAMBI_NO_GRAPHS_WIDGETS
+#       include <QtGraphsWidgets/QtGraphsWidgets>
+#   endif
+#endif // QT_VERSION < QT_VERSION_CHECK(6, 6, 0)
 
 #ifndef QTJAMBI_NO_LOTTIE
-#include <QtBodymovin/QtBodymovin>
+#   include <QtBodymovin/QtBodymovin>
 #endif
 
 #ifndef QTJAMBI_NO_SQL
-#ifdef QT_WIDGETS_LIB
-#  include <QtSql/QtSql>
-#else
-#define QT_WIDGETS_LIB
-#  include <QtSql/QtSql>
-#undef QT_WIDGETS_LIB
-#endif
-#  include <QtJambiSql/hashes.h>
+#   ifdef QT_WIDGETS_LIB
+#       include <QtSql/QtSql>
+#   else
+#       define QT_WIDGETS_LIB
+#       include <QtSql/QtSql>
+#       undef QT_WIDGETS_LIB
+#   endif
+#   include <QtJambiSql/hashes.h>
 #endif
 
 #ifndef QTJAMBI_NO_SVG
-#  include <QtSvg/QtSvg>
+#   include <QtSvg/QtSvg>
 #endif
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #ifndef QTJAMBI_NO_SVGWIDGETS
-#  include <QtSvgWidgets/QtSvgWidgets>
-#endif
+#   include <QtSvgWidgets/QtSvgWidgets>
 #endif
 
 #ifndef QTJAMBI_NO_HELP
-#  include <QtHelp/QtHelp>
-#  include <QtJambiHelp/hashes.h>
+#   include <QtHelp/QtHelp>
+#   include <QtJambiHelp/hashes.h>
 #endif
 
 #ifndef QTJAMBI_NO_MULTIMEDIA
-#  include <QtMultimedia/QtMultimedia>
-#include <QtJambiMultimedia/hashes.h>
-#if QT_VERSION>=0x050000
-#ifndef QTJAMBI_NO_MULTIMEDIAWIDGETS
-#  include <QtMultimediaWidgets/QtMultimediaWidgets>
-#endif
-#endif
-
-#endif
-#ifndef QTJAMBI_NO_SCRIPT
-#  include <QtScript/QtScript>
-#  include <QtJambiScript/hashes.h>
-#endif
-
-#ifndef QTJAMBI_NO_SCRIPTTOOLS
-# if QT_VERSION >= 0x040600
-#  include <QtScriptTools/QtScriptTools>
-# endif
+#   include <QtMultimedia/QtMultimedia>
+#   include <QtJambiMultimedia/hashes.h>
+#   ifndef QTJAMBI_NO_MULTIMEDIAWIDGETS
+#       include <QtMultimediaWidgets/QtMultimediaWidgets>
+#   endif
 #endif
 
 #ifndef QTJAMBI_NO_XMLPATTERNS
-#  include <QtXmlPatterns/QtXmlPatterns>
-#  include <QtJambiXmlPatterns/hashes.h>
+#   include <QtXmlPatterns/QtXmlPatterns>
+#   include <QtJambiXmlPatterns/hashes.h>
 #endif
 
 #ifndef QTJAMBI_NO_DBUS
-# if QT_VERSION >= 0x040200
-#  include <QtDBus/QtDBus>
-# endif
+#   include <QtDBus/QtDBus>
 #endif
 
 #ifndef QTJAMBI_NO_TEST
-#define QT_WIDGETS_LIB
-#  include <QtTest/QtTest>
-#  include <QtGui/qtestsupport_gui.h>
-#  include <QtWidgets/qtestsupport_widgets.h>
-#  include <QtCore/qtestsupport_core.h>
-#  include <QtTest/qtest_gui.h>
-#  include <QtTest/qtest_widgets.h>
-#  include <QtTest/qtest_network.h>
-#  include <QtTest/qtestsystem.h>
+#   define QT_WIDGETS_LIB
+#   include <QtTest/QtTest>
+#   include <QtGui/qtestsupport_gui.h>
+#   include <QtWidgets/qtestsupport_widgets.h>
+#   include <QtCore/qtestsupport_core.h>
+#   include <QtTest/qtest_gui.h>
+#   include <QtTest/qtest_widgets.h>
+#   include <QtTest/qtest_network.h>
+#   include <QtTest/qtestsystem.h>
 #endif
-
-
-# if QT_VERSION >= 0x050000
 
 #ifndef QTJAMBI_NO_WEBENGINECORE
-#include <QtJambiWebEngineCore/hashes.h>
-#include <QtWebEngineCore/QtWebEngineCore>
+#   include <QtJambiWebEngineCore/hashes.h>
+#   include <QtWebEngineCore/QtWebEngineCore>
+#endif
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #ifndef QTJAMBI_NO_WEBENGINEQUICK
-#include <QtWebEngineQuick/QtWebEngineQuick>
+#   include <QtWebEngineQuick/QtWebEngineQuick>
 #endif
-#else
-#ifndef QTJAMBI_NO_WEBENGINE
-#include <QtWebEngine/QtWebEngine>
-#endif
-#endif
-
 #ifndef QTJAMBI_NO_WEBENGINEWIDGETS
-#include <QtWebEngineWidgets/QtWebEngineWidgets>
-#include <QtJambiWebEngineWidgets/hashes.h>
-#endif
+#   include <QtWebEngineWidgets/QtWebEngineWidgets>
+#   include <QtJambiWebEngineWidgets/hashes.h>
 #endif
 
 #ifndef QTJAMBI_NO_WEBSOCKETS
-#include <QtWebSockets/QtWebSockets>
-#include <QtJambiWebSockets/hashes.h>
+#   include <QtWebSockets/QtWebSockets>
+#   include <QtJambiWebSockets/hashes.h>
 #endif
 
 #ifndef QTJAMBI_NO_WEBCHANNEL
-#include <QtWebChannel/QtWebChannel>
-#ifndef QTJAMBI_NO_WEBCHANNELQUICK
-#include <QtWebChannelQuick/QtWebChannelQuick>
+#   include <QtWebChannel/QtWebChannel>
 #endif
+
+#ifndef QTJAMBI_NO_WEBCHANNELQUICK
+#   include <QtWebChannelQuick/QtWebChannelQuick>
 #endif
 
 #ifndef QTJAMBI_NO_WEBVIEW
-#include <QtWebView/QtWebView>
+#   include <QtWebView/QtWebView>
 #endif
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#ifndef QTJAMBI_NO_WINEXTRAS
-#ifndef Q_OS_WIN
-#define Q_OS_WIN
-#include <QtWinExtras/QtWinExtras>
-#undef Q_OS_WIN
-#else
-#include <QtWinExtras/QtWinExtras>
-#endif
-#endif
-
-#ifndef QTJAMBI_NO_MACEXTRAS
-#ifndef Q_OS_OSX
-#define Q_OS_OSX
-#include <QtMacExtras/QtMacExtras>
-#undef Q_OS_OSX
-#else
-#include <QtMacExtras/QtMacExtras>
-#endif
-#endif
-
-#ifndef QTJAMBI_NO_X11EXTRAS
-#ifndef Q_OS_X11
-#define Q_OS_X11
-#include <QtX11Extras/QtX11Extras>
-#include <QtX11Extras/QX11Info>
-#undef Q_OS_X11
-#else
-#include <QtX11Extras/QtX11Extras>
-#include <QtX11Extras/QX11Info>
-#endif
-#endif
-#endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 
 #ifndef QTJAMBI_NO_SERIALPORT
-#include <QtSerialPort/QtSerialPort>
+#   include <QtSerialPort/QtSerialPort>
 #endif
 
 #ifndef QTJAMBI_NO_REMOTEOBJECTS
-#define QREMOTEOBJECTS_ABSTRACT_ITEM_MODEL_TYPES_H
-#define QREMOTEOBJECTSOURCE_H
-#include <QtRemoteObjects/QtRemoteObjects>
-#include <QtJambiRemoteObjects/hashes.h>
+#   define QREMOTEOBJECTS_ABSTRACT_ITEM_MODEL_TYPES_H
+#   define QREMOTEOBJECTSOURCE_H
+#   include <QtRemoteObjects/QtRemoteObjects>
+#   include <QtJambiRemoteObjects/hashes.h>
 #endif
 
 #ifndef QTJAMBI_NO_GAMEPAD
-#include <QtGamepad/QtGamepad>
+#   include <QtGamepad/QtGamepad>
 #endif
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #ifndef QTJAMBI_NO_STATEMACHINE
-#include <QtStateMachine/QtStateMachine>
-#endif
+#   include <QtStateMachine/QtStateMachine>
 #endif
 
 #ifndef QTJAMBI_NO_SCXML
-#include <QtScxml/QtScxml>
+#   include <QtScxml/QtScxml>
 #endif
 
 #ifndef QTJAMBI_NO_NFC
-#include <QtNfc/QtNfc>
-#include <QtJambiNfc/hashes.h>
+#   include <QtNfc/QtNfc>
+#   include <QtJambiNfc/hashes.h>
 #endif
 
 #ifndef QTJAMBI_NO_PURCHASING
-#include <QtPurchasing/QtPurchasing>
+#   include <QtPurchasing/QtPurchasing>
 #endif
 
 #ifndef QTJAMBI_NO_TEXTTOSPEECH
-#include <QtTextToSpeech/QtTextToSpeech>
-#include <QtJambiTextToSpeech/hashes.h>
+#   include <QtTextToSpeech/QtTextToSpeech>
+#   include <QtJambiTextToSpeech/hashes.h>
 #endif
 
 #ifndef QTJAMBI_NO_SERIALBUS
-#include <QtSerialBus/QtSerialBus>
-#include <QtJambiSerialBus/hashes.h>
+#   include <QtSerialBus/QtSerialBus>
+#   include <QtJambiSerialBus/hashes.h>
 #endif
 
 #ifndef QTJAMBI_NO_SENSORS
-#include <QtSensors/QtSensors>
+#   include <QtSensors/QtSensors>
 #endif
 
 //#define Q_COMPILER_EXPLICIT_OVERRIDES
 #ifndef QTJAMBI_NO_QT3DCORE
-#include <Qt3DCore/Qt3DCore>
+#   include <Qt3DCore/Qt3DCore>
 #endif
 
 #ifndef QTJAMBI_NO_QT3DQUICKSCENE2D
-#include <Qt3DQuickScene2D/Qt3DQuickScene2D>
+#   include <Qt3DQuickScene2D/Qt3DQuickScene2D>
 #endif
 
 #ifndef QTJAMBI_NO_QT3DINPUT
-#include <Qt3DInput/Qt3DInput>
-#include <QtJambi3DInput/hashes.h>
+#   include <Qt3DInput/Qt3DInput>
+#   include <QtJambi3DInput/hashes.h>
 #endif
 
 #ifndef QTJAMBI_NO_QT3DEXTRAS
-#include <Qt3DExtras/Qt3DExtras>
+#   include <Qt3DExtras/Qt3DExtras>
 #endif
 
 #ifndef QTJAMBI_NO_QT3DLOGIC
-#include <Qt3DLogic/Qt3DLogic>
+#   include <Qt3DLogic/Qt3DLogic>
 #endif
 
 #ifndef QTJAMBI_NO_QT3DQUICK
-#include <Qt3DQuick/Qt3DQuick>
+#   include <Qt3DQuick/Qt3DQuick>
 #endif
 
 #ifndef QTJAMBI_NO_QT3DQUICKEXTRAS
-#include <Qt3DQuickExtras/Qt3DQuickExtras>
+#   include <Qt3DQuickExtras/Qt3DQuickExtras>
 #endif
 
 #ifndef QTJAMBI_NO_QT3DRENDER
-#include <Qt3DRender/Qt3DRender>
-#include <QtJambi3DRender/hashes.h>
+#   include <Qt3DRender/Qt3DRender>
+#   include <QtJambi3DRender/hashes.h>
 #endif
 
 #ifndef QTJAMBI_NO_QT3DQUICKRENDER
-#include <Qt3DQuickRender/Qt3DQuickRender>
+#   include <Qt3DQuickRender/Qt3DQuickRender>
 #endif
 
 #ifndef QTJAMBI_NO_QT3DANIMATION
-#include <Qt3DAnimation/Qt3DAnimation>
-#include <QtJambi3DAnimation/hashes.h>
+#   include <Qt3DAnimation/Qt3DAnimation>
+#   include <QtJambi3DAnimation/hashes.h>
 #endif
 
 #ifndef QTJAMBI_NO_LOCATION
-#include <QtLocation/QtLocation>
-#include <QtJambiLocation/hashes.h>
+#   include <QtLocation/QtLocation>
+#   include <QtJambiLocation/hashes.h>
 #endif
 
 #ifndef QTJAMBI_NO_POSITIONING
-#include <QtPositioning/QtPositioning>
-#include <QtJambiPositioning/hashes.h>
+#   include <QtPositioning/QtPositioning>
+#   include <QtJambiPositioning/hashes.h>
 #endif
 
 #ifndef QTJAMBI_NO_BLUETOOTH
-#include <QtBluetooth/QtBluetooth>
-#include <QtJambiBluetooth/hashes.h>
+#   include <QtBluetooth/QtBluetooth>
+#   include <QtJambiBluetooth/hashes.h>
 #endif
 
 #if !defined(QTJAMBI_NO_INSIGHTTRACKER)
-#include <QtInsightTracker/QtInsightTracker>
+#   include <QtInsightTracker/QtInsightTracker>
 #endif
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-
 #ifndef QTJAMBI_NO_OPENGLWIDGETS
-#include <QtOpenGLWidgets/QtOpenGLWidgets>
+#   include <QtOpenGLWidgets/QtOpenGLWidgets>
 #endif
 
 #ifndef QTJAMBI_NO_PDF
-#include <QtPdf/QtPdf>
-#include <QtJambiPdf/hashes.h>
+#   include <QtPdf/QtPdf>
+#   include <QtJambiPdf/hashes.h>
 #endif
+
 #ifndef QTJAMBI_NO_PDFWIDGETS
-#include <QtPdfWidgets/QtPdfWidgets>
+#   include <QtPdfWidgets/QtPdfWidgets>
 #endif
 
 #if !defined(QTJAMBI_NO_HTTPSERVER) && QT_VERSION >= QT_VERSION_CHECK(6, 4, 0)
-#define QT_WEBSOCKETS_LIB
-#include <QtHttpServer/QtHttpServer>
-#include <QtJambiHttpServer/hashes.h>
+#   define QT_WEBSOCKETS_LIB
+#   include <QtHttpServer/QtHttpServer>
+#   include <QtJambiHttpServer/hashes.h>
 #endif
 
 #if !defined(QTJAMBI_NO_SPATIALAUDIO) && QT_VERSION >= QT_VERSION_CHECK(6, 4, 0)
-#include <QtSpatialAudio/QtSpatialAudio>
+#   include <QtSpatialAudio/QtSpatialAudio>
 #endif
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
-#ifndef QTJAMBI_NO_GRPC
-#include <QtGrpc/QtGrpc>
-#endif
-
-#ifndef QTJAMBI_NO_PROTOBUF
-#include <QtProtobuf/QtProtobuf>
-#endif
+#   ifndef QTJAMBI_NO_GRPC
+#       include <QtGrpc/QtGrpc>
+#   endif
+#   ifndef QTJAMBI_NO_PROTOBUF
+#       include <QtProtobuf/QtProtobuf>
+#   endif
 #endif //QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
 
 #ifndef QTJAMBI_NO_OPENGL
-
-#ifdef QT_NO_OPENGL
-#undef QT_NO_OPENGL
-#define QT_NO_OPENGL_BRIDGE
-#endif
-
-#include <QtOpenGL/QtOpenGL>
-#include <QtJambiOpenGL/hashes.h>
-#include <QtOpenGL/qopenglfunctions_es2.h>
-
-#define QTJAMBI_FEATURE_opengles2 -1
-
-#include <QtOpenGL/qopenglfunctions_1_0.h>
-#include <QtOpenGL/qopenglfunctions_1_1.h>
-#include <QtOpenGL/qopenglfunctions_1_2.h>
-#include <QtOpenGL/qopenglfunctions_1_3.h>
-#include <QtOpenGL/qopenglfunctions_1_4.h>
-#include <QtOpenGL/qopenglfunctions_1_5.h>
-#include <QtOpenGL/qopenglfunctions_2_0.h>
-#include <QtOpenGL/qopenglfunctions_2_1.h>
-#include <QtOpenGL/qopenglfunctions_3_0.h>
-#include <QtOpenGL/qopenglfunctions_3_1.h>
-#include <QtOpenGL/qopenglfunctions_3_2_compatibility.h>
-#include <QtOpenGL/qopenglfunctions_3_2_core.h>
-#include <QtOpenGL/qopenglfunctions_3_3_compatibility.h>
-#include <QtOpenGL/qopenglfunctions_3_3_core.h>
-#include <QtOpenGL/qopenglfunctions_4_0_compatibility.h>
-#include <QtOpenGL/qopenglfunctions_4_0_core.h>
-#include <QtOpenGL/qopenglfunctions_4_1_compatibility.h>
-#include <QtOpenGL/qopenglfunctions_4_1_core.h>
-#include <QtOpenGL/qopenglfunctions_4_2_compatibility.h>
-#include <QtOpenGL/qopenglfunctions_4_2_core.h>
-#include <QtOpenGL/qopenglfunctions_4_3_compatibility.h>
-#include <QtOpenGL/qopenglfunctions_4_3_core.h>
-#include <QtOpenGL/qopenglfunctions_4_4_compatibility.h>
-#include <QtOpenGL/qopenglfunctions_4_4_core.h>
-#include <QtOpenGL/qopenglfunctions_4_5_compatibility.h>
-#include <QtOpenGL/qopenglfunctions_4_5_core.h>
-
-#define QTJAMBI_FEATURE_opengles2 1
-
+#   ifdef QT_NO_OPENGL
+#       undef QT_NO_OPENGL
+#       define QT_NO_OPENGL_BRIDGE
+#   endif
+#   include <QtOpenGL/QtOpenGL>
+#   include <QtJambiOpenGL/hashes.h>
+#   include <QtOpenGL/qopenglfunctions_es2.h>
+#   define QTJAMBI_FEATURE_opengles2 -1
+#   include <QtOpenGL/qopenglfunctions_1_0.h>
+#   include <QtOpenGL/qopenglfunctions_1_1.h>
+#   include <QtOpenGL/qopenglfunctions_1_2.h>
+#   include <QtOpenGL/qopenglfunctions_1_3.h>
+#   include <QtOpenGL/qopenglfunctions_1_4.h>
+#   include <QtOpenGL/qopenglfunctions_1_5.h>
+#   include <QtOpenGL/qopenglfunctions_2_0.h>
+#   include <QtOpenGL/qopenglfunctions_2_1.h>
+#   include <QtOpenGL/qopenglfunctions_3_0.h>
+#   include <QtOpenGL/qopenglfunctions_3_1.h>
+#   include <QtOpenGL/qopenglfunctions_3_2_compatibility.h>
+#   include <QtOpenGL/qopenglfunctions_3_2_core.h>
+#   include <QtOpenGL/qopenglfunctions_3_3_compatibility.h>
+#   include <QtOpenGL/qopenglfunctions_3_3_core.h>
+#   include <QtOpenGL/qopenglfunctions_4_0_compatibility.h>
+#   include <QtOpenGL/qopenglfunctions_4_0_core.h>
+#   include <QtOpenGL/qopenglfunctions_4_1_compatibility.h>
+#   include <QtOpenGL/qopenglfunctions_4_1_core.h>
+#   include <QtOpenGL/qopenglfunctions_4_2_compatibility.h>
+#   include <QtOpenGL/qopenglfunctions_4_2_core.h>
+#   include <QtOpenGL/qopenglfunctions_4_3_compatibility.h>
+#   include <QtOpenGL/qopenglfunctions_4_3_core.h>
+#   include <QtOpenGL/qopenglfunctions_4_4_compatibility.h>
+#   include <QtOpenGL/qopenglfunctions_4_4_core.h>
+#   include <QtOpenGL/qopenglfunctions_4_5_compatibility.h>
+#   include <QtOpenGL/qopenglfunctions_4_5_core.h>
+#   define QTJAMBI_FEATURE_opengles2 1
 #endif
 
 #ifdef QT_NO_OPENGL_BRIDGE
-#undef QT_NO_OPENGL_BRIDGE
-#define QT_NO_OPENGL
+#   undef QT_NO_OPENGL_BRIDGE
+#   define QT_NO_OPENGL
 #endif
 
 #undef Q_OS_ANDROID_EMBEDDED
@@ -672,38 +554,35 @@ typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,
 #define __OBJC__
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 1, 0)
-#undef QCOREAPPLICATION_PLATFORM_H
-#include <QtCore/qcoreapplication_platform.h>
+#   undef QCOREAPPLICATION_PLATFORM_H
+#   include <QtCore/qcoreapplication_platform.h>
 #endif //QT_VERSION >= QT_VERSION_CHECK(6, 1, 0)
 
 #ifndef QTJAMBI_NO_GUI
-#undef QGUIAPPLICATION_P_H
-#include <QtGui/private/qguiapplication_p.h>
-#undef QGUIAPPLICATION_PLATFORM_H
-#if QT_VERSION >= QT_VERSION_CHECK(6, 1, 0)
-#include <QtGui/qguiapplication_platform.h>
-#endif //QT_VERSION >= QT_VERSION_CHECK(6, 1, 0)
-#include <QtGui/qoffscreensurface_platform.h>
+#   undef QGUIAPPLICATION_P_H
+#   include <QtGui/private/qguiapplication_p.h>
+#   undef QGUIAPPLICATION_PLATFORM_H
+#   if QT_VERSION >= QT_VERSION_CHECK(6, 1, 0)
+#       include <QtGui/qguiapplication_platform.h>
+#   endif //QT_VERSION >= QT_VERSION_CHECK(6, 1, 0)
+#   include <QtGui/qoffscreensurface_platform.h>
 
-#undef QOPENGLCONTEXT_PLATFORM_H
-#include <QtGui/qopenglcontext_platform.h>
+#   undef QOPENGLCONTEXT_PLATFORM_H
+#   include <QtGui/qopenglcontext_platform.h>
 
-#include <QtGui/qpa/qplatformwindow_p.h>
-#include <QtGui/qpa/qplatformscreen_p.h>
-#endif
+#   include <QtGui/qpa/qplatformwindow_p.h>
+#   include <QtGui/qpa/qplatformscreen_p.h>
+#endif // QTJAMBI_NO_GUI
+
 #ifndef QTJAMBI_NO_QUICK
-#undef QSGTEXTURE_PLATFORM_H
-#include <QtQuick/qsgtexture_platform.h>
-#endif
+#   undef QSGTEXTURE_PLATFORM_H
+#   include <QtQuick/qsgtexture_platform.h>
+#endif // QTJAMBI_NO_QUICK
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
-#undef QSCREEN_PLATFORM_H
-#define Q_OS_WIN32
-#define Q_OS_ANDROID
-#include <QtGui/qscreen_platform.h>
-#endif
-
-#endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-
-
+#   undef QSCREEN_PLATFORM_H
+#   define Q_OS_WIN32
+#   define Q_OS_ANDROID
+#   include <QtGui/qscreen_platform.h>
+#endif // QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
 

@@ -29,9 +29,7 @@
 **
 ****************************************************************************/
 
-#include "qtjambiapi.h"
-#include "java_p.h"
-#include "qtjambi_cast.h"
+#include "pch_p.h"
 
 extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_ReflectionUtility_privateLookup
 (JNIEnv *env,

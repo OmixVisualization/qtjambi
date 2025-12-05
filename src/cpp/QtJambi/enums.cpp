@@ -29,12 +29,7 @@
 **
 ****************************************************************************/
 
-#include <QtCore/QReadWriteLock>
-#include "registryutil_p.h"
-#include "java_p.h"
-#include "utils_p.h"
-
-#include "qtjambi_cast.h"
+#include "pch_p.h"
 
 struct SwitchTable{
     jfieldID field;

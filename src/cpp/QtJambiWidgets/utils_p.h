@@ -63,7 +63,7 @@ const QObject* getPointerOwner(const QTreeWidgetItem* __qt_this);
 const QObject* getPointerOwner(const QListWidgetItem* __qt_this);
 const QObject* getPointerOwner(const QTableWidgetItem* __qt_this);
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) && QT_VERSION < QT_VERSION_CHECK(6, 2, 0)
+#if QT_VERSION < QT_VERSION_CHECK(6, 2, 0)
 namespace QtJambiPrivate{
 template<>
 struct supports_qHash<QList<QPair<qreal,qreal>>> : std::false_type{};

@@ -771,7 +771,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "io.qt.core.QString"
+                    modifiedType: "io.qt.core.@NonNull QString"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -805,7 +805,7 @@ TypeSystem{
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, __qt_%1);"}
+                                  "%out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));"}
                 }
             }
             ModifyArgument{
@@ -834,7 +834,7 @@ TypeSystem{
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, __qt_%1);"}
+                                  "%out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));"}
                 }
             }
             ModifyArgument{
@@ -863,7 +863,7 @@ TypeSystem{
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, __qt_%1);"}
+                                  "%out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));"}
                 }
             }
             ModifyArgument{
@@ -892,7 +892,7 @@ TypeSystem{
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, __qt_%1);"}
+                                  "%out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));"}
                 }
             }
             ModifyArgument{
@@ -921,7 +921,7 @@ TypeSystem{
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, __qt_%1);"}
+                                  "%out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));"}
                 }
             }
             ModifyArgument{
@@ -950,7 +950,7 @@ TypeSystem{
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, __qt_%1);"}
+                                  "%out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));"}
                 }
             }
             ModifyArgument{
@@ -994,7 +994,7 @@ TypeSystem{
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, __qt_%1);"}
+                                  "%out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));"}
                 }
             }
             ModifyArgument{
@@ -1021,7 +1021,7 @@ TypeSystem{
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, __qt_%1);"}
+                                  "%out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));"}
                 }
             }
             ModifyArgument{
@@ -1048,7 +1048,7 @@ TypeSystem{
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, __qt_%1);"}
+                                  "%out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));"}
                 }
             }
             ModifyArgument{
@@ -1075,7 +1075,7 @@ TypeSystem{
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, __qt_%1);"}
+                                  "%out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));"}
                 }
             }
             ModifyArgument{
@@ -1102,7 +1102,7 @@ TypeSystem{
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, __qt_%1);"}
+                                  "%out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));"}
                 }
             }
             ModifyArgument{
@@ -1129,7 +1129,7 @@ TypeSystem{
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, __qt_%1);"}
+                                  "%out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));"}
                 }
             }
             ModifyArgument{
@@ -1156,7 +1156,7 @@ TypeSystem{
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, __qt_%1);"}
+                                  "%out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));"}
                 }
             }
             ModifyArgument{
@@ -1183,7 +1183,7 @@ TypeSystem{
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, __qt_%1);"}
+                                  "%out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));"}
                 }
             }
             ModifyArgument{
@@ -1210,7 +1210,7 @@ TypeSystem{
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, __qt_%1);"}
+                                  "%out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));"}
                 }
             }
             ModifyArgument{
@@ -1237,7 +1237,7 @@ TypeSystem{
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, __qt_%1);"}
+                                  "%out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));"}
                 }
             }
             ModifyArgument{
@@ -1264,7 +1264,7 @@ TypeSystem{
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, __qt_%1);"}
+                                  "%out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));"}
                 }
             }
             ModifyArgument{
@@ -1291,7 +1291,7 @@ TypeSystem{
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, __qt_%1);"}
+                                  "%out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));"}
                 }
             }
             ModifyArgument{
@@ -1810,40 +1810,6 @@ TypeSystem{
     }
     
     ObjectType{
-        name: "QDBusPendingReplyData"
-        javaName: "QDBusPendingReplyBase"
-        forceFriendly: true
-        InterfacePolymorphy{
-            interfaceType: "QDBusPendingCall"
-            condition: "false"
-        }
-        ModifyFunction{
-            signature: "setMetaTypes(int, const int *)"
-            access: Modification.Private
-            ModifyArgument{
-                index: 2
-                NoNullPointer{
-                }
-                AsArray{
-                    lengthParameter: 1
-                    noOffset: true
-                }
-            }
-        }
-        InjectCode{
-            Text{content: "@QtUninvokable\n"+
-                          "final void setMetaTypes(io.qt.core.QMetaType[] metaTypes){\n"+
-                          "    int[] metaTypeIDs = new int[metaTypes.length];\n"+
-                          "    for(int i=0; i<metaTypes.length; ++i){\n"+
-                          "        metaTypeIDs[i] = metaTypes[i].id();\n"+
-                          "    }\n"+
-                          "    setMetaTypes(metaTypeIDs);\n"+
-                          "}"}
-        }
-        until: 5
-    }
-    
-    ObjectType{
         name: "QDBusPendingReplyBase"
         forceFriendly: true
         InterfacePolymorphy{
@@ -1863,7 +1829,6 @@ TypeSystem{
                 }
             }
         }
-        since: 6
     }
     
     ObjectType{

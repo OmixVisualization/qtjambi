@@ -29,6 +29,7 @@
 
 #include <QtCore/qcompilerdetection.h>
 QT_WARNING_DISABLE_DEPRECATED
+#include "pch_p.h"
 #include <QtCore/QByteArrayList>
 #include <QtCore/QQueue>
 #include <QtCore/QQueue>
@@ -467,7 +468,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_AbstractSpan_initializeFro
 template<typename NativeType>
 class ArraySpan : public ManagedSpan{
     typedef typename QtJambiPrivate::jni_type_decider<NativeType>::JArrayType JArray;
-    typedef typename QtJambiPrivate::jni_type<JArray>::template NativeFactory<NativeType, std::is_const<NativeType>::value>::type ArrayAccess;
+    typedef typename QtJambiPrivate::jni_type<JArray>::template NativeFactory<NativeType, std::is_const<NativeType>::value>::PersistentConverter ArrayAccess;
 
     struct Data : ManagedSpanData{
         ArrayAccess arrayAccess;
@@ -807,7 +808,7 @@ extern "C" JNIEXPORT jint JNICALL Java_io_qt_core_AbstractSpan_hashCode
         if(containerAccess){
             bool isConst = containerAccess->isConst();
             QtJambiSpan* span = reinterpret_cast<QtJambiSpan*>(container.first);
-            hash_type hashValue;
+            size_t hashValue;
             if(span->size && span->begin)
                 hashValue = qHashMulti(0, span->begin, span->size, isConst);
             else

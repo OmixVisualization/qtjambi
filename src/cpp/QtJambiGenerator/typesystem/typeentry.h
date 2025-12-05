@@ -860,6 +860,9 @@ class FunctionalTypeEntry : public TypeEntry {
         }
         bool isFunctionPointer() const { return m_isFunctionPointer; }
         void setFunctionPointer(bool isFunctionPointer) { m_isFunctionPointer = isFunctionPointer; }
+
+        const QString &precompiledHeader() const;
+        void setPrecompiledHeader(const QString &_precompiledHeader);
     private:
         QString m_implements;
         QString m_package_name;
@@ -878,6 +881,7 @@ class FunctionalTypeEntry : public TypeEntry {
         QString m_target_typesystem;
         CodeSnipList m_code_snips;
         QString m_functionName;
+        QString m_precompiledHeader;
         uint m_generic_class : 1;
         uint m_isFunctionPointer : 1;
 };
@@ -1293,6 +1297,8 @@ class ComplexTypeEntry : public TypeEntry {
 
         bool isQAction() const;
         void setQAction(bool qw);
+        bool isQFuturing() const;
+        void setQFuturing(bool qw);
 
         bool isQMediaControl() const;
         void setQMediaControl(bool qw);
@@ -1502,6 +1508,12 @@ class ComplexTypeEntry : public TypeEntry {
         bool getNoInstance() const;
         void setNoInstance(bool newNoInstance);
 
+        const QString &precompiledHeader() const;
+        void setPrecompiledHeader(const QString &_precompiledHeader);
+
+        bool isAddTextStreamFunctions() const;
+        void setAddTextStreamFunctions(bool newAddTextStreamFunctions);
+
     protected:
         enum ComplexAttributeFlag{
             IsQObject = 0x01,
@@ -1526,6 +1538,7 @@ class ComplexTypeEntry : public TypeEntry {
             IsQModelIndex = 0x800000,
             IsQAbstractItemModel = 0x1000000,
             IsQThread = 0x2000000,
+            IsQFuturing = 0x4000000,
         };
         QFlags<ComplexAttributeFlag> m_attributes;
 
@@ -1594,6 +1607,8 @@ private:
         bool notCloneable = false;
         bool pushUpStatics = false;
         bool noInstance = false;
+        bool m_addTextStreamFunctions = false;
+        QString m_precompiledHeader;
         friend GeneratorApplication;
         friend class FunctionalTypeEntry;
 };

@@ -29,18 +29,7 @@
 **
 ****************************************************************************/
 
-#include "qtjambiapi.h"
-#include <QtCore/QReadWriteLock>
-#include <QtCore/QMap>
-#include <QtCore/QSharedPointer>
-#include <QtCore/QSequentialIterable>
-#include "containeraccess_p.h"
-#include "functionpointer.h"
-#include "registryapi.h"
-#include "registryutil_p.h"
-#include "qtjambilink_p.h"
-#include "java_p.h"
-#include "coreapi.h"
+#include "pch_p.h"
 
 QT_WARNING_DISABLE_GCC("-Winaccessible-base")
 QT_WARNING_DISABLE_CLANG("-Winaccessible-base")
@@ -685,33 +674,11 @@ QtMetaContainerPrivate::QMetaSequenceInterface* AutoListAccess::createMetaSequen
 
 int AutoListAccess::registerContainer(const QByteArray& typeName)
 {
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    int newMetaType = QMetaType::type(typeName);
-#else
     int newMetaType = QMetaType::fromName(typeName).id();
-#endif
     if(newMetaType==QMetaType::UnknownType){
         QSharedPointer<AutoListAccess> access(new AutoListAccess(*this), &containerDisposer);
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
         auto iface = m_elementMetaType.iface();
-#endif
         newMetaType = registerContainerMetaType(typeName,
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#if QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
-                                       qtjambi_function_pointer<16,void(void*)>([access](void* ptr){
-                                            access->destructContainer(ptr);
-                                       }, qHash(typeName)),
-                                       [](void* result, const void * other) -> void* {
-                                            if(other){
-                                                return new(result) QList<char>(*reinterpret_cast<const QList<char>*>(other));
-                                            }else{
-                                                return new(result) QList<char>();
-                                            }
-                                       },
-#endif //QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
-                                       uint(sizeOf()),
-                                       uint(alignof(QList<char>)),
-#else
                                        AutoListAccess::defaultCtr,
                                        AutoListAccess::copyCtr,
                                        AutoListAccess::moveCtr,
@@ -729,13 +696,12 @@ int AutoListAccess::registerContainer(const QByteArray& typeName)
                                        uint(sizeOf()),
                                        ushort(alignof(QList<char>)),
                                        QMetaType::UnknownType,
-#endif
                                        QMetaType::NeedsConstruction
                                                    | QMetaType::NeedsDestruction
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                                                   | QMetaType::MovableType,
+#if QT_VERSION < QT_VERSION_CHECK(6, 5, 0)
+                                                    | QMetaType::MovableType,
 #else
-                                                   | QMetaType::RelocatableType,
+                                                    | QMetaType::RelocatableType,
 #endif
                                        nullptr,
                                        nullptr,
@@ -743,9 +709,9 @@ int AutoListAccess::registerContainer(const QByteArray& typeName)
         if(m_hashFunction){
             insertHashFunctionByMetaType(newMetaType,
                                             [access]
-                                            (const void* ptr, hash_type seed)->hash_type{
+                                            (const void* ptr, size_t seed)->size_t{
                                                 if(ptr){
-                                                    hash_type hashCode = seed;
+                                                    size_t hashCode = seed;
                                                     const QListData* p = reinterpret_cast<const QListData*>(ptr);
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
                                                     if(access->m_isLargeOrStaticType){

@@ -29,19 +29,9 @@
 **
 ****************************************************************************/
 
+#include "pch_p.h"
 #include <QtCore/private/qcoreapplication_p.h>
 #include <QtCore/private/qthread_p.h>
-#include "qtjambiapi.h"
-#include "exception.h"
-#include "java_p.h"
-#include "registryutil_p.h"
-#include "guiapi.h"
-#include "qtjambilink_p.h"
-#include "qtjambishell_p.h"
-#include "utils_p.h"
-#if QT_VERSION < QT_VERSION_CHECK(6, 8, 0)
-#include "threadutils_p.h"
-#endif
 
 #ifdef QTJAMBI_NO_METHOD_TRACE
 #define QTJAMBI_DEBUG_EVENT_PRINT(...)

@@ -32,18 +32,18 @@
 
 #include <QtCore/QVector>
 #include <QtCore/QReadWriteLock>
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-QT_WARNING_DISABLE_GCC("-Wdeprecated-declarations")
-QT_WARNING_DISABLE_DEPRECATED
-#endif
+#include <QtCore/QSharedPointer>
+#include <QtCore/QVariant>
 
 #include "objectdata.h"
 
 class J2CStringBuffer;
 class QIODevice;
 class QCoreApplication;
+class QFutureInterfaceBase;
 enum class QtJambiNativeID : jlong;
+template <typename T>
+class QFuture;
 
 class QTJAMBI_EXPORT ApplicationData : public QtJambiObjectData
 {
@@ -143,11 +143,7 @@ QTJAMBI_EXPORT void preExit();
 
 QTJAMBI_EXPORT void unexit();
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-QTJAMBI_EXPORT const QtPrivate::AbstractDebugStreamFunction * registeredDebugStreamOperator(int typeId);
-#endif
-
-QTJAMBI_EXPORT hash_type computeHash(const QMetaType& metaType, const void* ptr, hash_type seed = 0, bool* success = nullptr);
+QTJAMBI_EXPORT size_t computeHash(const QMetaType& metaType, const void* ptr, size_t seed = 0, bool* success = nullptr);
 
 QTJAMBI_EXPORT void invokeAndCatch(JNIEnv *__jni_env, void* ptr, void(*expression)(void*));
 
@@ -167,6 +163,22 @@ QTJAMBI_EXPORT jclass getInterfaceByIID(JNIEnv *env, const char* iid);
 
 QTJAMBI_EXPORT void * futurePrivate(const QFutureInterfaceBase * base);
 
+QTJAMBI_EXPORT const QFutureInterfaceBase& futureInterface(const QFuture<QVariant>& future);
+
+QTJAMBI_EXPORT const QFutureInterfaceBase& futureInterface(const QFuture<void>& future);
+
+QTJAMBI_EXPORT QFutureInterfaceBase& futureInterface(QFuture<QVariant>& future);
+
+QTJAMBI_EXPORT QFutureInterfaceBase& futureInterface(QFuture<void>& future);
+
+QTJAMBI_EXPORT const QFutureInterfaceBase* futureInterface(const QFuture<QVariant>* future);
+
+QTJAMBI_EXPORT const QFutureInterfaceBase* futureInterface(const QFuture<void>* future);
+
+QTJAMBI_EXPORT QFutureInterfaceBase* futureInterface(QFuture<QVariant>* future);
+
+QTJAMBI_EXPORT QFutureInterfaceBase* futureInterface(QFuture<void>* future);
+
 #if QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
 struct NITypeInfo{
     const char* name;
@@ -181,6 +193,8 @@ QTJAMBI_EXPORT void registerDependentInterface(JNIEnv *env, jobject dependentObj
 
 QTJAMBI_EXPORT void registerDependentObject(JNIEnv *env, jobject dependentObject, jobject owner);
 
+QTJAMBI_EXPORT void registerDependentObject(QtJambiNativeID dependent, QtJambiNativeID owner);
+
 QTJAMBI_EXPORT void unregisterDependentInterface(JNIEnv *env, jobject dependentObject, jobject owner);
 
 QTJAMBI_EXPORT void unregisterDependentObject(JNIEnv *env, jobject dependentObject, jobject owner);
@@ -189,13 +203,7 @@ QTJAMBI_EXPORT void initializeQList(JNIEnv *env, jobject object, jclass elementT
 
 QTJAMBI_EXPORT void initializeQSet(JNIEnv *env, jobject object, jclass elementType, QtJambiNativeID elementMetaType, jobject other);
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-QTJAMBI_EXPORT void initializeQLinkedList(JNIEnv *env, jobject object, jclass elementType, QtJambiNativeID elementMetaType, jobject other);
-
-QTJAMBI_EXPORT void initializeQVector(JNIEnv *env, jobject object, jclass elementType, QtJambiNativeID elementMetaType, jobject other);
-#else
 QTJAMBI_EXPORT void registerQProperty(JNIEnv *env, QtJambiNativeID __object_nativeId, QtJambiNativeID property);
-#endif
 
 QTJAMBI_EXPORT void initializeQHash(JNIEnv *env, jobject object, jclass keyType, QtJambiNativeID keyMetaType, jclass valueType, QtJambiNativeID valueMetaType, jobject other);
 

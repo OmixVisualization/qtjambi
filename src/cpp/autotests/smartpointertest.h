@@ -80,13 +80,11 @@ public:
     QByteArray returnVirtualString();
     typedef std::function<const char*()> StringSupplier;
     QByteArray returnString(StringSupplier supplier);
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     static QScopedPointer<QObject> asScopedPointer(QScopedPointer<QObject> object);
     virtual QScopedPointer<QObject> createScopedObject();
     void useScopedObject();
     virtual QScopedPointer<QEvent> createScopedEvent();
     void useScopedEvent();
-#endif
 signals:
 
 public slots:

@@ -61,9 +61,7 @@ public:
                              , typename std::enable_if<!std::is_same<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type, Runnable>::value, bool>::type = true
                              , typename std::enable_if<!std::is_null_pointer<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type>::value, bool>::type = true
                              , typename std::enable_if<!std::is_same<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type, FunctionPointer>::value, bool>::type = true
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
                              , typename std::enable_if<std::is_invocable<Functor>::value, bool>::type = true
-#endif
     >
     Runnable(Functor&& functor) noexcept
         : Runnable(
@@ -82,12 +80,23 @@ public:
     bool operator !() const noexcept;
     template<typename T>
     static Runnable deleter(T* t){
-        return Runnable(
-            reinterpret_cast<void*>(t),
-            [](void* data){
-                T* ptr = reinterpret_cast<T*>(data);
-                delete ptr;
-            }, nullptr);
+        if constexpr(std::is_base_of_v<QObject, T>){
+            return Runnable(
+                reinterpret_cast<void*>(new QPointer<T>(t)),
+                [](void* data){
+                    QPointer<T>* pointer = reinterpret_cast<QPointer<T>*>(data);
+                    if(T* ptr = pointer->get())
+                        delete ptr;
+                    delete pointer;
+                }, nullptr);
+        }else{
+            return Runnable(
+                reinterpret_cast<void*>(t),
+                [](void* data){
+                    T* ptr = reinterpret_cast<T*>(data);
+                    delete ptr;
+                }, nullptr);
+        }
     }
     template<typename T>
     static Runnable arrayDeleter(T* t){

@@ -425,16 +425,23 @@ public:
     const QString &getModifiedJniType() const;
     void setModifiedJniType(const QString &newModifiedJniType);
 
+    QString getModifiedJavaType() const;
+    void setModifiedJavaType(const QString &newModifiedJavaType);
+
 signals:
     void modifiedTypeChanged();
 
     void modifiedJniTypeChanged();
 
+    void modifiedJavaTypeChanged();
+
 private:
     QString modifiedType;
+    QString modifiedJavaType;
     QString modifiedJniType;
     Q_PROPERTY(QString modifiedType READ getModifiedType WRITE setModifiedType NOTIFY modifiedTypeChanged)
     Q_PROPERTY(QString modifiedJniType READ getModifiedJniType WRITE setModifiedJniType NOTIFY modifiedJniTypeChanged)
+    Q_PROPERTY(QString modifiedJavaType READ getModifiedJavaType WRITE setModifiedJavaType NOTIFY modifiedJavaTypeChanged FINAL)
 };
 
 class NoNullPointer : public AbstractObject
@@ -603,6 +610,9 @@ public:
     bool getNoImplicitArguments() const;
     void setNoImplicitArguments(bool newNoImplicitArguments);
 
+    bool getIsTextStreamFunction() const;
+    void setIsTextStreamFunction(bool newIsTextStreamFunction);
+
 signals:
     void accessChanged();
 
@@ -636,6 +646,8 @@ signals:
 
     void noImplicitArgumentsChanged();
 
+    void isTextStreamFunctionChanged();
+
 private:
     AccessModifications access;
     QString rename;
@@ -653,6 +665,7 @@ private:
     QString proxyCall;
     QString targetType;
     bool noImplicitArguments = false;
+    bool isTextStreamFunction = false;
     Q_PROPERTY(AccessModifications access READ getAccess WRITE setAccess NOTIFY accessChanged)
     Q_PROPERTY(QString rename READ getRename WRITE setRename NOTIFY renameChanged)
     Q_PROPERTY(bool noExcept READ getNoExcept WRITE setNoExcept NOTIFY noExceptChanged)
@@ -669,6 +682,7 @@ private:
     Q_PROPERTY(QString proxyCall READ getProxyCall WRITE setProxyCall NOTIFY proxyCallChanged)
     Q_PROPERTY(QString targetType READ getTargetType WRITE setTargetType NOTIFY targetTypeChanged)
     Q_PROPERTY(bool noImplicitArguments READ getNoImplicitArguments WRITE setNoImplicitArguments NOTIFY noImplicitArgumentsChanged FINAL)
+    Q_PROPERTY(bool isTextStreamFunction READ getIsTextStreamFunction WRITE setIsTextStreamFunction NOTIFY isTextStreamFunctionChanged FINAL)
 };
 
 class Argument : public AbstractObject
@@ -929,6 +943,12 @@ public:
     bool getNoImplicitArguments() const;
     void setNoImplicitArguments(bool newNoImplicitArguments);
 
+    bool getIsTextStreamFunction() const;
+    void setIsTextStreamFunction(bool newIsTextStreamFunction);
+
+    bool getPullDown() const;
+    void setPullDown(bool newPullDown);
+
 signals:
     void signatureChanged();
 
@@ -974,6 +994,10 @@ signals:
 
     void noImplicitArgumentsChanged();
 
+    void isTextStreamFunctionChanged();
+
+    void pullDownChanged();
+
 private:
     QString signature;
     AccessModifications access;
@@ -997,6 +1021,8 @@ private:
     bool isForcedExplicit = false;
     bool isForcedImplicit = false;
     bool noImplicitArguments = false;
+    bool isTextStreamFunction = false;
+    bool pullDown = false;
     Q_PROPERTY(QString signature READ getSignature WRITE setSignature NOTIFY signatureChanged)
     Q_PROPERTY(AccessModifications access READ getAccess WRITE setAccess NOTIFY accessChanged)
     Q_PROPERTY(bool noExcept READ getNoExcept WRITE setNoExcept NOTIFY noExceptChanged)
@@ -1019,6 +1045,8 @@ private:
     Q_PROPERTY(bool isForcedExplicit READ getIsForcedExplicit WRITE setIsForcedExplicit NOTIFY isForcedExplicitChanged FINAL)
     Q_PROPERTY(bool isForcedImplicit READ getIsForcedImplicit WRITE setIsForcedImplicit NOTIFY isForcedImplicitChanged FINAL)
     Q_PROPERTY(bool noImplicitArguments READ getNoImplicitArguments WRITE setNoImplicitArguments NOTIFY noImplicitArgumentsChanged FINAL)
+    Q_PROPERTY(bool isTextStreamFunction READ getIsTextStreamFunction WRITE setIsTextStreamFunction NOTIFY isTextStreamFunctionChanged FINAL)
+    Q_PROPERTY(bool pullDown READ getPullDown WRITE setPullDown NOTIFY pullDownChanged FINAL)
 };
 
 class GlobalFunction : public ModifyFunction

@@ -27,15 +27,44 @@
 **
 ****************************************************************************/
 
-#define QFUTURE_TEST
-#include "qtjambiapi.h"
-#include "java_p.h"
-#include <QtCore/QFutureInterfaceBase>
-#include <QtCore/QFutureWatcherBase>
+#include "pch_p.h"
 #include <QtCore/private/qfutureinterface_p.h>
-#include "coreapi.h"
-#include "registryutil_p.h"
-#include "qtjambilink_p.h"
+
+template<>
+class QPromise<std::nullptr_t>{
+public:
+    inline static const QFutureInterfaceBasePrivate* d_ptr(const QFutureInterfaceBase& future){ return future.d; }
+    inline static QFutureInterfaceBasePrivate* d_ptr(QFutureInterfaceBase& future){ return future.d; }
+    inline static const QFutureInterfaceBasePrivate* d_ptr(const QFutureInterfaceBase* future){ return future ? future->d : nullptr; }
+    inline static QFutureInterfaceBasePrivate* d_ptr(QFutureInterfaceBase* future){ return future ? future->d : nullptr; }
+    inline static QFutureInterfaceBasePrivate* d_ptr(const QSharedPointer<QFutureInterfaceBase>& future){ return future ? future->d : nullptr; }
+};
+
+template<>
+class QFuture<std::nullptr_t>{
+public:
+    inline static const QFutureInterfaceBase& d_ptr(const QFuture<QVariant>& future){ return future.d; }
+
+    inline static const QFutureInterfaceBase& d_ptr(const QFuture<void>& future){ return future.d; }
+
+    inline static QFutureInterfaceBase& d_ptr(QFuture<QVariant>& future){ return future.d; }
+
+    inline static QFutureInterfaceBase& d_ptr(QFuture<void>& future){ return future.d; }
+
+    inline static const QFutureInterfaceBase* d_ptr(const QFuture<QVariant>* future){ return future ? &future->d : nullptr; }
+
+    inline static const QFutureInterfaceBase* d_ptr(const QFuture<void>* future){ return future ? &future->d : nullptr; }
+
+    inline static QFutureInterfaceBase* d_ptr(QFuture<QVariant>* future){ return future ? &future->d : nullptr; }
+
+    inline static QFutureInterfaceBase* d_ptr(QFuture<void>* future){ return future ? &future->d : nullptr; }
+};
+
+const QFutureInterfaceBasePrivate* d_ptr(const QFutureInterfaceBase& future){ return QPromise<std::nullptr_t>::d_ptr(future); }
+QFutureInterfaceBasePrivate* d_ptr(QFutureInterfaceBase& future){ return QPromise<std::nullptr_t>::d_ptr(future); }
+const QFutureInterfaceBasePrivate* d_ptr(const QFutureInterfaceBase* future){ return QPromise<std::nullptr_t>::d_ptr(future); }
+QFutureInterfaceBasePrivate* d_ptr(QFutureInterfaceBase* future){ return QPromise<std::nullptr_t>::d_ptr(future); }
+QFutureInterfaceBasePrivate* d_ptr(const QSharedPointer<QFutureInterfaceBase>& future){ return QPromise<std::nullptr_t>::d_ptr(future); }
 
 struct FutureCallOut;
 
@@ -60,6 +89,7 @@ struct FutureCallOut final : public QFutureCallOutInterface{
     QtJambiAPI::ResultTranslator m_resultRetranslator;
     QAtomicInteger<char> m_blocked;
     ReverseFutureCallOut m_reverseFutureCallOut;
+    bool m_topLevel;
 };
 
 FutureCallOut::FutureCallOut(QSharedPointer<QFutureInterfaceBase>&& sourceFuture, QSharedPointer<QFutureInterfaceBase>&& targetFuture, QtJambiAPI::ResultTranslator resultTranslator, QtJambiAPI::ResultTranslator resultRetranslator)
@@ -68,68 +98,55 @@ FutureCallOut::FutureCallOut(QSharedPointer<QFutureInterfaceBase>&& sourceFuture
       m_targetFuture(std::move(targetFuture)),
       m_resultTranslator(resultTranslator),
       m_resultRetranslator(resultRetranslator),
-      m_reverseFutureCallOut(this) {}
+    m_reverseFutureCallOut(this), m_topLevel(false) {}
 
 void FutureCallOut::initialize()
 {
     Q_ASSERT(!m_sourceFuture.isNull());
     Q_ASSERT(!m_targetFuture.isNull());
-    if(m_sourceFuture->d){
-        QMutexLocker locker(&m_sourceFuture->d->m_mutex);
+    if(QFutureInterfaceBasePrivate* source_d = d_ptr(m_sourceFuture)){
+        if(QFutureInterfaceBasePrivate* target_d = d_ptr(m_targetFuture)){
+            QMutexLocker locker(&source_d->m_mutex);
 #if QT_VERSION < QT_VERSION_CHECK(6, 3, 0)
-        m_targetFuture->d->manualProgress = m_sourceFuture->d->manualProgress;
+            target_d->manualProgress = source_d->manualProgress;
 #else
-        if(m_sourceFuture->d->m_progress){
-            m_targetFuture->d->m_progress.reset(new QFutureInterfaceBasePrivate::ProgressData);
-            m_targetFuture->d->m_progress->minimum = m_sourceFuture->d->m_progress->minimum;
-            m_targetFuture->d->m_progress->maximum = m_sourceFuture->d->m_progress->maximum;
-            m_targetFuture->d->m_progress->text = m_sourceFuture->d->m_progress->text;
-        }
+            if(source_d->m_progress){
+                target_d->m_progress.reset(new QFutureInterfaceBasePrivate::ProgressData);
+                target_d->m_progress->minimum = source_d->m_progress->minimum;
+                target_d->m_progress->maximum = source_d->m_progress->maximum;
+                target_d->m_progress->text = source_d->m_progress->text;
+            }
 #endif
-        const auto currentState = m_sourceFuture->d->state.loadRelaxed();
-        try{
-            if (currentState & QFutureInterfaceBase::Started) {
-                postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Started));
+            const auto currentState = source_d->state.loadRelaxed();
+            try{
+                if (currentState & QFutureInterfaceBase::Started) {
+                    postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Started));
 #if QT_VERSION < QT_VERSION_CHECK(6, 3, 0)
-                postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::ProgressRange,
-                                                                m_sourceFuture->d->m_progressMinimum,
-                                                                m_sourceFuture->d->m_progressMaximum));
-                postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Progress,
-                                                                m_sourceFuture->d->m_progressValue,
-                                                                m_sourceFuture->d->m_progressText));
-#else
-                if(m_sourceFuture->d->m_progress){
                     postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::ProgressRange,
-                                                                    m_sourceFuture->d->m_progress->minimum,
-                                                                    m_sourceFuture->d->m_progress->maximum));
+                                                                    source_d->m_progressMinimum,
+                                                                    source_d->m_progressMaximum));
                     postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Progress,
-                                                                    m_sourceFuture->d->m_progressValue,
-                                                                    m_sourceFuture->d->m_progress->text));
-                }else{
-                    postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Progress,
-                                                                    m_sourceFuture->d->m_progressValue,
-                                                                    QString()));
-                }
+                                                                    source_d->m_progressValue,
+                                                                    source_d->m_progressText));
+#else
+                    if(source_d->m_progress){
+                        postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::ProgressRange,
+                                                                        source_d->m_progress->minimum,
+                                                                        source_d->m_progress->maximum));
+                        postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Progress,
+                                                                        source_d->m_progressValue,
+                                                                        source_d->m_progress->text));
+                    }else{
+                        postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Progress,
+                                                                        source_d->m_progressValue,
+                                                                        QString()));
+                    }
 #endif
-            }
+                }
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 3, 0)
-            QtPrivate::ResultIteratorBase it = m_sourceFuture->d->m_results.begin();
-            while (it != m_sourceFuture->d->m_results.end()) {
-                const int begin = it.resultIndex();
-                const int end = begin + it.batchSize();
-                    postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::ResultsReady,
-                                                                    begin,
-                                                                    end));
-
-                it.batchedAdvance();
-            }
-#else
-            if(m_sourceFuture->d->hasException){
-                m_targetFuture->d->data.setException(m_sourceFuture->d->data.m_exceptionStore.exception());
-            }else{
-                QtPrivate::ResultIteratorBase it = m_sourceFuture->d->data.m_results.begin();
-                while (it != m_sourceFuture->d->data.m_results.end()) {
+                QtPrivate::ResultIteratorBase it = source_d->m_results.begin();
+                while (it != source_d->m_results.end()) {
                     const int begin = it.resultIndex();
                     const int end = begin + it.batchSize();
                         postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::ResultsReady,
@@ -138,32 +155,59 @@ void FutureCallOut::initialize()
 
                     it.batchedAdvance();
                 }
-            }
+#else
+                if(source_d->hasException){
+                    target_d->data.setException(source_d->data.m_exceptionStore.exception());
+                }else{
+                    QtPrivate::ResultIteratorBase it = source_d->data.m_results.begin();
+                    while (it != source_d->data.m_results.end()) {
+                        const int begin = it.resultIndex();
+                        const int end = begin + it.batchSize();
+                            postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::ResultsReady,
+                                                                            begin,
+                                                                            end));
+
+                        it.batchedAdvance();
+                    }
+                }
 #endif
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            if (currentState & QFutureInterfaceBase::Paused)
-                postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Paused));
+                if (currentState & QFutureInterfaceBase::Paused)
+                    postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Paused));
 #else
-            if (currentState & QFutureInterfaceBase::Suspended)
-                postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Suspended));
-            else if (currentState & QFutureInterfaceBase::Suspending)
-                postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Suspending));
+                if (currentState & QFutureInterfaceBase::Suspended)
+                    postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Suspended));
+                else if (currentState & QFutureInterfaceBase::Suspending)
+                    postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Suspending));
 #endif
 
-            if (currentState & QFutureInterfaceBase::Canceled)
-                postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Canceled));
-        }catch(...){
-            delete this;
-            throw;
-        }
-        if (currentState & QFutureInterfaceBase::Finished){
-            postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Finished));
-        }else{
-            m_sourceFuture->d->outputConnections.append(this);
-            QMutexLocker locker2(&m_targetFuture->d->m_mutex);
-            m_targetFuture->d->outputConnections.append(&m_reverseFutureCallOut);
-            m_targetFuture->d->state.storeRelaxed(currentState);
+                if (currentState & QFutureInterfaceBase::Canceled)
+                    postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Canceled));
+            }catch(...){
+                delete this;
+                throw;
+            }
+            if (currentState & QFutureInterfaceBase::Finished){
+                postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Finished));
+                // has been deleted!
+            }else{
+                m_topLevel = source_d->outputConnections.isEmpty();
+                if(!m_topLevel){
+                    m_topLevel = true;
+                    for(int i=0; i<source_d->outputConnections.size(); ++i){
+                        if(dynamic_cast<ReverseFutureCallOut*>(source_d->outputConnections[i])
+                            || dynamic_cast<FutureCallOut*>(source_d->outputConnections[i])){
+                            m_topLevel = false;
+                            break;
+                        }
+                    }
+                }
+                source_d->outputConnections.append(this);
+                QMutexLocker locker2(&target_d->m_mutex);
+                target_d->outputConnections.append(&m_reverseFutureCallOut);
+                target_d->state.storeRelaxed(currentState);
+            }
         }
     }
 }
@@ -220,9 +264,7 @@ void FutureCallOut::postCallOutEvent(const QFutureCallOutEvent &callOutEvent){
             m_targetFuture->setProgressRange(callOutEvent.index1, callOutEvent.index2);
             break;
         case QFutureCallOutEvent::ResultsReady:
-            if(JniEnvironment env{200}){
-                m_resultTranslator(env, m_sourceFuture, m_targetFuture, callOutEvent.index1, callOutEvent.index2-callOutEvent.index1);
-            }
+            m_resultTranslator(m_sourceFuture.get(), m_targetFuture.get(), callOutEvent.index1, callOutEvent.index2-callOutEvent.index1);
             break;
         }
     }catch(...){
@@ -240,28 +282,28 @@ void FutureCallOut::disconnectFromOutputInterface(bool isReverseEvent)
     };
     static InactiveFutureCallOut inactiveFutureCallOut;
 
-    if(m_sourceFuture->d){
+    if(QFutureInterfaceBasePrivate* source_d = d_ptr(m_sourceFuture)){
         if(isReverseEvent){
-            QMutexLocker lock(&m_sourceFuture->d->m_mutex);
-            auto index = m_sourceFuture->d->outputConnections.indexOf(this);
+            QMutexLocker lock(&source_d->m_mutex);
+            auto index = source_d->outputConnections.indexOf(this);
             if (index > -1)
-                m_sourceFuture->d->outputConnections[index] = &inactiveFutureCallOut;
+                source_d->outputConnections[index] = &inactiveFutureCallOut;
         }else{
-            auto index = m_sourceFuture->d->outputConnections.indexOf(this);
+            auto index = source_d->outputConnections.indexOf(this);
             if (index > -1)
-                m_sourceFuture->d->outputConnections[index] = &inactiveFutureCallOut;
+                source_d->outputConnections[index] = &inactiveFutureCallOut;
         }
     }
-    if(m_targetFuture->d){
+    if(QFutureInterfaceBasePrivate* target_d = d_ptr(m_targetFuture)){
         if(isReverseEvent){
-            auto index = m_targetFuture->d->outputConnections.indexOf(&m_reverseFutureCallOut);
+            auto index = target_d->outputConnections.indexOf(&m_reverseFutureCallOut);
             if (index > -1)
-                m_targetFuture->d->outputConnections[index] = &inactiveFutureCallOut;
+                target_d->outputConnections[index] = &inactiveFutureCallOut;
         }else{
-            QMutexLocker lock(&m_targetFuture->d->m_mutex);
-            auto index = m_targetFuture->d->outputConnections.indexOf(&m_reverseFutureCallOut);
+            QMutexLocker lock(&target_d->m_mutex);
+            auto index = target_d->outputConnections.indexOf(&m_reverseFutureCallOut);
             if (index > -1)
-                m_targetFuture->d->outputConnections[index] = &inactiveFutureCallOut;
+                target_d->outputConnections[index] = &inactiveFutureCallOut;
         }
     }
     delete this;
@@ -320,9 +362,7 @@ void ReverseFutureCallOut::postCallOutEvent(const QFutureCallOutEvent &callOutEv
             break;
         case QFutureCallOutEvent::ResultsReady:
             if(m_futureCallOut->m_resultRetranslator){
-                if(JniEnvironment env{200}){
-                    m_futureCallOut->m_resultRetranslator(env, m_futureCallOut->m_sourceFuture, m_futureCallOut->m_targetFuture, callOutEvent.index1, callOutEvent.index2-callOutEvent.index1);
-                }
+                m_futureCallOut->m_resultRetranslator(m_futureCallOut->m_targetFuture.get(), m_futureCallOut->m_sourceFuture.get(), callOutEvent.index1, callOutEvent.index2-callOutEvent.index1);
             }
             break;
         }
@@ -334,113 +374,178 @@ void ReverseFutureCallOut::postCallOutEvent(const QFutureCallOutEvent &callOutEv
 }
 
 jobject QtJambiAPI::convertQFutureWatcherToJavaObject(JNIEnv* env, const QFutureWatcherBase* futureWatcher,
-                                    FutureSetter futureSetter, FutureResult futureResult, FutureGetter futureGetter){
+                                    FutureSetter futureSetter, FutureResult futureResult, FutureGetter futureGetter, FutureInterfaceGetter futureInterfaceGetter){
     if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForQObject(const_cast<QFutureWatcherBase*>(futureWatcher))){
         jobject result = link->getJavaObjectLocalRef(env);
         if(Java::QtCore::QFutureWatcher::isInstanceOf(env, result))
             return result;
     }
-    jobject result = Java::QtCore::QFutureWatcher::newInstance(env, jlong(futureSetter), jlong(futureResult), jlong(futureGetter));
+    jobject result = Java::QtCore::QFutureWatcher::newInstance(env, nullptr);
+    Java::QtCore::QFutureWatcher::set_futureGetter(env, result, jlong(futureGetter));
+    Java::QtCore::QFutureWatcher::set_futureSetter(env, result, jlong(futureSetter));
+    Java::QtCore::QFutureWatcher::set_futureResult(env, result, jlong(futureResult));
+    Java::QtCore::QFutureWatcher::set_futureInterfaceGetter(env, result, jlong(futureInterfaceGetter));
     QtJambiLink::createLinkForNativeQObject(env, result, const_cast<QFutureWatcherBase*>(futureWatcher));
     return result;
 }
 
-jobject QtJambiAPI::createQFutureFromQFutureInterface(JNIEnv* env, jobject futureInterface){
-    return Java::QtCore::QFuture::newInstance(env, futureInterface, true);
-}
-
-jobject QtJambiAPI::getQFutureInterfaceFromQFuture(JNIEnv* env, jobject future){
-    if(Java::QtCore::QFuture::isInstanceOf(env, future)){
-        return Java::QtCore::QFuture::d(env, future);
-    }else if(Java::QtCore::QFutureWatcher::isInstanceOf(env, future)){
-        jobject _future = Java::QtCore::QFutureWatcher::future(env, future);
-        return Java::QtCore::QFuture::d(env, _future);
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-    }else if(Java::QtCore::QPromise::isInstanceOf(env, future)){
-        return Java::QtCore::QPromise::d(env, future);
+bool QtJambiAPI::isVariantFutureInterface(const QFutureInterfaceBase* base){
+    if(!dynamic_cast<const QFutureInterface<QVariant>*>(base)){
+#if defined(Q_OS_ANDROID) || defined(Q_OS_FREEBSD)
+        if(base){
+            QString baseType = QLatin1String(QtJambiAPI::typeName(QtJambiPrivate::CheckPointer<QFutureInterfaceBase>::trySupplyType(base)));
+            return baseType==QLatin1String("QFutureInterface_shell")
+                   || baseType==QLatin1String("QFutureInterface<QVariant>");
+        }
 #endif
-    }else return nullptr;
-}
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-QFutureInterfaceBase& QtJambiAPI::getQFutureInterfaceFromQFuture(const QFuture<void>& future){
-    return future.d;
-}
-#endif
-
-bool isVariantFuture(QSharedPointer<QFutureInterfaceBase>& sourceFuture){
-    if(dynamic_cast<QFutureInterface<QVariant>*>(sourceFuture.get()))
-        return true;
-    QFutureInterfaceBase* sourceObject = sourceFuture.get();
-    if(auto* id = QtJambiPrivate::CheckPointer<QFutureInterfaceBase>::trySupplyType(sourceObject)){
-        QByteArray sourceFutureTypeName = QtJambiAPI::typeName(*id);
-        if(sourceFutureTypeName=="QFutureInterface<QVariant>"
-            || sourceFutureTypeName=="QFutureInterface_shell<QVariant>")
-            return true;
+        return false;
     }
-    return false;
+    else return true;
+};
+
+bool QtJambiAPI::isVoidFutureInterface(const QFutureInterfaceBase* base){
+    if(!dynamic_cast<const QFutureInterface<void>*>(base)){
+#if defined(Q_OS_ANDROID) || defined(Q_OS_FREEBSD)
+        if(base){
+            QString baseType = QLatin1String(QtJambiAPI::typeName(QtJambiPrivate::CheckPointer<QFutureInterfaceBase>::trySupplyType(base)));
+            return baseType==QLatin1String("QFutureInterface_vshell")
+                   || baseType==QLatin1String("QFutureInterface<void>");
+        }
+#endif
+        return false;
+    }
+    else return true;
+};
+
+const QFutureInterface<QVariant>* QtJambiAPI::asVariantFutureInterface(const QFutureInterfaceBase* base){
+    if(const QFutureInterface<QVariant>* fiv = dynamic_cast<const QFutureInterface<QVariant>*>(base)){
+        return fiv;
+#if defined(Q_OS_ANDROID) || defined(Q_OS_FREEBSD)
+    }else if(base){
+        QString baseType = QLatin1String(QtJambiAPI::typeName(QtJambiPrivate::CheckPointer<QFutureInterfaceBase>::trySupplyType(base)));
+        if(baseType==QLatin1String("QFutureInterface_shell")
+            || baseType==QLatin1String("QFutureInterface<QVariant>")){
+            return static_cast<const QFutureInterface<QVariant>*>(base);
+        }
+#endif
+    }
+    return nullptr;
+}
+QFutureInterface<QVariant>* QtJambiAPI::asVariantFutureInterface(QFutureInterfaceBase* base){
+    if(QFutureInterface<QVariant>* fiv = dynamic_cast<QFutureInterface<QVariant>*>(base)){
+        return fiv;
+#if defined(Q_OS_ANDROID) || defined(Q_OS_FREEBSD)
+    }else if(base){
+        QString baseType = QLatin1String(QtJambiAPI::typeName(QtJambiPrivate::CheckPointer<QFutureInterfaceBase>::trySupplyType(base)));
+        if(baseType==QLatin1String("QFutureInterface_shell")
+            || baseType==QLatin1String("QFutureInterface<QVariant>")){
+            return static_cast<QFutureInterface<QVariant>*>(base);
+        }
+#endif
+    }
+    return nullptr;
 }
 
-QFutureInterfaceBase* QtJambiAPI::translateQFutureInterface(QSharedPointer<QFutureInterfaceBase>&& sourceFuture, QSharedPointer<QFutureInterfaceBase>&& targetFuture, const char* translatedType, ResultTranslator resultTranslator, ResultTranslator resultRetranslator){
-    if(sourceFuture->d){
-        if(isVariantFuture(sourceFuture)){
-            QMutexLocker lock(&sourceFuture->d->m_mutex);
-            if(!sourceFuture->d->outputConnections.isEmpty()){
-                for(int i=0; i<sourceFuture->d->outputConnections.size(); ++i){
-                    if(ReverseFutureCallOut* rco = dynamic_cast<ReverseFutureCallOut*>(sourceFuture->d->outputConnections[i])){
-                        QFutureInterfaceBase* sourceObject = rco->m_futureCallOut->m_sourceFuture.get();
-                        QFutureInterfaceBase* targetObject = targetFuture.get();
-                        const std::type_info* sourceType = QtJambiPrivate::CheckPointer<QFutureInterfaceBase>::trySupplyType(sourceObject);
-                        const std::type_info* targetType = QtJambiPrivate::CheckPointer<QFutureInterfaceBase>::trySupplyType(targetObject);
-                        if(targetType && sourceType && typeid_equals(*targetType, *sourceType)){
-                            return sourceObject;
-                        }else if(targetType && sourceType){
-                            if(JniEnvironment env{200}){
-                                QByteArray baseType = QtJambiAPI::typeName(*sourceType);
-                                QByteArray requiredType = QtJambiAPI::typeName(*targetType);
-                                auto idx = requiredType.indexOf('<');
-                                if(idx>0){
-                                    requiredType = translatedType + requiredType.mid(idx);
-                                }else{
-                                    requiredType = translatedType;
-                                }
-                                if(baseType=="QFutureInterfaceBase"
-                                        || baseType=="QFutureInterfaceBase_shell"){
-                                    Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Cannot cast %1<void> to %2.").arg(translatedType, requiredType) QTJAMBI_STACKTRACEINFO );
-                                }else if(baseType.startsWith("QFutureInterface<")){
-                                    Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Cannot cast %1%2 to %3.").arg(translatedType, baseType.mid(16), requiredType) QTJAMBI_STACKTRACEINFO );
-                                }else if(baseType.startsWith("QFutureInterface_shell<")){
-                                    Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Cannot cast %1%2 to %3.").arg(translatedType, baseType.mid(22), requiredType) QTJAMBI_STACKTRACEINFO );
-                                }
-                            }
-                        }
-                    }else if(FutureCallOut* rco = dynamic_cast<FutureCallOut*>(sourceFuture->d->outputConnections[i])){
-                        QFutureInterfaceBase* sourceObject = rco->m_targetFuture.get();
-                        QFutureInterfaceBase* targetObject = targetFuture.get();
-                        const std::type_info* sourceType = QtJambiPrivate::CheckPointer<QFutureInterfaceBase>::trySupplyType(sourceObject);
-                        const std::type_info* targetType = QtJambiPrivate::CheckPointer<QFutureInterfaceBase>::trySupplyType(targetObject);
-                        if(targetType && sourceType && typeid_equals(*targetType, *sourceType)){
-                            return sourceObject;
-                        }else if(targetType && sourceType){
-                            if(JniEnvironment env{200}){
-                                QByteArray baseType = QtJambiAPI::typeName(*sourceType);
-                                QByteArray requiredType = QtJambiAPI::typeName(*targetType);
-                                auto idx = requiredType.indexOf('<');
-                                if(idx>0){
-                                    requiredType = translatedType + requiredType.mid(idx);
-                                }else{
-                                    requiredType = translatedType;
-                                }
-                                if(baseType=="QFutureInterfaceBase"
-                                        || baseType=="QFutureInterfaceBase_shell"){
-                                    Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Cannot cast %1<void> to %2.").arg(translatedType, requiredType) QTJAMBI_STACKTRACEINFO );
-                                }else if(baseType.startsWith("QFutureInterface<")){
-                                    Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Cannot cast %1%2 to %3.").arg(translatedType, baseType.mid(16), requiredType) QTJAMBI_STACKTRACEINFO );
-                                }else if(baseType.startsWith("QFutureInterface_shell<")){
-                                    Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Cannot cast %1%2 to %3.").arg(translatedType, baseType.mid(22), requiredType) QTJAMBI_STACKTRACEINFO );
-                                }
-                            }
-                        }
+const QFutureInterface<void>* QtJambiAPI::asVoidFutureInterface(const QFutureInterfaceBase* base){
+    if(const QFutureInterface<void>* fiv = dynamic_cast<const QFutureInterface<void>*>(base)){
+        return fiv;
+#if defined(Q_OS_ANDROID) || defined(Q_OS_FREEBSD)
+    }else if(base){
+        QString baseType = QLatin1String(QtJambiAPI::typeName(QtJambiPrivate::CheckPointer<QFutureInterfaceBase>::trySupplyType(base)));
+        if(baseType==QLatin1String("QFutureInterface_vshell")
+            || baseType==QLatin1String("QFutureInterface<void>")){
+            return static_cast<const QFutureInterface<void>*>(base);
+        }
+#endif
+    }
+    return nullptr;
+}
+QFutureInterface<void>* QtJambiAPI::asVoidFutureInterface(QFutureInterfaceBase* base){
+    if(QFutureInterface<void>* fiv = dynamic_cast<QFutureInterface<void>*>(base)){
+        return fiv;
+#if defined(Q_OS_ANDROID) || defined(Q_OS_FREEBSD)
+    }else if(base){
+        QString baseType = QLatin1String(QtJambiAPI::typeName(QtJambiPrivate::CheckPointer<QFutureInterfaceBase>::trySupplyType(base)));
+        if(baseType==QLatin1String("QFutureInterface_vshell")
+            || baseType==QLatin1String("QFutureInterface<void>")){
+            return static_cast<QFutureInterface<void>*>(base);
+        }
+#endif
+    }
+    return nullptr;
+}
+
+std::unique_ptr<QFutureInterfaceBase> QtJambiAPI::getQFutureInterfaceFromQFutureWatcher(JNIEnv* env, jobject future){
+    if(FutureInterfaceGetter futureInterfaceGetter = FutureInterfaceGetter(Java::QtCore::QFutureWatcher::futureInterfaceGetter(env, future))){
+        QFutureWatcherBase* ft = QtJambiAPI::convertJavaObjectToNative<QFutureWatcherBase>(env, future);
+        return futureInterfaceGetter(ft);
+    }else{
+        QFuture<QVariant>* _future = QtJambiAPI::convertJavaObjectToNative<QFuture<QVariant>>(env, Java::QtCore::QFutureWatcher::future(env, future));
+        const QFutureInterfaceBase* base = QtPrivate::Continuation<QVariant,bool,bool>::sourceFuture(_future);
+        if(const QFutureInterface<QVariant>* fiv = asVariantFutureInterface(base)){
+            return std::unique_ptr<QFutureInterfaceBase>{new QFutureInterface<QVariant>(*fiv)};
+        }else{
+            return std::unique_ptr<QFutureInterfaceBase>{new QFutureInterfaceBase(*base)};
+        }
+    }
+}
+
+void findParents(QList<QFutureInterfaceBase*>& parents, QFutureInterfaceBasePrivate* source_d){
+    QList<QFutureInterfaceBase*> _parents;
+    {
+        QMutexLocker lock(&source_d->m_mutex);
+        if(!source_d->outputConnections.isEmpty()){
+            for(int i=0; i<source_d->outputConnections.size(); ++i){
+                if(ReverseFutureCallOut* rco = dynamic_cast<ReverseFutureCallOut*>(source_d->outputConnections[i])){
+                    if(rco->m_futureCallOut->m_topLevel)
+                        parents[0] = rco->m_futureCallOut->m_sourceFuture.get();
+                    else
+                        _parents << rco->m_futureCallOut->m_sourceFuture.get();
+                }else if(FutureCallOut* rco = dynamic_cast<FutureCallOut*>(source_d->outputConnections[i])){
+                    if(rco->m_topLevel)
+                        parents[0] = rco->m_sourceFuture.get();
+                    else
+                        _parents << rco->m_targetFuture.get();
+                }
+            }
+        }
+    }
+    for(QFutureInterfaceBase* base : std::as_const(_parents)){
+        if(!parents.contains(base)){
+            if(QFutureInterfaceBasePrivate* base_d = d_ptr(base)){
+                parents << base;
+                findParents(parents, base_d);
+            }
+        }
+    }
+}
+
+QFutureInterfaceBase* QtJambiAPI::translateQFutureInterface(QSharedPointer<QFutureInterfaceBase>&& sourceFuture, QSharedPointer<QFutureInterfaceBase>&& targetFuture, ResultTranslator resultTranslator, ResultTranslator resultRetranslator, FutureInterfaceTypeTest futureInterfaceTypeTest){
+    if(QFutureInterfaceBasePrivate* source_d = d_ptr(sourceFuture)){
+        // in case of QFuture<QVariant> -> QFuture<T1> -> QFuture<QVariant>
+        // don't use top-level base because QFuture<QVariant> could represent QFuture<T2>
+        if(!isVariantFutureInterface(targetFuture.get())){
+            QList<QFutureInterfaceBase*> parents;
+            parents << nullptr; // representing the top level element
+            parents << sourceFuture.get();
+            findParents(parents, source_d);
+            parents.takeAt(1); // taking sourceFuture
+            QFutureInterfaceBase* topLevel = parents.takeAt(0);
+            if(topLevel && futureInterfaceTypeTest(topLevel))
+                return topLevel;
+            for(QFutureInterfaceBase* base : std::as_const(parents)){
+                if(futureInterfaceTypeTest(base)){
+                    return base;
+                }
+            }
+            if(topLevel && topLevel!=sourceFuture.get() && !isVariantFutureInterface(targetFuture.get())){
+                if(!isVariantFutureInterface(topLevel)){
+                    // take the top level element
+                    return topLevel;
+                }
+                if(isVariantFutureInterface(sourceFuture.get())){
+                    if(QFutureInterface<QVariant>* topLevelVariant = asVariantFutureInterface(topLevel)){
+                        sourceFuture = QSharedPointer<QFutureInterfaceBase>(new QFutureInterface<QVariant>(*topLevelVariant));
                     }
                 }
             }
@@ -463,8 +568,40 @@ void CoreAPI::cleanContinuation(JNIEnv*, QFutureInterfaceBase* b)
 }
 #endif
 
+const QFutureInterfaceBase& CoreAPI::futureInterface(const QFuture<QVariant>& future){
+    return QFuture<std::nullptr_t>::d_ptr(future);
+}
+
+const QFutureInterfaceBase& CoreAPI::futureInterface(const QFuture<void>& future){
+    return QFuture<std::nullptr_t>::d_ptr(future);
+}
+
+QFutureInterfaceBase& CoreAPI::futureInterface(QFuture<QVariant>& future){
+    return QFuture<std::nullptr_t>::d_ptr(future);
+}
+
+QFutureInterfaceBase& CoreAPI::futureInterface(QFuture<void>& future){
+    return QFuture<std::nullptr_t>::d_ptr(future);
+}
+
+const QFutureInterfaceBase* CoreAPI::futureInterface(const QFuture<QVariant>* future){
+    return QFuture<std::nullptr_t>::d_ptr(future);
+}
+
+const QFutureInterfaceBase* CoreAPI::futureInterface(const QFuture<void>* future){
+    return QFuture<std::nullptr_t>::d_ptr(future);
+}
+
+QFutureInterfaceBase* CoreAPI::futureInterface(QFuture<QVariant>* future){
+    return QFuture<std::nullptr_t>::d_ptr(future);
+}
+
+QFutureInterfaceBase* CoreAPI::futureInterface(QFuture<void>* future){
+    return QFuture<std::nullptr_t>::d_ptr(future);
+}
+
 void * CoreAPI::futurePrivate(const QFutureInterfaceBase * base){
-    return base->d;
+    return d_ptr(const_cast<QFutureInterfaceBase*>(base));
 }
 
 void CoreAPI::invokeAndCatch(JNIEnv *__jni_env, void* ptr, void(*expression)(void*)){

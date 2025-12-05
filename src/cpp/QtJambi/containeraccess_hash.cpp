@@ -29,27 +29,11 @@
 **
 ****************************************************************************/
 
-#include "qtjambiapi.h"
-#include <QtCore/QReadWriteLock>
-#include <QtCore/QMap>
-#include <QtCore/QSharedPointer>
-#include <QtCore/QAssociativeIterable>
-#include "containeraccess_p.h"
-#include "functionpointer.h"
-#include "registryutil_p.h"
-#include "coreapi.h"
-#include "qtjambilink_p.h"
-#include "java_p.h"
-#include "utils_p.h"
+#include "pch_p.h"
 
 QT_WARNING_DISABLE_GCC("-Winaccessible-base")
 QT_WARNING_DISABLE_CLANG("-Winaccessible-base")
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-bool isEquals(const QMetaType& keyMetaType, const void * ptr, const void* ptr2);
-
-QThreadStorage<quintptr> AutoHashAccess::currentAccess;
-#else
 QReadWriteLock* containerAccessLock();
 QMap<int, QtMetaContainerPrivate::QMetaAssociationInterface>& metaAssociationHash();
 
@@ -154,34 +138,19 @@ AutoHashAccess::iterator AutoHashAccess::end(const void* container){
     return d ? d->end(*this) : iterator(QHashData::iterator{*this});
 }
 
-#endif
-
 AutoHashAccess::AutoHashAccess(const AutoHashAccess & other)
     :AbstractHashAccess(), AbstractNestedAssociativeAccess(),
-      m_keyMetaType(other.m_keyMetaType
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                                       .id()),
-      m_keyAlign(other.m_keyAlign
-#endif
-                                  ),
+      m_keyMetaType(other.m_keyMetaType),
       m_keyHashFunction(other.m_keyHashFunction),
       m_keyInternalToExternalConverter(other.m_keyInternalToExternalConverter),
       m_keyExternalToInternalConverter(other.m_keyExternalToInternalConverter),
       m_keyNestedContainerAccess(other.m_keyNestedContainerAccess),
-      m_valueMetaType(other.m_valueMetaType
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                                          .id()),
-      m_valueAlign(other.m_valueAlign
-#endif
-                                     ),
+      m_valueMetaType(other.m_valueMetaType),
       m_valueHashFunction(other.m_valueHashFunction),
       m_valueInternalToExternalConverter(other.m_valueInternalToExternalConverter),
       m_valueExternalToInternalConverter(other.m_valueExternalToInternalConverter),
       m_valueNestedContainerAccess(other.m_valueNestedContainerAccess),
       m_align(other.m_align),
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-      m_offset1(other.m_offset1),
-#endif
       m_offset2(other.m_offset2),
       m_size(other.m_size),
       m_keyOwnerFunction(other.m_keyOwnerFunction),
@@ -197,13 +166,8 @@ AutoHashAccess::~AutoHashAccess(){
 std::unique_ptr<AbstractHashAccess::KeyValueIterator> AutoHashAccess::keyValueIterator(const void* container) {
     class KeyValueIterator : public AbstractHashAccess::KeyValueIterator{
         AutoHashAccess* m_access;
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        Node* current;
-        Node* end;
-#else
         iterator current;
         iterator end;
-#endif
         KeyValueIterator(const KeyValueIterator& other)
             :m_access(other.m_access),
             current(other.current),
@@ -213,11 +177,7 @@ std::unique_ptr<AbstractHashAccess::KeyValueIterator> AutoHashAccess::keyValueIt
     public:
         KeyValueIterator(AutoHashAccess* _access, QHashData* container)
             :m_access(_access),
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            current(container ? container->firstNode() : reinterpret_cast<Node*>(container)), end(reinterpret_cast<Node*>(container))
-#else
             current(container ? container->begin(*_access) : iterator(*_access)), end(container ? container->end(*_access) : iterator(*_access))
-#endif
         {}
         bool hasNext() override{
             return current!=end;
@@ -227,29 +187,16 @@ std::unique_ptr<AbstractHashAccess::KeyValueIterator> AutoHashAccess::keyValueIt
             k.l = nullptr;
             jvalue v;
             v.l = nullptr;
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            m_access->m_keyInternalToExternalConverter(env, nullptr, reinterpret_cast<char*>(current)+m_access->m_offset1, k, true);
-            if(m_access->m_offset2!=0)
-                m_access->m_valueInternalToExternalConverter(env, nullptr, reinterpret_cast<char*>(current)+m_access->m_offset2, v, true);
-            current = QHashData::nextNode(current);
-#else
             m_access->m_keyInternalToExternalConverter(env, nullptr, current.key(), k, true);
             if(m_access->m_offset2!=0)
                 m_access->m_valueInternalToExternalConverter(env, nullptr, current.value(), v, true);
             ++current;
-#endif
             return {k.l, v.l};
         }
         QPair<const void*,const void*> next() override {
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            void* key = reinterpret_cast<char*>(current)+m_access->m_offset1;
-            void* value = reinterpret_cast<char*>(current)+m_access->m_offset2;
-            current = QHashData::nextNode(current);
-#else
             void* key = current.key();
             void* value = current.value();
             ++current;
-#endif
             if(m_access->m_keyDataType & AbstractContainerAccess::PointersMask){
                 key = *reinterpret_cast<void**>(key);
             }
@@ -268,15 +215,9 @@ std::unique_ptr<AbstractHashAccess::KeyValueIterator> AutoHashAccess::keyValueIt
             return true;
         }
         QPair<const void*,const void*> constNext() override {
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            void* key = reinterpret_cast<char*>(current)+m_access->m_offset1;
-            void* value = reinterpret_cast<char*>(current)+m_access->m_offset2;
-            current = QHashData::nextNode(current);
-#else
             void* key = current.key();
             void* value = current.value();
             ++current;
-#endif
             return {key, value};
         }
         QPair<const void*,void*> mutableNext() override {
@@ -289,13 +230,8 @@ std::unique_ptr<AbstractHashAccess::KeyValueIterator> AutoHashAccess::keyValueIt
 std::unique_ptr<AbstractHashAccess::KeyValueIterator> AutoHashAccess::keyValueIterator(void* container) {
     class KeyValueIterator : public AbstractHashAccess::KeyValueIterator{
         AutoHashAccess* m_access;
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        Node* current;
-        Node* end;
-#else
         iterator current;
         iterator end;
-#endif
         KeyValueIterator(const KeyValueIterator& other)
             :m_access(other.m_access),
             current(other.current),
@@ -305,11 +241,7 @@ std::unique_ptr<AbstractHashAccess::KeyValueIterator> AutoHashAccess::keyValueIt
     public:
         KeyValueIterator(AutoHashAccess* _access, QHashData* container)
             :m_access(_access),
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            current(container ? container->firstNode() : reinterpret_cast<Node*>(container)), end(reinterpret_cast<Node*>(container))
-#else
             current(container ? container->begin(*_access) : iterator(*_access)), end(container ? container->end(*_access) : iterator(*_access))
-#endif
         {}
         bool hasNext() override{
             return current!=end;
@@ -360,27 +292,15 @@ std::unique_ptr<AbstractHashAccess::KeyValueIterator> AutoHashAccess::keyValueIt
             return false;
         }
         QPair<const void*,const void*> constNext() override {
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            void* key = reinterpret_cast<char*>(current)+m_access->m_offset1;
-            void* value = reinterpret_cast<char*>(current)+m_access->m_offset2;
-            current = QHashData::nextNode(current);
-#else
             void* key = current.key();
             void* value = current.value();
             ++current;
-#endif
             return {key, value};
         }
         QPair<const void*,void*> mutableNext() override {
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            void* key = reinterpret_cast<char*>(current)+m_access->m_offset1;
-            void* value = reinterpret_cast<char*>(current)+m_access->m_offset2;
-            current = QHashData::nextNode(current);
-#else
             void* key = current.key();
             void* value = current.value();
             ++current;
-#endif
             return {key, value};
         }
     };
@@ -388,24 +308,14 @@ std::unique_ptr<AbstractHashAccess::KeyValueIterator> AutoHashAccess::keyValueIt
 }
 
 AutoHashAccess::AutoHashAccess(
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                int keyMetaType,
-                size_t keyAlign,
-#else
                 const QMetaType& keyMetaType,
-#endif
                 const QtJambiUtils::QHashFunction& keyHashFunction,
                 const QtJambiUtils::InternalToExternalConverter& keyInternalToExternalConverter,
                 const QtJambiUtils::ExternalToInternalConverter& keyExternalToInternalConverter,
                 const QSharedPointer<AbstractContainerAccess>& keyNestedContainerAccess,
                 PtrOwnerFunction keyOwnerFunction,
                 AbstractContainerAccess::DataType keyDataType,
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                int valueMetaType,
-                size_t valueAlign,
-#else
                 const QMetaType& valueMetaType,
-#endif
                 const QtJambiUtils::QHashFunction& valueHashFunction,
                 const QtJambiUtils::InternalToExternalConverter& valueInternalToExternalConverter,
                 const QtJambiUtils::ExternalToInternalConverter& valueExternalToInternalConverter,
@@ -415,27 +325,16 @@ AutoHashAccess::AutoHashAccess(
         )
     : AbstractHashAccess(), AbstractNestedAssociativeAccess(),
       m_keyMetaType(keyMetaType),
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-      m_keyAlign(keyAlign),
-#endif
       m_keyHashFunction(keyHashFunction),
       m_keyInternalToExternalConverter(keyInternalToExternalConverter),
       m_keyExternalToInternalConverter(keyExternalToInternalConverter),
       m_keyNestedContainerAccess(keyNestedContainerAccess),
       m_valueMetaType(valueMetaType),
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-      m_valueAlign(valueAlign),
-#endif
       m_valueHashFunction(valueHashFunction),
       m_valueInternalToExternalConverter(valueInternalToExternalConverter),
       m_valueExternalToInternalConverter(valueExternalToInternalConverter),
       m_valueNestedContainerAccess(valueNestedContainerAccess),
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-      m_align(qMax(keyAlign, valueAlign)),
-      m_offset1(0),
-#else
       m_align(m_valueMetaType.id()!=QMetaType::Void ? qMax(m_keyMetaType.alignOf(), m_valueMetaType.alignOf()) : m_keyMetaType.alignOf()),
-#endif
       m_offset2(0),
       m_size(0),
       m_keyOwnerFunction(keyOwnerFunction),
@@ -448,42 +347,19 @@ AutoHashAccess::AutoHashAccess(
     Q_ASSERT(m_keyMetaType.id()!=QMetaType::UnknownType
             && m_keyMetaType.id()!=QMetaType::Void);
     Q_ASSERT(m_valueMetaType.id()!=QMetaType::UnknownType);
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    m_offset1 = sizeof(void*);
-    if(m_offset1%alignof(uint)>0)
-        m_offset1 += alignof(uint)-m_offset1%alignof(uint);
-    m_offset1 += sizeof(uint);
-    if(m_offset1%m_keyAlign>0)
-        m_offset1 += m_keyAlign-m_offset1%m_keyAlign;
-#endif
     if(m_valueMetaType.id()!=QMetaType::Void){
         Q_ASSERT(m_valueInternalToExternalConverter);
         Q_ASSERT(m_valueExternalToInternalConverter);
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        m_offset2 = m_offset1 + m_keyMetaType.sizeOf();
-        if(m_offset2%m_valueAlign>0)
-            m_offset2 += m_valueAlign-m_offset2%m_valueAlign;
-        m_size = m_offset2 + m_valueMetaType.sizeOf();
-        if(m_size%m_align>0)
-            m_size += m_align-m_size%m_align;
-#else
         m_offset2 = m_keyMetaType.sizeOf();
         if(m_offset2%m_valueMetaType.alignOf()>0)
             m_offset2 += m_valueMetaType.alignOf()-m_offset2%m_valueMetaType.alignOf();
         m_size = m_offset2 + m_valueMetaType.sizeOf();
         if(m_size%m_align>0)
             m_size += m_align-m_size%m_align;
-#endif
     }else{
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        m_size = m_offset1 + m_keyMetaType.sizeOf();
-        if(m_size%m_align>0)
-            m_size += m_align-m_size%m_align;
-#else
         m_size = m_keyMetaType.sizeOf();
         if(m_size%m_align>0)
             m_size += m_align-m_size%m_align;
-#endif
         m_offset2 = 0;
     }
 }
@@ -1771,95 +1647,58 @@ jboolean AutoHashAccess::equal(JNIEnv *env, const void* container, jobject other
 
 int AutoHashAccess::registerContainer(const QByteArray& typeName)
 {
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    int newMetaType = QMetaType::type(typeName);
-#else
     int newMetaType = QMetaType::fromName(typeName).id();
-#endif
     if(newMetaType==QMetaType::UnknownType){
         QSharedPointer<AutoHashAccess> access(dynamic_cast<AutoHashAccess*>(this->clone()), &containerDisposer);
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
         auto kiface = m_keyMetaType.iface();
         auto viface = m_valueMetaType.iface();
-#endif
         newMetaType = registerContainerMetaType(typeName,
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#if QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
-                                       qtjambi_function_pointer<16,void(void*)>([access](void* ptr){
-                                            access->destructContainer(ptr);
-                                       }, qHash(typeName)),
-                                       [](void* ptr, const void * other) -> void* {
-                                            if(other){
-                                                QHashData *const* map2 = reinterpret_cast<QHashData *const*>(other);
-                                                QHashData* d2 = *map2;
-                                                if(d2!=&QHashData::shared_null && d2->ref.ref())
-                                                    return new (ptr) QHashData *(d2);
-                                            }
-                                            return new (ptr) QHashData const*(&QHashData::shared_null);
-                                       },
-#endif //QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
-                                       uint(sizeOf()),
-                                       alignOf(),
-#else
-                                       AutoHashAccess::defaultCtr,
-                                       AutoHashAccess::copyCtr,
-                                       AutoHashAccess::moveCtr,
-                                       AutoHashAccess::dtor,
-                                       (kiface->equals
-                                                    || (kiface->flags & QMetaType::IsPointer)
-                                                    || (kiface->flags & QMetaType::IsEnumeration))
-                                                && (viface->equals
-                                                    || (viface->flags & QMetaType::IsPointer)
-                                                    || (viface->flags & QMetaType::IsEnumeration)) ? AutoHashAccess::equalsFn : nullptr,
-                                       nullptr,
-                                       (kiface->debugStream
-                                                    || (kiface->flags & QMetaType::IsPointer)
-                                                    || (kiface->flags & QMetaType::IsEnumeration))
-                                                && (viface->debugStream
-                                                    || (viface->flags & QMetaType::IsPointer)
-                                                    || (viface->flags & QMetaType::IsEnumeration)) ? AutoHashAccess::debugStreamFn : nullptr,
-                                       (kiface->dataStreamOut
-                                                    || (kiface->flags & QMetaType::IsEnumeration))
-                                                && (viface->dataStreamOut
-                                                    || (viface->flags & QMetaType::IsEnumeration)) ? AutoHashAccess::dataStreamOutFn : nullptr,
-                                       (kiface->dataStreamIn
-                                                    || (kiface->flags & QMetaType::IsEnumeration))
-                                                && (viface->dataStreamIn
-                                                    || (viface->flags & QMetaType::IsEnumeration)) ? AutoHashAccess::dataStreamInFn : nullptr,
-                                       nullptr,
-                                       uint(sizeOf()),
-                                       alignOf(),
-                                       QMetaType::UnknownType,
-#endif
-                                       QMetaType::NeedsConstruction
+                                                AutoHashAccess::defaultCtr,
+                                                AutoHashAccess::copyCtr,
+                                                AutoHashAccess::moveCtr,
+                                                AutoHashAccess::dtor,
+                                                (kiface->equals
+                                                 || (kiface->flags & QMetaType::IsPointer)
+                                                 || (kiface->flags & QMetaType::IsEnumeration))
+                                                        && (viface->equals
+                                                            || (viface->flags & QMetaType::IsPointer)
+                                                            || (viface->flags & QMetaType::IsEnumeration)) ? AutoHashAccess::equalsFn : nullptr,
+                                                nullptr,
+                                                (kiface->debugStream
+                                                 || (kiface->flags & QMetaType::IsPointer)
+                                                 || (kiface->flags & QMetaType::IsEnumeration))
+                                                        && (viface->debugStream
+                                                            || (viface->flags & QMetaType::IsPointer)
+                                                            || (viface->flags & QMetaType::IsEnumeration)) ? AutoHashAccess::debugStreamFn : nullptr,
+                                                (kiface->dataStreamOut
+                                                 || (kiface->flags & QMetaType::IsEnumeration))
+                                                        && (viface->dataStreamOut
+                                                            || (viface->flags & QMetaType::IsEnumeration)) ? AutoHashAccess::dataStreamOutFn : nullptr,
+                                                (kiface->dataStreamIn
+                                                 || (kiface->flags & QMetaType::IsEnumeration))
+                                                        && (viface->dataStreamIn
+                                                            || (viface->flags & QMetaType::IsEnumeration)) ? AutoHashAccess::dataStreamInFn : nullptr,
+                                                nullptr,
+                                                uint(sizeOf()),
+                                                alignOf(),
+                                                QMetaType::UnknownType,
+                                                QMetaType::NeedsConstruction
                                                    | QMetaType::NeedsDestruction
-                                                   | QMetaType::MovableType,
+#if QT_VERSION < QT_VERSION_CHECK(6, 5, 0)
+                                                    | QMetaType::MovableType,
+#else
+                                                    | QMetaType::RelocatableType,
+#endif
                                        nullptr,
                                        nullptr,
                                        access);
         if(m_keyHashFunction && m_valueHashFunction){
             insertHashFunctionByMetaType(newMetaType,
                                             [access]
-                                            (const void* ptr, hash_type seed)->hash_type{
+                                            (const void* ptr, size_t seed)->size_t{
                                                 if(ptr){
                                                     QHashData *const* map = reinterpret_cast<QHashData *const*>(ptr);
                                                     QHashData* d = *map;
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                                                    hash_type hashCode = seed;
-                                                    Node* e = reinterpret_cast<Node*>(d);
-                                                    Node *n = d->firstNode();
-                                                    while (n && n != e) {
-                                                        void* key = reinterpret_cast<char*>(n)+access->m_offset1;
-                                                        void* value = reinterpret_cast<char*>(n)+access->m_offset2;
-                                                        hash_type heyHash = access->m_keyHashFunction(key, 0);
-                                                        hash_type valueHash = access->m_valueHashFunction(value, 0);
-                                                        hash_type pairSeed = 0;
-                                                        pairSeed = pairSeed ^ (heyHash + 0x9e3779b9 + (pairSeed << 6) + (pairSeed >> 2));
-                                                        pairSeed = pairSeed ^ (valueHash + 0x9e3779b9 + (pairSeed << 6) + (pairSeed >> 2));
-                                                        hashCode = hashCode + pairSeed;
-                                                        n = QHashData::nextNode(n);
-                                                    }
-#else
                                                     size_t hashCode = 0;
                                                     if(d){
                                                         iterator e = d->end(*access);
@@ -1870,7 +1709,6 @@ int AutoHashAccess::registerContainer(const QByteArray& typeName)
                                                             ++n;
                                                         }
                                                     }
-#endif
                                                     return hashCode;
                                                 }else{
                                                     return 0;
@@ -1878,226 +1716,6 @@ int AutoHashAccess::registerContainer(const QByteArray& typeName)
                                             });
         }
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        {
-            int to = qMetaTypeId<QtMetaTypePrivate::QAssociativeIterableImpl>();
-            struct ConverterFunction : QtPrivate::AbstractConverterFunction{
-                int _metaType_id_first;
-                uint _metaType_flags_first;
-                int _metaType_id_second;
-                uint _metaType_flags_second;
-                QtMetaTypePrivate::QAssociativeIterableImpl::sizeFunc _size;
-                QtMetaTypePrivate::QAssociativeIterableImpl::findFunc _find;
-                QtMetaTypePrivate::QAssociativeIterableImpl::beginFunc _begin;
-                QtMetaTypePrivate::QAssociativeIterableImpl::beginFunc _end;
-                QtMetaTypePrivate::QAssociativeIterableImpl::advanceFunc _advance;
-                QtMetaTypePrivate::QAssociativeIterableImpl::getFunc _getKey;
-                QtMetaTypePrivate::QAssociativeIterableImpl::getFunc _getValue;
-                QtMetaTypePrivate::QAssociativeIterableImpl::destroyIterFunc _destroyIter;
-                QtMetaTypePrivate::QAssociativeIterableImpl::equalIterFunc _equalIter;
-                QtMetaTypePrivate::QAssociativeIterableImpl::copyIterFunc _copyIter;
-
-                ConverterFunction(QSharedPointer<AutoHashAccess> access, int newMetaType, int keyMetaType, bool keyIsPointer, int valueMetaType, bool valueIsPointer, size_t offset1, size_t offset2)
-                    : QtPrivate::AbstractConverterFunction(convert),
-                      _metaType_id_first(keyMetaType),
-                      _metaType_flags_first(keyIsPointer),
-                      _metaType_id_second(valueMetaType),
-                      _metaType_flags_second(valueIsPointer),
-                      _size([](const void *container) -> int {
-                                QHashData *const* map = reinterpret_cast<QHashData *const*>(container);
-                                return (*map)->size;
-                            }),
-                      _find(qtjambi_function_pointer<16,void(const void *, const void *, void **)>([access](const void *container, const void *key, void **iterator){
-                                QHashData *const* map = reinterpret_cast<QHashData *const*>(container);
-                                *iterator = access->findNode(map, key);
-                            }, newMetaType)),
-                      _begin([](const void *container, void ** iterator){
-                                QHashData *const* map = reinterpret_cast<QHashData *const*>(container);
-                                QHashData* d = *map;
-                                *iterator = d->firstNode();
-                            }),
-                      _end([](const void *container, void ** iterator){
-                                QHashData *const* map = reinterpret_cast<QHashData *const*>(container);
-                                QHashData* d = *map;
-                                Node* e = reinterpret_cast<Node*>(d);
-                                *iterator = e;
-                            }),
-                      _advance([](void **iter, int n){
-                                Node* node = reinterpret_cast<Node*>(*iter);
-                                if(n>0){
-                                    for(int i=0; node!=nullptr && i<n; ++i){
-                                        node = QHashData::nextNode(node);
-                                    }
-                                }else if(n<0){
-                                    for(int i=0; node!=nullptr && i>n; --i){
-                                        node = QHashData::previousNode(node);
-                                    }
-                                }
-                                *iter = node;
-                            }),
-                      _getKey(qtjambi_function_pointer<16,QtMetaTypePrivate::VariantData(void*const*,int,uint)>([offset1](void * const *iter, int metaTypeId, uint flags)->QtMetaTypePrivate::VariantData{
-                                char* node = reinterpret_cast<char*>(*iter);
-                                return QtMetaTypePrivate::VariantData(metaTypeId, node+offset1, flags);
-                            }, hash_type(offset1))),
-                      _getValue(qtjambi_function_pointer<16,QtMetaTypePrivate::VariantData(void*const*,int,uint)>([offset2](void * const *iter, int metaTypeId, uint flags)->QtMetaTypePrivate::VariantData{
-                                char* node = reinterpret_cast<char*>(*iter);
-                                return QtMetaTypePrivate::VariantData(metaTypeId, node+offset2, flags);
-                            }, hash_type(offset1))),
-                      _destroyIter([](void **){}),
-                      _equalIter([](void * const *iter, void * const *other)->bool{ return *iter==*other; }),
-                      _copyIter([](void ** iter1, void * const *iter2){
-                                    *reinterpret_cast<Node**>(iter1) = *reinterpret_cast<Node*const*>(iter2);
-                                })
-                {
-                }
-
-                static bool convert(const AbstractConverterFunction *_f, const void *src, void*target){
-                    const ConverterFunction* f = static_cast<const ConverterFunction*>(_f);
-                    QtMetaTypePrivate::QAssociativeIterableImpl* a = new(target) QtMetaTypePrivate::QAssociativeIterableImpl();
-                    a->_iterable = src;
-                    a->_metaType_id_key = f->_metaType_id_first;
-                    a->_metaType_flags_key = f->_metaType_flags_first;
-                    a->_metaType_id_value = f->_metaType_id_second;
-                    a->_metaType_flags_value = f->_metaType_flags_second;
-                    a->_size = f->_size;
-                    a->_find = f->_find;
-                    a->_begin = f->_begin;
-                    a->_end = f->_end;
-                    a->_advance = f->_advance;
-                    a->_getKey = f->_getKey;
-                    a->_getValue = f->_getValue;
-                    a->_destroyIter = f->_destroyIter;
-                    a->_equalIter = f->_equalIter;
-                    a->_copyIter = f->_copyIter;
-                    return true;
-                }
-            };
-            registerConverter(new ConverterFunction(access, newMetaType, m_keyMetaType.id(), AbstractContainerAccess::isPointerType(m_keyMetaType), m_valueMetaType.id(), AbstractContainerAccess::isPointerType(m_valueMetaType), m_offset1, m_offset2), newMetaType, to);
-        }
-        if((QMetaType::hasRegisteredComparators(m_keyMetaType.id())
-            || registeredComparator(m_keyMetaType.id())
-            || m_keyMetaType.id()<QMetaType::User
-            || AbstractContainerAccess::isPointerType(m_keyMetaType))
-                && (QMetaType::hasRegisteredComparators(m_valueMetaType.id())
-                || registeredComparator(m_valueMetaType.id())
-                || m_valueMetaType.id()<QMetaType::User
-                || AbstractContainerAccess::isPointerType(m_valueMetaType))){
-            struct Comparator : QtPrivate::AbstractComparatorFunction{
-                static bool equals(const AbstractComparatorFunction *_c, const void *a, const void *b){
-                    const Comparator* c = static_cast<const Comparator*>(_c);
-                    return c->access->equal(a, b);
-                }
-                static void destroy(AbstractComparatorFunction *_c){
-                    delete static_cast<Comparator*>(_c);
-                }
-                QSharedPointer<AutoHashAccess> access;
-
-                Comparator(const QSharedPointer<AutoHashAccess>& _access)
-                    : QtPrivate::AbstractComparatorFunction(nullptr, equals, destroy),
-                      access(_access)
-                {
-
-                }
-            };
-            RegistryAPI::registerComparator(new Comparator(access), newMetaType);
-        }
-        if((QMetaType::hasRegisteredDebugStreamOperator(m_keyMetaType.id())
-                && QMetaType::hasRegisteredDebugStreamOperator(m_valueMetaType.id()))
-                || (registeredDebugStreamOperator(m_keyMetaType.id())
-                    && registeredDebugStreamOperator(m_valueMetaType.id()))
-                || (m_keyMetaType.id()<QMetaType::User
-                    && m_valueMetaType.id()<QMetaType::User)
-                || (AbstractContainerAccess::isPointerType(m_keyMetaType)
-                    || AbstractContainerAccess::isPointerType(m_valueMetaType))){
-            struct DebugStreamFunction : QtPrivate::AbstractDebugStreamFunction{
-                static void stream(const AbstractDebugStreamFunction *_f, QDebug& dbg, const void *ptr){
-                    const DebugStreamFunction* f = static_cast<const DebugStreamFunction*>(_f);
-                    QHashData *const* map = reinterpret_cast<QHashData *const*>(ptr);
-                    QHashData* d = *map;
-                    Node* e = reinterpret_cast<Node*>(d);
-                    Node *n = d->firstNode();
-                    dbg = dbg.nospace().noquote();
-                    if(f->access->isMulti())
-                        dbg << "QMultiHash";
-                    else
-                        dbg << "QHash";
-                    dbg << "(";
-                    while (n && n != e) {
-                        void* key = reinterpret_cast<char*>(n)+f->access->m_offset1;
-                        void* value = reinterpret_cast<char*>(n)+f->access->m_offset2;
-                        dbg << "(";
-                        CoreAPI::appendToDebugStream(dbg, f->access->m_keyMetaType.id(), key);
-                        dbg << ",";
-                        CoreAPI::appendToDebugStream(dbg, f->access->m_valueMetaType.id(), value);
-                        dbg << ")";
-                        n = QHashData::nextNode(n);
-                    }
-                    dbg << ")";
-                }
-                static void destroy(AbstractDebugStreamFunction *_f){
-                    delete static_cast<DebugStreamFunction*>(_f);
-                }
-                QSharedPointer<AutoHashAccess> access;
-
-                DebugStreamFunction(const QSharedPointer<AutoHashAccess>& _access)
-                    : QtPrivate::AbstractDebugStreamFunction(stream, destroy),
-                      access(_access)
-                {
-                }
-            };
-            RegistryAPI::registerDebugStreamOperator(new DebugStreamFunction(access), newMetaType);
-        }
-        {
-            size_t offset1 = m_offset1;
-            size_t offset2 = m_offset2;
-            int keyMetaType_id = m_keyMetaType.id();
-            int valueMetaType_id = m_valueMetaType.id();
-            QMetaType::registerStreamOperators(newMetaType,
-                                               qtjambi_function_pointer<16,void(QDataStream &, const void *)>(
-                                                                               [keyMetaType_id,valueMetaType_id,offset1,offset2](QDataStream &s, const void * p){
-                                                                                       QHashData *const* map = reinterpret_cast<QHashData *const*>(p);
-                                                                                       QHashData* d = *map;
-                                                                                       Node* e = reinterpret_cast<Node*>(d);
-                                                                                       Node *n = d->firstNode();
-                                                                                       s << quint32((*map)->size);
-                                                                                       while (n && n != e) {
-                                                                                           void* key = reinterpret_cast<char*>(n)+offset1;
-                                                                                           void* value = reinterpret_cast<char*>(n)+offset2;
-                                                                                           QMetaType::save(s, keyMetaType_id, key);
-                                                                                           QMetaType::save(s, valueMetaType_id, value);
-                                                                                           n = QHashData::nextNode(n);
-                                                                                       }
-                                                                               }, newMetaType),
-                                               qtjambi_function_pointer<16,void(QDataStream &, void *)>(
-                                                                               [access](QDataStream &s, void * p){
-                                                                                    QHashData ** map = reinterpret_cast<QHashData **>(p);
-                                                                                    QHashData*& d = *map;
-                                                                                    const QHashData* empty = &QHashData::shared_null;
-                                                                                    access->assign(p, &empty);
-                                                                                    access->detach(map);
-                                                                                    Node* e = reinterpret_cast<Node*>(d);
-                                                                                    quint32 size = 0;
-                                                                                    s >> size;
-                                                                                    for(quint32 i=0; i<size; ++i){
-                                                                                        void* key = QMetaType::create(access->m_keyMetaType.id(), nullptr);
-                                                                                        QMetaType::load(s, access->m_keyMetaType.id(), key);
-                                                                                        uint h;
-                                                                                        Node **node = access->findNode(map, key, &h);
-                                                                                        if (*node == e || access->isMulti()) {
-                                                                                            if (d->willGrow())
-                                                                                                node = access->findNode(map, key, h);
-                                                                                            access->createNode(d, h, key, s, node);
-                                                                                            continue;
-                                                                                        }
-                                                                                        void* avalue = reinterpret_cast<char*>(*node) + access->m_offset2;
-                                                                                        access->m_valueMetaType.construct(avalue);
-                                                                                        QMetaType::load(s, access->m_valueMetaType.id(), avalue);
-                                                                                        QMetaType::destroy(access->m_keyMetaType.id(), key);
-                                                                                    }
-                                                                               }, newMetaType)
-                                               );
-        }
-#else
         {
             const QMetaType to = QMetaType::fromType<QAssociativeIterable>();
             QMetaType::registerMutableViewFunction([newMetaType](void *src, void *target)->bool{
@@ -2109,7 +1727,6 @@ int AutoHashAccess::registerContainer(const QByteArray& typeName)
                 return true;
             }, QMetaType(newMetaType), to);
         }
-#endif
     }else{
         registerContainerAccess(newMetaType, this);
     }
@@ -2906,18 +2523,12 @@ jint AutoHashAccess::capacity(JNIEnv *, const void* container){
 void AutoHashAccess::reserve(JNIEnv *, const ContainerInfo& container, jint asize){
     QHashData ** map = reinterpret_cast<QHashData **>(container.container);
     QHashData*& d = *map;
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    detach(map);
-    d->rehash(-qMax<int>(asize, 1));
-#else
     if (isDetached(container.container))
         d->rehash(*this, size_t(asize));
     else
         d = QHashData::detached(*this, d, size_t(asize));
-#endif
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 void AutoHashAccess::eraseSpanEntry(char* value) const{
     m_valueMetaType.destruct(value);
 }
@@ -2929,8 +2540,6 @@ void AutoHashAccess::copySpanEntry(char* value1, const char* value2) const{
 bool AutoHashAccess::equalSpanEntries(const char* value1, const char* value2) const{
     return m_valueMetaType.equals(value1, value2);
 }
-#endif
-
 
 KeyPointerRCAutoHashAccess::KeyPointerRCAutoHashAccess(KeyPointerRCAutoHashAccess& other)
     : AutoHashAccess(other), ReferenceCountingSetContainer() {}

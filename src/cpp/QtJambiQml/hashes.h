@@ -42,11 +42,11 @@
 #if QT_VERSION >= QT_VERSION_CHECK(6, 1, 0)
 #include <QtQml/QJSPrimitiveValue>
 
-inline hash_type qHash(const QJSPrimitiveValue &value, hash_type seed = 0)
+inline size_t qHash(const QJSPrimitiveValue &value, size_t seed = 0)
 {
     switch(value.type()){
     case QJSPrimitiveValue::Undefined:
-        return std::numeric_limits<hash_type>::max();
+        return std::numeric_limits<size_t>::max();
     case QJSPrimitiveValue::Null:
         return 0;
     case QJSPrimitiveValue::Boolean:
@@ -62,7 +62,7 @@ inline hash_type qHash(const QJSPrimitiveValue &value, hash_type seed = 0)
 }
 #endif // QT_VERSION >= QT_VERSION_CHECK(6, 1, 0)
 
-inline hash_type qHash(const QQmlScriptString &value, hash_type seed = 0)
+inline size_t qHash(const QQmlScriptString &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -82,7 +82,7 @@ inline hash_type qHash(const QQmlScriptString &value, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QQmlError &value, hash_type seed = 0)
+inline size_t qHash(const QQmlError &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -98,20 +98,12 @@ inline hash_type qHash(const QQmlError &value, hash_type seed = 0)
     return seed;
 }
 
-hash_type qHash(const QQmlListReference &value, hash_type seed = 0);
+size_t qHash(const QQmlListReference &value, size_t seed = 0);
 
 namespace QtQml {
     typedef QObject *(*QQmlAttachedPropertiesFunc)(QObject *);
-#if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
     typedef std::function<QObject*(QQmlEngine *, QJSEngine *)> ObjectCallback;
-#else
-    typedef QObject *(*ObjectCallback)(QQmlEngine *, QJSEngine *);
-#endif
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     typedef std::function<QJSValue(QQmlEngine *, QJSEngine *)> ValueCallback;
-#else
-    typedef QJSValue (*ValueCallback)(QQmlEngine *, QJSEngine *);
-#endif
 }
 
 #if defined(QTJAMBI_GENERATOR_RUNNING) && QT_VERSION >= QT_VERSION_CHECK(6,7,0)

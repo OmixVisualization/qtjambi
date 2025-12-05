@@ -155,14 +155,12 @@ private:
     QList<int> m_ints;
 };
 
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 template<typename T>
 struct QtPrivate::QEqualityOperatorForType<std::initializer_list<T>,true>
 {
     static bool equals(const QMetaTypeInterface *, const void *a, const void *b)
     { return initializer_list_equals<T>(*reinterpret_cast<const std::initializer_list<T> *>(a), *reinterpret_cast<const std::initializer_list<T> *>(b)); }
 };
-#endif
 
 #if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
 

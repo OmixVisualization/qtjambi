@@ -34,6 +34,7 @@ TypeSystem{
     defaultSuperClass: "QtObject"
     qtLibrary: "QtQml"
     module: "qtjambi.qml"
+    precompiledHeader: "pch_p.h"
     description: "Classes for QML and JavaScript languages."
     InjectCode{
         target: CodeClass.MetaInfo
@@ -97,11 +98,6 @@ TypeSystem{
     
     Rejection{
         className: "QQmlTypeNotAvailable"
-    }
-    
-    Rejection{
-        className: "QQmlInfo"
-        functionName: "operator<<"
     }
     
     Rejection{
@@ -798,23 +794,252 @@ TypeSystem{
         }
     }
     
-    ValueType{
+    ObjectType{
         name: "QQmlInfo"
-        CustomConstructor{
-            Text{content: "if(copy){\n"+
-                          "    return new(placement) QQmlInfo(*copy);\n"+
-                          "}else{\n"+
-                          "    return new(placement) QQmlInfo(qmlDebug(nullptr));\n"+
-                          "}"}
+        DelegateBaseClass{
+            baseClass: "QDebug"
+            delegate: "base"
         }
-        CustomConstructor{
-            type: CustomConstructor.Default
-            Text{content: "new(placement) QQmlInfo(qmlDebug(nullptr));"}
+        implementing: "java.lang.AutoCloseable, java.lang.Appendable"
+        InjectCode{
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class autoclosedelete"
+                quoteBeforeLine: "}// class"
+            }
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiQml.java"
+                quoteAfterLine: "class QQmlInfo___"
+                quoteBeforeLine: "}// class"
+            }
+        }
+        InjectCode{
+            position: Position.Clone
+            Text{content: "clone.disabled = this.disabled;"}
+        }
+        addTextStreamFunctions: true
+        ModifyFunction{
+            signature: "QTextStreamFunction"
+            InjectCode{ Text{content: "if(disabled) return this;"} }
+        }
+        ModifyFunction{
+            signature: "operator<<(QTextStreamManipulator)"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "operator<<(QLatin1String)"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "operator<<(const void*)"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "operator<<(uint)"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "operator<<(ulong)"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "operator<<(unsigned short)"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "operator<<(signed long)"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "operator<<(quint64)"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "operator<<(qfloat16)"
+            remove: RemoveFlag.All
+            since: [6,5]
+        }
+        ModifyFunction{
+            signature: "operator<<(char32_t)"
+            remove: RemoveFlag.All
         }
         ModifyFunction{
             signature: "operator<<(QQmlInfo,const QWindow*)"
-            rename: "append"
+            remove: RemoveFlag.All
             since: 6.2
+        }
+        ModifyFunction{
+            signature: "operator<<(QChar)"
+            rename: "append"
+            InjectCode{ Text{content: "if(disabled) return this;"} }
+        }
+        ModifyFunction{
+            signature: "operator<<(QUrl)"
+            rename: "append"
+            InjectCode{ Text{content: "if(disabled) return this;"} }
+        }
+        ModifyFunction{
+            signature: "operator<<(const char*)"
+            rename: "append"
+            InjectCode{ Text{content: "if(disabled) return this;"} }
+            ModifyArgument{
+                index: 1
+                ReplaceType{
+                    modifiedType: "java.lang.@NonNull CharSequence"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "QStringView %out = qtjambi_cast<QStringView>(%env, %scope, %in);"}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "operator<<(QStringView)"
+            rename: "append"
+            InjectCode{ Text{content: "if(disabled) return this;"} }
+            ModifyArgument{
+                index: 1
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "const char* %out = qtjambi_cast<const char*>(%env, %scope, %in);"}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "operator<<(QString)"
+            rename: "append"
+            InjectCode{ Text{content: "if(disabled) return this;"} }
+            ModifyArgument{
+                index: 1
+                ReplaceType{
+                    modifiedType: "io.qt.core.@NonNull QString"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "const QString& %out = qtjambi_cast<const QString&>(%env, %in);"}
+                }
+            }
+            Delegate{
+                name: "writeString"
+            }
+        }
+        ModifyFunction{
+            signature: "operator<<(bool)"
+            rename: "append"
+            InjectCode{ Text{content: "if(disabled) return this;"} }
+        }
+        ModifyFunction{
+            signature: "operator<<(char)"
+            rename: "append"
+            InjectCode{ Text{content: "if(disabled) return this;"} }
+        }
+        ModifyFunction{
+            signature: "operator<<(QByteArray)"
+            rename: "append"
+            InjectCode{ Text{content: "if(disabled) return this;"} }
+        }
+        ModifyFunction{
+            signature: "operator<<(double)"
+            rename: "append"
+            InjectCode{ Text{content: "if(disabled) return this;"} }
+        }
+        ModifyFunction{
+            signature: "operator<<(float)"
+            rename: "append"
+            InjectCode{ Text{content: "if(disabled) return this;"} }
+        }
+        ModifyFunction{
+            signature: "operator<<(qint64)"
+            rename: "append"
+            InjectCode{ Text{content: "if(disabled) return this;"} }
+        }
+        ModifyFunction{
+            signature: "operator<<(signed short)"
+            rename: "append"
+            InjectCode{ Text{content: "if(disabled) return this;"} }
+        }
+        ModifyFunction{
+            signature: "operator<<(signed int)"
+            rename: "append"
+            InjectCode{ Text{content: "if(disabled) return this;"} }
+        }
+        ModifyFunction{
+            signature: "maybeQuote(char)"
+            associatedTo: "QDebug"
+            pullDown: true
+            InjectCode{ Text{content: "if(disabled) return this;"} }
+        }
+        ModifyFunction{
+            signature: "maybeSpace()"
+            associatedTo: "QDebug"
+            pullDown: true
+            InjectCode{ Text{content: "if(disabled) return this;"} }
+        }
+        ModifyFunction{
+            signature: "autoInsertSpaces()const"
+            associatedTo: "QDebug"
+            pullDown: true
+        }
+        ModifyFunction{
+            signature: "noquote()"
+            associatedTo: "QDebug"
+            pullDown: true
+            InjectCode{ Text{content: "if(disabled) return this;"} }
+        }
+        ModifyFunction{
+            signature: "quote()"
+            associatedTo: "QDebug"
+            pullDown: true
+            InjectCode{ Text{content: "if(disabled) return this;"} }
+        }
+        ModifyFunction{
+            signature: "nospace()"
+            associatedTo: "QDebug"
+            pullDown: true
+            InjectCode{ Text{content: "if(disabled) return this;"} }
+        }
+        ModifyFunction{
+            signature: "space()"
+            associatedTo: "QDebug"
+            pullDown: true
+            InjectCode{ Text{content: "if(disabled) return this;"} }
+        }
+        ModifyFunction{
+            signature: "quoteStrings()const"
+            associatedTo: "QDebug"
+            pullDown: true
+        }
+        ModifyFunction{
+            signature: "resetFormat()"
+            associatedTo: "QDebug"
+            pullDown: true
+            InjectCode{ Text{content: "if(disabled) return this;"} }
+        }
+        ModifyFunction{
+            signature: "setAutoInsertSpaces(bool)"
+            associatedTo: "QDebug"
+            pullDown: true
+        }
+        ModifyFunction{
+            signature: "setQuoteStrings(bool)"
+            associatedTo: "QDebug"
+            pullDown: true
+        }
+        ModifyFunction{
+            signature: "setVerbosity(int)"
+            associatedTo: "QDebug"
+            pullDown: true
+        }
+        ModifyFunction{
+            signature: "verbosity()const"
+            associatedTo: "QDebug"
+            pullDown: true
+        }
+        ModifyFunction{
+            signature: "verbosity(int)"
+            associatedTo: "QDebug"
+            pullDown: true
+            InjectCode{ Text{content: "if(disabled) return this;"} }
         }
     }
     
@@ -1688,7 +1913,27 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
         }
         ModifyFunction{
             signature: "create(QQmlIncubator &, QQmlContext *, QQmlContext *)"
-            blockExceptions: true
+            InjectCode{
+                position: Position.Beginning
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "incubator"
+                }
+                ArgumentMap{
+                    index: 2
+                    metaName: "context"
+                }
+                ArgumentMap{
+                    index: 3
+                    metaName: "forContext"
+                }
+                Text{
+                    content: String.raw`
+                    incubator.__rcContext = context;
+                    incubator.__rcForContext = forContext;`
+                }
+            }
         }
         ModifyFunction{
             signature: "setData(QByteArray,QUrl)"
@@ -1860,6 +2105,13 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
                     codeClass: CodeClass.Native
                     ownership: Ownership.Java
                 }
+            }
+        }
+        InjectCode{
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiQml.java"
+                quoteAfterLine: "class __QQmlIncubator"
+                quoteBeforeLine: "}// class"
             }
         }
     }
@@ -2043,6 +2295,10 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
     GlobalFunction{
         signature: "qjsEngine(const QObject*)"
         targetType: "QtQml"
+        ModifyArgument{
+            index: 1
+            NoNullPointer{}
+        }
     }
     
     GlobalFunction{

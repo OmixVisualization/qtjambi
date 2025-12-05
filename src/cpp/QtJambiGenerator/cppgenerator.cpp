@@ -73,12 +73,14 @@ QString CppGenerator::subDirectoryForPackage(const QString &package) const {
     }else
         return QString(package).replace(u'.', u'_');
 }
-QString CppGenerator::translateType(const MetaType *java_type, Option option) {
+QString CppGenerator::jniName(const MetaType *java_type, Option option) {
     if (!java_type)
         return QStringLiteral(u"void");
 
     if (java_type->hasNativeId() && (option & UseNativeIds)){
         return QStringLiteral(u"QtJambiNativeID");
+    }else if (java_type->isException()){
+        return QStringLiteral(u"jthrowable");
     }else if (java_type->isCharString()){
         return QStringLiteral(u"jstring");
     }else if (java_type->isPrimitive()
@@ -90,7 +92,7 @@ QString CppGenerator::translateType(const MetaType *java_type, Option option) {
         return java_type->typeEntry()->jniName();
     } else if (java_type->isArray()){
         if(java_type->arrayElementType() && java_type->arrayElementType()->isNativePointer()){
-            return translateType(java_type->arrayElementType(), option);
+            return jniName(java_type->arrayElementType(), option);
         }else if(java_type->typeEntry()->isArray())
             return java_type->typeEntry()->jniName();
         else{
@@ -107,7 +109,7 @@ QString CppGenerator::translateType(const MetaType *java_type, Option option) {
     } else if(java_type->isContainer() && static_cast<const ContainerTypeEntry *>(java_type->typeEntry())->type()==ContainerTypeEntry::std_array){
         const MetaType *elementType = java_type->instantiations()[0];
         if(elementType && elementType->isNativePointer()){
-            return translateType(elementType, option);
+            return jniName(elementType, option);
         }else if(java_type->typeEntry()->isArray())
             return java_type->typeEntry()->jniName();
         else if(elementType){
@@ -180,22 +182,58 @@ void writeTypeInfo(QTextStream &s, const MetaType *type){
 }
 
 void CppGenerator::writeTypeInfo(QTextStream &s, const MetaType *type, Option options) {
+    if (type->isArray()) {
+        if (options & ArrayAsPointer) {
+            writeTypeInfo(s, type->arrayElementType(), Option((options & ~ForceConstReference) | SkipName));
+            for(int i=0; i<type->arrayElementCounts().size(); ++i){
+                if(i+1==type->arrayElementCounts().size() && type->isConstant())
+                    s << " const";
+                s << "*";
+            }
+        } else if (!(options & SkipArray)) {
+            //writeTypeInfo(s, type->arrayElementType(), Option((options & ~ForceConstReference) | SkipName));
+            s << "auto&";
+            /*
+            for(int i=0; i<type->arrayElementCounts().size(); ++i){
+                const QPair<int,QString>& pair = type->arrayElementCounts()[i];
+                if(pair.second.isEmpty())
+                    s << "[" << pair.first << "]";
+                else
+                    s << "[" << pair.second << "]";
+            }*/
+        }else{
+            writeTypeInfo(s, type->arrayElementType(), Option((options & ~ForceConstReference)));
+        }
+        return;
+    }
+
     if(type->typeEntry()->isComplex()){
         const ComplexTypeEntry *ctype = reinterpret_cast<const ComplexTypeEntry *>(type->typeEntry());
-        if(ctype->isGenericClass() && type->instantiations().isEmpty()){
-            s << "auto";
-            switch(type->getReferenceType()){
-            case MetaType::Reference:
-                s << "&";
-                break;
-            case MetaType::RReference:
-                s << "&&";
-                break;
-            default: break;
+        if(ctype->isGenericClass()){
+            bool isAuto = type->instantiations().isEmpty();
+            if(!isAuto){
+                for(const MetaType *inst : type->instantiations()){
+                    if(inst->typeUsagePattern()==MetaType::AutoPattern){
+                        isAuto = true;
+                        break;
+                    }
+                }
             }
-            if (!(options & SkipName) && !(options & NoSpace))
-                s << ' ';
-            return;
+            if(isAuto){
+                s << "auto";
+                switch(type->getReferenceType()){
+                case MetaType::Reference:
+                    s << "&";
+                    break;
+                case MetaType::RReference:
+                    s << "&&";
+                    break;
+                default: break;
+                }
+                if (!(options & SkipName) && !(options & NoSpace))
+                    s << ' ';
+                return;
+            }
         }
     }
     if ((options & OriginalTypeDescription) && !type->originalTypeDescription().isEmpty()) {
@@ -229,23 +267,6 @@ void CppGenerator::writeTypeInfo(QTextStream &s, const MetaType *type, Option op
         }
     }
 
-    if (type->isArray()) {
-        writeTypeInfo(s, type->arrayElementType(), Option(options & ~ForceConstReference));
-        if (options & ArrayAsPointer) {
-            for(int i=0; i<type->arrayElementCounts().size(); ++i)
-                s << "*";
-        } else if (!(options & SkipArray)) {
-            for(int i=0; i<type->arrayElementCounts().size(); ++i){
-                const QPair<int,QString>& pair = type->arrayElementCounts()[i];
-                if(pair.second.isEmpty())
-                    s << "[" << pair.first << "]";
-                else
-                    s << "[" << pair.second << "]";
-            }
-        }
-        return;
-    }
-
     const TypeEntry *te = type->typeEntry();
 
     if(type->isConstant() && (options & FunctionOverride) == FunctionOverride){
@@ -262,9 +283,8 @@ void CppGenerator::writeTypeInfo(QTextStream &s, const MetaType *type, Option op
              )){
         s << "const ";
     }
-    if(type->isVolatile()){
+    if(type->isVolatile())
         s << "volatile ";
-    }
 
     if ((options & EnumAsInts) && (te->isEnum() || te->isFlags()) && type->indirections().isEmpty() && (type->getReferenceType()!=MetaType::Reference || type->isConstant())) {
         uint size = 32;
@@ -418,9 +438,15 @@ void CppGenerator::writeFunctionArguments(QTextStream &s,
             needComma = true;
         MetaArgument *arg = arguments.at(i);
         if(option & JNIProxyFunction){
-            QString typeReplaced = java_function->typeReplaced(arg->argumentIndex() + 1);
+            QString javaType;
+            QString jniType;
+            QString typeReplaced = java_function->typeReplaced(arg->argumentIndex() + 1, &javaType, &jniType);
             bool addArrayOffset = false;
-            if(!typeReplaced.isEmpty())
+            if(!jniType.isEmpty())
+                s << jniType << " ";
+            else if(!javaType.isEmpty())
+                s << jniName(javaType) << " ";
+            else if(!typeReplaced.isEmpty())
                 s << jniName(annotationFreeTypeName(typeReplaced));
             else{
                 if(java_function->useArgumentAsBuffer(arg->argumentIndex() + 1)){
@@ -455,7 +481,7 @@ void CppGenerator::writeFunctionArguments(QTextStream &s,
                 }else if(java_function->useArgumentAsSlotContext(arg->argumentIndex() + 1)){
                     s << "QtJambiNativeID";
                 }else{
-                    s << translateType(arg->type(), Option(option & ~JNIProxyFunction));
+                    s << jniName(arg->type(), Option(option & ~JNIProxyFunction));
                 }
             }
             if (!(option & SkipName)){
@@ -475,11 +501,17 @@ void CppGenerator::writeFunctionArguments(QTextStream &s,
                         }
                     }
                     if(lengthParam && java_function->argumentRemoved(lengthParam->argumentIndex() + 1)==ArgumentRemove_No){
-                        typeReplaced = java_function->typeReplaced(lengthParam->argumentIndex() + 1);
-                        if(!typeReplaced.isEmpty())
+                        QString javaType;
+                        QString jniType;
+                        typeReplaced = java_function->typeReplaced(lengthParam->argumentIndex() + 1, &javaType, &jniType);
+                        if(!jniType.isEmpty())
+                            s << jniType << " ";
+                        else if(!javaType.isEmpty())
+                            s << jniName(javaType) << " ";
+                        else if(!typeReplaced.isEmpty())
                             s << jniName(annotationFreeTypeName(typeReplaced));
                         else
-                            s << translateType(lengthParam->type(), Option(option & ~JNIProxyFunction));
+                            s << jniName(lengthParam->type(), Option(option & ~JNIProxyFunction));
                         if (!(option & SkipName)){
                             s << " __qt_offset_of_" << arg->indexedName();
                         }
@@ -578,11 +610,17 @@ void CppGenerator::writeFunctionSignature(QTextStream &s,
 
     if ((option & SkipReturnType) == 0) {
         if((option & JNIProxyFunction)){
-            QString typeReplaced = java_function->typeReplaced(0);
-            if(!typeReplaced.isEmpty())
+            QString javaType;
+            QString jniType;
+            QString typeReplaced = java_function->typeReplaced(0, &javaType, &jniType);
+            if(!jniType.isEmpty())
+                s << jniType << " ";
+            else if(!javaType.isEmpty())
+                s << jniName(javaType) << " ";
+            else if(!typeReplaced.isEmpty())
                 s << jniName(annotationFreeTypeName(typeReplaced)) << " ";
             else if (function_type) {
-                s << translateType(function_type, Option(Option(option & ~JNIProxyFunction) & ~UseNativeIds));
+                s << jniName(function_type, Option(Option(option & ~JNIProxyFunction) & ~UseNativeIds));
                 s << " ";
             } else if (!java_function->isConstructor()) {
                 s << "void ";
@@ -777,15 +815,15 @@ QString CppGenerator::jni_signature(const MetaFunctional *function, JNISignature
                             }
                         }
                         if(lengthParam && function->argumentRemoved(lengthParam->argumentIndex() + 1)==ArgumentRemove_No){
-                            QString jniType;
-                            QString modified_type = function->typeReplaced(lengthParam->argumentIndex() + 1, &jniType);
+                            QString javaType;
+                            QString modified_type = function->typeReplaced(lengthParam->argumentIndex() + 1, &javaType);
 
-                            if (modified_type.isEmpty())
+                            if(!javaType.isEmpty())
+                                returned += jni_signature(javaType, format);
+                            else if (modified_type.isEmpty())
                                 returned += jni_signature(lengthParam->type(), format);
-                            else if(jniType.isEmpty())
-                                returned += jni_signature(annotationFreeTypeName(modified_type), format);
                             else
-                                returned += jni_signature(jniType, format);
+                                returned += jni_signature(annotationFreeTypeName(modified_type), format);
                         }
                     }
                 }
@@ -794,29 +832,29 @@ QString CppGenerator::jni_signature(const MetaFunctional *function, JNISignature
             }else if(function->useArgumentAsSlotContext(argument->argumentIndex() + 1)){
                 returned += jni_signature(QStringLiteral(u"io.qt.core.QObject"), format);
             }else{
-                QString jniType;
-                QString modified_type = function->typeReplaced(argument->argumentIndex() + 1, &jniType);
+                QString javaType;
+                QString modified_type = function->typeReplaced(argument->argumentIndex() + 1, &javaType);
 
-                if (modified_type.isEmpty())
+                if(!javaType.isEmpty())
+                    returned += jni_signature(javaType, format);
+                else if (modified_type.isEmpty())
                     returned += jni_signature(argument->type(), format);
-                else if(jniType.isEmpty())
-                    returned += jni_signature(annotationFreeTypeName(modified_type), format);
                 else
-                    returned += jni_signature(jniType, format);
+                    returned += jni_signature(annotationFreeTypeName(modified_type), format);
             }
         }
     }
 
     returned += ")";
 
-    QString jniType;
-    QString modified_type = function->typeReplaced(0, &jniType);
-    if (modified_type.isEmpty())
+    QString javaType;
+    QString modified_type = function->typeReplaced(0, &javaType);
+    if(!javaType.isEmpty())
+        returned += jni_signature(javaType, JNISignatureFormat(format | ReturnType));
+    else if (modified_type.isEmpty())
         returned += jni_signature(function->type(), JNISignatureFormat(format | ReturnType));
-    else if(jniType.isEmpty())
-        returned += jni_signature(annotationFreeTypeName(modified_type), JNISignatureFormat(format | ReturnType));
     else
-        returned += jni_signature(jniType, JNISignatureFormat(format | ReturnType));
+        returned += jni_signature(annotationFreeTypeName(modified_type), JNISignatureFormat(format | ReturnType));
     return returned;
 }
 
@@ -839,10 +877,10 @@ QString CppGenerator::jni_signature(const MetaFunction *function, JNISignatureFo
             if(t.isEmpty())
                 t = QStringLiteral(u"java.lang.Object");
             returned += jni_signature(annotationFreeTypeName(t), format);
-        }else if(mod.modified_jni_type.isEmpty())
+        }else if(mod.modified_java_type.isEmpty())
             returned += jni_signature(annotationFreeTypeName(mod.modified_type), format);
         else
-            returned += jni_signature(mod.modified_jni_type, format);
+            returned += jni_signature(mod.modified_java_type, format);
         ++argumentCounter;
     }
     for(const MetaArgument *argument : arguments) {
@@ -895,15 +933,15 @@ QString CppGenerator::jni_signature(const MetaFunction *function, JNISignatureFo
                             }
                         }
                         if(lengthParam && function->argumentRemoved(lengthParam->argumentIndex() + 1)==ArgumentRemove_No){
-                            QString jniType;
-                            QString modified_type = function->typeReplaced(lengthParam->argumentIndex() + 1, &jniType);
+                            QString javaType;
+                            QString modified_type = function->typeReplaced(lengthParam->argumentIndex() + 1, &javaType);
 
-                            if (modified_type.isEmpty())
+                            if(!javaType.isEmpty())
+                                returned += jni_signature(javaType, format);
+                            else if (modified_type.isEmpty())
                                 returned += jni_signature(lengthParam->type(), format);
-                            else if(jniType.isEmpty())
-                                returned += jni_signature(annotationFreeTypeName(modified_type), format);
                             else
-                                returned += jni_signature(jniType, format);
+                                returned += jni_signature(annotationFreeTypeName(modified_type), format);
                         }
                     }
                 }
@@ -912,9 +950,11 @@ QString CppGenerator::jni_signature(const MetaFunction *function, JNISignatureFo
             }else if(function->useArgumentAsSlotContext(argument->argumentIndex() + 1)){
                 returned += jni_signature(QStringLiteral(u"io.qt.core.QObject"), format);
             }else{
-                QString jniType;
-                QString modified_type = function->typeReplaced(argument->argumentIndex() + 1, &jniType);
-                if (modified_type.isEmpty())
+                QString javaType;
+                QString modified_type = function->typeReplaced(argument->argumentIndex() + 1, &javaType);
+                if(!javaType.isEmpty())
+                    returned += jni_signature(javaType, format);
+                else if (modified_type.isEmpty())
                     returned += jni_signature(argument->type(), format);
                 else{
                     if(parameterTypesByName.contains(modified_type)){
@@ -922,10 +962,8 @@ QString CppGenerator::jni_signature(const MetaFunction *function, JNISignatureFo
                         if(t.isEmpty())
                             t = QStringLiteral(u"java.lang.Object");
                         returned += jni_signature(annotationFreeTypeName(t), format);
-                    }else if(jniType.isEmpty())
+                    }else
                         returned += jni_signature(annotationFreeTypeName(modified_type), format);
-                    else
-                        returned += jni_signature(jniType, format);
                 }
             }
         }
@@ -937,10 +975,10 @@ QString CppGenerator::jni_signature(const MetaFunction *function, JNISignatureFo
                 if(t.isEmpty())
                     t = QStringLiteral(u"java.lang.Object");
                 returned += jni_signature(annotationFreeTypeName(t), format);
-            }else if(mod.modified_jni_type.isEmpty())
+            }else if(mod.modified_java_type.isEmpty())
                 returned += jni_signature(annotationFreeTypeName(mod.modified_type), format);
             else
-                returned += jni_signature(mod.modified_jni_type, format);
+                returned += jni_signature(mod.modified_java_type, format);
             ++argumentCounter;
         }
     }
@@ -951,17 +989,19 @@ QString CppGenerator::jni_signature(const MetaFunction *function, JNISignatureFo
             if(t.isEmpty())
                 t = QStringLiteral(u"java.lang.Object");
             returned += jni_signature(annotationFreeTypeName(t), format);
-        }else if(mod.modified_jni_type.isEmpty())
+        }else if(mod.modified_java_type.isEmpty())
             returned += jni_signature(annotationFreeTypeName(mod.modified_type), format);
         else
-            returned += jni_signature(mod.modified_jni_type, format);
+            returned += jni_signature(mod.modified_java_type, format);
     }
 
     returned += ")";
 
-    QString jniType;
-    QString modified_type = function->typeReplaced(0, &jniType);
-    if (modified_type.isEmpty()){
+    QString javaType;
+    QString modified_type = function->typeReplaced(0, &javaType);
+    if(!javaType.isEmpty())
+        returned += jni_signature(javaType, JNISignatureFormat(format | ReturnType));
+    else if (modified_type.isEmpty()){
         if(function->isFinal())
             returned += jni_signature(function->type(), JNISignatureFormat(format | ReturnType));
         else
@@ -973,10 +1013,8 @@ QString CppGenerator::jni_signature(const MetaFunction *function, JNISignatureFo
             if(t.isEmpty())
                 t = "java.lang.Object";
             returned += jni_signature(annotationFreeTypeName(t), JNISignatureFormat(format | ReturnType));
-        }else if(jniType.isEmpty())
+        }else
             returned += jni_signature(annotationFreeTypeName(modified_type), JNISignatureFormat(format | ReturnType));
-        else
-            returned += jni_signature(jniType, JNISignatureFormat(format | ReturnType));
     }
     return returned;
 }

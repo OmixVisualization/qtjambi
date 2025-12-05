@@ -138,7 +138,6 @@ public:
     void* constructContainer(JNIEnv *, void* placement, const ConstContainerAndAccessInfo& copyOf) override {
         return constructContainer(placement, copyOf.container);
     }
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     void* constructContainer(void* placement, void* move) override {
         QTJAMBI_KEY_VALUE_LOCKER(this);
         return new(placement) QPair<K,T>(std::move(*reinterpret_cast<const QPair<K,T>*>(move)));
@@ -146,7 +145,6 @@ public:
     void* constructContainer(JNIEnv *, void* placement, const ContainerAndAccessInfo& move) override {
         return constructContainer(placement, move.container);
     }
-#endif
     bool destructContainer(void* container) override {
         QTJAMBI_KEY_VALUE_LOCKER(this);
         reinterpret_cast<QPair<K,T>*>(container)->~QPair<K,T>();

@@ -68,10 +68,6 @@ QList<QObject*> qtjambi_findChildren(JNIEnv *env, const QObject *__qt_this, jcla
 #endif
 QList<QObject*> qtjambi_findChildren(JNIEnv *env, const QObject *__qt_this, const QRegularExpression& regexp, Qt::FindChildOptions options);
 QList<QObject*> qtjambi_findChildren(JNIEnv *env, const QObject *__qt_this, jclass type, const QRegularExpression& regexp, Qt::FindChildOptions options);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-QList<QObject*> qtjambi_findChildren(JNIEnv *env, const QObject *__qt_this, const QRegExp& regexp, Qt::FindChildOptions options);
-QList<QObject*> qtjambi_findChildren(JNIEnv *env, const QObject *__qt_this, jclass type, const QRegExp& regexp, Qt::FindChildOptions options);
-#endif
 
 const std::type_info& typeid_QFutureInterfaceBase_shell();
 
@@ -100,11 +96,8 @@ namespace QtCore
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QLockFile$LockInfo,
                                      QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QRunnable,)
-#if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QFile$TrashResult,
                                      QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
-#endif
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QProperty,
                                      QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(value)
                                      QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(setValue)
@@ -264,7 +257,6 @@ namespace QtCore
                                      QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(invoke))
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QPropertyNotifier,
                                      QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(invoke))
-#endif
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QString$Predicate,
                                      QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(test))
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QByteArray$Predicate,
@@ -281,6 +273,8 @@ namespace QtCore
                                      QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(apply))
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QFuture$FutureConsumer,
                                      QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(accept))
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QFutureInterfaceBase$State,)
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QFutureInterfaceBase,)
 namespace Internal
 {
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QAbstractFileEngineHandler,
@@ -360,9 +354,7 @@ namespace Runtime{
 }
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 QtPrivate::QPropertyObserverCallback qtjambi_get_signal_callback(JNIEnv *, QUntypedPropertyData *);
-#endif
 
 #if defined(QT_NO_DEBUG)
 #define QTJAMBI_CONTAINER_CAST(Type, target, source) Type* target = static_cast<Type*>(source)

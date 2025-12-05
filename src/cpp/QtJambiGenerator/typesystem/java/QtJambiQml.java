@@ -47,6 +47,87 @@ class __QQmlComponent extends QQmlComponent{
     }
 }// class
 
+class QQmlInfo___ extends QQmlInfo {
+    /**
+     * Appends a subsequence of the specified character sequence to this
+     * <code>QQmlInfo</code>.
+     */
+    @Override
+    @QtUninvokable
+    public final @NonNull QQmlInfo append(@NonNull CharSequence csq, int start, int end) {
+        if (!disabled)
+            append(csq == null ? "null" : csq.subSequence(start, end));
+        return this;
+    }
+
+    /**
+     * <p>
+     * See <a href=
+     * "@docRoot/qqmlinfo.html#operator-lt-lt"><code>QQmlInfo::operator&lt;&lt;</code></a>
+     * </p>
+     */
+    @QtUninvokable
+    public final @NonNull QQmlInfo append(java.lang.Object obj) {
+        if (!disabled) {
+            if(obj instanceof io.qt.core.QString) {
+                return append((io.qt.core.QString)obj);
+            }else if(obj instanceof io.qt.core.QByteArray) {
+                return append((io.qt.core.QByteArray)obj);
+            }else if(obj instanceof io.qt.core.QByteArrayView) {
+                return append((io.qt.core.QByteArrayView)obj);
+            }else if(obj instanceof java.nio.ByteBuffer) {
+                return append((java.nio.ByteBuffer)obj);
+            }else if(obj instanceof Character) {
+                return append((char)obj);
+            }else if(obj instanceof byte[]) {
+                return append((byte[])obj);
+            }else if(obj instanceof Byte) {
+                return append((byte)obj);
+            }else if(obj instanceof Double) {
+                return append((double)obj);
+            }else if(obj instanceof Float) {
+                return append((float)obj);
+            }else if(obj instanceof Integer) {
+                return append((int)obj);
+            }else if(obj instanceof String) {
+                return append((String)obj);
+            }else if(obj instanceof Long) {
+                return append((long)obj);
+            }else if(obj instanceof Short) {
+                return append((short)obj);
+            }else if(obj instanceof CharSequence) {
+                return append((CharSequence)obj);
+            }
+            io.qt.core.QMetaType metaType = io.qt.core.QMetaType.fromObject(obj);
+            debugStream(QtJambi_LibraryUtilities.internal.nativeId(this),
+                    QtJambi_LibraryUtilities.internal.checkedNativeId(metaType), obj);
+        }
+        return this;
+    }
+
+    @QtUninvokable
+    private native static void debugStream(long debug, long metaType, Object value);
+
+    @QtPropertyMember(enabled = false)
+    @NativeAccess
+    private boolean disabled;
+}// class
+
+class __QQmlIncubator extends QQmlIncubator{
+    @QtUninvokable
+    public <T extends io.qt.core.@Nullable QObject> T object(@NonNull Class<T> type){
+        String packageName = type.getName();
+        int idx = packageName.lastIndexOf('.');
+        if(idx>0){
+            packageName = packageName.substring(0, idx);
+        }
+        QtUtilities.initializePackage(packageName);
+        return type.cast(object());
+    }
+    Object __rcContext;
+    Object __rcForContext;
+}// class
+
 class __QJSValue extends QJSValue{
 
 }// class

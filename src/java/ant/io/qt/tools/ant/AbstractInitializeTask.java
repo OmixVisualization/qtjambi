@@ -317,7 +317,7 @@ public abstract class AbstractInitializeTask extends Task {
     
     protected void decideAlternativeJavaHomesTarget() {
     	OSInfo osInfo = OSInfo.instance(getProject());
-    	int qtMajorVersion = 5;
+    	int qtMajorVersion = 6;
     	int qtMinorVersion = 0;
     	try {
     		qtMajorVersion = Integer.parseInt(AntUtil.getPropertyAsString(propertyHelper, Constants.QT_VERSION_MAJOR));
@@ -360,9 +360,10 @@ public abstract class AbstractInitializeTask extends Task {
             }
         }
         mySetProperty(-1, Constants.JAVA8_HOME_TARGET, sourceValue, s, true);
-        switch(osInfo.os()) {
+        switch(osInfo.crossOS()) {
         case Linux:
-        case MacOS: 
+        case MacOS:
+        case Windows:
         	switch(System.getProperty("os.arch").toLowerCase()) {
         	case "arm64":
         	case "aarch64":
@@ -374,46 +375,34 @@ public abstract class AbstractInitializeTask extends Task {
                 if(s == null || s.isEmpty()) {
                     try {
                         s = System.getenv("JAVA_X64_HOME_TARGET");
-                        if(s != null) {
-                    		File includeDir = new File(s, "include");
-                    		File jni_h = new File(includeDir, "jni.h");
-                    		if(jni_h.isFile()) {
-                            	sourceValue = " (from envvar:JAVA_X64_HOME_TARGET)";
-                    		}else {
-                    			s = null;
-                    		}
-                        }
+//                        if(s != null) {
+//                    		File includeDir = new File(s, "include");
+//                    		File jni_h = new File(includeDir, "jni.h");
+//                    		if(jni_h.isFile()) {
+//                            	sourceValue = " (from envvar:JAVA_X64_HOME_TARGET)";
+//                    		}else {
+//                    			s = null;
+//                    		}
+//                        }
                     } catch(SecurityException eat) {
                     }
                 }
                 if(s == null || s.isEmpty()) {
                     try {
                         s = System.getenv("JAVA_X64_HOME");
-                        if(s != null) {
-                    		File includeDir = new File(s, "include");
-                    		File jni_h = new File(includeDir, "jni.h");
-                    		if(jni_h.isFile()) {
-                    			sourceValue = " (from envvar:JAVA_X64_HOME)";
-                    		}else {
-                    			s = null;
-                    		}
-                        }
+//                        if(s != null) {
+//                    		File includeDir = new File(s, "include");
+//                    		File jni_h = new File(includeDir, "jni.h");
+//                    		if(jni_h.isFile()) {
+//                    			sourceValue = " (from envvar:JAVA_X64_HOME)";
+//                    		}else {
+//                    			s = null;
+//                    		}
+//                        }
                     } catch(SecurityException eat) {
                     }
                 }
                 mySetProperty(-1, Constants.JAVA_X64_HOME_TARGET, sourceValue, s, true);
-                if(qtMajorVersion==5) {
-                	if(s!=null) {
-                		File jvm;
-	        			if((jvm = new File(new File(s, "bin"), "java")).exists()) {
-	        				mySetProperty(-1, "tools.jvm", " (taken from "+Constants.JAVA_X64_HOME_TARGET+")", jvm.getAbsolutePath(), true);
-	        			}else {
-	        				mySetProperty(-1, "tools.jvm", " (default)", "java", true);
-	        			}
-                	}else {
-                		throw new BuildException("Cannot build Qt5 without x64 JVM.");
-                	}
-                }
         		break;
         	case "x86_64":
         	case "x64":
@@ -425,30 +414,30 @@ public abstract class AbstractInitializeTask extends Task {
 	                if(s == null || s.isEmpty()) {
 	                    try {
 	                        s = System.getenv("JAVA_ARM64_HOME_TARGET");
-	                        if(s != null) {
-	                    		File includeDir = new File(s, "include");
-	                    		File jni_h = new File(includeDir, "jni.h");
-	                    		if(jni_h.isFile()) {
-	                            	sourceValue = " (from envvar:JAVA_ARM64_HOME_TARGET)";
-	                    		}else {
-	                    			s = null;
-	                    		}
-	                        }
+//	                        if(s != null) {
+//	                    		File includeDir = new File(s, "include");
+//	                    		File jni_h = new File(includeDir, "jni.h");
+//	                    		if(jni_h.isFile()) {
+//	                            	sourceValue = " (from envvar:JAVA_ARM64_HOME_TARGET)";
+//	                    		}else {
+//	                    			s = null;
+//	                    		}
+//	                        }
 	                    } catch(SecurityException eat) {
 	                    }
 	                }
 	                if(s == null || s.isEmpty()) {
 	                    try {
 	                        s = System.getenv("JAVA_ARM64_HOME");
-	                        if(s != null) {
-	                    		File includeDir = new File(s, "include");
-	                    		File jni_h = new File(includeDir, "jni.h");
-	                    		if(jni_h.isFile()) {
-	                    			sourceValue = " (from envvar:JAVA_ARM64_HOME)";
-	                    		}else {
-	                    			s = null;
-	                    		}
-	                        }
+//	                        if(s != null) {
+//	                    		File includeDir = new File(s, "include");
+//	                    		File jni_h = new File(includeDir, "jni.h");
+//	                    		if(jni_h.isFile()) {
+//	                    			sourceValue = " (from envvar:JAVA_ARM64_HOME)";
+//	                    		}else {
+//	                    			s = null;
+//	                    		}
+//	                        }
 	                    } catch(SecurityException eat) {
 	                    }
 	                }

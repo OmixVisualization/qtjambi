@@ -29,20 +29,9 @@
 **
 ****************************************************************************/
 
-#include <QtCore/QList>
-#include <QtCore/QMutex>
-#include <QtCore/QUrl>
-#include <QtCore/QResource>
-#include <QtCore/QScopeGuard>
 #include <QtCore/private/qabstractfileengine_p.h>
 #include <QtCore/private/qfsfileengine_p.h>
-#include "qtjambiapi.h"
-#include "jobjectwrapper.h"
-#include "java_p.h"
-#ifdef Q_OS_ANDROID
-#include "androidapi.h"
-#endif
-#include "utils_p.h"
+#include "pch_p.h"
 
 #ifdef Q_OS_ANDROID
 #include <android/asset_manager_jni.h>

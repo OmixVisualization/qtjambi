@@ -33,25 +33,16 @@
 #include <QtJambi/QtJambiAPI>
 #include <QtJambi/JavaAPI>
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
 namespace Java{
 namespace QtRemoteObjects {
-#if QT_VERSION <= QT_VERSION_CHECK(5, 12, 0)
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(ClientIoDevice$ReadResult,
-                                     QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(ServerIoDevice$ReadResult,
-                                     QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
-#elif QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-QTJAMBI_REPOSITORY_DECLARE_CLASS(IoDeviceBase$ReadResult,
-                                 QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
-#endif
-#if QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QtROIoDeviceBase$ReadResult,
                                      QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
+}
+}
 #endif
-}
-}
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) || !defined(QTJAMBI_NO_RO_PRIVATE)
+#if !defined(QTJAMBI_NO_RO_PRIVATE)
 void qtjambi_qRegisterRemoteObjectsClient(JNIEnv *env, jclass type, const QString& id);
 void qtjambi_qRegisterRemoteObjectsServer(JNIEnv *env, jclass type, const QString& id);
 #endif

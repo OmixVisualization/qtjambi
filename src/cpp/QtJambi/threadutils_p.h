@@ -149,10 +149,6 @@ private:
 
 class AbstractThreadEvent : public QEvent
 {
-#if QT_VERSION < 0x060000
-public:
-    virtual AbstractThreadEvent* clone() const = 0;
-#endif
 protected:
     AbstractThreadEvent();
     AbstractThreadEvent(const AbstractThreadEvent& clone);
@@ -202,9 +198,7 @@ public:
              , typename std::enable_if<!std::is_same<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type, JNIInvokable>::value, bool>::type = true
              , typename std::enable_if<!std::is_null_pointer<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type>::value, bool>::type = true
              , typename std::enable_if<!std::is_same<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type, FunctionPointer>::value, bool>::type = true
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
              , typename std::enable_if<std::is_invocable<Functor, JNIEnv *>::value, bool>::type = true
-#endif
              >
     JNIInvokable(Functor&& functor) noexcept
         : JNIInvokable(

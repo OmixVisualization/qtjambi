@@ -574,11 +574,12 @@ bool MetaBuilder::build(FileModelItem&& dom) {
     QList<PendingHiddenBaseType> pendingHiddenBaseTypes;
     QList<MetaClass *> pendingConstructorUsages;
     QList<QPair<MetaClass*,MetaClass*>> pendingPrivateSuperUsages;
+    QList<PendingDelegate> pendingDelegates;
     for(MetaClass *cls : qAsConst(m_meta_classes)) {
         if (!cls->isInterface() && !cls->isNamespace()) {
-            setupInheritance(cls, pendingHiddenBaseTypes, pendingConstructorUsages, pendingPrivateSuperUsages);
+            setupInheritance(cls, pendingHiddenBaseTypes, pendingConstructorUsages, pendingPrivateSuperUsages, pendingDelegates);
         }else if(cls->isInterface()){
-            setupInheritance(cls->extractInterfaceImpl(), pendingHiddenBaseTypes, pendingConstructorUsages, pendingPrivateSuperUsages);
+            setupInheritance(cls->extractInterfaceImpl(), pendingHiddenBaseTypes, pendingConstructorUsages, pendingPrivateSuperUsages, pendingDelegates);
         }
     }
 
@@ -658,6 +659,30 @@ bool MetaBuilder::build(FileModelItem&& dom) {
                             applyOnType(cls->typeEntry(), [](ComplexTypeEntry* c){c->setHasProtectedDefaultConstructor();});
                         }
                         cls->addFunction(constructor);
+                    }
+                }
+            }
+        }
+    }
+
+    for(const PendingDelegate& pendingDelegate : qAsConst(pendingDelegates)){
+        if (MetaClass *base_class = m_meta_classes.findClass(pendingDelegate.base_class_type)) {
+            for(MetaFunction* function : base_class->functions()){
+                const FunctionModificationList mods = function->modifications(pendingDelegate.meta_class);
+                for(const FunctionModification& mod : mods){
+                    if(mod.modifiers & TS::Modification::PullDown && mod.association==pendingDelegate.base_class_type->name()){
+                        function = function->copy();
+                        if(function->type() && function->type()->typeEntry()==pendingDelegate.base_class_type){
+                            function->type()->setTypeEntry(pendingDelegate.meta_class->typeEntry());
+                        }
+                        if(pendingDelegate.is_protected){
+                            *function -= MetaAttributes::Public;
+                            *function += MetaAttributes::Protected;
+                        }
+                        function->setImplementingClass(pendingDelegate.meta_class);
+                        function->setDeclaringClass(pendingDelegate.meta_class);
+                        pendingDelegate.meta_class->addFunction(function);
+                        break;
                     }
                 }
             }
@@ -797,11 +822,13 @@ bool MetaBuilder::build(FileModelItem&& dom) {
         setupEquals(cls);
         setupComparable(cls);
         setupBeginEnd(cls);
+        setupTextStreamFunctions(cls);
     }
     for(MetaClass *cls : qAsConst(m_meta_classes)) {
         setupEquals(cls);
         setupComparable(cls);
         setupBeginEnd(cls);
+        setupTextStreamFunctions(cls);
 
         if(cls->hasCloneOperator() && !cls->typeEntry()->isContainer() && !cls->isInterface()){
             bool hasCopyConstructor = cls->typeEntry()->hasPrivateCopyConstructor() || cls->typeEntry()->hasProtectedCopyConstructor();
@@ -853,6 +880,10 @@ bool MetaBuilder::build(FileModelItem&& dom) {
                         }
                     }
                     type->setInstantiations(instantiations);
+                }
+                if(cls->isTemplateInstantiation() && cls->templateBaseClass() && type->instantiations().isEmpty()) {
+                    type->setTypeEntry(cls->templateBaseClass()->typeEntry());
+                    type->setInstantiations(cls->templateBaseClassInstantiations());
                 }
                 type->setReferenceType(MetaType::Reference);
                 decideUsagePattern(type);
@@ -1142,7 +1173,7 @@ void MetaBuilder::applyDocs(const DocModel* docModel){
                     }
                     for(MetaFunction * meta_function : meta_class->functions()){
                         const DocClass* _cls = cls;
-                        if(meta_function->declaringClass()!=meta_class){
+                        if(meta_function->declaringClass() && meta_function->declaringClass()!=meta_class){
                             const DocClass* __cls = docModel->getClass(meta_function->declaringClass()->qualifiedCppName());
                             if(!__cls && meta_function->declaringClass()->templateBaseClass()){
                                 __cls = docModel->getClass(meta_function->declaringClass()->templateBaseClass()->qualifiedCppName());
@@ -3904,6 +3935,16 @@ MetaClass *MetaBuilder::traverseClass(ClassModelItem class_item, QList<PendingCl
         full_class_name = strip_template_args(m_current_class->typeEntry()->qualifiedCppName())
                           + "::" + full_class_name;
     }
+    RejectReason reason = NoReason;
+    if(class_item->isTemplate() && !class_item->templateInstantiations().isEmpty()){
+        if(m_database->isClassRejected(full_class_name))
+            reason = GenerationDisabled;
+        QStringList targs;
+        for(const TypeInfo& ti : class_item->templateInstantiations()){
+            targs << ti.toString();
+        }
+        full_class_name += "<" + targs.join(",") + ">";
+    }
 
     ComplexTypeEntry *type = m_database->findComplexType(full_class_name);
     if(type){
@@ -3920,20 +3961,21 @@ MetaClass *MetaBuilder::traverseClass(ClassModelItem class_item, QList<PendingCl
     }
     if(type && type->designatedInterface())
         type = type->designatedInterface();
-    RejectReason reason = NoReason;
 
-    if (m_database->isClassRejected(full_class_name)) {
-        reason = GenerationDisabled;
-    } else if (!type) {
-        TypeEntry *te = m_database->findType(full_class_name);
-        if (te && !te->isComplex())
-            reason = RedefinedToNotClass;
-        else if(class_item->accessPolicy()==CodeModel::Private || full_class_name.startsWith("QtPrivate::") || class_item->fileName().endsWith("_p.h"))
-            reason = IsPrivate;
-        else
-            reason = NotInTypeSystem;
-    } else if ((type->codeGeneration() & ~TypeEntry::InheritedByTypeSystem) == TypeEntry::GenerateNothing) {
-        reason = GenerationDisabled;
+    if (reason == NoReason) {
+        if (m_database->isClassRejected(full_class_name)) {
+            reason = GenerationDisabled;
+        } else if (!type) {
+            TypeEntry *te = m_database->findType(full_class_name);
+            if (te && !te->isComplex())
+                reason = RedefinedToNotClass;
+            else if(class_item->accessPolicy()==CodeModel::Private || full_class_name.startsWith("QtPrivate::") || class_item->fileName().endsWith("_p.h"))
+                reason = IsPrivate;
+            else
+                reason = NotInTypeSystem;
+        } else if ((type->codeGeneration() & ~TypeEntry::InheritedByTypeSystem) == TypeEntry::GenerateNothing) {
+            reason = GenerationDisabled;
+        }
     }
 
     if (reason != NoReason) {
@@ -3980,14 +4022,6 @@ MetaClass *MetaBuilder::traverseClass(ClassModelItem class_item, QList<PendingCl
                 }
             }
         }
-
-        if(class_item->isTemplate() && !class_item->templateInstantiations().isEmpty()){
-            QStringList targs;
-            for(const TypeInfo& ti : class_item->templateInstantiations()){
-                targs << ti.toString();
-            }
-            full_class_name += "<" + targs.join(",") + ">";
-        }
         m_rejected_classes.insert({full_class_name, class_item->fileName()}, reason);
         return nullptr;
     }
@@ -4013,6 +4047,17 @@ MetaClass *MetaBuilder::traverseClass(ClassModelItem class_item, QList<PendingCl
             type->setQCoreApplication(true);
         }else if(full_class_name==QLatin1String("QAction")){
             type->setQAction(true);
+        }else if(full_class_name==QLatin1String("QFuture")
+                 || full_class_name==QLatin1String("QFutureInterface")
+                 || full_class_name==QLatin1String("QFutureSynchronizer")
+                 || full_class_name==QLatin1String("QFutureWatcher")
+                 || full_class_name==QLatin1String("QPromise")
+                 || full_class_name.startsWith(QLatin1String("QFuture<"))
+                 || full_class_name.startsWith(QLatin1String("QFutureSynchronizer<"))
+                 || full_class_name.startsWith(QLatin1String("QFutureInterface<"))
+                 || full_class_name.startsWith(QLatin1String("QFutureWatcher<"))
+                 || full_class_name.startsWith(QLatin1String("QPromise<"))){
+            type->setQFuturing(true);
         }else if(full_class_name==QLatin1String("QMediaControl")){
             type->setQMediaControl(true);
         }
@@ -4168,6 +4213,8 @@ MetaClass *MetaBuilder::traverseClass(ClassModelItem class_item, QList<PendingCl
                         instantiation->setQAbstractItemModel(true);
                     }else if(meta_class->typeEntry()->isQAction()){
                         instantiation->setQAction(true);
+                    }else if(meta_class->typeEntry()->isQFuturing()){
+                        instantiation->setQFuturing(true);
                     }else if(meta_class->typeEntry()->isQCoreApplication()){
                         instantiation->setQCoreApplication(true);
                     }else if(meta_class->typeEntry()->isQMediaControl()){
@@ -4193,6 +4240,7 @@ MetaClass *MetaBuilder::traverseClass(ClassModelItem class_item, QList<PendingCl
 
                 MetaClass *instantiation_meta_class = new MetaClass();
                 instantiation_meta_class->setTypeEntry(instantiation);
+                instantiation_meta_class->setTemplateInstantiation(true);
                 instantiation_meta_class->setBaseClassTypeInfo(meta_class->baseClassTypeInfo());
                 instantiation_meta_class->setTemplateBaseClass(meta_class);
                 instantiation_meta_class->setAttributes(meta_class->attributes());
@@ -4468,6 +4516,7 @@ void MetaBuilder::traverseFunctions(ScopeModelItem scope_item) {
             if(!m_current_class){
                 meta_function->setFunctionType(MetaFunction::GlobalScopeFunction);
             }
+            bool isTextStreamFunction = false;
             TS::Language removalMod = TS::NoLanguage;
             bool hasInstantiations = false;
             MetaClass* targetClass = nullptr;
@@ -4483,6 +4532,9 @@ void MetaBuilder::traverseFunctions(ScopeModelItem scope_item) {
                         for(const FunctionModification& mod : qAsConst(list)){
                             if(mod.removal & TS::TargetLangCode){
                                 removalMod = mod.removal;
+                            }
+                            if(mod.modifiers & TS::Modification::IsTextStreamFunction){
+                                isTextStreamFunction = true;
                             }
                             if(function_item->isTemplate()){
                                 hasInstantiations |= !mod.template_instantiations.isEmpty();
@@ -4557,6 +4609,9 @@ void MetaBuilder::traverseFunctions(ScopeModelItem scope_item) {
                     if(mod.removal & TS::TargetLangCode){
                         removalMod = mod.removal;
                     }
+                    if(mod.modifiers & TS::Modification::IsTextStreamFunction){
+                        isTextStreamFunction = true;
+                    }
                     if(function_item->isTemplate()){
                         hasInstantiations |= !mod.template_instantiations.isEmpty();
                     }
@@ -4595,6 +4650,9 @@ void MetaBuilder::traverseFunctions(ScopeModelItem scope_item) {
                     if(mod.removal & TS::TargetLangCode){
                         removalMod = mod.removal;
                     }
+                    if(mod.modifiers & TS::Modification::IsTextStreamFunction){
+                        isTextStreamFunction = true;
+                    }
                     if(function_item->isTemplate()){
                         hasInstantiations |= !mod.template_instantiations.isEmpty();
                     }
@@ -4605,10 +4663,16 @@ void MetaBuilder::traverseFunctions(ScopeModelItem scope_item) {
                 targetClass = m_current_class;
 
             if(!targetClass && removalMod!=TS::NoLanguage){
-                delete meta_function;
-                meta_function = nullptr;
+                if(isTextStreamFunction){
+                    m_textStreamFunctions << meta_function;
+                }else{
+                    delete meta_function;
+                    meta_function = nullptr;
+                }
                 continue;
             }
+            if(isTextStreamFunction)
+                m_textStreamFunctions << meta_function;
 
             if (!meta_function->isInvalid() && targetClass) {
                 if (QPropertySpec *read = targetClass->propertySpecForRead(meta_function->name())) {
@@ -6012,7 +6076,7 @@ bool MetaBuilder::setupFunctionTemplateInstantiations(MetaClass *meta_class){
         if(!templateParameters.isEmpty() || (func->type() && func->type()->typeUsagePattern()==MetaType::AutoPattern)){
             QList<QPair<const TemplateInstantiation*,const FunctionModification*>> templateInstantiations;
             FunctionModificationList mods = func->modifications(meta_class);
-            for(const FunctionModification& mod : mods) {
+            for(const FunctionModification& mod : qAsConst(mods)) {
                 for(const TemplateInstantiation& ti : mod.template_instantiations){
                     templateInstantiations.append({&ti, &mod});
                 }
@@ -6028,16 +6092,26 @@ bool MetaBuilder::setupFunctionTemplateInstantiations(MetaClass *meta_class){
                         func2->setOriginalName(func2->name());
                         func2->setName(template_instantiation.renamedTo());
                     }
-
                     // find types of the template instantiations
                     MetaTemplateParameterList untreatedTemplateParameters = func2->templateParameters();
                     QMap<QString,QPair<MetaType*,QString>> templateTypes;
                     for(int k=0; k<template_instantiation.arguments.size() && k<func2->templateParameters().size(); k++){
                         MetaTemplateParameter* tparam = func2->templateParameters()[k];
-                        if(tparam->instantiation().isEmpty()){
+                        if(tparam->instantiation().isEmpty() && !tparam->instantiationType()){
                             if(tparam->type() && tparam->type()->typeUsagePattern()==MetaType::TemplateArgumentPattern){
                                 if(template_instantiation.arguments[k].name.isEmpty()){
                                     QString arg = template_instantiation.arguments[k].type;
+                                    if(arg=="void"){
+                                        if(TypeEntry * te = TypeDatabase::instance()->findType("void")){
+                                            MetaType *ttype = new MetaType();
+                                            ttype->setTypeUsagePattern(MetaType::VoidPattern);
+                                            ttype->setTypeEntry(te);
+                                            templateTypes[tparam->name()] = {ttype,{}};
+                                            tparam->setInstantiation(template_instantiation.arguments[k].implicit, arg, ttype);
+                                            untreatedTemplateParameters.removeOne(tparam);
+                                            continue;
+                                        }
+                                    }
                                     TypeInfo info = analyzeTypeInfo(meta_class, arg);
                                     MetaClass * tmp_current_class = m_current_class;
                                     m_current_class = meta_class;
@@ -6102,7 +6176,11 @@ bool MetaBuilder::setupFunctionTemplateInstantiations(MetaClass *meta_class){
                                 if(rtype && (rtype->typeEntry()->isQSpan() || rtype->typeEntry()->isInitializerList())){
                                     Q_ASSERT(rtype->instantiations().size()>=1);
                                 }
-                                func2->setType(rtype);
+                                if(rtype->typeUsagePattern()==MetaType::VoidPattern){
+                                    func2->setType(rtype);
+                                }else{
+                                    func2->setType(rtype);
+                                }
                             }
                         }
                     }
@@ -6255,8 +6333,27 @@ bool MetaBuilder::setupFunctionTemplateInstantiations(MetaClass *meta_class){
                     }
                 }
             }else{
-                if(func->isRemovedFromAllLanguages(meta_class))
+                if(func->isRemovedFromAllLanguages(meta_class)){
                     functions << func;
+                }else if(!func->isPrivate()){
+                    bool resolved = true;
+                    for(MetaTemplateParameter* tparam : qAsConst(templateParameters)){
+                        if(tparam->defaultType().isEmpty() && tparam->instantiation().isEmpty() && !tparam->instantiationType()){
+                            resolved = false;
+                            break;
+                        }
+                    }
+                    if(resolved){
+                        functions << func;
+                    }else{
+                        if(!func->implementingClass() || (func->implementingClass()->typeEntry()->codeGeneration() & TypeEntry::GenerateCode)){
+                            if(func->functionType()==MetaFunction::GlobalScopeFunction)
+                                ReportHandler::warning(QString("Missing instantiations for template method %1").arg(func->minimalSignature()));
+                            else
+                                ReportHandler::warning(QString("Missing instantiations for template method %1::%2").arg(func->implementingClass()->qualifiedCppName(), func->minimalSignature()));
+                        }
+                    }
+                }
             }
         }else{
             functions << func;
@@ -6660,7 +6757,7 @@ void MetaBuilder::fixFunctions(MetaClass * cls) {
     }
 }
 
-void MetaBuilder::setupInheritance(MetaClass *meta_class, QList<PendingHiddenBaseType>& pendingHiddenBaseTypes, QList<MetaClass *>& pendingConstructorUsages, QList<QPair<MetaClass*,MetaClass*>>& pendingPrivateSuperUsages) {
+void MetaBuilder::setupInheritance(MetaClass *meta_class, QList<PendingHiddenBaseType>& pendingHiddenBaseTypes, QList<MetaClass *>& pendingConstructorUsages, QList<QPair<MetaClass*,MetaClass*>>& pendingPrivateSuperUsages, QList<PendingDelegate>& pendingDelegates) {
     Q_ASSERT(!meta_class->isInterface());
 
     if (m_setup_inheritance_done.contains(meta_class))
@@ -6668,7 +6765,7 @@ void MetaBuilder::setupInheritance(MetaClass *meta_class, QList<PendingHiddenBas
     m_setup_inheritance_done.insert(meta_class);
 
     if(meta_class->templateBaseClass() && meta_class->qualifiedCppName().endsWith(">")){
-        setupInheritance(const_cast<MetaClass *>(meta_class->templateBaseClass()), pendingHiddenBaseTypes, pendingConstructorUsages, pendingPrivateSuperUsages);
+        setupInheritance(const_cast<MetaClass *>(meta_class->templateBaseClass()), pendingHiddenBaseTypes, pendingConstructorUsages, pendingPrivateSuperUsages, pendingDelegates);
         TypeInfo info = analyzeTypeInfo(meta_class, meta_class->qualifiedCppName());
         pendingHiddenBaseTypes.append(PendingHiddenBaseType{meta_class, meta_class->templateBaseClass(), info});
         return;
@@ -6716,7 +6813,7 @@ void MetaBuilder::setupInheritance(MetaClass *meta_class, QList<PendingHiddenBas
         const MetaType* typeAliasType = meta_class->typeAliasType();
         if(typeAliasType->typeEntry() && typeAliasType->typeEntry()->isAlias()){
             if(MetaClass *cls = m_meta_classes.findClass(typeAliasType->typeEntry()->qualifiedCppName())){
-                setupInheritance(cls, pendingHiddenBaseTypes, pendingConstructorUsages, pendingPrivateSuperUsages);
+                setupInheritance(cls, pendingHiddenBaseTypes, pendingConstructorUsages, pendingPrivateSuperUsages, pendingDelegates);
                 if(cls->typeAliasType()){
                     MetaType* newTypeAliasType = cls->typeAliasType()->copy();
                     if(newTypeAliasType->indirections().isEmpty()
@@ -6759,7 +6856,7 @@ void MetaBuilder::setupInheritance(MetaClass *meta_class, QList<PendingHiddenBas
                 templ = m_meta_classes.findClass(base_name);
 
             if (templ) {
-                setupInheritance(templ, pendingHiddenBaseTypes, pendingConstructorUsages, pendingPrivateSuperUsages);
+                setupInheritance(templ, pendingHiddenBaseTypes, pendingConstructorUsages, pendingPrivateSuperUsages, pendingDelegates);
                 pendingHiddenBaseTypes.append(PendingHiddenBaseType{meta_class, templ, publicBaseClasses.first()});
                 return;
             }
@@ -6782,57 +6879,55 @@ void MetaBuilder::setupInheritance(MetaClass *meta_class, QList<PendingHiddenBas
         if (!base_class_entry) {
             ReportHandler::warning(QString("class '%1' inherits from unknown base class '%2'")
                                    .arg(meta_class->name(), base_class_name));
+            continue;
+        }
+
+        if(meta_class->typeEntry()->delegatedBaseClasses().contains(base_class_name)){
+            QString delegate = meta_class->typeEntry()->delegatedBaseClasses()[base_class_name];
+            if(delegate.isEmpty()){
+                auto idx = base_name.indexOf('<');
+                if(idx>=0){
+                    if(base_name.startsWith("Q")){
+                        delegate = QString("to%1").arg(base_name.mid(1, idx-1));
+                    }else{
+                        delegate = QString("to%1").arg(base_name.mid(0, idx));
+                    }
+                }else{
+                    if(base_name.startsWith("Q")){
+                        delegate = QString("to%1").arg(base_name.mid(1));
+                    }else{
+                        delegate = QString("to%1").arg(base_name);
+                    }
+                }
+            }
+            MetaType* type = new MetaType;
+            type->setTypeEntry(base_class_entry);
+            type->setIndirections({false});
+            decideUsagePattern(type);
+            MetaFunction * delegateFunction = new MetaFunction();
+            delegateFunction->setType(type);
+            delegateFunction->setName(delegate);
+            delegateFunction->setOriginalName(delegate);
+            delegateFunction->setFunctionType(MetaFunction::BaseClassDelegateFunction);
+            delegateFunction->setOriginalAttributes(MetaAttributes::Final | MetaAttributes::Public);
+            *delegateFunction += MetaAttributes::Final;
+            *delegateFunction += MetaAttributes::Public;
+            *delegateFunction += MetaAttributes::Native;
+            delegateFunction->setDeclaringClass(meta_class);
+            delegateFunction->setImplementingClass(meta_class);
+            meta_class->addFunction(delegateFunction);
+            pendingDelegates << PendingDelegate{meta_class, base_class_entry};
+            continue;
         }
 
         // true for primary base class
-        else if (!base_class_entry->designatedInterface() && !base_class_entry->isInterface()) {
+        if (!base_class_entry->designatedInterface() && !base_class_entry->isInterface()) {
             if (primaries > 0) {
-                if(meta_class->typeEntry()->delegatedBaseClasses().contains(base_class_name)){
-                    QString delegate = meta_class->typeEntry()->delegatedBaseClasses()[base_class_name];
-                    if(delegate.isEmpty()){
-                        auto idx = base_name.indexOf('<');
-                        if(idx>=0){
-                            if(base_name.startsWith("Q")){
-                                delegate = QString("to%1").arg(base_name.mid(1, idx-1));
-                            }else{
-                                delegate = QString("to%1").arg(base_name.mid(0, idx));
-                            }
-                        }else{
-                            if(base_name.startsWith("Q")){
-                                delegate = QString("to%1").arg(base_name.mid(1));
-                            }else{
-                                delegate = QString("to%1").arg(base_name);
-                            }
-                        }
-                    }
-                    bool ok = false;
-                    MetaType* type = translateType(publicBaseClasses[i], &ok, QString("setupInheritance of %1").arg(meta_class->name()));
-                    if(!ok || !type){
-                        ReportHandler::warning(QString("class '%1' inherits from unknown base class '%2'")
-                                               .arg(meta_class->name(), publicBaseClasses[i].toString()));
-                    }else{
-                        type->setIndirections({false});
-                        decideUsagePattern(type);
-                    }
-                    MetaFunction * delegateFunction = new MetaFunction();
-                    delegateFunction->setType(type);
-                    delegateFunction->setName(delegate);
-                    delegateFunction->setOriginalName(delegate);
-                    delegateFunction->setFunctionType(MetaFunction::BaseClassDelegateFunction);
-                    delegateFunction->setOriginalAttributes(MetaAttributes::Final | MetaAttributes::Protected);
-                    *delegateFunction += MetaAttributes::Final;
-                    *delegateFunction += MetaAttributes::Public;
-                    *delegateFunction += MetaAttributes::Native;
-                    delegateFunction->setDeclaringClass(meta_class);
-                    delegateFunction->setImplementingClass(meta_class);
-                    meta_class->addFunction(delegateFunction);
-                }else{
-                    ReportHandler::warning(QString("class '%1' has multiple primary public base classes"
-                                                   " '%2' and '%3'")
-                                           .arg(meta_class->name(),
-                                                publicBaseClasses.at(primary).toString(),
-                                                base_class_name));
-                }
+                ReportHandler::warning(QString("class '%1' has multiple primary public base classes"
+                                               " '%2' and '%3'")
+                                       .arg(meta_class->name(),
+                                            publicBaseClasses.at(primary).toString(),
+                                            base_class_name));
             }else{
                 primaries++;
                 primary = i;
@@ -6859,24 +6954,23 @@ void MetaBuilder::setupInheritance(MetaClass *meta_class, QList<PendingHiddenBas
             if(!meta_class->typeEntry()->delegatedBaseClasses()[base_class_name].isEmpty()){
                 delegate = meta_class->typeEntry()->delegatedBaseClasses()[base_class_name];
             }
-            bool ok = false;
-            MetaType* type = translateType(protectedBaseClasses[i], &ok, QString("Inheritance %1 of %2").arg(base_class_name, meta_class->name()));
-            if(ok){
-                type->setIndirections({false});
-                decideUsagePattern(type);
-                MetaFunction * delegateFunction = new MetaFunction();
-                delegateFunction->setType(type);
-                delegateFunction->setName(delegate);
-                delegateFunction->setOriginalName(delegate);
-                delegateFunction->setFunctionType(MetaFunction::BaseClassDelegateFunction);
-                delegateFunction->setOriginalAttributes(MetaAttributes::Final | MetaAttributes::Protected);
-                *delegateFunction += MetaAttributes::Final;
-                *delegateFunction += MetaAttributes::Protected;
-                *delegateFunction += MetaAttributes::Native;
-                delegateFunction->setDeclaringClass(meta_class);
-                delegateFunction->setImplementingClass(meta_class);
-                meta_class->addFunction(delegateFunction);
-            }
+            MetaType* type = new MetaType;
+            type->setTypeEntry(base_class_entry);
+            type->setIndirections({false});
+            decideUsagePattern(type);
+            MetaFunction * delegateFunction = new MetaFunction();
+            delegateFunction->setType(type);
+            delegateFunction->setName(delegate);
+            delegateFunction->setOriginalName(delegate);
+            delegateFunction->setFunctionType(MetaFunction::BaseClassDelegateFunction);
+            delegateFunction->setOriginalAttributes(MetaAttributes::Final | MetaAttributes::Protected);
+            *delegateFunction += MetaAttributes::Final;
+            *delegateFunction += MetaAttributes::Protected;
+            *delegateFunction += MetaAttributes::Native;
+            delegateFunction->setDeclaringClass(meta_class);
+            delegateFunction->setImplementingClass(meta_class);
+            meta_class->addFunction(delegateFunction);
+            pendingDelegates << PendingDelegate{meta_class, base_class_entry, true};
         }
     }
 
@@ -6920,11 +7014,11 @@ void MetaBuilder::setupInheritance(MetaClass *meta_class, QList<PendingHiddenBas
             return;
         }
         if(base_class->isInterface()){
-            setupInheritance(const_cast<MetaClass *>(base_class)->extractInterfaceImpl(), pendingHiddenBaseTypes, pendingConstructorUsages, pendingPrivateSuperUsages);
+            setupInheritance(const_cast<MetaClass *>(base_class)->extractInterfaceImpl(), pendingHiddenBaseTypes, pendingConstructorUsages, pendingPrivateSuperUsages, pendingDelegates);
             if(!meta_class->interfaces().contains(base_class))
                 meta_class->addInterface(base_class);
         }else{
-            setupInheritance(base_class, pendingHiddenBaseTypes, pendingConstructorUsages, pendingPrivateSuperUsages);
+            setupInheritance(base_class, pendingHiddenBaseTypes, pendingConstructorUsages, pendingPrivateSuperUsages, pendingDelegates);
             meta_class->setBaseClass(base_class);
             if(meta_class->usingProtectedBaseConstructors() || meta_class->usingPublicBaseConstructors())
                 pendingConstructorUsages.append(base_class);
@@ -6950,7 +7044,7 @@ void MetaBuilder::setupInheritance(MetaClass *meta_class, QList<PendingHiddenBas
         if (i != primary) {
             if(MetaClass *base_class = m_meta_classes.findClass(publicBaseClasses.at(i).toString(), MetaClassList::QualifiedCppName)){
                 if(base_class->isInterface()){
-                    setupInheritance(const_cast<MetaClass *>(base_class)->extractInterfaceImpl(), pendingHiddenBaseTypes, pendingConstructorUsages, pendingPrivateSuperUsages);
+                    setupInheritance(const_cast<MetaClass *>(base_class)->extractInterfaceImpl(), pendingHiddenBaseTypes, pendingConstructorUsages, pendingPrivateSuperUsages, pendingDelegates);
                     if(!meta_class->interfaces().contains(base_class)){
                         meta_class->addInterface(base_class);
                     }
@@ -6973,7 +7067,7 @@ void MetaBuilder::setupInheritance(MetaClass *meta_class, QList<PendingHiddenBas
                         }
                     }
                 }else{
-                    setupInheritance(base_class, pendingHiddenBaseTypes, pendingConstructorUsages, pendingPrivateSuperUsages);
+                    setupInheritance(base_class, pendingHiddenBaseTypes, pendingConstructorUsages, pendingPrivateSuperUsages, pendingDelegates);
                     if(meta_class->typeEntry()->designatedInterface()
                             && const_cast<MetaClass *>(meta_class)->extractInterface()
                             && base_class->typeEntry()->designatedInterface()
@@ -7059,7 +7153,6 @@ MetaFunction *MetaBuilder::traverseFunction(FunctionModelItem function_item, con
     }
     const ArgumentList& arguments = function_item->arguments();
     QString function_name = function_item->name();
-
     QString class_name;
     if(m_current_class)
         class_name = m_current_class->typeEntry()->qualifiedCppName();
@@ -7074,7 +7167,7 @@ MetaFunction *MetaBuilder::traverseFunction(FunctionModelItem function_item, con
             if(_originalSignature!=signature)
                 list << ts->functionModifications(_originalSignature);
             for(const FunctionModification& mod : qAsConst(list)){
-                if(mod.isRemoveModifier()){
+                if(mod.isRemoveModifier() && !mod.isTextStreamFunction()){
                     remove = true;
                     break;
                 }
@@ -7208,7 +7301,6 @@ MetaFunction *MetaBuilder::traverseFunction(FunctionModelItem function_item, con
     } else {
         bool ok = false;
         MetaType *type = nullptr;
-
         if(!function_type.qualifiedName().isEmpty() && metaTemplateParameters.contains(function_type.qualifiedName().join("::"))){
             MetaTemplateParameter* parameter = metaTemplateParameters[function_type.qualifiedName().join("::")];
             if(parameter && parameter->type()){
@@ -8570,15 +8662,22 @@ MetaType *MetaBuilder::translateType(TypeInfo typei,
                     meta_type->setInstantiations({});
                     break;
                 }else{
-                    delete meta_type;
-                    return nullptr;
+                    const TypeEntry *type = m_database->findType("auto");
+                    if(type){
+                        targ_type = new MetaType();
+                        targ_type->setTypeUsagePattern(MetaType::AutoPattern);
+                        targ_type->setTypeEntry(type);
+                    }else {
+                        delete meta_type;
+                        return nullptr;
+                    }
                 }
             }
             if(!targ_type && info.toString()=="void"){
                 const TypeEntry *type = m_database->findType("void");
                 if(type){
                     targ_type = new MetaType();
-                    targ_type->setTypeUsagePattern(MetaType::PrimitivePattern);
+                    targ_type->setTypeUsagePattern(MetaType::VoidPattern);
                     targ_type->setTypeEntry(type);
                 }
             }
@@ -8720,6 +8819,8 @@ void MetaBuilder::decideUsagePattern(MetaType *meta_type) {
                 || (meta_type->getReferenceType()==MetaType::RReference && meta_type->indirections().size() == 0)){
             if(type->qualifiedCppName()=="std::nullptr_t")
                 meta_type->setTypeUsagePattern(MetaType::NullptrPattern);
+            else if(type->qualifiedCppName()=="std::exception_ptr")
+                meta_type->setTypeUsagePattern(MetaType::ExceptionPattern);
             else
                 meta_type->setTypeUsagePattern(MetaType::PrimitivePattern);
         }else if(meta_type->actualIndirections() == 1
@@ -8739,8 +8840,11 @@ void MetaBuilder::decideUsagePattern(MetaType *meta_type) {
     } else if (type->isAuto()) {
         meta_type->setTypeUsagePattern(MetaType::AutoPattern);
     } else if (type->isVoid()) {
-        meta_type->setTypeUsagePattern(MetaType::NativePointerPattern);
-
+        if(meta_type->indirections().isEmpty() && meta_type->getReferenceType()==MetaType::NoReference){
+            meta_type->setTypeUsagePattern(MetaType::VoidPattern);
+        }else{
+            meta_type->setTypeUsagePattern(MetaType::NativePointerPattern);
+        }
     } else if (type->isFunctional()) {
         meta_type->setTypeUsagePattern(MetaType::FunctionalPattern);
 
@@ -9257,7 +9361,7 @@ MetaType *MetaBuilder::inheritTemplateType(const QList<const MetaType *> &templa
 
         // If the template is intantiated with void we special case this as rejecting the functions that use this
         // parameter from the instantiation.
-        if (template_types.size() <= tae->ordinal() || template_types.at(tae->ordinal())->typeEntry()->name() == "void") {
+        if (template_types.size() <= tae->ordinal() || !template_types.at(tae->ordinal()) || template_types.at(tae->ordinal())->typeEntry()->name() == "void") {
             if (ok)
                 *ok = false;
             return nullptr;
@@ -9299,7 +9403,8 @@ MetaType *MetaBuilder::inheritTemplateType(const QList<const MetaType *> &templa
 void MetaBuilder::inheritHiddenBaseType(MetaClass *subclass, const MetaClass *hidden_base_class,
         const TypeInfo &info, QList<MetaClass *>& pendingConstructorUsages) {
     QList<const MetaType *> template_types;
-    QHash<const TypeEntry *,const MetaType *> template_types_by_name;
+    QHash<QString,const MetaType *> template_types_by_name;
+    QHash<const TypeEntry *,const MetaType *> template_types_by_tvar;
     for (int i = 0; i < info.arguments().size(); ++i) {
         const TypeInfo &ti = info.arguments()[i];
         bool ok = false;
@@ -9338,7 +9443,8 @@ void MetaBuilder::inheritHiddenBaseType(MetaClass *subclass, const MetaClass *hi
     }
 
     for (auto l = qMin(template_types.size(), qMin(hidden_base_class->templateArguments().size(), info.arguments().size())), i = decltype(l)(0); i < l; ++i) {
-        template_types_by_name.insert(hidden_base_class->templateArguments().at(i), template_types.at(i));
+        template_types_by_tvar.insert(hidden_base_class->templateArguments().at(i), template_types.at(i));
+        template_types_by_name.insert(hidden_base_class->templateArguments().at(i)->name(), template_types.at(i));
     }
 
     {
@@ -9353,8 +9459,8 @@ void MetaBuilder::inheritHiddenBaseType(MetaClass *subclass, const MetaClass *hi
 
         QString implements = hidden_base_class->typeEntry()->implements();
         if(!implements.isEmpty()){
-            for (QHash<const TypeEntry *,const MetaType *>::const_iterator ki = template_types_by_name.constBegin();
-                 ki != template_types_by_name.constEnd(); ki++) {
+            for (QHash<const TypeEntry *,const MetaType *>::const_iterator ki = template_types_by_tvar.constBegin();
+                 ki != template_types_by_tvar.constEnd(); ki++) {
                 const TypeEntry * t_entry = ki.value()->typeEntry();
                 if(t_entry->isTemplateArgument())
                     implements = implements.replace("%"+ki.key()->name(),"%"+t_entry->qualifiedCppName());
@@ -9389,7 +9495,7 @@ void MetaBuilder::inheritHiddenBaseType(MetaClass *subclass, const MetaClass *hi
     IteratorTypeEntry * iteratorTypeEntry = m_database->findIteratorType(hidden_base_class->typeEntry());
     MetaClass * newIteratorClass = nullptr;
     if(iteratorTypeEntry){
-        newIteratorClass = instantiateIterator(iteratorTypeEntry, subclass, template_types, template_types_by_name);
+        newIteratorClass = instantiateIterator(iteratorTypeEntry, subclass, template_types, template_types_by_tvar);
     }
 
     const MetaFunctionList& funcs = subclass->functions();
@@ -9399,6 +9505,22 @@ void MetaBuilder::inheritHiddenBaseType(MetaClass *subclass, const MetaClass *hi
 
         MetaFunction *f = function->copy();
         f->setArguments(MetaArgumentList());
+
+        if(!function->isInGlobalScope()){
+            MetaTemplateParameterList templateParameters;
+            for(MetaTemplateParameter* tparam : f->templateParameters()){
+                if(tparam->type()){
+                    if(!tparam->defaultType().isEmpty()){
+                        if(const MetaType * t = template_types_by_name[tparam->defaultType()]){
+                            tparam->setDefaultType({});
+                            tparam->setInstantiation(true, {}, t);
+                        }
+                    }
+                }
+                templateParameters << tparam;
+            }
+            f->setTemplateParameters(templateParameters);
+        }
 
         bool ok = true;
         MetaType *ftype = function->type();
@@ -9569,8 +9691,8 @@ void MetaBuilder::inheritHiddenBaseType(MetaClass *subclass, const MetaClass *hi
             // substitution of the template instantation type inside
             // injected code..
             if (mod.modifiers & Modification::CodeInjection) {
-                for (QHash<const TypeEntry *,const MetaType *>::const_iterator ki = template_types_by_name.constBegin();
-                     ki != template_types_by_name.constEnd(); ki++) {
+                for (QHash<const TypeEntry *,const MetaType *>::const_iterator ki = template_types_by_tvar.constBegin();
+                     ki != template_types_by_tvar.constEnd(); ki++) {
                     CodeSnip &snip = mod.snips.last();
                     QString code = snip.code();
                     const TypeEntry * t_entry = ki.value()->typeEntry();
@@ -10003,6 +10125,59 @@ static MetaFunctionList filter_functions(const MetaFunctionList &lst, QSet<QStri
     }
     return functions;
 }
+void MetaBuilder::setupTextStreamFunctions(MetaClass *cls) {
+    if(cls->typeEntry()->isAddTextStreamFunctions()){
+        FunctionModificationList mods = cls->typeEntry()->functionModifications();
+        FunctionModification textStreamFunctionModification;
+        for(auto l = mods.size(), i = decltype(l)(0); i<l; ++i){
+            if(mods[i].signature=="QTextStreamFunction"){
+                textStreamFunctionModification = mods[i];
+                mods.removeAt(i);
+                cls->typeEntry()->setFunctionModifications(mods);
+                break;
+            }
+        }
+        for(MetaFunction *f : std::as_const(m_textStreamFunctions)) {
+            f = f->copy();
+            *f -= MetaFunction::Static;
+            *f -= MetaFunction::Private;
+            *f -= MetaFunction::Protected;
+            *f += MetaFunction::Public;
+            f->setIsTextStreamFormat(true);
+            f->setImplementingClass(cls);
+            if(!f->declaringClass())
+                f->setDeclaringClass(cls);
+            if(f->arguments().size()==1 && f->arguments()[0]->type()->typeEntry()->qualifiedCppName()=="QTextStream"){
+                FunctionModification mod;
+                mod.signature = f->minimalSignature();
+                ArgumentModification amod(1);
+                amod.removed = true;
+                mod.argument_mods << amod;
+                cls->typeEntry()->addFunctionModification(mod);
+            }
+            MetaType* type;
+            if((type = f->type())){
+                type->setIndirections({});
+                type->setInstantiations({});
+                type->setConstant(false);
+                type->setReferenceType(MetaType::Reference);
+                type->setTypeEntry(cls->typeEntry());
+            }else{
+                type = new MetaType;
+                type->setConstant(false);
+                type->setReferenceType(MetaType::Reference);
+                type->setTypeEntry(cls->typeEntry());
+                f->setType(type);
+            }
+            if(!textStreamFunctionModification.signature.isEmpty()){
+                FunctionModification mod = textStreamFunctionModification;
+                mod.signature = f->minimalSignature();
+                cls->typeEntry()->addFunctionModification(mod);
+            }
+            cls->addFunction(f);
+        }
+    }
+}
 
 void MetaBuilder::setupBeginEnd(MetaClass *cls) {
     MetaFunctionList begins;
@@ -10015,7 +10190,7 @@ void MetaBuilder::setupBeginEnd(MetaClass *cls) {
 
     MetaFunctionList functions = cls->queryFunctions(MetaClass::ClassImplements
                                          | MetaClass::NotRemovedFromTargetLang);
-    for(MetaFunction *f : functions) {
+    for(MetaFunction *f : std::as_const(functions)) {
         if(f->type() && f->type()->typeEntry()->isIterator() && f->arguments().size()==0){
             if (f->name() == name_begin || f->name() == name_constBegin)
                 begins << f;
@@ -10025,13 +10200,13 @@ void MetaBuilder::setupBeginEnd(MetaClass *cls) {
     }
 
     if (begins.size() || ends.size()) {
-        for(MetaFunction *f : begins) {
+        for(MetaFunction *f : std::as_const(begins)) {
             FunctionModification mod;
             mod.signature = f->minimalSignature();
             mod.modifiers = FunctionModification::Protected;
             const_cast<ComplexTypeEntry *>(static_cast<const ComplexTypeEntry *>(f->implementingClass()->typeEntry()))->addFunctionModification(mod);
         }
-        for(MetaFunction *f : ends) {
+        for(MetaFunction *f : std::as_const(ends)) {
             FunctionModification mod;
             mod.signature = f->minimalSignature();
             mod.modifiers = FunctionModification::Protected;
@@ -10049,7 +10224,7 @@ void MetaBuilder::setupEquals(MetaClass *cls) {
                                         MetaClass::ClassImplements
                                         | MetaClass::Visible
                                         | MetaClass::NotRemovedFromTargetLang);
-    for(MetaFunction *f : functions) {
+    for(MetaFunction *f : std::as_const(functions)) {
         switch(f->operatorType()){
         case OperatorType::Equals:
             if(f->arguments().size()==1)
@@ -10094,7 +10269,7 @@ void MetaBuilder::setupComparable(MetaClass *cls) {
 
     const MetaFunctionList functions = cls->queryFunctions(MetaClass::ClassImplements
                                          | MetaClass::NotRemovedFromTargetLang);
-    for(MetaFunction *f : functions) {
+    for(MetaFunction *f : std::as_const(functions)) {
         switch(f->operatorType()){
         case OperatorType::Greater:
             if(f->arguments().size()==1)
@@ -10350,6 +10525,7 @@ void MetaBuilder::setupConstructorAvailability(MetaClass *meta_class){
                         if(!fmod.modified_type.isEmpty()){
                             modified = true;
                             amod.modified_type = fmod.modified_type;
+                            amod.modified_java_type = fmod.modified_java_type;
                             amod.modified_jni_type = fmod.modified_jni_type;
                             for(const CodeSnip& snip : fmod.conversion_rules){
                                 if((snip.language == TS::Language(TS::Setter | TS::NativeCode))){

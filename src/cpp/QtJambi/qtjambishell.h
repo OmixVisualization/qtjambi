@@ -65,42 +65,41 @@ public:
     const void * qt_metacast(const char *className, bool* ok = nullptr) const;
     int qt_metacall(QMetaObject::Call _c, int _id, void **_a);
 
-
     static void initialize(JNIEnv *env, jclass callingClass, jobject object, ConstructorFunction constructorFunction,
-                           size_t size, const std::type_info& typeId, uint returnScopeRequired, bool isShell,
+                           size_t size, const std::type_info& typeId, uint returnScopeRequired, SafeBool isShell,
                            PtrDeleterFunction delete_function,
                            jvalue* arguments = nullptr);
 
     static void initialize(JNIEnv *env, jclass callingClass, jobject object, ConstructorFunction constructorFunction,
-                           size_t size, const std::type_info& typeId, uint returnScopeRequired, bool isShell,
+                           size_t size, const std::type_info& typeId, uint returnScopeRequired, SafeBool isShell,
                            PtrDeleterFunction delete_function, PtrOwnerFunction ownerFunction,
                            jvalue* arguments = nullptr);
 
     static void initialize(JNIEnv *env, jclass callingClass, jobject object, ConstructorFunction constructorFunction,
-                           size_t size, const std::type_info& typeId, uint returnScopeRequired, bool isShell,
+                           size_t size, const std::type_info& typeId, uint returnScopeRequired, SafeBool isShell,
                            jvalue* arguments = nullptr);
 
     static void initialize(JNIEnv *env, jclass callingClass, jobject object, ConstructorFunction constructorFunction,
-                           size_t size, const std::type_info& typeId, uint returnScopeRequired, bool isShell,
+                           size_t size, const std::type_info& typeId, uint returnScopeRequired, SafeBool isShell,
                            PtrOwnerFunction ownerFunction,
                            jvalue* arguments = nullptr);
 
     static void initialize(JNIEnv *env, jclass callingClass, jobject object, ConstructorFunction constructorFunction,
                            size_t size, const std::type_info& typeId, uint returnScopeRequired, const QMetaObject& originalMetaObject,
-                           bool isShell, bool hasCustomMetaObject, jvalue* arguments = nullptr);
+                           SafeBool isShell, SafeBool hasCustomMetaObject, jvalue* arguments = nullptr);
 
     static void initialize(JNIEnv *env, jclass callingClass, jobject object, ConstructorFunction constructorFunction,
-                           size_t size, const std::type_info& typeId, uint returnScopeRequired, bool isShell,
+                           size_t size, const std::type_info& typeId, uint returnScopeRequired, SafeBool isShell,
                            AbstractContainerAccess* containerAccess,
                            jvalue* arguments = nullptr, QtJambiNativeID owner = QtJambiNativeID(0));
 
     static void initialize(JNIEnv *env, jclass callingClass, jobject object, ConstructorFunction constructorFunction,
-                           size_t size, const std::type_info& typeId, uint returnScopeRequired, bool isShell,
+                           size_t size, const std::type_info& typeId, uint returnScopeRequired, SafeBool isShell,
                            AbstractContainerAccess* containerAccess,
                            PtrDeleterFunction delete_function, jvalue* arguments = nullptr, QtJambiNativeID owner = QtJambiNativeID(0));
 
     static void initialize(JNIEnv *env, jclass callingClass, jobject object, ConstructorFunction constructorFunction,
-                           size_t size, const std::type_info& typeId, uint returnScopeRequired, bool isShell,
+                           size_t size, const std::type_info& typeId, uint returnScopeRequired, SafeBool isShell,
                            AbstractContainerAccess* containerAccess,
                            PtrDeleterFunction delete_function, PtrOwnerFunction ownerFunction,
                            jvalue* arguments = nullptr, QtJambiNativeID owner = QtJambiNativeID(0));

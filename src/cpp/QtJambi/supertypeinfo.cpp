@@ -27,16 +27,7 @@
 **
 ****************************************************************************/
 
-
-#include <QtCore/QHash>
-#include <QtCore/QVector>
-#include <QtCore/QString>
-#include <QtCore/QCoreApplication>
-#include <QtCore/QReadWriteLock>
-#include "qtjambiapi.h"
-#include "java_p.h"
-#include "supertypeinfo_p.h"
-#include "registryutil_p.h"
+#include "pch_p.h"
 
 Q_GLOBAL_STATIC(QReadWriteLock, gSuperTypeInfosLock)
 typedef SecureContainer<QHash<jint,SuperTypeInfos>, gSuperTypeInfosLock> SuperTypeInfosMap;

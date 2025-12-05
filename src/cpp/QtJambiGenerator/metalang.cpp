@@ -228,6 +228,7 @@ MetaFunction::MetaFunction()
     m_declExplicit(false),
     m_template(false),
     m_invalid(false),
+    m_isTextStreamFormat(false),
     m_actualMinimumArgumentCount(-1),
     m_accessedField(nullptr),
     m_functionReferenceType(MetaType::NoReference),
@@ -253,6 +254,16 @@ const MetaArgument *MetaFunction::argumentByIndex(const MetaArgumentList& argume
         }
     }
     return result;
+}
+
+uint MetaFunction::isTextStreamFormat() const
+{
+    return m_isTextStreamFormat;
+}
+
+void MetaFunction::setIsTextStreamFormat(uint newIsTextStreamFormat)
+{
+    m_isTextStreamFormat = newIsTextStreamFormat;
 }
 
 QString MetaFunction::name() const { return m_name; }
@@ -2123,12 +2134,15 @@ bool MetaFunctional::implementPlainDelegate(int key) const{
     return false;
 }
 
-QString MetaFunction::typeReplaced(int key, QString* jniType) const {
+QString MetaFunction::typeReplaced(int key, QString* javaType, QString* jniType) const {
     if(m_accessedField){
         if( (key==1 && (this->attributes() & MetaAttributes::SetterFunction) == MetaAttributes::SetterFunction)
                 || (key==0 && (this->attributes() & MetaAttributes::GetterFunction) == MetaAttributes::GetterFunction) ){
             FieldModificationList modifications = m_accessedField->modifications();
             if(!modifications.isEmpty()) {
+                if(javaType && !modifications.first().modified_java_type.isEmpty()){
+                    *javaType = modifications.first().modified_java_type;
+                }
                 if(jniType && !modifications.first().modified_jni_type.isEmpty()){
                     *jniType = modifications.first().modified_jni_type;
                 }
@@ -2144,6 +2158,9 @@ QString MetaFunction::typeReplaced(int key, QString* jniType) const {
                 if (argument_modification.type==ArgumentModification::Default
                         && argument_modification.index == key
                         && !argument_modification.modified_type.isEmpty()) {
+                    if(javaType && !argument_modification.modified_java_type.isEmpty()){
+                        *javaType = argument_modification.modified_java_type;
+                    }
                     if(jniType && !argument_modification.modified_jni_type.isEmpty()){
                         *jniType = argument_modification.modified_jni_type;
                     }
@@ -2155,13 +2172,18 @@ QString MetaFunction::typeReplaced(int key, QString* jniType) const {
     return QString();
 }
 
-QString MetaFunctional::typeReplaced(int key, QString* jniType) const {
+QString MetaFunctional::typeReplaced(int key, QString* javaType, QString* jniType) const {
     for(const ArgumentModification& argument_modification : this->typeEntry()->argumentModification()) {
         if (argument_modification.index == key
                 && !argument_modification.modified_type.isEmpty()) {
-            if(jniType
+            if(javaType
                     && argument_modification.type==ArgumentModification::Default
-                    && !argument_modification.modified_jni_type.isEmpty()){
+                    && !argument_modification.modified_java_type.isEmpty()){
+                *javaType = argument_modification.modified_java_type;
+            }
+            if(jniType
+                && argument_modification.type==ArgumentModification::Default
+                && !argument_modification.modified_jni_type.isEmpty()){
                 *jniType = argument_modification.modified_jni_type;
             }
             return argument_modification.modified_type;
@@ -2321,7 +2343,7 @@ FunctionModificationList MetaFunction::modifications(const ComplexTypeEntry *ent
     FunctionModificationList result;
     if(entry){
         result = entry->functionModifications(minimalSignature());
-        if(result.isEmpty() && minimalSignature()!=originalSignature())
+        if(result.isEmpty() && minimalSignature()!=originalSignature() && !originalSignature().isEmpty())
             result = entry->functionModifications(originalSignature());
         if(m_functionTemplate.first){
             if(m_functionTemplate.first && !m_functionTemplate.second.signature.isEmpty()){
@@ -2817,6 +2839,8 @@ void MetaClass::setBaseClass(MetaClass *base_class) {
             m_type_entry->setQCoreApplication(true);
         if(base_class->typeEntry()->isQAction())
             m_type_entry->setQAction(true);
+        if(base_class->typeEntry()->isQFuturing())
+            m_type_entry->setQFuturing(true);
         if(base_class->typeEntry()->isQMediaControl())
             m_type_entry->setQMediaControl(true);
         base_class->m_has_subClasses = true;
@@ -3145,6 +3169,14 @@ bool MetaClass::needsOShellDestructor() const{
     return m_needsOShellDestructor;
 }
 
+bool MetaClass::isTemplateInstantiation() const{
+    return m_isTemplateInstantiation;
+}
+
+void MetaClass::setTemplateInstantiation(bool b){
+    m_isTemplateInstantiation = b;
+}
+
 bool MetaClass::instantiateShellClass() const {
     return !isFinal()
             //&& !m_has_private_metacall
@@ -3392,6 +3424,7 @@ const MetaFunction *MetaField::getter() const {
         if(accessModifier & Modification::AccessModifierMask){
             m_getter->setVisibility(accessModifier & Modification::AccessModifierMask);
         }
+        m_getter->setConstant(true);
         if (QPropertySpec *read = m_class->propertySpecForMember(this->name())) {
             *m_getter += MetaAttributes::PropertyReader;
             m_getter->setPropertySpec(read);
@@ -3413,6 +3446,10 @@ const MetaFunction *MetaField::getter() const {
         m_getter->setType(type()->copy());
         if(type()->getReferenceType()==MetaType::NoReference && !type()->isArray() && !type()->isPrimitive() && !type()->isPrimitiveChar() && !type()->isSmartPointer() && type()->indirections().isEmpty()){
             m_getter->type()->setReferenceType(MetaType::Reference);
+            m_getter->type()->setConstant(true);
+        }else if(type()->isArray()){
+            m_getter->type()->setConstant(true);
+        }else if(!type()->indirections().isEmpty()){
             m_getter->type()->setConstant(true);
         }
         MetaBuilder::decideUsagePattern(m_getter->type());
@@ -3567,6 +3604,7 @@ MetaClass::MetaClass()
         m_usingProtectedBaseConstructors(false),
         m_usingPublicBaseConstructors(false),
         m_needsOShellDestructor(false),
+        m_isTemplateInstantiation(false),
         m_enclosing_class(nullptr),
         m_base_class(nullptr),
         m_typeAliasType(nullptr),
@@ -4198,6 +4236,14 @@ MetaClass *MetaClassList::findClass(const QString &name, NameFlag nameFlag) cons
         }
     }
 
+    return nullptr;
+}
+
+MetaClass *MetaClassList::findClass(const TypeEntry *entry) const {
+    for(MetaClass *c : *this) {
+        if (c->typeEntry()==entry)
+            return c;
+    }
     return nullptr;
 }
 

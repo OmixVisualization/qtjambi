@@ -513,6 +513,7 @@ TypeSystem{
                     index: 0
                     ReplaceType{
                         modifiedType: "T"
+                        modifiedJavaType: "io.qt.sensors.QSensorReading"
                         modifiedJniType: "jobject"
                     }
                     NoNullPointer{}
@@ -525,6 +526,8 @@ TypeSystem{
                     NoNullPointer{}
                     ReplaceType{
                         modifiedType: "T"
+                        modifiedJavaType: "io.qt.sensors.QSensorReading"
+                        modifiedJniType: "jobject"
                     }
                     ConversionRule{
                         codeClass: CodeClass.Native
@@ -546,6 +549,7 @@ TypeSystem{
                     index: 0
                     ReplaceType{
                         modifiedType: "T"
+                        modifiedJavaType: "io.qt.sensors.QSensorReading"
                         modifiedJniType: "jobject"
                     }
                     NoNullPointer{}

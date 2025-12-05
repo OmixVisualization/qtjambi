@@ -32,25 +32,27 @@
 #ifndef QTJAMBICORE_HASHES_H
 #define QTJAMBICORE_HASHES_H
 
+#define QFUTURE_TEST
 #include <QtCore/QtCore>
 #include <QtJambi/Global>
+#include <QtJambi/CoreAPI>
 #if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0) && QT_CONFIG(permissions)
 #include <QtCore/qpermissions.h>
 #endif
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) && defined(QTJAMBI_GENERATOR_RUNNING)
-hash_type qHash(QSizePolicy);
+#if defined(QTJAMBI_GENERATOR_RUNNING)
+size_t qHash(QSizePolicy);
 #endif
 
 class QWidget;
 
 template<class T>
-hash_type genericHash(const T &value, hash_type seed = 0)
+size_t genericHash(const T &value, size_t seed = 0)
 {
     return qHashBits(&value, sizeof(T), seed);
 }
 
-inline hash_type qHash(const QAbstractEventDispatcher::TimerInfo &value, hash_type seed = 0)
+inline size_t qHash(const QAbstractEventDispatcher::TimerInfo &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -70,7 +72,7 @@ inline bool operator==(const QAbstractEventDispatcher::TimerInfo &v1, const QAbs
 }
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
-inline hash_type qHash(const QAbstractEventDispatcher::TimerInfoV2 &value, hash_type seed = 0)
+inline size_t qHash(const QAbstractEventDispatcher::TimerInfoV2 &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -92,13 +94,13 @@ inline bool operator==(const QAbstractEventDispatcher::TimerInfoV2 &v1, const QA
 
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 4, 0)
-inline hash_type qHash(const QMetaType &value, hash_type seed = 0)
+inline size_t qHash(const QMetaType &value, size_t seed = 0)
 {
     return qHash(value.id(), seed);
 }
 #endif
 
-inline hash_type qHash(const QSizeF &size, hash_type seed = 0)
+inline size_t qHash(const QSizeF &size, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -110,7 +112,7 @@ inline hash_type qHash(const QSizeF &size, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QByteArrayMatcher &value, hash_type seed = 0)
+inline size_t qHash(const QByteArrayMatcher &value, size_t seed = 0)
 {
     return qHash(value.pattern(), seed);
 }
@@ -120,7 +122,7 @@ inline bool operator==(const QByteArrayMatcher &value1, const QByteArrayMatcher 
     return value1.pattern()==value2.pattern();
 }
 
-inline hash_type qHash(const QCalendar &value, hash_type seed = 0)
+inline size_t qHash(const QCalendar &value, size_t seed = 0)
 {
     return qHash(value.name(), seed);
 }
@@ -130,7 +132,7 @@ inline bool operator==(const QCalendar &value1, const QCalendar &value2)
     return value1.name()==value2.name();
 }
 
-inline hash_type qHash(const QCalendar::YearMonthDay &value, hash_type seed = 0)
+inline size_t qHash(const QCalendar::YearMonthDay &value, size_t seed = 0)
 {
     return genericHash(value, seed);
 }
@@ -140,7 +142,7 @@ inline bool operator==(const QCalendar::YearMonthDay &value1, const QCalendar::Y
     return value1.year==value2.year && value1.month==value2.month && value1.day==value2.day;
 }
 
-inline hash_type qHash(const QCborError &value, hash_type seed = 0)
+inline size_t qHash(const QCborError &value, size_t seed = 0)
 {
     return qHash(QCborError::Code(value), seed);
 }
@@ -150,7 +152,7 @@ inline bool operator==(const QCborError &value1, const QCborError &value2)
     return QCborError::Code(value1)==QCborError::Code(value2);
 }
 
-inline hash_type qHash(const QCborParserError &value, hash_type seed = 0)
+inline size_t qHash(const QCborParserError &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -167,7 +169,7 @@ inline bool operator==(const QCborParserError &value1, const QCborParserError &v
     return value1.offset==value2.offset && value1.error==value2.error;
 }
 
-inline hash_type qHash(const QOperatingSystemVersion &value, hash_type seed = 0)
+inline size_t qHash(const QOperatingSystemVersion &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -190,7 +192,7 @@ inline bool operator==(const QOperatingSystemVersion &value1, const QOperatingSy
 }
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 3, 0)
-inline hash_type qHash(const QOperatingSystemVersionBase &value, hash_type seed = 0)
+inline size_t qHash(const QOperatingSystemVersionBase &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -212,8 +214,9 @@ inline bool operator==(const QOperatingSystemVersionBase &value1, const QOperati
             && value1.microVersion()==value2.microVersion();
 }
 
-#if defined(QFACTORYLOADER_P_H) || (QT_VERSION >= QT_VERSION_CHECK(6, 10, 0) && defined(QPLUGIN_P_H))
-inline hash_type qHash(const QPluginParsedMetaData &value, hash_type seed = 0)
+class QPluginParsedMetaData;
+
+inline size_t qHash(const QPluginParsedMetaData &value, size_t seed = 0)
 {
     return qHash(*reinterpret_cast<const QCborValue*>(&value), seed);
 }
@@ -223,9 +226,8 @@ inline bool operator==(const QPluginParsedMetaData &value1, const QPluginParsedM
     return *reinterpret_cast<const QCborValue*>(&value1)==*reinterpret_cast<const QCborValue*>(&value2);
 }
 #endif
-#endif
 
-inline hash_type qHash(const QCollator &value, hash_type seed = 0)
+inline size_t qHash(const QCollator &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -247,7 +249,7 @@ inline bool operator==(const QCollator &value1, const QCollator &value2)
             && value1.ignorePunctuation()==value2.ignorePunctuation();
 }
 
-inline hash_type qHash(const QDeadlineTimer &value, hash_type seed = 0)
+inline size_t qHash(const QDeadlineTimer &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -271,27 +273,75 @@ QDeadlineTimer operator+(QDeadlineTimer dt, qint64 msecs);
 QDeadlineTimer& QDeadlineTimer::operator=(const QDeadlineTimer& other);
 #endif
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-inline hash_type qHash(const QSize &size, hash_type seed = 0)
+inline size_t qHash(const QFutureInterfaceBase &value, size_t seed = 0)
 {
-    QtPrivate::QHashCombine hash;
-    seed = hash(seed, size.width());
-    seed = hash(seed, size.height());
-    return seed;
+    return qHash(quintptr(CoreAPI::futurePrivate(&value)), seed);
 }
-#else
 
+#if defined(QTJAMBI_GENERATOR_RUNNING)
+using QFutureRunnable = std::function<void()>;
+using QFutureSupplier = std::function<QVariant()>;
+using QFutureConsumer = std::function<void(QVariant)>;
+using QFutureFutureConsumer = std::function<void(QFuture<QVariant>)>;
+using QFutureFunction = std::function<QVariant(QVariant)>;
+using QFutureFutureFunction = std::function<QVariant(QFuture<QVariant>)>;
+size_t qHash(const QFuture<QVariant> &, size_t = 0);
+template<class T>
+bool operator==(const QFuture<QVariant> &f1, const QFuture<T> &f2);
+template<class T>
+bool operator==(const QFutureInterface<QVariant> &f1, const QFutureInterface<T> &f2);
+QDebug operator<<(QDebug out, const QFutureInterfaceBase &);
+QDebug operator<<(QDebug out, const QFutureInterface<QVariant> &);
+QDebug operator<<(QDebug out, const QFuture<QVariant> &);
+#else
+template<class T>
+inline size_t qHash(const QFuture<T> &value, size_t seed = 0)
+{
+    return qHash(CoreAPI::futureInterface(value), seed);
+}
 template<class T>
 bool operator==(const QFuture<T> &f1, const QFuture<T> &f2) {
-    struct Future{
-        QFutureInterfaceBase d;
-    };
-    return reinterpret_cast<const Future*>(&f1)->d==reinterpret_cast<const Future*>(&f2)->d;
+    return CoreAPI::futureInterface(f1)==CoreAPI::futureInterface(f2);
 }
-#endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+inline QDebug operator<<(QDebug out, const QFutureInterfaceBase &value){
+    const void* ptr = CoreAPI::futurePrivate(&value);
+    if(dynamic_cast<const QFutureInterface<QVariant>*>(&value)){
+        out << "QFutureInterface<QVariant>(" << ptr << ")";
+    }else if(dynamic_cast<const QFutureInterface<void>*>(&value)){
+        out << "QFutureInterface<void>(" << ptr << ")";
+    }else{
+        out << "QFutureInterfaceBase(" << ptr << ")";
+    }
+    return out;
+}
+template<class T>
+QDebug operator<<(QDebug out, const QFutureInterface<T> &value){
+    const void* ptr = CoreAPI::futurePrivate(&value);
+    const QFutureInterfaceBase* base = &value;
+    if(dynamic_cast<const QFutureInterface<QVariant>*>(base)){
+        out << "QFutureInterface<QVariant>(" << ptr << ")";
+    }else if(dynamic_cast<const QFutureInterface<void>*>(base)){
+        out << "QFutureInterface<void>(" << ptr << ")";
+    }else{
+        out << "QFutureInterface<T>(" << ptr << ")";
+    }
+    return out;
+}
+template<class T>
+QDebug operator<<(QDebug out, const QFuture<T> &value){
+    const QFutureInterfaceBase& base = CoreAPI::futureInterface(value);
+    const void* ptr = CoreAPI::futurePrivate(&base);
+    if(dynamic_cast<const QFutureInterface<QVariant>*>(&base)){
+        out << "QFuture<QVariant>(" << ptr << ")";
+    }else{
+        out << "QFuture<void>(" << ptr << ")";
+    }
+    return out;
+}
+#endif
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 2, 0)
-inline hash_type qHash(const QPointF &point, hash_type seed = 0)
+inline size_t qHash(const QPointF &point, size_t seed = 0)
 {
     QtPrivate::QHashCombine hash;
     seed = hash(seed, point.x());
@@ -299,49 +349,23 @@ inline hash_type qHash(const QPointF &point, hash_type seed = 0)
     return seed;
 }
 #else
-inline hash_type qHash(const QPointF &point, QHashDummyValue, hash_type seed = 0)
+inline size_t qHash(const QPointF &point, QHashDummyValue, size_t seed = 0)
 {
     return qHashMulti(seed, point.x(), point.y());
 }
 #endif
 
-inline hash_type qHash(const QFutureInterfaceBase &value, hash_type seed = 0)
-{
-    return qHash(quintptr(&value.resultStoreBase()), seed);
-}
-
-template<class T>
-inline hash_type qHash(const QFuture<T> &value, hash_type seed = 0)
-{
-    struct Future{
-        QFutureInterfaceBase d;
-    };
-    return qHash(reinterpret_cast<const Future*>(&value)->d, seed);
-}
-
-inline hash_type qHash(const QFileInfo &fileInfo, hash_type seed = 0)
+inline size_t qHash(const QFileInfo &fileInfo, size_t seed = 0)
 {
     return qHash(fileInfo.absoluteFilePath(), seed);
 }
 
-inline hash_type qHash(const QDir &dir, hash_type seed = 0)
+inline size_t qHash(const QDir &dir, size_t seed = 0)
 {
     return qHash(dir.absolutePath(), seed);
 }
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-inline hash_type qHash(const QRect &rect, hash_type seed = 0)
-{
-    QtPrivate::QHashCombine hash;
-    seed = hash(seed, rect.left());
-    seed = hash(seed, rect.top());
-    seed = hash(seed, rect.right());
-    seed = hash(seed, rect.bottom());
-    return seed;
-}
-#endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-
-inline hash_type qHash(const QRectF &rect, hash_type seed = 0)
+inline size_t qHash(const QRectF &rect, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -355,17 +379,7 @@ inline hash_type qHash(const QRectF &rect, hash_type seed = 0)
     return seed;
 }
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-inline hash_type qHash(const QPoint &point, hash_type seed = 0)
-{
-    QtPrivate::QHashCombine hash;
-    seed = hash(seed, point.x());
-    seed = hash(seed, point.y());
-    return seed;
-}
-#endif
-
-inline hash_type qHash(const QLineF &line, hash_type seed = 0)
+inline size_t qHash(const QLineF &line, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -379,8 +393,7 @@ inline hash_type qHash(const QLineF &line, hash_type seed = 0)
     return seed;
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-inline hash_type qHash(const QItemSelectionRange &value, hash_type seed = 0)
+inline size_t qHash(const QItemSelectionRange &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -391,9 +404,8 @@ inline hash_type qHash(const QItemSelectionRange &value, hash_type seed = 0)
     seed = hash(seed, value.bottomRight());
     return seed;
 }
-#endif
 
-inline hash_type qHash(const QJsonValueRef &value, hash_type seed = 0)
+inline size_t qHash(const QJsonValueRef &value, size_t seed = 0)
 {
     switch (value.type()) {
     case QJsonValue::Null:
@@ -413,7 +425,7 @@ inline hash_type qHash(const QJsonValueRef &value, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QItemSelection &value, hash_type seed = 0)
+inline size_t qHash(const QItemSelection &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -427,48 +439,7 @@ inline hash_type qHash(const QItemSelection &value, hash_type seed = 0)
     return seed;
 }
 
-#if QT_VERSION < QT_VERSION_CHECK(5, 12, 0)
-hash_type qHash(const QJsonObject &value, hash_type seed = 0);
-hash_type qHash(const QJsonArray &value, hash_type seed = 0);
-
-inline hash_type qHash(const QJsonValue &value, hash_type seed = 0)
-{
-    switch (value.type()) {
-    case QJsonValue::Null:
-        return qHash(nullptr, seed);
-    case QJsonValue::Bool:
-        return qHash(value.toBool(), seed);
-    case QJsonValue::Double:
-        return qHash(value.toDouble(), seed);
-    case QJsonValue::String:
-        return qHash(value.toString(), seed);
-    case QJsonValue::Array:
-        return qHash(value.toArray(), seed);
-    case QJsonValue::Object:
-        return qHash(value.toObject(), seed);
-    default: break;
-    }
-    return seed;
-}
-
-inline hash_type qHash(const QJsonObject &object, hash_type seed)
-{
-    QtPrivate::QHashCombine hash;
-    for (auto it = object.begin(), end = object.end(); it != end; ++it) {
-        const QString key = it.key();
-        const QJsonValue value = it.value();
-        seed = hash(seed, QPair<const QString&, const QJsonValue&>(key, value));
-    }
-    return seed;
-}
-
-inline hash_type qHash(const QJsonArray &array, hash_type seed)
-{
-    return qHashRange(array.begin(), array.end(), seed);
-}
-#endif
-
-inline hash_type qHash(const QJsonDocument &value, hash_type seed = 0)
+inline size_t qHash(const QJsonDocument &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -487,7 +458,7 @@ inline hash_type qHash(const QJsonDocument &value, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QEasingCurve &curve, hash_type seed = 0)
+inline size_t qHash(const QEasingCurve &curve, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -504,7 +475,7 @@ inline hash_type qHash(const QEasingCurve &curve, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QLine &line, hash_type seed = 0)
+inline size_t qHash(const QLine &line, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -516,7 +487,7 @@ inline hash_type qHash(const QLine &line, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QMargins &value, hash_type seed = 0)
+inline size_t qHash(const QMargins &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -530,7 +501,7 @@ inline hash_type qHash(const QMargins &value, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QMarginsF &value, hash_type seed = 0)
+inline size_t qHash(const QMarginsF &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -544,7 +515,7 @@ inline hash_type qHash(const QMarginsF &value, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QXmlStreamAttribute &value, hash_type seed = 0)
+inline size_t qHash(const QXmlStreamAttribute &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -560,7 +531,7 @@ inline hash_type qHash(const QXmlStreamAttribute &value, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QXmlStreamAttributes &value, hash_type seed = 0)
+inline size_t qHash(const QXmlStreamAttributes &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombineCommutative hash;
@@ -574,7 +545,7 @@ inline hash_type qHash(const QXmlStreamAttributes &value, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QTimeZone &value, hash_type seed = 0)
+inline size_t qHash(const QTimeZone &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -586,7 +557,7 @@ inline hash_type qHash(const QTimeZone &value, hash_type seed = 0)
 }
 
 #if QT_CONFIG(processenvironment)
-inline hash_type qHash(const QProcessEnvironment &value, hash_type seed = 0)
+inline size_t qHash(const QProcessEnvironment &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombineCommutative hash;
@@ -602,7 +573,7 @@ inline hash_type qHash(const QProcessEnvironment &value, hash_type seed = 0)
 }
 #endif
 
-inline hash_type qHash(const QXmlStreamEntityDeclaration &value, hash_type seed = 0)
+inline size_t qHash(const QXmlStreamEntityDeclaration &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -617,7 +588,7 @@ inline hash_type qHash(const QXmlStreamEntityDeclaration &value, hash_type seed 
     return seed;
 }
 
-inline hash_type qHash(const QXmlStreamNamespaceDeclaration &value, hash_type seed = 0)
+inline size_t qHash(const QXmlStreamNamespaceDeclaration &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -629,7 +600,7 @@ inline hash_type qHash(const QXmlStreamNamespaceDeclaration &value, hash_type se
     return seed;
 }
 
-inline hash_type qHash(const QXmlStreamNotationDeclaration &value, hash_type seed = 0)
+inline size_t qHash(const QXmlStreamNotationDeclaration &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -642,9 +613,9 @@ inline hash_type qHash(const QXmlStreamNotationDeclaration &value, hash_type see
     return seed;
 }
 
-hash_type qHash(const QMetaMethod &value, hash_type seed = 0);
+size_t qHash(const QMetaMethod &value, size_t seed = 0);
 
-inline hash_type qHash(const QStorageInfo &value, hash_type seed = 0)
+inline size_t qHash(const QStorageInfo &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -664,7 +635,7 @@ inline hash_type qHash(const QStorageInfo &value, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QElapsedTimer &value, hash_type seed = 0)
+inline size_t qHash(const QElapsedTimer &value, size_t seed = 0)
 {
     struct ElapsedTimer{
         qint64 t1;
@@ -681,12 +652,12 @@ inline hash_type qHash(const QElapsedTimer &value, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QMetaObject &value, hash_type seed = 0)
+inline size_t qHash(const QMetaObject &value, size_t seed = 0)
 {
     return qHash(qintptr(&value), seed);
 }
 
-inline hash_type qHash(const QMetaEnum &value, hash_type seed = 0)
+inline size_t qHash(const QMetaEnum &value, size_t seed = 0)
 {
     if(!value.isValid())
         return seed;
@@ -700,7 +671,7 @@ inline hash_type qHash(const QMetaEnum &value, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QMetaMethod &value, hash_type seed)
+inline size_t qHash(const QMetaMethod &value, size_t seed)
 {
     if(!value.isValid())
         return seed;
@@ -714,7 +685,7 @@ inline hash_type qHash(const QMetaMethod &value, hash_type seed)
     return seed;
 }
 
-inline hash_type qHash(const QMetaProperty &value, hash_type seed = 0)
+inline size_t qHash(const QMetaProperty &value, size_t seed = 0)
 {
     if(!value.isValid())
         return seed;
@@ -740,7 +711,7 @@ inline bool operator==(const QMetaProperty &value1, const QMetaProperty &value2)
             && value2.propertyIndex()==value2.propertyIndex();
 }
 
-inline hash_type qHash(const QMetaClassInfo &value, hash_type seed = 0)
+inline size_t qHash(const QMetaClassInfo &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -852,33 +823,15 @@ inline size_t qHash(const QUuid::Id128Bytes &value, size_t seed = 0){
 namespace QtMocConstants{}
 #endif
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 QDebug operator<<(QDebug out, const QByteArrayView &);
 
 struct QtJambiItemSelection{
     QtJambiItemSelection(std::initializer_list<QItemSelectionRange>);
     QtJambiItemSelection();
 };
-#endif
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-inline bool operator<(const QString &, const QString &) noexcept{return false;}
-inline bool operator<(const QChar &, const QChar &) noexcept{return false;}
-inline bool operator==(const QChar &, const QChar &) noexcept{return false;}
-#endif // QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 
 struct QtJambiStringList{
     QtJambiStringList() = delete;
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    QString join(const QString &sep);
-    QString join(QChar sep);
-    QStringList filter(const QString &str, Qt::CaseSensitivity cs);
-    QStringList filter(const QRegularExpression  &re);
-    int removeDuplicates();
-    void replaceInStrings(const QString &before, const QString &after, Qt::CaseSensitivity cs);
-    void replaceInStrings(const QRegularExpression &re, const QString &after);
-    void sort(Qt::CaseSensitivity cs);
-#else // QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     QtJambiStringList(std::initializer_list<QString>);
     QtJambiStringList(QList<QString>);
     void sort(Qt::CaseSensitivity cs);
@@ -894,7 +847,6 @@ struct QtJambiStringList{
     qsizetype indexOf(const QRegularExpression &re, qsizetype from);
     qsizetype lastIndexOf(const QRegularExpression &re, qsizetype from);
 #endif // QT_CONFIG(regularexpression)
-#endif // QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 };
 #endif //QTJAMBI_GENERATOR_RUNNING
 

@@ -29,22 +29,11 @@
 **
 ****************************************************************************/
 
-#include "qtjambiapi.h"
-#include <QtCore/QReadWriteLock>
-#include <QtCore/QMap>
-#include <QtCore/QSharedPointer>
-#include "containeraccess_p.h"
-#include "functionpointer.h"
-#include "registryutil_p.h"
-#include "utils_p.h"
-#include "qtjambilink_p.h"
-#include "java_p.h"
-#include "coreapi.h"
+#include "pch_p.h"
 
 QT_WARNING_DISABLE_GCC("-Winaccessible-base")
 QT_WARNING_DISABLE_CLANG("-Winaccessible-base")
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 QSharedPointer<class AutoPairAccess> getPairAccess(const QtPrivate::QMetaTypeInterface *iface){
     return findContainerAccess(iface->typeId.loadAcquire()).dynamicCast<AutoPairAccess>();
 }
@@ -89,26 +78,15 @@ void AutoPairAccess::dataStreamInFn(const QtPrivate::QMetaTypeInterface *iface, 
         access->dataStreamIn(s, ptr);
     }
 }
-#endif
 
 AutoPairAccess::AutoPairAccess(const AutoPairAccess& other)
     : AbstractPairAccess(), AbstractNestedPairAccess(),
-      m_keyMetaType(other.m_keyMetaType
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                                       .id()),
-      m_keyAlign(other.m_keyAlign
-#endif
-                                  ),
+      m_keyMetaType(other.m_keyMetaType),
       m_keyHashFunction(other.m_keyHashFunction),
       m_keyInternalToExternalConverter(other.m_keyInternalToExternalConverter),
       m_keyExternalToInternalConverter(other.m_keyExternalToInternalConverter),
       m_keyNestedContainerAccess(other.m_keyNestedContainerAccess),
-      m_valueMetaType(other.m_valueMetaType
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                                          .id()),
-      m_valueAlign(other.m_valueAlign
-#endif
-                                     ),
+      m_valueMetaType(other.m_valueMetaType),
       m_valueHashFunction(other.m_valueHashFunction),
       m_valueInternalToExternalConverter(other.m_valueInternalToExternalConverter),
       m_valueExternalToInternalConverter(other.m_valueExternalToInternalConverter),
@@ -124,24 +102,14 @@ AutoPairAccess::AutoPairAccess(const AutoPairAccess& other)
 }
 
 AutoPairAccess::AutoPairAccess(
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        int keyMetaType,
-        size_t keyAlign,
-#else
         const QMetaType& keyMetaType,
-#endif
         const QtJambiUtils::QHashFunction& keyHashFunction,
         const QtJambiUtils::InternalToExternalConverter& keyInternalToExternalConverter,
         const QtJambiUtils::ExternalToInternalConverter& keyExternalToInternalConverter,
         const QSharedPointer<AbstractContainerAccess>& keyNestedContainerAccess,
         PtrOwnerFunction keyOwnerFunction,
         AbstractContainerAccess::DataType keyDataType,
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        int valueMetaType,
-        size_t valueAlign,
-#else
         const QMetaType& valueMetaType,
-#endif
         const QtJambiUtils::QHashFunction& valueHashFunction,
         const QtJambiUtils::InternalToExternalConverter& valueInternalToExternalConverter,
         const QtJambiUtils::ExternalToInternalConverter& valueExternalToInternalConverter,
@@ -151,26 +119,16 @@ AutoPairAccess::AutoPairAccess(
         )
     :   AbstractPairAccess(), AbstractNestedPairAccess(),
       m_keyMetaType(keyMetaType),
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-      m_keyAlign(keyAlign),
-#endif
       m_keyHashFunction(keyHashFunction),
       m_keyInternalToExternalConverter(keyInternalToExternalConverter),
       m_keyExternalToInternalConverter(keyExternalToInternalConverter),
       m_keyNestedContainerAccess(keyNestedContainerAccess),
       m_valueMetaType(valueMetaType),
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-      m_valueAlign(valueAlign),
-#endif
       m_valueHashFunction(valueHashFunction),
       m_valueInternalToExternalConverter(valueInternalToExternalConverter),
       m_valueExternalToInternalConverter(valueExternalToInternalConverter),
       m_valueNestedContainerAccess(valueNestedContainerAccess),
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-      m_align(qMax(keyAlign, valueAlign)),
-#else
       m_align(qMax(m_keyMetaType.alignOf(), m_valueMetaType.alignOf())),
-#endif
       m_offset(0),
       m_size(0),
       m_keyOwnerFunction(keyOwnerFunction),
@@ -182,21 +140,12 @@ AutoPairAccess::AutoPairAccess(
             && m_keyMetaType.id()!=QMetaType::Void);
     Q_ASSERT(m_valueMetaType.id()!=QMetaType::UnknownType
             && m_valueMetaType.id()!=QMetaType::Void);
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    m_offset = m_keyMetaType.sizeOf();
-    if(m_offset%m_valueAlign>0)
-        m_offset += m_valueAlign-m_offset%m_valueAlign;
-    m_size = m_offset + m_valueMetaType.sizeOf();
-    if(m_size%m_align>0)
-        m_size += m_align-m_size%m_align;
-#else
     m_offset = m_keyMetaType.sizeOf();
     if(m_offset%m_valueMetaType.alignOf()>0)
         m_offset += m_valueMetaType.alignOf()-m_offset%m_valueMetaType.alignOf();
     m_size = m_offset + m_valueMetaType.sizeOf();
     if(m_size%m_align>0)
         m_size += m_align-m_size%m_align;
-#endif
 }
 
 void AutoPairAccess::dispose() { delete this; }
@@ -225,7 +174,6 @@ void* AutoPairAccess::constructContainer(void* result, const void* container) {
     return result;
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 void* AutoPairAccess::constructContainer(JNIEnv*, void* result, const ContainerAndAccessInfo& container) {
     return constructContainer(result, container.container);
 }
@@ -375,7 +323,6 @@ void AutoPairAccess::dataStreamIn(QDataStream &s, void *ptr){
         m_valueMetaType.construct(ptr, v.data());
     }
 }
-#endif
 
 void AutoPairAccess::assign(JNIEnv *, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) {
     assign(container.container, other.container);
@@ -396,7 +343,6 @@ void AutoPairAccess::swap(JNIEnv *, const ContainerInfo& container, const Contai
     if(container2.container){
         void* v1 = reinterpret_cast<char*>(container.container)+m_offset;
         void* v2 = reinterpret_cast<char*>(container2.container)+m_offset;
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
         auto kiface = m_keyMetaType.iface();
         if(kiface->moveCtr){
             void* tmpFirst = operator new(kiface->size);
@@ -406,9 +352,7 @@ void AutoPairAccess::swap(JNIEnv *, const ContainerInfo& container, const Contai
             m_keyMetaType.destruct(container2.container);
             kiface->moveCtr(kiface, container2.container, tmpFirst);
             m_keyMetaType.destroy(tmpFirst);
-        }else
-#endif
-        {
+        }else{
             void* tmpFirst = m_keyMetaType.create(container.container);
             m_keyMetaType.destruct(container.container);
             m_keyMetaType.construct(container.container, container2.container);
@@ -416,7 +360,6 @@ void AutoPairAccess::swap(JNIEnv *, const ContainerInfo& container, const Contai
             m_keyMetaType.construct(container2.container, tmpFirst);
             m_keyMetaType.destroy(tmpFirst);
         }
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
         auto viface = m_valueMetaType.iface();
         if(viface->moveCtr){
             void* tmpSecond = operator new(viface->size);
@@ -426,9 +369,7 @@ void AutoPairAccess::swap(JNIEnv *, const ContainerInfo& container, const Contai
             m_valueMetaType.destruct(v2);
             viface->moveCtr(viface, v2, tmpSecond);
             m_valueMetaType.destroy(tmpSecond);
-        }else
-#endif
-        {
+        }else{
             void* tmpSecond = m_valueMetaType.create(v1);
             m_valueMetaType.destruct(v1);
             m_valueMetaType.construct(v1, v2);
@@ -447,33 +388,19 @@ bool AutoPairAccess::destructContainer(void* container) {
 }
 
 int AutoPairAccess::registerContainer(const QByteArray& typeName) {
-    int newMetaType = QMetaType::type(typeName);
+    int newMetaType = QMetaType::fromName(typeName).id();
     if(newMetaType==QMetaType::UnknownType){
         if(typeName.startsWith("QPair<")){
-            newMetaType = QMetaType::type("std::p"+typeName.mid(2));
+            newMetaType = QMetaType::fromName("std::p"+typeName.mid(2)).id();
         }else if(typeName.startsWith("std::pair<")){
-            newMetaType = QMetaType::type("QP"+typeName.mid(6));
+            newMetaType = QMetaType::fromName("QP"+typeName.mid(6)).id();
         }
     }
     if(newMetaType==QMetaType::UnknownType){
         QSharedPointer<AutoPairAccess> access(new AutoPairAccess(*this), &containerDisposer);
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
         auto kiface = m_keyMetaType.iface();
         auto viface = m_valueMetaType.iface();
-#endif
         newMetaType = registerContainerMetaType(typeName,
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#if QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
-                                       qtjambi_function_pointer<16,void(void*)>([access](void* ptr){
-                                            access->destructContainer(ptr);
-                                       }, qHash(typeName)),
-                                       qtjambi_function_pointer<16,void*(void *, const void *)>([access](void* ptr, const void * other) -> void* {
-                                            return other ? access->constructContainer(ptr, other) : access->constructContainer(ptr);
-                                       }, qHash(typeName)),
-#endif //QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
-                                       uint(m_size),
-                                       ushort(m_align),
-#else
                                        (kiface->defaultCtr || !(kiface->flags & QMetaType::NeedsConstruction)) && (viface->defaultCtr || !(viface->flags & QMetaType::NeedsConstruction)) ? AutoPairAccess::defaultCtr : nullptr,
                                        (kiface->copyCtr || !(kiface->flags & QMetaType::NeedsConstruction)) && (viface->copyCtr || !(viface->flags & QMetaType::NeedsConstruction)) ? AutoPairAccess::copyCtr : nullptr,
                                        (kiface->moveCtr || !(kiface->flags & QMetaType::NeedsConstruction)) && (viface->moveCtr || !(viface->flags & QMetaType::NeedsConstruction)) ? AutoPairAccess::moveCtr : nullptr,
@@ -503,10 +430,9 @@ int AutoPairAccess::registerContainer(const QByteArray& typeName) {
                                        uint(m_size),
                                        ushort(m_align),
                                        QMetaType::UnknownType,
-#endif
                                        QMetaType::NeedsConstruction
                                                    | QMetaType::NeedsDestruction
-                                                   | QMetaType::MovableType,
+                                                   | QMetaType::RelocatableType,
                                        nullptr,
                                        nullptr,
                                        access);
@@ -516,173 +442,17 @@ int AutoPairAccess::registerContainer(const QByteArray& typeName) {
             size_t offset = m_offset;
             insertHashFunctionByMetaType(newMetaType,
                                             [offset, keyHash, valueHash]
-                                            (const void* ptr, hash_type seed)->hash_type{
+                                            (const void* ptr, size_t seed)->size_t{
                                                 if(ptr){
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                                                    uint h1 = keyHash(ptr, seed);
-                                                    uint h2 = valueHash(reinterpret_cast<const char*>(ptr)+offset, seed);
-                                                    return ((h1 << 16) | (h1 >> 16)) ^ h2 ^ seed;
-#else
-                                                    hash_type pairSeed = seed;
+                                                    size_t pairSeed = seed;
                                                     pairSeed = pairSeed ^ (keyHash(ptr, 0) + 0x9e3779b9 + (pairSeed << 6) + (pairSeed >> 2));
                                                     pairSeed = pairSeed ^ (valueHash(reinterpret_cast<const char*>(ptr)+offset, 0) + 0x9e3779b9 + (pairSeed << 6) + (pairSeed >> 2));
                                                     return pairSeed;
-#endif
                                                 }else{
                                                     return 0;
                                                 }
                                             });
         }
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        {
-            int to = qMetaTypeId<QtMetaTypePrivate::QPairVariantInterfaceImpl>();
-            typedef QtMetaTypePrivate::VariantData (*getFunc)(const void * const *p, int metaTypeId, uint flags);
-            struct ConverterFunction : QtPrivate::AbstractConverterFunction{
-                int _metaType_id_first;
-                uint _metaType_flags_first;
-                int _metaType_id_second;
-                uint _metaType_flags_second;
-                getFunc _getFirst;
-                getFunc _getSecond;
-
-                ConverterFunction(const QMetaType& keyMetaType, const QMetaType& valueMetaType, size_t offset)
-                    : QtPrivate::AbstractConverterFunction(convert),
-                      _metaType_id_first(keyMetaType.id()),
-                      _metaType_flags_first(AbstractContainerAccess::isPointerType(keyMetaType)),
-                      _metaType_id_second(valueMetaType.id()),
-                      _metaType_flags_second(AbstractContainerAccess::isPointerType(valueMetaType))
-                {
-                    _getFirst = [](const void * const *p, int metaTypeId, uint flags) -> QtMetaTypePrivate::VariantData {
-                                    return QtMetaTypePrivate::VariantData(metaTypeId, p, flags);
-                                };
-                    _getSecond = qtjambi_function_pointer<16,QtMetaTypePrivate::VariantData(const void * const *, int, uint)>(
-                                [offset](const void * const *p, int metaTypeId, uint flags) -> QtMetaTypePrivate::VariantData {
-                                    const void* snd = reinterpret_cast<const char*>(p)+offset;
-                                    return QtMetaTypePrivate::VariantData(metaTypeId, snd, flags);
-                                }, hash_type(offset));
-                }
-
-                static bool convert(const AbstractConverterFunction *_f, const void *src, void*target){
-                    const ConverterFunction* f = static_cast<const ConverterFunction*>(_f);
-                    struct PairVariantInterfaceImpl
-                    {
-                        const void *_pair;
-                        int _metaType_id_first;
-                        uint _metaType_flags_first;
-                        int _metaType_id_second;
-                        uint _metaType_flags_second;
-                        getFunc _getFirst;
-                        getFunc _getSecond;
-                    };
-                    new(target) PairVariantInterfaceImpl{src,
-                                f->_metaType_id_first,
-                                f->_metaType_flags_first,
-                                f->_metaType_id_second,
-                                f->_metaType_flags_second,
-                                f->_getFirst,
-                                f->_getSecond};
-                    return true;
-                }
-            };
-            registerConverter(new ConverterFunction(m_keyMetaType, m_valueMetaType, m_offset), newMetaType, to);
-        }
-        if((QMetaType::hasRegisteredComparators(m_keyMetaType.id())
-            || registeredComparator(m_keyMetaType.id())
-            || m_keyMetaType.id()<QMetaType::User
-            || AbstractContainerAccess::isPointerType(m_keyMetaType))
-                && (QMetaType::hasRegisteredComparators(m_valueMetaType.id())
-                || registeredComparator(m_valueMetaType.id())
-                || m_valueMetaType.id()<QMetaType::User
-                || AbstractContainerAccess::isPointerType(m_valueMetaType))){
-            struct Comparator : QtPrivate::AbstractComparatorFunction{
-                static bool lessThan(const AbstractComparatorFunction *_c, const void *a, const void *b){
-                    const Comparator* c = static_cast<const Comparator*>(_c);
-                    const void* a2 = reinterpret_cast<const char*>(a)+c->m_offset;
-                    const void* b2 = reinterpret_cast<const char*>(b)+c->m_offset;
-                    if(isLessThan(c->_metaType_id_first, a, b))
-                        return true;
-                    return isLessThan(c->_metaType_id_second, a2, b2);
-                }
-                static bool equals(const AbstractComparatorFunction *_c, const void *a, const void *b){
-                    const Comparator* c = static_cast<const Comparator*>(_c);
-                    const void* a2 = reinterpret_cast<const char*>(a)+c->m_offset;
-                    const void* b2 = reinterpret_cast<const char*>(b)+c->m_offset;
-                    return isEquals(c->_metaType_id_first, a, b) && isEquals(c->_metaType_id_second, a2, b2);
-                }
-                static void destroy(AbstractComparatorFunction *_c){
-                    delete static_cast<Comparator*>(_c);
-                }
-                QMetaType _metaType_id_first;
-                QMetaType _metaType_id_second;
-                size_t m_offset;
-
-                Comparator(const QMetaType& keyMetaType, const QMetaType& valueMetaType, size_t offset)
-                    : QtPrivate::AbstractComparatorFunction(lessThan, equals, destroy),
-                      _metaType_id_first(keyMetaType.id()),
-                      _metaType_id_second(valueMetaType.id()),
-                      m_offset(offset)
-                {
-
-                }
-            };
-            RegistryAPI::registerComparator(new Comparator(m_keyMetaType, m_valueMetaType, m_offset), newMetaType);
-        }
-        if((QMetaType::hasRegisteredDebugStreamOperator(m_keyMetaType.id())
-                && QMetaType::hasRegisteredDebugStreamOperator(m_valueMetaType.id()))
-                || (registeredDebugStreamOperator(m_keyMetaType.id())
-                    && registeredDebugStreamOperator(m_valueMetaType.id()))
-                || (m_keyMetaType.id()<QMetaType::User
-                    && m_valueMetaType.id()<QMetaType::User)
-                || (AbstractContainerAccess::isPointerType(m_keyMetaType)
-                    || AbstractContainerAccess::isPointerType(m_valueMetaType))){
-            struct DebugStreamFunction : QtPrivate::AbstractDebugStreamFunction{
-                static void stream(const AbstractDebugStreamFunction *_f, QDebug& d, const void *ptr){
-                    const DebugStreamFunction* f = static_cast<const DebugStreamFunction*>(_f);
-                    const void* ptr2 = reinterpret_cast<const char*>(ptr)+f->m_offset;
-                    d << "QPair(";
-                    CoreAPI::appendToDebugStream(d, f->_metaType_id_first, ptr);
-                    d << ",";
-                    CoreAPI::appendToDebugStream(d, f->_metaType_id_second, ptr2);
-                    d << ")";
-                }
-                static void destroy(AbstractDebugStreamFunction *_f){
-                    delete static_cast<DebugStreamFunction*>(_f);
-                }
-                int _metaType_id_first;
-                int _metaType_id_second;
-                size_t m_offset;
-
-                DebugStreamFunction(const QMetaType& keyMetaType, const QMetaType& valueMetaType, size_t offset)
-                    : QtPrivate::AbstractDebugStreamFunction(stream, destroy),
-                      _metaType_id_first(keyMetaType.id()),
-                      _metaType_id_second(valueMetaType.id()),
-                      m_offset(offset)
-                {
-
-                }
-            };
-            RegistryAPI::registerDebugStreamOperator(new DebugStreamFunction(m_keyMetaType, m_valueMetaType, m_offset), newMetaType);
-        }
-        {
-            int _metaType_id_first = m_keyMetaType.id();
-            int _metaType_id_second = m_valueMetaType.id();
-            size_t offset = m_offset;
-            QMetaType::registerStreamOperators(newMetaType,
-                                               qtjambi_function_pointer<16,void(QDataStream &, const void *)>(
-                                                                               [_metaType_id_first, _metaType_id_second, offset](QDataStream &s, const void * p){
-                                                                                   const void* snd = reinterpret_cast<const char*>(p)+offset;
-                                                                                   if(QMetaType::save(s, _metaType_id_first, p))
-                                                                                      QMetaType::save(s, _metaType_id_second, snd);
-                                                                               }, newMetaType),
-                                               qtjambi_function_pointer<16,void(QDataStream &, void *)>(
-                                                                               [_metaType_id_first, _metaType_id_second, offset](QDataStream &s, void * p){
-                                                                                   void* snd = reinterpret_cast<char*>(p)+offset;
-                                                                                   if(QMetaType::load(s, _metaType_id_first, p))
-                                                                                      QMetaType::load(s, _metaType_id_second, snd);
-                                                                               }, newMetaType)
-                                               );
-        }
-#else
         {
             const QMetaType to = QMetaType::fromType<QtMetaTypePrivate::QPairVariantInterfaceImpl>();
             QMetaType::ConverterFunction o = [newMetaType](const void *src, void *target)->bool{
@@ -713,7 +483,6 @@ int AutoPairAccess::registerContainer(const QByteArray& typeName) {
             };
             QMetaType::registerConverterFunction(o, QMetaType(newMetaType), to);
         }
-#endif
     }else{
         registerContainerAccess(newMetaType, this);
     }

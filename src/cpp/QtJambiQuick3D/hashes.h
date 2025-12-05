@@ -39,8 +39,8 @@ inline bool operator==(const QQuick3DGeometry::Attribute& a, const QQuick3DGeome
     return a.semantic==b.semantic && a.offset==b.offset && a.componentType==b.componentType;
 }
 
-inline hash_type qHash(const QQuick3DGeometry::Attribute &value){
-    hash_type hashCode = qHash(value.semantic);
+inline size_t qHash(const QQuick3DGeometry::Attribute &value){
+    size_t hashCode = qHash(value.semantic);
     hashCode = hashCode * 31 + qHash(value.offset);
     hashCode = hashCode * 31 + qHash(value.componentType);
     return hashCode;
@@ -48,8 +48,8 @@ inline hash_type qHash(const QQuick3DGeometry::Attribute &value){
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 1, 0)
 #include <QtQuick3D/QQuick3DInstancing>
-inline hash_type qHash(const QQuick3DInstancing::InstanceTableEntry &value){
-    hash_type hashCode = qHash(value.row0);
+inline size_t qHash(const QQuick3DInstancing::InstanceTableEntry &value){
+    size_t hashCode = qHash(value.row0);
     hashCode = hashCode * 31 + qHash(value.row1);
     hashCode = hashCode * 31 + qHash(value.row2);
     hashCode = hashCode * 31 + qHash(value.color);

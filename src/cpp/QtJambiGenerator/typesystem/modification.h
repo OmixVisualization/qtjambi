@@ -129,6 +129,7 @@ struct ArgumentModification {
 
     //! The text given for the new type of the argument
     QString modified_type;
+    QString modified_java_type;
     QString modified_jni_type;
     QString modified_name;
 
@@ -196,7 +197,9 @@ struct Modification {
         NoKotlinGetter =        0x02000000,
         ForcedExplicit =        0x04000000,
         ForcedImplicit =        0x08000000,
-        NoImplicitArguments =   0x10000000
+        NoImplicitArguments =   0x10000000,
+        IsTextStreamFunction =  0x20000000,
+        PullDown =              0x40000000
     };
 
     Modification() : modifiers(0) { }
@@ -221,6 +224,7 @@ struct Modification {
     bool isForcedExplicit() const { return (modifiers & ForcedExplicit) == ForcedExplicit; }
     bool isForcedImplicit() const { return (modifiers & ForcedImplicit) == ForcedImplicit; }
     bool isNoImplicitArguments() const { return (modifiers & NoImplicitArguments) == NoImplicitArguments; }
+    bool isTextStreamFunction() const { return (modifiers & IsTextStreamFunction) == IsTextStreamFunction; }
     QString accessModifierString() const;
 
     bool isDeprecated() const { return modifiers & Deprecated; }
@@ -296,21 +300,14 @@ struct FunctionModification: public AbstractFunctionModification {
 typedef QList<FunctionModification> FunctionModificationList;
 
 struct FieldModification: public Modification {
-    FieldModification()
-        : name(),
-          modified_type(),
-          modified_jni_type(),
-          ownerships(),
-          referenceCounts(),
-          conversion_rules(),
-          no_null_pointers(false)
-    {}
-    bool isReadable() const { return modifiers & Readable; }
-    bool isWritable() const { return modifiers & Writable; }
+    FieldModification();
+    bool isReadable() const;
+    bool isWritable() const;
 
     QString name;
     //! The text given for the new type of the argument
     QString modified_type;
+    QString modified_java_type;
     QString modified_jni_type;
 
     //! The new definition of ownership for a specific argument

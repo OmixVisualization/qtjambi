@@ -27,8 +27,7 @@
 **
 ****************************************************************************/
 
-#include "metainfo.h"
-#include "java_p.h"
+#include "pch_p.h"
 
 jobject MetaInfoAPI::internalAccess(JNIEnv *env, jclass){
     return Java::QtJambi::AccessUtility::instance(env);

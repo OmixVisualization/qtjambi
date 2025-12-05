@@ -30,20 +30,7 @@
 #include <QtCore/qcompilerdetection.h>
 QT_WARNING_DISABLE_DEPRECATED
 
-#include "qtjambiapi.h"
-#include <QtCore/QtCore>
-#include "java_p.h"
-#include "typemanager_p.h"
-#include "qtjambilink_p.h"
-#include "jobjectwrapper.h"
-#include "coreapi.h"
-#include "utils_p.h"
-
-#include <stdlib.h>
-#include <unordered_set>
-#include <unordered_map>
-#include <set>
-#include "qtjambi_cast.h"
+#include "pch_p.h"
 
 size_t getValueSizeForClass(JNIEnv *env, jclass object_class)
 {

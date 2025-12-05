@@ -39,3 +39,10 @@ HEADERS += \
 lessThan(QT_MAJOR_VERSION, 6) : linux-g++* : {
     CONFIG+=use_gold_linker
 }
+
+!ios:{
+    PRECOMPILED_HEADER = pch_p.h
+    CONFIG += precompile_header
+}else{
+    HEADERS += pch_p.h
+}

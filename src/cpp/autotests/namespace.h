@@ -89,9 +89,9 @@ namespace NameSpace
     };
 
 #ifndef QTJAMBI_GENERATOR_RUNNING
-    inline hash_type qHash(const ValueA & v, hash_type seed = 0)
+    inline size_t qHash(const ValueA & v, size_t seed = 0)
     {
-        hash_type hashCode = seed;
+        size_t hashCode = seed;
         hashCode = hashCode * 31 + ::qHash(v.getX());
         return hashCode;
     }
@@ -180,7 +180,7 @@ namespace NameSpace
 };
 
 #ifdef QTJAMBI_GENERATOR_RUNNING
-hash_type qHash(const NameSpace::ValueA & v);
+size_t qHash(const NameSpace::ValueA & v);
 #endif
 
 

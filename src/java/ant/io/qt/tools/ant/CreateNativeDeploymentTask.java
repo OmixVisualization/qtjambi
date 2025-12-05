@@ -429,7 +429,6 @@ public class CreateNativeDeploymentTask extends Task {
 						}
 					}
 				}
-				
 				java.io.File libFile = new java.io.File(new java.io.File(builddir, _libdir), libName);
 				java.io.File includeDir = new java.io.File(new java.io.File(builddir, "include"), name);
 				java.io.File target = new java.io.File(targetLibDir, libName);

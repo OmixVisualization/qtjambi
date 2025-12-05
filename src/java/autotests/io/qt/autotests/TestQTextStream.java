@@ -40,6 +40,7 @@ import java.nio.CharBuffer;
 import org.junit.Assert;
 import org.junit.Test;
 
+import io.qt.core.QDebug;
 import io.qt.core.QFile;
 import io.qt.core.QIODevice;
 import io.qt.core.QTemporaryFile;
@@ -70,6 +71,7 @@ public class TestQTextStream extends ApplicationInitializer {
             stream.dispose();
             stream = new QTextStream(s, new QIODevice.OpenMode(QIODevice.OpenModeFlag.ReadWrite));
             stream.writeString(buffer);
+            stream.qSetRealNumberPrecision(2);
             stream.flush();
             Assert.assertEquals("TestString\n55 HeiAsBuffer", s.toString());
             stream.dispose();
@@ -155,19 +157,14 @@ public class TestQTextStream extends ApplicationInitializer {
             f.open(QFile.OpenModeFlag.WriteOnly);
             QTextStream stream = new QTextStream(f);
 
-            stream.writeInt(1);
-            stream.writeString(" ");
-            stream.writeByte((byte) 'u');
-            stream.writeString(" ");
-            stream.writeShort((short) 24);
-            stream.writeString(" ");
-            stream.writeInt(25);
-            stream.writeString(" ");
-            stream.writeLong(26);
-            stream.writeString(" ");
-            stream.writeFloat(24.5f);
-            stream.writeString(" ");
-            stream.writeDouble(26.4);
+            stream.append(1).endl()
+	            .append((byte) 'u').endl()
+	            .append((short) 24).endl()
+	            .append(25).endl()
+	            .append(26).endl()
+	            .append(24.5f).endl()
+	            .append(26.4).endl()
+	            .qSetRealNumberPrecision(3).append(28.222);
             f.close();
         }
 
@@ -194,6 +191,60 @@ public class TestQTextStream extends ApplicationInitializer {
             stream.skipWhiteSpace();
 
             assertEquals(26.4, stream.readDouble(), 0.0);
+            stream.skipWhiteSpace();
+            assertEquals(28.2, stream.readDouble(), 0.0);
+            stream.skipWhiteSpace();
+            f.close();
+        }
+        f.remove();
+        f.dispose();
+    }
+
+    @Test public void testNumbersWithQDebug() {
+        QFile f = new QTemporaryFile();
+
+        // Write out...
+        {
+            f.open(QFile.OpenModeFlag.WriteOnly);
+
+            try(QDebug dbg = new QDebug(f)){
+	            dbg.append(1).endl()
+		            .append((byte) 'u').endl()
+		            .append((short) 24).endl()
+		            .append(25).endl()
+		            .append(26).endl()
+		            .append(24.5f).endl()
+		            .append(26.4).endl()
+		            .qSetRealNumberPrecision(3).append(28.222);
+            }
+            f.close();
+        }
+
+        {
+            f.open(QFile.OpenModeFlag.ReadOnly);
+            QTextStream stream = new QTextStream(f);
+
+            assertTrue(stream.readInt() == 1);
+            stream.skipWhiteSpace();
+
+            assertEquals((byte) 'u', stream.readByte());
+            stream.skipWhiteSpace();
+
+            assertEquals((short) 24, stream.readShort());
+            stream.skipWhiteSpace();
+
+            assertEquals(25, stream.readInt());
+            stream.skipWhiteSpace();
+
+            assertEquals(26l, stream.readLong());
+            stream.skipWhiteSpace();
+
+            assertEquals((float) 24.5, stream.readFloat(), 0.0);
+            stream.skipWhiteSpace();
+
+            assertEquals(26.4, stream.readDouble(), 0.0);
+            stream.skipWhiteSpace();
+            assertEquals(28.2, stream.readDouble(), 0.0);
             stream.skipWhiteSpace();
             f.close();
         }

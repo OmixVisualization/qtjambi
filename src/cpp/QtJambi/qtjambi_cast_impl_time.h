@@ -36,16 +36,6 @@
 
 namespace QtJambiPrivate {
 
-template<bool forward, bool has_scope, bool is_pointer, bool is_const, bool is_reference, typename NativeType>
-struct qtjambi_jnitype_crono_duration_cast{
-    Q_STATIC_ASSERT_X(false && !has_scope, "Cannot cast types");
-};
-
-template<bool forward, bool has_scope, bool is_pointer, bool is_const, bool is_reference, typename NativeType>
-struct qtjambi_jnitype_crono_time_point_cast{
-    Q_STATIC_ASSERT_X(false && !has_scope, "Cannot cast types");
-};
-
 template<intmax_t num, intmax_t den>
 struct dutation_cast_type{
     using type = std::chrono::seconds;
@@ -66,85 +56,65 @@ struct dutation_cast_type<1, std::micro::den>{
     using type = std::chrono::nanoseconds;
 };
 
-template<bool has_scope, bool is_pointer, bool is_const, bool is_reference, typename NativeType>
-struct qtjambi_jnitype_crono_duration_cast<true, has_scope, is_pointer, is_const, is_reference, NativeType>{
+template<bool forward, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename NativeType, typename... Args>
+struct qtjambi_jnitype_crono_duration_cast{
     typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
+    typedef typename std::conditional<is_reference, typename std::conditional<is_rvalue, typename std::add_rvalue_reference<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_in;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
-        NativeType_c _in = deref_ptr<is_pointer, NativeType_c>::deref(in);
-        return QtJambiAPI::convertDuration(env, std::chrono::duration_cast<typename dutation_cast_type<NativeType::period::num, NativeType::period::den>::type>(_in));
+    typedef typename std::conditional<forward, NativeType_in, jobject>::type In;
+    typedef typename std::conditional<forward, jobject, NativeType_out>::type Out;
+
+    static Out cast(In in, Args... args){
+        if constexpr(forward){
+            Q_STATIC_ASSERT_X(cast_var_args<Args...>::hasJNIEnv, "Cannot cast to jobject without JNIEnv.");
+            auto env = cast_var_args<Args...>::env(args...);
+            NativeType_c _in = deref_ptr<is_pointer, NativeType_c>::deref(in);
+            return QtJambiAPI::convertDuration(env, std::chrono::duration_cast<typename dutation_cast_type<NativeType::period::num, NativeType::period::den>::type>(_in));
+        }else{
+            if constexpr(is_reference || is_pointer){
+                Q_STATIC_ASSERT_X(!is_reference || cast_var_args<Args...>::hasScope, "Cannot cast jobject to std::chrono &");
+                if(!in)
+                    return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, NativeType, Args...>::convert(nullptr, args...);
+                NativeType value = qtjambi_jnitype_crono_duration_cast<false, false, false, false, false, NativeType, Args...>::cast(in, args...);
+                return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, NativeType, Args...>::convert(std::move(value), args...);
+            }else{
+                auto env = cast_var_args<Args...>::env(args...);
+                QPair<std::chrono::seconds, std::chrono::nanoseconds> time  = QtJambiAPI::readDuration(env, in);
+                return std::chrono::duration_cast<NativeType>(time.first + time.second);
+            }
+        }
     }
 };
 
-template<bool has_scope, bool is_pointer, bool is_const, bool is_reference, typename NativeType>
-struct qtjambi_jnitype_crono_time_point_cast<true, has_scope, is_pointer, is_const, is_reference, NativeType>{
+template<bool forward, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename NativeType, typename... Args>
+struct qtjambi_jnitype_crono_time_point_cast{
     typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
+    typedef typename std::conditional<is_reference, typename std::conditional<is_rvalue, typename std::add_rvalue_reference<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_in;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
-        NativeType_c _in = deref_ptr<is_pointer, NativeType_c>::deref(in);
-        return QtJambiAPI::convertTimePointFromEpoch(env, std::chrono::duration_cast<typename dutation_cast_type<NativeType::period::num, NativeType::period::den>::type>(_in.time_since_epoch()));
-    }
-};
+    typedef typename std::conditional<forward, NativeType_in, jobject>::type In;
+    typedef typename std::conditional<forward, jobject, NativeType_out>::type Out;
 
-template<bool has_scope, bool is_const, typename NativeType>
-struct qtjambi_jnitype_crono_duration_cast<false, has_scope, false, is_const, false, NativeType>{
-    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
-    typedef typename std::conditional<false, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
-    typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-
-    static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope*){
-        QPair<std::chrono::seconds, std::chrono::nanoseconds> time  = QtJambiAPI::readDuration(env, in);
-        return std::chrono::duration_cast<NativeType>(time.first + time.second);
-    }
-};
-
-template<bool has_scope, bool is_pointer, bool is_const, bool is_reference, typename NativeType>
-struct qtjambi_jnitype_crono_duration_cast<false, has_scope, is_pointer, is_const, is_reference, NativeType>{
-    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    Q_STATIC_ASSERT_X(!is_reference || has_scope, "Cannot cast jobject to std::chrono &");
-
-    static NativeType_out cast(JNIEnv *env, jobject in, const char*name, QtJambiScope* scope){
-        if(!in)
-            return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, has_scope, NativeType>::convert(env, scope, nullptr);
-        NativeType value = qtjambi_jnitype_crono_duration_cast<false, has_scope, false, false, false, NativeType>::cast(env, in, name, scope);
-        return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, has_scope, NativeType>::convert(env, scope, std::move(value));
-    }
-};
-
-template<bool has_scope, bool is_const, typename NativeType>
-struct qtjambi_jnitype_crono_time_point_cast<false, has_scope, false, is_const, false, NativeType>{
-    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
-    typedef typename std::conditional<false, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
-    typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-
-    static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope*){
-        QPair<std::chrono::seconds, std::chrono::nanoseconds> time  = QtJambiAPI::readTimePoint(env, in);
-        return NativeType(std::chrono::duration_cast<typename NativeType::duration>(time.first + time.second));
-    }
-};
-
-template<bool has_scope, bool is_pointer, bool is_const, bool is_reference, typename NativeType>
-struct qtjambi_jnitype_crono_time_point_cast<false, has_scope, is_pointer, is_const, is_reference, NativeType>{
-    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    Q_STATIC_ASSERT_X(!is_reference || has_scope, "Cannot cast jobject to std::chrono &");
-
-    static NativeType_out cast(JNIEnv *env, jobject in, const char*name, QtJambiScope* scope){
-        if(!in)
-            return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, has_scope, NativeType>::convert(env, scope, nullptr);
-        NativeType value = qtjambi_jnitype_crono_time_point_cast<false, has_scope, false, false, false, NativeType>::cast(env, in, name, scope);
-        return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, has_scope, NativeType>::convert(env, scope, std::move(value));
+    static Out cast(In in, Args... args){
+        if constexpr(forward){
+            Q_STATIC_ASSERT_X(cast_var_args<Args...>::hasJNIEnv, "Cannot cast to jobject without JNIEnv.");
+            auto env = cast_var_args<Args...>::env(args...);
+            NativeType_c _in = deref_ptr<is_pointer, NativeType_c>::deref(in);
+            return QtJambiAPI::convertTimePointFromEpoch(env, std::chrono::duration_cast<typename dutation_cast_type<NativeType::period::num, NativeType::period::den>::type>(_in.time_since_epoch()));
+        }else{
+            if constexpr(is_reference || is_pointer){
+                Q_STATIC_ASSERT_X(!is_reference || cast_var_args<Args...>::hasScope, "Cannot cast jobject to std::chrono &");
+                if(!in)
+                    return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, NativeType, Args...>::convert(nullptr, args...);
+                NativeType value = qtjambi_jnitype_crono_time_point_cast<false, false, false, false, false, NativeType, Args...>::cast(in, args...);
+                return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, NativeType, Args...>::convert(std::move(value), args...);
+            }else{
+                auto env = cast_var_args<Args...>::env(args...);
+                QPair<std::chrono::seconds, std::chrono::nanoseconds> time  = QtJambiAPI::readTimePoint(env, in);
+                return NativeType(std::chrono::duration_cast<typename NativeType::duration>(time.first + time.second));
+            }
+        }
     }
 };
 

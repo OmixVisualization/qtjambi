@@ -149,6 +149,9 @@
         <condition property="less.jdk21" value="true">
 			<less arg1="${target.java.version}" arg2="21"/>
         </condition>
+        <condition property="less.jdk24" value="true">
+			<less arg1="${target.java.version}" arg2="24"/>
+        </condition>
 		<property name="qtjambi.isqt${qtjambi.soname.version.major}" value="true"/>
         <fileset id="qtjambi.autotest.classes" dir="${java.srcdir}/autotests">
             <include name="io/qt/**/Test${test.includes}.java"/>
@@ -241,15 +244,17 @@
             <exclude name="io/qt/**/Test*SvgWidgets.java" unless="${qtjambi.svgwidgets.any.true}"/>
             <exclude name="io/qt/**/Test*TextToSpeech.java" unless="${qtjambi.texttospeech.any.true}"/>
             <exclude name="io/qt/**/Test*UITools.java" unless="${qtjambi.uitools.any.true}"/>
+            <exclude name="io/qt/**/Test*WebSockets.java" unless="${qtjambi.websockets.any.true}"/>
             <exclude name="io/qt/**/Test*WebChannel.java" unless="${qtjambi.webchannel.any.true}"/>
             <exclude name="io/qt/**/Test*WebChannelQuick.java" unless="${qtjambi.webchannelquick.any.true}"/>
-            <exclude name="io/qt/**/TestWebChannelQuickOnEngine.java" unless="${qtjambi.webenginecore.any.true}"/>
-            <exclude name="io/qt/**/TestWebChannelQuickOnView.java" unless="${qtjambi.webview.any.true}"/>
+            <exclude name="io/qt/**/TestWebChannelOnEngine.java" unless="${qtjambi.webenginequick.any.true}"/>
+            <exclude name="io/qt/**/TestWebChannelOnView.java" unless="${qtjambi.webview.any.true}"/>
             <exclude name="io/qt/**/Test*WebEngine.java" unless="${qtjambi.webengine.any.true}"/>
             <exclude name="io/qt/**/Test*WebEngineCore.java" unless="${qtjambi.webenginecore.any.true}"/>
             <exclude name="io/qt/**/Test*WebEngineQuick.java" unless="${qtjambi.webenginequick.any.true}"/>
             <exclude name="io/qt/**/Test*WebEngineWidgets.java" unless="${qtjambi.webenginewidgets.any.true}"/>
             <exclude name="io/qt/**/Test*WebSockets.java" unless="${qtjambi.websockets.any.true}"/>
+            <exclude name="io/qt/**/TestWebSocketsOnEngine.java" unless="${qtjambi.webenginequick.any.true}"/>
             <exclude name="io/qt/**/Test*WebView.java" unless="${qtjambi.webview.any.true}"/>
             <exclude name="io/qt/**/Test*XmlPatterns.java" unless="${qtjambi.xmlpatterns.any.true}"/>
             <exclude name="io/qt/**/Test*Pdf.java" unless="${qtjambi.pdf.any.true}"/>
@@ -265,6 +270,7 @@
             <exclude name="io/qt/**/TestQScript*.java" unless="${qtjambi.script.any.true}"/>
             <exclude name="io/qt/**/TestWebEngineQuickQt5.java" unless="${qtjambi.webengine.any.true}"/>
             <exclude name="io/qt/**/TestWebEngineQ*.java" unless="${qtjambi.webenginequick.any.true}"/>
+            <exclude name="io/qt/**/TestWebSockets*.java" unless="${qtjambi.websockets.any.true}"/>
             <exclude name="io/qt/**/TestWebChannel*.java" unless="${qtjambi.webchannel.any.true}"/>
             <exclude name="io/qt/**/TestWebChannelQuick*.java" unless="${qtjambi.webchannelquick.any.true}"/>
             <exclude name="io/qt/**/TestWebView*.java" unless="${qtjambi.webview.any.true}"/>
@@ -408,13 +414,6 @@
             </then>
         </if>
 		<if>
-			<equals arg1="${qtjambi.osname}" arg2="ios"/>
-			<then>
-				<antcall inheritrefs="true" target="create-ios-bundles">
-				</antcall>
-			</then>
-        </if>
-		<if>
 			<or>
 				<equals arg1="${qtjambi.osname}" arg2="android"/>
 				<equals arg1="${qtjambi.osname}" arg2="android-arm"/>
@@ -440,8 +439,83 @@
 					<param name="qtjambi.android.osname" value="android-x64"/>
 				</antcall>
 			</then>
+			<else>
+				<if>
+					<equals arg1="${qtjambi.osname}" arg2="ios"/>
+					<then>
+						<antcall inheritrefs="true" target="create-ios-bundles">
+						</antcall>
+					</then>
+					<else>
+						<antcall inheritrefs="true" target="create-bundle">
+							<param name="qtjambi.builddir" location="${outputDir}/${qtjambi.osname}/tests"/>
+						</antcall>
+					</else>
+				</if>
+			</else>
 		</if>
     </target>
+	<target name="create-bundle">
+		<create-native-deployment outputDirectory="${outputDir}/${qtjambi.osname}/tests" 
+									tempDirectory="${outputDir}/${qtjambi.osname}/tests"
+									debug="false" module="qtjambi.autotests" 
+									libraries="autotests" 
+									jarFile="${outputDir}/${qtjambi.osname}/tests/qtjambi-autotests-native-${qtjambi.osname}-${qtjambi.jar.version}.jar"
+									forcedebuginfo="false"/>
+		<if>
+			<not>
+				<equals arg1="${library.includes}" arg2=""/>
+			</not>
+			<then>
+				<jar destfile="${outputDir}/${qtjambi.osname}/tests/qtjambi-autotests-native-${qtjambi.osname}-${qtjambi.jar.version}.jar">
+					<manifest>
+						<attribute name="Built-By" value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
+						<attribute name="Bundle-Name"      value="qtjambi.autotests native library"/>
+						<attribute name="Bundle-Description"      value="qtjambi.autotests native library"/>
+						<attribute name="Bundle-License"         value="GNU LESSER GENERAL PUBLIC LICENSE Version 2.1"/>
+						<attribute name="Bundle-Version"          value="${qtjambi.jar.version}"/>
+						<attribute name="Bundle-ManifestVersion" value="2"/>
+					</manifest>
+					<fileset dir="${outputDir}/${qtjambi.osname}/tests" includes="${library.includes}"/>
+					<fileset dir="${outputDir}/${qtjambi.osname}/tests" includes="META-INF/*"/>
+				</jar>
+			</then>
+        </if>
+		<delete dir="${outputDir}/${qtjambi.osname}/tests/META-INF" failonerror="false"/>
+		<if>
+			<and>
+				<istrue value="${qtjambi.force.debug.info}"/>
+			</and>
+			<then>
+				<create-native-deployment outputDirectory="${outputDir}/${qtjambi.osname}/tests" 
+											tempDirectory="${outputDir}/${qtjambi.osname}/tests"
+											debug="false" module="qtjambi.autotests" 
+											libraries="autotests" 
+											jarFile="${outputDir}/${qtjambi.osname}/tests/qtjambi-autotests-debuginfo-${qtjambi.osname}-${qtjambi.jar.version}.jar"
+											forcedebuginfo="true"/>
+				<if>
+					<not>
+						<equals arg1="${library.includes}" arg2=""/>
+					</not>
+					<then>
+						<jar destfile="${outputDir}/${qtjambi.osname}/tests/qtjambi-autotests-debuginfo-${qtjambi.osname}-${qtjambi.jar.version}.jar">
+							<manifest>
+								<attribute name="Built-By" value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
+								<attribute name="Bundle-Name"      value="qtjambi.autotests debuginfo"/>
+								<attribute name="Bundle-Description"      value="qtjambi.autotests native library"/>
+								<attribute name="Bundle-License"         value="GNU LESSER GENERAL PUBLIC LICENSE Version 2.1"/>
+								<attribute name="Bundle-Version"          value="${qtjambi.jar.version}"/>
+								<attribute name="Bundle-ManifestVersion" value="2"/>
+							</manifest>
+							<fileset dir="${outputDir}/${qtjambi.osname}/tests" includes="${library.includes}"/>
+							<fileset dir="${outputDir}/${qtjambi.osname}/tests" includes="META-INF/*"/>
+						</jar>
+					</then>
+				</if>
+				<delete dir="${outputDir}/${qtjambi.osname}/tests/META-INF" failonerror="false"/>
+			</then>
+		</if>
+	</target>
 	<target name="create-android-bundles">
 		<if>
 			<available file="${outputDir}/${qtjambi.osname}/tests/lib/libautotests_${qtjambi.android.abi}.so"/>
@@ -643,10 +717,30 @@
 				</or>
 			</not>
 			<then>
+				<if>
+					<less arg1="${target.java.version}" arg2="19"/>
+					<then>
+						<property name="javaext-version" value="17"/>
+						<property name="enablepreview" value="-J-Dx=0"/>
+					</then>
+					<else>
+						<if>
+							<less arg1="${target.java.version}" arg2="21"/>
+							<then>
+								<property name="javaext-version" value="${target.java.version}"/>
+								<property name="enablepreview" value="--enable-preview"/>
+							</then>
+							<else>
+								<property name="javaext-version" value="21"/>
+								<property name="enablepreview" value="-J-Dx=0"/>
+							</else>
+						</if>
+					</else>
+				</if>
 				<javac destdir="${test.javaext.outdir}" debug="true" srcdir="${test.javaext.srcoutdir}"
-						includeantruntime="false" encoding="UTF-8" source="${target.java.version}" target="${target.java.version}">
+						fork="true" includeantruntime="false" encoding="UTF-8" release="${javaext-version}">
 					<compilerarg value="-Xlint:-deprecation,-unchecked,-options,-preview" />
-					<compilerarg value="--enable-preview" />
+					<compilerarg value="${enablepreview}" />
 					<classpath>
 						<fileset dir="${deploymentdir}">
 							<include name="qtjambi*-${qtjambi.jar.version}.jar"/>
@@ -673,9 +767,6 @@
 				<attribute name="Bundle-Name"             value="QtJambi Autotests"/>
 				<attribute name="Bundle-RequiredExecutionEnvironment" value="${minimum.java.version}"/>
 				<attribute name="Bundle-Version"          value="${qtjambi.version.bundle}"/>
-				<attribute name="QtJambi-Plugin-Metadata" value="${plugin.metadata}"/>
-				<attribute name="QtJambi-Plugin-Class"    value="${plugin.class.name}"/>
-				<attribute name="QtJambi-Plugin-Name"    value="${module}"/>
 			</manifest>
 			<fileset dir="${test.java.outdir}"/>
 			<fileset dir="${test.javaext.outdir}"/>
@@ -782,139 +873,82 @@
 				<property name="jambiLib"      location="${deploymentdir}/platforms/${qtjambi.osname}/${kind}/lib"/>
 				<property name="jambiBin"      location="${deploymentdir}/platforms/${qtjambi.osname}/${kind}/bin"/>
 				<if>
-					<equals arg1="${jdk-exec-version}" arg2="8"/>
+					<and>
+						<isset property="test.jvm"/>
+						<available file="${test.jvm}" type="file"/>
+					</and>
 					<then>
-						<path id="qtjambi.autotest.classes.junit">
-							<fileset refid="qtjambi.autotest.classes"/>
-						</path>
-						<property name="qtjambi.autotest.extended" value="qtjambi.autotest.empty"/>
+						<echo>test.jvm: ${test.jvm}
+						</echo>
 						<if>
-							<os family="windows"/>
+							<equals arg1="${jdk-exec-version}" arg2="8"/>
 							<then>
-								<property name="test.jvm" location="${java8.home.target}/bin/java.exe"/>
+								<path id="qtjambi.autotest.classes.junit">
+									<fileset refid="qtjambi.autotest.classes"/>
+								</path>
 							</then>
 							<else>
-								<property name="test.jvm" location="${java8.home.target}/bin/java"/>
+								<path id="qtjambi.autotest.classes.junit">
+									<fileset refid="qtjambi.autotest.classes"/>
+									<fileset refid="qtjambi.autotest.jdkextended.classes"/>
+								</path>
 							</else>
-						</if>
-						<if>
-							<and>
-								<not>
-									<available file="${test.jvm}" type="file"/>
-								</not>
-								<istrue value="${check.jdk8}"/>
-							</and>
-							<then>
-								<fail message="No jdk8 available. Please specify JAVA8_HOME_TARGET environment variable."/>
-							</then>
 						</if>
 					</then>
 					<else>
-						<path id="qtjambi.autotest.classes.junit">
-							<fileset refid="qtjambi.autotest.classes"/>
-							<fileset refid="qtjambi.autotest.jdkextended.classes"/>
-						</path>
 						<if>
-							<equals arg1="${jdk-exec-version}" arg2="arm64"/>
+							<equals arg1="${jdk-exec-version}" arg2="8"/>
 							<then>
-								<property name="test.jvm" location="${java.arm64.home.target}/bin/java"/>
-							</then>
-							<else>
+								<path id="qtjambi.autotest.classes.junit">
+									<fileset refid="qtjambi.autotest.classes"/>
+								</path>
+								<property name="qtjambi.autotest.extended" value="qtjambi.autotest.empty"/>
 								<if>
-									<equals arg1="${jdk-exec-version}" arg2="x64"/>
+									<os family="windows"/>
 									<then>
-										<property name="test.jvm" location="${java.x64.home.target}/bin/java"/>
+										<property name="test.jvm" location="${java8.home.target}/bin/java.exe"/>
+									</then>
+									<else>
+										<property name="test.jvm" location="${java8.home.target}/bin/java"/>
+									</else>
+								</if>
+								<if>
+									<and>
+										<not>
+											<available file="${test.jvm}" type="file"/>
+										</not>
+										<istrue value="${check.jdk8}"/>
+									</and>
+									<then>
+										<fail message="No jdk8 available. Please specify JAVA8_HOME_TARGET environment variable."/>
 									</then>
 								</if>
-							</else>
-						</if>
-						<if>
-							<os family="windows"/>
-							<then>
-								<property name="test.jvm" location="${java.home.target}/bin/java.exe"/>
+							</then>
+							<else>
+								<path id="qtjambi.autotest.classes.junit">
+									<fileset refid="qtjambi.autotest.classes"/>
+									<fileset refid="qtjambi.autotest.jdkextended.classes"/>
+								</path>
 								<if>
-									<equals arg1="${qtjambi.osname}" arg2="windows-arm64"/>
+									<equals arg1="${jdk-exec-version}" arg2="arm64"/>
 									<then>
-										<loadproperties srcFile="${java.home.target}/release" prefix="fork-jvm">
-											<filterchain>
-												<linecontains>
-													<contains value="OS_ARCH"/>
-												</linecontains>
-											</filterchain>
-										</loadproperties>
-										<if>
-											<not>
-												<equals arg1="${fork-jvm.OS_ARCH}" arg2="&quot;aarch64&quot;"/>
-											</not>
-											<then>
-												<property name="skip-unittests" value="true"/>
-											</then>
-										</if>
+										<property name="test.jvm" location="${java.arm64.home.target}/bin/java"/>
 									</then>
 									<else>
 										<if>
-											<or>
-												<equals arg1="${qtjambi.osname}" arg2="windows-x64"/>
-												<equals arg1="${qtjambi.osname}" arg2="windows-llvm-mingw-x64"/>
-												<equals arg1="${qtjambi.osname}" arg2="windows-mingw-x64"/>
-											</or>
+											<equals arg1="${jdk-exec-version}" arg2="x64"/>
 											<then>
-												<loadproperties srcFile="${java.home.target}/release" prefix="fork-jvm">
-													<filterchain>
-														<linecontains>
-															<contains value="OS_ARCH"/>
-														</linecontains>
-													</filterchain>
-												</loadproperties>
-												<if>
-													<not>
-														<equals arg1="${fork-jvm.OS_ARCH}" arg2="&quot;x86_64&quot;"/>
-													</not>
-													<then>
-														<property name="skip-unittests" value="true"/>
-													</then>
-												</if>
+												<property name="test.jvm" location="${java.x64.home.target}/bin/java"/>
 											</then>
-											<else>
-											</else>
 										</if>
 									</else>
 								</if>
-							</then>
-							<else>
 								<if>
-									<equals arg1="${qtjambi.osname}" arg2="linux-arm64"/>
+									<os family="windows"/>
 									<then>
-										<loadproperties srcFile="${java.home.target}/release" prefix="fork-jvm">
-											<filterchain>
-												<linecontains>
-													<contains value="OS_ARCH"/>
-												</linecontains>
-											</filterchain>
-										</loadproperties>
+										<property name="test.jvm" location="${java.home.target}/bin/java.exe"/>
 										<if>
-											<not>
-												<equals arg1="${fork-jvm.OS_ARCH}" arg2="&quot;aarch64&quot;"/>
-											</not>
-											<then>
-												<property name="test.jvm" location="${java.arm64.home.target}/bin/java"/>
-												<if>
-													<not>
-														<available file="${test.jvm}" type="file"/>
-													</not>
-													<then>
-														<property name="skip-unittests" value="true"/>
-													</then>
-												</if>
-											</then>
-											<else>
-												<property name="test.jvm" location="${java.home.target}/bin/java"/>
-											</else>
-										</if>
-									</then>
-									<else>
-										<if>
-											<equals arg1="${qtjambi.osname}" arg2="linux-x64"/>
+											<equals arg1="${qtjambi.osname}" arg2="windows-arm64"/>
 											<then>
 												<loadproperties srcFile="${java.home.target}/release" prefix="fork-jvm">
 													<filterchain>
@@ -925,10 +959,60 @@
 												</loadproperties>
 												<if>
 													<not>
-														<equals arg1="${fork-jvm.OS_ARCH}" arg2="&quot;x86_64&quot;"/>
+														<equals arg1="${fork-jvm.OS_ARCH}" arg2="&quot;aarch64&quot;"/>
 													</not>
 													<then>
-														<property name="test.jvm" location="${java.x64.home.target}/bin/java"/>
+														<property name="skip-unittests" value="true"/>
+													</then>
+												</if>
+											</then>
+											<else>
+												<if>
+													<or>
+														<equals arg1="${qtjambi.osname}" arg2="windows-x64"/>
+														<equals arg1="${qtjambi.osname}" arg2="windows-llvm-mingw-x64"/>
+														<equals arg1="${qtjambi.osname}" arg2="windows-mingw-x64"/>
+													</or>
+													<then>
+														<loadproperties srcFile="${java.home.target}/release" prefix="fork-jvm">
+															<filterchain>
+																<linecontains>
+																	<contains value="OS_ARCH"/>
+																</linecontains>
+															</filterchain>
+														</loadproperties>
+														<if>
+															<not>
+																<equals arg1="${fork-jvm.OS_ARCH}" arg2="&quot;x86_64&quot;"/>
+															</not>
+															<then>
+																<property name="skip-unittests" value="true"/>
+															</then>
+														</if>
+													</then>
+													<else>
+													</else>
+												</if>
+											</else>
+										</if>
+									</then>
+									<else>
+										<if>
+											<equals arg1="${qtjambi.osname}" arg2="linux-arm64"/>
+											<then>
+												<loadproperties srcFile="${java.home.target}/release" prefix="fork-jvm">
+													<filterchain>
+														<linecontains>
+															<contains value="OS_ARCH"/>
+														</linecontains>
+													</filterchain>
+												</loadproperties>
+												<if>
+													<not>
+														<equals arg1="${fork-jvm.OS_ARCH}" arg2="&quot;aarch64&quot;"/>
+													</not>
+													<then>
+														<property name="test.jvm" location="${java.arm64.home.target}/bin/java"/>
 														<if>
 															<not>
 																<available file="${test.jvm}" type="file"/>
@@ -944,20 +1028,53 @@
 												</if>
 											</then>
 											<else>
-												<property name="test.jvm" location="${java.home.target}/bin/java"/>
+												<if>
+													<equals arg1="${qtjambi.osname}" arg2="linux-x64"/>
+													<then>
+														<loadproperties srcFile="${java.home.target}/release" prefix="fork-jvm">
+															<filterchain>
+																<linecontains>
+																	<contains value="OS_ARCH"/>
+																</linecontains>
+															</filterchain>
+														</loadproperties>
+														<if>
+															<not>
+																<equals arg1="${fork-jvm.OS_ARCH}" arg2="&quot;x86_64&quot;"/>
+															</not>
+															<then>
+																<property name="test.jvm" location="${java.x64.home.target}/bin/java"/>
+																<if>
+																	<not>
+																		<available file="${test.jvm}" type="file"/>
+																	</not>
+																	<then>
+																		<property name="skip-unittests" value="true"/>
+																	</then>
+																</if>
+															</then>
+															<else>
+																<property name="test.jvm" location="${java.home.target}/bin/java"/>
+															</else>
+														</if>
+													</then>
+													<else>
+														<property name="test.jvm" location="${java.home.target}/bin/java"/>
+													</else>
+												</if>
 											</else>
 										</if>
 									</else>
 								</if>
+								<if>
+									<not>
+										<available file="${test.jvm}" type="file"/>
+									</not>
+									<then>
+										<property name="test.jvm" location="java"/>
+									</then>
+								</if>
 							</else>
-						</if>
-						<if>
-							<not>
-								<available file="${test.jvm}" type="file"/>
-							</not>
-							<then>
-								<property name="test.jvm" location="java"/>
-							</then>
 						</if>
 					</else>
 				</if>
@@ -968,243 +1085,331 @@
 							<istrue value="${skip-unittests}"/>
 						</not>
 						<or>
-							<equals arg1="${jdk-exec-version}" arg2=""/>
+							<and>
+								<equals arg1="${jdk-exec-version}" arg2=""/>
+								<not>
+									<isset property="qtjambi.test.conf"/>
+								</not>
+							</and>
 							<available file="${test.jvm}" type="file"/>
 						</or>
 					</and>
 					<then>
-						<if>
-							<os family="windows"/>
-							<then>
-								<property name="qtPath"           location="${qtjambi.qt.bindir}" />
-								<property name="qtJambiPath"      location="${deploymentdir}/platforms/${qtjambi.osname}/${kind}/bin" />
-								<property name="testLibPath"      location="${outputDir}/${qtjambi.osname}/tests/bin" />
-							</then>
-							<else>
-								<property name="qtPath"           location="${qtjambi.qt.libdir}" />
-								<property name="qtJambiPath"      location="${deploymentdir}/platforms/${qtjambi.osname}/${kind}/lib" />
-								<property name="testLibPath"      location="${outputDir}/${qtjambi.osname}/tests/lib" />
-							</else>
-						</if>
-						<property name="qtjambiPluginPath"   location="${deploymentdir}/platforms/${qtjambi.osname}/${kind}/plugins" />
-						<property name="testPluginPath"   location="${outputDir}/${qtjambi.osname}/tests/${kind}/plugins" />
-						<property name="testQmlPath"   location="${outputDir}/${qtjambi.osname}/tests/${kind}/qml" />
-						<condition property="qtjambi.enable-method-logs" value="true" else="false">
-							<or>
-								<istrue value="${qtjambi.debug.trace}"/>
-								<istrue value="${qtjambi.enable-method-logs}"/>
-							</or>
-						</condition>
-						<condition property="qtjambi.enable-dangling-pointer-check" value="true" else="false">
-							<istrue value="${qtjambi.enable-dangling-pointer-check}"/>
-						</condition>
-						<condition property="qtjambi.enable-thread-affinity-check" value="true" else="false">
-							<istrue value="${qtjambi.enable-thread-affinity-check}"/>
-						</condition>
-						<condition property="qtjambi.enable-event-thread-affinity-check" value="true" else="false">
-							<istrue value="${qtjambi.enable-event-thread-affinity-check}"/>
-						</condition>
-						<if>
-							<available type="file" file="${resourcesdir}/sqlite-jdbc.jar"/>
-							<then>
-							</then>
-							<else>
-								<mkdir dir="${resourcesdir}"/>
-								<trycatch>
-									<try>
-										<get src="${sqlite.jdbc.download.url}" dest="${resourcesdir}/sqlite-jdbc.jar" verbose="true"/>
-									</try>
-									<catch>
-										<echo>Unable to download ${sqlite.jdbc.download.url}</echo>
-									</catch>
-								</trycatch>
-							</else>
-						</if>
-						<property name="testJdbcPath"   location="${resourcesdir}/sqlite-jdbc.jar" />
-						<if>
-							<available type="file" file="${resourcesdir}/jna.jar"/>
-							<then>
-							</then>
-							<else>
-								<mkdir dir="${resourcesdir}"/>
-								<trycatch>
-									<try>
-										<get src="${jna.lib.download.url}" dest="${resourcesdir}/jna.jar" verbose="true"/>
-									</try>
-									<catch>
-										<echo>Unable to download ${jna.lib.download.url}</echo>
-									</catch>
-								</trycatch>
-							</else>
-						</if>
-						<if>
-							<os family="mac"/>
-							<then>
-								<property name="XstartOnFirstThread" value="-XstartOnFirstThread" />
-								<if>
-									<and>
-										<or>
-											<equals arg1="${jdk-exec-version}" arg2="x64"/>
-											<equals arg1="${jdk-exec-version}" arg2=""/>
-										</or>
-										<or>
-											<less arg1="6" arg2="${qtjambi.soname.version.major}"/>
-											<and>
-												<equals arg1="${qtjambi.soname.version.major}" arg2="6"/>
-												<or>
-													<less arg1="5" arg2="${qtjambi.soname.version.minor}"/>
-													<and>
-														<equals arg1="${qtjambi.soname.version.major}" arg2="5"/>
-														<less arg1="5" arg2="${qtjambi.soname.version.patch}"/>
-													</and>
-												</or>
-											</and>
-										</or>
-									</and>
-									<then>
-										<property name="SYSTEM_VERSION_COMPAT" value="SYSTEM_VERSION_COMPAT" />
-									</then>
-									<else>
-										<property name="SYSTEM_VERSION_COMPAT" value="_" />
-									</else>
-								</if>
-							</then>
-							<else>
-								<property name="XstartOnFirstThread" value="-Dx" />
-								<property name="SYSTEM_VERSION_COMPAT" value="_" />
-							</else>
-						</if>
-						<if>
-							<not>
-								<isset property="test"/>
-							</not>
-							<then>
-								<delete dir="${outputDir}/${qtjambi.osname}/tests/junitxml-${kind}${jdk-exec-version}" failonerror="false"/>
-							</then>
-						</if>
-						<condition property="Xcheck_jni" value="-Xcheck:jni" else="-Dx">
-							<istrue value="${jnicheck}"/>
-						</condition>
-						<condition property="Dskip-deletion" value="-Dqtjambi.deployer.skip.deletion=${qtjambi.deployer.skip.deletion}" else="-Dx">
-							<isset property="qtjambi.deployer.skip.deletion"/>
-						</condition>
-						<condition property="Ddelay" value="-Dtest.delay=${test.delay}" else="-Dx">
-							<isset property="test.delay"/>
-						</condition>
-						<condition property="Dattach" value="-Dtest.attach=${test.attach}" else="-Dx">
-							<isset property="test.attach"/>
-						</condition>
-						<condition property="Dkeep-temp-deployment" value="-Dio.qt.keep-temp-deployment=${io.qt.keep-temp-deployment}" else="-Dx">
-							<isset property="io.qt.keep-temp-deployment"/>
-						</condition>
-						<condition property="Ddeploymentdir" value="-Dio.qt.deploymentdir=${io.qt.deploymentdir}" else="-Dx">
-							<isset property="io.qt.deploymentdir"/>
-						</condition>
-						<condition property="enablepreview" value="-Dx" else="--enable-preview">
-							<equals arg1="${jdk-exec-version}" arg2="8"/>
-						</condition>
-						<condition property="Dqtjambi.log-level" value="-Dqtjambi.log-level=${qtjambi.log-level}" else="-Dx">
-							<isset property="qtjambi.log-level"/>
-						</condition>
-						<condition property="Dio.qt.enable-dangling-pointer-check" value="-Dio.qt.enable-dangling-pointer-check=${io.qt.enable-dangling-pointer-check}" else="-Dx">
-							<isset property="io.qt.enable-dangling-pointer-check"/>
-						</condition>
-						<condition property="Dio.qt.enable-thread-affinity-check" value="-Dio.qt.enable-thread-affinity-check=${io.qt.enable-thread-affinity-check}" else="-Dx">
-							<isset property="io.qt.enable-thread-affinity-check"/>
-						</condition>
-						<condition property="Dio.qt.enable-event-thread-affinity-check" value="-Dio.qt.enable-event-thread-affinity-check=${io.qt.enable-event-thread-affinity-check}" else="-Dx">
-							<isset property="io.qt.enable-event-thread-affinity-check"/>
-						</condition>
-						<condition property="Dio.qt.enable-method-logs" value="-Dio.qt.enable-method-logs=${io.qt.enable-method-logs}" else="-Dx">
-							<isset property="io.qt.enable-method-logs"/>
-						</condition>
-						<condition property="Dio.qt.enable-cleanup-logs" value="-Dio.qt.enable-cleanup-logs=${io.qt.enable-cleanup-logs}" else="-Dx">
-							<isset property="io.qt.enable-cleanup-logs"/>
-						</condition>
-						<condition property="Dio.qt.enable-event-logs" value="-Dio.qt.enable-event-logs=${io.qt.enable-event-logs}" else="-Dx">
-							<isset property="io.qt.enable-event-logs"/>
-						</condition>
-						<condition property="Dio.qt.enable-metaobject-logs" value="-Dio.qt.enable-metaobject-logs=${io.qt.enable-metaobject-logs}" else="-Dx">
-							<isset property="io.qt.enable-metaobject-logs"/>
-						</condition>
-						<condition property="Dio.qt.internal.disable-metalambdas" value="-Dio.qt.internal.disable-metalambdas=${io.qt.internal.disable-metalambdas}" else="-Dx">
-							<isset property="io.qt.internal.disable-metalambdas"/>
-						</condition>
 						<condition property="JVMArg.enable.native.access" value="-Dx" else="--enable-native-access=ALL-UNNAMED">
 							<less arg1="${target.java.version}" arg2="21"/>
 						</condition>
+						<if>
+							<or>
+								<equals arg1="${qtjambi.osname}" arg2="windows-arm64"/>
+								<equals arg1="${qtjambi.osname}" arg2="windows-x64"/>
+								<equals arg1="${qtjambi.osname}" arg2="windows-mingw-x64"/>
+								<equals arg1="${qtjambi.osname}" arg2="windows-llvm-mingw-x64"/>
+							</or>
+							<then>
+								<property name="qtPath"            location="${qtjambi.qt.bindir}" />
+								<property name="qtJambiPath"       location="${deploymentdir}/platforms/${qtjambi.osname}/${kind}/bin" />
+								<property name="testLibPath"       location="${outputDir}/${qtjambi.osname}/tests/bin" />
+								<property name="testDeploymentDir" location="${outputDir}/${qtjambi.osname}/tests/${kind}" />
+							</then>
+							<else>
+								<property name="qtPath"            location="${qtjambi.qt.libdir}" />
+								<property name="qtJambiPath"       location="${deploymentdir}/platforms/${qtjambi.osname}/${kind}/lib" />
+								<property name="testLibPath"       location="${outputDir}/${qtjambi.osname}/tests/lib" />
+								<property name="testDeploymentDir" location="${outputDir}/${qtjambi.osname}/tests/${kind}" />
+							</else>
+						</if>
 						<trycatch>
 							<try>
+								<if>
+									<available file="${qtPath}" type="dir"/>
+									<then>
+										<if>
+											<and>
+												<available file="${qtJambiPath}" type="dir"/>
+												<available file="${testLibPath}" type="dir"/>
+											</and>
+											<then>
+												<property name="Dio.qt.library-path-override" value="-Dio.qt.library-path-override=${qtPath}${psep}${qtJambiPath}${psep}${testLibPath}" />
+												<property name="Dio.qt.deploymentdir" value="-Dx" />
+												<condition property="Dkeep-temp-deployment" value="-Dio.qt.keep-temp-deployment=${io.qt.keep-temp-deployment}" else="-Dx">
+													<isset property="io.qt.keep-temp-deployment"/>
+												</condition>
+												<property name="Dio.qt.no-deployment-spec" value="-Dio.qt.no-deployment-spec=true" />
+											</then>
+											<else>
+												<delete dir="${testDeploymentDir}/QtJambi${qtjambi.jar.version}" failonerror="false"/>
+												<java fork="true" jvm="${test.jvm}" classname="io.qt.internal.LibraryExtractor" failonerror="true">
+													<classpath>
+														<fileset dir="${deploymentdir}">
+															<include name="qtjambi*-${qtjambi.jar.version}.jar"/>
+															<exclude name="qtjambi-*native-*.jar"/>
+														</fileset>
+														<pathelement path="${outputDir}/${qtjambi.osname}/tests/qtjambi-autotests-${qtjambi.jar.version}.jar" />
+													</classpath>
+													<jvmarg value="-Dio.qt.library-path-override=${qtPath}"/>
+													<jvmarg value="-Dio.qt.deploymentdir=${testDeploymentDir}"/>
+													<jvmarg value="-Dqtjambi.osname=${qtjambi.osname}"/>
+													<jvmarg value="${JVMArg.enable.native.access}"/>
+												</java>
+												<property name="Dio.qt.library-path-override" value="-Dio.qt.library-path-override=${qtPath}" />
+												<property name="Dio.qt.deploymentdir" value="-Dx" />
+												<property name="Dio.qt.no-deployment-spec" value="-Dx" />
+												<property name="Dkeep-temp-deployment" value="-Dio.qt.keep-temp-deployment=true" />
+											</else>
+										</if>
+									</then>
+									<else>
+										<delete dir="${testDeploymentDir}/QtJambi${qtjambi.jar.version}" failonerror="false"/>
+										<java fork="true" jvm="${test.jvm}" classname="io.qt.internal.LibraryExtractor" failonerror="true">
+											<classpath>
+												<fileset dir="${deploymentdir}">
+													<include name="qtjambi*-${qtjambi.jar.version}.jar"/>
+													<exclude name="qtjambi-*native-*.jar"/>
+												</fileset>
+												<pathelement path="${outputDir}/${qtjambi.osname}/tests/qtjambi-autotests-${qtjambi.jar.version}.jar" />
+											</classpath>
+											<jvmarg value="-Dio.qt.library-path-override="/>
+											<jvmarg value="-Dio.qt.deploymentdir=${testDeploymentDir}"/>
+											<jvmarg value="-Dqtjambi.osname=${qtjambi.osname}"/>
+											<jvmarg value="${JVMArg.enable.native.access}"/>
+										</java>
+										<property name="Dio.qt.library-path-override" value="-Dio.qt.library-path-override=" />
+										<property name="Dio.qt.deploymentdir" value="-Dio.qt.deploymentdir=${testDeploymentDir}" />
+										<property name="Dkeep-temp-deployment" value="-Dio.qt.keep-temp-deployment=true" />
+										<property name="Dio.qt.no-deployment-spec" value="-Dx" />
+									</else>
+								</if>
+								<condition property="Dio.qt.library-path-override" value="-Dx" else="">
+									<isset property="qtjambi.test.conf"/>
+								</condition>
+								<property name="qtjambiPluginPath"   location="${deploymentdir}/platforms/${qtjambi.osname}/${kind}/plugins" />
+								<property name="testPluginPath"   location="${outputDir}/${qtjambi.osname}/tests/${kind}/plugins" />
+								<property name="testQmlPath"   location="${outputDir}/${qtjambi.osname}/tests/${kind}/qml" />
+								<condition property="qtjambi.enable-method-logs" value="true" else="false">
+									<or>
+										<istrue value="${qtjambi.debug.trace}"/>
+										<istrue value="${qtjambi.enable-method-logs}"/>
+									</or>
+								</condition>
+								<condition property="qtjambi.enable-dangling-pointer-check" value="true" else="false">
+									<istrue value="${qtjambi.enable-dangling-pointer-check}"/>
+								</condition>
+								<condition property="qtjambi.enable-thread-affinity-check" value="true" else="false">
+									<istrue value="${qtjambi.enable-thread-affinity-check}"/>
+								</condition>
+								<condition property="qtjambi.enable-event-thread-affinity-check" value="true" else="false">
+									<istrue value="${qtjambi.enable-event-thread-affinity-check}"/>
+								</condition>
+								<if>
+									<available type="file" file="${resourcesdir}/sqlite-jdbc.jar"/>
+									<then>
+									</then>
+									<else>
+										<mkdir dir="${resourcesdir}"/>
+										<trycatch>
+											<try>
+												<get src="${sqlite.jdbc.download.url}" dest="${resourcesdir}/sqlite-jdbc.jar" verbose="true"/>
+											</try>
+											<catch>
+												<echo>Unable to download ${sqlite.jdbc.download.url}</echo>
+											</catch>
+										</trycatch>
+									</else>
+								</if>
+								<property name="testJdbcPath"   location="${resourcesdir}/sqlite-jdbc.jar" />
+								<if>
+									<available type="file" file="${resourcesdir}/jna.jar"/>
+									<then>
+									</then>
+									<else>
+										<mkdir dir="${resourcesdir}"/>
+										<trycatch>
+											<try>
+												<get src="${jna.lib.download.url}" dest="${resourcesdir}/jna.jar" verbose="true"/>
+											</try>
+											<catch>
+												<echo>Unable to download ${jna.lib.download.url}</echo>
+											</catch>
+										</trycatch>
+									</else>
+								</if>
+								<if>
+									<os family="mac"/>
+									<then>
+										<property name="XstartOnFirstThread" value="-XstartOnFirstThread" />
+										<if>
+											<and>
+												<or>
+													<equals arg1="${jdk-exec-version}" arg2="x64"/>
+													<equals arg1="${jdk-exec-version}" arg2=""/>
+												</or>
+												<or>
+													<less arg1="6" arg2="${qtjambi.soname.version.major}"/>
+													<and>
+														<equals arg1="${qtjambi.soname.version.major}" arg2="6"/>
+														<or>
+															<less arg1="5" arg2="${qtjambi.soname.version.minor}"/>
+															<and>
+																<equals arg1="${qtjambi.soname.version.major}" arg2="5"/>
+																<less arg1="5" arg2="${qtjambi.soname.version.patch}"/>
+															</and>
+														</or>
+													</and>
+												</or>
+											</and>
+											<then>
+												<property name="SYSTEM_VERSION_COMPAT" value="SYSTEM_VERSION_COMPAT" />
+											</then>
+											<else>
+												<property name="SYSTEM_VERSION_COMPAT" value="_" />
+											</else>
+										</if>
+									</then>
+									<else>
+										<property name="XstartOnFirstThread" value="-Dx" />
+										<property name="SYSTEM_VERSION_COMPAT" value="_" />
+									</else>
+								</if>
+								<if>
+									<not>
+										<isset property="test"/>
+									</not>
+									<then>
+										<delete dir="${outputDir}/${qtjambi.osname}/tests/junitxml-${kind}${jdk-exec-version}" failonerror="false"/>
+									</then>
+								</if>
+								<condition property="Xcheck_jni" value="-Xcheck:jni" else="-Dx">
+									<istrue value="${jnicheck}"/>
+								</condition>
+								<condition property="Dskip-deletion" value="-Dqtjambi.deployer.skip.deletion=${qtjambi.deployer.skip.deletion}" else="-Dx">
+									<isset property="qtjambi.deployer.skip.deletion"/>
+								</condition>
+								<condition property="Ddelay" value="-Dtest.delay=${test.delay}" else="-Dx">
+									<isset property="test.delay"/>
+								</condition>
+								<condition property="Dattach" value="-Dtest.attach=${test.attach}" else="-Dx">
+									<isset property="test.attach"/>
+								</condition>
+								<condition property="enablepreview" value="-Dx" else="--enable-preview">
+									<equals arg1="${jdk-exec-version}" arg2="8"/>
+								</condition>
+								<condition property="Dqtjambi.log-level" value="-Dqtjambi.log-level=${qtjambi.log-level}" else="-Dx">
+									<isset property="qtjambi.log-level"/>
+								</condition>
+								<condition property="Dio.qt.enable-dangling-pointer-check" value="-Dio.qt.enable-dangling-pointer-check=${io.qt.enable-dangling-pointer-check}" else="-Dx">
+									<isset property="io.qt.enable-dangling-pointer-check"/>
+								</condition>
+								<condition property="Dio.qt.enable-thread-affinity-check" value="-Dio.qt.enable-thread-affinity-check=${io.qt.enable-thread-affinity-check}" else="-Dx">
+									<isset property="io.qt.enable-thread-affinity-check"/>
+								</condition>
+								<condition property="Dio.qt.enable-event-thread-affinity-check" value="-Dio.qt.enable-event-thread-affinity-check=${io.qt.enable-event-thread-affinity-check}" else="-Dx">
+									<isset property="io.qt.enable-event-thread-affinity-check"/>
+								</condition>
+								<condition property="Dio.qt.enable-method-logs" value="-Dio.qt.enable-method-logs=${io.qt.enable-method-logs}" else="-Dx">
+									<isset property="io.qt.enable-method-logs"/>
+								</condition>
+								<condition property="Dio.qt.enable-cleanup-logs" value="-Dio.qt.enable-cleanup-logs=${io.qt.enable-cleanup-logs}" else="-Dx">
+									<isset property="io.qt.enable-cleanup-logs"/>
+								</condition>
+								<condition property="Dio.qt.enable-event-logs" value="-Dio.qt.enable-event-logs=${io.qt.enable-event-logs}" else="-Dx">
+									<isset property="io.qt.enable-event-logs"/>
+								</condition>
+								<condition property="Dio.qt.enable-metaobject-logs" value="-Dio.qt.enable-metaobject-logs=${io.qt.enable-metaobject-logs}" else="-Dx">
+									<isset property="io.qt.enable-metaobject-logs"/>
+								</condition>
+								<condition property="Dio.qt.internal.disable-metalambdas" value="-Dio.qt.internal.disable-metalambdas=${io.qt.internal.disable-metalambdas}" else="-Dx">
+									<isset property="io.qt.internal.disable-metalambdas"/>
+								</condition>
 								<mkdir dir="${outputDir}/${qtjambi.osname}/tests/junitxml-${kind}${jdk-exec-version}"/>
-								<junit fork="yes" jvm="${test.jvm}" printsummary="true" dir="${outputDir}/${qtjambi.osname}/tests/${kind}/" haltonfailure="no" timeout="${qtjambi.junit.timeout}" showoutput="yes" logfailedtests="yes" threads="${qtjambi.junit.threads}">
-									<classpath>
-										<fileset dir="${deploymentdir}">
-											<include name="qtjambi*-${qtjambi.jar.version}.jar"/>
-											<exclude name="qtjambi-*native-*.jar"/>
-										</fileset>
-										<pathelement location="${resourcesdir}/junit.jar" />
-										<pathelement location="${resourcesdir}/hamcrest.jar" />
-										<pathelement location="${resourcesdir}/sqlite-jdbc.jar" />
-										<pathelement location="${resourcesdir}/jna.jar" />
-										<pathelement path="${outputDir}/${qtjambi.osname}/tests/qtjambi-autotests-${qtjambi.jar.version}.jar" />
-									</classpath>
-									<jvmarg value="-Dio.qt.library-path-override=${qtPath}${psep}${qtJambiPath}${psep}${testLibPath}"/>
-									<jvmarg value="-Dio.qt.debug=${kind}"/><!-- This should not be needed now, it loads default from MANIFEST.MF -->
-									<jvmarg value="-Dqtjambi.osname=${qtjambi.osname}"/>
-									<jvmarg value="-Dio.qt.log-messages=ALL"/>
-									<jvmarg value="${Dqtjambi.log-level}"/>
-									<jvmarg value="-Dio.qt.no-deployment-spec=true"/>
-									<jvmarg value="${Dio.qt.enable-dangling-pointer-check}"/>
-									<jvmarg value="${Dio.qt.enable-thread-affinity-check}"/>
-									<jvmarg value="${Dio.qt.enable-event-thread-affinity-check}"/>
-									<jvmarg value="${Dio.qt.enable-method-logs}"/>
-									<jvmarg value="${Dio.qt.enable-cleanup-logs}"/>
-									<jvmarg value="${Dio.qt.enable-event-logs}"/>
-									<jvmarg value="${Dio.qt.enable-metaobject-logs}"/>
-									<jvmarg value="${Dio.qt.internal.disable-metalambdas}"/>
-									<jvmarg value="-Dio.qt.qml-imports=${testQmlPath}"/>
-									<jvmarg value="-Dio.qt.pluginpath=${qtjambiPluginPath}${psep}${testPluginPath}"/>
-									<jvmarg value="${XstartOnFirstThread}"/>
-									<jvmarg value="${JVMArg.enable.native.access}"/>
-									<jvmarg value="-Dqtjambi.deployer.test.jdbc=${testJdbcPath}"/>
-									<!--jvmarg value="-Xrs"/-->
-									<!-- This stops JVM intercepting SIGSEGV
-									from native code (so we can see where/why it crashed) otherwise
-									the JVM may promote SIGSEGV to NullPointerException, which is
-									not that useful for debugging. -->
-									<jvmarg value="${Xcheck_jni}"/>
-									<jvmarg value="${Dskip-deletion}"/>
-									<jvmarg value="${Ddelay}"/>
-									<jvmarg value="${Dattach}"/>
-									<jvmarg value="${Dkeep-temp-deployment}"/>
-									<jvmarg value="${Ddeploymentdir}"/>
-									<jvmarg value="${enablepreview}"/>
-									<jvmarg value="-Dx-verbose:class"/>
-									<env key="${SYSTEM_VERSION_COMPAT}" value="0"/>
-									<env key="QT_MULTIMEDIA_PREFERRED_PLUGINS" value="Test"/>
-									<!--env key="QML_IMPORT_PATH" value="${absQtPath}/../qml"/-->
-						<!--            <jvmarg value="-verbose"/> -->
-									<formatter type="xml" usefile="yes" />
-									<batchtest fork="yes" todir="${outputDir}/${qtjambi.osname}/tests/junitxml-${kind}${jdk-exec-version}">
-										<path refid="qtjambi.autotest.classes.junit"/>
-									</batchtest>
-								</junit>
+								<trycatch>
+									<try>
+										<junit fork="yes" jvm="${test.jvm}" printsummary="true" dir="${outputDir}/${qtjambi.osname}/tests/${kind}/" haltonfailure="no" timeout="${qtjambi.junit.timeout}" showoutput="yes" logfailedtests="yes" threads="${qtjambi.junit.threads}">
+											<classpath>
+												<fileset dir="${deploymentdir}">
+													<include name="qtjambi*-${qtjambi.jar.version}.jar"/>
+													<exclude name="qtjambi-*native-*.jar"/>
+												</fileset>
+												<pathelement location="${resourcesdir}/junit.jar" />
+												<pathelement location="${resourcesdir}/hamcrest.jar" />
+												<pathelement location="${resourcesdir}/sqlite-jdbc.jar" />
+												<pathelement location="${resourcesdir}/jna.jar" />
+												<pathelement path="${outputDir}/${qtjambi.osname}/tests/qtjambi-autotests-${qtjambi.jar.version}.jar" />
+											</classpath>
+											<jvmarg value="${Dio.qt.library-path-override}"/>
+											<jvmarg value="-Dio.qt.debug=${kind}"/><!-- This should not be needed now, it loads default from MANIFEST.MF -->
+											<jvmarg value="-Dqtjambi.osname=${qtjambi.osname}"/>
+											<jvmarg value="-Dio.qt.log-messages=ALL"/>
+											<jvmarg value="${Dio.qt.deploymentdir}"/>
+											<jvmarg value="${Dqtjambi.log-level}"/>
+											<jvmarg value="${Dio.qt.no-deployment-spec}"/>
+											<jvmarg value="${Dio.qt.enable-dangling-pointer-check}"/>
+											<jvmarg value="${Dio.qt.enable-thread-affinity-check}"/>
+											<jvmarg value="${Dio.qt.enable-event-thread-affinity-check}"/>
+											<jvmarg value="${Dio.qt.enable-method-logs}"/>
+											<jvmarg value="${Dio.qt.enable-cleanup-logs}"/>
+											<jvmarg value="${Dio.qt.enable-event-logs}"/>
+											<jvmarg value="${Dio.qt.enable-metaobject-logs}"/>
+											<jvmarg value="${Dio.qt.internal.disable-metalambdas}"/>
+											<jvmarg value="-Dio.qt.qml-imports=${testQmlPath}"/>
+											<jvmarg value="-Dio.qt.pluginpath=${qtjambiPluginPath}${psep}${testPluginPath}"/>
+											<jvmarg value="${XstartOnFirstThread}"/>
+											<jvmarg value="${JVMArg.enable.native.access}"/>
+											<jvmarg value="-Dqtjambi.deployer.test.jdbc=${testJdbcPath}"/>
+											<!--jvmarg value="-Xrs"/-->
+											<!-- This stops JVM intercepting SIGSEGV
+											from native code (so we can see where/why it crashed) otherwise
+											the JVM may promote SIGSEGV to NullPointerException, which is
+											not that useful for debugging. -->
+											<jvmarg value="${Xcheck_jni}"/>
+											<jvmarg value="${Dskip-deletion}"/>
+											<jvmarg value="${Ddelay}"/>
+											<jvmarg value="${Dattach}"/>
+											<jvmarg value="${Dkeep-temp-deployment}"/>
+											<jvmarg value="${enablepreview}"/>
+											<jvmarg value="-Dx-verbose:class"/>
+											<env key="${SYSTEM_VERSION_COMPAT}" value="0"/>
+											<env key="QT_MULTIMEDIA_PREFERRED_PLUGINS" value="Test"/>
+											<!--env key="QML_IMPORT_PATH" value="${absQtPath}/../qml"/-->
+								<!--            <jvmarg value="-verbose"/> -->
+											<formatter type="xml" usefile="yes" />
+											<batchtest fork="yes" todir="${outputDir}/${qtjambi.osname}/tests/junitxml-${kind}${jdk-exec-version}">
+												<path refid="qtjambi.autotest.classes.junit"/>
+											</batchtest>
+										</junit>
+									</try>
+									<catch throwable="java.lang.Throwable" print="true">
+									</catch>
+									<finally>
+										<modify-test-results dir="${outputDir}/${qtjambi.osname}/tests/junitxml-${kind}${jdk-exec-version}" version="${qtjambi.jar.version}" mode="${kind}" jdk="${jdk-exec-os}"/>
+									</finally>
+								</trycatch>
 							</try>
-							<catch throwable="java.lang.Throwable" print="true">
-							</catch>
 							<finally>
-								<modify-test-results dir="${outputDir}/${qtjambi.osname}/tests/junitxml-${kind}${jdk-exec-version}" version="${qtjambi.jar.version}" mode="${kind}" jdk="${jdk-exec-os}"/>
+								<delete dir="${testDeploymentDir}/QtJambi${qtjambi.jar.version}" failonerror="false"/>
 							</finally>
 						</trycatch>
 					</then>
+					<else>
+						<if>
+							<not>
+								<available file="${test.jvm}" type="file"/>
+							</not>
+							<then>
+								<echo>Cannot test ${qtjambi.osname} because Java is not available: ${test.jvm}</echo>
+							</then>
+						</if>
+					</else>
 				</if>
             </else>
         </if>
     </target>
 
     <target name="run">
-        <if>
-            <available file="${deploymentdir}/platforms/${qtjambi.osname}/debug" type="dir"/>
+		<if>
+			<and>
+				<available file="${qtjambi.qt.bindir}" type="dir"/>
+				<available file="${deploymentdir}/platforms/${qtjambi.osname}/debug" type="dir"/>
+			</and>
             <then>
                 <antcall target="debug.run"/>
             </then>
@@ -1270,7 +1475,10 @@
     
     <target name="debug.run">
         <if>
-            <available file="${deploymentdir}/platforms/${qtjambi.osname}/debug" type="dir"/>
+			<and>
+				<available file="${qtjambi.qt.bindir}" type="dir"/>
+				<available file="${deploymentdir}/platforms/${qtjambi.osname}/debug" type="dir"/>
+			</and>
             <then>
                 <if>
                     <os family="mac"/>
@@ -1316,7 +1524,10 @@
     
     <target name="release.run8">
         <if>
-            <available file="${deploymentdir}/platforms/${qtjambi.osname}/release" type="dir"/>
+			<and>
+				<available file="${qtjambi.qt.bindir}" type="dir"/>
+				<available file="${deploymentdir}/platforms/${qtjambi.osname}/release" type="dir"/>
+			</and>
             <then>
                 <antcall target="run.test">
                     <param name="jdk-exec-version" value="8"/>
@@ -1333,7 +1544,10 @@
     
     <target name="debug.run8">
         <if>
-            <available file="${deploymentdir}/platforms/${qtjambi.osname}/debug" type="dir"/>
+			<and>
+				<available file="${qtjambi.qt.bindir}" type="dir"/>
+				<available file="${deploymentdir}/platforms/${qtjambi.osname}/debug" type="dir"/>
+			</and>
             <then>
                 <antcall target="run.test">
                     <param name="jdk-exec-version" value="8"/>

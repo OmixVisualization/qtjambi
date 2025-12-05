@@ -30,39 +30,9 @@
 ****************************************************************************/
 
 #include <QtCore/qcompilerdetection.h>
-
-#if QT_VERSION >= QT_VERSION_CHECK(6,4,0)
-#include <QtCore/private/qobject_p_p.h>
-#endif
-
 QT_WARNING_DISABLE_DEPRECATED
 
-#include <QtCore/QCoreApplication>
-#include <QtCore/QDataStream>
-#include <QtCore/QVarLengthArray>
-#include <QtCore/QPointer>
-#include <QtCore/QStringList>
-#include <QtCore/QMetaObject>
-#include <QtCore/QMetaProperty>
-#include <QtCore/QThread>
-#include <QtCore/QStaticPlugin>
-#include <QtCore/QCborMap>
-#include <QtCore/QCborValue>
-#include <QtCore/QResource>
-
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-#include <QtCore/QLinkedList>
-#include <QtCore/QVector>
-#endif
-
-#include <QtCore/private/qcoreapplication_p.h>
-#include "qtjambiapi.h"
-#include "qtjambilink_p.h"
-#include "utils_p.h"
-
-#include <QtCore/private/qobject_p.h>
-#include <QtCore/private/qthread_p.h>
-#include <QtCore/private/qplugin_p.h>
+#include "pch_p.h"
 
 extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_internal_TestUtility_hasDeleteLaterEvents(JNIEnv *, jclass){
 #if defined(QTJAMBI_DEBUG_TOOLS)

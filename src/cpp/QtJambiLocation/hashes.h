@@ -34,7 +34,7 @@
 #include <QtLocation/QtLocation>
 #include <QtJambiPositioning/hashes.h>
 
-inline hash_type qHash(const QPlaceUser &value, hash_type seed = 0)
+inline size_t qHash(const QPlaceUser &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -46,7 +46,7 @@ inline hash_type qHash(const QPlaceUser &value, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QPlaceContentRequest &value, hash_type seed = 0)
+inline size_t qHash(const QPlaceContentRequest &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -59,7 +59,7 @@ inline hash_type qHash(const QPlaceContentRequest &value, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QPlaceRatings &value, hash_type seed = 0)
+inline size_t qHash(const QPlaceRatings &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -73,7 +73,7 @@ inline hash_type qHash(const QPlaceRatings &value, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QPlaceIcon &value, hash_type seed = 0)
+inline size_t qHash(const QPlaceIcon &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -85,7 +85,7 @@ inline hash_type qHash(const QPlaceIcon &value, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QPlaceSearchResult &value, hash_type seed = 0)
+inline size_t qHash(const QPlaceSearchResult &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -98,7 +98,7 @@ inline hash_type qHash(const QPlaceSearchResult &value, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QPlaceContactDetail &value, hash_type seed = 0)
+inline size_t qHash(const QPlaceContactDetail &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -110,7 +110,7 @@ inline hash_type qHash(const QPlaceContactDetail &value, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QPlaceCategory &value, hash_type seed = 0)
+inline size_t qHash(const QPlaceCategory &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -125,7 +125,7 @@ inline hash_type qHash(const QPlaceCategory &value, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QPlaceAttribute &value, hash_type seed = 0)
+inline size_t qHash(const QPlaceAttribute &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -138,7 +138,7 @@ inline hash_type qHash(const QPlaceAttribute &value, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QPlaceSupplier &value, hash_type seed = 0)
+inline size_t qHash(const QPlaceSupplier &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -153,7 +153,7 @@ inline hash_type qHash(const QPlaceSupplier &value, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QGeoRouteRequest &value, hash_type seed = 0)
+inline size_t qHash(const QGeoRouteRequest &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -172,7 +172,7 @@ inline hash_type qHash(const QGeoRouteRequest &value, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QPlace &value, hash_type seed = 0)
+inline size_t qHash(const QPlace &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -199,7 +199,7 @@ inline hash_type qHash(const QPlace &value, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QPlaceMatchRequest &value, hash_type seed = 0)
+inline size_t qHash(const QPlaceMatchRequest &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -210,7 +210,7 @@ inline hash_type qHash(const QPlaceMatchRequest &value, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QPlaceSearchRequest &value, hash_type seed = 0)
+inline size_t qHash(const QPlaceSearchRequest &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -227,13 +227,13 @@ inline hash_type qHash(const QPlaceSearchRequest &value, hash_type seed = 0)
     return seed;
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) && !defined(QTJAMBI_GENERATOR_RUNNING)
+#if !defined(QTJAMBI_GENERATOR_RUNNING)
 namespace QtJambiLocationPrivate{
-hash_type variantHash(const QVariant& v, hash_type seed = 0);
+size_t variantHash(const QVariant& v, size_t seed = 0);
 }
 #endif
 
-inline hash_type qHash(const QPlaceContent &value, hash_type seed = 0)
+inline size_t qHash(const QPlaceContent &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;
@@ -241,11 +241,6 @@ inline hash_type qHash(const QPlaceContent &value, hash_type seed = 0)
     QtPrivate::QHashCombine hash(seed);
 #endif
     seed = hash(seed, value.type());
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    seed = hash(seed, value.user());
-    seed = hash(seed, value.supplier());
-    seed = hash(seed, value.attribution());
-#else
     for(QPlaceContent::DataTag tag : value.dataTags()){
         seed = hash(seed, tag);
         QVariant variant = value.value(tag);
@@ -313,11 +308,10 @@ inline hash_type qHash(const QPlaceContent &value, hash_type seed = 0)
             }
         }
     }
-#endif
     return seed;
 }
 
-inline hash_type qHash(const QGeoManeuver &value, hash_type seed = 0)
+inline size_t qHash(const QGeoManeuver &value, size_t seed = 0)
 {
     if(!value.isValid())
         return seed;
@@ -334,7 +328,7 @@ inline hash_type qHash(const QGeoManeuver &value, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QGeoRouteSegment &value, hash_type seed = 0)
+inline size_t qHash(const QGeoRouteSegment &value, size_t seed = 0)
 {
     if(!value.isValid())
         return seed;
@@ -351,7 +345,7 @@ inline hash_type qHash(const QGeoRouteSegment &value, hash_type seed = 0)
     return seed;
 }
 
-inline hash_type qHash(const QGeoRoute &value, hash_type seed = 0)
+inline size_t qHash(const QGeoRoute &value, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
     QtPrivate::QHashCombine hash;

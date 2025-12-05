@@ -29,21 +29,7 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qcompilerdetection.h>
-#include <QtCore/QCborParserError>
-#include <QtCore/QCborValue>
-#include <QtCore/QJsonObject>
-#include <QtCore/QString>
-#include <QtCore/QMutex>
-#include <QtCore/QCborMap>
-#include <QtCore/QThread>
-#include <QtCore/QtPlugin>
-#include "qtjambiapi.h"
-#include "java_p.h"
-#include "exception.h"
-#include "qtjambilink_p.h"
-#include "coreapi.h"
-#include "qtjambi_cast.h"
+#include "pch_p.h"
 
 #if defined(Q_OS_WIN32)
 #include <Windows.h>
@@ -184,7 +170,7 @@ void registerPluginImporter(){
                 return reinterpret_cast<void*>(&CoreAPI::unexit);
             }else if(QLatin1String(type)==QLatin1String("QtJambiAPI::convertJavaToNative")){
                 bool (*convertJavaToNative)(JNIEnv *, const std::type_info&, jobject, void *) = [](JNIEnv *env, const std::type_info& typeId, jobject java_object, void * output)->bool{
-                    return QtJambiAPI::convertJavaToNative(env, typeId, java_object, output);
+                    return QtJambiAPI::convertJavaToNative(env, java_object, output, typeId);
                 };
                 return reinterpret_cast<void*>(convertJavaToNative);
             }else if(QLatin1String(type)==QLatin1String("QtJambiAPI::convertQObjectToJavaObject")){

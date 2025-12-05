@@ -34,6 +34,7 @@ TypeSystem{
     defaultSuperClass: "QtObject"
     qtLibrary: "QtMultimedia"
     module: "qtjambi.multimedia"
+    precompiledHeader: "pch_p.h"
     description: "Classes for audio, video, radio and camera functionality."
     LoadTypeSystem{name: "QtGuiRhi"; since: 6.6}
 

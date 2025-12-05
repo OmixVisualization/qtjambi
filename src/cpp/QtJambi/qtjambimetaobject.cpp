@@ -29,31 +29,17 @@
 
 #include <QtCore/qcompilerdetection.h>
 QT_WARNING_DISABLE_DEPRECATED
-#include "functionpointer.h"
-#include "qtjambimetaobject_p.h"
-#include "qtjambiapi.h"
-#include "coreapi.h"
-#include "java_p.h"
-#include "registryutil_p.h"
-#include "typemanager_p.h"
-#include "threadutils_p.h"
-#include "qtjambilink_p.h"
-#include "supertypeinfo_p.h"
-#include "qtjambishell_p.h"
+
+#include "pch_p.h"
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #include "qmlapi.h"
 #else
 #include <cstring>
 #endif
 
-#include <QtCore/QHash>
-#include <QtCore/QVarLengthArray>
-#include <QtCore/QMetaEnum>
 #include <QtCore/private/qthread_p.h>
 #include <QtCore/private/qcoreapplication_p.h>
 #include <QtCore/private/qmetaobject_p.h>
-
-#include "qtjambi_cast.h"
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
 #define qAsConst std::as_const
@@ -69,7 +55,7 @@ typedef SecureContainer<QHash<const QMetaObject *, jweak>, gMetaObjectsLock> Jav
 Q_GLOBAL_STATIC(JavaMetaObjectHash, javaMetaObjects);
 #endif
 
-typedef SecureContainer<QHash<hash_type,const QMetaObject *>, gMetaObjectsLock> MetaObjectByNameHash;
+typedef SecureContainer<QHash<size_t,const QMetaObject *>, gMetaObjectsLock> MetaObjectByNameHash;
 Q_GLOBAL_STATIC(MetaObjectByNameHash, metaObjectsByName);
 
 #define QTJAMBI_MAX_NUMBER_OF_CLASSES 1024
@@ -374,11 +360,11 @@ struct QPropertyInfo{
     inline bool operator!()const{return propertyField==nullptr;}
 };
 
-typedef SecureContainer<QHash<hash_type, QVector<ParameterTypeInfo>>, gMetaObjectsLock> ParameterTypeHash;
+typedef SecureContainer<QHash<size_t, QVector<ParameterTypeInfo>>, gMetaObjectsLock> ParameterTypeHash;
 Q_GLOBAL_STATIC(ParameterTypeHash, gParameterTypeInfos)
 typedef SecureContainer<QHash<int, const QMetaObject *>, gMetaObjectsLock> MetaObjectHash;
 Q_GLOBAL_STATIC(MetaObjectHash, gMetaObjects);
-typedef SecureContainer<QHash<hash_type, JObjectWrapper>, gMetaObjectsLock> SignalTypesHash;
+typedef SecureContainer<QHash<size_t, JObjectWrapper>, gMetaObjectsLock> SignalTypesHash;
 Q_GLOBAL_STATIC(SignalTypesHash, gSignalTypes);
 
 QtJambiUtils::InternalToExternalConverter ParameterTypeInfo::default_internalToExternalConverter()
@@ -392,7 +378,7 @@ QtJambiUtils::ExternalToInternalConverter ParameterTypeInfo::default_externalToI
 }
 
 ParameterTypeInfo::ParameterTypeInfo()
-    : m_qTypeId(QMetaType::UnknownType),
+    : m_metaType(QMetaType::UnknownType),
       m_typeName(),
       m_javaClass(nullptr),
       m_internalToExternalConverter(ParameterTypeInfo::default_internalToExternalConverter()),
@@ -403,7 +389,7 @@ ParameterTypeInfo::ParameterTypeInfo()
 
 ParameterTypeInfo ParameterTypeInfo::voidTypeInfo(JNIEnv* env){
     ParameterTypeInfo info = ParameterTypeInfo(
-                QMetaType::Void,
+                QMetaType(QMetaType::Void),
                 getGlobalClassRef(env, Java::Runtime::Void::primitiveType(env))
           );
     info.m_externalToInternalConverter = ParameterTypeInfo::default_externalToInternalConverter();
@@ -414,12 +400,12 @@ ParameterTypeInfo ParameterTypeInfo::voidTypeInfo(JNIEnv* env){
 }
 
 ParameterTypeInfo::ParameterTypeInfo(
-    int qTypeId,
+    const QMetaType& metaType,
     jclass _javaClass
     )
     :
-    m_qTypeId(qTypeId),
-    m_typeName(QLatin1String(QMetaType(qTypeId).name())),
+    m_metaType(metaType),
+    m_typeName(QLatin1String(m_metaType.name())),
     m_javaClass(_javaClass),
     m_internalToExternalConverter(),
     m_externalToInternalConverter(),
@@ -429,12 +415,12 @@ ParameterTypeInfo::ParameterTypeInfo(
 }
 
 ParameterTypeInfo::ParameterTypeInfo(
-        int qTypeId,
+        const QMetaType& metaType,
         const QString& typeName,
         jclass _javaClass
         )
     :
-      m_qTypeId(qTypeId),
+      m_metaType(metaType),
       m_typeName(typeName),
       m_javaClass(_javaClass),
       m_internalToExternalConverter(),
@@ -445,14 +431,14 @@ ParameterTypeInfo::ParameterTypeInfo(
 }
 
 ParameterTypeInfo::ParameterTypeInfo(
-        int qTypeId,
+        const QMetaType& metaType,
         jclass _javaClass,
         QtJambiUtils::InternalToExternalConverter&& internalToExternalConverter,
         QtJambiUtils::ExternalToInternalConverter&& externalToInternalConverter
         )
     :
-      m_qTypeId(qTypeId),
-      m_typeName(QLatin1String(QMetaType(qTypeId).name())),
+      m_metaType(metaType),
+      m_typeName(QLatin1String(m_metaType.name())),
       m_javaClass(_javaClass),
       m_internalToExternalConverter(std::move(internalToExternalConverter)),
       m_externalToInternalConverter(std::move(externalToInternalConverter)),
@@ -462,14 +448,14 @@ ParameterTypeInfo::ParameterTypeInfo(
 }
 
 ParameterTypeInfo::ParameterTypeInfo(
-        int qTypeId,
+        const QMetaType& metaType,
         const QString& typeName,
         jclass _javaClass,
         QtJambiUtils::InternalToExternalConverter&& internalToExternalConverter,
         QtJambiUtils::ExternalToInternalConverter&& externalToInternalConverter
         )
     :
-      m_qTypeId(qTypeId),
+      m_metaType(metaType),
       m_typeName(typeName),
       m_javaClass(_javaClass),
       m_internalToExternalConverter(std::move(internalToExternalConverter)),
@@ -481,7 +467,7 @@ ParameterTypeInfo::ParameterTypeInfo(
 
 ParameterTypeInfo::ParameterTypeInfo(const ParameterTypeInfo& other)
     :
-      m_qTypeId(other.m_qTypeId),
+      m_metaType(other.m_metaType),
       m_typeName(other.m_typeName),
       m_javaClass(other.m_javaClass),
       m_internalToExternalConverter(other.m_internalToExternalConverter),
@@ -491,7 +477,7 @@ ParameterTypeInfo::ParameterTypeInfo(const ParameterTypeInfo& other)
 {}
 
 ParameterTypeInfo& ParameterTypeInfo::operator=(const ParameterTypeInfo& other){
-    m_qTypeId = other.m_qTypeId;
+    m_metaType = other.m_metaType;
     m_typeName = other.m_typeName;
     m_javaClass = other.m_javaClass;
     m_internalToExternalConverter = other.m_internalToExternalConverter;
@@ -503,7 +489,7 @@ ParameterTypeInfo& ParameterTypeInfo::operator=(const ParameterTypeInfo& other){
 
 ParameterTypeInfo::ParameterTypeInfo(ParameterTypeInfo&& other)
     :
-      m_qTypeId(other.m_qTypeId),
+      m_metaType(other.m_metaType),
       m_typeName(std::move(other.m_typeName)),
       m_javaClass(other.m_javaClass),
       m_internalToExternalConverter(std::move(other.m_internalToExternalConverter)),
@@ -513,7 +499,7 @@ ParameterTypeInfo::ParameterTypeInfo(ParameterTypeInfo&& other)
 {}
 
 ParameterTypeInfo& ParameterTypeInfo::operator=(ParameterTypeInfo&& other){
-    m_qTypeId = other.m_qTypeId;
+    m_metaType = other.m_metaType;
     m_typeName = std::move(other.m_typeName);
     m_javaClass = other.m_javaClass;
     m_internalToExternalConverter = std::move(other.m_internalToExternalConverter);
@@ -527,7 +513,7 @@ void ParameterTypeInfo::resolveI2E(JNIEnv* env){
     m_internalToExternalConverter = QtJambiTypeManager::getInternalToExternalConverter(
                                                                                             env,
                                                                                             m_typeName,
-                                                                                            QMetaType(m_qTypeId),
+                                                                                            QMetaType(m_metaType),
                                                                                             m_javaClass,
                                                                                             true
                                                                                         );
@@ -539,7 +525,7 @@ void ParameterTypeInfo::resolveE2I(JNIEnv* env){
                                                                                             env,
                                                                                             m_javaClass,
                                                                                             m_typeName,
-                                                                                            QMetaType(m_qTypeId)
+                                                                                            QMetaType(m_metaType)
                                                                                         );
     m_resolvedE2I = true;
 }
@@ -560,8 +546,8 @@ jclass ParameterTypeInfo::javaClass() const{
     return m_javaClass;
 }
 
-int ParameterTypeInfo::metaType() const{
-    return m_qTypeId;
+const QMetaType& ParameterTypeInfo::metaType() const{
+    return m_metaType;
 }
 
 void static_metacall_QObject(const QtJambiMetaObject* q, QObject * o, QMetaObject::Call cl, int idx, void ** argv)
@@ -717,7 +703,7 @@ void static_metacall_any_type(const QtJambiMetaObject* q, QObject * o, QMetaObje
 
 typedef void (*StaticMetacallFunction)(const QtJambiMetaObject* q, QObject * o, QMetaObject::Call cl, int idx, void ** argv);
 
-hash_type computeHash(const QtJambiMetaObject* q, StaticMetacallFunction fct){
+size_t computeHash(const QtJambiMetaObject* q, StaticMetacallFunction fct){
     return qHashMulti(0, q, quintptr(fct));
 }
 
@@ -999,7 +985,7 @@ void QtJambiMetaObjectPrivate::analyzeMethods(JNIEnv *env, jobject classLoader, 
                                                                 typeName,
                                                                 qMetaType);
                 info.parameterTypeInfos << ParameterTypeInfo{
-                                               qMetaType.id(),
+                                               qMetaType,
                                                typeName,
                                                getGlobalClassRef(env, javaClass),
                                                std::move(internalToExternalConverter),
@@ -1144,7 +1130,7 @@ void QtJambiMetaObjectPrivate::initialize(JNIEnv *env, const QMetaObject *origin
                     QMetaType qMetaType(signalMetaTypes.pointer()[j]);
                     jclass javaClass = Java::QtJambi::SignalUtility$SignalParameterType::type(env, signalParameterType);
                     QtJambiAPI::addToJavaCollection(env, parameterClassTypes, javaClass);
-                    signal.emitMethodInfo.parameterTypeInfos.append({qMetaType.id(),
+                    signal.emitMethodInfo.parameterTypeInfos.append({qMetaType,
                                                     getGlobalClassRef(env, javaClass)});
                 }
                 signal.emitMethodInfo.isStatic = false;
@@ -1199,7 +1185,7 @@ void QtJambiMetaObjectPrivate::initialize(JNIEnv *env, const QMetaObject *origin
                 QMetaType qMetaType(Java::QtJambi::MetaObjectData$MetaTypeInfo::metaTypeId(env, mt));
                 jstring jtypeName = Java::QtJambi::MetaObjectData$MetaTypeInfo::typeName(env, mt);
                 QString typeName = jtypeName ? qtjambi_cast<QString>(env, jtypeName) : QLatin1String(qMetaType.name());
-                ParameterTypeInfo propertyTypeInfo{qMetaType.id(),
+                ParameterTypeInfo propertyTypeInfo{qMetaType,
                                                    typeName,
                                                    getGlobalClassRef(env, javaClass)};
                 QPropertyInfo& info = m_properties[i].m_QProperty_field;
@@ -1343,7 +1329,7 @@ void QtJambiMetaObjectPrivate::initialize(JNIEnv *env, const QMetaObject *origin
                     member.type = jValueType::c;
                 }else{
                     member.type = jValueType::l;
-                    member.memberTypeInfo = ParameterTypeInfo{qMetaType.id(),
+                    member.memberTypeInfo = ParameterTypeInfo{qMetaType,
                                                                             typeName,
                                                                             getGlobalClassRef(env, javaClass)};
                 }
@@ -1826,7 +1812,7 @@ jobject QtJambiMetaObject::toReflected(JNIEnv * env, const QMetaMethod& method)
     return nullptr;
 }
 
-hash_type qHash(const QMetaMethod& method, hash_type seed = 0){
+size_t qHash(const QMetaMethod& method, size_t seed = 0){
     return qHashMulti(seed, method.enclosingMetaObject(), method.methodIndex());
 }
 
@@ -1849,7 +1835,7 @@ QVector<ParameterTypeInfo> QtJambiMetaObject::methodParameterInfo(JNIEnv * env, 
             }
         }
     }
-    hash_type key = qHash(method);
+    size_t key = qHash(method);
     {
         QReadLocker locker(gMetaObjectsLock());
         Q_UNUSED(locker)
@@ -1871,7 +1857,7 @@ QVector<ParameterTypeInfo> QtJambiMetaObject::methodParameterInfo(JNIEnv * env, 
                 case QMetaType::Char:
                 case QMetaType::SChar:
                     result.append(ParameterTypeInfo(
-                                    info.metaTypeId,
+                                    QMetaType(info.metaTypeId),
                                     getGlobalClassRef(env, Java::Runtime::Byte::primitiveType(env)),
                                     [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& out, bool forceBoxedType)->bool{
                                            out.b = *reinterpret_cast<const qint8*>(in);
@@ -1904,7 +1890,7 @@ QVector<ParameterTypeInfo> QtJambiMetaObject::methodParameterInfo(JNIEnv * env, 
                 case QMetaType::UShort:
                 case QMetaType::Short:
                     result.append(ParameterTypeInfo(
-                                    info.metaTypeId,
+                                    QMetaType(info.metaTypeId),
                                     getGlobalClassRef(env, Java::Runtime::Short::primitiveType(env)),
                                     [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& out, bool forceBoxedType)->bool{
                                            out.s = *reinterpret_cast<const qint16*>(in);
@@ -1938,7 +1924,7 @@ QVector<ParameterTypeInfo> QtJambiMetaObject::methodParameterInfo(JNIEnv * env, 
                 case QMetaType::UInt:
                 case QMetaType::Int:
                     result.append(ParameterTypeInfo(
-                                    info.metaTypeId,
+                                    QMetaType(info.metaTypeId),
                                     getGlobalClassRef(env, Java::Runtime::Integer::primitiveType(env)),
                                     [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& out, bool forceBoxedType)->bool{
                                            out.i = *reinterpret_cast<const qint32*>(in);
@@ -1971,7 +1957,7 @@ QVector<ParameterTypeInfo> QtJambiMetaObject::methodParameterInfo(JNIEnv * env, 
                 case QMetaType::ULongLong:
                 case QMetaType::LongLong:
                     result.append(ParameterTypeInfo(
-                                    info.metaTypeId,
+                                    QMetaType(info.metaTypeId),
                                     getGlobalClassRef(env, Java::Runtime::Long::primitiveType(env)),
                                     [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& out, bool forceBoxedType)->bool{
                                            out.j = *reinterpret_cast<const qint64*>(in);
@@ -2005,7 +1991,7 @@ QVector<ParameterTypeInfo> QtJambiMetaObject::methodParameterInfo(JNIEnv * env, 
                 case QMetaType::Long:
                     if(QMetaType(info.metaTypeId).sizeOf()==4){
                         result.append(ParameterTypeInfo(
-                                    info.metaTypeId,
+                                    QMetaType(info.metaTypeId),
                                     getGlobalClassRef(env, Java::Runtime::Integer::primitiveType(env)),
                                     [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& out, bool forceBoxedType)->bool{
                                            out.i = *reinterpret_cast<const qint32*>(in);
@@ -2036,7 +2022,7 @@ QVector<ParameterTypeInfo> QtJambiMetaObject::methodParameterInfo(JNIEnv * env, 
                               ));
                     }else{
                         result.append(ParameterTypeInfo(
-                                info.metaTypeId,
+                                QMetaType(info.metaTypeId),
                                 getGlobalClassRef(env, Java::Runtime::Long::primitiveType(env)),
                                 [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& out, bool forceBoxedType)->bool{
                                        out.j = *reinterpret_cast<const qint64*>(in);
@@ -2070,7 +2056,7 @@ QVector<ParameterTypeInfo> QtJambiMetaObject::methodParameterInfo(JNIEnv * env, 
                 case QMetaType::Char16:
                 case QMetaType::QChar:
                     result.append(ParameterTypeInfo(
-                                    info.metaTypeId,
+                                    QMetaType(info.metaTypeId),
                                     getGlobalClassRef(env, Java::Runtime::Character::primitiveType(env)),
                                     [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& out, bool forceBoxedType)->bool{
                                            out.c = jchar(reinterpret_cast<const QChar*>(in)->unicode());
@@ -2102,7 +2088,7 @@ QVector<ParameterTypeInfo> QtJambiMetaObject::methodParameterInfo(JNIEnv * env, 
                     break;
                 case QMetaType::Float:
                     result.append(ParameterTypeInfo(
-                                    info.metaTypeId,
+                                    QMetaType(info.metaTypeId),
                                     getGlobalClassRef(env, Java::Runtime::Float::primitiveType(env)),
                                     [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& out, bool forceBoxedType)->bool{
                                            out.f = *reinterpret_cast<const float*>(in);
@@ -2134,7 +2120,7 @@ QVector<ParameterTypeInfo> QtJambiMetaObject::methodParameterInfo(JNIEnv * env, 
                     break;
                 case QMetaType::Double:
                     result.append(ParameterTypeInfo(
-                                    info.metaTypeId,
+                                    QMetaType(info.metaTypeId),
                                     getGlobalClassRef(env, Java::Runtime::Double::primitiveType(env)),
                                     [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& out, bool forceBoxedType)->bool{
                                            out.d = *reinterpret_cast<const double*>(in);
@@ -2166,7 +2152,7 @@ QVector<ParameterTypeInfo> QtJambiMetaObject::methodParameterInfo(JNIEnv * env, 
                     break;
                 case QMetaType::Bool:
                     result.append(ParameterTypeInfo(
-                                    info.metaTypeId,
+                                    QMetaType(info.metaTypeId),
                                     getGlobalClassRef(env, Java::Runtime::Boolean::primitiveType(env)),
                                     [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& out, bool forceBoxedType)->bool{
                                            out.z = *reinterpret_cast<const bool*>(in);
@@ -2198,7 +2184,7 @@ QVector<ParameterTypeInfo> QtJambiMetaObject::methodParameterInfo(JNIEnv * env, 
                     break;
                 case QMetaType::QString:
                     result.append(ParameterTypeInfo(
-                                    info.metaTypeId,
+                                    QMetaType(info.metaTypeId),
                                     getGlobalClassRef(env, Java::Runtime::String::getClass(env)),
                                     [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& out, bool)->bool{
                                            out.l = qtjambi_cast<jobject>(env, *reinterpret_cast<const QString*>(in));
@@ -2219,7 +2205,7 @@ QVector<ParameterTypeInfo> QtJambiMetaObject::methodParameterInfo(JNIEnv * env, 
                     break;
                 case QMetaType::QByteArray:
                     result.append(ParameterTypeInfo(
-                                    info.metaTypeId,
+                                    QMetaType(info.metaTypeId),
                                     getGlobalClassRef(env, Java::QtCore::QByteArray::getClass(env)),
                                     [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& out, bool)->bool{
                                            out.l = qtjambi_cast<jobject>(env, *reinterpret_cast<const QByteArray*>(in));
@@ -2240,7 +2226,7 @@ QVector<ParameterTypeInfo> QtJambiMetaObject::methodParameterInfo(JNIEnv * env, 
                     break;
                 case QMetaType::QVariant:
                     result.append(ParameterTypeInfo(
-                                    info.metaTypeId,
+                                    QMetaType(info.metaTypeId),
                                     getGlobalClassRef(env, Java::Runtime::Object::getClass(env)),
                                     [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& out, bool)->bool{
                                            out.l = qtjambi_cast<jobject>(env, *reinterpret_cast<const QVariant*>(in));
@@ -2263,7 +2249,7 @@ QVector<ParameterTypeInfo> QtJambiMetaObject::methodParameterInfo(JNIEnv * env, 
                     break;
                 }
             }else{
-                result.append({info.metaTypeId,
+                result.append({QMetaType(info.metaTypeId),
                                 JavaAPI::resolveClass(env, info.javaClass),
                                 info.qtToJavaConverterFunction,
                                 info.javaToQtConverterFunction});
@@ -2276,22 +2262,22 @@ QVector<ParameterTypeInfo> QtJambiMetaObject::methodParameterInfo(JNIEnv * env, 
         QList<QByteArray> parameterTypes = method.parameterTypes();
         for (int i=0; i<length; ++i){
             QByteArray qTypeName;
-            int metaType;
+            QMetaType metaType;
             if(i==0){
                 if(method.methodType()==QMetaMethod::Constructor){
-                    result.append({QMetaType::UnknownType,nullptr,nullptr,nullptr});
+                    result.append({QMetaType{QMetaType::UnknownType},nullptr,nullptr,nullptr});
                     continue;
                 }
                 qTypeName = method.typeName();
-                metaType = method.returnType();
+                metaType = method.returnMetaType();
             }else{
                 qTypeName = parameterTypes.at(i-1).data();
-                metaType = method.parameterType(i-1);
+                metaType = method.parameterMetaType(i-1);
             }
-            if(metaType==QMetaType::UnknownType)
-                metaType = QMetaType::type(qTypeName);
-            else if(metaType!=QMetaType::UnknownType && qTypeName.isEmpty())
-                qTypeName = QMetaType::typeName(metaType);
+            if(metaType.id()==QMetaType::UnknownType)
+                metaType = QMetaType::fromName(qTypeName);
+            else if(metaType.id()!=QMetaType::UnknownType && qTypeName.isEmpty())
+                qTypeName = metaType.name();
             QMetaType _metaType(metaType);
             QString externalTypeName = QtJambiTypeManager::getExternalTypeName(env, qTypeName, method.enclosingMetaObject(), _metaType);
             jclass javaClass = JavaAPI::resolveClass(env, qPrintable(externalTypeName), classLoader);
@@ -2338,7 +2324,7 @@ QVector<ParameterTypeInfo> QtJambiMetaObject::methodParameterInfo(JNIEnv * env, 
                         return true;
                     };
                 }
-                result.append({QMetaType::UnknownType,nullptr,std::move(internalToExternalConverter),nullptr});
+                result.append({QMetaType{QMetaType::UnknownType},nullptr,std::move(internalToExternalConverter),nullptr});
             }
         }
     }
@@ -3293,7 +3279,7 @@ bool QmlAPI::registerQmlExtension(JNIEnv *env, const QMetaObject *extended_meta_
 
 jobject QtJambiMetaObject::getSignalTypes(JNIEnv *env, jobject signal, const QMetaMethod& metaMethod){
     jobject result = nullptr;
-    hash_type key = qHash(metaMethod);
+    size_t key = qHash(metaMethod);
     {
         QReadLocker locker(gMetaObjectsLock());
         Q_UNUSED(locker)
@@ -3355,12 +3341,12 @@ jobject QtJambiMetaObject::getSignalTypes(JNIEnv *env, jobject signal, const QMe
 }
 
 void QtJambiMetaObjectPrivate::clearAtShutdown(JNIEnv * env){
-    QHash<hash_type, QVector<ParameterTypeInfo>> parameterTypeInfos;
+    QHash<size_t, QVector<ParameterTypeInfo>> parameterTypeInfos;
     QList<QSharedPointer<const QtJambiMetaObject>> metaObjects;
     QHash<int, const QMetaObject *> metaObjectsHash;
-    QHash<hash_type, JObjectWrapper> signalTypes;
+    QHash<size_t, JObjectWrapper> signalTypes;
     QHash<const QMetaObject *, jweak> hash;
-    QHash<hash_type,const QMetaObject *> mhash;
+    QHash<size_t,const QMetaObject *> mhash;
     {
         QWriteLocker locker(gMetaObjectsLock());
         if(!gParameterTypeInfos.isDestroyed()){

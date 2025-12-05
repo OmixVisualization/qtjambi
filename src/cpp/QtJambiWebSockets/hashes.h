@@ -36,16 +36,16 @@
 #include <QtWebSockets/QWebSocketHandshakeOptions>
 
 #if defined(QTJAMBI_GENERATOR_RUNNING)
-hash_type qHash(const QWebSocketHandshakeOptions& value, hash_type seed = 0);
+size_t qHash(const QWebSocketHandshakeOptions& value, size_t seed = 0);
 #else
 class QWebSocketHandshakeOptionsPrivate{
 public:
-    static hash_type hash(const QWebSocketHandshakeOptions& value, hash_type seed){
+    static size_t hash(const QWebSocketHandshakeOptions& value, size_t seed){
         return qHash(quintptr(value.d.data()), seed);
     }
 };
 
-inline hash_type qHash(const QWebSocketHandshakeOptions& value, hash_type seed = 0)
+inline size_t qHash(const QWebSocketHandshakeOptions& value, size_t seed = 0)
 {
     return QWebSocketHandshakeOptionsPrivate::hash(value, seed);
 }
