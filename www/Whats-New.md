@@ -3,7 +3,7 @@
 * Removing Qt5 backward compatibility
 * QFuture and QPromise are now native wrapper types
 * The new internal class `io.qt.internal.LibraryExtractor` (main) can be used to extract all required QtJambi libraries.
-* `QQmlInfo` not mirrors native API entirely.
+* `QQmlInfo` now mirrors native API entirely.
 * All appearances of quint16 http ports now map to Java's int type.
 * Fixed memory leak in using function pointers.
 
@@ -660,4 +660,5 @@ A lot!
 ## Compatibility
 
 QtJambi 6.2.1 and 5.15.3 are source-compatible but maybe not be binary-compatible to its predecessor releases. 
+
 You might need to compile your code with the new QtJambi version again.
